@@ -47,7 +47,11 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           </label>
           <Textarea
             id="special-requests"
-            placeholder="Themes: 'underwater adventure', 'winter holiday'; Tone: 'funny', 'educational'; Elements: 'friendly robot', 'magical garden'; Vocabulary: 'include colors', 'practice rhyming'"
+            placeholder="Themes: 'underwater adventure', 'winter holiday'
+Tone: 'funny', 'educational'
+Elements: 'friendly robot', 'magical garden'
+Characters: 'brave knight', 'talking animal'
+Setting: 'enchanted forest', 'space station'"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             className="min-h-[120px]"
@@ -60,7 +64,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           <TagInput
             value={targetVocab}
             onChange={setTargetVocab}
-            placeholder="Add words, then press Enter"
+            placeholder="ocean, brave, explore"
           />
           <p className="text-xs text-muted-foreground">Words here will guide the AI to include them in the next story.</p>
         </div>

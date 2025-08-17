@@ -103,7 +103,7 @@ export const FormStep3Personalization = ({
       }
 
       // Setup debounced spellcheck for text fields
-      const spellcheckFields = ['hobbies', 'favoriteAnimal', 'favoriteFood', 'specialRequest'];
+      const spellcheckFields = ['hobbies', 'favoriteAnimal', 'favoriteFood', 'specialRequest', 'targetVocabulary'];
       if (spellcheckFields.includes(field) && value.length > 2) {
         if (spellcheckTimeouts[field]) {
           clearTimeout(spellcheckTimeouts[field]);
@@ -120,7 +120,7 @@ export const FormStep3Personalization = ({
       onUpdate({ [field]: sanitizedValue });
 
       // Handle real-time translation for specific fields
-      if (['favoriteAnimal', 'favoriteFood', 'favoriteColor', 'hobbies', 'specialRequest'].includes(field as string) && sanitizedValue.trim()) {
+      if (['favoriteAnimal', 'favoriteFood', 'favoriteColor', 'hobbies', 'specialRequest', 'targetVocabulary'].includes(field as string) && sanitizedValue.trim()) {
         setTranslationLoading(prev => ({ ...prev, [field as string]: true }));
         
         try {
@@ -377,19 +377,19 @@ export const FormStep3Personalization = ({
                 {t("formStep3.specialRequest.label", "Special Story Request")}
               </Label>
               
-              <TagInput
+              <Textarea
                 value={formData.specialRequest || ""}
-                onChange={(value) => handleInputChange('specialRequest', value)}
-                placeholder="theme: adventure, mystery
-tone: funny, exciting
-characters: brave knight, dragon
-setting: magical forest
-vocabulary: color, numbers"
-                className="transition-colors focus-within:border-primary"
+                onChange={(e) => handleInputChange('specialRequest', e.target.value)}
+                placeholder="Themes: 'underwater adventure', 'winter holiday'
+Tone: 'funny', 'educational'
+Elements: 'friendly robot', 'magical garden'
+Characters: 'brave knight', 'talking animal'
+Setting: 'enchanted forest', 'space station'"
+                className="min-h-[120px] transition-colors focus:border-primary"
               />
               
               <p className="text-xs text-muted-foreground">
-                Format your input like the examples above for best AI understanding. (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
+                Tell us what kind of story you'd love! (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
               </p>
               
               {spellcheckSuggestions.specialRequest && (
@@ -408,6 +408,41 @@ vocabulary: color, numbers"
                 <div className="flex items-center gap-2 text-xs text-success">
                   <Globe className="h-3 w-3" />
                   <span>{translations.specialRequest}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Target Vocabulary */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">
+                {t("formStep3.targetVocabulary.label", "Target vocabulary (optional)")}
+              </Label>
+              <TagInput
+                value={formData.targetVocabulary || ""}
+                onChange={(value) => handleInputChange('targetVocabulary', value)}
+                placeholder="ocean, brave, explore"
+                className="transition-colors focus-within:border-primary"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("formStep3.targetVocabulary.help", "Words here will guide the AI to include them in the next story.")}
+              </p>
+              
+              {spellcheckSuggestions.targetVocabulary && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{t("spellcheck.suggestion", "Did you mean:")}</span>
+                  <button
+                    onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
+                    className="text-primary hover:text-primary/80 underline"
+                  >
+                    {spellcheckSuggestions.targetVocabulary}
+                  </button>
+                </div>
+              )}
+              
+              {translations.targetVocabulary && (
+                <div className="flex items-center gap-2 text-xs text-success">
+                  <Globe className="h-3 w-3" />
+                  <span>{translations.targetVocabulary}</span>
                 </div>
               )}
             </div>

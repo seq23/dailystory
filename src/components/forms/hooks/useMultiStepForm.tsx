@@ -22,6 +22,7 @@ export const useMultiStepForm = () => {
     hobbies: "",
     favoriteFood: "",
     specialRequest: "",
+    targetVocabulary: "",
     difficultyLevel: "beginner",
     readingAbility: "beginner"
   });
@@ -108,8 +109,13 @@ export const useMultiStepForm = () => {
       return null;
     }
 
+    // Combine special request and target vocabulary
+    const base = (formData.specialRequest || "").trim();
+    const vocab = (formData.targetVocabulary || "").trim();
+    const combinedSpecialRequest = vocab ? `${base ? base + "\n" : ""}Target vocabulary: ${vocab}` : base;
+
     // Final content validation
-    const allText = `${formData.name} ${formData.favoriteAnimal} ${formData.favoriteFood} ${formData.hobbies} ${formData.specialRequest}`;
+    const allText = `${formData.name} ${formData.favoriteAnimal} ${formData.favoriteFood} ${formData.hobbies} ${combinedSpecialRequest}`;
     const finalValidation = ContentSecurity.isContentAppropriate(allText, formData.grade, formData.nativeLanguage);
     
     if (!finalValidation.appropriate) {
@@ -133,7 +139,7 @@ export const useMultiStepForm = () => {
       grade: formData.grade
     });
     
-    return { ...formData, difficultyLevel: difficulty };
+    return { ...formData, specialRequest: combinedSpecialRequest, difficultyLevel: difficulty };
   }, [formData, validateStep1, t]);
 
   return {

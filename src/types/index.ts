@@ -26,6 +26,7 @@ export interface UserInfo {
   hobbies: string;
   favoriteFood: string;
   specialRequest: string;
+  targetVocabulary?: string;
   difficultyLevel?: DifficultyLevel;
   readingAbility?: DifficultyLevel;
   readingLevel?: string; // Add this for compatibility
