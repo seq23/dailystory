@@ -31,6 +31,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  console.log("DEPLOYMENT TEST - App component loaded successfully");
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

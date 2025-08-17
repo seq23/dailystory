@@ -273,9 +273,16 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
   
   if (context === 'learning' || context === 'conversation') {
     try {
-      dictionaryId = await getComprehensiveDictionary(context as 'learning' | 'conversation');
+      // Check for existing dictionary first
+      const cachedId = circuitBreakerState.dictionaries.get(context);
+      if (cachedId) {
+        dictionaryId = cachedId;
+        console.log(`Using cached ${context} dictionary: ${dictionaryId}`);
+      } else {
+        console.log(`No cached ${context} dictionary found, proceeding without dictionary`);
+      }
     } catch (dictError) {
-      console.warn(`Dictionary generation failed for ${context}, proceeding without dictionary:`, dictError.message);
+      console.warn(`Dictionary lookup failed for ${context}, proceeding without dictionary:`, dictError.message);
       dictionaryFailed = true;
       // Continue without dictionary rather than failing completely
     }
