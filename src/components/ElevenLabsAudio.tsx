@@ -258,8 +258,9 @@ useEffect(() => {
     if (contentHash && currentUIHash && currentUIHash !== contentHash && retryCount === 0) {
       console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - syncing immediately`);
       
-      // Force sync by updating our hash to match UI
-      (window as any).__audioContentHash = currentUIHash;
+      // Fix #2: Wait for proper content sync instead of forcing it
+      console.log('⏳ Content hash mismatch detected, waiting for sync...');
+      return; // Don't force sync, let content update naturally
       
       // Track for diagnostics
       try {

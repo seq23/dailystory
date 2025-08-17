@@ -294,6 +294,26 @@ useEffect(() => {
   return () => window.removeEventListener('audio:statechange', handleGlobalAudioStateChange);
 }, []);
 
+// Clear audio service state on page change (Fix #1 - CRITICAL)
+useEffect(() => {
+  const clearAudioOnPageChange = async () => {
+    try {
+      // Stop any active audio from previous pages
+      const { audioSyncService } = await import('@/services/audioSyncService');
+      audioSyncService.stopAudio();
+      
+      // Reset audio UI state immediately
+      setIsAudioPlaying(false);
+      
+      console.log('🧹 Cleared audio state for page change:', currentPage + 1);
+    } catch (error) {
+      console.warn('Failed to clear audio state on page change:', error);
+    }
+  };
+  
+  clearAudioOnPageChange();
+}, [currentPage]); // Triggers when page changes
+
 // Direct URL management for story sessions (more reliable than hook-based approach)
 const navigate = useNavigate();
 
