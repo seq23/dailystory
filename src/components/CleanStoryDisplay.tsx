@@ -314,6 +314,17 @@ useEffect(() => {
   clearAudioOnPageChange();
 }, [currentPage]); // Triggers when page changes
 
+// Debug userInfo avatar data when component mounts/updates (Fix #1 - CRITICAL)
+useEffect(() => {
+  console.log('🔍 [DEBUG] CleanStoryDisplay userInfo avatar check:', {
+    hasUserInfo: !!userInfo,
+    name: userInfo?.name,
+    avatar: userInfo?.avatar,
+    avatarType: userInfo?.avatar?.type,
+    avatarSkinTone: userInfo?.avatar?.skinTone
+  });
+}, [userInfo]);
+
 // Direct URL management for story sessions (more reliable than hook-based approach)
 const navigate = useNavigate();
 

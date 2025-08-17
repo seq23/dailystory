@@ -13,12 +13,27 @@ export const guestSession = {
     try { return sessionStorage.getItem(ACTIVE_KEY) === '1'; } catch { return false; }
   },
   saveUserInfo(user: UserInfo) {
-    try { sessionStorage.setItem(USER_KEY, JSON.stringify(user)); } catch {}
+    try { 
+      console.log('🔍 [DEBUG] Saving user info to guest session:', { 
+        name: user.name, 
+        avatar: user.avatar,
+        difficultyLevel: user.difficultyLevel 
+      });
+      sessionStorage.setItem(USER_KEY, JSON.stringify(user)); 
+    } catch {}
   },
   getUserInfo(): UserInfo | null {
     try {
       const raw = sessionStorage.getItem(USER_KEY);
-      return raw ? (JSON.parse(raw) as UserInfo) : null;
+      const user = raw ? (JSON.parse(raw) as UserInfo) : null;
+      if (user) {
+        console.log('🔍 [DEBUG] Retrieved user info from guest session:', { 
+          name: user.name, 
+          avatar: user.avatar,
+          difficultyLevel: user.difficultyLevel 
+        });
+      }
+      return user;
     } catch { return null; }
   },
   saveTimerEndTs(ts: number) {

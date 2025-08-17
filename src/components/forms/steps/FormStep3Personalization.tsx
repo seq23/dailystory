@@ -294,10 +294,13 @@ export const FormStep3Personalization = ({
               <Label className="text-sm font-medium text-foreground">
                 {t("formStep3.avatar.label", "Choose Your Avatar")}
               </Label>
-              <AvatarPicker
-                value={formData.avatar}
-                onChange={(avatar) => handleInputChange('avatar', avatar)}
-              />
+               <AvatarPicker
+                 value={formData.avatar}
+                 onChange={(avatar) => {
+                   console.log('🔍 [DEBUG] Avatar selected in form:', avatar);
+                   handleInputChange('avatar', avatar);
+                 }}
+               />
               <p className="text-xs text-muted-foreground">
                 {t("formStep3.avatar.help", "Your avatar will appear in the stories as the main character")}
               </p>

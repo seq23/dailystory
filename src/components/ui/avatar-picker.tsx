@@ -32,6 +32,14 @@ const avatarImages = {
     olive: "/avatar-girl-olive.jpg",
     dark: "/avatar-girl-dark.jpg",
   },
+  // Add fallback for invalid avatar types (Fix #3)
+  "prefer-not-to-answer": {
+    pale: "/avatar-boy-pale.jpg", // Fallback to boy images
+    light: "/avatar-boy-light.jpg",
+    medium: "/avatar-boy-medium.jpg", 
+    olive: "/avatar-boy-olive.jpg",
+    dark: "/avatar-boy-dark.jpg",
+  }
 }
 
 const skinToneColors = {
@@ -59,6 +67,17 @@ export const AvatarPicker = React.forwardRef<
   // For "prefer-not-to-answer", default to boy avatar for display but we'll handle pronouns separately
   const displayType = value.type === "prefer-not-to-answer" ? "boy" : value.type
   const currentAvatar = avatarImages[displayType as "boy" | "girl"]?.[value.skinTone]
+  
+  // Add debugging for avatar image selection (Fix #3)
+  React.useEffect(() => {
+    console.log('🔍 [DEBUG] AvatarPicker current selection:', {
+      type: value.type,
+      skinTone: value.skinTone,
+      displayType,
+      currentAvatar,
+      imageExists: !!currentAvatar
+    });
+  }, [value.type, value.skinTone, displayType, currentAvatar]);
 
   return (
     <div ref={ref} className={cn("space-y-4", className)}>
@@ -128,6 +147,18 @@ export const AvatarPicker = React.forwardRef<
                 src={currentAvatar}
                 alt={`${value.type} avatar with ${value.skinTone} skin tone`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('🚨 [DEBUG] Avatar image failed to load:', {
+                    src: currentAvatar,
+                    type: value.type,
+                    skinTone: value.skinTone
+                  });
+                  // Set fallback image
+                  (e.target as HTMLImageElement).src = '/avatar-boy-medium.jpg';
+                }}
+                onLoad={() => {
+                  console.log('✅ [DEBUG] Avatar image loaded successfully:', currentAvatar);
+                }}
               />
             </div>
           </div>

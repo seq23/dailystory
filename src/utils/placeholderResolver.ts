@@ -59,12 +59,21 @@ function firstName(name?: string): string | undefined {
 }
 
 function derivePronoun(userInfo?: UserInfo): string {
+  console.log('🔍 [DEBUG] Deriving pronoun from userInfo:', { 
+    hasUserInfo: !!userInfo,
+    avatar: userInfo?.avatar,
+    avatarType: userInfo?.avatar?.type 
+  });
+  
   switch (userInfo?.avatar?.type) {
     case "boy":
+      console.log('✅ [DEBUG] Using "he" pronoun for boy avatar');
       return "he";
     case "girl":
+      console.log('✅ [DEBUG] Using "she" pronoun for girl avatar');
       return "she";
     default:
+      console.log('⚠️ [DEBUG] Using "they" pronoun (default fallback)');
       return "they";
   }
 }

@@ -86,6 +86,20 @@ useEffect(() => {
   };
 
 const handleFormSubmit = (info: UserInfo) => {
+  console.log('🔍 [DEBUG] Form submitted with userInfo:', {
+    name: info.name,
+    avatar: info.avatar,
+    avatarType: info.avatar?.type,
+    avatarSkinTone: info.avatar?.skinTone,
+    difficultyLevel: info.difficultyLevel
+  });
+
+  // Add avatar validation and fallback handling (Fix #4)
+  if (!info.avatar || !info.avatar.type) {
+    console.warn('⚠️ [DEBUG] Avatar data missing or corrupted, applying fallback');
+    info.avatar = { type: "boy", skinTone: "medium" };
+  }
+
   setUserInfo(info);
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
   try { StorySessionCache.clearCachedSession('guest'); } catch {}

@@ -309,6 +309,13 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryP
 }
 
 export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>): string {
+  console.log('🔍 [DEBUG] Formatting user prompt with userInfo:', { 
+    name: userInfo.name, 
+    avatar: userInfo.avatar,
+    difficultyLevel: userInfo.difficultyLevel,
+    template: template.slice(0, 100) + '...'
+  });
+  
   // Start with basic placeholder resolution
   let prompt = resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
   
