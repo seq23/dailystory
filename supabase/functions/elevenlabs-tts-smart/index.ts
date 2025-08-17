@@ -11,7 +11,7 @@ let circuitBreakerState = {
   failures: 0,
   lastFailure: 0,
   isOpen: false,
-  dictionaries: null as any,
+  dictionaries: new Map<string, string>(), // context -> dictionaryId
   lastDictionaryCheck: 0
 };
 
@@ -19,49 +19,205 @@ const CIRCUIT_BREAKER_THRESHOLD = 5;
 const CIRCUIT_BREAKER_TIMEOUT = 300000; // 5 minutes
 const DICTIONARY_CACHE_TIMEOUT = 3600000; // 1 hour
 
-async function getDictionaryId(): Promise<string | null> {
+// Comprehensive vocabulary for generating dictionaries
+const COMPREHENSIVE_VOCABULARY = {
+  level0: ['a', 'I', 'am', 'an', 'and', 'at', 'be', 'big', 'can', 'cat', 'come', 'do', 'dog', 'for', 'get', 'go', 'has', 'have', 'he', 'help', 'here', 'him', 'his', 'how', 'in', 'is', 'it', 'like', 'look', 'me', 'my', 'no', 'not', 'on', 'or', 'play', 'said', 'see', 'she', 'the', 'to', 'up', 'we', 'will', 'you'],
+  level1: ['all', 'ball', 'book', 'boy', 'came', 'car', 'day', 'did', 'eat', 'find', 'girl', 'good', 'had', 'her', 'his', 'home', 'house', 'jump', 'know', 'little', 'long', 'make', 'man', 'may', 'new', 'now', 'old', 'one', 'out', 'put', 'ran', 'red', 'run', 'say', 'sit', 'so', 'some', 'take', 'that', 'them', 'then', 'they', 'this', 'three', 'time', 'two', 'want', 'was', 'water', 'way', 'went', 'were', 'what', 'when', 'where', 'who', 'why', 'with', 'yes'],
+  level2: ['about', 'after', 'again', 'another', 'any', 'ask', 'back', 'began', 'better', 'black', 'blue', 'brown', 'call', 'could', 'does', 'down', 'first', 'found', 'from', 'gave', 'green', 'grow', 'head', 'just', 'keep', 'kind', 'last', 'leave', 'left', 'let', 'live', 'made', 'much', 'must', 'name', 'never', 'next', 'night', 'only', 'open', 'other', 'own', 'people', 'place', 'right', 'round', 'saw', 'school', 'should', 'stop', 'tell', 'think', 'too', 'turn', 'us', 'use', 'very', 'walk', 'well', 'white', 'why', 'work', 'would', 'write', 'year', 'your'],
+  level3: ['almost', 'always', 'before', 'best', 'both', 'buy', 'clean', 'cut', 'done', 'draw', 'drink', 'eight', 'every', 'fall', 'far', 'fast', 'five', 'fly', 'four', 'full', 'funny', 'got', 'hold', 'hot', 'hurt', 'if', 'its', 'laugh', 'light', 'many', 'myself', 'off', 'once', 'pick', 'please', 'pretty', 'pull', 'read', 'sing', 'six', 'sleep', 'small', 'start', 'ten', 'thank', 'their', 'these', 'today', 'together', 'try', 'upon', 'warm', 'wash', 'which', 'wish', 'yellow'],
+  level4: ['along', 'around', 'because', 'been', 'carry', 'cold', 'coming', 'don\'t', 'enough', 'first', 'gave', 'going', 'heavy', 'hour', 'isn\'t', 'morning', 'myself', 'near', 'piece', 'really', 'second', 'sister', 'tried', 'under', 'until', 'while', 'without']
+};
+
+// Common phonetic mappings for consistent pronunciation
+const PHONETIC_MAPPINGS = {
+  'the': 'ðə',
+  'a': 'ə',
+  'and': 'ænd',
+  'to': 'tu',
+  'of': 'ʌv',
+  'in': 'ɪn',
+  'is': 'ɪz',
+  'it': 'ɪt',
+  'you': 'ju',
+  'that': 'ðæt',
+  'he': 'hi',
+  'was': 'wʌz',
+  'for': 'fɔr',
+  'on': 'ɑn',
+  'are': 'ɑr',
+  'as': 'æz',
+  'with': 'wɪθ',
+  'his': 'hɪz',
+  'they': 'ðeɪ',
+  'i': 'aɪ',
+  'at': 'æt',
+  'be': 'bi',
+  'this': 'ðɪs',
+  'have': 'hæv',
+  'from': 'frʌm',
+  'or': 'ɔr',
+  'one': 'wʌn',
+  'had': 'hæd',
+  'by': 'baɪ',
+  'word': 'wɜrd',
+  'but': 'bʌt',
+  'not': 'nɑt',
+  'what': 'wʌt',
+  'all': 'ɔl',
+  'were': 'wɜr',
+  'we': 'wi',
+  'when': 'wɛn',
+  'your': 'jʊr',
+  'can': 'kæn',
+  'said': 'sɛd',
+  'there': 'ðɛr',
+  'each': 'itʃ',
+  'which': 'wɪtʃ',
+  'she': 'ʃi',
+  'do': 'du',
+  'how': 'haʊ',
+  'their': 'ðɛr',
+  'if': 'ɪf'
+};
+
+// Generate PLS lexicon content
+function generatePLSLexicon(vocabulary: string[], contextType: 'learning' | 'conversation'): string {
+  const timestamp = new Date().toISOString();
+  const lexiconName = `comprehensive-${contextType}-lexicon-${Date.now()}`;
+  
+  let plsContent = `<?xml version="1.0" encoding="UTF-8"?>
+<lexicon version="1.0" 
+         xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.w3.org/2005/01/pronunciation-lexicon
+                             http://www.w3.org/TR/2007/CR-pronunciation-lexicon-20071212/pls.xsd"
+         alphabet="ipa" xml:lang="en-US">
+  <!-- Generated: ${timestamp} -->
+  <!-- Context: ${contextType} -->
+  <!-- Vocabulary Count: ${vocabulary.length} -->
+`;
+
+  // Add phonetic entries for vocabulary
+  for (const word of vocabulary) {
+    if (PHONETIC_MAPPINGS[word.toLowerCase()]) {
+      const pronunciation = PHONETIC_MAPPINGS[word.toLowerCase()];
+      
+      if (contextType === 'learning') {
+        // For learning context, add both normal and slow variants
+        plsContent += `  <lexeme>
+    <grapheme>${word}</grapheme>
+    <phoneme>${pronunciation}</phoneme>
+  </lexeme>
+  <lexeme>
+    <grapheme>${word}</grapheme>
+    <phoneme>${pronunciation.split('').join(' ')}</phoneme>
+  </lexeme>
+`;
+      } else {
+        // For conversation context, use natural pronunciation
+        plsContent += `  <lexeme>
+    <grapheme>${word}</grapheme>
+    <phoneme>${pronunciation}</phoneme>
+  </lexeme>
+`;
+      }
+    }
+  }
+
+  plsContent += '</lexicon>';
+  return plsContent;
+}
+
+// Get or create comprehensive dictionary for context
+async function getComprehensiveDictionary(context: 'learning' | 'conversation'): Promise<string | null> {
   try {
     const now = Date.now();
     
-    // Use cached dictionary info if available and fresh
-    if (circuitBreakerState.dictionaries && 
+    // Check cache first
+    if (circuitBreakerState.dictionaries.has(context) && 
         (now - circuitBreakerState.lastDictionaryCheck) < DICTIONARY_CACHE_TIMEOUT) {
-      return circuitBreakerState.dictionaries.charlotteDictionaryId;
+      console.log(`Using cached ${context} dictionary:`, circuitBreakerState.dictionaries.get(context));
+      return circuitBreakerState.dictionaries.get(context) || null;
     }
 
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
     if (!elevenLabsApiKey) {
-      console.log('ElevenLabs API key not configured for dictionary lookup');
+      console.log('ElevenLabs API key not configured for comprehensive dictionary');
       return null;
     }
 
-    console.log('Fetching dictionary list from ElevenLabs...');
-    const response = await fetch('https://api.elevenlabs.io/v1/pronunciation-dictionaries', {
+    // Check if dictionary already exists
+    console.log(`Checking for existing ${context} dictionary...`);
+    const listResponse = await fetch('https://api.elevenlabs.io/v1/pronunciation-dictionaries', {
       method: 'GET',
-      headers: {
-        'xi-api-key': elevenLabsApiKey,
-      },
+      headers: { 'xi-api-key': elevenLabsApiKey },
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      const charlotteDictionary = data.pronunciation_dictionaries?.find(
-        (dict: any) => dict.name === 'charlotte-learning-lexicon'
+    if (listResponse.ok) {
+      const data = await listResponse.json();
+      const dictionaryName = `comprehensive-${context}-lexicon`;
+      const existingDict = data.pronunciation_dictionaries?.find(
+        (dict: any) => dict.name.startsWith(dictionaryName)
       );
       
-      circuitBreakerState.dictionaries = {
-        charlotteDictionaryId: charlotteDictionary?.id || null
-      };
+      if (existingDict) {
+        console.log(`Found existing ${context} dictionary:`, existingDict.id);
+        circuitBreakerState.dictionaries.set(context, existingDict.id);
+        circuitBreakerState.lastDictionaryCheck = now;
+        return existingDict.id;
+      }
+    }
+
+    // Generate comprehensive vocabulary for all levels
+    console.log(`Generating comprehensive ${context} dictionary...`);
+    const allVocabulary = [
+      ...COMPREHENSIVE_VOCABULARY.level0,
+      ...COMPREHENSIVE_VOCABULARY.level1,
+      ...COMPREHENSIVE_VOCABULARY.level2,
+      ...COMPREHENSIVE_VOCABULARY.level3,
+      ...COMPREHENSIVE_VOCABULARY.level4
+    ];
+
+    // Remove duplicates
+    const uniqueVocabulary = [...new Set(allVocabulary)];
+    console.log(`Vocabulary size: ${uniqueVocabulary.length} words`);
+
+    // Generate PLS lexicon
+    const plsContent = generatePLSLexicon(uniqueVocabulary, context);
+    const dictionaryName = `comprehensive-${context}-lexicon-${Date.now()}`;
+
+    // Upload to ElevenLabs
+    console.log(`Uploading ${context} dictionary to ElevenLabs...`);
+    const uploadResponse = await fetch('https://api.elevenlabs.io/v1/pronunciation-dictionaries/add-from-file', {
+      method: 'POST',
+      headers: {
+        'xi-api-key': elevenLabsApiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: dictionaryName,
+        file: btoa(plsContent),
+        description: `Comprehensive ${context} pronunciation lexicon with ${uniqueVocabulary.length} words. Generated automatically for consistent pronunciation.`
+      }),
+    });
+
+    if (uploadResponse.ok) {
+      const uploadData = await uploadResponse.json();
+      console.log(`Successfully uploaded ${context} dictionary:`, uploadData.id);
+      
+      // Cache the new dictionary
+      circuitBreakerState.dictionaries.set(context, uploadData.id);
       circuitBreakerState.lastDictionaryCheck = now;
       
-      console.log('Dictionary lookup result:', charlotteDictionary?.id ? 'Found' : 'Not found');
-      return charlotteDictionary?.id || null;
+      return uploadData.id;
     } else {
-      console.log('Dictionary lookup failed:', response.status);
+      const errorText = await uploadResponse.text();
+      console.error(`Failed to upload ${context} dictionary:`, uploadResponse.status, errorText);
       return null;
     }
+
   } catch (error) {
-    console.log('Dictionary lookup error:', error.message);
+    console.error(`Error with ${context} dictionary:`, error.message);
     return null;
   }
 }
@@ -93,10 +249,10 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     await new Promise(resolve => setTimeout(resolve, delay));
   }
 
-  // Get dictionary ID for learning context
+  // Get comprehensive dictionary ID for context
   let dictionaryId: string | null = null;
-  if (context === 'learning') {
-    dictionaryId = await getDictionaryId();
+  if (context === 'learning' || context === 'conversation') {
+    dictionaryId = await getComprehensiveDictionary(context as 'learning' | 'conversation');
   }
 
   const requestBody: any = {
@@ -110,13 +266,13 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     }
   };
 
-  // Add pronunciation dictionary for learning context
-  if (context === 'learning' && dictionaryId) {
+  // Add pronunciation dictionary for context
+  if (dictionaryId) {
     requestBody.pronunciation_dictionary_locators = [{
       pronunciation_dictionary_id: dictionaryId,
       version_id: "latest"
     }];
-    console.log('Using Charlotte learning lexicon:', dictionaryId);
+    console.log(`Using comprehensive ${context} dictionary:`, dictionaryId);
   }
 
   console.log(`ElevenLabs TTS request (attempt ${retryCount + 1}):`, {
@@ -198,7 +354,8 @@ serve(async (req) => {
             audioContent: base64Audio,
             context,
             voiceId,
-            usedDictionary: context === 'learning' && circuitBreakerState.dictionaries?.charlotteDictionaryId
+            usedDictionary: !!circuitBreakerState.dictionaries.get(context),
+            appliedLexicon: !!circuitBreakerState.dictionaries.get(context)
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -207,12 +364,11 @@ serve(async (req) => {
           lastError = new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
           console.error(`Attempt ${attempt + 1} failed:`, lastError.message);
           
-          // If dictionary-related error in learning context, clear cache for next attempt
-          if (context === 'learning' && 
-              (errorText.includes('dictionary') || errorText.includes('pronunciation')) &&
-              circuitBreakerState.dictionaries?.charlotteDictionaryId) {
+          // If dictionary-related error, clear cache for next attempt
+          if ((errorText.includes('dictionary') || errorText.includes('pronunciation')) &&
+              circuitBreakerState.dictionaries.has(context)) {
             console.log('Dictionary error detected, clearing dictionary cache for next attempt');
-            circuitBreakerState.dictionaries = null;
+            circuitBreakerState.dictionaries.delete(context);
             circuitBreakerState.lastDictionaryCheck = 0;
           }
           
