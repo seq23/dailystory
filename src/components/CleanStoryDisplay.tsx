@@ -53,6 +53,8 @@ import { DifficultyManager } from "@/services/difficultyManager";
 import { DiagnosticTool } from "@/utils/diagnostics";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
+import { ImageFallbackService } from "@/services/ImageFallbackService";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
@@ -250,6 +252,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<number, boolean>>({});
+  const [fallbackStates, setFallbackStates] = useState<Record<number, boolean>>({});
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchDone, setBatchDone] = useState(0);
   const [batchTotal, setBatchTotal] = useState(0);
@@ -2084,17 +2088,21 @@ const handleRestartTimer = () => {
                             fallbackToClassic('image-error');
                           }}
                         />
-                        {/* Foreground clean image, never cropped */}
-                        <img
+                        {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
+                        <ImageWithFallback
                           src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+                          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                           className="relative z-10 h-full w-full object-contain"
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => {
-                            console.warn('Story image failed to load, switching to classic fallback:', currentImage);
-                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                            fallbackToClassic('image-error');
+                          fallbackText={`📖 Page ${currentPage + 1}`}
+                          onLoadingChange={(isLoading) => {
+                            setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
+                          }}
+                          onFallbackUsed={(isUsingFallback) => {
+                            setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
+                            if (isUsingFallback) {
+                              console.warn('Story image failed to load, using enhanced fallback:', currentImage);
+                              fallbackToClassic('image-error');
+                            }
                           }}
                         />
                       </>
@@ -2187,16 +2195,20 @@ const handleRestartTimer = () => {
                           </div>
                         )}
                         {currentImage ? (
-                          <img 
+                          <ImageWithFallback
                             src={currentImage} 
                             alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                             className="w-full h-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                            onError={(e) => {
-                              console.warn('Story image failed to load, switching to classic fallback:', currentImage);
-                              (e.currentTarget as HTMLImageElement).style.display = 'none';
-                              fallbackToClassic('image-error');
+                            fallbackText={`📖 Page ${currentPage + 1}`}
+                            onLoadingChange={(isLoading) => {
+                              setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
+                            }}
+                            onFallbackUsed={(isUsingFallback) => {
+                              setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
+                              if (isUsingFallback) {
+                                console.warn('Story image failed to load, using enhanced fallback:', currentImage);
+                                fallbackToClassic('image-error');
+                              }
                             }}
                           />
                         ) : isGeneratingImage ? (
