@@ -105,6 +105,9 @@ All colors MUST be HSL.
     
     /* Custom animation timings */
     --animation-bounce-slow: bounce 1.5s infinite;
+    
+    /* Achievement shake animation */
+    --shake-intensity: 10px;
 
     /* Author Voice Colors - 10 unique colors for author styles */
     --color-red: 15 85% 65%;
@@ -1177,6 +1180,13 @@ All colors MUST be HSL.
   }
 }
 
+/* Achievement notification shake animation */
+@keyframes achievement-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-var(--shake-intensity)); }
+  20%, 40%, 60%, 80% { transform: translateX(var(--shake-intensity)); }
+}
+
 /* Additional Animation Classes */
 .animate-shimmer {
   animation: shimmer 2s infinite;
@@ -1188,6 +1198,10 @@ All colors MUST be HSL.
 
 .animate-float {
   animation: float-gentle 3s ease-in-out infinite;
+}
+
+.animate-achievement-shake {
+  animation: achievement-shake 0.6s ease-in-out;
 }
 
 /* Mobile Keyboard Handling */

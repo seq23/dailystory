@@ -57,6 +57,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const [animatingTowers, setAnimatingTowers] = useState<Record<string, boolean>>({});
   const [celebrationMode, setCelebrationMode] = useState(false);
   const [sparkleMode, setSparkleMode] = useState(false);
+  const [shakeMode, setShakeMode] = useState(false);
   const [recentAchievements, setRecentAchievements] = useState<any[]>([]);
   const [enabled, setEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('progressTowersEnabled') !== '0'; } catch { return true; }
@@ -181,18 +182,28 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     }
   }, [userStats, currentWordsRead, currentPagesRead, vocabularyLearned, timeSpent]);
 
-  // Handle new achievements
+  // Handle new achievements - trigger sparkle and shake for ALL achievements
   useEffect(() => {
     if (hasNewAchievements) {
       const achievement = getNextAchievement();
       if (achievement) {
+        // Add to recent achievements for display in progress towers
+        setRecentAchievements(prev => [achievement, ...prev.slice(0, 4)]); // Keep only 5 most recent
+        
+        // Trigger visual effects for all achievements
+        setSparkleMode(true);
+        setShakeMode(true);
+        
         // Only show full popup for epic/legendary achievements
         if (achievement.rarity === 'epic' || achievement.rarity === 'legendary') {
           setActiveAchievement(achievement);
-        } else {
-          // Add to recent achievements for display in progress towers
-          setRecentAchievements(prev => [achievement, ...prev.slice(0, 4)]); // Keep only 5 most recent
         }
+        
+        // Clear visual effects after duration
+        setTimeout(() => {
+          setSparkleMode(false);
+          setShakeMode(false);
+        }, 2000);
       }
     }
   }, [hasNewAchievements, getNextAchievement]);
@@ -256,30 +267,53 @@ className={cn(
       >
         {/* Main container */}
         {!enabled && (
-          <button
-            onClick={() => {
-              try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
-              setEnabled(true);
-              try { console.info('[ProgressTowers] re-enabled via trophy'); } catch {}
-              window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: true }));
-            }}
-            className={cn(
-              "absolute flex items-center justify-center",
-              "w-12 h-12 rounded-full backdrop-blur-sm border transition-all duration-300",
-              "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
-              "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
-              "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
-              "group relative overflow-hidden touch-manipulation",
-              "bottom-4 left-1/2 -translate-x-1/2",
-              isMobile && "w-9 h-9",
-              sparkleMode && "animate-pulse shadow-primary/20",
-              celebrationMode && "ring-2 ring-primary/30 shadow-xl shadow-primary/10"
+          <div className="relative">
+            <button
+              onClick={() => {
+                try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
+                setEnabled(true);
+                try { console.info('[ProgressTowers] re-enabled via trophy'); } catch {}
+                window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: true }));
+              }}
+              className={cn(
+                "absolute flex items-center justify-center",
+                "w-12 h-12 rounded-full backdrop-blur-sm border transition-all duration-300",
+                "bg-gradient-to-br from-primary/20 to-primary/30 border-primary/30",
+                "hover:from-primary/30 hover:to-primary/40 hover:border-primary/40",
+                "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
+                "group relative overflow-hidden touch-manipulation",
+                "bottom-4 left-1/2 -translate-x-1/2",
+                isMobile && "w-9 h-9",
+                sparkleMode && "animate-pulse shadow-primary/20",
+                shakeMode && "animate-achievement-shake",
+                celebrationMode && "ring-2 ring-primary/30 shadow-xl shadow-primary/10"
+              )}
+              aria-label="Show progress towers"
+              title="Show progress towers"
+            >
+              <Trophy className="w-5 h-5 text-primary group-hover:text-primary/80" />
+            </button>
+            
+            {/* Sparkle effect around dismissed trophy */}
+            {sparkleMode && (
+              <div className="absolute inset-0 pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={`trophy-sparkle-${i}`}
+                    className="absolute animate-pulse"
+                    style={{
+                      left: `${-20 + (i * 20)}%`,
+                      top: `${-10 + (i * 15)}%`,
+                      animationDelay: `${i * 200}ms`,
+                      animationDuration: '1.5s'
+                    }}
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                  </div>
+                ))}
+              </div>
             )}
-            aria-label="Show progress towers"
-            title="Show progress towers"
-          >
-            <Trophy className="w-5 h-5 text-primary group-hover:text-primary/80" />
-          </button>
+          </div>
         )}
 
         <div className={cn(
