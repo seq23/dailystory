@@ -156,9 +156,10 @@ export class SimpleAudioEngine {
       console.log('🎵 SimpleAudioEngine: Requesting Smart ElevenLabs TTS...');
       console.log('🔊 CRITICAL DEBUG: About to call SmartElevenLabsTTS.generateSpeech with:', {
         text: text.substring(0, 50),
-        context: 'conversation',
+        context: 'conversation', // Level 3+ always uses conversation context (Charlotte's natural voice)
         voiceId: voiceId,
-        signal: signal.aborted
+        signal: signal.aborted,
+        textLength: text.length
       });
       
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(text, 'conversation', voiceId);
@@ -246,26 +247,34 @@ export class SimpleAudioEngine {
       utterance.pitch = 1.1; // Child-friendly higher pitch
       utterance.volume = 1.0;
       
-      // Enhanced voice selection for better quality
+      // Enhanced voice selection for better quality - prefer Charlotte-like voices
       const voices = speechSynthesis.getVoices();
       const preferredVoice = voices.find(voice => {
         const name = voice.name.toLowerCase();
         const lang = voice.lang.toLowerCase();
         
-        // Prefer high-quality voices
+        // Try to find Charlotte-like voices first
+        return (name.includes('charlotte') || name.includes('female') || 
+                name.includes('woman') || name.includes('british') ||
+                name.includes('uk english')) &&
+               (lang.startsWith('en-') || lang === 'en');
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        
+        // Fallback to high-quality voices
         return (name.includes('premium') || name.includes('enhanced') || 
                 name.includes('neural') || name.includes('natural')) &&
                (lang.startsWith('en-') || lang === 'en');
       }) || voices.find(voice => {
         const name = voice.name.toLowerCase();
-        // Fallback to child-friendly voices
-        return name.includes('child') || name.includes('kid') || 
-               name.includes('young') || name.includes('female');
+        // Final fallback to any female English voice
+        return (name.includes('female') || name.includes('woman')) && voice.lang.startsWith('en');
       }) || voices.find(voice => voice.lang.startsWith('en'));
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
-        console.log('🔊 Using voice:', preferredVoice.name);
+        console.log('🔊 Using enhanced voice:', preferredVoice.name);
       }
 
       this.webSpeechSpeaking = true;

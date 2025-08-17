@@ -9,6 +9,7 @@ interface AudioSyncOptions {
   model?: string;
   speed?: number;
   userInfo?: UserInfo;
+  difficulty?: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   onWordHighlight?: (wordIndex: number) => void;
   onError?: (error: Error) => void;
 }
@@ -148,10 +149,16 @@ export class AudioSyncService {
     }
     
     try {
+      // Determine context based on difficulty level
+      // Level 3+ (hard/expert) = conversation (natural Charlotte voice)
+      // Level 1-2 (beginner/easy/medium) = learning (phonetic pronunciation)
+      const context = (options.difficulty === 'hard' || options.difficulty === 'expert') ? 'conversation' : 'learning';
+      console.log(`🔊 AudioSync: Using ${context} context for difficulty ${options.difficulty}`);
+      
       // Generate audio with Smart ElevenLabs TTS with enhanced error handling
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(
         text.slice(0, 3000),
-        'learning',
+        context,
         voice
       );
 

@@ -310,6 +310,7 @@ useEffect(() => {
       text,
       voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
       model: 'eleven_turbo_v2_5',
+      difficulty, // Pass difficulty to determine TTS context
       onWordHighlight: (wordIndex: number) => {
         console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
         onWordHighlight?.(wordIndex);

@@ -29,7 +29,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`🔊 Smart TTS Request: "${text}" [Context: ${context}]`);
+    console.log(`🔊 Smart TTS Request: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}" [Context: ${context}] [Length: ${text.length}]`);
 
     // Prepare request body - only include lexicon for learning contexts
     const requestBody: any = {
@@ -123,8 +123,16 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         } else {
-          // If fallback also fails, throw error instead of returning error response in catch block
-          throw new Error(`Fallback also failed: ${fallbackResponse.status}`);
+          // If fallback also fails, return error response instead of throwing
+          console.error(`❌ Fallback also failed: ${fallbackResponse.status}`);
+          return new Response(
+            JSON.stringify({ 
+              error: `Both primary and fallback TTS failed: ${fallbackResponse.status}`,
+              errorType: 'fallback_failed',
+              details: 'Dictionary and fallback TTS both unavailable'
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
       }
       
