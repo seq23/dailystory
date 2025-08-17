@@ -241,7 +241,7 @@
       },
       "favoriteColor": {
         "label": "Favorite color",
-        "placeholder": "Pick a color"
+        "placeholder": "Pick a color or shade"
       },
       "favoriteAnimal": {
         "label": "Favorite animal", 
