@@ -38,16 +38,33 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
 
   const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [vcLevel, setVcLevel] = useState(0);
+  const [currentAudioPlaying, setCurrentAudioPlaying] = useState(isAudioPlaying);
+
   useEffect(() => {
     const onStatus = (e: any) => setVcStatus((e?.detail?.status || 'idle'));
     const onLevel = (e: any) => setVcLevel(Math.max(0, Math.min(1, Number(e?.detail?.level ?? 0))));
+    
+    // Listen for global audio state changes
+    const onAudioStateChange = (e: any) => {
+      const isPlaying = e?.detail?.isPlaying ?? false;
+      setCurrentAudioPlaying(isPlaying);
+    };
+    
     window.addEventListener('voice:status', onStatus as EventListener);
     window.addEventListener('voice:level', onLevel as EventListener);
+    window.addEventListener('audio:statechange', onAudioStateChange as EventListener);
+    
     return () => {
       window.removeEventListener('voice:status', onStatus as EventListener);
       window.removeEventListener('voice:level', onLevel as EventListener);
+      window.removeEventListener('audio:statechange', onAudioStateChange as EventListener);
     };
   }, []);
+
+  // Update local state when prop changes
+  useEffect(() => {
+    setCurrentAudioPlaying(isAudioPlaying);
+  }, [isAudioPlaying]);
 
   return (
     <nav
@@ -71,21 +88,21 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                     <Button
                       variant="outline"
                       className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
-                      onClick={isAudioPlaying ? onStopAudio : onPlayAudio}
-                      disabled={audioDisabled && !isAudioPlaying}
-                      aria-label={isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Read to me")}
+                      onClick={currentAudioPlaying ? onStopAudio : onPlayAudio}
+                      disabled={audioDisabled && !currentAudioPlaying}
+                      aria-label={currentAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Read to me")}
                     >
-                      {isAudioPlaying ? (
+                      {currentAudioPlaying ? (
                         <Square className="w-5 h-5" />
                       ) : (
                         <Volume2 className="w-5 h-5" />
                       )}
-                      <span className="text-[11px] leading-none">{isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Read")}</span>
+                      <span className="text-[11px] leading-none">{currentAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Read")}</span>
                     </Button>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  {isAudioPlaying
+                  {currentAudioPlaying
                     ? t("tooltips.dock.stop", "Stop playback")
                     : audioDisabled
                       ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)")

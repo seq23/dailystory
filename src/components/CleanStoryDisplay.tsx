@@ -26,6 +26,8 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 import { ElevenLabsAudio, type ElevenLabsAudioHandle } from "@/components/ElevenLabsAudio";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { AudioErrorBoundary } from "@/components/AudioErrorBoundary";
+import { ComprehensiveAudioRecovery } from "@/components/ComprehensiveAudioRecovery";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -49,8 +51,6 @@ import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStat
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 import { useAudioHighlightingFix } from "@/hooks/useAudioHighlightingFix";
 import { ImageGenerationErrorBoundary } from "@/components/ImageGenerationErrorBoundary";
-import { AudioErrorBoundary } from "@/components/AudioErrorBoundary";
-import { ComprehensiveAudioRecovery } from "@/components/ComprehensiveAudioRecovery";
 
 import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -1499,17 +1499,34 @@ useEffect(() => {
     try {
       // Immediate UI feedback before async operation
       setIsAudioPlaying(true);
+      
+      // Dispatch immediate state change for all components
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: true } 
+      }));
+      
       await audioRef.current?.play?.();
       if (!isPremium) setAudioPlayedPage(currentPage);
     } catch (error) {
       console.warn('Dock play failed:', error);
       setIsAudioPlaying(false); // Reset on error
+      
+      // Dispatch error state change
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: false } 
+      }));
     }
   };
 
   const handleDockStopAudio = () => {
     // Immediate UI feedback before async operation
     setIsAudioPlaying(false);
+    
+    // Dispatch immediate state change for all components
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
+    
     try { 
       audioRef.current?.stop?.(); 
       // Also stop other audio systems
@@ -2076,7 +2093,9 @@ const handleRestartTimer = () => {
       userInfo={userInfo}
     >
       <ErrorBoundary>
-        <div className="min-h-screen bg-gradient-primary mobile-optimized flex flex-col">
+        <ComprehensiveAudioRecovery />
+        <AudioErrorBoundary>
+          <div className="min-h-screen bg-gradient-primary mobile-optimized flex flex-col">
         {/* Responsive Header */}
         <ResponsiveStoryHeader
           storyTitle={storyTitle}
@@ -2810,8 +2829,9 @@ const handleRestartTimer = () => {
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
-      </div>
-    </ErrorBoundary>
+          </div>
+        </AudioErrorBoundary>
+      </ErrorBoundary>
     </GameContextProvider>
   );
 };
