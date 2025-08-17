@@ -271,7 +271,9 @@ className={cn(
               "shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50",
               "group relative overflow-hidden touch-manipulation",
               "bottom-4 left-1/2 -translate-x-1/2",
-              isMobile && "w-9 h-9"
+              isMobile && "w-9 h-9",
+              sparkleMode && "animate-pulse shadow-primary/20",
+              celebrationMode && "ring-2 ring-primary/30 shadow-xl shadow-primary/10"
             )}
             aria-label="Show progress towers"
             title="Show progress towers"
