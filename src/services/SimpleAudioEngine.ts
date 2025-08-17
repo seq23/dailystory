@@ -154,7 +154,19 @@ export class SimpleAudioEngine {
       const signal = this.inflight.signal;
 
       console.log('🎵 SimpleAudioEngine: Requesting Smart ElevenLabs TTS...');
+      console.log('🔊 CRITICAL DEBUG: About to call SmartElevenLabsTTS.generateSpeech with:', {
+        text: text.substring(0, 50),
+        context: 'conversation',
+        voiceId: voiceId,
+        signal: signal.aborted
+      });
+      
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(text, 'conversation', voiceId);
+      
+      console.log('🔊 CRITICAL DEBUG: SmartElevenLabsTTS.generateSpeech returned:', {
+        arrayBufferLength: arrayBuffer.byteLength,
+        signalAborted: signal.aborted
+      });
       
       if (signal.aborted) {
         console.log('🎵 SimpleAudioEngine: Request was aborted');

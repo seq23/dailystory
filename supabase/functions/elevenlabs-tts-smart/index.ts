@@ -47,7 +47,7 @@ serve(async (req) => {
     if (context === 'learning') {
       console.log('📚 Learning context: Applying phonetic lexicon');
       requestBody.pronunciation_dictionary_locators = [{
-        pronunciation_dictionary_id: "charlotte-lexicon.xml",
+        pronunciation_dictionary_id: "charlotte-learning-lexicon.xml",
         version_id: "latest"
       }];
     } else {
@@ -74,8 +74,8 @@ serve(async (req) => {
       
       // Check for dictionary-specific errors
       const isDictionaryError = errorText.includes('pronunciation_dictionary') || 
-                               errorText.includes('dictionary not found') ||
-                               errorText.includes('charlotte-lexicon');
+                                errorText.includes('dictionary not found') ||
+                                errorText.includes('charlotte-learning-lexicon');
       
       if (isDictionaryError && context === 'learning') {
         console.log('📚 Dictionary error detected, retrying without lexicon...');

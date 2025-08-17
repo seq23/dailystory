@@ -242,16 +242,36 @@ export const InteractiveWord = ({
     e.stopPropagation();
     if (isPlaying) return;
     setIsPlaying(true);
+    
+    console.log('🔊 CRITICAL DEBUG: handlePronounce called for word:', word);
+    console.log('🔊 CRITICAL DEBUG: AudioEngine instance:', audioEngine);
+    console.log('🔊 CRITICAL DEBUG: Environment:', {
+      isPreview: window.location.href.includes('preview'),
+      isConsole: !window.location.href.includes('preview'),
+      userAgent: navigator.userAgent,
+      onLine: navigator.onLine
+    });
+    
     try {
       const cleanWordOnly = word.replace(/[.,!?;:'"()]/g, '').trim();
       const processedWord = contextualPronunciation.processTextForPronunciation(cleanWordOnly, false);
+      
+      console.log('🔊 CRITICAL DEBUG: About to call audioEngine.playText with:', {
+        text: processedWord,
+        voiceId: 'XB0fDUnXU5powFXDhCwa',
+        contentHash: processedWord
+      });
+      
       await audioEngine.playText({
         text: processedWord,
         voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
         contentHash: processedWord
       });
+      
+      console.log('🔊 CRITICAL DEBUG: audioEngine.playText completed successfully');
     } catch (error) {
-      console.error('Error pronouncing word:', error);
+      console.error('🔊 CRITICAL ERROR: Error pronouncing word:', error);
+      console.error('🔊 CRITICAL ERROR: Error stack:', error.stack);
     } finally {
       setIsPlaying(false);
     }
@@ -350,18 +370,29 @@ export const InteractiveWord = ({
       if (userNativeLanguage === 'en') {
         // Use Charlotte's voice for English speakers
         try {
+          console.log('🔊 CRITICAL DEBUG: About to call SimpleAudioEngine for explanation');
+          console.log('🔊 CRITICAL DEBUG: Definition to speak:', definitionToSpeak);
+          
           const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-          await SimpleAudioEngine.getInstance().playText({
+          const audioEngineInstance = SimpleAudioEngine.getInstance();
+          
+          console.log('🔊 CRITICAL DEBUG: SimpleAudioEngine instance:', audioEngineInstance);
+          
+          await audioEngineInstance.playText({
             text: definitionToSpeak,
             voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
             modelId: 'eleven_turbo_v2_5'
           });
+          
+          console.log('🔊 CRITICAL DEBUG: SimpleAudioEngine.playText completed successfully');
           setIsPlaying(false);
         } catch (error) {
-          console.error('Charlotte TTS failed, falling back to browser speech:', error);
+          console.error('🔊 CRITICAL ERROR: Charlotte TTS failed, falling back to browser speech:', error);
+          console.error('🔊 CRITICAL ERROR: Error stack:', error.stack);
           // Fallback to browser speech for English speakers if Charlotte fails
           if ('speechSynthesis' in window) {
             try {
+              console.log('🔊 CRITICAL DEBUG: Using browser speech fallback');
               const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
               utterance.rate = 0.7;
               utterance.pitch = 1.0;

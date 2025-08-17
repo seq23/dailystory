@@ -55,6 +55,7 @@ import { DiagnosticTool } from "@/utils/diagnostics";
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import { AudioFallbackNotification } from "@/components/AudioFallbackNotification";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
@@ -2676,10 +2677,12 @@ const handleRestartTimer = () => {
         className="fixed"
       />
       
+      {/* Audio Fallback Notification */}
+      <AudioFallbackNotification />
+      
       {/* Voice Command System */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
-      {/* Voice Commands Integration - handled by main audio controls */}
       </div>
     </ErrorBoundary>
     </GameContextProvider>

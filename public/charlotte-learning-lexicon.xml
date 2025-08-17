@@ -1,207 +1,187 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<lexicon version="1.0" 
-      xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.w3.org/2005/01/pronunciation-lexicon
-        http://www.w3.org/TR/2007/REC-pronunciation-lexicon-20071211/pls.xsd"
-      alphabet="ipa" xml:lang="en-US">
-
-<!-- ONLY DIFFICULT LEARNING WORDS - NO COMMON COMMANDS -->
-
-<!-- Challenging vocabulary words for early readers -->
-<lexeme>
-    <grapheme>illuminate</grapheme>
-    <phoneme>ɪˈlumɪˌneɪt</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>illuminating</grapheme>
-    <phoneme>ɪˈlumɪˌneɪtɪŋ</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>illumination</grapheme>
-    <phoneme>ɪˌlumɪˈneɪʃən</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>beautiful</grapheme>
-    <phoneme>ˈbjutɪfəl</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>through</grapheme>
-    <phoneme>θru</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>thought</grapheme>
-    <phoneme>θɔt</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>enough</grapheme>
-    <phoneme>ɪˈnʌf</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>rough</grapheme>
-    <phoneme>rʌf</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>tough</grapheme>
-    <phoneme>tʌf</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>caught</grapheme>
-    <phoneme>kɔt</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>taught</grapheme>
-    <phoneme>tɔt</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>daughter</grapheme>
-    <phoneme>ˈdɔtər</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>laughter</grapheme>
-    <phoneme>ˈlæftər</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>neighborhood</grapheme>
-    <phoneme>ˈneɪbərˌhʊd</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>mysterious</grapheme>
-    <phoneme>mɪˈstɪriəs</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>adventure</grapheme>
-    <phoneme>ədˈvɛntʃər</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>treasure</grapheme>
-    <phoneme>ˈtrɛʒər</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>creature</grapheme>
-    <phoneme>ˈkritʃər</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>dinosaur</grapheme>
-    <phoneme>ˈdaɪnəˌsɔr</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>butterfly</grapheme>
-    <phoneme>ˈbʌtərˌflaɪ</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>elephant</grapheme>
-    <phoneme>ˈɛləfənt</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>giraffe</grapheme>
-    <phoneme>dʒəˈræf</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>penguin</grapheme>
-    <phoneme>ˈpɛŋgwɪn</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>castle</grapheme>
-    <phoneme>ˈkæsəl</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>island</grapheme>
-    <phoneme>ˈaɪlənd</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>ocean</grapheme>
-    <phoneme>ˈoʊʃən</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>mountain</grapheme>
-    <phoneme>ˈmaʊntən</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>forest</grapheme>
-    <phoneme>ˈfɔrəst</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>rainbow</grapheme>
-    <phoneme>ˈreɪnˌboʊ</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>thunder</grapheme>
-    <phoneme>ˈθʌndər</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>lightning</grapheme>
-    <phoneme>ˈlaɪtnɪŋ</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>surprise</grapheme>
-    <phoneme>sərˈpraɪz</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>wonderful</grapheme>
-    <phoneme>ˈwʌndərfəl</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>exciting</grapheme>
-    <phoneme>ɪkˈsaɪtɪŋ</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>amazing</grapheme>
-    <phoneme>əˈmeɪzɪŋ</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>incredible</grapheme>
-    <phoneme>ɪnˈkrɛdəbəl</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>fantastic</grapheme>
-    <phoneme>fænˈtæstɪk</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>magnificent</grapheme>
-    <phoneme>mægˈnɪfəsənt</phoneme>
-</lexeme>
-
-<lexeme>
-    <grapheme>extraordinary</grapheme>
-    <phoneme>ɪkˈstrɔrdəˌnɛri</phoneme>
-</lexeme>
-
-</lexicon>
+<pronunciation_dictionary>
+  <!-- Enhanced phonetic lexicon for children's reading assistance -->
+  
+  <!-- Common sight words with clear pronunciation -->
+  <item>
+    <word>the</word>
+    <phonemes>ðə</phonemes>
+  </item>
+  
+  <item>
+    <word>and</word>
+    <phonemes>ænd</phonemes>
+  </item>
+  
+  <item>
+    <word>said</word>
+    <phonemes>sɛd</phonemes>
+  </item>
+  
+  <item>
+    <word>was</word>
+    <phonemes>wʌz</phonemes>
+  </item>
+  
+  <item>
+    <word>you</word>
+    <phonemes>ju</phonemes>
+  </item>
+  
+  <item>
+    <word>they</word>
+    <phonemes>ðeɪ</phonemes>
+  </item>
+  
+  <item>
+    <word>there</word>
+    <phonemes>ðɛr</phonemes>
+  </item>
+  
+  <item>
+    <word>their</word>
+    <phonemes>ðɛr</phonemes>
+  </item>
+  
+  <item>
+    <word>where</word>
+    <phonemes>wɛr</phonemes>
+  </item>
+  
+  <item>
+    <word>were</word>
+    <phonemes>wɜr</phonemes>
+  </item>
+  
+  <!-- Common reading words with clear syllable breaks -->
+  <item>
+    <word>beautiful</word>
+    <phonemes>ˈbjutɪfəl</phonemes>
+  </item>
+  
+  <item>
+    <word>through</word>
+    <phonemes>θru</phonemes>
+  </item>
+  
+  <item>
+    <word>enough</word>
+    <phonemes>ɪˈnʌf</phonemes>
+  </item>
+  
+  <item>
+    <word>laugh</word>
+    <phonemes>læf</phonemes>
+  </item>
+  
+  <item>
+    <word>cough</word>
+    <phonemes>kɔf</phonemes>
+  </item>
+  
+  <item>
+    <word>rough</word>
+    <phonemes>rʌf</phonemes>
+  </item>
+  
+  <!-- Silent letters clarification -->
+  <item>
+    <word>knight</word>
+    <phonemes>naɪt</phonemes>
+  </item>
+  
+  <item>
+    <word>island</word>
+    <phonemes>ˈaɪlənd</phonemes>
+  </item>
+  
+  <item>
+    <word>castle</word>
+    <phonemes>ˈkæsəl</phonemes>
+  </item>
+  
+  <item>
+    <word>listen</word>
+    <phonemes>ˈlɪsən</phonemes>
+  </item>
+  
+  <!-- Vowel sound clarifications -->
+  <item>
+    <word>bread</word>
+    <phonemes>brɛd</phonemes>
+  </item>
+  
+  <item>
+    <word>head</word>
+    <phonemes>hɛd</phonemes>
+  </item>
+  
+  <item>
+    <word>great</word>
+    <phonemes>greɪt</phonemes>
+  </item>
+  
+  <item>
+    <word>break</word>
+    <phonemes>breɪk</phonemes>
+  </item>
+  
+  <!-- Compound words with clear pronunciation -->
+  <item>
+    <word>everyone</word>
+    <phonemes>ˈɛvriˌwʌn</phonemes>
+  </item>
+  
+  <item>
+    <word>something</word>
+    <phonemes>ˈsʌmθɪŋ</phonemes>
+  </item>
+  
+  <item>
+    <word>anything</word>
+    <phonemes>ˈɛniθɪŋ</phonemes>
+  </item>
+  
+  <item>
+    <word>everything</word>
+    <phonemes>ˈɛvriθɪŋ</phonemes>
+  </item>
+  
+  <!-- Common irregular verbs -->
+  <item>
+    <word>caught</word>
+    <phonemes>kɔt</phonemes>
+  </item>
+  
+  <item>
+    <word>taught</word>
+    <phonemes>tɔt</phonemes>
+  </item>
+  
+  <item>
+    <word>bought</word>
+    <phonemes>bɔt</phonemes>
+  </item>
+  
+  <item>
+    <word>thought</word>
+    <phonemes>θɔt</phonemes>
+  </item>
+  
+  <!-- Numbers with clear pronunciation -->
+  <item>
+    <word>eight</word>
+    <phonemes>eɪt</phonemes>
+  </item>
+  
+  <item>
+    <word>forty</word>
+    <phonemes>ˈfɔrti</phonemes>
+  </item>
+  
+  <item>
+    <word>ninety</word>
+    <phonemes>ˈnaɪnti</phonemes>
+  </item>
+  
+</pronunciation_dictionary>
