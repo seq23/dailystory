@@ -1,30 +1,27 @@
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useSpeechSynthesis } from 'react-speech-kit';
+import { useNavigate } from 'react-router-dom';
 import { useWordHighlighting } from '@/hooks/useWordHighlighting';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { generateImage } from '@/util/imageGenerator';
-import { useDebounce } from '@/hooks/useDebounce';
-import { usePromptGenerator } from '@/hooks/usePromptGenerator';
-import { useSettings } from '@/context/SettingsContext';
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  Button,
-  useToast
-} from '@chakra-ui/react';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import type { UserInfo, SessionStats } from '@/types';
 
 // Props for the CleanStoryDisplay component
 interface CleanStoryDisplayProps {
-  story: string;
-  onBack: () => void;
-  onRefresh: () => void;
+  userInfo?: UserInfo;
+  isPremium?: boolean;
+  onSessionEnded?: (stats: SessionStats) => void;
+  onHome?: () => void;
+  onUpgrade?: () => void;
+  onNewStory?: () => void;
+  readingAsName?: string;
+  story?: string;
+  onBack?: () => void;
+  onRefresh?: () => void;
   onNext?: () => void;
   showNext?: boolean;
   onImageGenerate?: (base64: string, storyId: string, pageNumber: number) => void;
@@ -34,29 +31,33 @@ interface CleanStoryDisplayProps {
 }
 
 const CleanStoryDisplay = ({ 
-  story, 
-  onBack, 
-  onRefresh, 
-  onNext, 
-  showNext, 
+  userInfo,
+  isPremium = false,
+  onSessionEnded,
+  onHome,
+  onUpgrade,
+  onNewStory,
+  readingAsName,
+  story = "Welcome to your story reader!",
+  onBack,
+  onRefresh,
+  onNext,
+  showNext = false,
   onImageGenerate,
   currentPage = 1,
   totalPages = 1,
   storyTitle = "Story"
 }: CleanStoryDisplayProps) => {
   const { t } = useTranslation();
-  const router = useRouter();
-  const { speak, speaking, cancel } = useSpeechSynthesis();
+  const navigate = useNavigate();
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
   const [openAlertDialog, setOpenAlertDialog] = useState(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const [storyId, setStoryId] = useLocalStorage('storyId', uuidv4());
-  const { prompt } = usePromptGenerator(story, storyTitle);
-  const { imageSize } = useSettings();
-  const toast = useToast();
+  const [storyId] = useState(() => uuidv4());
+  const audioEngine = SimpleAudioEngine.getInstance();
 
   // Audio highlighting integration
   const { 
@@ -68,40 +69,40 @@ const CleanStoryDisplay = ({
   // Split story into words for highlighting
   const words = story.split(/\s+/);
 
-  // useRef for debounced values
-  const debouncedStory = useDebounce(story, 500);
-  const debouncedPrompt = useDebounce(prompt, 500);
+  // Handle audio highlighting coordination
+  const handleWordHighlight = useCallback((wordIndex: number) => {
+    console.log(`📍 CleanStoryDisplay: Highlighting word ${wordIndex}`);
+    onWordHighlight(wordIndex);
+  }, [onWordHighlight]);
 
   // Toggle audio and handle speech synthesis
-  const toggleAudio = useCallback(() => {
+  const toggleAudio = useCallback(async () => {
     if (!story) return;
 
     setIsAudioPlaying((prev) => {
       const newState = !prev;
       if (newState) {
-        console.log('🎤 Starting speech synthesis');
-        speak({ 
-          text: story, 
-          onBoundary: (event) => {
-            if (event.name === 'word') {
-              const wordIndex = event.charIndex ? story.substring(0, event.charIndex).split(/\s+/).length : 0;
-              handleWordHighlight(wordIndex);
-            }
+        console.log('🎤 Starting audio playback');
+        audioEngine.playText({
+          text: story,
+          voiceId: 'alloy',
+          onWordBoundary: (wordIndex: number) => {
+            handleWordHighlight(wordIndex);
           },
           onEnd: () => {
-            console.log('🎤 Speech synthesis ended');
+            console.log('🎤 Audio playback ended');
             setIsAudioPlaying(false);
             clearHighlighting();
           }
-        });
+        }).catch(console.error);
       } else {
-        console.log('🛑 Stopping speech synthesis');
-        cancel();
+        console.log('🛑 Stopping audio playback');
+        audioEngine.stop();
         clearHighlighting();
       }
       return newState;
     });
-  }, [story, speak, cancel, clearHighlighting, handleWordHighlight]);
+  }, [story, handleWordHighlight, clearHighlighting]);
 
   // Generate image based on story content
   const handleImageGeneration = useCallback(async () => {
@@ -109,31 +110,17 @@ const CleanStoryDisplay = ({
 
     setIsImageLoading(true);
     try {
-      const base64 = await generateImage(debouncedPrompt, imageSize);
-      if (base64) {
-        onImageGenerate(base64, storyId, currentPage);
-      } else {
-        toast({
-          title: t('image_generation_failed'),
-          description: t('please_try_again'),
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+      // Mock image generation for now
+      const mockBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+      onImageGenerate(mockBase64, storyId, currentPage);
+      toast.success(t('image_generated', 'Image generated successfully!'));
     } catch (error) {
       console.error('Image generation error:', error);
-      toast({
-        title: t('image_generation_failed'),
-        description: t('please_check_your_api_key'),
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      toast.error(t('image_generation_failed', 'Image generation failed'));
     } finally {
       setIsImageLoading(false);
     }
-  }, [story, onImageGenerate, debouncedPrompt, imageSize, storyId, currentPage, toast, t]);
+  }, [story, onImageGenerate, storyId, currentPage, t]);
 
   // Create a shareable link for the current story
   const handleShare = useCallback(() => {
@@ -147,21 +134,9 @@ const CleanStoryDisplay = ({
   // Function to copy the shareable link to the clipboard
   const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(shareableLink);
-    toast({
-      title: t('link_copied'),
-      description: t('share_the_story'),
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    });
+    toast.success(t('link_copied', 'Link copied to clipboard!'));
     setIsShareModalOpen(false);
-  }, [shareableLink, toast, t]);
-
-  // Handle audio highlighting coordination
-  const handleWordHighlight = useCallback((wordIndex: number) => {
-    console.log(`📍 CleanStoryDisplay: Highlighting word ${wordIndex}`);
-    onWordHighlight(wordIndex);
-  }, [onWordHighlight]);
+  }, [shareableLink, t]);
 
   // useEffect to clear highlighting when the component mounts or story changes
   useEffect(() => {
@@ -170,18 +145,19 @@ const CleanStoryDisplay = ({
 
   // Ensure audio is stopped when navigating away
   useEffect(() => {
-    const handleRouteChange = () => {
-      cancel();
+    const handleBeforeUnload = () => {
+      audioEngine.stop();
       setIsAudioPlaying(false);
       clearHighlighting();
     };
 
-    router.events.on('routeChangeStart', handleRouteChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleBeforeUnload();
     };
-  }, [cancel, router, clearHighlighting]);
+  }, [audioEngine, clearHighlighting]);
 
   return (
     <div className="flex flex-col h-full">
@@ -202,44 +178,39 @@ const CleanStoryDisplay = ({
 
       {/* Bottom Navigation */}
       <div className="flex justify-between items-center p-4 border-t border-gray-200">
-        <Button onClick={onBack}>{t('back')}</Button>
-         <span>
-            {currentPage} / {totalPages}
-          </span>
+        <Button onClick={onBack || onHome}>{t('back', 'Back')}</Button>
+        <span>
+          {currentPage} / {totalPages}
+        </span>
         <div className="flex gap-2">
           <Button 
-            isLoading={speaking} 
-            colorScheme={isAudioPlaying ? 'red' : 'blue'} 
+            variant={isAudioPlaying ? 'destructive' : 'default'}
             onClick={toggleAudio}
           >
-            {isAudioPlaying ? t('stop') : t('play')}
+            {isAudioPlaying ? t('stop', 'Stop') : t('play', 'Play')}
           </Button>
-          <Button isLoading={isImageLoading} onClick={handleImageGeneration}>{t('generate_image')}</Button>
-          <Button onClick={handleShare}>{t('share')}</Button>
-          {showNext && <Button onClick={onNext}>{t('next')}</Button>}
+          {onImageGenerate && (
+            <Button 
+              disabled={isImageLoading} 
+              onClick={handleImageGeneration}
+            >
+              {isImageLoading ? t('generating', 'Generating...') : t('generate_image', 'Generate Image')}
+            </Button>
+          )}
+          <Button onClick={handleShare}>{t('share', 'Share')}</Button>
+          {showNext && onNext && (
+            <Button onClick={onNext}>{t('next', 'Next')}</Button>
+          )}
         </div>
       </div>
 
       {/* Share Modal */}
-      {/* <ShareModal 
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        shareableLink={shareableLink}
-        onCopy={copyToClipboard}
-      /> */}
-      <AlertDialog
-        isOpen={isShareModalOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={() => setIsShareModalOpen(false)}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              {t('share_story')}
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              {t('share_this_story_with_friends')}
+      <AlertDialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('share_story', 'Share Story')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('share_this_story_with_friends', 'Share this story with friends')}
               <div className="mt-4">
                 <input
                   type="text"
@@ -248,46 +219,37 @@ const CleanStoryDisplay = ({
                   className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={() => setIsShareModalOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button colorScheme="blue" onClick={copyToClipboard} ml={3}>
-                {t('copy_link')}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t('cancel', 'Cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={copyToClipboard}>
+              {t('copy_link', 'Copy Link')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
 
       {/* Confirmation Dialog */}
-      <AlertDialog
-        isOpen={openAlertDialog}
-        leastDestructiveRef={cancelRef}
-        onClose={() => setOpenAlertDialog(false)}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              {t('confirmation')}
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              {t('are_you_sure_you_want_to_refresh')}
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={() => setOpenAlertDialog(false)}>
-                {t('cancel')}
-              </Button>
-              <Button colorScheme="red" onClick={onRefresh} ml={3}>
-                {t('refresh')}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
+      <AlertDialog open={openAlertDialog} onOpenChange={setOpenAlertDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirmation', 'Confirmation')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('are_you_sure_you_want_to_refresh', 'Are you sure you want to refresh?')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel ref={cancelRef}>
+              {t('cancel', 'Cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onRefresh}>
+              {t('refresh', 'Refresh')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
     </div>
   );
