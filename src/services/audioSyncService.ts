@@ -149,10 +149,15 @@ export class AudioSyncService {
     }
     
     try {
-      // Force conversation context for ALL story reading (natural Charlotte voice)
+      // EMERGENCY FIX: Force conversation context for ALL story reading (natural Charlotte voice)
       // Learning context is ONLY used for individual word interactions
       const context = 'conversation';
-      console.log(`🔊 AudioSync: Using ${context} context for ALL story reading (natural Charlotte voice)`);
+      const timestamp = new Date().toISOString();
+      console.log(`🔊 EMERGENCY FIX [${timestamp}]: Using ${context} context for ALL story reading - no more learning context for stories!`, {
+        difficulty: options.difficulty,
+        textLength: text.length,
+        sessionId: localSessionId
+      });
       
       // Generate audio with Smart ElevenLabs TTS with enhanced error handling
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(

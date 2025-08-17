@@ -82,50 +82,68 @@ const PHONETIC_MAPPINGS = {
 
 // Generate PLS lexicon content
 function generatePLSLexicon(vocabulary: string[], contextType: 'learning' | 'conversation'): string {
-  const timestamp = new Date().toISOString();
-  const lexiconName = `comprehensive-${contextType}-lexicon-${Date.now()}`;
-  
-  let plsContent = `<?xml version="1.0" encoding="UTF-8"?>
+  try {
+    const timestamp = new Date().toISOString();
+    const lexiconName = `comprehensive-${contextType}-lexicon-${Date.now()}`;
+    
+    // Start with basic XML structure - use simpler encoding to avoid issues
+    let plsContent = `<?xml version="1.0" encoding="UTF-8"?>
 <lexicon version="1.0" 
          xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.w3.org/2005/01/pronunciation-lexicon
-                             http://www.w3.org/TR/2007/CR-pronunciation-lexicon-20071212/pls.xsd"
          alphabet="ipa" xml:lang="en-US">
   <!-- Generated: ${timestamp} -->
   <!-- Context: ${contextType} -->
-  <!-- Vocabulary Count: ${vocabulary.length} -->
 `;
 
-  // Add phonetic entries for vocabulary
-  for (const word of vocabulary) {
-    if (PHONETIC_MAPPINGS[word.toLowerCase()]) {
-      const pronunciation = PHONETIC_MAPPINGS[word.toLowerCase()];
-      
-      if (contextType === 'learning') {
-        // For learning context, add both normal and slow variants
-        plsContent += `  <lexeme>
-    <grapheme>${word}</grapheme>
-    <phoneme>${pronunciation}</phoneme>
-  </lexeme>
-  <lexeme>
-    <grapheme>${word}</grapheme>
-    <phoneme>${pronunciation.split('').join(' ')}</phoneme>
+    // Limit vocabulary to prevent stack overflow - only process first 50 words
+    const limitedVocabulary = vocabulary.slice(0, 50);
+    console.log(`Generating PLS for ${limitedVocabulary.length} words (limited from ${vocabulary.length})`);
+
+    // Add phonetic entries for vocabulary with error handling
+    for (const word of limitedVocabulary) {
+      try {
+        const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+        if (cleanWord && PHONETIC_MAPPINGS[cleanWord]) {
+          const pronunciation = PHONETIC_MAPPINGS[cleanWord];
+          
+          // Escape any problematic characters
+          const safeWord = cleanWord.replace(/[<>&"']/g, '');
+          const safePronunciation = pronunciation.replace(/[<>&"']/g, '');
+          
+          if (contextType === 'learning') {
+            // For learning context, add phonetic variant
+            plsContent += `  <lexeme>
+    <grapheme>${safeWord}</grapheme>
+    <phoneme>${safePronunciation}</phoneme>
   </lexeme>
 `;
-      } else {
-        // For conversation context, use natural pronunciation
-        plsContent += `  <lexeme>
-    <grapheme>${word}</grapheme>
-    <phoneme>${pronunciation}</phoneme>
+          } else {
+            // For conversation context, use natural pronunciation
+            plsContent += `  <lexeme>
+    <grapheme>${safeWord}</grapheme>
+    <phoneme>${safePronunciation}</phoneme>
   </lexeme>
 `;
+          }
+        }
+      } catch (wordError) {
+        console.warn(`Skipping problematic word "${cleanWord}":`, wordError);
+        // Continue to next word instead of failing completely
       }
     }
-  }
 
-  plsContent += '</lexicon>';
-  return plsContent;
+    plsContent += '</lexicon>';
+    return plsContent;
+  } catch (error) {
+    console.error('Error generating PLS lexicon:', error);
+    // Return minimal valid lexicon to prevent failures
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<lexicon version="1.0" 
+         xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
+         alphabet="ipa" xml:lang="en-US">
+  <!-- Emergency fallback lexicon -->
+</lexicon>`;
+  }
 }
 
 // Get or create comprehensive dictionary for context

@@ -30,9 +30,12 @@ export const processTextForDesktop = (
       return null;
     }
 
-    // Find the word-only index for this word
+    // Find the word-only index for this word with null safety
     const wordOnlyIndex = wordOnlyArray.findIndex(item => item.originalIndex === index);
-    const isHighlighted = highlightedWordIndex !== undefined && highlightedWordIndex !== -1 && highlightedWordIndex === wordOnlyIndex;
+    const isHighlighted = highlightedWordIndex !== undefined && 
+                         highlightedWordIndex !== -1 && 
+                         highlightedWordIndex === wordOnlyIndex &&
+                         wordOnlyIndex >= 0;
     
     return (
       <MobileOptimizedInteractiveWord 
