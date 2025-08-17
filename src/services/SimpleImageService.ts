@@ -9,6 +9,7 @@ import { AdvancedStoryAnalyzer } from './AdvancedStoryAnalyzer';
 import { DirectContentExtractor } from './DirectContentExtractor';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { PromptLengthManager } from '@/utils/promptLengthManager';
+import { ImageFallbackService } from './ImageFallbackService';
 
 export interface ImageGenerationConfig {
   provider: 'runware' | 'dalle';
@@ -278,15 +279,34 @@ export class SimpleImageService {
         console.log(`✅ Generation successful with ${result.provider} (${userInfo.name}) - Tier ${this.getTierUsed(result.provider)}`);
       } else {
         console.error('❌ All image providers failed after 3 tiers:', result.error);
+        
+        // Generate fallback placeholder image
+        console.log('🎨 Generating fallback placeholder image...');
+        const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
+        
+        result = {
+          url: fallbackUrl,
+          success: true,
+          provider: 'fallback',
+          error: undefined
+        };
+        
+        console.log('✅ Fallback placeholder generated successfully');
       }
       
       return result;
     } catch (error) {
       console.error('🚀 Ultra-fast generation failed:', error);
+      
+      // Even on complete failure, provide a fallback image
+      console.log('🎨 Complete failure - generating emergency fallback...');
+      const emergencyFallback = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
+      
       return {
-        url: '',
-        success: false,
-        error: error instanceof Error ? error.message : 'Image generation failed'
+        url: emergencyFallback,
+        success: true,
+        provider: 'emergency-fallback',
+        error: undefined
       };
     } finally {
       release();
@@ -297,6 +317,8 @@ export class SimpleImageService {
     if (provider === 'runware-enhanced') return '1 (Enhanced)';
     if (provider === 'runware') return '2 (Simple)';
     if (provider === 'openai') return '3 (OpenAI)';
+    if (provider === 'fallback') return '4 (Fallback)';
+    if (provider === 'emergency-fallback') return '5 (Emergency)';
     return 'Unknown';
   }
 

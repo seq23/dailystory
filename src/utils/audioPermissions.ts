@@ -31,8 +31,9 @@ export class AudioPermissions {
     const { isPremium, vcStatus, isNetworkAvailable } = this.currentContext;
     console.log('🔍 Voice hover check:', { isPremium, vcStatus, isNetworkAvailable });
     
-    // Allow voice hover for all users when voice commands are active
-    return isNetworkAvailable && vcStatus === 'listening';
+    // Allow voice hover for all users regardless of voice command status
+    // This enables basic word interaction features (hear, explain, syllables) for everyone
+    return isNetworkAvailable;
   }
 
   /**
@@ -66,7 +67,7 @@ export class AudioPermissions {
     
     switch (action) {
       case 'voice-hover':
-        if (vcStatus !== 'listening') return 'Voice commands not active';
+        // Voice hover now works for all users - no restriction
         return null;
       case 'premium-audio':
         if (!isPremium) return 'Premium subscription required';

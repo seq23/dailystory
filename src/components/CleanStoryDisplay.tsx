@@ -44,6 +44,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
+import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStatusIndicator";
 
 import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -117,6 +118,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [justAdvanced, setJustAdvanced] = useState(false);
   const [storyTitle, setStoryTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [lastImageError, setLastImageError] = useState<string | null>(null);
+  const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
 
   // Generation protection to prevent double story generation
   const isGeneratingRef = useRef(false);
@@ -215,7 +218,29 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       }
     } catch {}
   })();
-}, [isPremium, userInfo?.name]);
+  }, [isPremium, userInfo?.name]);
+
+  // Monitor network status for image generation
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsNetworkAvailable(true);
+      setLastImageError(null);
+      console.log('🌐 Network restored - image generation available');
+    };
+    
+    const handleOffline = () => {
+      setIsNetworkAvailable(false);
+      console.log('🌐 Network offline - image generation unavailable');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
