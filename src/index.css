@@ -68,9 +68,16 @@ All colors MUST be HSL.
     --accent: 50 100% 70%;
     --accent-foreground: 50 80% 20%;
 
-    /* Warning/attention color */
+    /* Semantic colors for consistent UI */
+    --success: 120 70% 50%;
+    --success-foreground: 0 0% 100%;
+    --info: 200 90% 55%;
+    --info-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 80% 15%;
+    --fun: 271 80% 57%;
+    --fun-foreground: 0 0% 100%;
+    
     /* Gentle coral destructive */
     --destructive: 15 85% 65%;
     --destructive-foreground: 0 0% 100%;
@@ -117,14 +124,19 @@ All colors MUST be HSL.
     --touch-target-min: 44px; /* iOS and Android minimum */
     --touch-target-comfortable: 48px; /* More comfortable target size */
     
-    /* Spacing scale for consistent layouts */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
-    --space-3xl: 4rem;
+    /* Spacing scale for consistent layouts - 4px grid system */
+    --space-xs: 0.25rem;   /* 4px */
+    --space-sm: 0.5rem;    /* 8px */
+    --space-md: 1rem;      /* 16px */
+    --space-lg: 1.5rem;    /* 24px */
+    --space-xl: 2rem;      /* 32px */
+    --space-2xl: 3rem;     /* 48px */
+    --space-3xl: 4rem;     /* 64px */
+    
+    /* Component spacing presets */
+    --component-gap: var(--space-md);
+    --section-gap: var(--space-xl);
+    --page-padding: var(--space-lg);
 
     --sidebar-background: 0 0% 98%;
 
@@ -287,7 +299,37 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-fun;
+    @apply bg-background text-foreground font-body;
+  }
+  
+  /* Typography Hierarchy */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-fun;
+  }
+  
+  .text-title {
+    @apply font-fun;
+  }
+  
+  .text-body {
+    @apply font-body;
+  }
+  
+  .text-accent {
+    @apply font-accent;
+  }
+  
+  /* Standardized component spacing */
+  .component-gap {
+    gap: var(--component-gap);
+  }
+  
+  .section-gap {
+    gap: var(--section-gap);
+  }
+  
+  .page-padding {
+    padding: var(--page-padding);
   }
 
   /* RTL support for Arabic */

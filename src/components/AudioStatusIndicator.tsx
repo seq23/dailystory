@@ -59,7 +59,7 @@ export const AudioStatusIndicator: React.FC<AudioStatusIndicatorProps> = ({ clas
           text: 'Using browser speech',
           icon: Volume2,
           variant: 'secondary' as const,
-          className: 'bg-orange-100 text-orange-800 border-orange-200'
+          className: 'bg-warning/10 text-warning border-warning/20'
         };
       case 'offline':
         return {

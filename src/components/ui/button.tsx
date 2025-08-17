@@ -18,6 +18,12 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Status-based button variants using semantic colors
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-soft",
+        info: "bg-info text-info-foreground hover:bg-info/90 shadow-soft",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-soft",
+        
+        // Fun interactive variants using design system gradients
         fun: "bg-gradient-primary text-primary-foreground hover:shadow-glow hover:scale-105 transition-all duration-300 ease-bounce rounded-3xl",
         playful: "bg-gradient-secondary text-secondary-foreground hover:shadow-soft hover:scale-105 transition-all duration-300 ease-bounce rounded-3xl border-2 border-white/20",
         hero: "bg-gradient-hero text-white hover:shadow-glow hover:scale-105 transition-all duration-300 ease-bounce rounded-3xl text-lg font-bold",

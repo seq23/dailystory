@@ -25,9 +25,10 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'comic': ['Comic Neue', 'cursive', 'sans-serif'],
-				'fun': ['Fredoka', 'cursive', 'sans-serif'],
-				'schoolbell': ['Schoolbell', 'cursive', 'sans-serif'],
+				// Primary Typography System - Consistent 3-font hierarchy
+				'fun': ['Fredoka', 'cursive', 'sans-serif'],        // UI headers, titles
+				'body': ['Inter', 'ui-sans-serif', 'system-ui'],    // Body text, reading
+				'accent': ['Comic Neue', 'cursive', 'sans-serif'],  // Child-focused accents only
 				'inter': ['Inter', 'ui-sans-serif', 'system-ui'],
 				'sans': ['Fredoka', 'ui-sans-serif', 'system-ui'],
 				// Multilingual font families
@@ -56,6 +57,22 @@ export default {
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				fun: {
+					DEFAULT: 'hsl(var(--fun))',
+					foreground: 'hsl(var(--fun-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',

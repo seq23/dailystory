@@ -906,7 +906,7 @@ export const InteractiveWord = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
             <button
               onClick={handlePronounce}
-              className="flex items-center justify-center gap-2 text-xs sm:text-sm bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border-2 border-blue-200 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg transition-colors touch-manipulation min-h-[44px] font-semibold text-blue-700 shadow-sm"
+              className="flex items-center justify-center gap-2 text-xs sm:text-sm bg-info/10 hover:bg-info/20 active:bg-info/30 border-2 border-info/20 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg transition-colors touch-manipulation min-h-[44px] font-semibold text-info shadow-sm"
               disabled={isPlaying}
             >
               <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -1798,7 +1798,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               <button
                 onClick={handleMobilePronounce}
                 disabled={isPlayingMobile}
-                className="flex flex-col items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 border-2 border-blue-200 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-blue-700 disabled:opacity-50"
+                className="flex flex-col items-center justify-center gap-2 bg-info/10 hover:bg-info/20 active:bg-info/30 border-2 border-info/20 p-4 rounded-xl transition-colors touch-manipulation min-h-[80px] font-semibold text-info disabled:opacity-50"
               >
                 <Volume2 className="w-6 h-6" />
                 <span className="text-sm">
