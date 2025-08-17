@@ -2005,7 +2005,10 @@ const handleRestartTimer = () => {
   const handleProgressUpdate = (type: string, value: number) => {
     console.log('Progress updated:', type, value);
   };
+  
+  console.log('🔍 DEBUG: About to render component, checking syntax...');
 
+  console.log('🔍 DEBUG: Starting return statement...'); 
   return (
     <GameContextProvider
       userId={userInfo.name}
