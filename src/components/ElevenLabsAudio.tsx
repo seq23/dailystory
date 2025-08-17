@@ -18,6 +18,11 @@ import { VocabularyTrackingService } from "@/services/vocabularyTrackingService"
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 import TTSDebugOverlay from "@/components/TTSDebugOverlay";
 
+// Import new lean hooks
+import { useAudioSession } from "@/hooks/useAudioSession";
+import { useAudioSync } from "@/hooks/useAudioSync";
+import { useAudioControls } from "@/hooks/useAudioControls";
+
 interface ElevenLabsAudioProps {
   text: string;
   userInfo: UserInfo;
@@ -54,80 +59,78 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
 }: ElevenLabsAudioProps, ref) => {
   const { t } = useTranslation();
   const { isMobileOrTablet, isCapacitor, hasTouchCapability } = useIsMobile();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
   const { handleVoiceToggle, isConnected: voiceConnected, isConnecting: voiceConnecting } = useVoiceIntegration();
-  const [isStabilizing, setIsStabilizing] = useState(false);
+  const { toast, dismiss } = useToast();
+
+  // Use lean hooks for separated concerns
+  const { canUseAudio, shouldShowCrown, markPageAsPlayed } = useAudioSession({
+    userInfo,
+    isPremium,
+    currentPage,
+    contentHash
+  });
+
+  const { validateHashSync } = useAudioSync({
+    contentHash,
+    text,
+    currentPage
+  });
+
+  const { 
+    isPlaying, 
+    isLoading, 
+    isStabilizing, 
+    playAudio: playAudioCore, 
+    stopAudio: stopAudioCore,
+    speedMultiplierRef 
+  } = useAudioControls({
+    text,
+    userInfo,
+    currentPage,
+    contentHash,
+    difficulty,
+    onWordHighlight,
+    onAudioStateChange
+  });
+
+  // Voice command state (kept local as it's UI-specific)
+  const [voiceCommandsEnabled, setVoiceCommandsEnabled] = useState(false);
+  const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
+  const [vcLevel, setVcLevel] = useState(0);
+  
   const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const restoredRef = useRef(false);
   const voiceEnabledRef = useRef(false);
   const restartTimeoutRef = useRef<number | null>(null);
-  // Use audioSyncService for enhanced word highlighting
-  const [hasPlayedThisPage, setHasPlayedThisPage] = useState(false);
-  const { toast, dismiss } = useToast();
   const voiceTipsShownRef = useRef(false);
-  const speedMultiplierRef = useRef(1);
-  const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
-  const [vcLevel, setVcLevel] = useState(0);
   const burstCounterRef = useRef(0);
   const lastBurstTsRef = useRef(0);
-  const mismatchSinceRef = useRef<number | null>(null);
-  const audioRetryRef = useRef<boolean>(false);
   const lastTapRef = useRef<number>(0);
+
   const emitStatus = (s: 'idle'|'listening'|'processing') =>
     window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: s } }));
 
-  // Per-page audio access for free users (no hard cap)
-  const canUseAudio = isPremium || !hasPlayedThisPage;
-  const shouldShowCrown = !isPremium && hasPlayedThisPage;
+  // Enhanced playAudio that checks permissions and marks pages
+  const playAudio = async () => {
+    if (!canUseAudio) {
+      return;
+    }
 
-  // Speed baseline calculator (mirror of service mapping)
-  const getBaseSpeed = () => {
-    const map: Record<typeof difficulty, number> = {
-      beginner: 0.5,
-      easy: 0.75,
-      medium: 0.85,
-      hard: 0.9,
-      expert: 1.0,
-    } as const;
-    const base = map[difficulty] ?? 0.85;
-    const ageMultiplier = userInfo && (userInfo as any).age && (userInfo as any).age <= 8 ? 0.9 : 1.0;
-    return Math.max(0.4, Math.min(1.2, base * ageMultiplier));
+    try {
+      await playAudioCore(validateHashSync);
+      
+      if (!isPremium) {
+        markPageAsPlayed();
+      }
+    } catch (error) {
+      console.error('Audio playback failed:', error);
+    }
   };
 
-  // Mobile audio initialization
-  useEffect(() => {
-    if (isMobileOrTablet) {
-      // Initialize mobile audio on component mount
-      audioSyncService.getPlaybackStatus(); // This will trigger mobile audio initialization
-    }
-  }, [isMobileOrTablet]);
-
-  // Expose current user name for vocabulary storage key standardization
-  useEffect(() => {
-    (window as any).__currentUserName = userInfo?.name || 'guest';
-  }, [userInfo?.name]);
-
-// Stop audio on text or page change to avoid stale playback and apply reduced stabilization
-useEffect(() => {
-  // Immediate state update
-  setIsPlaying(false);
-  setIsLoading(false);
-  
-  // Stop audio service
-  try { 
-    audioSyncService.stopAudio(); 
-  } catch (error) {
-    console.warn('Error stopping audio on page change:', error);
-  }
-  
-  setIsStabilizing(true);
-  // Reduced stabilization timing: 500ms for optimal performance
-  const delay = 500;
-  const to = window.setTimeout(() => setIsStabilizing(false), delay);
-  return () => clearTimeout(to);
-}, [text, currentPage]);
+  // Stop audio wrapper
+  const stopAudio = () => {
+    stopAudioCore();
+  };
 
   // Listen to voice status/level for mic button live indicators
   useEffect(() => {
@@ -141,32 +144,9 @@ useEffect(() => {
     };
   }, []);
 
-  // Listen for hash changes and update audio service immediately
-  useEffect(() => {
-    const handleHashChange = () => {
-      const currentUIHash = (window as any).__pageContentHash;
-      if (currentUIHash && currentUIHash !== contentHash) {
-        console.log(`🔄 Hash change detected: ${currentUIHash?.slice(0,10)} - notifying audio service`);
-        // Notify audio service of hash change
-        if (typeof audioSyncService.syncContentHash === 'function') {
-          audioSyncService.syncContentHash(currentUIHash);
-        }
-      }
-    };
-
-    // Listen for content hash changes
-    window.addEventListener('content:hash:changed', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('content:hash:changed', handleHashChange);
-    };
-  }, [contentHash]);
-
-
   // Stop voice commands on unmount
   useEffect(() => {
     return () => {
-      try { audioSyncService.stopAudio(); } catch {}
       try { vcRef.current?.stop?.(); } catch {}
       try { emitStatus('idle'); } catch {}
     };
@@ -179,7 +159,6 @@ useEffect(() => {
       const userDisabled = (window as any).__t2r_vc_user_disabled === true;
       if (isPremium && saved === '1' && !userDisabled && !restoredRef.current) {
         (window as any).__t2r_vc_user_disabled = false;
-        // Voice commands not supported by audioSyncService
         setVoiceCommandsEnabled(true);
         voiceEnabledRef.current = true;
         restoredRef.current = true;
@@ -203,11 +182,6 @@ useEffect(() => {
     }
   }, [voiceCommandsEnabled, vcStatus, toast, t]);
 
-  // Reset free-play flag when page or content changes
-  useEffect(() => {
-    setHasPlayedThisPage(false);
-  }, [currentPage, contentHash]);
-
   // Support global voice events (toggle and hard stop)
   useEffect(() => {
     const toggleHandler = () => toggleVoiceCommands();
@@ -223,7 +197,6 @@ useEffect(() => {
         setVcLevel(0);
         try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
         try { vcRef.current?.stop?.(); } catch {}
-        // Voice commands not available in audioSyncService
       }
     };
     window.addEventListener('voice:toggle', toggleHandler as EventListener);
@@ -234,254 +207,55 @@ useEffect(() => {
     };
   }, [voiceCommandsEnabled]);
 
-  // Enhanced audio playback with unlimited hash mismatch recovery
-  const playAudio = async () => {
-    if (!isPremium && hasPlayedThisPage) {
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Debounce rapid taps
+  // Premium voice commands toggle
+  const toggleVoiceCommands = () => {
+    // Debounce rapid taps to avoid race conditions
     const now = Date.now();
-    if (now - (lastTapRef.current || 0) < 350) { setIsLoading(false); return; }
-    lastTapRef.current = now;
+    if (now - (lastBurstTsRef.current || 0) < 350) return;
+    lastBurstTsRef.current = now;
 
-    try {
-      await playWithHashValidation();
-
-      if (!isPremium) {
-        setHasPlayedThisPage(true);
-      }
-    } catch (error) {
-      console.error('Enhanced audio playback error:', error);
-
-      toast({
-        title: t("audioReading.audioError", "Audio Error"),
-        description: isMobileOrTablet ? 
-          t("audioReading.mobileAudioError", "Could not play audio. On mobile devices, ensure sound is enabled and try again.") :
-          t("audioReading.audioPlayError", "Could not play audio. Please try again."),
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Enhanced hash validation with proper waiting mechanism
-  const playWithHashValidation = async (retryCount = 0): Promise<void> => {
-    // Get current hashes
-    const currentUIHash = (window as any).__pageContentHash;
-    
-    // If there's a hash mismatch, wait for proper synchronization
-    if (contentHash && currentUIHash && currentUIHash !== contentHash) {
-      console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - waiting for sync...`);
-      
-      // Show sync progress to user
-      toast({
-        title: "Syncing content...",
-        description: "Waiting for content synchronization. This may take a moment during story generation.",
-        duration: 3000,
-      });
-      
-      // Wait for hash synchronization with extended timeout
-      const syncSuccess = await waitForHashSync(contentHash, currentUIHash);
-      
-      if (!syncSuccess) {
-        console.error('❌ Hash sync timeout - unable to synchronize content');
-        toast({
-          title: "Sync timeout",
-          description: "Content synchronization took too long. Please try again.",
-          variant: "destructive",
-          duration: 4000,
-        });
-        return;
-      }
-      
-      console.log('✅ Hash synchronization successful');
-      toast({
-        title: "Content synchronized",
-        description: "Audio is now ready to play with synchronized content.",
-        duration: 1500,
-      });
-    }
-
-    // Enhanced stabilization with reduced timing (500ms instead of 3-4 seconds)
-    if (isStabilizing) {
-      console.log('🕐 Audio playback waiting for stabilization...');
-      if (retryCount === 0) {
-        toast({
-          title: t("audioReading.stabilizing", "Preparing audio..."),
-          description: t("audioReading.stabilizingDesc", "Please wait while we prepare the best reading experience."),
-          duration: 2000,
-        });
-      }
-      
-      // Wait for stabilization to complete
-      while (isStabilizing) {
-        await new Promise(r => setTimeout(r, 100));
-      }
-    }
-
-    const speed = getBaseSpeed() * speedMultiplierRef.current;
-    const playSnapshot = { text, page: currentPage, contentHash };
-
-    // Create abort controller for this specific playback
-    const abortController = new AbortController();
-
-    // Use the audioSyncService for synchronized playback
-    await audioSyncService.playText({
-      text,
-      voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
-      model: 'eleven_turbo_v2_5',
-      difficulty, // Pass difficulty to determine TTS context
-      onWordHighlight: (wordIndex: number) => {
-        console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
-        onWordHighlight?.(wordIndex);
-      },
-      onStateChange: (isPlaying: boolean) => {
-        setIsPlaying(isPlaying);
-        setIsLoading(false);
-        onAudioStateChange?.(isPlaying);
-        
-        if (!isPlaying) {
-          onWordHighlight?.(-1); // Clear highlighting
-          
-          // Double-check highlighting is cleared
-          setTimeout(() => onWordHighlight?.(-1), 100);
-          
-          // Emit state change for coordination
-          window.dispatchEvent(new CustomEvent('audio:statechange', { 
-            detail: { isPlaying: false } 
-          }));
-        }
-      }
-    });
-
-    // Guard: if page or text changed during load, stop and bail
-    if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
-      console.warn('🛑 TTS aborted due to page/text/hash change during load');
-      try { audioSyncService.stopAudio(); } catch {}
-      toast({ title: t('audioReading.pageChanged', 'Page changed'), description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), duration: 1800 });
+    if (!isPremium) {
+      onUpgrade?.();
       return;
     }
 
-    setIsPlaying(true);
-  };
-
-
-  const stopAudio = () => {
-    console.log('🛑 ElevenLabsAudio: Stop initiated');
-    
-    // Immediate state update for responsive UI
-    setIsPlaying(false);
-    setIsLoading(false);
-    
-    // Clear highlighting immediately
-    onWordHighlight?.(-1);
-    
-    // Notify parent component immediately
-    onAudioStateChange?.(false);
-    
-    // Stop audio sync service
-    try {
-      audioSyncService.stopAudio();
-    } catch (error) {
-      console.warn('Error stopping audio sync service:', error);
-    }
-    
-    // Emit state change for UI updates (but not stop events to prevent loops)
-    window.dispatchEvent(new CustomEvent('audio:statechange', { 
-      detail: { isPlaying: false } 
-    }));
-    
-    console.log('✅ ElevenLabsAudio: Stop completed');
-  };
-
-  /**
-   * Wait for hash synchronization with exponential backoff and extended timeout
-   */
-  const waitForHashSync = async (expectedHash: string, initialUIHash: string): Promise<boolean> => {
-    const MAX_WAIT_TIME = 30000; // 30 seconds timeout
-    const startTime = Date.now();
-    let attempt = 0;
-    let delay = 100; // Start with 100ms
-    
-    console.log(`⏳ Starting hash sync wait: expected=${expectedHash?.slice(0,10)}, initial=${initialUIHash?.slice(0,10)}`);
-    
-    while (Date.now() - startTime < MAX_WAIT_TIME) {
-      // Check current hash
-      const currentUIHash = (window as any).__pageContentHash;
-      
-      // If hashes now match, we're synchronized
-      if (currentUIHash && currentUIHash === expectedHash) {
-        console.log(`✅ Hash sync successful after ${Date.now() - startTime}ms and ${attempt} attempts`);
-        return true;
+    if (voiceCommandsEnabled) {
+      // Turn OFF: set flags first to prevent any late onstart from flipping UI back
+      try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
+      ;(window as any).__t2r_vc_user_disabled = true;
+      ;(window as any).__t2r_voice_force_off = true;
+      voiceEnabledRef.current = false;
+      setVoiceCommandsEnabled(false);
+      emitStatus('idle');
+      setVcStatus('idle');
+      setVcLevel(0);
+      try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
+      try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+        restartTimeoutRef.current = null;
       }
-      
-      // If UI hash changed to something else, update audio service
-      if (currentUIHash && currentUIHash !== initialUIHash && currentUIHash !== expectedHash) {
-        console.log(`🔄 UI hash changed during sync: ${currentUIHash?.slice(0,10)} - updating audio service`);
-        // Force sync the audio service's hash
-        if (typeof audioSyncService.syncContentHash === 'function') {
-          audioSyncService.syncContentHash(currentUIHash);
-        }
-        return true; // Consider this a successful sync to new content
-      }
-      
-      attempt++;
-      console.log(`⏳ Hash sync attempt ${attempt}: current=${currentUIHash?.slice(0,10)}, waiting ${delay}ms...`);
-      
-      // Wait with exponential backoff
-      await new Promise(resolve => setTimeout(resolve, delay));
-      
-      // Exponential backoff: 100ms → 200ms → 500ms → 1s → 2s → 5s (max)
-      delay = Math.min(5000, delay < 500 ? delay * 2 : delay + 1000);
+      try { vcRef.current?.stop?.(); } catch {}
+      return;
     }
-    
-    console.error(`❌ Hash sync timeout after ${MAX_WAIT_TIME}ms`);
-    return false;
-  };
 
-// Premium voice commands toggle
-const toggleVoiceCommands = () => {
-  // Debounce rapid taps to avoid race conditions
-  const now = Date.now();
-  if (now - (lastBurstTsRef.current || 0) < 350) return;
-  lastBurstTsRef.current = now;
+    const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
+    const pointerFine = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: fine)').matches : false;
+    const isHybridDesktop = hasTouchCapability && !isMobileOrTablet && pointerFine;
+    const useWebSpeech = hasWebSpeech && !isMobileOrTablet && (pointerFine || !hasTouchCapability);
 
-  if (!isPremium) {
-    onUpgrade?.();
-    return;
-  }
-
-  if (voiceCommandsEnabled) {
-    // Turn OFF: set flags first to prevent any late onstart from flipping UI back
-    try { sessionStorage.setItem('t2r_voice_commands', '0'); } catch {}
-    ;(window as any).__t2r_vc_user_disabled = true;
-    ;(window as any).__t2r_voice_force_off = true;
-    voiceEnabledRef.current = false;
-    setVoiceCommandsEnabled(false);
-    emitStatus('idle');
-    setVcStatus('idle');
-    setVcLevel(0);
-    try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
-    try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
+    if (useWebSpeech) {
+      try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
+      ;(window as any).__t2r_vc_user_disabled = false;
+      ;(window as any).__t2r_voice_force_off = false;
+      setVoiceCommandsEnabled(true);
+      voiceEnabledRef.current = true;
+      emitStatus('listening');
+      setVcStatus('listening');
+      return;
     }
-    try { vcRef.current?.stop?.(); } catch {}
-    // Voice commands not available in audioSyncService
-    return;
-  }
 
-  const hasWebSpeech = typeof window !== 'undefined' && ((('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)));
-  const pointerFine = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: fine)').matches : false;
-  const isHybridDesktop = hasTouchCapability && !isMobileOrTablet && pointerFine;
-  const useWebSpeech = hasWebSpeech && !isMobileOrTablet && (pointerFine || !hasTouchCapability);
-
-  if (useWebSpeech) {
+    // Headless Whisper path (no modal)
     try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
     ;(window as any).__t2r_vc_user_disabled = false;
     ;(window as any).__t2r_voice_force_off = false;
@@ -489,20 +263,8 @@ const toggleVoiceCommands = () => {
     voiceEnabledRef.current = true;
     emitStatus('listening');
     setVcStatus('listening');
-    // Voice commands not available in audioSyncService
-    return;
-  }
-
-  // Headless Whisper path (no modal)
-  try { sessionStorage.setItem('t2r_voice_commands', '1'); } catch {}
-  ;(window as any).__t2r_vc_user_disabled = false;
-  ;(window as any).__t2r_voice_force_off = false;
-  setVoiceCommandsEnabled(true);
-  voiceEnabledRef.current = true;
-  emitStatus('listening');
-  setVcStatus('listening');
-  vcRef.current?.start?.();
-};
+    vcRef.current?.start?.();
+  };
 
   // Expose imperative methods to parent (e.g., bottom dock)
   useImperativeHandle(ref, () => ({
@@ -512,170 +274,143 @@ const toggleVoiceCommands = () => {
     get isPlaying() { return isPlaying; }
   }), [isPlaying]);
 
-const handleHeadlessCommand = (cmd: string) => {
-  try {
-    // Voice command processing not available in audioSyncService
-    const result = null;
-    console.log('🎙️ Headless voice command processed:', { cmd, result });
-    if (result && result.recognized && typeof result.action === 'function') {
-      window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
-      try {
-        result.action();
-        toast({ title: t('audioReading.voiceCommandRun', 'Command executed'), description: cmd, duration: 1500 });
-      } finally {
-        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } }));
-      }
-    } else {
-      toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
-    }
-  } catch (e) {
-    console.error('Headless voice processing failed', e);
-    toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
-   } finally {
-      if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
-        if (restartTimeoutRef.current) {
-          clearTimeout(restartTimeoutRef.current);
-          restartTimeoutRef.current = null;
-        }
-        restartTimeoutRef.current = window.setTimeout(() => {
-          if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
-            try { vcRef.current?.start?.(); } catch (e) { console.warn('Headless restart failed', e); }
-          }
-        }, 250);
-      }
-   }
-};
-
-  // Event-driven audio state monitoring instead of polling
-  useEffect(() => {
-    const handleAudioStateChange = (event: CustomEvent) => {
-      const newIsPlaying = event.detail.isPlaying;
-      if (newIsPlaying !== isPlaying) {
-        console.log(`🔄 Audio state sync: ${isPlaying} → ${newIsPlaying}`);
-        setIsPlaying(newIsPlaying);
-        onAudioStateChange?.(newIsPlaying);
-      }
-    };
-
-    // Listen for audio state changes from audioSyncService
-    window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
-    
-    // Also check current status on mount
-    const status = audioSyncService.getPlaybackStatus();
-    if (status.isPlaying !== isPlaying) {
-      setIsPlaying(status.isPlaying);
-      onAudioStateChange?.(status.isPlaying);
-    }
-
-    return () => {
-      window.removeEventListener('audio:statechange', handleAudioStateChange as EventListener);
-    };
-  }, [isPlaying, onAudioStateChange]);
-
-// Voice vocabulary events handler
-useEffect(() => {
-  const onVocab = async (evt: Event) => {
-    const { detail } = evt as CustomEvent<{ type: 'define'|'explain'|'pronounce'|'save'; word: string }>;
-    if (!detail?.word) return;
-    const raw = detail.word.replace(/[.,!?;:'"()]/g, '').trim();
-      const resolveWord = (w: string | undefined) => {
-        const pronouns = ['this', 'this word', 'that', 'that word', 'it', 'this one'];
-        const lw = (w || '').toLowerCase();
-        if (pronouns.includes(lw)) {
-          const ctx = (window as any).__hoveredWord || (window as any).__lastSelectedWord || (window as any).__currentHighlightedWord;
-          return typeof ctx === 'string' && ctx.trim().length > 0 ? ctx : '';
-        }
-        return w || '';
-      };
-    const resolved = resolveWord(raw);
-    if (!resolved) {
-      toast({ title: t('vocab.selectWord', 'Select a word first'), description: t('vocab.tapWordHint', 'Tap a word or start audio highlighting, then ask again.'), duration: 2500 });
-      return;
-    }
-    const cleanWord = resolved;
+  const handleHeadlessCommand = (cmd: string) => {
     try {
-      if (detail.type === 'pronounce') {
-        // Use SimpleAudioEngine for word pronunciation
-        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-        await SimpleAudioEngine.getInstance().playText({ 
-          text: cleanWord,
-          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-        });
+      // Voice command processing not available in audioSyncService
+      const result = null;
+      console.log('🎙️ Headless voice command processed:', { cmd, result });
+      if (result && result.recognized && typeof result.action === 'function') {
+        window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
+        try {
+          result.action();
+          toast({ title: t('audioReading.voiceCommandRun', 'Command executed'), description: cmd, duration: 1500 });
+        } finally {
+          window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } }));
+        }
+      } else {
+        toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
+      }
+    } catch (e) {
+      console.error('Headless voice processing failed', e);
+      toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
+     } finally {
+        if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
+          if (restartTimeoutRef.current) {
+            clearTimeout(restartTimeoutRef.current);
+            restartTimeoutRef.current = null;
+          }
+          restartTimeoutRef.current = window.setTimeout(() => {
+            if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
+              try { vcRef.current?.start?.(); } catch (e) { console.warn('Headless restart failed', e); }
+            }
+          }, 250);
+        }
+     }
+  };
+
+  // Voice vocabulary events handler
+  useEffect(() => {
+    const onVocab = async (evt: Event) => {
+      const { detail } = evt as CustomEvent<{ type: 'define'|'explain'|'pronounce'|'save'; word: string }>;
+      if (!detail?.word) return;
+      const raw = detail.word.replace(/[.,!?;:'"()]/g, '').trim();
+        const resolveWord = (w: string | undefined) => {
+          const pronouns = ['this', 'this word', 'that', 'that word', 'it', 'this one'];
+          const lw = (w || '').toLowerCase();
+          if (pronouns.includes(lw)) {
+            const ctx = (window as any).__hoveredWord || (window as any).__lastSelectedWord || (window as any).__currentHighlightedWord;
+            return typeof ctx === 'string' && ctx.trim().length > 0 ? ctx : '';
+          }
+          return w || '';
+        };
+      const resolved = resolveWord(raw);
+      if (!resolved) {
+        toast({ title: t('vocab.selectWord', 'Select a word first'), description: t('vocab.tapWordHint', 'Tap a word or start audio highlighting, then ask again.'), duration: 2500 });
         return;
       }
-      const userLang = userInfo?.nativeLanguage || 'en';
-      const { data, error } = await supabase.functions.invoke('word-dictionary', {
-        body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
-      });
-      const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
-      await VocabularyTrackingService.logEncounter(cleanWord, definition, difficulty);
-        if (detail.type === 'define' || detail.type === 'explain') {
-          toast({ title: cleanWord, description: definition, duration: 4000 });
-          try {
-            // Use SimpleAudioEngine for definitions
-            const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-            await SimpleAudioEngine.getInstance().playText({ 
-              text: definition,
-              voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-            });
-          } catch (e) {
-            console.warn('Definition TTS failed', e);
-          }
-        } else if (detail.type === 'save') {
-          try {
-            (window as any).addToVocabulary?.({
-              word: cleanWord,
-              definition,
-              difficulty: (difficulty === 'beginner' ? 'beginner' : 'intermediate'),
-              dateAdded: new Date().toISOString(),
-              timesReviewed: 0,
-              mastered: false,
-            });
-          } catch {}
-          toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
+      const cleanWord = resolved;
+      try {
+        if (detail.type === 'pronounce') {
+          // Use SimpleAudioEngine for word pronunciation
+          const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+          await SimpleAudioEngine.getInstance().playText({ 
+            text: cleanWord,
+            voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+          });
+          return;
         }
-    } catch (err) {
-      console.error('voice:vocab handler error', err);
-      toast({ title: t('vocab.error', 'Vocabulary error'), description: String(err), variant: 'destructive' });
-    }
-  };
-  window.addEventListener('voice:vocab', onVocab as EventListener);
-  return () => window.removeEventListener('voice:vocab', onVocab as EventListener);
-}, [userInfo, difficulty, toast, t]);
+        const userLang = userInfo?.nativeLanguage || 'en';
+        const { data, error } = await supabase.functions.invoke('word-dictionary', {
+          body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
+        });
+        const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
+        await VocabularyTrackingService.logEncounter(cleanWord, definition, difficulty);
+          if (detail.type === 'define' || detail.type === 'explain') {
+            toast({ title: cleanWord, description: definition, duration: 4000 });
+            try {
+              // Use SimpleAudioEngine for definitions
+              const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
+              await SimpleAudioEngine.getInstance().playText({ 
+                text: definition,
+                voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+              });
+            } catch (e) {
+              console.warn('Definition TTS failed', e);
+            }
+          } else if (detail.type === 'save') {
+            try {
+              (window as any).addToVocabulary?.({
+                word: cleanWord,
+                definition,
+                difficulty: (difficulty === 'beginner' ? 'beginner' : 'intermediate'),
+                dateAdded: new Date().toISOString(),
+                timesReviewed: 0,
+                mastered: false,
+              });
+            } catch {}
+            toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
+          }
+      } catch (err) {
+        console.error('voice:vocab handler error', err);
+        toast({ title: t('vocab.error', 'Vocabulary error'), description: String(err), variant: 'destructive' });
+      }
+    };
+    window.addEventListener('voice:vocab', onVocab as EventListener);
+    return () => window.removeEventListener('voice:vocab', onVocab as EventListener);
+  }, [userInfo, difficulty, toast, t]);
 
-// Voice command playback controls
-useEffect(() => {
-  const onPause = () => {
-    try { audioSyncService.pauseAudio(); } catch {}
-    setIsPlaying(false);
-  };
-  const onResume = async () => {
-    try { await audioSyncService.resumeAudio(); setIsPlaying(true); }
-    catch { try { await playAudio(); } catch {} }
-  };
-  const onRepeat = async () => {
-    try { stopAudio(); await playAudio(); } catch {}
-  };
-  const onSpeed = async (evt: Event) => {
-    const e = evt as CustomEvent<{ delta?: number }>;
-    const delta = Number(e?.detail?.delta ?? 0);
-    const next = Math.max(0.6, Math.min(1.3, speedMultiplierRef.current + delta));
-    speedMultiplierRef.current = next;
-    if (isPlaying) {
+  // Voice command playback controls
+  useEffect(() => {
+    const onPause = () => {
+      try { audioSyncService.pauseAudio(); } catch {}
+    };
+    const onResume = async () => {
+      try { await audioSyncService.resumeAudio(); }
+      catch { try { await playAudio(); } catch {} }
+    };
+    const onRepeat = async () => {
       try { stopAudio(); await playAudio(); } catch {}
-    }
-  };
-  window.addEventListener('audio:pause', onPause as EventListener);
-  window.addEventListener('audio:resume', onResume as EventListener);
-  window.addEventListener('audio:repeat', onRepeat as EventListener);
-  window.addEventListener('audio:speed', onSpeed as EventListener);
-  return () => {
-    window.removeEventListener('audio:pause', onPause as EventListener);
-    window.removeEventListener('audio:resume', onResume as EventListener);
-    window.removeEventListener('audio:repeat', onRepeat as EventListener);
-    window.removeEventListener('audio:speed', onSpeed as EventListener);
-  };
-}, [isPlaying, playAudio]);
+    };
+    const onSpeed = async (evt: Event) => {
+      const e = evt as CustomEvent<{ delta?: number }>;
+      const delta = Number(e?.detail?.delta ?? 0);
+      const next = Math.max(0.6, Math.min(1.3, speedMultiplierRef.current + delta));
+      speedMultiplierRef.current = next;
+      if (isPlaying) {
+        try { stopAudio(); await playAudio(); } catch {}
+      }
+    };
+    window.addEventListener('audio:pause', onPause as EventListener);
+    window.addEventListener('audio:resume', onResume as EventListener);
+    window.addEventListener('audio:repeat', onRepeat as EventListener);
+    window.addEventListener('audio:speed', onSpeed as EventListener);
+    return () => {
+      window.removeEventListener('audio:pause', onPause as EventListener);
+      window.removeEventListener('audio:resume', onResume as EventListener);
+      window.removeEventListener('audio:repeat', onRepeat as EventListener);
+      window.removeEventListener('audio:speed', onSpeed as EventListener);
+    };
+  }, [isPlaying, playAudio]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -781,3 +516,5 @@ useEffect(() => {
     </div>
   );
 });
+
+ElevenLabsAudio.displayName = "ElevenLabsAudio";
