@@ -544,7 +544,7 @@ const [highlightSave, setHighlightSave] = useState(false);
       } catch (error) {
         console.error('🎤 Failed to set content variables:', error);
       }
-    }, 100); // 100ms debounce to prevent hash mismatch
+    }, 500); // 500ms debounce to prevent hash mismatch
     
     return () => {
       if (contentHashTimeoutRef.current) {
