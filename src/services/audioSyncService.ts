@@ -250,10 +250,13 @@ export class AudioSyncService {
       }
       this.isPlaying = true;
       this.onStateChange?.(true); // Notify state change
-      // Emit global event for all audio components
-      window.dispatchEvent(new CustomEvent('audio:statechange', { 
-        detail: { isPlaying: true } 
-      }));
+      
+      // Emit global event with 150ms delay to allow other systems to settle
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: true } 
+        }));
+      }, 150);
       
       // Start real-time progress tracking
       this.startProgressTracking(voice, speed, onWordHighlight, localSessionId, localContentHash);

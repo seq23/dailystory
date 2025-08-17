@@ -27,17 +27,25 @@ export const useSimpleAudioHighlighting = () => {
 
   // Start highlighting session
   const startHighlighting = useCallback(() => {
+    if (isActive) {
+      console.log('🎵 Already highlighting, ignoring start request');
+      return;
+    }
     console.log('🎵 Starting highlighting session');
     setIsActive(true);
     setCurrentHighlightedWord(-1);
-  }, []);
+  }, [isActive]);
 
   // Stop highlighting session
   const stopHighlighting = useCallback(() => {
+    if (!isActive) {
+      console.log('🛑 Already inactive, ignoring stop request');
+      return;
+    }
     console.log('🛑 Stopping highlighting session');
     setIsActive(false);
     clearHighlighting();
-  }, [clearHighlighting]);
+  }, [isActive, clearHighlighting]);
 
   // Set cleanup function for external cleanup
   const setCleanupFunction = useCallback((cleanup: () => void) => {

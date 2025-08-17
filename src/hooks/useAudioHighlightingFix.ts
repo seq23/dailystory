@@ -6,21 +6,31 @@ import { useEffect } from 'react';
  */
 export const useAudioHighlightingFix = () => {
   useEffect(() => {
-    // Listen for all audio state changes
+    let stateChangeTimeout: NodeJS.Timeout | null = null;
+    
+    // Listen for all audio state changes with debouncing
     const handleAudioStateChange = (event: CustomEvent) => {
       const { isPlaying } = event.detail;
       
-      if (isPlaying) {
-        console.log('🎵 Audio started - ensuring highlighting is active');
-        
-        // Ensure highlighting system is ready
-        window.dispatchEvent(new CustomEvent('highlighting:ensure-active'));
-      } else {
-        console.log('🛑 Audio stopped - clearing all highlights');
-        
-        // Clear all highlighting immediately
-        window.dispatchEvent(new CustomEvent('highlighting:clear-all'));
+      // Clear previous timeout to debounce rapid state changes
+      if (stateChangeTimeout) {
+        clearTimeout(stateChangeTimeout);
       }
+      
+      // Debounce with 300ms delay to prevent rapid start/stop cycles
+      stateChangeTimeout = setTimeout(() => {
+        if (isPlaying) {
+          console.log('🎵 Audio started - ensuring highlighting is active');
+          
+          // Ensure highlighting system is ready
+          window.dispatchEvent(new CustomEvent('highlighting:ensure-active'));
+        } else {
+          console.log('🛑 Audio stopped - clearing all highlights');
+          
+          // Clear all highlighting immediately
+          window.dispatchEvent(new CustomEvent('highlighting:clear-all'));
+        }
+      }, 300);
     };
     
     // Listen for highlighting requests

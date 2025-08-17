@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSimpleAudioHighlighting } from '@/hooks/useSimpleAudioHighlighting';
 
 /**
@@ -15,13 +15,30 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
     setCleanupFunction
   } = useSimpleAudioHighlighting();
 
-  // Handle audio state changes
+  // Handle audio state changes with 300ms debouncing
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   useEffect(() => {
-    if (isAudioPlaying) {
-      startHighlighting();
-    } else {
-      stopHighlighting();
+    // Clear any existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
+    
+    // Set new debounced action
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (isAudioPlaying) {
+        startHighlighting();
+      } else {
+        stopHighlighting();
+      }
+    }, 300); // 300ms debounce to prevent rapid start/stop cycles
+    
+    // Cleanup function
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
   }, [isAudioPlaying, startHighlighting, stopHighlighting]);
 
   // Clear highlighting on text change (new page/story)
