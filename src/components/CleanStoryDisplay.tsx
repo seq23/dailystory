@@ -283,6 +283,17 @@ const handleAudioStateChange = (playing: boolean) => {
   setIsAudioPlaying(playing);
 };
 
+// Global audio state event listener (Fix #1)
+useEffect(() => {
+  const handleGlobalAudioStateChange = (event: any) => {
+    const isPlaying = event.detail?.isPlaying || false;
+    setIsAudioPlaying(isPlaying);
+  };
+  
+  window.addEventListener('audio:statechange', handleGlobalAudioStateChange);
+  return () => window.removeEventListener('audio:statechange', handleGlobalAudioStateChange);
+}, []);
+
 // Direct URL management for story sessions (more reliable than hook-based approach)
 const navigate = useNavigate();
 
@@ -1411,11 +1422,11 @@ useEffect(() => {
       return;
     }
     
-    if (audioRef.current?.isPlaying) {
-      // Immediate UI feedback before async operation
+    if (isAudioPlaying) {
+      // Use state instead of ref for reliability (Fix #2)
       setIsAudioPlaying(false);
       try { 
-        audioRef.current.stop(); 
+        audioRef.current?.stop?.(); 
       } catch (error) {
         console.warn('Dock stop failed:', error);
       }
