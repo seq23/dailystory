@@ -43,8 +43,67 @@ export const FormStep3Personalization = ({
   const [translationLoading, setTranslationLoading] = useState<Record<string, boolean>>({});
   const [spellcheckTimeouts, setSpellcheckTimeouts] = useState<{[key: string]: NodeJS.Timeout}>({});
 
-  // Spellcheck function with debouncing
-  const performSpellcheck = async (field: string, text: string) => {
+  // Individual tag spellcheck for TagInput fields
+  const performTagInputSpellcheck = async (field: string, text: string) => {
+    if (!text.trim()) return;
+
+    const tagInputFields = ['hobbies', 'favoriteAnimal', 'favoriteFood'];
+    
+    if (tagInputFields.includes(field)) {
+      // Split into individual tags and spellcheck each separately
+      const tags = text.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      const correctedTags: string[] = [];
+      let hasChanges = false;
+
+      setSpellcheckLoading(prev => ({ ...prev, [field]: true }));
+
+      try {
+        for (const tag of tags) {
+          if (spellcheckService.shouldCheck(tag)) {
+            const result = await spellcheckService.checkSpelling(
+              tag,
+              formData.grade || 'K',
+              'user_form_input'
+            );
+            
+            if (result.hadErrors && result.correctedText !== tag) {
+              correctedTags.push(result.correctedText);
+              hasChanges = true;
+            } else {
+              correctedTags.push(tag);
+            }
+          } else {
+            correctedTags.push(tag);
+          }
+        }
+
+        // Only suggest if there were actual changes
+        if (hasChanges) {
+          const correctedText = correctedTags.join(', ');
+          setSpellcheckSuggestions(prev => ({
+            ...prev,
+            [field]: correctedText
+          }));
+        } else {
+          setSpellcheckSuggestions(prev => {
+            const updated = { ...prev };
+            delete updated[field];
+            return updated;
+          });
+        }
+      } catch (error) {
+        console.warn('Tag spellcheck failed for field:', field, error);
+      } finally {
+        setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
+      }
+    } else {
+      // Fall back to regular spellcheck for non-TagInput fields
+      performRegularSpellcheck(field, text);
+    }
+  };
+
+  // Regular spellcheck function for non-TagInput fields
+  const performRegularSpellcheck = async (field: string, text: string) => {
     if (!spellcheckService.shouldCheck(text)) {
       return;
     }
@@ -110,7 +169,7 @@ export const FormStep3Personalization = ({
         }
 
         const timeout = setTimeout(() => {
-          performSpellcheck(field, value);
+          performTagInputSpellcheck(field, value);
         }, 500);
 
         setSpellcheckTimeouts(prev => ({ ...prev, [field]: timeout }));
