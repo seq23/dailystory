@@ -30,33 +30,20 @@ export class InteractiveWordAudioService {
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
       
-      // Request audio control with dedicated channel
+      // Request audio control with high priority for direct button actions
       window.dispatchEvent(new CustomEvent('audio:request', { 
-        detail: { system: 'interactive-word', priority: 'high' } 
+        detail: { system: 'interactive-word', priority: 5, source: 'direct-button' } 
       }));
 
-      // Slight delay to ensure audio coordination
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      try {
-        // Try SmartElevenLabsTTS first with learning context for clear pronunciation
-        const audioBuffer = await SmartElevenLabsTTS.generateLearningSpeech(cleanWord);
-        await this.playAudioBuffer(audioBuffer);
-        console.log(`✅ SmartTTS success for word: ${cleanWord}`);
-      } catch (smartError) {
-        console.warn(`⚠️ SmartTTS failed for "${cleanWord}":`, smartError);
-        
-        // Fallback to SimpleAudioEngine
-        const audioEngine = SimpleAudioEngine.getInstance();
-        const processedWord = contextualPronunciation.processTextForPronunciation(cleanWord, false);
-        
-        await audioEngine.playText({
-          text: processedWord,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: `hear-${cleanWord}-${Date.now()}`
-        });
-        console.log(`✅ SimpleAudioEngine fallback success for: ${cleanWord}`);
-      }
+      // Use SimpleAudioEngine directly for reliable coordination
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await audioEngine.playText({
+        text: cleanWord,
+        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+        contentHash: `hear-${cleanWord}-${Date.now()}`,
+        modelId: 'eleven_turbo_v2_5'
+      });
+      console.log(`✅ Successfully played word: ${cleanWord}`);
 
     } catch (error) {
       console.error(`❌ Failed to play word "${word}":`, error);
@@ -96,9 +83,9 @@ export class InteractiveWordAudioService {
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
       
-      // Request audio control
+      // Request audio control with high priority for direct button actions
       window.dispatchEvent(new CustomEvent('audio:request', { 
-        detail: { system: 'interactive-word', priority: 'high' } 
+        detail: { system: 'interactive-word', priority: 5, source: 'direct-button' } 
       }));
 
       // Get word definition
@@ -118,31 +105,17 @@ export class InteractiveWordAudioService {
         throw new Error('No definition found');
       }
 
-      // Slight delay to ensure audio coordination
-      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log(`📖 Got definition for "${cleanWord}": ${definition.definition}`);
 
-      try {
-        // Use SmartTTS for conversation-style definition
-        const explanationText = `${cleanWord} means: ${definition.definition}`;
-        const audioBuffer = await SmartElevenLabsTTS.generateConversationSpeech(explanationText);
-        await this.playAudioBuffer(audioBuffer);
-        console.log(`✅ SmartTTS explanation success for: ${cleanWord}`);
-        
-      } catch (smartError) {
-        console.warn(`⚠️ SmartTTS failed for explanation of "${cleanWord}":`, smartError);
-        
-        // Fallback to SimpleAudioEngine
-        const audioEngine = SimpleAudioEngine.getInstance();
-        const explanationText = definition.definition;
-        const processedText = contextualPronunciation.processTextForPronunciation(explanationText, true);
-        
-        await audioEngine.playText({
-          text: processedText,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: `explain-${cleanWord}-${Date.now()}`
-        });
-        console.log(`✅ SimpleAudioEngine explanation fallback success for: ${cleanWord}`);
-      }
+      // Use SimpleAudioEngine directly for reliable coordination
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await audioEngine.playText({
+        text: definition.definition,
+        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+        contentHash: definition.definition.substring(0, 20),
+        modelId: 'eleven_turbo_v2_5'
+      });
+      console.log(`✅ Successfully explained word: ${cleanWord}`);
 
     } catch (error) {
       console.error(`❌ Failed to explain word "${word}":`, error);
@@ -182,9 +155,9 @@ export class InteractiveWordAudioService {
     try {
       const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
       
-      // Request audio control
+      // Request audio control with high priority for direct button actions
       window.dispatchEvent(new CustomEvent('audio:request', { 
-        detail: { system: 'interactive-word', priority: 'high' } 
+        detail: { system: 'interactive-word', priority: 5, source: 'direct-button' } 
       }));
 
       // Get syllables using the async method for consistency
@@ -194,34 +167,18 @@ export class InteractiveWordAudioService {
         throw new Error('No syllables found');
       }
 
-      const syllableCount = syllables.length;
       const syllableText = syllables.join(' - ');
-      const fullResponse = `${cleanWord} has ${syllableCount} syllable${syllableCount !== 1 ? 's' : ''}: ${syllableText}`;
-
       console.log(`🔤 Syllables for "${cleanWord}": ${syllableText}`);
 
-      // Slight delay to ensure audio coordination
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      try {
-        // Use SmartTTS for conversation-style syllable breakdown
-        const audioBuffer = await SmartElevenLabsTTS.generateConversationSpeech(fullResponse);
-        await this.playAudioBuffer(audioBuffer);
-        console.log(`✅ SmartTTS syllables success for: ${cleanWord}`);
-        
-      } catch (smartError) {
-        console.warn(`⚠️ SmartTTS failed for syllables of "${cleanWord}":`, smartError);
-        
-        // Fallback to SimpleAudioEngine
-        const audioEngine = SimpleAudioEngine.getInstance();
-        
-        await audioEngine.playText({
-          text: fullResponse,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: `syllables-${cleanWord}-${Date.now()}`
-        });
-        console.log(`✅ SimpleAudioEngine syllables fallback success for: ${cleanWord}`);
-      }
+      // Use SimpleAudioEngine directly for reliable coordination
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await audioEngine.playText({
+        text: syllableText,
+        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+        contentHash: syllableText,
+        modelId: 'eleven_turbo_v2_5'
+      });
+      console.log(`✅ Successfully played syllables: ${syllableText}`);
 
     } catch (error) {
       console.error(`❌ Failed to break word "${word}" into syllables:`, error);

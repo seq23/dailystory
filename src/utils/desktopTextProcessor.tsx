@@ -38,7 +38,7 @@ export const processTextForDesktop = (
       <MobileOptimizedInteractiveWord 
         key={`${index}-${word}`} 
         word={word} 
-        className={`${className} ${isHighlighted ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse transition-all duration-500 shadow-md rounded-sm' : 'transition-all duration-300'}`}
+        className={`${className} ${isHighlighted ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse transition-all duration-500 shadow-md rounded-sm' : 'transition-all duration-300'} ${isPremium ? 'interactive-word-premium-hover' : ''}`}
         difficulty={difficulty}
         userInfo={userInfo}
         isPremium={isPremium}

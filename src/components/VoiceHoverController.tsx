@@ -10,9 +10,9 @@ interface VoiceHoverControllerProps {
 }
 
 /**
- * Voice Hover Controller for Voice Command Mode
- * Allows users to hover over words to hear pronunciation, definitions, and syllables
- * Only works for premium users with active voice commands
+ * DEPRECATED: Voice Hover Controller
+ * This component is being phased out in favor of PremiumHoverController
+ * Keeping for backwards compatibility during transition
  */
 export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) => {
   const lastProcessedWordRef = useRef<string>('');

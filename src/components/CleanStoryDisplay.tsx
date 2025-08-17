@@ -36,6 +36,7 @@ import "@/styles/storyDisplay.css";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
+import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { SimpleVoiceCommands } from '@/components/SimpleVoiceCommands';
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -2683,6 +2684,7 @@ const handleRestartTimer = () => {
       {/* Voice Command System */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
+      <PremiumHoverController isPremium={isPremium} />
       </div>
     </ErrorBoundary>
     </GameContextProvider>

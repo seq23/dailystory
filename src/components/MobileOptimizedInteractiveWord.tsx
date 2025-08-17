@@ -123,12 +123,8 @@ if (props.forceModal || isMobileOrTablet) {
       if (isPlaying) return;
       setIsPlaying(true);
       try {
-        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-        await SimpleAudioEngine.getInstance().playText({
-          text: cleanWord,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          modelId: 'eleven_turbo_v2_5'
-        });
+        const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+        await InteractiveWordAudioService.hearWord(cleanWord);
       } catch (e) {
         console.error('Mobile HearIt failed', e);
       } finally {
@@ -141,51 +137,8 @@ if (props.forceModal || isMobileOrTablet) {
       if (isLoadingWordData) return;
       setIsLoadingWordData(true);
       try {
-        const userLang = props.userInfo?.nativeLanguage || 'en';
-        const { data, error } = await supabase.functions.invoke('word-dictionary', {
-          body: { word: cleanWord, userLevel: difficulty, userLanguage: userLang }
-        });
-        const definition: string = (!error && data?.definition) ? data.definition : cleanWord;
-
-        // Language-specific audio: Charlotte for English speakers, native browser speech for others
-        if (userLang === 'en') {
-          // Use Charlotte's voice for English speakers
-          try {
-            const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-            await SimpleAudioEngine.getInstance().playText({
-              text: definition,
-              voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-              modelId: 'eleven_turbo_v2_5'
-            });
-          } catch (error) {
-            console.error('Charlotte TTS failed, falling back to browser speech:', error);
-            // Fallback to browser speech for English speakers if Charlotte fails
-            if ('speechSynthesis' in window) {
-              const utterance = new SpeechSynthesisUtterance(definition);
-              utterance.rate = 0.7;
-              utterance.pitch = 1.0;
-              utterance.volume = 1.0;
-              speechSynthesis.speak(utterance);
-            }
-          }
-        } else {
-          // Use native browser speech for non-English speakers
-          if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(definition);
-            utterance.rate = 0.7;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            utterance.lang = userLang;
-            
-            const voices = speechSynthesis.getVoices();
-            const languageCode = userLang.substring(0, 2);
-            const nativeVoice = voices.find(voice => 
-              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
-            );
-            if (nativeVoice) utterance.voice = nativeVoice;
-            speechSynthesis.speak(utterance);
-          }
-        }
+        const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+        await InteractiveWordAudioService.explainWord(cleanWord);
       } catch (e) {
         console.error('Mobile Explain failed', e);
       } finally {
@@ -197,23 +150,8 @@ if (props.forceModal || isMobileOrTablet) {
     const handleSyllables = async () => {
       try {
         setIsPlaying(true);
-        const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(cleanWord);
-        const toAudioFriendly = (original: string, sylls: string[]) => {
-          const w = (original || '').toLowerCase();
-          if (w.endsWith('ies') && w.length > 4) return [w.slice(0, -3) + 'y', 's'];
-          if (w.endsWith('es') && w.length > 3) return [w.slice(0, -2), 'es'];
-          if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return [w.slice(0, -1), 's'];
-          return sylls;
-        };
-        const adjusted = toAudioFriendly(cleanWord, raw);
-        const syllText = adjusted.join(' - ');
-
-        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-        await SimpleAudioEngine.getInstance().playText({
-          text: syllText,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          modelId: 'eleven_turbo_v2_5'
-        });
+        const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+        await InteractiveWordAudioService.syllableWord(cleanWord);
         setIsPlaying(false);
       } catch (e) {
         console.error('Mobile Syllables failed', e);
@@ -271,16 +209,14 @@ if (props.forceModal || isMobileOrTablet) {
             if (!shouldBeInteractive) return;
             (window as any).__hoveredWord = cleanWord;
             
-            // Dispatch hover event for VoiceHoverController (works on all devices)
-            window.dispatchEvent(new CustomEvent('voice:hover:word', {
-              detail: { word: cleanWord, action: 'hear' }
-            }));
+            // Note: Premium hover is now handled by PremiumHoverController
+            // This keeps the word context for voice commands only
           }}
           onMouseLeave={() => {
             if ((window as any).__hoveredWord === cleanWord) (window as any).__hoveredWord = '';
             cancelRef.current = true;
           }}
-          className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''}`}
+          className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''} ${props.isPremium && shouldBeInteractive ? 'interactive-word-premium-hover' : ''}`}
           style={{ fontSize: 'inherit', lineHeight: 'inherit', display: 'inline' }}
         >
           {props.word}
