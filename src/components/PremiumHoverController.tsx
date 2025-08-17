@@ -37,7 +37,7 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
       if (!isPremium || processingRef.current) return;
       
       const target = event.target as HTMLElement;
-      if (!target || !target.classList || !target.classList.contains('interactive-word-premium-hover')) return;
+      if (!target.classList.contains('interactive-word-premium-hover')) return;
       
       const word = target.textContent?.trim();
       if (!word || lastProcessedWordRef.current === word) return;

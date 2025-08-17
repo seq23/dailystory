@@ -149,11 +149,8 @@ export class AudioSyncService {
     
     try {
       // Generate audio with Smart ElevenLabs TTS with enhanced error handling
-      const chunkSize = 1500; // Smaller chunks to prevent 500 errors
-      const textChunk = text.length > chunkSize ? text.slice(0, chunkSize) : text;
-      
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(
-        textChunk,
+        text.slice(0, 3000),
         'learning',
         voice
       );

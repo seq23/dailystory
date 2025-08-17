@@ -1,25 +1,28 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 /**
- * Simplified audio highlighting hook with no circular dependencies
- * Uses direct state management instead of callback patterns
+ * Simplified audio highlighting hook with lean architecture
+ * Removed circular dependencies and excessive state management
  */
 export const useSimpleAudioHighlighting = () => {
   const [currentHighlightedWord, setCurrentHighlightedWord] = useState(-1);
   const [isActive, setIsActive] = useState(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
-  // Simple word highlighting without callback dependencies
+  // Simple word highlighting
   const highlightWord = useCallback((wordIndex: number) => {
     console.log(`🎯 Highlighting word ${wordIndex}`);
     setCurrentHighlightedWord(wordIndex);
   }, []);
 
-  // Clear highlighting without cleanup callbacks
+  // Clear highlighting
   const clearHighlighting = useCallback(() => {
     console.log('🧹 Clearing highlights');
     setCurrentHighlightedWord(-1);
-    // Remove cleanup callback that was causing circular dependency
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
   }, []);
 
   // Start highlighting session
@@ -44,12 +47,18 @@ export const useSimpleAudioHighlighting = () => {
     clearHighlighting();
   }, [isActive, clearHighlighting]);
 
+  // Set cleanup function for external cleanup
+  const setCleanupFunction = useCallback((cleanup: () => void) => {
+    cleanupRef.current = cleanup;
+  }, []);
+
   return {
     currentHighlightedWord,
     isActive,
     highlightWord,
     clearHighlighting,
     startHighlighting,
-    stopHighlighting
+    stopHighlighting,
+    setCleanupFunction
   };
 };
