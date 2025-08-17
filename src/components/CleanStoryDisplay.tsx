@@ -2740,7 +2740,7 @@ const handleRestartTimer = () => {
         currentPagesRead={pagesCompleted.size}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
         timeSpent={Date.now() - sessionStartTime}
-        onProgressUpdate={(type, value) => {
+        onProgressUpdate={(type: string, value: number) => {
           console.log('Progress updated:', type, value);
         }}
         className="fixed"
