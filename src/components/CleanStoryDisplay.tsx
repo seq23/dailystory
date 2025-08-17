@@ -34,7 +34,6 @@ import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
-import { useAudioHighlightingFix } from "@/hooks/useAudioHighlightingFix";
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
@@ -541,14 +540,11 @@ const [highlightSave, setHighlightSave] = useState(false);
     setAudioPlayedPage(null);
   }, [currentPage, contentHash]);
   
-  // Universal audio highlighting integration - works for ALL users
+  // Audio highlighting integration
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
     currentStoryText, 
     isAudioPlaying
   );
-  
-  // Universal highlighting fix for all users and devices
-  const { highlightWord: universalHighlightWord, clearHighlighting: universalClearHighlighting } = useAudioHighlightingFix();
 
 // Voice command -> audio control bridge (now using ElevenLabsAudio)
 useEffect(() => {
@@ -811,6 +807,7 @@ useEffect(() => {
     const t2 = setTimeout(() => setFinishFlashCycle(false), 2000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }
+  return;
 }, [pagesCompleted]);
 
 // Ensure timer UI becomes visible when time ends for premium (to show celebration + choice)
@@ -1625,8 +1622,8 @@ const handleRestartTimer = () => {
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
         setStory(newStory);
         setCurrentPage(0);
-          }
-        } catch (error) {
+      }
+    } catch (error) {
       console.error('Failed to generate new story:', error);
       toast({ title: 'Magic Failed', description: 'Please try again in a moment.', variant: 'destructive' });
     } finally {
@@ -1895,9 +1892,7 @@ const handleRestartTimer = () => {
           (img as any).loading = 'eager';
           img.src = u;
           preloadedUrlsRef.current.add(u);
-        } catch (error) {
-          console.warn('Image preload failed:', error);
-        }
+        } catch {}
       });
       idx += 4;
       if (idx < urls.length) setTimeout(pump, 60); // gentle pacing
@@ -1911,68 +1906,7 @@ const handleRestartTimer = () => {
 
     schedule(pump);
     return () => { cancelled = true; };
-  
-  // Enhanced auto image generation trigger
-  useEffect(() => {
-    if (!pageImages[currentPage] && story.length > 0 && storyTitle) {
-      let cancelled = false;
-      
-      const pump = async () => {
-        try {
-          const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
-          
-          console.log('🖼️ Image generation check:', {
-            layout,
-            storyLength: story.length,
-            currentPage,
-            hasCurrentImage: !!pageImages[currentPage],
-            allImages: Object.keys(pageImages)
-          });
-          
-          if (cancelled) return;
-          
-          await ImageGenerationTrigger.triggerAutoGeneration({
-            currentPage,
-            totalPages: story.length,
-            hasCurrentImage: !!pageImages[currentPage],
-            allImages: Object.entries(pageImages),
-            isNetworkAvailable: ImageGenerationTrigger.isNetworkAvailable(),
-            userInfo,
-            storyTitle,
-            pageText: story[currentPage] || ""
-          });
-          
-        } catch (error) {
-          if (!cancelled) {
-            console.warn('🖼️ Auto image generation failed:', error);
-          }
-        }
-      };
-    
-      // Listen for generated images
-      const handleImageGenerated = (event: CustomEvent) => {
-        const { pageIndex, imageUrl } = event.detail;
-        if (pageIndex === currentPage && imageUrl) {
-          setPageImages(prev => ({ ...prev, [pageIndex]: imageUrl }));
-          console.log('🖼️ Received auto-generated image for page', pageIndex);
-        }
-      };
-      
-      window.addEventListener('image:generated', handleImageGenerated as EventListener);
-      
-      const schedule = (cb: () => void) => {
-        const ric = (window as any).requestIdleCallback;
-        if (typeof ric === 'function') ric(() => cb());
-        else setTimeout(cb, 0);
-      };
-
-      schedule(pump);
-      return () => { 
-        cancelled = true; 
-        window.removeEventListener('image:generated', handleImageGenerated as EventListener);
-      };
-    }
-  }, [currentPage, pageImages, story.length, storyTitle]);
+  }, [currentPage, pageImages, story.length]);
 
   if (isLoading || forceLoaderActive) {
     return (
@@ -2001,17 +1935,9 @@ const handleRestartTimer = () => {
     );
   }
 
-  // Extract progress update handler to avoid TypeScript parsing issues
-  const handleProgressUpdate = (type: string, value: number) => {
-    console.log('Progress updated:', type, value);
-  };
-  
-  console.log('🔍 DEBUG: About to render component, checking syntax...');
-
-  console.log('🔍 DEBUG: Starting return statement...'); 
   return (
-    <GameContextProvider
-      userId={userInfo.name}
+    <GameContextProvider 
+      userId={userInfo.name} 
       userType={isPremium ? 'premium' : 'free'}
       userInfo={userInfo}
     >
@@ -2090,10 +2016,7 @@ const handleRestartTimer = () => {
                   currentPage={currentPage}
                   totalPages={story.length}
                   difficulty={currentDifficulty}
-                  onWordHighlight={(wordIndex: number) => {
-                    console.log(`🎯 Story word highlighted: ${wordIndex}`);
-                    universalHighlightWord(wordIndex);
-                  }}
+                  onWordHighlight={onWordHighlight}
                   contentHash={contentHash}
                   onAudioStateChange={handleAudioStateChange}
                   />
@@ -2122,6 +2045,7 @@ const handleRestartTimer = () => {
                       {t('nav.save','Save')}
                     </Button>
                   )}
+
                 </div>
                 {!isMobileOrTablet && isAudioPlaying && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -2748,12 +2672,16 @@ const handleRestartTimer = () => {
         currentPagesRead={pagesCompleted.size}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
         timeSpent={Date.now() - sessionStartTime}
-        onProgressUpdate={handleProgressUpdate}
+        onProgressUpdate={(type, value) => {
+          console.log('Progress updated:', type, value);
+        }}
         className="fixed"
       />
       
+      {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
       
+      {/* Voice Command System */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
