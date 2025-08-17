@@ -47,7 +47,7 @@ serve(async (req) => {
     if (context === 'learning') {
       console.log('📚 Learning context: Applying phonetic lexicon');
       requestBody.pronunciation_dictionary_locators = [{
-        pronunciation_dictionary_id: "charlotte-learning-lexicon",
+        pronunciation_dictionary_id: "charlotte-lexicon.xml",
         version_id: "latest"
       }];
     } else {
@@ -71,8 +71,66 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ ElevenLabs API Error:', errorText);
+      
+      // Check for dictionary-specific errors
+      const isDictionaryError = errorText.includes('pronunciation_dictionary') || 
+                               errorText.includes('dictionary not found') ||
+                               errorText.includes('charlotte-lexicon');
+      
+      if (isDictionaryError && context === 'learning') {
+        console.log('📚 Dictionary error detected, retrying without lexicon...');
+        
+        // Retry without dictionary
+        const fallbackRequestBody = {
+          text,
+          model_id: "eleven_turbo_v2_5",
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.2,
+            use_speaker_boost: true
+          }
+          // No pronunciation_dictionary_locators
+        };
+        
+        const fallbackResponse = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+          {
+            method: 'POST',
+            headers: {
+              'Accept': 'audio/mpeg',
+              'Content-Type': 'application/json',
+              'xi-api-key': apiKey,
+            },
+            body: JSON.stringify(fallbackRequestBody),
+          }
+        );
+        
+        if (fallbackResponse.ok) {
+          console.log('✅ Fallback without dictionary succeeded');
+          const audioArrayBuffer = await fallbackResponse.arrayBuffer();
+          const base64Audio = btoa(
+            String.fromCharCode(...new Uint8Array(audioArrayBuffer))
+          );
+          
+          return new Response(
+            JSON.stringify({ 
+              audioContent: base64Audio,
+              context,
+              appliedLexicon: false,
+              fallbackReason: 'Dictionary not available'
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      
       return new Response(
-        JSON.stringify({ error: `ElevenLabs API error: ${response.status}` }),
+        JSON.stringify({ 
+          error: `ElevenLabs API error: ${response.status}`,
+          errorType: isDictionaryError ? 'dictionary' : 'api',
+          details: errorText 
+        }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

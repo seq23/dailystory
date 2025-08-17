@@ -145,7 +145,7 @@ export class SimpleAudioEngine {
       // Check network connectivity before attempting TTS
       if (!navigator.onLine) {
         console.warn('🎵 SimpleAudioEngine: No network connection, using fallback immediately');
-        this.fallbackToWebSpeech(text);
+        this.fallbackToWebSpeech(text, true, 'No internet connection - using offline voice');
         return;
       }
 
@@ -182,19 +182,34 @@ export class SimpleAudioEngine {
       this.playing = true;
     } catch (error) {
       console.error('🎵 SimpleAudioEngine: ElevenLabs failed, falling back to browser speech:', error);
-      // Enhanced fallback with user notification
-      this.fallbackToWebSpeech(text, true);
+      
+      // Determine error type for better user messaging
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      let fallbackMessage = 'Using device voice due to technical issues';
+      
+      if (errorMessage.includes('dictionary')) {
+        fallbackMessage = 'Dictionary loading issue - using standard pronunciation';
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        fallbackMessage = 'Network connection issue - using offline voice';
+      } else if (errorMessage.includes('API key') || errorMessage.includes('unauthorized')) {
+        fallbackMessage = 'Service temporarily unavailable - using device voice';
+      } else if (!navigator.onLine) {
+        fallbackMessage = 'No internet connection - using offline voice';
+      }
+      
+      // Enhanced fallback with specific error messaging
+      this.fallbackToWebSpeech(text, true, fallbackMessage);
     }
   }
 
-  private fallbackToWebSpeech(text: string, showNotification = false): void {
+  private fallbackToWebSpeech(text: string, showNotification = false, customMessage?: string): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       console.log('🔊 SimpleAudioEngine: Using browser speech fallback');
       
       if (showNotification) {
         // Dispatch event to show user notification about fallback
         window.dispatchEvent(new CustomEvent('audio:fallback', {
-          detail: { message: 'Using device voice due to network issues' }
+          detail: { message: customMessage || 'Using device voice due to network issues' }
         }));
       }
 
