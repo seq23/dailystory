@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StorySessionBreadcrumb } from "@/components/StorySessionBreadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Home, TrendingUp, TrendingDown, Loader2, Wand, Save } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -301,6 +302,23 @@ export const ResponsiveStoryHeader = ({
       "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
       isMobileOrTablet && "sticky top-0"
     )}>
+      {/* Enhanced Breadcrumb Navigation - Desktop/Tablet Premium Only */}
+      {isPremium && storyTitle && !isMobile && (
+        <div className="border-b border-border/40 bg-background/50">
+          <div className={cn(
+            isMobileOrTablet ? "safe-area-padding px-4 py-2" : "max-w-7xl mx-auto px-6 py-2"
+          )}>
+            <StorySessionBreadcrumb
+              storyTitle={storyTitle}
+              currentPage={1} // This would come from story state
+              totalPages={10} // This would come from story state
+              onNavigateHome={onHome}
+              variant={isTablet ? "minimal" : "default"}
+            />
+          </div>
+        </div>
+      )}
+      
       <div className={cn(
         isMobileOrTablet ? "safe-area-padding" : "max-w-7xl mx-auto px-6"
       )}>

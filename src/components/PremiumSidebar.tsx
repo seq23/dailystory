@@ -27,10 +27,14 @@ import {
   Trophy,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Home,
+  BarChart3,
+  Zap
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocation } from 'react-router-dom';
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -42,41 +46,78 @@ interface PremiumSidebarProps {
 }
 
 const sidebarItems = [
+  // Core Navigation
+  {
+    title: "Home",
+    url: "",
+    icon: Home,
+    description: "Return to main dashboard",
+    premium: false,
+    group: "core"
+  },
   {
     title: "My Stories",
     url: "stories",
     icon: BookOpen,
-    description: "Read and create stories"
+    description: "Read and create stories",
+    premium: false,
+    group: "core"
+  },
+  // Learning & Progress
+  {
+    title: "Progress Dashboard",
+    url: "progress",
+    icon: BarChart3,
+    description: "Track your reading journey",
+    premium: false,
+    group: "learning"
   },
   {
     title: "Story Library", 
     url: "library",
     icon: Library,
     description: "Saved stories & collections",
-    premium: true
+    premium: true,
+    group: "learning"
   },
+  {
+    title: "Premium Features",
+    url: "premium",
+    icon: Zap,
+    description: "Unlock advanced capabilities",
+    premium: true,
+    group: "learning"
+  },
+  // Settings & Profile
   {
     title: "Profile Settings",
     url: "profile",
     icon: Settings,
-    description: "Edit your reading profile"
+    description: "Edit your reading profile",
+    premium: false,
+    group: "settings"
   },
   {
     title: "Parent Dashboard",
     url: "parent",
     icon: User,
-    description: "Parent controls & reports"
+    description: "Parent controls & reports",
+    premium: false,
+    group: "settings"
   },
   {
     title: "My Account",
     url: "account",
     icon: CreditCard,
-    description: "Manage subscription & settings"
+    description: "Manage subscription & settings",
+    premium: false,
+    group: "settings"
   }
 ];
 
 export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium }: PremiumSidebarProps) => {
   const { state, toggleSidebar } = useSidebar();
+  const location = useLocation();
   const collapsed = state === "collapsed";
   const { isMobile } = useIsMobile();
   const effectiveCollapsed = collapsed && !isMobile;
@@ -106,12 +147,23 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     return () => window.removeEventListener('progressTowersToggle', handler as EventListener);
   }, []);
 
-  const isActive = (itemUrl: string) => currentView === itemUrl;
+  // Enhanced active state detection
+  const isActive = (itemUrl: string) => {
+    if (itemUrl === "") return location.pathname === "/" && currentView === "";
+    return currentView === itemUrl;
+  };
+
+  // Group items by category
+  const groupedItems = sidebarItems.reduce((acc, item) => {
+    if (!acc[item.group]) acc[item.group] = [];
+    acc[item.group].push(item);
+    return acc;
+  }, {} as Record<string, typeof sidebarItems>);
 
   const getNavClasses = (item: any) => {
     const baseClasses = "flex items-center gap-3 w-full transition-colors rounded-lg";
     if (isActive(item.url)) {
-      return `${baseClasses} bg-primary text-primary-foreground`;
+      return `${baseClasses} bg-primary/10 text-primary border-r-2 border-primary font-medium`;
     }
     if (item.premium && !isPremium) {
       return `${baseClasses} opacity-60 hover:opacity-80`;
@@ -196,41 +248,42 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
           </div>
         )}
 
-        {/* Navigation Menu */}
-        <SidebarGroup>
-          <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : ""}>
-            Navigation
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sidebarItems.map((item) => (
-                <SidebarMenuItem key={item.url} className={effectiveCollapsed ? "my-1" : ""}>
-                  <SidebarMenuButton 
-                    onClick={() => onViewChange(item.url)}
-                    className={`${getNavClasses(item)} ${effectiveCollapsed ? "justify-center gap-0 mx-auto h-10 w-10 rounded-md" : ""}`}
-                    disabled={item.premium && !isPremium}
-                  >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
-                    {!effectiveCollapsed && (
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{item.title}</span>
-                          {item.premium && !isPremium && (
-                            <Sparkles className="w-3 h-3 text-yellow-500" />
-                          )}
+        {/* Enhanced Navigation Menu with Groups */}
+        {Object.entries(groupedItems).map(([groupName, items]) => (
+          <SidebarGroup key={groupName}>
+            <SidebarGroupLabel className={effectiveCollapsed ? "sr-only" : "text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-2"}>
+              {groupName.charAt(0).toUpperCase() + groupName.slice(1)}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.url} className={effectiveCollapsed ? "my-1" : ""}>
+                    <SidebarMenuButton 
+                      onClick={() => onViewChange(item.url)}
+                      className={`${getNavClasses(item)} ${effectiveCollapsed ? "justify-center gap-0 mx-auto h-10 w-10 rounded-md" : ""}`}
+                      disabled={item.premium && !isPremium}
+                    >
+                      <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive(item.url) ? "text-primary" : ""}`} />
+                      {!effectiveCollapsed && (
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate">{item.title}</span>
+                            {item.premium && !isPremium && (
+                              <Sparkles className="w-3 h-3 text-warning flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {item.description}
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {item.description}
-                        </p>
-                      </div>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+        ))}
 
           {isPremium && (
             <SidebarGroup>

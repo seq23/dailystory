@@ -85,20 +85,27 @@ export const PremiumHeader = ({
       <div className="container mx-auto px-4 pr-[env(safe-area-inset-right)] py-3">
         <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Enhanced Mobile Sidebar Toggle */}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarTrigger aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} className="mr-1 md:hidden" />
+                  <SidebarTrigger 
+                    aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} 
+                    className="mr-1 md:hidden h-9 w-9 hover:bg-muted/50 rounded-md transition-colors" 
+                  />
                 </TooltipTrigger>
-                 <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
+                <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            {/* Desktop/Tablet trigger to the LEFT of the logo */}
+            {/* Enhanced Desktop/Tablet trigger */}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarTrigger aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} className="hidden md:inline-flex mr-2" />
+                  <SidebarTrigger 
+                    aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"} 
+                    className="hidden md:inline-flex mr-2 h-9 w-9 hover:bg-muted/50 rounded-md transition-colors" 
+                  />
                 </TooltipTrigger>
                 <TooltipContent side="bottom">{isSidebarOpen ? 'Close navigation' : 'Open navigation'}</TooltipContent>
               </Tooltip>
@@ -126,18 +133,18 @@ export const PremiumHeader = ({
             </div>
           </div>
 
-          {/* User Avatar and Actions */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Enhanced User Avatar and Actions */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
-            {/* Avatar with Dropdown + Child badge overlay */}
+            {/* Enhanced Avatar with Dropdown + Child badge overlay */}
             <div className="relative">
               <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="relative z-10 flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+                    className="relative z-10 flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
                   >
-                    <Avatar className="w-8 h-8">
+                    <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
                       <AvatarImage 
                         src={getAvatarUrl()} 
                         alt={userInfo.name}
@@ -154,12 +161,12 @@ export const PremiumHeader = ({
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-left hidden sm:block">
-                      <p className="text-sm font-medium text-gray-800">{userInfo.name}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{userInfo.name}</p>
+                      <p className="text-xs text-gray-600 truncate max-w-[120px]">
                         {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
                       </p>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform data-[state=open]:rotate-180" />
                   </Button>
                 </DropdownMenuTrigger>
                 

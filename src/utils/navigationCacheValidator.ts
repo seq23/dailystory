@@ -123,6 +123,20 @@ export class NavigationCacheValidator {
         lastAccessed: Date.now()
       };
 
+      // Enhanced validation before setting
+      if (newState.currentPage && newState.totalPages) {
+        if (newState.currentPage < 1 || newState.totalPages < 0) {
+          console.warn('📍 Invalid page numbers detected, correcting...');
+          newState.currentPage = Math.max(1, newState.currentPage);
+          newState.totalPages = Math.max(0, newState.totalPages);
+        }
+
+        if (newState.currentPage > newState.totalPages && newState.totalPages > 0) {
+          console.warn('📍 Current page exceeds total pages, correcting...');
+          newState.currentPage = newState.totalPages;
+        }
+      }
+
       // Validate before saving
       const validation = this.validateState(newState);
       if (!validation.isValid) {
@@ -131,6 +145,7 @@ export class NavigationCacheValidator {
       }
 
       sessionStorage.setItem(this.CACHE_KEY, JSON.stringify(newState));
+      console.log('📍 Navigation state updated:', newState);
       return true;
     } catch (error) {
       console.error('Failed to set navigation state:', error);

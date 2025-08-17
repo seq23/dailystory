@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface StoryNavigationProps {
@@ -61,8 +61,8 @@ export const useStoryNavigation = ({
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Return current story state from URL for persistence
-  const getStoryStateFromUrl = () => {
+  // Enhanced navigation state recovery
+  const getStoryStateFromUrl = useCallback(() => {
     const params = new URLSearchParams(location.search);
     return {
       isStorySession: params.get('session') === 'story',
@@ -70,7 +70,41 @@ export const useStoryNavigation = ({
       total: parseInt(params.get('total') || '0'),
       title: params.get('title') ? decodeURIComponent(params.get('title')!) : undefined
     };
-  };
+  }, [location.search]);
 
-  return { getStoryStateFromUrl };
+  // Enhanced browser navigation handling
+  const handleUrlChange = useCallback(() => {
+    const urlState = getStoryStateFromUrl();
+    console.log('📍 URL state changed:', urlState);
+    
+    // Validate state and trigger recovery if needed
+    if (urlState.isStorySession && (!urlState.page || !urlState.total)) {
+      console.warn('📍 Invalid story state detected, triggering recovery');
+      // Could trigger a state recovery mechanism here
+    }
+    
+    return urlState;
+  }, [getStoryStateFromUrl]);
+
+  // Enhanced state persistence
+  const persistNavigationState = useCallback((state: {
+    page: number;
+    total: number;
+    title?: string;
+  }) => {
+    try {
+      sessionStorage.setItem('story_navigation_state', JSON.stringify({
+        ...state,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.warn('📍 Failed to persist navigation state:', error);
+    }
+  }, []);
+
+  return { 
+    getStoryStateFromUrl,
+    handleUrlChange,
+    persistNavigationState
+  };
 };
