@@ -243,35 +243,20 @@ export const InteractiveWord = ({
     if (isPlaying) return;
     setIsPlaying(true);
     
-    console.log('🔊 CRITICAL DEBUG: handlePronounce called for word:', word);
-    console.log('🔊 CRITICAL DEBUG: AudioEngine instance:', audioEngine);
-    console.log('🔊 CRITICAL DEBUG: Environment:', {
-      isPreview: window.location.href.includes('preview'),
-      isConsole: !window.location.href.includes('preview'),
-      userAgent: navigator.userAgent,
-      onLine: navigator.onLine
-    });
+    console.log('🎯 Interactive word DIRECT HEAR button clicked for:', cleanWord);
     
     try {
-      const cleanWordOnly = word.replace(/[.,!?;:'"()]/g, '').trim();
-      const processedWord = contextualPronunciation.processTextForPronunciation(cleanWordOnly, false);
-      
-      console.log('🔊 CRITICAL DEBUG: About to call audioEngine.playText with:', {
-        text: processedWord,
-        voiceId: 'XB0fDUnXU5powFXDhCwa',
-        contentHash: processedWord
-      });
-      
-      await audioEngine.playText({
-        text: processedWord,
-        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-        contentHash: processedWord
-      });
-      
-      console.log('🔊 CRITICAL DEBUG: audioEngine.playText completed successfully');
+      // Use dedicated service instead of mixed audio systems
+      const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+      await InteractiveWordAudioService.hearWord(cleanWord);
+      console.log('✅ Interactive word hear completed successfully');
     } catch (error) {
-      console.error('🔊 CRITICAL ERROR: Error pronouncing word:', error);
-      console.error('🔊 CRITICAL ERROR: Error stack:', error.stack);
+      console.error('❌ Interactive word hear failed:', error);
+      toast({
+        title: "Audio Error", 
+        description: `Failed to pronounce "${cleanWord}"`,
+        variant: "destructive"
+      });
     } finally {
       setIsPlaying(false);
     }
@@ -366,75 +351,18 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-      // Language-specific audio: Charlotte for English speakers, native browser speech for others
-      if (userNativeLanguage === 'en') {
-        // Use Charlotte's voice for English speakers
+        // Use dedicated InteractiveWordAudioService for audio
         try {
-          console.log('🔊 CRITICAL DEBUG: About to call SimpleAudioEngine for explanation');
-          console.log('🔊 CRITICAL DEBUG: Definition to speak:', definitionToSpeak);
-          
-          const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-          const audioEngineInstance = SimpleAudioEngine.getInstance();
-          
-          console.log('🔊 CRITICAL DEBUG: SimpleAudioEngine instance:', audioEngineInstance);
-          
-          await audioEngineInstance.playText({
-            text: definitionToSpeak,
-            voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-            modelId: 'eleven_turbo_v2_5'
-          });
-          
-          console.log('🔊 CRITICAL DEBUG: SimpleAudioEngine.playText completed successfully');
-          setIsPlaying(false);
-        } catch (error) {
-          console.error('🔊 CRITICAL ERROR: Charlotte TTS failed, falling back to browser speech:', error);
-          console.error('🔊 CRITICAL ERROR: Error stack:', error.stack);
-          // Fallback to browser speech for English speakers if Charlotte fails
-          if ('speechSynthesis' in window) {
-            try {
-              console.log('🔊 CRITICAL DEBUG: Using browser speech fallback');
-              const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
-              utterance.rate = 0.7;
-              utterance.pitch = 1.0;
-              utterance.volume = 1.0;
-              utterance.onend = () => setIsPlaying(false);
-              utterance.onerror = () => setIsPlaying(false);
-              speechSynthesis.speak(utterance);
-            } catch {
-              setIsPlaying(false);
-            }
-          } else {
-            setIsPlaying(false);
-          }
-        }
-      } else {
-        // Use native browser speech for non-English speakers
-        if ('speechSynthesis' in window) {
-          try {
-            const utterance = new SpeechSynthesisUtterance(definitionToSpeak);
-            utterance.rate = 0.7;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            utterance.lang = userNativeLanguage;
-            
-            const voices = speechSynthesis.getVoices();
-            const languageCode = userNativeLanguage.substring(0, 2);
-            const nativeVoice = voices.find(voice => 
-              voice.lang.toLowerCase().startsWith(languageCode.toLowerCase())
-            );
-            if (nativeVoice) utterance.voice = nativeVoice;
-            
-            utterance.onend = () => setIsPlaying(false);
-            utterance.onerror = () => setIsPlaying(false);
-            speechSynthesis.speak(utterance);
-          } catch (audioError) {
-            console.error('Browser speech failed:', audioError);
-            setIsPlaying(false);
-          }
-        } else {
+          console.log('🎯 Interactive word DIRECT EXPLAIN clicked for:', cleanWord);
+          const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+          await InteractiveWordAudioService.explainWord(cleanWord);
+          console.log('✅ Interactive word explain completed successfully');
+        } catch (audioError) {
+          console.error('❌ Interactive word explain audio failed:', audioError);
+          // Show definition without audio if audio fails
+        } finally {
           setIsPlaying(false);
         }
-      }
       
     } catch (error) {
       console.error('❌ Handle explain error (safe fallback):', error);
@@ -1007,24 +935,18 @@ export const InteractiveWord = ({
              {/* Universal Phonetic Breakdown Button - Available for ALL users */}
               <button
                 onClick={async () => {
-                  console.log('🔤 DESKTOP PHONETIC BUTTON CLICKED for word:', word);
+                  console.log('🎯 Desktop Interactive word SYLLABLES clicked for:', cleanWord);
                   setIsPlayingPhonetics(true);
                   try {
-                    // Get syllables and play them
-                    const phoneticEngine = PhoneticRulesEngine.getInstance();
-                    const syllables = phoneticEngine.breakIntoSyllables(word);
-                    const syllableText = syllables.join(' - ');
-                    await audioEngine.playText({
-                      text: syllableText,
-                      voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-                      contentHash: syllableText
-                    });
-                    // Removed unnecessary phonetic breakdown status toast
+                    // Use dedicated InteractiveWordAudioService instead of mixed systems
+                    const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+                    await InteractiveWordAudioService.syllableWord(cleanWord);
+                    console.log('✅ Desktop Interactive word syllables completed successfully');
                  } catch (error) {
-                   console.error('Phonetic breakdown error:', error);
+                   console.error('❌ Desktop Interactive word syllables failed:', error);
                    toast({
                      title: "Error",
-                     description: "Could not play phonetic breakdown. Please try again.",
+                     description: "Could not play syllable breakdown. Please try again.",
                      variant: "destructive",
                    });
                  } finally {
@@ -1690,51 +1612,28 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Phonetic breakdown handler - now available to all users
   const handlePhoneticBreakdown = async () => {
-    console.log('🔤 Phonetic breakdown clicked for word:', props.word);
-    console.log('🔤 UserInfo available:', !!props.userInfo);
-    console.log('🔤 Audio engine available:', !!audioEngine);
-    
-    if (!props.userInfo) {
-      console.error('❌ Phonetic: No user info available');
-      return;
-    }
+    console.log('🎯 Interactive word DIRECT SYLLABLES clicked for:', props.word);
     
     setIsPlayingPhonetics(true);
-    console.log('🔤 Starting phonetic breakdown for:', props.word);
     
     try {
-      console.log('🔤 Starting syllable playback with SimpleAudioEngine...');
-      // Get syllables and play them
-      const phoneticEngine = PhoneticRulesEngine.getInstance();
-      const syllables = phoneticEngine.breakIntoSyllables(props.word);
-      const syllableText = syllables.join(' - ');
-      await audioEngine.playText({
-        text: syllableText,
-        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-        contentHash: syllableText
-      });
+      // Use dedicated InteractiveWordAudioService instead of mixed systems
+      const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
+      await InteractiveWordAudioService.syllableWord(props.word);
+      console.log('✅ Interactive word syllables completed successfully');
       
       // Track vocabulary learning for all users
-      console.log('🎯 Phonetic: Adding to vocabulary for word:', props.word);
-      console.log('🔤 Phonetic: Checking global addVocabularyWord availability...');
-      console.log('🔤 Phonetic: window.addVocabularyWord exists:', !!(window as any).addVocabularyWord);
-      console.log('🔤 Phonetic: typeof window.addVocabularyWord:', typeof (window as any).addVocabularyWord);
-      
+      console.log('🎯 Syllables: Adding to vocabulary for word:', props.word);
       if (typeof (window as any).addVocabularyWord === 'function') {
-        console.log('🔤 Phonetic: Calling global addVocabularyWord...');
         (window as any).addVocabularyWord();
-        console.log('✅ Phonetic: Vocabulary word added via global function');
-      } else {
-        console.warn('⚠️ Phonetic: Global addVocabularyWord not available or not a function');
-        console.log('🔤 Phonetic: Available window properties:', Object.keys(window).filter(key => key.includes('Vocabulary') || key.includes('gamification') || key.includes('add')));
+        console.log('✅ Syllables: Vocabulary word added via global function');
       }
       
-      // Removed unnecessary phonetic breakdown status toast
     } catch (error) {
-      console.error('❌ Phonetic breakdown error:', error);
+      console.error('❌ Interactive word syllables failed:', error);
       toast({
         title: "Error",
-        description: "Could not play phonetic breakdown. Please try again.",
+        description: "Could not play syllable breakdown. Please try again.",
         variant: "destructive",
       });
     } finally {

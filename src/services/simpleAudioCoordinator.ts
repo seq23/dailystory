@@ -4,7 +4,7 @@
  * Provides timeout protection and better mutual exclusion
  */
 
-type AudioSystem = 'sync' | 'simple' | 'voice' | 'charlotte' | null;
+type AudioSystem = 'sync' | 'simple' | 'voice' | 'charlotte' | 'interactive-word' | null;
 
 class SimpleAudioCoordinator {
   private activeSystem: AudioSystem = null;
@@ -27,6 +27,15 @@ class SimpleAudioCoordinator {
           this.lockTimeout = null;
         }
         
+        // Handle system priority - interactive-word has higher priority than hover events
+        const currentPriority = this.getSystemPriority(this.activeSystem);
+        const requestPriority = this.getSystemPriority(system);
+        
+        if (currentPriority >= requestPriority && event.detail?.priority !== 'high') {
+          console.log(`🔒 Audio Coordinator: Rejecting ${system} request (lower priority)`);
+          return;
+        }
+        
         // Stop the other system if active
         if (this.activeSystem === 'sync') {
           window.dispatchEvent(new CustomEvent('audio:stop:sync'));
@@ -36,6 +45,9 @@ class SimpleAudioCoordinator {
           window.dispatchEvent(new CustomEvent('audio:stop:voice'));
         } else if (this.activeSystem === 'charlotte') {
           window.dispatchEvent(new CustomEvent('audio:stop:charlotte'));
+        } else if (this.activeSystem === 'interactive-word') {
+          // Interactive word system will handle its own cleanup
+          console.log('🎯 Audio Coordinator: Interactive word system in control');
         }
         
         this.activeSystem = system;
@@ -105,6 +117,20 @@ class SimpleAudioCoordinator {
 
   getActiveSystem(): AudioSystem {
     return this.activeSystem;
+  }
+
+  /**
+   * Get system priority for coordination
+   */
+  private getSystemPriority(system: AudioSystem): number {
+    const priorities = {
+      'interactive-word': 100,
+      'charlotte': 80,
+      'voice': 70,
+      'simple': 50,
+      'sync': 40
+    };
+    return priorities[system as keyof typeof priorities] || 0;
   }
 
   /**

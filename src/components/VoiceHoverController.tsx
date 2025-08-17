@@ -34,8 +34,14 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
 
     window.addEventListener('voice:status', handleVoiceStatus as EventListener);
 
-    const handleWordHover = async (event: CustomEvent<{ word: string; action: 'hear' | 'explain' | 'syllables' }>) => {
-      const { word, action } = event.detail;
+    const handleWordHover = async (event: CustomEvent<{ word: string; action: 'hear' | 'explain' | 'syllables'; source?: string }>) => {
+      const { word, action, source } = event.detail;
+      
+      // CRITICAL: Ignore events from direct button clicks - only handle voice command events
+      if (source === 'direct-button' || source === 'interactive-word') {
+        console.log(`🚫 VoiceHoverController: Ignoring ${source} event for "${word}"`);
+        return;
+      }
       
       if (!word || processingRef.current) return;
 
@@ -43,6 +49,12 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
       if (!AudioPermissions.canUseVoiceHover()) {
         const reason = AudioPermissions.getBlockReason('voice-hover');
         console.log(`🔒 Voice hover blocked: ${reason}`);
+        return;
+      }
+      
+      // Only process if voice commands are active
+      if (vcStatusRef.current === 'idle') {
+        console.log(`🚫 VoiceHoverController: Voice commands not active, ignoring event`);
         return;
       }
       
