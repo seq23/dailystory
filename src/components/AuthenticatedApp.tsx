@@ -13,6 +13,8 @@ import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
+import { ProgressDashboard } from "@/components/ProgressDashboard";
+import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { BookOpen } from "lucide-react";
@@ -24,7 +26,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading";
+type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("stories");
@@ -449,6 +451,30 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                         onNewStory={() => setCurrentView("stories")}
                       />
                     </div>
+                  )}
+
+                  {currentView === "progress" && (
+                    <ProgressDashboard
+                      userInfo={userInfo}
+                      isVisible={true}
+                      onClose={() => setCurrentView("stories")}
+                      isPremium={isPremium}
+                    />
+                  )}
+
+                  {currentView === "premium" && (
+                    <VocabularyDashboard
+                      userInfo={userInfo}
+                      isPremium={isPremium}
+                      onStartThemedSession={(theme) => {
+                        console.log('Starting themed session:', theme);
+                        setCurrentView("stories");
+                      }}
+                      onStartProgressiveSession={() => {
+                        console.log('Starting progressive session');
+                        setCurrentView("stories");
+                      }}
+                    />
                   )}
                 </>
               )}
