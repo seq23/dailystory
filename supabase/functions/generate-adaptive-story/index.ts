@@ -424,10 +424,28 @@ class EnhancedFallbackManager {
   private static processTemplate(template: string, userInfo: any): string {
     const userName = NameFormatter.capitalize(userInfo?.name || 'the child');
     const userColor = ensureColorName(userInfo?.favoriteColor);
+    const avatarType = userInfo?.avatar?.type || 'boy';
     
-    return template
+    // Replace pronouns based on avatar type
+    let processed = template
       .replace(/{NAME}/g, userName)
-      .replace(/{COLOR}/g, userColor);
+      .replace(/{name}/g, userName)
+      .replace(/{COLOR}/g, userColor)
+      .replace(/{color}/g, userColor);
+    
+    // Replace gender-specific pronouns
+    if (avatarType === 'girl') {
+      processed = processed
+        .replace(/\bhe\b/gi, 'she')
+        .replace(/\bhim\b/gi, 'her')
+        .replace(/\bhis\b/gi, 'her');
+    } else {
+      processed = processed
+        .replace(/\bshe\b/gi, 'he')
+        .replace(/\bher\b/gi, 'him');
+    }
+    
+    return processed;
   }
   
   static clearSession(): void {
@@ -436,20 +454,35 @@ class EnhancedFallbackManager {
 }
 
 // Simple fallback template function for Level 0
-function getFallbackTemplate(difficulty: string, userName: string, favoriteColor?: string, favoriteAnimal?: string, favoriteFood?: string): string[] {
+function getFallbackTemplate(difficulty: string, userName: string, favoriteColor?: string, favoriteAnimal?: string, favoriteFood?: string, userInfo?: any): string[] {
   console.log(`Getting fallback template for difficulty: ${difficulty}`);
   
   const templates = LEVEL_0_FALLBACK_TEMPLATES;
   const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+  const avatarType = userInfo?.avatar?.type || 'boy';
   
-  // Process template with user information
-  return randomTemplate.map(page => 
-    page
+  // Process template with user information and gender
+  return randomTemplate.map(page => {
+    let processed = page
       .replace(/{userName}/g, userName)
       .replace(/{favoriteColor}/g, favoriteColor || 'blue')
       .replace(/{favoriteAnimal}/g, favoriteAnimal || 'cat')
-      .replace(/{favoriteFood}/g, favoriteFood || 'apples')
-  );
+      .replace(/{favoriteFood}/g, favoriteFood || 'apples');
+    
+    // Replace gender-specific pronouns
+    if (avatarType === 'girl') {
+      processed = processed
+        .replace(/\bhe\b/gi, 'she')
+        .replace(/\bhim\b/gi, 'her')
+        .replace(/\bhis\b/gi, 'her');
+    } else {
+      processed = processed
+        .replace(/\bshe\b/gi, 'he')
+        .replace(/\bher\b/gi, 'him');
+    }
+    
+    return processed;
+  });
 }
 
 // Enhanced fallback page generator using the Enhanced Template Library
@@ -458,7 +491,7 @@ function getEnhancedFallbackPages(difficulty: string, userInfo: any): string[] {
   
   // Update mapping to include Level 0 for beginner
   if (difficulty === 'beginner') {
-    return getFallbackTemplate('beginner', userInfo.name || 'Alex', userInfo.favoriteColor, userInfo.favoriteAnimal, userInfo.favoriteFood);
+    return getFallbackTemplate('beginner', userInfo.name || 'Alex', userInfo.favoriteColor, userInfo.favoriteAnimal, userInfo.favoriteFood, userInfo);
   }
   
   const difficultyMap: Record<string, string> = {
@@ -499,6 +532,7 @@ serve(async (req) => {
       hasBody: !!requestBody,
       readingLevel: requestBody?.readingLevel,
       userName: requestBody?.config?.userName,
+      avatarType: requestBody?.config?.userInfo?.avatar?.type,
       bodyKeys: Object.keys(requestBody || {})
     });
     

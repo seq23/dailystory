@@ -232,6 +232,34 @@ class StoryVisualStateManager {
     
     return settingParts.length > 0 ? `, ${settingParts.join(', ')}` : '';
   }
+
+  // Helper methods for setting extraction
+  static extractLocation(text: string): string {
+    const locationPatterns = [
+      /\b(park|playground|hill|field|garden|yard|beach|forest|home|school|mountain|river)\b/i
+    ];
+    
+    for (const pattern of locationPatterns) {
+      const match = text.match(pattern);
+      if (match) return match[1].toLowerCase();
+    }
+    return '';
+  }
+
+  static extractTimeOfDay(text: string): string {
+    if (/\b(morning|dawn|sunrise)\b/i.test(text)) return 'morning';
+    if (/\b(afternoon|noon|midday)\b/i.test(text)) return 'afternoon';
+    if (/\b(evening|sunset|dusk)\b/i.test(text)) return 'evening';
+    if (/\b(night|dark|midnight)\b/i.test(text)) return 'night';
+    return '';
+  }
+
+  static extractWeather(text: string): string {
+    if (/\b(sunny|bright|sunshine)\b/i.test(text)) return 'sunny';
+    if (/\b(rain|rainy|storm|cloudy)\b/i.test(text)) return 'rainy';
+    if (/\b(snow|snowy|winter)\b/i.test(text)) return 'snowy';
+    return '';
+  }
 }
 
 function extractPrimaryScene(text: string): string {
@@ -538,14 +566,25 @@ serve(async (req) => {
         return createCorsErrorResponse(`Invalid userInfo: ${validation.error}`, 400);
       }
       
-      const state = StoryVisualStateManager.getOrCreateStoryState(sessionId);
+      const state = StoryVisualStateManager.getOrCreateStoryState(sessionId, 10);
+      state.currentPage = pageNumber;
       
-      // Apply skin tone to state
+      // Apply comprehensive character info to state with gender consistency
       if (userInfo.avatar.skinTone) {
         StoryVisualStateManager.updateSetting(sessionId, pageNumber, {
           skinTone: userInfo.avatar.skinTone
         });
       }
+      
+      // Ensure character consistency across pages
+      const mainCharacterDesc = `${userInfo.avatar.type} ${userInfo.avatar.skinTone} skin character`;
+      StoryVisualStateManager.updateCharacterWithSeed(
+        sessionId, 
+        userInfo.name, 
+        mainCharacterDesc, 
+        undefined, 
+        pageNumber
+      );
       
       const secondaryCharacters = detectSecondaryCharacters(pageText);
       for (const charName of secondaryCharacters) {
@@ -566,6 +605,19 @@ serve(async (req) => {
       );
       
       let characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
+      
+      // Generate seed if none exists for character consistency
+      if (!characterSeed) {
+        characterSeed = Math.floor(Math.random() * 2147483647);
+        StoryVisualStateManager.updateCharacterWithSeed(
+          sessionId, 
+          userInfo.name, 
+          mainCharacterDesc,
+          characterSeed,
+          pageNumber
+        );
+        console.log(`🔒 Saved seed ${characterSeed} for ${userInfo.name} consistency`);
+      }
       
       const skinToneMap = {
         'pale': 'pale skin',
@@ -593,6 +645,7 @@ serve(async (req) => {
       
       const skinToneForPrompt = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
       
+      // Enhanced character description with gender specificity
       const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinToneForPrompt}`;
       
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';

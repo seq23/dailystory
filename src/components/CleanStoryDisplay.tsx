@@ -1049,13 +1049,16 @@ const initializeStory = async () => {
   const generateImageForCurrentPage = async () => {
     if (isGeneratingImage || pageImages[currentPage]) return;
     
-    // Enhanced cache validation - check EnhancedImageCache first
+    // Enhanced cache validation with story continuity markers
     const storyText = displayedStory[currentPage];
-    const cachedImageUrl = (await import('@/services/enhancedImageCache')).EnhancedImageCache.getCachedImage(
+    const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+    const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+    const cachedImageUrl = EnhancedImageCache.getCachedImage(
       storyText.slice(0, 120), 
       characterSessionId, 
       currentPage,
-      storyId
+      storyId,
+      storyMarkers
     );
     
     if (cachedImageUrl) {
@@ -1082,14 +1085,17 @@ const initializeStory = async () => {
           [currentPage]: result.url
         }));
         
-        // Cache in both systems to prevent re-generation
-        (await import('@/services/enhancedImageCache')).EnhancedImageCache.cacheImage(
+        // Cache with story continuity markers to prevent re-generation
+        const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+        const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+        EnhancedImageCache.cacheImage(
           storyText.slice(0, 120),
           result.url,
           characterSessionId,
           currentPage,
           undefined,
-          storyId
+          storyId,
+          storyMarkers
         );
         
         try {

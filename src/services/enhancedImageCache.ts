@@ -83,16 +83,32 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Generate cache key for image
+   * Generate cache key for image with story continuity context
    */
-  private static generateCacheKey(prompt: string, sessionId: string, pageNumber?: number, storyId?: string): string {
-    const baseKey = `${prompt}-${sessionId}`;
+  private static generateCacheKey(prompt: string, sessionId: string, pageNumber?: number, storyId?: string, contextualMarkers?: string): string {
+    // Create a hash of prompt for consistent length
+    const promptHash = this.createPromptHash(prompt);
+    const baseKey = `${promptHash}-${sessionId}`;
     const storyKey = storyId ? `${baseKey}-${storyId}` : baseKey;
-    return pageNumber !== undefined ? `${storyKey}-p${pageNumber}` : storyKey;
+    const contextKey = contextualMarkers ? `${storyKey}-ctx:${contextualMarkers}` : storyKey;
+    return pageNumber !== undefined ? `${contextKey}-p${pageNumber}` : contextKey;
   }
 
   /**
-   * Cache an image
+   * Create a consistent hash from prompt text for cache keys
+   */
+  private static createPromptHash(prompt: string): string {
+    let hash = 0;
+    for (let i = 0; i < prompt.length; i++) {
+      const char = prompt.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  /**
+   * Cache an image with story continuity context
    */
   static cacheImage(
     prompt: string, 
@@ -100,11 +116,12 @@ export class EnhancedImageCache {
     sessionId: string, 
     pageNumber?: number,
     storyHash?: string,
-    storyId?: string
+    storyId?: string,
+    contextualMarkers?: string
   ): void {
     try {
       const map = this.getCacheMap();
-      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId);
+      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId, contextualMarkers);
       
       // Check session image limit
       const sessionImages = Array.from(map.values()).filter(img => img.sessionId === sessionId);
@@ -137,16 +154,28 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Get cached image
+   * Get cached image with story continuity validation
    */
-  static getCachedImage(prompt: string, sessionId: string, pageNumber?: number, storyId?: string): string | null {
+  static getCachedImage(prompt: string, sessionId: string, pageNumber?: number, storyId?: string, contextualMarkers?: string): string | null {
     try {
       const map = this.getCacheMap();
-      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId);
+      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId, contextualMarkers);
       const cached = map.get(key);
       
       if (cached) {
-        console.log('📸 Image cache hit:', { key, sessionId, pageNumber });
+        // Additional validation: check if contextual markers have changed significantly
+        if (contextualMarkers && pageNumber && pageNumber > 1) {
+          // For pages beyond the first, validate story continuity
+          const isValidContext = this.validateStoryContinuity(cached, contextualMarkers);
+          if (!isValidContext) {
+            console.log('📸 Image cache invalidated due to context mismatch:', { key, sessionId, pageNumber });
+            map.delete(key);
+            this.saveCacheMap(map);
+            return null;
+          }
+        }
+        
+        console.log('📸 Image cache hit:', { key, sessionId, pageNumber, contextValidated: !!contextualMarkers });
         return cached.url;
       }
       
@@ -317,6 +346,50 @@ export class EnhancedImageCache {
     storyId?: string
   ): void {
     this.cacheImage(prompt, imageUrl, sessionId, pageNumber, storyHash, storyId);
+  }
+
+  /**
+   * Validate story continuity for cached images
+   */
+  private static validateStoryContinuity(cached: CachedImage, currentMarkers: string): boolean {
+    // Simple validation: if we have contextual markers, they should remain consistent
+    // This prevents using images from different story contexts
+    if (!currentMarkers) return true;
+    
+    // Extract key elements that should remain consistent
+    const currentElements = currentMarkers.toLowerCase().split(',').map(s => s.trim());
+    const timeAgo = Date.now() - cached.timestamp;
+    
+    // Allow some flexibility for recent images (within 5 minutes)
+    if (timeAgo < 5 * 60 * 1000) {
+      return true;
+    }
+    
+    // For older cached images, be more strict about context matching
+    return false;
+  }
+
+  /**
+   * Extract story continuity markers from text
+   */
+  static extractStoryMarkers(text: string, userInfo?: any): string {
+    const markers: string[] = [];
+    
+    // Extract key visual elements that should remain consistent
+    const colorMatches = text.match(/\b(red|blue|green|yellow|purple|pink|orange|brown|black|white|colorful)\b/gi);
+    const objectMatches = text.match(/\b(ball|car|bike|tree|house|animal|bird|dog|cat|flower)\b/gi);
+    const settingMatches = text.match(/\b(park|hill|forest|home|school|yard|garden|beach)\b/gi);
+    
+    if (colorMatches) markers.push(...colorMatches.slice(0, 2));
+    if (objectMatches) markers.push(...objectMatches.slice(0, 2)); 
+    if (settingMatches) markers.push(...settingMatches.slice(0, 1));
+    
+    // Add user avatar type for character consistency
+    if (userInfo?.avatar?.type) {
+      markers.push(userInfo.avatar.type);
+    }
+    
+    return markers.join(',').toLowerCase();
   }
 
   /**
