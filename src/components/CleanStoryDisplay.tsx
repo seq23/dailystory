@@ -811,7 +811,6 @@ useEffect(() => {
     const t2 = setTimeout(() => setFinishFlashCycle(false), 2000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }
-  return;
 }, [pagesCompleted]);
 
 // Ensure timer UI becomes visible when time ends for premium (to show celebration + choice)
@@ -2004,7 +2003,7 @@ const handleRestartTimer = () => {
 
   return (
     <GameContextProvider 
-      userId={userInfo.name} 
+      userId={userInfo.name}
       userType={isPremium ? 'premium' : 'free'}
       userInfo={userInfo}
     >
@@ -2094,6 +2093,7 @@ const handleRestartTimer = () => {
                       }
                     }
                     universalHighlightWord(wordIndex);
+                  }}
                   contentHash={contentHash}
                   onAudioStateChange={handleAudioStateChange}
                   />
