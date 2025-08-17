@@ -2085,11 +2085,15 @@ const handleRestartTimer = () => {
                   difficulty={currentDifficulty}
                   onWordHighlight={(wordIndex) => {
                     console.log(`🎯 Story word highlighted: ${wordIndex}`);
-                    
-                    // Use both highlighting systems for maximum compatibility
-                    onWordHighlight(wordIndex);
+                    // Use both highlighting systems for maximum compatibility  
+                    if (typeof onWordHighlight === 'function') {
+                      try {
+                        onWordHighlight(wordIndex);
+                      } catch (e) {
+                        console.warn('Word highlight error:', e);
+                      }
+                    }
                     universalHighlightWord(wordIndex);
-                  }}
                   contentHash={contentHash}
                   onAudioStateChange={handleAudioStateChange}
                   />
