@@ -839,6 +839,54 @@ export class AudioSyncService {
   }
 
   /**
+   * Sync content hash with UI - for hash mismatch resolution
+   */
+  syncContentHash(newHash: string): void {
+    console.log(`🔄 AudioSyncService: Syncing content hash from ${this.activeContentHash?.slice(0,10)} to ${newHash?.slice(0,10)}`);
+    this.activeContentHash = newHash;
+    
+    // Update global reference for coordination
+    (window as any).__audioServiceHash = newHash;
+    
+    // Emit hash sync event
+    window.dispatchEvent(new CustomEvent('audio:hash:synced', { 
+      detail: { newHash, timestamp: Date.now() } 
+    }));
+  }
+
+  /**
+   * Wait for content hash to match expected hash
+   */
+  async waitForHashSync(expectedHash: string, timeout: number = 30000): Promise<boolean> {
+    const startTime = Date.now();
+    let attempt = 0;
+    let delay = 100; // Start with 100ms
+    
+    console.log(`⏳ AudioSyncService: Waiting for hash sync to ${expectedHash?.slice(0,10)}`);
+    
+    while (Date.now() - startTime < timeout) {
+      const currentUIHash = (window as any).__pageContentHash;
+      
+      // Check if hashes match
+      if (currentUIHash === expectedHash) {
+        console.log(`✅ AudioSyncService: Hash sync successful after ${Date.now() - startTime}ms`);
+        this.syncContentHash(expectedHash);
+        return true;
+      }
+      
+      attempt++;
+      console.log(`⏳ AudioSyncService: Hash sync attempt ${attempt}, waiting ${delay}ms...`);
+      
+      // Wait with exponential backoff
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay = Math.min(5000, delay < 500 ? delay * 2 : delay + 1000);
+    }
+    
+    console.error(`❌ AudioSyncService: Hash sync timeout after ${timeout}ms`);
+    return false;
+  }
+
+  /**
    * Detect mobile device
    */
   private isMobile(): boolean {

@@ -562,9 +562,22 @@ const [highlightSave, setHighlightSave] = useState(false);
 
   useEffect(() => {
     try { 
+      const previousHash = (window as any).__pageContentHash;
       (window as any).__pageContentHash = contentHash; 
       (window as any).__pageContentString = currentStoryText;
       (window as any).__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
+      
+      // Emit hash change event if hash actually changed
+      if (previousHash !== contentHash && contentHash) {
+        console.log(`🔄 Content hash changed: ${previousHash?.slice(0,10)} → ${contentHash?.slice(0,10)}`);
+        window.dispatchEvent(new CustomEvent('content:hash:changed', { 
+          detail: { 
+            previousHash, 
+            newHash: contentHash, 
+            timestamp: Date.now() 
+          } 
+        }));
+      }
       (window as any).__userName = userInfo?.name || '';
       console.log('🎤 Content variables updated for voice commands:', {
         page: currentPage,

@@ -141,6 +141,27 @@ useEffect(() => {
     };
   }, []);
 
+  // Listen for hash changes and update audio service immediately
+  useEffect(() => {
+    const handleHashChange = () => {
+      const currentUIHash = (window as any).__pageContentHash;
+      if (currentUIHash && currentUIHash !== contentHash) {
+        console.log(`🔄 Hash change detected: ${currentUIHash?.slice(0,10)} - notifying audio service`);
+        // Notify audio service of hash change
+        if (typeof audioSyncService.syncContentHash === 'function') {
+          audioSyncService.syncContentHash(currentUIHash);
+        }
+      }
+    };
+
+    // Listen for content hash changes
+    window.addEventListener('content:hash:changed', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('content:hash:changed', handleHashChange);
+    };
+  }, [contentHash]);
+
 
   // Stop voice commands on unmount
   useEffect(() => {
@@ -247,39 +268,42 @@ useEffect(() => {
     }
   };
 
-  // Simplified hash validation with immediate sync
+  // Enhanced hash validation with proper waiting mechanism
   const playWithHashValidation = async (retryCount = 0): Promise<void> => {
-    const MAX_RETRIES = 2; // Reduced to prevent long retry loops
-    
     // Get current hashes
     const currentUIHash = (window as any).__pageContentHash;
     
-    // If there's a hash mismatch, sync immediately instead of retrying
-    if (contentHash && currentUIHash && currentUIHash !== contentHash && retryCount === 0) {
-      console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - syncing immediately`);
+    // If there's a hash mismatch, wait for proper synchronization
+    if (contentHash && currentUIHash && currentUIHash !== contentHash) {
+      console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - waiting for sync...`);
       
-      // Fix #2: Wait for proper content sync instead of forcing it
-      console.log('⏳ Content hash mismatch detected, waiting for sync...');
-      return; // Don't force sync, let content update naturally
+      // Show sync progress to user
+      toast({
+        title: "Syncing content...",
+        description: "Waiting for content synchronization. This may take a moment during story generation.",
+        duration: 3000,
+      });
       
-      // Track for diagnostics
-      try {
-        const { mobileAudioDiagnostics } = await import('@/utils/mobileAudioDiagnostics');
-        mobileAudioDiagnostics.trackHashMismatch(contentHash, currentUIHash, 0);
-      } catch (e) {
-        console.warn('Failed to track hash mismatch:', e);
+      // Wait for hash synchronization with extended timeout
+      const syncSuccess = await waitForHashSync(contentHash, currentUIHash);
+      
+      if (!syncSuccess) {
+        console.error('❌ Hash sync timeout - unable to synchronize content');
+        toast({
+          title: "Sync timeout",
+          description: "Content synchronization took too long. Please try again.",
+          variant: "destructive",
+          duration: 4000,
+        });
+        return;
       }
       
+      console.log('✅ Hash synchronization successful');
       toast({
-        title: "Audio synchronized",
-        description: "Audio synced with current page",
+        title: "Content synchronized",
+        description: "Audio is now ready to play with synchronized content.",
         duration: 1500,
       });
-    }
-    
-    // If still mismatched after sync attempt, skip validation
-    if (retryCount >= MAX_RETRIES) {
-      console.log('🔄 Skipping hash validation to prevent infinite loops');
     }
 
     // Enhanced stabilization with reduced timing (500ms instead of 3-4 seconds)
@@ -372,6 +396,51 @@ useEffect(() => {
     }));
     
     console.log('✅ ElevenLabsAudio: Stop completed');
+  };
+
+  /**
+   * Wait for hash synchronization with exponential backoff and extended timeout
+   */
+  const waitForHashSync = async (expectedHash: string, initialUIHash: string): Promise<boolean> => {
+    const MAX_WAIT_TIME = 30000; // 30 seconds timeout
+    const startTime = Date.now();
+    let attempt = 0;
+    let delay = 100; // Start with 100ms
+    
+    console.log(`⏳ Starting hash sync wait: expected=${expectedHash?.slice(0,10)}, initial=${initialUIHash?.slice(0,10)}`);
+    
+    while (Date.now() - startTime < MAX_WAIT_TIME) {
+      // Check current hash
+      const currentUIHash = (window as any).__pageContentHash;
+      
+      // If hashes now match, we're synchronized
+      if (currentUIHash && currentUIHash === expectedHash) {
+        console.log(`✅ Hash sync successful after ${Date.now() - startTime}ms and ${attempt} attempts`);
+        return true;
+      }
+      
+      // If UI hash changed to something else, update audio service
+      if (currentUIHash && currentUIHash !== initialUIHash && currentUIHash !== expectedHash) {
+        console.log(`🔄 UI hash changed during sync: ${currentUIHash?.slice(0,10)} - updating audio service`);
+        // Force sync the audio service's hash
+        if (typeof audioSyncService.syncContentHash === 'function') {
+          audioSyncService.syncContentHash(currentUIHash);
+        }
+        return true; // Consider this a successful sync to new content
+      }
+      
+      attempt++;
+      console.log(`⏳ Hash sync attempt ${attempt}: current=${currentUIHash?.slice(0,10)}, waiting ${delay}ms...`);
+      
+      // Wait with exponential backoff
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      // Exponential backoff: 100ms → 200ms → 500ms → 1s → 2s → 5s (max)
+      delay = Math.min(5000, delay < 500 ? delay * 2 : delay + 1000);
+    }
+    
+    console.error(`❌ Hash sync timeout after ${MAX_WAIT_TIME}ms`);
+    return false;
   };
 
 // Premium voice commands toggle
