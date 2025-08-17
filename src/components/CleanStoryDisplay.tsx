@@ -1052,6 +1052,12 @@ const initializeStory = async () => {
     // Enhanced cache validation with story continuity markers
     const storyText = displayedStory[currentPage];
     const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+    
+    // Validate userInfo structure before extracting markers
+    if (!userInfo || !userInfo.avatar) {
+      console.warn('⚠️ Missing userInfo or avatar data for story markers');
+    }
+    
     const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
     const cachedImageUrl = EnhancedImageCache.getCachedImage(
       storyText.slice(0, 120), 
@@ -1087,6 +1093,12 @@ const initializeStory = async () => {
         
         // Cache with story continuity markers to prevent re-generation
         const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+        
+        // Validate userInfo before extracting markers
+        if (!userInfo || !userInfo.avatar) {
+          console.warn('⚠️ Missing userInfo or avatar data for caching story markers');
+        }
+        
         const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
         EnhancedImageCache.cacheImage(
           storyText.slice(0, 120),
@@ -1118,17 +1130,30 @@ const initializeStory = async () => {
     
     // Enhanced cache validation - check EnhancedImageCache first
     const storyText = story[index];
-    const cachedImageUrl = (await import('@/services/enhancedImageCache')).EnhancedImageCache.getCachedImage(
-      storyText.slice(0, 120), 
-      characterSessionId, 
-      index,
-      storyId
-    );
-    
-    if (cachedImageUrl) {
-      console.log('📸 Using cached image for page', index);
-      setPageImages(prev => ({ ...prev, [index]: cachedImageUrl }));
-      return;
+    try {
+      const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+      
+      // Validate userInfo structure
+      if (!userInfo || !userInfo.avatar) {
+        console.warn('⚠️ Missing userInfo or avatar data for index cache lookup');
+      }
+      
+      const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+      const cachedImageUrl = EnhancedImageCache.getCachedImage(
+        storyText.slice(0, 120), 
+        characterSessionId, 
+        index,
+        storyId,
+        storyMarkers
+      );
+      
+      if (cachedImageUrl) {
+        console.log('📸 Using cached image for page', index);
+        setPageImages(prev => ({ ...prev, [index]: cachedImageUrl }));
+        return;
+      }
+    } catch (cacheError) {
+      console.warn('Failed to check image cache for index:', cacheError);
     }
     
     try {
@@ -1145,14 +1170,27 @@ const initializeStory = async () => {
         setPageImages(nextMap);
         
         // Cache in both systems to prevent re-generation
-        (await import('@/services/enhancedImageCache')).EnhancedImageCache.cacheImage(
-          storyText.slice(0, 120),
-          result.url,
-          characterSessionId,
-          index,
-          undefined,
-          storyId
-        );
+        try {
+          const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+          
+          // Validate userInfo before caching
+          if (!userInfo || !userInfo.avatar) {
+            console.warn('⚠️ Missing userInfo or avatar data for index caching');
+          }
+          
+          const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+          EnhancedImageCache.cacheImage(
+            storyText.slice(0, 120),
+            result.url,
+            characterSessionId,
+            index,
+            undefined,
+            storyId,
+            storyMarkers
+          );
+        } catch (cacheError) {
+          console.warn('Failed to cache image for index:', cacheError);
+        }
         
         try {
           const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';

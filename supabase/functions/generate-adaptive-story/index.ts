@@ -552,9 +552,17 @@ serve(async (req) => {
 
     // Use the prompts sent from the frontend services
     // If custom prompts are provided (from LiveGenerationService), use those
-    // Otherwise, fall back to basic prompts for NetflixStyleStoryService  
-    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers.`;
-    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}.`;
+    // Otherwise, fall back to basic prompts for NetflixStyleStoryService
+    
+    // Extract gender information from userInfo for proper pronouns
+    const avatarType = config?.userInfo?.avatar?.type || 'boy';
+    const characterGender = avatarType === 'girl' ? 'girl' : 'boy';
+    const pronouns = avatarType === 'girl' ? 'she/her' : 'he/him';
+    
+    console.log('👤 Character Gender Info:', { avatarType, characterGender, pronouns, userName: config?.userName });
+    
+    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is a ${characterGender} named ${config?.userName || 'the child'} (use ${pronouns} pronouns consistently throughout the story).`;
+    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}, who is a ${characterGender}. Use ${pronouns} pronouns consistently for the main character throughout the entire story.`;
 
     const maxTokens = readingLevel === 'beginner' ? 200 : 
                      readingLevel === 'easy' ? 400 : 
