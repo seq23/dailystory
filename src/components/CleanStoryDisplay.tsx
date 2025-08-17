@@ -28,6 +28,7 @@ interface CleanStoryDisplayProps {
   currentPage?: number;
   totalPages?: number;
   storyTitle?: string;
+  currentStory?: any; // Add the missing currentStory property
 }
 
 const CleanStoryDisplay = ({ 
@@ -46,7 +47,8 @@ const CleanStoryDisplay = ({
   onImageGenerate,
   currentPage = 1,
   totalPages = 1,
-  storyTitle = "Story"
+  storyTitle = "Story",
+  currentStory // Accept the currentStory prop
 }: CleanStoryDisplayProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -102,7 +104,7 @@ const CleanStoryDisplay = ({
       }
       return newState;
     });
-  }, [story, handleWordHighlight, clearHighlighting]);
+  }, [story, handleWordHighlight, clearHighlighting, audioEngine]);
 
   // Generate image based on story content
   const handleImageGeneration = useCallback(async () => {

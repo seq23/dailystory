@@ -7,6 +7,8 @@ export type PlayOptions = {
   contentHash?: string;
   voiceId?: string;
   modelId?: string;
+  onWordBoundary?: (wordIndex: number) => void;
+  onEnd?: () => void;
 };
 
 /**
