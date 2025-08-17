@@ -214,6 +214,21 @@ export class StorySessionCache {
     try {
       sessionStorage.removeItem(cacheKey);
       console.log(`🗑️ Cleared cached story session for user ${userId}`);
+      
+      // Also clear any generation cache that might have stale content
+      console.log(`🧹 Force clearing generation cache to fix pronoun issues`);
+      try {
+        // Clear any cached generation data to force fresh generation
+        const generationCacheKeys = Object.keys(sessionStorage).filter(key => 
+          key.includes('generation') || key.includes('story') || key.includes('cache')
+        );
+        generationCacheKeys.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log(`🧹 Cleared cache key: ${key}`);
+        });
+      } catch (error) {
+        console.warn('Failed to clear generation cache:', error);
+      }
     } catch (error) {
       console.warn('Failed to clear cached session:', error);
     }

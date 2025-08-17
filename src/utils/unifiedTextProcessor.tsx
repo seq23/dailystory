@@ -59,8 +59,13 @@ export const processTextWithConsistentFlow = ({
     
     // Consistent highlighting classes for both mobile and desktop
     const highlightClasses = isHighlighted 
-      ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse transition-all duration-500 shadow-md rounded-sm' 
+      ? 'highlighted' 
       : 'transition-all duration-300';
+    
+    // Debug highlighting
+    if (isHighlighted) {
+      console.log(`🎯 Highlighting word at index ${wordOnlyIndex}: "${token}"`);
+    }
     
     const finalClassName = `inline ${className} ${highlightClasses}`;
     

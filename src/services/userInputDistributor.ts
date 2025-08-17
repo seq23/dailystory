@@ -391,6 +391,8 @@ export class UserInputDistributor {
   private static getPronoun(userInfo: UserInfo, type: 'subject' | 'object' | 'possessive'): string {
     const avatarType = userInfo.avatar?.type;
     
+    console.log(`🎯 Getting pronoun for avatar type: "${avatarType}" (type: ${type})`);
+    
     const pronouns = {
       boy: { subject: 'he', object: 'him', possessive: 'his' },
       girl: { subject: 'she', object: 'her', possessive: 'her' },
@@ -398,6 +400,7 @@ export class UserInputDistributor {
     };
     
     const selected = pronouns[avatarType as keyof typeof pronouns] || pronouns.default;
+    console.log(`🎯 Selected pronouns for "${avatarType}":`, selected);
     return selected[type];
   }
 
@@ -407,13 +410,19 @@ export class UserInputDistributor {
   private static getPronouns(userInfo: UserInfo): { subject: string; object: string; possessive: string } {
     const avatarType = userInfo.avatar?.type || 'neutral';
     
+    console.log(`🎯 getPronouns called for avatar:`, userInfo.avatar);
+    console.log(`🎯 Avatar type resolved as: "${avatarType}"`);
+    
     if (avatarType === 'boy') {
+      console.log(`🎯 Using boy pronouns: he/him/his`);
       return { subject: 'he', object: 'him', possessive: 'his' };
     } else if (avatarType === 'girl') {
+      console.log(`🎯 Using girl pronouns: she/her/her`);
       return { subject: 'she', object: 'her', possessive: 'her' };
     }
     
     // Default to gender-neutral
+    console.log(`🎯 Using neutral pronouns: they/them/their`);
     return { subject: 'they', object: 'them', possessive: 'their' };
   }
 

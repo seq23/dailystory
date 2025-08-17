@@ -7,6 +7,44 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Agent configuration for natural conversation mode
+const AGENT_CONFIGURATION = {
+  // Ensure Charlotte speaks naturally during conversations
+  conversation_config: {
+    turn_detection: {
+      type: "server_vad",
+      threshold: 0.5,
+      prefix_padding_ms: 300,
+      silence_duration_ms: 1000
+    },
+    agent_config: {
+      prompt: {
+        prompt: `You are Charlotte, a friendly AI reading assistant for children. You help kids with stories and reading.
+
+CRITICAL PRONUNCIATION RULES:
+- Speak naturally and conversationally by default
+- Only break words into syllables when explicitly asked for "word help" or pronunciation assistance
+- For normal conversation, speak words normally (e.g., "together" not "to-get-her")
+- When helping with pronunciation, then break into syllables clearly
+
+Your personality: Warm, encouraging, patient, age-appropriate. Help children understand stories, define words, and encourage reading.
+
+Examples:
+- Normal: "That's a great question about the story!"
+- Word help: "The word 'together' is pronounced 'to-geth-er' with three syllables."`,
+        
+        // Ensure natural speech by default
+        voice_settings: {
+          stability: 0.8,
+          similarity_boost: 0.8,
+          style: 0.0, // More natural, less stylized
+          use_speaker_boost: true
+        }
+      }
+    }
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });

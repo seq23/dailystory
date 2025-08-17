@@ -1895,7 +1895,7 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                <ElevenLabsAudio
+                  <ElevenLabsAudio
                   ref={audioRef}
                   text={currentStoryText || ""}
                   userInfo={userInfo}
