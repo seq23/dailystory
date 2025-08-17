@@ -23,6 +23,7 @@ export class SmartElevenLabsTTS {
       window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
     }
 
+    // First attempt: with dictionary (for learning context)
     const { data, error } = await supabase.functions.invoke('elevenlabs-tts-smart', {
       body: {
         text,
@@ -33,6 +34,40 @@ export class SmartElevenLabsTTS {
 
     if (error) {
       console.error('❌ Smart TTS Error:', error);
+      
+      // If dictionary-related error and learning context, retry without dictionary
+      if (context === 'learning' && (error.message.includes('dictionary') || error.message.includes('pronunciation'))) {
+        console.log('🔄 Retrying TTS without dictionary for learning context...');
+        
+        try {
+          const { data: retryData, error: retryError } = await supabase.functions.invoke('elevenlabs-tts-smart', {
+            body: {
+              text,
+              voiceId,
+              context: 'conversation' // Use conversation context to avoid dictionary
+            }
+          });
+          
+          if (!retryError && retryData?.audioContent) {
+            console.log('✅ Smart TTS Success (no dictionary fallback)');
+            
+            // Convert base64 to ArrayBuffer
+            const binaryString = atob(retryData.audioContent);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            // Release audio coordinator lock for Charlotte speech (original context was conversation)
+            window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
+            
+            return bytes.buffer;
+          }
+        } catch (retryErr) {
+          console.warn('Retry without dictionary also failed:', retryErr);
+        }
+      }
+      
       throw new Error(`Smart TTS failed: ${error.message}`);
     }
 
@@ -47,7 +82,7 @@ export class SmartElevenLabsTTS {
       bytes[i] = binaryString.charCodeAt(i);
     }
 
-    console.log(`✅ Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon}]`);
+    console.log(`✅ Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon || false}]`);
     
     // Release audio coordinator lock for Charlotte speech
     if (context === 'conversation') {

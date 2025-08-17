@@ -249,10 +249,18 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     await new Promise(resolve => setTimeout(resolve, delay));
   }
 
-  // Get comprehensive dictionary ID for context
+  // Get comprehensive dictionary ID for context - graceful fallback on dictionary failure
   let dictionaryId: string | null = null;
+  let dictionaryFailed = false;
+  
   if (context === 'learning' || context === 'conversation') {
-    dictionaryId = await getComprehensiveDictionary(context as 'learning' | 'conversation');
+    try {
+      dictionaryId = await getComprehensiveDictionary(context as 'learning' | 'conversation');
+    } catch (dictError) {
+      console.warn(`Dictionary generation failed for ${context}, proceeding without dictionary:`, dictError.message);
+      dictionaryFailed = true;
+      // Continue without dictionary rather than failing completely
+    }
   }
 
   const requestBody: any = {
@@ -266,13 +274,15 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     }
   };
 
-  // Add pronunciation dictionary for context
+  // Add pronunciation dictionary for context if available
   if (dictionaryId) {
     requestBody.pronunciation_dictionary_locators = [{
       pronunciation_dictionary_id: dictionaryId,
       version_id: "latest"
     }];
     console.log(`Using comprehensive ${context} dictionary:`, dictionaryId);
+  } else if (dictionaryFailed) {
+    console.log(`Proceeding with ${context} request without dictionary due to generation failure`);
   }
 
   console.log(`ElevenLabs TTS request (attempt ${retryCount + 1}):`, {
@@ -354,8 +364,9 @@ serve(async (req) => {
             audioContent: base64Audio,
             context,
             voiceId,
-            usedDictionary: !!circuitBreakerState.dictionaries.get(context),
-            appliedLexicon: !!circuitBreakerState.dictionaries.get(context)
+            usedDictionary: !!dictionaryId,
+            appliedLexicon: !!dictionaryId,
+            dictionaryFailed
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });

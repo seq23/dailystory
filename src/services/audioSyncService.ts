@@ -707,41 +707,62 @@ export class AudioSyncService {
       const processedText = contextualPronunciation.processTextForPronunciation(text, true);
       const utterance = new SpeechSynthesisUtterance(processedText);
       
-      // Optimized settings for better mobile experience
-      utterance.rate = Math.max(0.3, Math.min(1.5, speed * 1.1)); // Slightly faster than input speed
-      utterance.pitch = 1.1; // Child-friendly higher pitch
+      // Optimized settings for better highlighting synchronization - slower for children
+      utterance.rate = Math.max(0.3, Math.min(1.2, speed * 0.7)); // Slower for better word tracking
+      utterance.pitch = 1.0; // Natural pitch
       utterance.volume = 1.0;
       
-      // Enhanced voice selection for better quality
+      // Enhanced voice selection - prioritize American voices, exclude UK voices
       const voices = speechSynthesis.getVoices();
       const preferredVoice = voices.find(voice => {
         const name = voice.name.toLowerCase();
         const lang = voice.lang.toLowerCase();
         
-        // Prefer high-quality voices first
-        return (name.includes('premium') || name.includes('enhanced') || 
-                name.includes('neural') || name.includes('natural')) &&
-               (lang.startsWith('en-') || lang === 'en');
+        // Prefer US female voices first, exclude UK/British
+        return lang.startsWith('en-us') && name.includes('female') && 
+               !name.includes('uk') && !name.includes('british');
       }) || voices.find(voice => {
         const name = voice.name.toLowerCase();
-        // Fallback to child-friendly voices
-        return name.includes('child') || name.includes('kid') || 
-               name.includes('young') || name.includes('female');
-      }) || voices.find(voice => voice.lang.startsWith('en'));
+        const lang = voice.lang.toLowerCase();
+        
+        // US voices with common names (Samantha, Ava, Allison)
+        return lang.startsWith('en-us') && 
+               (name.includes('samantha') || name.includes('ava') || name.includes('allison')) &&
+               !name.includes('uk') && !name.includes('british');
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        
+        // Any US voice, excluding UK/British
+        return lang.startsWith('en-us') && !name.includes('uk') && !name.includes('british');
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        
+        // General American voices
+        return name.includes('american') && !name.includes('uk') && !name.includes('british');
+      }) || voices.find(voice => {
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        
+        // Any English voice that's not UK/British (last resort)
+        return lang.startsWith('en') && !name.includes('uk') && !name.includes('british');
+      });
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
-        console.log('🔊 Using enhanced voice:', preferredVoice.name);
+        console.log('🔊 Using enhanced voice:', preferredVoice.name, preferredVoice.lang);
+      } else {
+        console.log('🔊 No preferred American voice found, using default');
       }
 
       // Enhanced word highlighting with faster timing for mobile
       if (onWordHighlight && this.words.length > 0) {
         const isMobile = this.isMobile();
         
-        // Calculate timing based on actual speech rate and word count
-        const baseWPM = isMobile ? 140 : 120; // Faster baseline for mobile
+        // Calculate timing based on slower speech rate for better highlighting
+        const baseWPM = isMobile ? 110 : 100; // Slower baseline for better synchronization
         const adjustedWPM = baseWPM * utterance.rate;
-        const wordDuration = Math.max(200, 60000 / adjustedWPM); // Minimum 200ms per word
+        const wordDuration = Math.max(300, 60000 / adjustedWPM); // Minimum 300ms per word, longer for clarity
         
         console.log(`🔊 Fallback highlighting: ${this.words.length} words, ${adjustedWPM} WPM, ${wordDuration}ms per word`);
         
