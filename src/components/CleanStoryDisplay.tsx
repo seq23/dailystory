@@ -34,6 +34,7 @@ import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
+import { useAudioHighlightingFix } from "@/hooks/useAudioHighlightingFix";
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
@@ -540,11 +541,14 @@ const [highlightSave, setHighlightSave] = useState(false);
     setAudioPlayedPage(null);
   }, [currentPage, contentHash]);
   
-  // Audio highlighting integration
+  // Universal audio highlighting integration - works for ALL users
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
     currentStoryText, 
     isAudioPlaying
   );
+  
+  // Universal highlighting fix for all users and devices
+  const { highlightWord: universalHighlightWord, clearHighlighting: universalClearHighlighting } = useAudioHighlightingFix();
 
 // Voice command -> audio control bridge (now using ElevenLabsAudio)
 useEffect(() => {
@@ -1622,8 +1626,8 @@ const handleRestartTimer = () => {
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
         setStory(newStory);
         setCurrentPage(0);
-      }
-    } catch (error) {
+          }
+        } catch (error) {
       console.error('Failed to generate new story:', error);
       toast({ title: 'Magic Failed', description: 'Please try again in a moment.', variant: 'destructive' });
     } finally {
@@ -1892,7 +1896,9 @@ const handleRestartTimer = () => {
           (img as any).loading = 'eager';
           img.src = u;
           preloadedUrlsRef.current.add(u);
-        } catch {}
+        } catch (error) {
+          console.warn('Image preload failed:', error);
+        }
       });
       idx += 4;
       if (idx < urls.length) setTimeout(pump, 60); // gentle pacing
@@ -1906,7 +1912,68 @@ const handleRestartTimer = () => {
 
     schedule(pump);
     return () => { cancelled = true; };
-  }, [currentPage, pageImages, story.length]);
+  
+  // Enhanced auto image generation trigger
+  useEffect(() => {
+    if (!pageImages[currentPage] && story.length > 0 && storyTitle) {
+      let cancelled = false;
+      
+      const pump = async () => {
+        try {
+          const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
+          
+          console.log('🖼️ Image generation check:', {
+            layout,
+            storyLength: story.length,
+            currentPage,
+            hasCurrentImage: !!pageImages[currentPage],
+            allImages: Object.keys(pageImages)
+          });
+          
+          if (cancelled) return;
+          
+          await ImageGenerationTrigger.triggerAutoGeneration({
+            currentPage,
+            totalPages: story.length,
+            hasCurrentImage: !!pageImages[currentPage],
+            allImages: Object.entries(pageImages),
+            isNetworkAvailable: ImageGenerationTrigger.isNetworkAvailable(),
+            userInfo,
+            storyTitle,
+            pageText: story[currentPage] || ""
+          });
+          
+        } catch (error) {
+          if (!cancelled) {
+            console.warn('🖼️ Auto image generation failed:', error);
+          }
+        }
+      };
+    
+      // Listen for generated images
+      const handleImageGenerated = (event: CustomEvent) => {
+        const { pageIndex, imageUrl } = event.detail;
+        if (pageIndex === currentPage && imageUrl) {
+          setPageImages(prev => ({ ...prev, [pageIndex]: imageUrl }));
+          console.log('🖼️ Received auto-generated image for page', pageIndex);
+        }
+      };
+      
+      window.addEventListener('image:generated', handleImageGenerated as EventListener);
+      
+      const schedule = (cb: () => void) => {
+        const ric = (window as any).requestIdleCallback;
+        if (typeof ric === 'function') ric(() => cb());
+        else setTimeout(cb, 0);
+      };
+
+      schedule(pump);
+      return () => { 
+        cancelled = true; 
+        window.removeEventListener('image:generated', handleImageGenerated as EventListener);
+      };
+    }
+  }, [currentPage, pageImages, story.length, storyTitle]);
 
   if (isLoading || forceLoaderActive) {
     return (
@@ -2016,7 +2083,13 @@ const handleRestartTimer = () => {
                   currentPage={currentPage}
                   totalPages={story.length}
                   difficulty={currentDifficulty}
-                  onWordHighlight={onWordHighlight}
+                  onWordHighlight={(wordIndex) => {
+                    console.log(`🎯 Story word highlighted: ${wordIndex}`);
+                    
+                    // Use both highlighting systems for maximum compatibility
+                    onWordHighlight(wordIndex);
+                    universalHighlightWord(wordIndex);
+                  }}
                   contentHash={contentHash}
                   onAudioStateChange={handleAudioStateChange}
                   />
@@ -2681,7 +2754,7 @@ const handleRestartTimer = () => {
       {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
       
-      {/* Voice Command System */}
+      {/* Universal Voice Command System - works for all users */}
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
