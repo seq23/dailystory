@@ -7,10 +7,14 @@ interface UseReaderLayoutResult {
   lowEnd: boolean;
   reason?: string;
   fallbackToClassic: (reason?: string) => void;
+  overrideLayout: (layout: ReaderLayout | null) => void;
+  isDevelopment: boolean;
 }
 
 export function useReaderLayout(): UseReaderLayoutResult {
   const [reason, setReason] = useState<string | undefined>(undefined);
+  const [overrideActive, setOverrideActive] = useState(false);
+  const isDevelopment = import.meta.env.DEV;
 
   const initial = useMemo<ReaderLayout>(() => {
     try {
@@ -72,9 +76,49 @@ export function useReaderLayout(): UseReaderLayoutResult {
     } catch {}
     setReason(why);
     setLayout("classic");
+    setOverrideActive(true);
     // Minimal telemetry for debugging
     if (why) console.info(`[ReaderLayout] Fallback to classic due to: ${why}`);
   };
 
-  return { layout, lowEnd, reason, fallbackToClassic };
+  const overrideLayout = (newLayout: ReaderLayout | null) => {
+    try {
+      if (newLayout) {
+        localStorage.setItem("reader:layout:runtime", newLayout);
+        setLayout(newLayout);
+        setOverrideActive(true);
+        setReason(`Developer override: ${newLayout}`);
+        console.info(`[ReaderLayout] Developer override to: ${newLayout}`);
+      } else {
+        // Clear override and recalculate
+        localStorage.removeItem("reader:layout:runtime");
+        localStorage.removeItem("reader:layout");
+        setOverrideActive(false);
+        setReason(undefined);
+        
+        // Recalculate layout
+        const isWide = window.matchMedia?.("(min-width: 1280px)").matches ?? false;
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+        const deviceMemory = (navigator as any).deviceMemory ?? 4;
+        const cores = navigator.hardwareConcurrency ?? 4;
+        const lowEndDevice = reduceMotion || deviceMemory < 2 || cores <= 2;
+        
+        let autoLayout: ReaderLayout;
+        if (isWide && !reduceMotion) {
+          autoLayout = "split";
+        } else if (lowEndDevice) {
+          autoLayout = "classic";
+        } else {
+          autoLayout = "modern";
+        }
+        
+        setLayout(autoLayout);
+        console.info(`[ReaderLayout] Reset to auto-detected: ${autoLayout}`);
+      }
+    } catch (error) {
+      console.warn('[ReaderLayout] Override failed:', error);
+    }
+  };
+
+  return { layout, lowEnd, reason, fallbackToClassic, overrideLayout, isDevelopment };
 }

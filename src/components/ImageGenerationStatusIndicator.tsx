@@ -9,6 +9,8 @@ interface ImageGenerationStatusProps {
   hasImages: boolean;
   isNetworkAvailable: boolean;
   lastError?: string;
+  layout?: "classic" | "modern" | "split";
+  showLayoutInfo?: boolean;
 }
 
 export const ImageGenerationStatusIndicator = ({
@@ -17,7 +19,9 @@ export const ImageGenerationStatusIndicator = ({
   batchProgress,
   hasImages,
   isNetworkAvailable,
-  lastError
+  lastError,
+  layout = "modern",
+  showLayoutInfo = false
 }: ImageGenerationStatusProps) => {
   // Don't show anything if everything is working normally
   if (!isGenerating && !isBatchGenerating && hasImages && isNetworkAvailable && !lastError) {
@@ -65,11 +69,21 @@ export const ImageGenerationStatusIndicator = ({
 
   // No images but service available
   if (!hasImages && isNetworkAvailable) {
+    const isClassicLayout = layout === "classic";
+    const message = isClassicLayout 
+      ? "In Classic mode, tap 'Generate illustration' to create images for your story pages."
+      : "Ready to generate illustrations for your story pages automatically.";
+    
     return (
       <Alert className="border-gray-200 bg-gray-50">
         <Wifi className="h-4 w-4" />
         <AlertDescription>
-          Ready to generate illustrations for your story pages.
+          {message}
+          {showLayoutInfo && isClassicLayout && (
+            <div className="mt-1 text-xs text-muted-foreground">
+              Switch to Modern layout for automatic image generation.
+            </div>
+          )}
         </AlertDescription>
       </Alert>
     );

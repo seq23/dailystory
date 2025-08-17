@@ -46,6 +46,8 @@ import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
 import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStatusIndicator";
+import { LayoutDebugIndicator } from "@/components/dev/LayoutDebugIndicator";
+import { ImageGenerationDebugPanel } from "@/components/dev/ImageGenerationDebugPanel";
 
 import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -109,7 +111,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const runtimeTouch = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
   const forceDesktopModal = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('desktopModal') === '1';
   const preferMobileModal = forceDesktopModal || isMobile || (isTablet && (hasTouchCapability || runtimeTouch));
-  const { layout, fallbackToClassic } = useReaderLayout();
+  const { layout, fallbackToClassic, overrideLayout, lowEnd, reason, isDevelopment } = useReaderLayout();
   
   // Story state
   const [story, setStory] = useState<string[]>([]);
@@ -2213,14 +2215,16 @@ const handleRestartTimer = () => {
                     )}
                   </div>
                   {/* Image Generation Status Indicator */}
-                  <ImageGenerationStatusIndicator
-                    isGenerating={isGeneratingImage}
-                    isBatchGenerating={isBatchGenerating}
-                    batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
-                    hasImages={Object.keys(pageImages).length > 0}
-                    isNetworkAvailable={isNetworkAvailable}
-                    lastError={lastImageError}
-                  />
+                   <ImageGenerationStatusIndicator
+                     isGenerating={isGeneratingImage}
+                     isBatchGenerating={isBatchGenerating}
+                     batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
+                     hasImages={Object.keys(pageImages).length > 0}
+                     isNetworkAvailable={isNetworkAvailable}
+                     lastError={lastImageError}
+                     layout={layout}
+                     showLayoutInfo={isDevelopment}
+                   />
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
@@ -2771,6 +2775,30 @@ const handleRestartTimer = () => {
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
+      
+      {/* Development Debug Panels */}
+      {isDevelopment && (
+        <>
+          <LayoutDebugIndicator
+            layout={layout}
+            lowEnd={lowEnd}
+            reason={reason}
+            onLayoutOverride={overrideLayout}
+          />
+          <ImageGenerationDebugPanel
+            layout={layout}
+            hasImages={Object.keys(pageImages).length > 0}
+            isGenerating={isGeneratingImage || isBatchGenerating}
+            lastError={lastImageError}
+            onForceGenerate={() => generateImageForCurrentPage()}
+            onClearCache={() => {
+              setPageImages({});
+              setLastImageError(null);
+            }}
+            autoGenerationEnabled={layout !== "classic"}
+          />
+        </>
+      )}
       </div>
     </ErrorBoundary>
     </GameContextProvider>
