@@ -2082,16 +2082,8 @@ const handleRestartTimer = () => {
                   currentPage={currentPage}
                   totalPages={story.length}
                   difficulty={currentDifficulty}
-                  onWordHighlight={(wordIndex) => {
+                  onWordHighlight={(wordIndex: number) => {
                     console.log(`🎯 Story word highlighted: ${wordIndex}`);
-                    // Use both highlighting systems for maximum compatibility  
-                    if (typeof onWordHighlight === 'function') {
-                      try {
-                        onWordHighlight(wordIndex);
-                      } catch (e) {
-                        console.warn('Word highlight error:', e);
-                      }
-                    }
                     universalHighlightWord(wordIndex);
                   }}
                   contentHash={contentHash}
@@ -2122,7 +2114,6 @@ const handleRestartTimer = () => {
                       {t('nav.save','Save')}
                     </Button>
                   )}
-
                 </div>
                 {!isMobileOrTablet && isAudioPlaying && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
