@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { MobileTooltip } from "@/components/MobileTooltip";
+import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { ChevronLeft, ArrowRight, BookOpen, Info } from "lucide-react";
 import type { UserInfo, DifficultyLevel, LearningGoal } from "@/types";
 
@@ -93,6 +94,12 @@ export const FormStep2ReadingPrefs = ({
 
   return (
     <div className="space-y-6">
+      <FormProgressIndicator 
+        currentStep={2}
+        completedSteps={[1]}
+        compact={true}
+      />
+      
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-2">
           {t("formStep2.title", "Reading Preferences")}

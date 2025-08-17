@@ -9,6 +9,7 @@ import { Sparkles, ArrowRight, AlertCircle } from "lucide-react";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
+import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import type { UserInfo, Grade, LanguageCode } from "@/types";
 
 interface FormStep1EssentialProps {
@@ -86,6 +87,12 @@ export const FormStep1Essential = ({
 
   return (
     <div className="space-y-6">
+      <FormProgressIndicator 
+        currentStep={1}
+        completedSteps={[]}
+        compact={true}
+      />
+      
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-2">
           {t("formStep1.title", "Essential Information")}

@@ -7,6 +7,7 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { ChevronLeft, ChevronDown, ChevronRight, Palette, User, Heart, Sparkles, CheckCircle, Globe, Loader2 } from "lucide-react";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { validateTheme } from "@/utils/themeValidation";
@@ -179,6 +180,12 @@ export const FormStep3Personalization = ({
 
   return (
     <div className="space-y-6">
+      <FormProgressIndicator 
+        currentStep={3}
+        completedSteps={[1, 2]}
+        compact={true}
+      />
+      
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-2">
           {t("formStep3.title", "Make It Yours!")}
@@ -188,12 +195,9 @@ export const FormStep3Personalization = ({
         </p>
       </div>
 
-      {/* Research benefit highlight */}
-      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
-        <p className="text-sm text-primary font-medium text-center">
-          ✨ {t("formStep3.researchBenefit", "Personalized stories increase engagement and reading comprehension by up to 60%")}
-        </p>
-      </div>
+      <p className="text-xs text-center text-muted-foreground mb-4">
+        ✨ {t("formStep3.researchBenefit", "Personalized stories increase engagement and reading comprehension by up to 60%")}
+      </p>
 
       <div className="space-y-6">
         {/* Appearance Section */}
@@ -380,15 +384,19 @@ export const FormStep3Personalization = ({
               <Textarea
                 value={formData.specialRequest || ""}
                 onChange={(e) => handleInputChange('specialRequest', e.target.value)}
-                placeholder="Themes: 'underwater adventure', 'winter holiday'; Tone: 'funny', 'educational'; Elements: 'friendly robot', 'magical garden'; Vocabulary: 'include colors', 'practice rhyming'"
-                className="transition-colors focus:border-primary min-h-[120px]"
+                placeholder="Themes: 'underwater adventure', 'winter holiday'
+
+Tone: 'funny', 'educational'  
+
+Elements: 'friendly robot', 'magical garden'
+
+Vocabulary: 'include colors', 'practice rhyming'"
+                className="text-sm transition-colors focus:border-primary min-h-[120px]"
               />
               
               <p className="text-xs text-muted-foreground">
                 Any specific themes, characters, or adventures you would like to see? 
-                <span className="text-primary">(do not enter personal data - </span>
-                <a href="/privacy" className="text-primary hover:underline">see privacy policy</a>
-                <span className="text-primary">)</span>
+                (Do not enter personal data. See <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.)
               </p>
               
               {spellcheckSuggestions.specialRequest && (
