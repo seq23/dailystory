@@ -46,6 +46,9 @@ import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
 import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStatusIndicator";
+import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
+import { useAudioHighlightingFix } from "@/hooks/useAudioHighlightingFix";
+import { ImageGenerationErrorBoundary } from "@/components/ImageGenerationErrorBoundary";
 
 import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -540,11 +543,14 @@ const [highlightSave, setHighlightSave] = useState(false);
     setAudioPlayedPage(null);
   }, [currentPage, contentHash]);
   
-  // Audio highlighting integration
+  // Audio highlighting integration with universal fix
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
     currentStoryText, 
     isAudioPlaying
   );
+  
+  // Universal audio highlighting fix for all devices
+  const { highlightWord, clearHighlighting: clearFixedHighlighting } = useAudioHighlightingFix();
 
 // Voice command -> audio control bridge (now using ElevenLabsAudio)
 useEffect(() => {
@@ -692,7 +698,7 @@ useEffect(() => {
     }
   }, [userInfo.name, userInfo.age, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
-  // Generate image for current page with better diagnostics
+  // Auto-trigger image generation with smart network detection
   useEffect(() => {
     console.log('🖼️ Image generation check:', {
       layout,
@@ -703,10 +709,38 @@ useEffect(() => {
     });
     
     if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage]) {
-      console.log('🖼️ Triggering image generation for page', currentPage);
-      generateImageForCurrentPage();
+      console.log('🖼️ Checking auto-trigger conditions for page', currentPage);
+      
+      // Use ImageGenerationTrigger for smart auto-generation
+      const shouldGenerate = ImageGenerationTrigger.shouldAutoGenerate({
+        currentPage,
+        totalPages: story.length,
+        hasCurrentImage: !!pageImages[currentPage],
+        allImages: Object.values(pageImages),
+        isNetworkAvailable: ImageGenerationTrigger.isNetworkAvailable(),
+        userInfo,
+        storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
+        pageText: displayedStory[currentPage] || ''
+      });
+      
+      if (shouldGenerate) {
+        console.log('🖼️ Auto-triggering image generation for page', currentPage);
+        ImageGenerationTrigger.triggerAutoGeneration({
+          currentPage,
+          totalPages: story.length,
+          hasCurrentImage: !!pageImages[currentPage],
+          allImages: Object.values(pageImages),
+          isNetworkAvailable: true,
+          userInfo,
+          storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
+          pageText: displayedStory[currentPage] || ''
+         });
+      } else {
+        console.log('🖼️ Manual fallback image generation for page', currentPage);
+        generateImageForCurrentPage();
+      }
     }
-  }, [currentPage, story, pageImages, layout]);
+  }, [layout, story.length, currentPage, pageImages, userInfo, storyTitle, displayedStory]);
 
 // Timer countdown effect
 useEffect(() => {
@@ -1421,9 +1455,9 @@ useEffect(() => {
       }
     } else {
       try {
-        await audioRef.current?.play?.();
-        // State will be updated via callback, but ensure it's set for immediate feedback
+        // Immediate UI feedback before async operation
         setIsAudioPlaying(true);
+        await audioRef.current?.play?.();
         if (!isPremium) setAudioPlayedPage(currentPage);
       } catch (error) {
         console.warn('Dock play failed:', error);
@@ -2153,21 +2187,11 @@ const handleRestartTimer = () => {
                         />
                       </>
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Button
-                          onClick={generateImageForCurrentPage}
-                          disabled={isGeneratingImage}
-                          size="lg"
-                          aria-label="Generate illustration"
-                        >
-                          {isGeneratingImage ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          ) : (
-                            <Wand className="w-4 h-4 mr-2" />
-                          )}
-                          Generate illustration
-                        </Button>
-                      </div>
+                      <ImageGenerationErrorBoundary
+                        currentPage={currentPage}
+                        onRetry={generateImageForCurrentPage}
+                        fallbackImageUrl={`/story-illustration-${(currentPage % 44) + 1}.jpg`}
+                      />
                     )}
                   </div>
                   {/* Image Generation Status Indicator */}

@@ -31,6 +31,14 @@ serve(async (req) => {
 
     console.log(`🔊 Smart TTS Request: "${text}" [Context: ${context}]`);
 
+    // Validate text length to prevent 500 errors
+    if (text.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Text too long. Maximum 5000 characters allowed.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Prepare request body - only include lexicon for learning contexts
     const requestBody: any = {
       text,
