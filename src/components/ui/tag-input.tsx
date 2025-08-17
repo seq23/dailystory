@@ -37,7 +37,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
     onChange(newItems.join(', '));
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (disabled) return;
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -76,27 +76,24 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
         ))}
       </div>
       
-      {/* Input for new items with better placeholder handling */}
-      <div className="space-y-2">
-        <input
-          type="text"
-          value={currentInput}
-          onChange={(e) => setCurrentInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={items.length === 0 ? (placeholder || "") : ""}
-          className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground touch-target"
-          disabled={disabled}
-          onBlur={() => {
-            if (currentInput.trim() && !disabled) {
-              addItem(currentInput);
-            }
-            if (onBlur) {
-              onBlur(value);
-            }
-          }}
-        />
-        
-      </div>
+      {/* Textarea for new items with multi-line placeholder support */}
+      <textarea
+        value={currentInput}
+        onChange={(e) => setCurrentInput(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={items.length === 0 ? (placeholder || "") : ""}
+        className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground resize-none min-h-[60px] touch-target"
+        disabled={disabled}
+        rows={3}
+        onBlur={() => {
+          if (currentInput.trim() && !disabled) {
+            addItem(currentInput);
+          }
+          if (onBlur) {
+            onBlur(value);
+          }
+        }}
+      />
     </div>
   );
 };
