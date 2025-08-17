@@ -82,7 +82,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
         onChange={(e) => setCurrentInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={items.length === 0 ? (placeholder || "") : ""}
-        className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-muted-foreground resize-none min-h-[60px] touch-target"
+        className="w-full bg-transparent border-none outline-none text-base sm:text-lg placeholder:text-xs sm:placeholder:text-sm placeholder:text-muted-foreground resize-none min-h-[60px] touch-target"
         disabled={disabled}
         rows={3}
         onBlur={() => {
