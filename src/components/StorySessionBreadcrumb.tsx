@@ -13,8 +13,6 @@ import { cn } from '@/lib/utils';
 
 interface StorySessionBreadcrumbProps {
   storyTitle?: string;
-  currentPage?: number;
-  totalPages?: number;
   onNavigateHome?: () => void;
   className?: string;
   variant?: 'default' | 'minimal';
@@ -26,8 +24,6 @@ interface StorySessionBreadcrumbProps {
  */
 export const StorySessionBreadcrumb: React.FC<StorySessionBreadcrumbProps> = ({
   storyTitle,
-  currentPage,
-  totalPages,
   onNavigateHome,
   className,
   variant = 'default'
@@ -78,23 +74,6 @@ export const StorySessionBreadcrumb: React.FC<StorySessionBreadcrumbProps> = ({
           </>
         )}
 
-        {currentPage && totalPages && totalPages > 1 && (
-          <>
-            <BreadcrumbSeparator>
-              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-            </BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbPage className="flex items-center gap-1 text-muted-foreground">
-                <span className="text-xs sm:text-sm font-medium">
-                  {t('navigation.pageProgress', 'Page {{current}} of {{total}}', {
-                    current: currentPage,
-                    total: totalPages
-                  })}
-                </span>
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </>
-        )}
       </BreadcrumbList>
     </Breadcrumb>
   );

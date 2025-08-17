@@ -297,27 +297,167 @@ export const ResponsiveStoryHeader = ({
       </header>
     );
   }
+  // For premium users, only render story-specific controls as an overlay
+  // PremiumHeader already handles navigation, so avoid duplicate headers
+  if (isPremium) {
+    return (
+      <div className={cn(
+        "relative bg-white/90 backdrop-blur-sm border-b border-gray-200/50 z-20",
+        isMobileOrTablet && "sticky top-[--app-header-height]"
+      )}>
+        {/* Breadcrumb Navigation - Desktop/Tablet Premium Only */}
+        {storyTitle && !isMobile && (
+          <div className="border-b border-border/40 bg-background/50">
+            <div className={cn(
+              isMobileOrTablet ? "safe-area-padding px-4 py-2" : "max-w-7xl mx-auto px-6 py-2"
+            )}>
+              <StorySessionBreadcrumb
+                storyTitle={storyTitle}
+                onNavigateHome={onHome}
+                variant={isTablet ? "minimal" : "default"}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Story Controls Only - No duplicate navigation */}
+        <div className={cn(
+          isMobileOrTablet ? "safe-area-padding px-4 py-2" : "max-w-7xl mx-auto px-6 py-2"
+        )}>
+          <div className="flex items-center justify-between">
+            {/* Story Title */}
+            {displayTitle && (
+              <h1 className={cn(
+                "font-semibold truncate",
+                isMobile ? "text-sm" : isTablet ? "text-base" : "text-xl"
+              )}>
+                {displayTitle}
+              </h1>
+            )}
+            
+            {/* Story Controls */}
+            {showLevelControls && (
+              <div className="flex items-center gap-2">
+                {onNewStory && (
+                  <NewStoryCTA
+                    isPremium={true}
+                    iconOnly={isMobileOrTablet}
+                    onNewStory={onNewStory}
+                    onUpgrade={onUpgrade || (() => {})}
+                    size={isMobileOrTablet ? "sm" : "md"}
+                    wandPulse={wandPulse}
+                  />
+                )}
+                
+                {onDecreaseDifficulty && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={onDecreaseDifficulty}
+                          disabled={!canDecrease || isChangingDifficulty}
+                          className={cn(
+                            "min-h-[36px] min-w-[36px] rounded-full p-1",
+                            "transition-all duration-300",
+                            buttonAnimations.decrease ? "animate-scale-in bg-secondary/20 border-secondary" : ""
+                          )}
+                        >
+                          {isChangingDifficulty && changeDirection === 'decrease' ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        {t("storyDisplay.decreaseDifficulty", "Make easier")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "border px-2 py-1 transition-all duration-300 text-xs",
+                    getDifficultyColor(currentDifficulty),
+                    buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
+                  )}
+                >
+                  {getDifficultyLabel(currentDifficulty)}
+                </Badge>
+
+                {onIncreaseDifficulty && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={onIncreaseDifficulty}
+                          disabled={!canIncrease || isChangingDifficulty}
+                          className={cn(
+                            "min-h-[36px] min-w-[36px] rounded-full p-1",
+                            "transition-all duration-300",
+                            buttonAnimations.increase ? 'animate-[glow-pulse_0.6s_ease-in-out,_edgeBounce_0.4s_ease-out] border-primary/50 shadow-lg shadow-primary/25' : ''
+                          )}
+                        >
+                          {isChangingDifficulty && changeDirection === 'increase' ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TrendingUp className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        {t("storyDisplay.increaseDifficulty", "Make harder")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                {onSaveStory && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={highlightSave ? "default" : "outline"}
+                          size="sm"
+                          onClick={onSaveStory}
+                          disabled={isSaving}
+                          className={cn(
+                            "transition-all duration-300",
+                            highlightSave && "animate-pulse shadow-lg"
+                          )}
+                        >
+                          {isSaving ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4" />
+                          )}
+                          {!isMobileOrTablet && <span className="ml-2">Save</span>}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">Save Story</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // For free users, render full header (no PremiumHeader above)
   return (
     <header className={cn(
       "w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30",
       isMobileOrTablet && "sticky top-0"
     )}>
-      {/* Enhanced Breadcrumb Navigation - Desktop/Tablet Premium Only */}
-      {isPremium && storyTitle && !isMobile && (
-        <div className="border-b border-border/40 bg-background/50">
-          <div className={cn(
-            isMobileOrTablet ? "safe-area-padding px-4 py-2" : "max-w-7xl mx-auto px-6 py-2"
-          )}>
-            <StorySessionBreadcrumb
-              storyTitle={storyTitle}
-              currentPage={1} // This would come from story state
-              totalPages={10} // This would come from story state
-              onNavigateHome={onHome}
-              variant={isTablet ? "minimal" : "default"}
-            />
-          </div>
-        </div>
-      )}
       
       <div className={cn(
         isMobileOrTablet ? "safe-area-padding" : "max-w-7xl mx-auto px-6"
