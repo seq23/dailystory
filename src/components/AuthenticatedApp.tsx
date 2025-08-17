@@ -442,6 +442,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                         userInfo={userInfo}
                         isPremium={isPremium}
                         currentStory={currentStory}
+                        story={currentStory?.segments?.map(segment => segment.text).join(' ') || 'Loading story...'}
                         onSessionEnded={(stats) => {
                           console.log('Story session ended:', stats);
                           setCurrentView("library");

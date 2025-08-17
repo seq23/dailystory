@@ -134,6 +134,8 @@ useEffect(() => {
       <CleanStoryDisplay
         userInfo={effectiveUserInfo}
         isPremium={isPremium}
+        currentStory={currentStory}
+        story={currentStory?.segments?.map(segment => segment.text).join(' ') || 'Loading story...'}
         onSessionEnded={(stats) => {
           setCurrentView('library');
           onSessionEnded(stats);
