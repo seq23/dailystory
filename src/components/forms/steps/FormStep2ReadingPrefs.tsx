@@ -203,7 +203,7 @@ export const FormStep2ReadingPrefs = ({
           {t("formStep2.back", "Back")}
         </MobileOptimizedButton>
 
-        <MobileTooltip content={t("formStep2.storyTooltip", "Story will use your reading level and interests - add personal details in next step for even more personalization!")}>
+        <MobileTooltip content="Story will use your reading level but won't be fully personalized. Complete all steps for maximum personalization.">
           <MobileOptimizedButton
             onClick={onSubmit}
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"

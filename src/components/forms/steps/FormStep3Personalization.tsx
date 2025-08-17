@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
+import { Textarea } from "@/components/ui/textarea";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
@@ -268,6 +269,9 @@ export const FormStep3Personalization = ({
                 placeholder={t("formStep3.favoriteAnimal.placeholder", "e.g., dog, elephant, dragon")}
                 className="transition-colors focus-within:border-primary"
               />
+              <p className="text-xs text-muted-foreground">
+                Press Enter after typing each item to create separate tags
+              </p>
               
               {/* Spellcheck and translation feedback */}
               {spellcheckSuggestions.favoriteAnimal && (
@@ -308,6 +312,9 @@ export const FormStep3Personalization = ({
                 placeholder={t("formStep3.favoriteFood.placeholder", "e.g., pizza, ice cream, apples")}
                 className="transition-colors focus-within:border-primary"
               />
+              <p className="text-xs text-muted-foreground">
+                Press Enter after typing each item to create separate tags
+              </p>
               
               {spellcheckSuggestions.favoriteFood && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -340,6 +347,9 @@ export const FormStep3Personalization = ({
                 placeholder={t("formStep3.hobbies.placeholder", "e.g., soccer, drawing, video games")}
                 className="transition-colors focus-within:border-primary"
               />
+              <p className="text-xs text-muted-foreground">
+                Press Enter after typing each item to create separate tags
+              </p>
               
               {spellcheckSuggestions.hobbies && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -366,12 +376,26 @@ export const FormStep3Personalization = ({
               <Label className="text-sm font-medium text-foreground">
                 {t("formStep3.specialRequest.label", "Special Story Request")}
               </Label>
-              <TagInput
-                value={formData.specialRequest}
-                onChange={(value) => handleInputChange('specialRequest', value)}
-                placeholder={t("formStep3.specialRequest.placeholder", "e.g., adventure story, story about friendship")}
-                className="transition-colors focus-within:border-primary"
+              
+              {/* Small verbiage below the box */}
+              <p className="text-xs text-muted-foreground mb-2">
+                Any specific themes, characters, or adventures you would like to see? 
+                <span className="text-primary">(do not enter personal data - </span>
+                <a href="/privacy" className="text-primary hover:underline">see privacy policy</a>
+                <span className="text-primary">)</span>
+              </p>
+              
+              <Textarea
+                value={formData.specialRequest || ""}
+                onChange={(e) => handleInputChange('specialRequest', e.target.value)}
+                placeholder="For THEMES: adventure, mystery, friendship, learning. For OTHER ELEMENTS: characters (talking animals), settings (magical forest), or special requests (story about being brave). Press Enter after each item to create tags."
+                className="transition-colors focus:border-primary min-h-[80px]"
               />
+              
+              {/* Help text matches placeholder exactly */}
+              <p className="text-xs text-muted-foreground">
+                For THEMES: adventure, mystery, friendship, learning. For OTHER ELEMENTS: characters (talking animals), settings (magical forest), or special requests (story about being brave). Press Enter after each item to create tags.
+              </p>
               
               {spellcheckSuggestions.specialRequest && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -391,10 +415,6 @@ export const FormStep3Personalization = ({
                   <span>{translations.specialRequest}</span>
                 </div>
               )}
-              
-              <p className="text-xs text-muted-foreground">
-                {t("formStep3.specialRequest.help", "Any specific themes, characters, or adventures you'd like to see?")}
-              </p>
             </div>
           </CollapsibleContent>
         </Collapsible>

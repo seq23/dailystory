@@ -212,7 +212,7 @@ export const FormStep1Essential = ({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 pt-6">
-        <MobileTooltip content={t("formStep1.quickStoryTooltip", "Quick story with basic personalization - you can always add more details later!")}>
+        <MobileTooltip content="Story will not be personalized. To get a fully personalized story, continue to the next steps.">
           <MobileOptimizedButton
             onClick={onQuickSubmit}
             disabled={!canSubmit}
