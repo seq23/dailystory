@@ -148,7 +148,7 @@ export class AudioSyncService {
     }
     
     try {
-      // Generate audio with Smart ElevenLabs
+      // Generate audio with Smart ElevenLabs TTS with enhanced error handling
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(
         text.slice(0, 3000),
         'learning',
@@ -265,7 +265,8 @@ export class AudioSyncService {
       }
       console.error('ElevenLabs TTS failed, falling back to browser speech:', error);
       
-      // Fallback to browser speech with word highlighting
+      // Enhanced fallback to browser speech with word highlighting
+      console.log('🔊 AudioSyncService: Using enhanced browser speech fallback');
       this.fallbackToWebSpeech(text, onWordHighlight, speed);
       onStateChange?.(true);
     }

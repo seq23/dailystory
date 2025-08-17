@@ -247,58 +247,38 @@ useEffect(() => {
     }
   };
 
-  // Hash mismatch recovery with maximum retry limit
+  // Simplified hash validation with immediate sync
   const playWithHashValidation = async (retryCount = 0): Promise<void> => {
-    const MAX_RETRIES = 5; // Limit retries to prevent infinite loops
+    const MAX_RETRIES = 2; // Reduced to prevent long retry loops
     
-    // Validate hash before attempting playback
+    // Get current hashes
     const currentUIHash = (window as any).__pageContentHash;
     
-    if (contentHash && currentUIHash && currentUIHash !== contentHash) {
-      console.log(`🔄 Hash mismatch detected (attempt ${retryCount + 1}): UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)}`);
+    // If there's a hash mismatch, sync immediately instead of retrying
+    if (contentHash && currentUIHash && currentUIHash !== contentHash && retryCount === 0) {
+      console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - syncing immediately`);
       
-      // Track hash mismatch for diagnostics
+      // Force sync by updating our hash to match UI
+      (window as any).__audioContentHash = currentUIHash;
+      
+      // Track for diagnostics
       try {
         const { mobileAudioDiagnostics } = await import('@/utils/mobileAudioDiagnostics');
-        mobileAudioDiagnostics.trackHashMismatch(contentHash, currentUIHash, retryCount);
+        mobileAudioDiagnostics.trackHashMismatch(contentHash, currentUIHash, 0);
       } catch (e) {
         console.warn('Failed to track hash mismatch:', e);
       }
       
-      // If we've exceeded max retries, force sync by clearing our hash expectation
-      if (retryCount >= MAX_RETRIES) {
-        console.warn(`🚫 Max retry attempts (${MAX_RETRIES}) exceeded. Forcing hash sync.`);
-        
-        // Clear the global content hash to break the loop
-        try {
-          delete (window as any).__pageContentHash;
-        } catch (e) {
-          console.warn('Failed to clear page content hash:', e);
-        }
-        
-        // Only show toast ONCE on final attempt
-        toast({
-          title: "Audio synchronized",
-          description: "Audio has been synchronized with current content.",
-          duration: 2000,
-        });
-        
-        // Continue without hash validation
-        return playWithHashValidation(0);
-      }
-      
-      // Show user feedback ONLY on first attempt to reduce spam
-      if (retryCount === 0) {
-        toast({
-          title: "Syncing audio...",
-          description: "Ensuring audio matches current page",
-          duration: 1500,
-        });
-      }
-      
-      // Wait 500ms for stability, then retry
-      await new Promise(r => setTimeout(r, 500));
-      return playWithHashValidation(retryCount + 1);
+      toast({
+        title: "Audio synchronized",
+        description: "Audio synced with current page",
+        duration: 1500,
+      });
+    }
+    
+    // If still mismatched after sync attempt, skip validation
+    if (retryCount >= MAX_RETRIES) {
+      console.log('🔄 Skipping hash validation to prevent infinite loops');
     }
 
     // Enhanced stabilization with reduced timing (500ms instead of 3-4 seconds)

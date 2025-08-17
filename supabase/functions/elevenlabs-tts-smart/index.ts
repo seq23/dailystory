@@ -122,6 +122,9 @@ serve(async (req) => {
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
+        } else {
+          // If fallback also fails, throw error instead of returning error response in catch block
+          throw new Error(`Fallback also failed: ${fallbackResponse.status}`);
         }
       }
       
