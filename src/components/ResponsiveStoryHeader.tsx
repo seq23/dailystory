@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StorySessionBreadcrumb } from "@/components/StorySessionBreadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, TrendingUp, TrendingDown, Loader2, Wand, Save } from "lucide-react";
+import { Home, TrendingUp, TrendingDown, Loader2, Wand, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { DifficultyLevel, UserInfo } from '@/types';
@@ -418,29 +418,21 @@ export const ResponsiveStoryHeader = ({
                   </TooltipProvider>
                 )}
 
-                {onSaveStory && (
+                 {onEndSession && !isMobileOrTablet && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          variant={highlightSave ? "default" : "outline"}
+                          variant="destructive"
                           size="sm"
-                          onClick={onSaveStory}
-                          disabled={isSaving}
-                          className={cn(
-                            "transition-all duration-300",
-                            highlightSave && "animate-pulse shadow-lg"
-                          )}
+                          onClick={onEndSession}
+                          className="transition-all duration-300"
                         >
-                          {isSaving ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Save className="w-4 h-4" />
-                          )}
-                          {!isMobileOrTablet && <span className="ml-2">Save</span>}
+                          <LogOut className="w-4 h-4" />
+                          {!isMobileOrTablet && <span className="ml-2">{t("nav.endSession", "End Session")}</span>}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">Save Story</TooltipContent>
+                      <TooltipContent side="bottom">{t("nav.endSession", "End Session")}</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 )}
@@ -745,30 +737,6 @@ export const ResponsiveStoryHeader = ({
                     className={!isMobile ? "rounded-full px-6" : undefined}
                     showCoachOnSignIn={false}
                   />
-                )}
-                {onSaveStory && !isMobileOrTablet && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={onSaveStory}
-                          variant={highlightSave ? "secondary" : "outline"}
-                          size={isMobileOrTablet ? "sm" : "default"}
-                          disabled={isSaving}
-                          className={cn(isMobileOrTablet ? "min-h-[44px] px-4" : "", highlightSave ? "ring-2 ring-primary/40" : "")}
-                          aria-label={t("nav.save", "Save")}
-                        >
-                          {isSaving ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          ) : (
-                            <Save className="w-4 h-4 mr-2" />
-                          )}
-                          {t("nav.save", "Save")}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">{t("tooltips.saveDuringEndStory", "This will save this story to library.")}</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 )}
               </div>
 
