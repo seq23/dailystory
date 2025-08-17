@@ -9,6 +9,7 @@ import { FormStep1Essential } from "./steps/FormStep1Essential";
 import { FormStep2ReadingPrefs } from "./steps/FormStep2ReadingPrefs";
 import { FormStep3Personalization } from "./steps/FormStep3Personalization";
 import { FormProgressIndicator } from "./shared/FormProgressIndicator";
+import { MinimalEducationalBanner } from "./shared/MinimalEducationalBanner";
 import { useMultiStepForm } from "./hooks/useMultiStepForm";
 
 import type { UserInfo } from "@/types";
@@ -121,17 +122,19 @@ export const MultiStepUserForm = ({ onSubmit, onBack, isPremium = false }: Multi
           </p>
         </div>
 
-        {/* Progress Indicator */}
-        <FormProgressIndicator 
-          currentStep={currentStep}
-          completedSteps={[
-            ...(canAdvanceToStep(2) ? [1] : []),
-            ...(canAdvanceToStep(3) ? [2] : []),
-          ]}
-        />
-
         {/* Form Content */}
         <Card className="p-6 sm:p-8 shadow-card bg-gradient-card border-border/50">
+          {/* Sticky Progress Indicator */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 p-4 -m-6 mb-6">
+            <FormProgressIndicator 
+              currentStep={currentStep}
+              completedSteps={[
+                ...(canAdvanceToStep(2) ? [1] : []),
+                ...(canAdvanceToStep(3) ? [2] : []),
+              ]}
+              compact={true}
+            />
+          </div>
           {currentStep === 1 && (
             <FormStep1Essential
               formData={formData}
@@ -169,6 +172,9 @@ export const MultiStepUserForm = ({ onSubmit, onBack, isPremium = false }: Multi
             />
           )}
         </Card>
+
+        {/* Bottom Educational Banner */}
+        <MinimalEducationalBanner />
       </div>
     </div>
   );

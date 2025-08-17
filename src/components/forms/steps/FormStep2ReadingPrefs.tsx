@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
-import { EducationalBanner } from "../shared/EducationalBanner";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { ChevronLeft, ArrowRight, BookOpen, Info } from "lucide-react";
 import type { UserInfo, DifficultyLevel, LearningGoal } from "@/types";
@@ -94,8 +93,6 @@ export const FormStep2ReadingPrefs = ({
 
   return (
     <div className="space-y-6">
-      <EducationalBanner variant="trust" />
-
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-2">
           {t("formStep2.title", "Reading Preferences")}
@@ -206,20 +203,22 @@ export const FormStep2ReadingPrefs = ({
           {t("formStep2.back", "Back")}
         </MobileOptimizedButton>
 
-        <MobileOptimizedButton
-          onClick={onSubmit}
-          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
-        >
-          <BookOpen className="w-4 h-4 mr-2" />
-          {t("formStep2.createStory", "Create My Story!")}
-        </MobileOptimizedButton>
+        <MobileTooltip content={t("formStep2.storyTooltip", "Story will use your reading level and interests - add personal details in next step for even more personalization!")}>
+          <MobileOptimizedButton
+            onClick={onSubmit}
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            {t("formStep2.createStory", "Create Story Now")}
+          </MobileOptimizedButton>
+        </MobileTooltip>
 
         <MobileOptimizedButton
           onClick={onAdvanceToStep}
           variant="outline"
           className="py-3"
         >
-          {t("formStep2.personalizeMore", "Personalize More")}
+          {t("formStep2.addPersonalDetails", "Add Personal Details")}
           <ArrowRight className="w-4 h-4 ml-2" />
         </MobileOptimizedButton>
       </div>

@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
-import { EducationalBanner } from "../shared/EducationalBanner";
 import { Sparkles, ArrowRight, AlertCircle } from "lucide-react";
+import { MobileTooltip } from "@/components/MobileTooltip";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
 import type { UserInfo, Grade, LanguageCode } from "@/types";
@@ -86,8 +86,6 @@ export const FormStep1Essential = ({
 
   return (
     <div className="space-y-6">
-      <EducationalBanner variant="research" />
-
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-2">
           {t("formStep1.title", "Essential Information")}
@@ -214,14 +212,16 @@ export const FormStep1Essential = ({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 pt-6">
-        <MobileOptimizedButton
-          onClick={onQuickSubmit}
-          disabled={!canSubmit}
-          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 transition-all duration-300 disabled:opacity-50"
-        >
-          <Sparkles className="w-4 h-4 mr-2" />
-          {t("formStep1.createStoryNow", "Create Story Now!")}
-        </MobileOptimizedButton>
+        <MobileTooltip content={t("formStep1.quickStoryTooltip", "Quick story with basic personalization - you can always add more details later!")}>
+          <MobileOptimizedButton
+            onClick={onQuickSubmit}
+            disabled={!canSubmit}
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 transition-all duration-300 disabled:opacity-50"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {t("formStep1.createFirstStory", "Create My First Story")}
+          </MobileOptimizedButton>
+        </MobileTooltip>
 
         <MobileOptimizedButton
           onClick={onAdvanceToStep}
@@ -229,7 +229,7 @@ export const FormStep1Essential = ({
           variant="outline"
           className="flex-1 py-3 transition-all duration-300 disabled:opacity-50"
         >
-          {t("formStep1.customizeReading", "Customize Reading Experience")}
+          {t("formStep1.addReadingPrefs", "Add Reading Preferences")}
           <ArrowRight className="w-4 h-4 ml-2" />
         </MobileOptimizedButton>
       </div>

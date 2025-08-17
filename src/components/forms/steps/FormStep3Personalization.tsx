@@ -5,7 +5,6 @@ import { TagInput } from "@/components/ui/tag-input";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
-import { EducationalBanner } from "../shared/EducationalBanner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronLeft, ChevronDown, ChevronRight, Palette, User, Heart, Sparkles, CheckCircle, Globe, Loader2 } from "lucide-react";
 import { InputSanitizer } from "@/utils/inputSanitizer";
@@ -179,8 +178,6 @@ export const FormStep3Personalization = ({
 
   return (
     <div className="space-y-6">
-      <EducationalBanner variant="progress" />
-
       <div className="text-center mb-6">
         <h2 className="text-xl font-semibold text-foreground mb-2">
           {t("formStep3.title", "Make It Yours!")}
@@ -428,8 +425,8 @@ export const FormStep3Personalization = ({
           onClick={onSubmit}
           className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
         >
-          <Sparkles className="w-4 h-4 mr-2" />
-          {t("formStep3.createStory", "Create My Magical Story!")}
+          <Heart className="w-4 h-4 mr-2" />
+          {t("formStep3.createPerfectStory", "Create My Perfect Story")}
         </MobileOptimizedButton>
       </div>
 

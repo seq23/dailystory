@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils";
 interface FormProgressIndicatorProps {
   currentStep: 1 | 2 | 3;
   completedSteps: number[];
+  compact?: boolean;
 }
 
-export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgressIndicatorProps) => {
+export const FormProgressIndicator = ({ currentStep, completedSteps, compact = false }: FormProgressIndicatorProps) => {
   const { t } = useTranslation();
 
   const steps = [
@@ -33,9 +34,9 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
   ];
 
   return (
-    <div className="mb-8">
+    <div className={cn("mb-8", compact && "mb-0")}>
       <div className="flex justify-center">
-        <nav aria-label="Progress" className="w-full max-w-md">
+        <nav aria-label="Progress" className={cn("w-full max-w-md", compact && "max-w-lg")}>
           <ol className="flex items-center justify-between">
             {steps.map((step, stepIdx) => {
               const isCompleted = completedSteps.includes(step.number);
@@ -49,7 +50,8 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
                     <div className="flex items-center">
                       <div
                         className={cn(
-                          "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
+                          "flex items-center justify-center rounded-full border-2 transition-all duration-300",
+                          compact ? "h-8 w-8" : "h-10 w-10",
                           isCompleted
                             ? "bg-primary border-primary text-primary-foreground shadow-glow"
                             : isCurrent
@@ -58,9 +60,9 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
                         )}
                       >
                         {isCompleted ? (
-                          <Check className="h-5 w-5" />
+                          <Check className={cn(compact ? "h-4 w-4" : "h-5 w-5")} />
                         ) : (
-                          <step.icon className="h-5 w-5" />
+                          <step.icon className={cn(compact ? "h-4 w-4" : "h-5 w-5")} />
                         )}
                       </div>
                       
@@ -68,7 +70,8 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
                       {stepIdx < steps.length - 1 && (
                         <div
                           className={cn(
-                            "ml-4 h-0.5 w-12 sm:w-16 transition-all duration-300",
+                            "ml-4 h-0.5 transition-all duration-300",
+                            compact ? "w-8 sm:w-12" : "w-12 sm:w-16",
                             isCompleted
                               ? "bg-primary"
                               : "bg-muted-foreground/20"
@@ -78,10 +81,11 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
                     </div>
 
                     {/* Step label */}
-                    <div className="mt-3 text-center">
+                    <div className={cn("mt-3 text-center", compact && "mt-2")}>
                       <p
                         className={cn(
-                          "text-sm font-medium transition-colors duration-300",
+                          "font-medium transition-colors duration-300",
+                          compact ? "text-xs" : "text-sm",
                           isCurrent
                             ? "text-primary"
                             : isCompleted
@@ -91,16 +95,18 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
                       >
                         {step.name}
                       </p>
-                      <p
-                        className={cn(
-                          "text-xs transition-colors duration-300",
-                          isCurrent || isCompleted
-                            ? "text-muted-foreground"
-                            : "text-muted-foreground/60"
-                        )}
-                      >
-                        {step.description}
-                      </p>
+                      {!compact && (
+                        <p
+                          className={cn(
+                            "text-xs transition-colors duration-300",
+                            isCurrent || isCompleted
+                              ? "text-muted-foreground"
+                              : "text-muted-foreground/60"
+                          )}
+                        >
+                          {step.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </li>
@@ -110,14 +116,16 @@ export const FormProgressIndicator = ({ currentStep, completedSteps }: FormProgr
         </nav>
       </div>
 
-      {/* Educational context tooltip */}
-      <div className="mt-4 text-center">
-        <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          {currentStep === 1 && t("formProgress.step1Context", "We use your child's age and grade to recommend the most effective reading level")}
-          {currentStep === 2 && t("formProgress.step2Context", "Research shows that matching content to reading level accelerates learning")}
-          {currentStep === 3 && t("formProgress.step3Context", "Personalized stories increase engagement and reading comprehension")}
-        </p>
-      </div>
+      {/* Educational context tooltip - only show in non-compact mode */}
+      {!compact && (
+        <div className="mt-4 text-center">
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            {currentStep === 1 && t("formProgress.step1Context", "We use your child's age and grade to recommend the most effective reading level")}
+            {currentStep === 2 && t("formProgress.step2Context", "Research shows that matching content to reading level accelerates learning")}
+            {currentStep === 3 && t("formProgress.step3Context", "Personalized stories increase engagement and reading comprehension")}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
