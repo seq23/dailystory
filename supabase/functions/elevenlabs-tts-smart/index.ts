@@ -47,7 +47,7 @@ serve(async (req) => {
     if (context === 'learning') {
       console.log('📚 Learning context: Applying phonetic lexicon');
       requestBody.pronunciation_dictionary_locators = [{
-        pronunciation_dictionary_id: "charlotte-learning-lexicon.xml",
+        pronunciation_dictionary_id: "charlotte-learning-lexicon.txt",
         version_id: "latest"
       }];
     } else {
