@@ -278,20 +278,20 @@ export class SimpleImageService {
         this.recordUsage(userKey, result.cost);
         console.log(`✅ Generation successful with ${result.provider} (${userInfo.name}) - Tier ${this.getTierUsed(result.provider)}`);
       } else {
-        console.error('❌ All image providers failed after 3 tiers:', result.error);
+        console.error('❌ EMERGENCY FIX: All image providers failed after 3 tiers, providing fallback:', result.error);
         
-        // Generate fallback placeholder image
-        console.log('🎨 Generating fallback placeholder image...');
+        // ALWAYS generate fallback placeholder image - never return failure
+        console.log('🎨 EMERGENCY FIX: Generating guaranteed fallback placeholder image...');
         const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
         
         result = {
           url: fallbackUrl,
           success: true,
-          provider: 'fallback',
+          provider: 'fallback-guaranteed',
           error: undefined
         };
         
-        console.log('✅ Fallback placeholder generated successfully');
+        console.log('✅ EMERGENCY FIX: Guaranteed fallback placeholder generated successfully');
       }
       
       return result;

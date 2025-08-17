@@ -181,24 +181,37 @@ export class SimpleAudioEngine {
       await audio.play();
       this.playing = true;
     } catch (error) {
-      console.error('🎵 SimpleAudioEngine: ElevenLabs failed, falling back to browser speech:', error);
+      console.error('🎵 EMERGENCY FIX: ElevenLabs failed, implementing enhanced fallback:', error);
       
-      // Determine error type for better user messaging
+      // Enhanced error analysis for better user experience
       const errorMessage = error instanceof Error ? error.message : String(error);
       let fallbackMessage = 'Using device voice due to technical issues';
+      let shouldShowNotification = true;
       
-      if (errorMessage.includes('dictionary')) {
-        fallbackMessage = 'Dictionary loading issue - using standard pronunciation';
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+      if (errorMessage.includes('404') || errorMessage.includes('Function not found')) {
+        fallbackMessage = 'Audio service temporarily unavailable - using device voice';
+        console.error('🚨 EMERGENCY FIX: ElevenLabs edge function not deployed or returning 404');
+      } else if (errorMessage.includes('dictionary') || errorMessage.includes('pronunciation_dictionary_not_found')) {
+        fallbackMessage = 'Using standard pronunciation - phonetic dictionary unavailable';
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch') || !navigator.onLine) {
         fallbackMessage = 'Network connection issue - using offline voice';
       } else if (errorMessage.includes('API key') || errorMessage.includes('unauthorized')) {
-        fallbackMessage = 'Service temporarily unavailable - using device voice';
-      } else if (!navigator.onLine) {
-        fallbackMessage = 'No internet connection - using offline voice';
+        fallbackMessage = 'Audio service configuration issue - using device voice';
+        console.error('🚨 EMERGENCY FIX: ElevenLabs API key not configured properly');
       }
       
-      // Enhanced fallback with specific error messaging
-      this.fallbackToWebSpeech(text, true, fallbackMessage);
+      // Enhanced fallback with specific error messaging and user notification
+      this.fallbackToWebSpeech(text, shouldShowNotification, fallbackMessage);
+      
+      // Dispatch error event for UI components to handle
+      window.dispatchEvent(new CustomEvent('audio:service:error', { 
+        detail: { 
+          message: fallbackMessage, 
+          canRetry: navigator.onLine,
+          service: 'elevenlabs',
+          fallbackUsed: true
+        } 
+      }));
     }
   }
 

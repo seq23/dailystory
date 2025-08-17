@@ -648,19 +648,26 @@ useEffect(() => {
     }
   });
 
-  // Initialize story based on tier - with generation protection
+  // Initialize story based on tier - with ENHANCED generation protection
   useEffect(() => {
-    const userInfoKey = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
+    const userInfoKey = JSON.stringify({ 
+      name: userInfo.name, 
+      age: userInfo.age, 
+      isPremium, 
+      readingAsName,
+      isFromSavedStory: currentStory?.isFromSavedStory 
+    });
     
-    // Check if this is a meaningful change that requires regeneration
-    if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current) {
-      console.log('🔒 Skipping story regeneration - same user info and story already generated');
+    // CRITICAL: Check if this is a meaningful change that requires regeneration
+    if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current && story.length > 0) {
+      console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
+      setIsLoading(false);
       return;
     }
     
-    // Prevent multiple simultaneous generations
+    // CRITICAL: Prevent multiple simultaneous generations
     if (isGeneratingRef.current) {
-      console.log('🔒 Skipping story generation - already in progress');
+      console.log('🔒 EMERGENCY FIX: Skipping story generation - already in progress');
       return;
     }
 
@@ -668,12 +675,16 @@ useEffect(() => {
       newUserInfoKey: userInfoKey,
       lastUserInfoKey: lastUserInfoRef.current,
       storyGenerated: storyGeneratedRef.current,
-      isGenerating: isGeneratingRef.current
+      isGenerating: isGeneratingRef.current,
+      hasStory: story.length > 0
     });
     
-    lastUserInfoRef.current = userInfoKey;
-    initializeStory();
-  }, [userInfo, isPremium]);
+    // Only update if this is actually a new user context
+    if (lastUserInfoRef.current !== userInfoKey) {
+      lastUserInfoRef.current = userInfoKey;
+      initializeStory();
+    }
+  }, [userInfo.name, userInfo.age, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
   // Generate image for current page with better diagnostics
   useEffect(() => {
@@ -2105,6 +2116,16 @@ const handleRestartTimer = () => {
                       </div>
                     )}
                   </div>
+                  {/* Image Generation Status Indicator */}
+                  <ImageGenerationStatusIndicator
+                    isGenerating={isGeneratingImage}
+                    isBatchGenerating={isBatchGenerating}
+                    batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
+                    hasImages={Object.keys(pageImages).length > 0}
+                    isNetworkAvailable={isNetworkAvailable}
+                    lastError={lastImageError}
+                  />
+
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
                     {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
