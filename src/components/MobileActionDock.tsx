@@ -9,6 +9,7 @@ import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 interface MobileActionDockProps {
   isPremium: boolean;
   onPlayAudio?: () => void;
+  onStopAudio?: () => void;
   onVoiceCommand?: () => void;
   onCoach?: () => void;
   onSave?: () => void;
@@ -22,6 +23,7 @@ interface MobileActionDockProps {
 export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   isPremium,
   onPlayAudio,
+  onStopAudio,
   onVoiceCommand,
   onCoach,
   onSave,
@@ -69,7 +71,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                     <Button
                       variant="outline"
                       className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
-                      onClick={onPlayAudio}
+                      onClick={isAudioPlaying ? onStopAudio : onPlayAudio}
                       disabled={audioDisabled && !isAudioPlaying}
                       aria-label={isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Read to me")}
                     >

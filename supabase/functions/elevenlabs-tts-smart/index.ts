@@ -31,10 +31,11 @@ serve(async (req) => {
 
     console.log(`🔊 Smart TTS Request: "${text}" [Context: ${context}]`);
 
-    // Validate text length to prevent 500 errors
-    if (text.length > 5000) {
+    // Validate text length - Updated to 9,500 chars (safe under 10k ElevenLabs limit)
+    // This allows 1,400-word stories (8,400 chars) to process without chunking
+    if (text.length > 9500) {
       return new Response(
-        JSON.stringify({ error: 'Text too long. Maximum 5000 characters allowed.' }),
+        JSON.stringify({ error: 'Text too long. Maximum 9,500 characters allowed.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

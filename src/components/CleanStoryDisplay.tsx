@@ -49,6 +49,8 @@ import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStat
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 import { useAudioHighlightingFix } from "@/hooks/useAudioHighlightingFix";
 import { ImageGenerationErrorBoundary } from "@/components/ImageGenerationErrorBoundary";
+import { AudioErrorBoundary } from "@/components/AudioErrorBoundary";
+import { ComprehensiveAudioRecovery } from "@/components/ComprehensiveAudioRecovery";
 
 import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -519,23 +521,36 @@ const [highlightSave, setHighlightSave] = useState(false);
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
 
+  // Single source of truth for content hash - debounced to prevent mismatch
+  const contentHashTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   useEffect(() => {
-    try { 
-      (window as any).__pageContentHash = contentHash; 
-      (window as any).__pageContentString = currentStoryText;
-      (window as any).__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
-      (window as any).__userName = userInfo?.name || '';
-      console.log('🎤 Content variables updated for voice commands:', {
-        page: currentPage,
-        textLength: currentStoryText.length,
-        hasHash: !!contentHash,
-        storyTitle: (window as any).__storyTitle,
-        userName: (window as any).__userName,
-        textPreview: currentStoryText.substring(0, 100) + '...'
-      });
-    } catch (error) {
-      console.error('🎤 Failed to set content variables:', error);
+    // Clear previous timeout to debounce hash updates
+    if (contentHashTimeoutRef.current) {
+      clearTimeout(contentHashTimeoutRef.current);
     }
+    
+    contentHashTimeoutRef.current = setTimeout(() => {
+      try { 
+        (window as any).__pageContentHash = contentHash; 
+        (window as any).__pageContentString = currentStoryText;
+        (window as any).__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
+        (window as any).__userName = userInfo?.name || '';
+        console.log('🎤 Content variables synced:', {
+          page: currentPage,
+          textLength: currentStoryText.length,
+          hasHash: !!contentHash
+        });
+      } catch (error) {
+        console.error('🎤 Failed to set content variables:', error);
+      }
+    }, 100); // 100ms debounce to prevent hash mismatch
+    
+    return () => {
+      if (contentHashTimeoutRef.current) {
+        clearTimeout(contentHashTimeoutRef.current);
+      }
+    };
   }, [contentHash, currentStoryText, currentPage]);
 
   // Reset free-tier audio flag when navigating to a new page or content changes
@@ -544,13 +559,30 @@ const [highlightSave, setHighlightSave] = useState(false);
   }, [currentPage, contentHash]);
   
   // Audio highlighting integration with universal fix
-  const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
+  const { onWordHighlight, currentHighlightedWord, clearHighlighting, setCleanupFunction } = useWordHighlighting(
     currentStoryText, 
     isAudioPlaying
   );
   
   // Universal audio highlighting fix for all devices
   const { highlightWord, clearHighlighting: clearFixedHighlighting } = useAudioHighlightingFix();
+  
+  // Sync both highlighting systems for maximum compatibility
+  useEffect(() => {
+    if (currentHighlightedWord >= 0) {
+      highlightWord(currentHighlightedWord);
+    } else {
+      clearFixedHighlighting();
+    }
+  }, [currentHighlightedWord, highlightWord, clearFixedHighlighting]);
+  
+  // Provide cleanup function to highlighting hooks
+  useEffect(() => {
+    setCleanupFunction(() => {
+      clearHighlighting();
+      clearFixedHighlighting();
+    });
+  }, [setCleanupFunction, clearHighlighting, clearFixedHighlighting]);
 
 // Voice command -> audio control bridge (now using ElevenLabsAudio)
 useEffect(() => {
@@ -698,48 +730,58 @@ useEffect(() => {
     }
   }, [userInfo.name, userInfo.age, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
-  // Auto-trigger image generation with smart network detection
+  // Auto-trigger image generation with smart network detection (debounced)
+  const imageGenerationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   useEffect(() => {
-    console.log('🖼️ Image generation check:', {
-      layout,
-      storyLength: story.length,
-      currentPage,
-      hasCurrentImage: !!pageImages[currentPage],
-      allImages: Object.keys(pageImages)
-    });
+    // Clear previous timeout to debounce rapid calls
+    if (imageGenerationTimeoutRef.current) {
+      clearTimeout(imageGenerationTimeoutRef.current);
+    }
     
+    // Only log critical state changes, not every render
     if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage]) {
-      console.log('🖼️ Checking auto-trigger conditions for page', currentPage);
       
-      // Use ImageGenerationTrigger for smart auto-generation
-      const shouldGenerate = ImageGenerationTrigger.shouldAutoGenerate({
-        currentPage,
-        totalPages: story.length,
-        hasCurrentImage: !!pageImages[currentPage],
-        allImages: Object.values(pageImages),
-        isNetworkAvailable: ImageGenerationTrigger.isNetworkAvailable(),
-        userInfo,
-        storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
-        pageText: displayedStory[currentPage] || ''
-      });
-      
-      if (shouldGenerate) {
-        console.log('🖼️ Auto-triggering image generation for page', currentPage);
-        ImageGenerationTrigger.triggerAutoGeneration({
+      imageGenerationTimeoutRef.current = setTimeout(() => {
+        console.log('🖼️ Triggering image generation for page', currentPage);
+        
+        // Use ImageGenerationTrigger for smart auto-generation
+        const shouldGenerate = ImageGenerationTrigger.shouldAutoGenerate({
           currentPage,
           totalPages: story.length,
           hasCurrentImage: !!pageImages[currentPage],
           allImages: Object.values(pageImages),
-          isNetworkAvailable: true,
+          isNetworkAvailable: ImageGenerationTrigger.isNetworkAvailable(),
           userInfo,
           storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
           pageText: displayedStory[currentPage] || ''
-         });
-      } else {
-        console.log('🖼️ Manual fallback image generation for page', currentPage);
-        generateImageForCurrentPage();
-      }
+        });
+        
+        if (shouldGenerate) {
+          // FIXED: Call auto-generation when shouldGenerate is TRUE
+          console.log('🖼️ Auto-triggering image generation for page', currentPage);
+          ImageGenerationTrigger.triggerAutoGeneration({
+            currentPage,
+            totalPages: story.length,
+            hasCurrentImage: !!pageImages[currentPage],
+            allImages: Object.values(pageImages),
+            isNetworkAvailable: true,
+            userInfo,
+            storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
+            pageText: displayedStory[currentPage] || ''
+           });
+        } else {
+          // When auto-generation should NOT happen, show retry button instead
+          console.log('🖼️ Showing manual generation button for page', currentPage);
+        }
+      }, 500); // 500ms debounce
     }
+    
+    return () => {
+      if (imageGenerationTimeoutRef.current) {
+        clearTimeout(imageGenerationTimeoutRef.current);
+      }
+    };
   }, [layout, story.length, currentPage, pageImages, userInfo, storyTitle, displayedStory]);
 
 // Timer countdown effect
@@ -1152,7 +1194,16 @@ const initializeStory = async () => {
       }
       
     } catch (error) {
-      console.log('Image generation failed, continuing without image:', error);
+      console.error('Image generation failed:', error);
+      setLastImageError(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Show user-friendly error with retry option
+      toast({ 
+        title: 'Image Generation Failed', 
+        description: 'Click the Generate button to try again.', 
+        variant: 'destructive',
+        duration: 4000
+      });
     } finally {
       setIsGeneratingImage(false);
     }
@@ -1438,31 +1489,35 @@ useEffect(() => {
     setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
   };
 
-  // Bottom dock actions - enhanced with immediate state updates
+  // Separate play and stop functions for better state management
   const handleDockPlayAudio = async () => {
     if (!isPremium && audioPlayedPage === currentPage && !isAudioPlaying) {
       toast({ title: t('audioReading.audioUsed','Audio used'), description: t('audioReading.audioUsedTooltip','Audio used (1x per page for free users)'), duration: 2000 });
       return;
     }
     
-    if (audioRef.current?.isPlaying) {
+    try {
       // Immediate UI feedback before async operation
-      setIsAudioPlaying(false);
-      try { 
-        audioRef.current.stop(); 
-      } catch (error) {
-        console.warn('Dock stop failed:', error);
-      }
-    } else {
-      try {
-        // Immediate UI feedback before async operation
-        setIsAudioPlaying(true);
-        await audioRef.current?.play?.();
-        if (!isPremium) setAudioPlayedPage(currentPage);
-      } catch (error) {
-        console.warn('Dock play failed:', error);
-        setIsAudioPlaying(false); // Reset on error
-      }
+      setIsAudioPlaying(true);
+      await audioRef.current?.play?.();
+      if (!isPremium) setAudioPlayedPage(currentPage);
+    } catch (error) {
+      console.warn('Dock play failed:', error);
+      setIsAudioPlaying(false); // Reset on error
+    }
+  };
+
+  const handleDockStopAudio = () => {
+    // Immediate UI feedback before async operation
+    setIsAudioPlaying(false);
+    try { 
+      audioRef.current?.stop?.(); 
+      // Also stop other audio systems
+      window.dispatchEvent(new CustomEvent('audio:stop:audioSyncService'));
+      window.dispatchEvent(new CustomEvent('audio:stop:SimpleAudioEngine'));
+      window.dispatchEvent(new CustomEvent('audio:stop:voiceCommands'));
+    } catch (error) {
+      console.warn('Dock stop failed:', error);
     }
   };
 
@@ -1479,7 +1534,8 @@ const handleVoiceCommand = (command: string) => {
   if (cmd.includes('start reading') || cmd.includes('read') || cmd.includes('play')) {
     handleDockPlayAudio();
   } else if (cmd.includes('pause') || cmd.includes('stop')) {
-    try { audioRef.current?.stop?.(); } catch (e) { console.warn('Voice pause failed', e); }
+    // Use the dedicated stop function for proper cleanup
+    handleDockStopAudio();
   } else if (cmd.includes('next page') || cmd.includes('next')) {
     handleNext();
   } else if (cmd.includes('previous page') || cmd.includes('previous') || cmd.includes('back')) {
@@ -2672,6 +2728,7 @@ const handleRestartTimer = () => {
           <MobileActionDock
             isPremium={isPremium}
             onPlayAudio={handleDockPlayAudio}
+            onStopAudio={handleDockStopAudio}
             onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
             onCoach={handleDockCoach}
             onSave={isPremium ? handleSaveStoryNow : undefined}
