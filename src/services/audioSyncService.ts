@@ -149,11 +149,10 @@ export class AudioSyncService {
     }
     
     try {
-      // Determine context based on difficulty level
-      // Level 3+ (hard/expert) = conversation (natural Charlotte voice)
-      // Level 1-2 (beginner/easy/medium) = learning (phonetic pronunciation)
-      const context = (options.difficulty === 'hard' || options.difficulty === 'expert') ? 'conversation' : 'learning';
-      console.log(`🔊 AudioSync: Using ${context} context for difficulty ${options.difficulty}`);
+      // Force conversation context for ALL story reading (natural Charlotte voice)
+      // Learning context is ONLY used for individual word interactions
+      const context = 'conversation';
+      console.log(`🔊 AudioSync: Using ${context} context for ALL story reading (natural Charlotte voice)`);
       
       // Generate audio with Smart ElevenLabs TTS with enhanced error handling
       const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(

@@ -7,6 +7,7 @@ export type PlayOptions = {
   contentHash?: string;
   voiceId?: string;
   modelId?: string;
+  context?: 'conversation' | 'learning';
 };
 
 /**
@@ -116,7 +117,7 @@ export class SimpleAudioEngine {
   }
 
   async playText(opts: PlayOptions) {
-    const { text, voiceId, modelId, contentHash } = opts;
+    const { text, voiceId, modelId, contentHash, context = 'conversation' } = opts;
     
     // Check basic audio permissions
     if (!AudioPermissions.canPlayAudio()) {
@@ -156,13 +157,13 @@ export class SimpleAudioEngine {
       console.log('🎵 SimpleAudioEngine: Requesting Smart ElevenLabs TTS...');
       console.log('🔊 CRITICAL DEBUG: About to call SmartElevenLabsTTS.generateSpeech with:', {
         text: text.substring(0, 50),
-        context: 'conversation', // Level 3+ always uses conversation context (Charlotte's natural voice)
+        context: context,
         voiceId: voiceId,
         signal: signal.aborted,
         textLength: text.length
       });
       
-      const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(text, 'conversation', voiceId);
+      const arrayBuffer = await SmartElevenLabsTTS.generateSpeech(text, context, voiceId);
       
       console.log('🔊 CRITICAL DEBUG: SmartElevenLabsTTS.generateSpeech returned:', {
         arrayBufferLength: arrayBuffer.byteLength,

@@ -41,7 +41,8 @@ export class InteractiveWordAudioService {
         text: cleanWord,
         voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
         contentHash: `hear-${cleanWord}-${Date.now()}`,
-        modelId: 'eleven_turbo_v2_5'
+        modelId: 'eleven_turbo_v2_5',
+        context: 'learning' // Use phonetic pronunciation for "Hear It"
       });
       console.log(`✅ Successfully played word: ${cleanWord}`);
 
@@ -113,7 +114,8 @@ export class InteractiveWordAudioService {
         text: definition.definition,
         voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
         contentHash: definition.definition.substring(0, 20),
-        modelId: 'eleven_turbo_v2_5'
+        modelId: 'eleven_turbo_v2_5',
+        context: 'conversation' // Use natural voice for explanations
       });
       console.log(`✅ Successfully explained word: ${cleanWord}`);
 
@@ -176,7 +178,8 @@ export class InteractiveWordAudioService {
         text: syllableText,
         voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
         contentHash: syllableText,
-        modelId: 'eleven_turbo_v2_5'
+        modelId: 'eleven_turbo_v2_5',
+        context: 'learning' // Use phonetic pronunciation for syllables
       });
       console.log(`✅ Successfully played syllables: ${syllableText}`);
 
