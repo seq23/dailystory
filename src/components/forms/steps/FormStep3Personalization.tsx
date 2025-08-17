@@ -377,24 +377,18 @@ export const FormStep3Personalization = ({
                 {t("formStep3.specialRequest.label", "Special Story Request")}
               </Label>
               
-              {/* Small verbiage below the box */}
-              <p className="text-xs text-muted-foreground mb-2">
+              <Textarea
+                value={formData.specialRequest || ""}
+                onChange={(e) => handleInputChange('specialRequest', e.target.value)}
+                placeholder="Themes: 'underwater adventure', 'winter holiday'; Tone: 'funny', 'educational'; Elements: 'friendly robot', 'magical garden'; Vocabulary: 'include colors', 'practice rhyming'"
+                className="transition-colors focus:border-primary min-h-[120px]"
+              />
+              
+              <p className="text-xs text-muted-foreground">
                 Any specific themes, characters, or adventures you would like to see? 
                 <span className="text-primary">(do not enter personal data - </span>
                 <a href="/privacy" className="text-primary hover:underline">see privacy policy</a>
                 <span className="text-primary">)</span>
-              </p>
-              
-              <Textarea
-                value={formData.specialRequest || ""}
-                onChange={(e) => handleInputChange('specialRequest', e.target.value)}
-                placeholder="For THEMES: adventure, mystery, friendship, learning. For OTHER ELEMENTS: characters (talking animals), settings (magical forest), or special requests (story about being brave). Press Enter after each item to create tags."
-                className="transition-colors focus:border-primary min-h-[80px]"
-              />
-              
-              {/* Help text matches placeholder exactly */}
-              <p className="text-xs text-muted-foreground">
-                For THEMES: adventure, mystery, friendship, learning. For OTHER ELEMENTS: characters (talking animals), settings (magical forest), or special requests (story about being brave). Press Enter after each item to create tags.
               </p>
               
               {spellcheckSuggestions.specialRequest && (
