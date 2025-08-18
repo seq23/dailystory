@@ -386,12 +386,60 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voiceId = 'XB0fDUnXU5powFXDhCwa', context = 'conversation' } = await req.json();
+    console.log('🔧 ElevenLabs TTS Smart function started');
+    
+    // Step 1: Verify API Key Configuration
+    const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
+    console.log('🔑 API Key Check:', {
+      hasApiKey: !!elevenLabsApiKey,
+      keyLength: elevenLabsApiKey ? elevenLabsApiKey.length : 0,
+      keyPrefix: elevenLabsApiKey ? elevenLabsApiKey.substring(0, 8) + '...' : 'none'
+    });
+
+    if (!elevenLabsApiKey) {
+      console.error('❌ ELEVENLABS_API_KEY environment variable is not set');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'ElevenLabs API key not configured',
+        debug: 'ELEVENLABS_API_KEY environment variable missing'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Parse request body with error handling
+    let requestData;
+    try {
+      requestData = await req.json();
+    } catch (parseError) {
+      console.error('❌ Failed to parse request JSON:', parseError);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Invalid JSON in request body',
+        debug: parseError.message
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { text, voiceId = 'XB0fDUnXU5powFXDhCwa', context = 'conversation' } = requestData;
+    
+    // Step 2: Add Comprehensive Error Logging
+    console.log('📋 Request Details:', {
+      textLength: text ? text.length : 0,
+      voiceId: voiceId,
+      context: context,
+      textPreview: text ? text.substring(0, 100) + '...' : 'none'
+    });
 
     if (!text) {
+      console.error('❌ Text parameter is missing or empty');
       return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'Text is required' 
+        success: false,
+        error: 'Text is required',
+        debug: 'Text parameter missing from request'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -404,72 +452,140 @@ serve(async (req) => {
     // Try with retry logic
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
+        console.log(`🚀 Starting attempt ${attempt + 1} of ${maxRetries}`);
         const response = await makeElevenLabsRequest(text, voiceId, context, attempt);
 
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+
         if (response.ok) {
-          const audioBuffer = await response.arrayBuffer();
-          const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+          console.log('🎵 Processing audio response...');
           
-          console.log(`ElevenLabs TTS success on attempt ${attempt + 1}`);
+          // Safe audio processing to prevent stack overflow
+          let audioBuffer;
+          try {
+            audioBuffer = await response.arrayBuffer();
+            console.log('✅ Audio buffer received:', { size: audioBuffer.byteLength });
+          } catch (audioError) {
+            console.error('❌ Failed to read audio buffer:', audioError);
+            throw new Error(`Audio processing failed: ${audioError.message}`);
+          }
+
+          // FIXED: Safe base64 conversion to prevent stack overflow
+          console.log('🔄 Converting to base64...');
+          let base64Audio;
+          try {
+            const uint8Array = new Uint8Array(audioBuffer);
+            
+            // Use smaller chunks and safer conversion to prevent "Maximum call stack size exceeded"
+            let binary = '';
+            const chunkSize = 4096; // Small chunks to prevent stack overflow
+            
+            for (let i = 0; i < uint8Array.length; i += chunkSize) {
+              const chunk = uint8Array.slice(i, i + chunkSize);
+              // Use Array.from to avoid spread operator with large arrays
+              const chunkString = Array.from(chunk, byte => String.fromCharCode(byte)).join('');
+              binary += chunkString;
+            }
+            
+            base64Audio = btoa(binary);
+            console.log('✅ Base64 conversion completed:', { length: base64Audio.length });
+          } catch (conversionError) {
+            console.error('❌ Base64 conversion failed:', conversionError);
+            throw new Error(`Base64 conversion failed: ${conversionError.message}`);
+          }
+          
+          console.log(`🎉 ElevenLabs TTS success on attempt ${attempt + 1}`);
           
           return new Response(JSON.stringify({ 
             success: true,
             audioContent: base64Audio,
             context,
             voiceId,
-            usedDictionary: !!dictionaryId,
-            appliedLexicon: !!dictionaryId,
-            dictionaryFailed
+            size: audioBuffer.byteLength,
+            debug: {
+              attempt: attempt + 1,
+              audioSize: audioBuffer.byteLength,
+              base64Length: base64Audio.length
+            }
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         } else {
           const errorText = await response.text();
           lastError = new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
-          console.error(`Attempt ${attempt + 1} failed:`, lastError.message);
+          console.error(`❌ Attempt ${attempt + 1} failed:`, {
+            status: response.status,
+            statusText: response.statusText,
+            errorText: errorText
+          });
           
           // If dictionary-related error, clear cache for next attempt
           if ((errorText.includes('dictionary') || errorText.includes('pronunciation')) &&
               circuitBreakerState.dictionaries.has(context)) {
-            console.log('Dictionary error detected, clearing dictionary cache for next attempt');
+            console.log('📚 Dictionary error detected, clearing dictionary cache for next attempt');
             circuitBreakerState.dictionaries.delete(context);
             circuitBreakerState.lastDictionaryCheck = 0;
           }
           
           // Don't retry on client errors (4xx)
           if (response.status >= 400 && response.status < 500) {
+            console.log(`🚫 Client error ${response.status}, not retrying`);
             break;
           }
         }
       } catch (error) {
         lastError = error;
-        console.error(`Attempt ${attempt + 1} failed:`, error.message);
+        console.error(`❌ Attempt ${attempt + 1} failed with exception:`, {
+          name: error.name,
+          message: error.message,
+          stack: error.stack ? error.stack.substring(0, 500) : 'No stack trace'
+        });
         
         // Don't retry on authentication or circuit breaker errors
         if (error.message.includes('API key') || error.message.includes('Circuit breaker')) {
+          console.log('🚫 Critical error, not retrying:', error.message);
           break;
         }
       }
     }
 
-    console.error('All ElevenLabs attempts failed, last error:', lastError?.message);
+    console.error('💥 All ElevenLabs attempts failed, last error:', lastError?.message);
     
     return new Response(JSON.stringify({ 
       success: false, 
       error: lastError?.message || 'Failed to generate speech after multiple attempts',
       shouldFallback: true,
-      circuitBreakerOpen: circuitBreakerState.isOpen
+      circuitBreakerOpen: circuitBreakerState.isOpen,
+      debug: {
+        attempts: maxRetries,
+        lastErrorName: lastError?.name,
+        lastErrorMessage: lastError?.message,
+        circuitBreakerState: {
+          isOpen: circuitBreakerState.isOpen,
+          failures: circuitBreakerState.failures
+        }
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('ElevenLabs TTS Smart error:', error);
+    console.error('💥 ElevenLabs TTS Smart critical error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack ? error.stack.substring(0, 500) : 'No stack trace'
+    });
+    
     return new Response(JSON.stringify({ 
       success: false, 
       error: error.message,
-      shouldFallback: true
+      shouldFallback: true,
+      debug: {
+        errorName: error.name,
+        errorMessage: error.message,
+        stackTrace: error.stack ? error.stack.substring(0, 200) + '...' : 'No stack trace'
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
