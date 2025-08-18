@@ -149,8 +149,8 @@ export class MulticulturalVisualService {
     
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     
-    // Use diverse skin tones from profile instead of hardcoded mapping
-    const skinTone = this.selectRandomElement(profile.skinTones);
+    // Use the user's selected avatar skin tone
+    const skinTone = userInfo.avatar.skinTone;
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
@@ -164,8 +164,8 @@ export class MulticulturalVisualService {
     const profile = this.getCulturalVisualProfile('en');
     const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 'girl';
     
-    // Select from full spectrum of African American skin tones
-    const skinTone = this.selectRandomElement(profile.skinTones);
+    // Use the user's selected avatar skin tone
+    const skinTone = userInfo.avatar.skinTone;
     
     // Get culturally appropriate hair style for African American heritage
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);

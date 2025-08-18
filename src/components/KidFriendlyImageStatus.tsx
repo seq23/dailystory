@@ -66,8 +66,8 @@ export const KidFriendlyImageStatus = ({
 
   return (
     <div className={cn(
-      "absolute inset-0 bg-background/95 backdrop-blur-sm rounded-lg",
-      "flex items-center justify-center z-10",
+      "fixed top-4 right-4 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg",
+      "flex items-center justify-center z-[50] max-w-sm",
       "transition-all duration-300 ease-in-out animate-fade-in",
       className
     )}>

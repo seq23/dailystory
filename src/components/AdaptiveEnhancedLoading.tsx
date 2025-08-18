@@ -84,12 +84,6 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
           <div className="space-y-3">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
             <p className="text-muted-foreground">{description}</p>
-            <div className="text-sm text-muted-foreground/80 italic mb-2">
-              {isPremium 
-                ? "⏰ Premium stories take 20-30 seconds to craft perfectly!"
-                : "⏰ Stories take 15-25 seconds, then we add pictures!"
-              }
-            </div>
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <LoadingSpinner size="md" />
               <span>{t("common.loading", "Loading...")}</span>
