@@ -241,10 +241,14 @@ async function getComprehensiveDictionary(context: 'learning' | 'conversation'):
 }
 
 async function makeElevenLabsRequest(text: string, voiceId: string, context: string, retryCount = 0): Promise<Response> {
-  const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
-  if (!elevenLabsApiKey) {
-    throw new Error('ElevenLabs API key not configured');
-  }
+  try {
+    console.log(`🔧 ElevenLabs request started - attempt ${retryCount + 1}`);
+    
+    const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
+    if (!elevenLabsApiKey) {
+      console.error('❌ ElevenLabs API key not configured');
+      throw new Error('ElevenLabs API key not configured');
+    }
 
   // Check circuit breaker
   const now = Date.now();
@@ -319,35 +323,59 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     usingDictionary: !!dictionaryId
   });
 
-  try {
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'audio/mpeg',
-        'Content-Type': 'application/json',
-        'xi-api-key': elevenLabsApiKey,
-      },
-      body: JSON.stringify(requestBody),
-    });
+    try {
+      console.log(`📡 Making ElevenLabs API request to: https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`);
+      console.log(`📋 Request body:`, { 
+        textLength: text.length, 
+        model: requestBody.model_id,
+        stability: requestBody.voice_settings.stability,
+        dictionaryCount: requestBody.pronunciation_dictionary_locators?.length || 0
+      });
 
-    // Reset circuit breaker on success
-    if (response.ok) {
-      circuitBreakerState.failures = 0;
-      circuitBreakerState.isOpen = false;
-    }
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': elevenLabsApiKey,
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-    return response;
-  } catch (error) {
-    // Update circuit breaker on failure
-    circuitBreakerState.failures++;
-    circuitBreakerState.lastFailure = now;
-    
-    if (circuitBreakerState.failures >= CIRCUIT_BREAKER_THRESHOLD) {
-      circuitBreakerState.isOpen = true;
-      console.log('Circuit breaker opened due to repeated failures');
+      console.log(`📡 ElevenLabs API response: ${response.status} ${response.statusText}`);
+
+      // Reset circuit breaker on success
+      if (response.ok) {
+        console.log('✅ ElevenLabs request successful, resetting circuit breaker');
+        circuitBreakerState.failures = 0;
+        circuitBreakerState.isOpen = false;
+      } else {
+        console.error(`❌ ElevenLabs API error: ${response.status} ${response.statusText}`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error(`🚨 ElevenLabs request failed with error:`, error);
+      console.error(`Error details:`, {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.substring(0, 500)
+      });
+      
+      // Update circuit breaker on failure
+      circuitBreakerState.failures++;
+      circuitBreakerState.lastFailure = now;
+      
+      if (circuitBreakerState.failures >= CIRCUIT_BREAKER_THRESHOLD) {
+        circuitBreakerState.isOpen = true;
+        console.log('🔴 Circuit breaker opened due to repeated failures');
+      }
+      
+      throw error;
     }
-    
-    throw error;
+  } catch (outerError) {
+    console.error(`💥 Outer catch - function error:`, outerError);
+    throw outerError;
   }
 }
 

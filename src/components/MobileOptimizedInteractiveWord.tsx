@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { InteractiveWord } from "./InteractiveWord";
 import { MobileTTSModal } from "./MobileTTSModal";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,7 +23,7 @@ interface MobileOptimizedInteractiveWordProps {
   wordAlreadySaved?: boolean;
 }
 
-export const MobileOptimizedInteractiveWord = (props: MobileOptimizedInteractiveWordProps) => {
+export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimizedInteractiveWordProps) => {
   const { isMobileOrTablet } = useIsMobile();
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -241,4 +241,13 @@ if (props.forceModal || isMobileOrTablet) {
 
   // For desktop, use the original InteractiveWord component
   return <InteractiveWord {...props} />;
-};
+}, (prevProps, nextProps) => {
+  // Memoization comparison
+  return (
+    prevProps.word === nextProps.word &&
+    prevProps.className === nextProps.className &&
+    prevProps.difficulty === nextProps.difficulty &&
+    prevProps.isPremium === nextProps.isPremium &&
+    prevProps.forceModal === nextProps.forceModal
+  );
+});

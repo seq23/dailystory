@@ -1,3 +1,4 @@
+import React from "react";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
@@ -18,7 +19,7 @@ interface TextProcessorOptions {
  * Unified text processor that handles both mobile and desktop rendering
  * with consistent highlighting and word flow
  */
-export const processTextWithConsistentFlow = ({
+export const processTextWithConsistentFlow = React.memo(({
   text,
   className = "",
   difficulty = "easy",
@@ -62,9 +63,18 @@ export const processTextWithConsistentFlow = ({
       ? 'highlighted' 
       : 'transition-all duration-300';
     
-    // Debug highlighting
+    // Debug highlighting with throttling to prevent spam
     if (isHighlighted) {
-      console.log(`🎯 Highlighting word at index ${wordOnlyIndex}: "${token}"`);
+      // Throttle console logs to prevent infinite loop spam
+      const now = Date.now();
+      const lastLogKey = `highlight-${wordOnlyIndex}`;
+      const globalObj = globalThis as any;
+      if (!globalObj.__lastHighlightLog || !globalObj.__lastHighlightLog[lastLogKey] || 
+          now - globalObj.__lastHighlightLog[lastLogKey] > 500) {
+        console.log(`🎯 Highlighting word at index ${wordOnlyIndex}: "${token}"`);
+        globalObj.__lastHighlightLog = globalObj.__lastHighlightLog || {};
+        globalObj.__lastHighlightLog[lastLogKey] = now;
+      }
     }
     
     const finalClassName = `inline ${className} ${highlightClasses}`;
@@ -100,4 +110,15 @@ export const processTextWithConsistentFlow = ({
       />
     );
   }).filter(Boolean);
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.text === nextProps.text &&
+    prevProps.highlightedWordIndex === nextProps.highlightedWordIndex &&
+    prevProps.className === nextProps.className &&
+    prevProps.difficulty === nextProps.difficulty &&
+    prevProps.isMobile === nextProps.isMobile &&
+    prevProps.isPremium === nextProps.isPremium &&
+    prevProps.userId === nextProps.userId
+  );
+});

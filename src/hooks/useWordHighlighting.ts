@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSimpleAudioHighlighting } from '@/hooks/useSimpleAudioHighlighting';
 
 /**
@@ -51,19 +51,19 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
   const lastHighlightedRef = useRef<{ wordIndex: number; timestamp: number } | null>(null);
   const highlightCountRef = useRef(0);
 
-  // Simple highlight callback with circuit breaker
-  const onWordHighlight = (wordIndex: number) => {
+  // Enhanced highlight callback with circuit breaker and debouncing
+  const onWordHighlight = React.useCallback((wordIndex: number) => {
     const now = Date.now();
     
-    // Check for infinite loop protection
+    // Enhanced infinite loop protection
     if (lastHighlightedRef.current && 
         lastHighlightedRef.current.wordIndex === wordIndex &&
-        now - lastHighlightedRef.current.timestamp < 100) {
+        now - lastHighlightedRef.current.timestamp < 200) {
       highlightCountRef.current++;
       
-      // If we've highlighted the same word more than 5 times in 100ms, stop
-      if (highlightCountRef.current > 5) {
-        console.warn(`🚨 Infinite highlighting loop detected for word ${wordIndex}. Stopping.`);
+      // If we've highlighted the same word more than 3 times in 200ms, stop
+      if (highlightCountRef.current > 3) {
+        console.warn(`🚨 Infinite highlighting loop detected for word ${wordIndex}. Stopping all highlighting.`);
         clearHighlighting();
         return;
       }
@@ -79,7 +79,7 @@ export const useWordHighlighting = (text: string, isAudioPlaying: boolean) => {
     } else {
       highlightWord(wordIndex);
     }
-  };
+  }, [highlightWord, clearHighlighting]);
 
   return {
     onWordHighlight,
