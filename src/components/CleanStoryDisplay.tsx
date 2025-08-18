@@ -23,9 +23,9 @@ import { GameContextProvider } from "@/components/GameContextProvider";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
 
 // Audio and Interactive Components
-import { ElevenLabsAudio, type ElevenLabsAudioHandle } from "@/components/ElevenLabsAudio";
+import { SynchronizedAudioControls } from "@/components/SynchronizedAudioControls";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -277,8 +277,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
-// Enhanced audio status sync via ElevenLabsAudio ref - removed polling for direct callbacks
-const audioRef = useRef<ElevenLabsAudioHandle | null>(null);
+// Audio engine instance for direct control
+const audioEngineRef = useRef(SimplifiedAudioEngine.getInstance());
 
 // Audio state sync through direct callbacks (no polling)
 const handleAudioStateChange = (playing: boolean) => {
@@ -301,9 +301,7 @@ useEffect(() => {
   const clearAudioOnPageChange = async () => {
     try {
       // Stop any active audio from previous pages
-      // TODO: Replace with SimplifiedAudioEngine.stop()
-      // const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
-      // SimplifiedAudioEngine.getInstance().stop();
+      audioEngineRef.current.stop();
       
       // Reset audio UI state immediately
       setIsAudioPlaying(false);
@@ -604,10 +602,18 @@ const [highlightSave, setHighlightSave] = useState(false);
     isAudioPlaying
   );
 
-// Voice command -> audio control bridge (now using ElevenLabsAudio)
+// Voice command -> audio control bridge (now using SimplifiedAudioEngine)
 useEffect(() => {
-  const onPlay = () => { try { audioRef.current?.play?.(); } catch (e) { console.warn('audio:play failed', e); } };
-  const onPause = () => { try { audioRef.current?.stop?.(); } catch (e) { console.warn('audio:pause failed', e); } };
+  const onPlay = () => { 
+    try { 
+      audioEngineRef.current.playTextWithSynchronization({
+        text: currentStoryText || "",
+        context: 'conversation',
+        onWordHighlight
+      }); 
+    } catch (e) { console.warn('audio:play failed', e); } 
+  };
+  const onPause = () => { try { audioEngineRef.current.stop(); } catch (e) { console.warn('audio:pause failed', e); } };
   window.addEventListener('audio:play', onPlay as EventListener);
   window.addEventListener('audio:pause', onPause as EventListener);
   return () => {
@@ -621,10 +627,11 @@ useEffect(() => {
     const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
 
     const playTTS = async (text: string) => {
-      const audioEngine = SimpleAudioEngine.getInstance();
-      await audioEngine.playText({ 
+      const audioEngine = SimplifiedAudioEngine.getInstance();
+      await audioEngine.playTextWithSynchronization({ 
         text,
-        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+        context: 'conversation'
       });
     };
 
@@ -648,10 +655,10 @@ useEffect(() => {
     };
 
     const handler = async () => {
-      const wasPlaying = !!audioRef.current?.isPlaying;
+      const wasPlaying = audioEngineRef.current.isPlaying();
       try {
         // Stop any narration first
-        try { audioRef.current?.stop?.(); } catch {}
+        try { audioEngineRef.current.stop(); } catch {}
 
         // Resolve target word: hovered -> lastSelected -> highlighted
         let target: string = (window as any).__hoveredWord || (window as any).__lastSelectedWord || '';
@@ -677,7 +684,13 @@ useEffect(() => {
       } finally {
         // Auto-resume narration if it was playing before the help flow
         if (wasPlaying) {
-          try { await audioRef.current?.play?.(); } catch {}
+          try { 
+            await audioEngineRef.current.playTextWithSynchronization({
+              text: currentStoryText || "",
+              context: 'conversation',
+              onWordHighlight
+            }); 
+          } catch {}
         }
       }
     };
@@ -1296,7 +1309,7 @@ const initializeStory = async () => {
   // It coordinates between NetflixStyleStoryService and BatchImageService for seamless UX
   const handleNext = async () => {
     // Stop audio when navigating (ensure audio halts)
-    try { audioRef.current?.stop?.(); } catch {}
+    try { audioEngineRef.current.stop(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
 
@@ -1397,7 +1410,7 @@ const initializeStory = async () => {
 
   const handlePrevious = () => {
     // Stop audio when navigating (ensure audio service halts)
-    try { audioRef.current?.stop?.(); } catch {}
+    try { audioEngineRef.current.stop(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
     setCurrentPage(Math.max(0, currentPage - 1));
@@ -1470,16 +1483,19 @@ useEffect(() => {
     }
     
     if (isAudioPlaying) {
-      // Use state instead of ref for reliability (Fix #2)
       setIsAudioPlaying(false);
       try { 
-        audioRef.current?.stop?.(); 
+        audioEngineRef.current.stop(); 
       } catch (error) {
         console.warn('Dock stop failed:', error);
       }
     } else {
       try {
-        await audioRef.current?.play?.();
+        await audioEngineRef.current.playTextWithSynchronization({
+          text: currentStoryText || "",
+          context: 'conversation',
+          onWordHighlight
+        });
         // State will be updated via callback, but ensure it's set for immediate feedback
         setIsAudioPlaying(true);
         if (!isPremium) setAudioPlayedPage(currentPage);
@@ -1491,7 +1507,8 @@ useEffect(() => {
   };
 
 const handleDockVoiceCommand = () => {
-  try { audioRef.current?.toggleVoiceCommands?.(); } catch (e) { console.warn('Dock voice toggle failed', e); }
+  // Voice commands are handled separately, no longer part of audio component
+  console.log('Voice commands not implemented in SimplifiedAudioEngine');
 };
 
 // Voice command handler for headless controller
@@ -1503,7 +1520,7 @@ const handleVoiceCommand = (command: string) => {
   if (cmd.includes('start reading') || cmd.includes('read') || cmd.includes('play')) {
     handleDockPlayAudio();
   } else if (cmd.includes('pause') || cmd.includes('stop')) {
-    try { audioRef.current?.stop?.(); } catch (e) { console.warn('Voice pause failed', e); }
+    try { audioEngineRef.current.stop(); } catch (e) { console.warn('Voice pause failed', e); }
   } else if (cmd.includes('next page') || cmd.includes('next')) {
     handleNext();
   } else if (cmd.includes('previous page') || cmd.includes('previous') || cmd.includes('back')) {
@@ -2109,18 +2126,11 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                  <ElevenLabsAudio
-                  ref={audioRef}
-                  text={currentStoryText || ""}
-                  userInfo={userInfo}
-                  isPremium={isPremium}
-                  onUpgrade={onUpgrade}
-                  currentPage={currentPage}
-                  totalPages={story.length}
-                  difficulty={currentDifficulty}
-                  onWordHighlight={onWordHighlight}
-                  contentHash={contentHash}
-                  onAudioStateChange={handleAudioStateChange}
+                  <SynchronizedAudioControls
+                    text={currentStoryText || ""}
+                    contentHash={contentHash}
+                    onWordHighlight={onWordHighlight}
+                    onPlayingChange={handleAudioStateChange}
                   />
                   <Dialog>
                     <DialogTrigger asChild>
