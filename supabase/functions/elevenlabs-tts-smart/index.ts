@@ -240,7 +240,7 @@ async function getComprehensiveDictionary(context: 'learning' | 'conversation'):
   }
 }
 
-async function makeElevenLabsRequest(text: string, voiceId: string, context: string, retryCount = 0): Promise<Response> {
+async function makeElevenLabsRequest(text: string, voiceId: string, context: string, useTimestamps: boolean, retryCount = 0): Promise<Response> {
   try {
     console.log(`🔧 ElevenLabs request started - attempt ${retryCount + 1}`);
     
@@ -271,27 +271,6 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     await new Promise(resolve => setTimeout(resolve, delay));
   }
 
-  // Get comprehensive dictionary ID for context - graceful fallback on dictionary failure
-  let dictionaryId: string | null = null;
-  let dictionaryFailed = false;
-  
-  if (context === 'learning' || context === 'conversation') {
-    try {
-      // Check for existing dictionary first
-      const cachedId = circuitBreakerState.dictionaries.get(context);
-      if (cachedId) {
-        dictionaryId = cachedId;
-        console.log(`Using cached ${context} dictionary: ${dictionaryId}`);
-      } else {
-        console.log(`No cached ${context} dictionary found, proceeding without dictionary`);
-      }
-    } catch (dictError) {
-      console.warn(`Dictionary lookup failed for ${context}, proceeding without dictionary:`, dictError.message);
-      dictionaryFailed = true;
-      // Continue without dictionary rather than failing completely
-    }
-  }
-
   const requestBody: any = {
     text,
     model_id: model,
@@ -303,39 +282,33 @@ async function makeElevenLabsRequest(text: string, voiceId: string, context: str
     }
   };
 
-  // Add pronunciation dictionary for context if available
-  if (dictionaryId) {
-    requestBody.pronunciation_dictionary_locators = [{
-      pronunciation_dictionary_id: dictionaryId,
-      version_id: "latest"
-    }];
-    console.log(`Using comprehensive ${context} dictionary:`, dictionaryId);
-  } else if (dictionaryFailed) {
-    console.log(`Proceeding with ${context} request without dictionary due to generation failure`);
-  }
-
   console.log(`ElevenLabs TTS request (attempt ${retryCount + 1}):`, {
     voice: voiceId,
     model,
     context,
     textLength: text.length,
     stability: requestBody.voice_settings.stability,
-    usingDictionary: !!dictionaryId
+    useTimestamps
   });
 
     try {
-      console.log(`📡 Making ElevenLabs API request to: https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`);
+      // Choose endpoint based on whether timestamps are needed
+      const endpoint = useTimestamps 
+        ? `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps`
+        : `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+      
+      console.log(`📡 Making ElevenLabs API request to: ${endpoint}`);
       console.log(`📋 Request body:`, { 
         textLength: text.length, 
         model: requestBody.model_id,
         stability: requestBody.voice_settings.stability,
-        dictionaryCount: requestBody.pronunciation_dictionary_locators?.length || 0
+        useTimestamps
       });
 
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Accept': 'audio/mpeg',
+          'Accept': useTimestamps ? 'application/json' : 'audio/mpeg',
           'Content-Type': 'application/json',
           'xi-api-key': elevenLabsApiKey,
         },
@@ -424,7 +397,7 @@ serve(async (req) => {
       });
     }
 
-    const { text, voiceId = 'XB0fDUnXU5powFXDhCwa', context = 'conversation' } = requestData;
+    const { text, voiceId = 'XB0fDUnXU5powFXDhCwa', context = 'conversation', useTimestamps = false } = requestData;
     
     // Step 2: Add Comprehensive Error Logging
     console.log('📋 Request Details:', {
@@ -453,19 +426,38 @@ serve(async (req) => {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         console.log(`🚀 Starting attempt ${attempt + 1} of ${maxRetries}`);
-        const response = await makeElevenLabsRequest(text, voiceId, context, attempt);
+        const response = await makeElevenLabsRequest(text, voiceId, context, useTimestamps, attempt);
 
         console.log(`📡 Response status: ${response.status} ${response.statusText}`);
 
         if (response.ok) {
-          console.log('🎵 Processing audio response...');
-          
-          // Safe audio processing to prevent stack overflow
-          let audioBuffer;
-          try {
-            audioBuffer = await response.arrayBuffer();
-            console.log('✅ Audio buffer received:', { size: audioBuffer.byteLength });
-          } catch (audioError) {
+          if (useTimestamps) {
+            console.log('🎵 Processing timestamps response...');
+            const data = await response.json();
+            console.log('✅ Timestamps data received:', { 
+              hasAudio: !!data.audio_base64, 
+              hasAlignment: !!data.alignment,
+              audioSize: data.audio_base64?.length || 0,
+              alignmentLength: data.alignment?.characters?.length || 0
+            });
+            
+            return new Response(JSON.stringify({
+              success: true,
+              audioContent: data.audio_base64,
+              alignment: data.alignment,
+              appliedLexicon: false
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          } else {
+            console.log('🎵 Processing audio response...');
+            
+            // Safe audio processing to prevent stack overflow
+            let audioBuffer;
+            try {
+              audioBuffer = await response.arrayBuffer();
+              console.log('✅ Audio buffer received:', { size: audioBuffer.byteLength });
+            } catch (audioError) {
             console.error('❌ Failed to read audio buffer:', audioError);
             throw new Error(`Audio processing failed: ${audioError.message}`);
           }

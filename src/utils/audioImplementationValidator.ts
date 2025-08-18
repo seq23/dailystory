@@ -1,4 +1,4 @@
-import { audioSyncService } from '../services/audioSyncService';
+// Removed: import { audioSyncService } from '../services/audioSyncService';
 import { SimpleAudioEngine } from '../services/SimpleAudioEngine';
 import type { UserInfo } from '@/types';
 
@@ -212,7 +212,8 @@ export class AudioImplementationValidator {
 
     // Check if AudioSyncService has proper voice profiles
     try {
-      const profiles = (audioSyncService as any).voiceProfiles;
+      // TODO: Replace with SimplifiedAudioEngine validation
+      const profiles = {}; // Removed audioSyncService reference
       
       if (!profiles['cgSgspJ2msm6clMCkdW9']) {
         this.issues.push('Jessica voice profile missing from AudioSyncService');

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { audioSyncService } from '@/services/audioSyncService';
+// Removed: import { audioSyncService } from '@/services/audioSyncService';
 
 /**
  * Hook to coordinate hash synchronization between UI and audio systems

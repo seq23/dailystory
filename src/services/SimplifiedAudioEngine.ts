@@ -1,0 +1,350 @@
+import { SynchronizedElevenLabsTTS } from '@/services/SynchronizedElevenLabsTTS';
+import { contextualPronunciation } from './contextualPronunciation';
+import { AudioPermissions } from '@/utils/audioPermissions';
+
+export type SynchronizedPlayOptions = {
+  text: string;
+  contentHash?: string;
+  voiceId?: string;
+  context?: 'conversation' | 'learning';
+  onWordHighlight?: (wordIndex: number) => void;
+};
+
+/**
+ * Simplified audio engine using ElevenLabs native timing synchronization
+ * Replaces manual timing calculations with ElevenLabs /with-timestamps API
+ */
+export class SimplifiedAudioEngine {
+  private static instance: SimplifiedAudioEngine | null = null;
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new SimplifiedAudioEngine();
+      (window as any).__SimplifiedAudioEngine = this.instance;
+    }
+    return this.instance;
+  }
+
+  private audio: HTMLAudioElement | null = null;
+  private currentUrl: string | null = null;
+  private playing = false;
+  private currentHash: string | null = null;
+  private inflight?: AbortController;
+  private wordTimings: Array<{ word: string; startTime: number; endTime: number }> = [];
+  private onWordHighlight?: (wordIndex: number) => void;
+  private highlightInterval?: NodeJS.Timeout;
+  
+  // Mobile audio management
+  private mobileAudioUnlocked = false;
+  private audioContext: AudioContext | null = null;
+
+  private ensureAudio() {
+    if (!this.audio) {
+      this.audio = new Audio();
+      this.audio.preload = 'auto';
+      this.audio.crossOrigin = 'anonymous';
+      
+      // Mobile-specific configurations
+      (this.audio as any).playsInline = true;
+      this.audio.setAttribute('playsinline', 'true');
+      
+      this.audio.addEventListener('ended', () => { 
+        this.playing = false;
+        this.stopWordHighlighting();
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+        window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simplified' } }));
+      });
+      
+      this.audio.addEventListener('pause', () => { 
+        this.playing = false;
+        this.stopWordHighlighting();
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+      });
+      
+      this.audio.addEventListener('play', () => { 
+        this.playing = true;
+        this.startWordHighlighting();
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: true } 
+        }));
+      });
+      
+      this.setupMobileAudioUnlock();
+    }
+    return this.audio;
+  }
+
+  private setupMobileAudioUnlock() {
+    if (this.mobileAudioUnlocked) return;
+    
+    const unlockAudio = async () => {
+      try {
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        
+        if (this.audioContext.state === 'suspended') {
+          await this.audioContext.resume();
+        }
+        
+        if (this.audio) {
+          const playPromise = this.audio.play();
+          if (playPromise) {
+            await playPromise.catch(() => {});
+            this.audio.pause();
+            this.audio.currentTime = 0;
+          }
+        }
+        
+        this.mobileAudioUnlocked = true;
+        console.log('🔊 Mobile audio unlocked');
+        
+        ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
+          document.removeEventListener(event, unlockAudio);
+        });
+      } catch (error) {
+        console.warn('Mobile audio unlock failed:', error);
+      }
+    };
+
+    ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
+      document.addEventListener(event, unlockAudio, { once: false });
+    });
+  }
+
+  async playTextWithSynchronization(opts: SynchronizedPlayOptions) {
+    const { text, voiceId, contentHash, context = 'conversation', onWordHighlight } = opts;
+    
+    if (!AudioPermissions.canPlayAudio()) {
+      const reason = AudioPermissions.getBlockReason('any-audio');
+      console.log(`🔒 SimplifiedAudioEngine: Audio blocked - ${reason}`);
+      return;
+    }
+    
+    console.log('🎵 SimplifiedAudioEngine: Starting synchronized playback:', {
+      textLength: text.length,
+      voice: voiceId || 'default',
+      contentHash: contentHash || 'none'
+    });
+    
+    // Request exclusive audio access
+    window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simplified' } }));
+    
+    // Stop any current playback
+    this.stop();
+
+    this.currentHash = contentHash || null;
+    this.onWordHighlight = onWordHighlight;
+
+    try {
+      if (!navigator.onLine) {
+        console.warn('🎵 SimplifiedAudioEngine: No network, using fallback');
+        this.fallbackToWebSpeech(text);
+        return;
+      }
+
+      this.inflight = new AbortController();
+      const signal = this.inflight.signal;
+
+      console.log('🎵 SimplifiedAudioEngine: Requesting Synchronized ElevenLabs TTS...');
+      
+      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, context, voiceId);
+      
+      if (signal.aborted) {
+        console.log('🎵 SimplifiedAudioEngine: Request was aborted');
+        return;
+      }
+
+      // Store timing data for synchronization
+      this.wordTimings = result.wordTimings;
+      
+      const blob = new Blob([result.audioBuffer], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+
+      const audio = this.ensureAudio();
+      
+      if (!this.mobileAudioUnlocked && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        console.log('🔊 Attempting to unlock mobile audio before playback');
+        await this.unlockMobileAudioForPlayback();
+      }
+      
+      try { audio.pause(); } catch {}
+      if (this.currentUrl) URL.revokeObjectURL(this.currentUrl);
+      this.currentUrl = url;
+      audio.src = url;
+
+      console.log('✅ SimplifiedAudioEngine: ElevenLabs synchronized audio loaded, starting playback');
+      await audio.play();
+      this.playing = true;
+      
+    } catch (error) {
+      console.error('🎵 ElevenLabs synchronized TTS failed, using fallback:', error);
+      this.fallbackToWebSpeech(text);
+    }
+  }
+
+  private startWordHighlighting() {
+    if (!this.audio || !this.onWordHighlight || this.wordTimings.length === 0) return;
+    
+    this.stopWordHighlighting(); // Clear any existing highlighting
+    
+    console.log('🎯 Starting native ElevenLabs word highlighting with', this.wordTimings.length, 'timings');
+    
+    // Use audio timeupdate for perfect synchronization
+    const updateHighlight = () => {
+      if (!this.audio || !this.playing) return;
+      
+      const currentTimeMs = this.audio.currentTime * 1000;
+      
+      // Find the current word based on timing
+      const currentWordIndex = this.wordTimings.findIndex(timing => 
+        currentTimeMs >= timing.startTime && currentTimeMs <= timing.endTime
+      );
+      
+      if (currentWordIndex !== -1 && this.onWordHighlight) {
+        this.onWordHighlight(currentWordIndex);
+      }
+    };
+    
+    // Use audio timeupdate event for perfect timing sync
+    this.audio.addEventListener('timeupdate', updateHighlight);
+    
+    // Also use interval as backup for smoother highlighting
+    this.highlightInterval = setInterval(updateHighlight, 50);
+  }
+
+  private stopWordHighlighting() {
+    if (this.highlightInterval) {
+      clearInterval(this.highlightInterval);
+      this.highlightInterval = undefined;
+    }
+    
+    // Clear the current highlight
+    if (this.onWordHighlight) {
+      this.onWordHighlight(-1);
+    }
+    
+    console.log('🧹 Stopped word highlighting');
+  }
+
+  private fallbackToWebSpeech(text: string): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      console.log('🔊 SimplifiedAudioEngine: Using browser speech fallback');
+      
+      window.dispatchEvent(new CustomEvent('audio:fallback', {
+        detail: { message: 'Using device voice due to network issues' }
+      }));
+
+      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
+      const utterance = new SpeechSynthesisUtterance(processedText);
+      
+      utterance.rate = 0.7;
+      utterance.pitch = 1.1;
+      utterance.volume = 1.0;
+      
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang === 'en-us' && voice.name.toLowerCase().includes('female')
+      ) || voices.find(voice => voice.lang.startsWith('en'));
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      this.playing = true;
+      
+      utterance.onstart = () => {
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: true } 
+        }));
+      };
+      
+      utterance.onend = () => {
+        this.playing = false;
+        this.stopWordHighlighting();
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+      };
+      
+      utterance.onerror = () => {
+        this.playing = false;
+        this.stopWordHighlighting();
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false } 
+        }));
+      };
+      
+      speechSynthesis.speak(utterance);
+    }
+  }
+
+  stop() {
+    console.log('🛑 SimplifiedAudioEngine: Stopping all audio');
+    
+    if (this.inflight) {
+      try { 
+        this.inflight.abort(); 
+      } catch {}
+      this.inflight = undefined;
+    }
+    
+    const a = this.audio;
+    if (a) {
+      try { 
+        a.pause(); 
+        a.currentTime = 0;
+      } catch {}
+    }
+    
+    if (this.currentUrl) {
+      try { 
+        URL.revokeObjectURL(this.currentUrl); 
+      } catch {}
+      this.currentUrl = null;
+    }
+    
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { 
+        speechSynthesis.cancel();
+      } catch {}
+    }
+    
+    this.stopWordHighlighting();
+    this.playing = false;
+    
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
+  }
+
+  private async unlockMobileAudioForPlayback(): Promise<void> {
+    if (this.mobileAudioUnlocked) return;
+    
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+      
+      this.mobileAudioUnlocked = true;
+      console.log('🔊 Mobile audio unlocked successfully');
+    } catch (error) {
+      console.warn('Failed to unlock mobile audio:', error);
+    }
+  }
+
+  isPlaying() {
+    return this.playing; 
+  }
+
+  getStatus() {
+    return { isPlaying: this.playing, contentHash: this.currentHash };
+  }
+}

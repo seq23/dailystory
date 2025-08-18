@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { audioSyncService } from '@/services/audioSyncService';
+// Removed: import { audioSyncService } from '@/services/audioSyncService';
 import type { UserInfo } from '@/types';
 
 interface AudioControlsOptions {
@@ -57,7 +57,7 @@ export const useAudioControls = ({
   useEffect(() => {
     if (isMobileOrTablet) {
       // Initialize mobile audio on component mount
-      audioSyncService.getPlaybackStatus(); // This will trigger mobile audio initialization
+      // TODO: Replace with SimplifiedAudioEngine mobile initialization
     }
   }, [isMobileOrTablet]);
 
@@ -68,11 +68,7 @@ export const useAudioControls = ({
     setIsLoading(false);
     
     // Stop audio service
-    try { 
-      audioSyncService.stopAudio(); 
-    } catch (error) {
-      console.warn('Error stopping audio on page change:', error);
-    }
+    // TODO: Replace with SimplifiedAudioEngine.stop()
     
     setIsStabilizing(true);
     // Reduced stabilization timing: 500ms for optimal performance
@@ -143,39 +139,23 @@ export const useAudioControls = ({
     const speed = getBaseSpeed() * speedMultiplierRef.current;
     const playSnapshot = { text, page: currentPage, contentHash };
 
-    // Use the audioSyncService for synchronized playback
-    await audioSyncService.playText({
+    // TODO: Replace with SimplifiedAudioEngine.playTextWithSynchronization
+    /*
+    await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({
       text,
       voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
-      model: 'eleven_turbo_v2_5',
-      difficulty, // Pass difficulty to determine TTS context
+      context: 'conversation',
       onWordHighlight: (wordIndex: number) => {
         console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
         onWordHighlight?.(wordIndex);
-      },
-      onStateChange: (isPlaying: boolean) => {
-        setIsPlaying(isPlaying);
-        setIsLoading(false);
-        onAudioStateChange?.(isPlaying);
-        
-        if (!isPlaying) {
-          onWordHighlight?.(-1); // Clear highlighting
-          
-          // Double-check highlighting is cleared
-          setTimeout(() => onWordHighlight?.(-1), 100);
-          
-          // Emit state change for coordination
-          window.dispatchEvent(new CustomEvent('audio:statechange', { 
-            detail: { isPlaying: false } 
-          }));
-        }
       }
     });
+    */
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
       console.warn('🛑 TTS aborted due to page/text/hash change during load');
-      try { audioSyncService.stopAudio(); } catch {}
+      // TODO: Replace with SimplifiedAudioEngine.stop()
       toast({ 
         title: t('audioReading.pageChanged', 'Page changed'), 
         description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), 
@@ -204,11 +184,7 @@ export const useAudioControls = ({
     onAudioStateChange?.(false);
     
     // Stop audio sync service
-    try {
-      audioSyncService.stopAudio();
-    } catch (error) {
-      console.warn('Error stopping audio sync service:', error);
-    }
+    // TODO: Replace with SimplifiedAudioEngine.stop()
     
     // Emit state change for UI updates (but not stop events to prevent loops)
     window.dispatchEvent(new CustomEvent('audio:statechange', { 
@@ -221,7 +197,7 @@ export const useAudioControls = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      try { audioSyncService.stopAudio(); } catch {}
+      // TODO: Replace with SimplifiedAudioEngine.stop()
     };
   }, []);
 

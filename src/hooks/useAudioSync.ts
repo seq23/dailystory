@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { audioSyncService } from '@/services/audioSyncService';
+// Removed: import { audioSyncService } from '@/services/audioSyncService';
 
 interface AudioSyncOptions {
   contentHash?: string;
