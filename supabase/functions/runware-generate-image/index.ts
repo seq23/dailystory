@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { MultiStageEnhancementPipeline } from "../_shared/multi-stage-pipeline.js";
 
 // Comprehensive Visual State Management
 interface CharacterState {
