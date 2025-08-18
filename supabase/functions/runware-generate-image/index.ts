@@ -865,11 +865,12 @@ serve(async (req) => {
       let connectionState = 'disconnected'; // disconnected → connecting → connected → authenticating → ready
       
       // Framework params should be available from the scope above
+      // Create safe framework params with fallbacks
       const frameworkParams = {
-        steps: framework?.parameters?.steps || 3,
-        cfgScale: framework?.parameters?.cfgScale || Math.max(1.5, CFGScale || 7),
-        scheduler: framework?.parameters?.scheduler || scheduler || 'FlowMatchEulerDiscreteScheduler',
-        strength: framework?.parameters?.strength || strength || 0.8
+        steps: (typeof framework !== 'undefined' && framework?.parameters?.steps) || 3,
+        cfgScale: (typeof framework !== 'undefined' && framework?.parameters?.cfgScale) || Math.max(1.5, CFGScale || 7),
+        scheduler: (typeof framework !== 'undefined' && framework?.parameters?.scheduler) || scheduler || 'FlowMatchEulerDiscreteScheduler',
+        strength: (typeof framework !== 'undefined' && framework?.parameters?.strength) || strength || 0.8
       };
       
       console.log('🎯 Framework params validated:', frameworkParams);

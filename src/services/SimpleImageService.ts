@@ -254,9 +254,25 @@ export class SimpleImageService {
         return tier2Result;
       }
       
-      console.log('⚠️ Enhanced Tier 2 failed, falling back to Tier 3');
+      console.log('⚠️ Enhanced Tier 2 failed, trying Tier 2.5');
     } catch (error) {
-      console.log('⚠️ Enhanced Tier 2 error, falling back to Tier 3:', error);
+      console.log('⚠️ Enhanced Tier 2 error, trying Tier 2.5:', error);
+    }
+
+    try {
+      // TIER 2.5: Simple Runware fallback with hardcoded extraction
+      console.log('🔧 Starting Tier 2.5: Simple Runware fallback');
+      const tier25Result = await this.generateWithRunwareSimpleFallback(cleanScene, config, userInfo, pageNumber);
+      
+      if (tier25Result.success) {
+        console.log('✅ Tier 2.5 succeeded with hardcoded extraction');
+        await this.recordUsage(tier25Result, userInfo?.name);
+        return tier25Result;
+      }
+      
+      console.log('⚠️ Tier 2.5 failed, falling back to Tier 3');
+    } catch (error) {
+      console.log('⚠️ Tier 2.5 error, falling back to Tier 3:', error);
     }
 
     try {
@@ -528,6 +544,53 @@ export class SimpleImageService {
       cost: 0,
       seed: undefined
     };
+  }
+
+  // TIER 2.5: Simple Runware fallback with hardcoded extraction
+  private static async generateWithRunwareSimpleFallback(
+    cleanScene: string,
+    config: ImageGenerationConfig,
+    userInfo?: UserInfo,
+    pageNumber?: number
+  ): Promise<ImageResult> {
+    try {
+      console.log('🎨 Tier 2.5: Simple fallback generation');
+
+      const { data, error } = await supabase.functions.invoke('runware-simple-fallback', {
+        body: {
+          pageText: cleanScene,
+          userInfo,
+          difficultyLevel: config.difficultyLevel || 'medium'
+        }
+      });
+
+      if (error) {
+        throw new Error(`Tier 2.5 API error: ${error.message}`);
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Tier 2.5 generation failed');
+      }
+
+      return {
+        url: data.imageURL,
+        success: true,
+        provider: 'runware-simple-fallback',
+        model: 'runware:100@1',
+        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
+        seed: data.seed
+      };
+
+    } catch (error) {
+      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'tier25-generation');
+      console.error('🎨 Tier 2.5 generation failed:', appError);
+
+      return {
+        url: '',
+        success: false,
+        error: ErrorHandler.getUserMessage(appError)
+      };
+    }
   }
 
   // Provider switching

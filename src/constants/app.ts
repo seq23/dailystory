@@ -32,8 +32,7 @@ export const APP_CONFIG = {
   PROGRESS_STORAGE_KEY: 'time2read_progress',
   SETTINGS_STORAGE_KEY: 'time2read_settings',
   
-  // API endpoints
-  RUNWARE_API_KEY: 'LRRGqlrg67zH8uss6lMjVvc54pVOrznM',
+  // API endpoints - All API keys are now managed through Supabase secrets
 } as const;
 
 export const SUPPORTED_LANGUAGES = [

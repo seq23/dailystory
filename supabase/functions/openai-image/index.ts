@@ -160,13 +160,32 @@ serve(async (req) => {
     // Enhanced children's book style with framework consistency
     enhancedPrompt += `. Style: ${framework.artStyle}, ${framework.quality}, ${framework.brandSuffix}`;
 
-    // Determine size based on width/height
-    let size = '1024x1024';
-    if (width === 1536 && height === 1024) size = '1792x1024';
-    else if (width === 1024 && height === 1536) size = '1024x1792';
+    // Enhance prompt with full page scene analysis
+    const { DirectContentExtractor } = await import('../_shared/DirectContentExtractor.js');
+    const pageContent = DirectContentExtractor.extractPageContent(positivePrompt);
+    
+    // Add emotional and visual context
+    const emotionalKeywords = ['happy', 'sad', 'excited', 'scared', 'curious', 'surprised'];
+    const detectedEmotion = emotionalKeywords.find(emotion => 
+      positivePrompt.toLowerCase().includes(emotion)) || 'neutral';
+    
+    // Build comprehensive scene description
+    const sceneAnalysis = `Scene: ${pageContent.primaryScene || positivePrompt}. 
+    Characters: ${pageContent.characters.length ? pageContent.characters.join(', ') : 'child protagonist'}. 
+    Setting: ${pageContent.setting || 'outdoor scene'}. 
+    Mood: ${detectedEmotion}. 
+    Objects: ${pageContent.objects.join(', ') || 'relevant scene objects'}`;
+    
+    // Create final enhanced prompt combining everything
+    const finalPrompt = `${sceneAnalysis}. ${enhancedPrompt}. Ultra high resolution children's book illustration`;
 
-    // Fix quality parameter mapping
-    const dalleQuality = quality === 'high' ? 'hd' : 'standard';
+    // Determine size for gpt-image-1 (different sizes than DALL-E 3)
+    let size = '1024x1024';
+    if (width === 1536 && height === 1024) size = '1536x1024';
+    else if (width === 1024 && height === 1536) size = '1024x1536';
+
+    // Use gpt-image-1 quality settings
+    const gptImageQuality = quality === 'high' ? 'high' : 'medium';
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -175,12 +194,13 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: enhancedPrompt,
-        n: 1,
+        model: 'gpt-image-1',
+        prompt: finalPrompt,
         size: size,
-        quality: dalleQuality,
-        style: style
+        quality: gptImageQuality,
+        output_format: 'webp',
+        background: 'opaque',
+        n: 1
       }),
     });
 
@@ -209,11 +229,11 @@ serve(async (req) => {
       success: true,
       imageURL: imageUrl,
       provider: 'openai',
-      model: 'dall-e-3',
-      cost: dalleQuality === 'hd' ? 0.08 : 0.04, // Actual OpenAI pricing
+      model: 'gpt-image-1',
+      cost: gptImageQuality === 'high' ? 0.12 : 0.08, // gpt-image-1 pricing
       pageNumber: pageNumber,
       seed: generatedSeed,
-      quality: dalleQuality,
+      quality: gptImageQuality,
       size: size
     });
 
