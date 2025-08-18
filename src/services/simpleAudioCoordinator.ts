@@ -90,8 +90,8 @@ class SimpleAudioCoordinator {
 
     window.addEventListener('audio:stop:simple', async () => {
       try {
-        const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-        SimpleAudioEngine.getInstance().stop();
+        const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
+        SimplifiedAudioEngine.getInstance().stop();
       } catch (e) {
         console.warn('Failed to stop simple audio:', e);
       }
