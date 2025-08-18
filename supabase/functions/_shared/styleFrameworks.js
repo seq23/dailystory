@@ -6,7 +6,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     // Level 0 - Pre-reader
     name: 'High-Quality 3D Children\'s Art',
     artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics (NO TEXT)',
-    colorPalette: 'Bright, cheerful colors with blue/turquoise dominant tones',
+    colorPalette: 'Bright, cheerful colors with natural color harmony',
     lighting: 'Natural daylight with soft shadows and highlights',
     texture: 'Smooth, polished surfaces with subtle material definition',
     composition: 'Clear, focused composition with appealing depth',
@@ -33,7 +33,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     // Level 1 - Beginner (identical to Level 0)
     name: 'High-Quality 3D Children\'s Art',
     artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics (NO TEXT)',
-    colorPalette: 'Bright, cheerful colors with blue/turquoise dominant tones',
+    colorPalette: 'Bright, cheerful colors with natural color harmony',
     lighting: 'Natural daylight with soft shadows and highlights',
     texture: 'Smooth, polished surfaces with subtle material definition',
     composition: 'Clear, focused composition with appealing depth',
@@ -140,7 +140,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
 
 // Color palette definitions
 export const COLOR_PALETTE_DEFINITIONS = {
-  'bright_vibrant': 'bright cheerful colors, blue and turquoise dominant tones, vibrant hues',
+  'bright_vibrant': 'bright cheerful colors, natural vibrant hues, harmonious palette',
   'warm_pastels': 'warm muted tones, soft pastels, gentle color harmony',
   'nuanced_artistic': 'nuanced color gradients, artistic palette, sophisticated color relationships',
   'complex_professional': 'complex color theory, professional artist palette, masterful color composition'

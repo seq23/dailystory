@@ -121,6 +121,8 @@ IMPORTANT: If any of these characters are referenced in the current page text, u
 function detectCharactersInText(text: string, userInfo?: any): CharacterData[] {
   const characters: CharacterData[] = [];
   
+  console.log(`🔍 [DEBUG] Detecting characters in text:`, text.substring(0, 100) + '...');
+  
   // Detect main character (always primary)
   if (userInfo?.name) {
     characters.push({
@@ -133,8 +135,19 @@ function detectCharactersInText(text: string, userInfo?: any): CharacterData[] {
     });
   }
 
-  // Detect secondary characters mentioned in text
-  const animalMatches = text.match(/\b(bird|cat|dog|rabbit|squirrel|butterfly|fox|deer|mouse|turtle)\b/gi);
+  // Exclude common temporal words that aren't characters
+  const TEMPORAL_EXCLUSIONS = new Set([
+    'once', 'today', 'yesterday', 'tomorrow', 'now', 'then', 'when', 'where', 'how', 
+    'who', 'what', 'why', 'after', 'before', 'during', 'while', 'until', 'since',
+    'morning', 'afternoon', 'evening', 'night', 'day', 'time', 'moment', 'soon',
+    'later', 'early', 'late', 'always', 'never', 'sometimes', 'often', 'first',
+    'second', 'third', 'last', 'next', 'previous', 'another', 'other', 'every',
+    'each', 'all', 'some', 'many', 'few', 'more', 'most', 'less', 'little',
+    'much', 'very', 'quite', 'rather', 'really', 'truly', 'certainly'
+  ]);
+
+  // Detect animals (legitimate secondary characters)
+  const animalMatches = text.match(/\b(bird|cat|dog|rabbit|squirrel|butterfly|fox|deer|mouse|turtle|owl|bear|lion|tiger|elephant|giraffe|zebra|monkey|duck|goose|chicken|pig|cow|horse|sheep|goat|fish|frog|snake|spider|bee|ant|ladybug)\b/gi);
   if (animalMatches) {
     const uniqueAnimals = [...new Set(animalMatches.map(a => a.toLowerCase()))];
     uniqueAnimals.forEach(animal => {
@@ -147,8 +160,33 @@ function detectCharactersInText(text: string, userInfo?: any): CharacterData[] {
         type: 'secondary'
       });
     });
+    console.log(`🔍 [DEBUG] Found animals:`, uniqueAnimals);
   }
 
+  // Detect proper names but exclude temporal words
+  const properNameMatches = text.match(/\b[A-Z][a-z]+\b/g) || [];
+  const validNames = properNameMatches.filter(name => 
+    !TEMPORAL_EXCLUSIONS.has(name.toLowerCase()) &&
+    name !== userInfo?.name && // Don't duplicate main character
+    name.length > 2 && // Avoid single letters and short words
+    !/^(The|And|But|Or|So|For|Yet|Nor|A|An|In|On|At|By|To|From|With|Of|As|Is|Was|Are|Were|Be|Been|Being|Have|Has|Had|Do|Does|Did|Can|Could|Will|Would|Should|Shall|May|Might|Must|This|That|These|Those|Here|There|Where|When|What|Who|Why|How)$/i.test(name)
+  );
+
+  validNames.forEach(name => {
+    if (!characters.some(char => char.name === name)) {
+      characters.push({
+        name: name,
+        description: `character named ${name}`,
+        firstAppearance: 1,
+        lastSeen: 1,
+        appearances: [],
+        type: 'secondary'
+      });
+    }
+  });
+
+  console.log(`✅ [DEBUG] Detected ${characters.length} characters:`, characters.map(c => c.name));
+  
   return characters;
 }
 

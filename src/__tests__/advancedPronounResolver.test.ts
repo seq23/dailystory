@@ -48,4 +48,18 @@ describe('AdvancedPronounResolver', () => {
     expect(interactions).toHaveLength(1);
     expect(interactions[0].characters).toEqual(['Alex', 'Emma']); // sorted
   });
+
+  it('should handle "prefer-not-to-answer" pronouns correctly', () => {
+    // Test that prefer-not-to-answer uses they/them pronouns
+    const resolved = AdvancedPronounResolver.resolveComplexPronouns(
+      testSessionId,
+      "The child went to their room. They were happy.",
+      1
+    );
+    
+    // Should maintain they/them usage for gender-neutral characters
+    expect(resolved).toContain('they');
+    expect(resolved).not.toContain('he');
+    expect(resolved).not.toContain('she');
+  });
 });

@@ -72,6 +72,9 @@ function derivePronoun(userInfo?: UserInfo): string {
     case "girl":
       console.log('✅ [DEBUG] Using "she" pronoun for girl avatar');
       return "she";
+    case "prefer-not-to-answer":
+      console.log('✅ [DEBUG] Using "they" pronoun for prefer-not-to-answer avatar');
+      return "they";
     default:
       console.log('⚠️ [DEBUG] Using "they" pronoun (default fallback)');
       return "they";
@@ -117,8 +120,29 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
   return cleanup(out);
 }
 
+// Generate all pronoun forms for comprehensive substitution
+function generatePronounSet(baseProform: string): Record<string, string> {
+  console.log(`🔍 [DEBUG] Generating pronoun set for base: ${baseProform}`);
+  
+  switch (baseProform) {
+    case "he":
+      return { pronoun: "he", he: "he", him: "him", his: "his", himself: "himself" };
+    case "she":
+      return { pronoun: "she", she: "she", her: "her", hers: "hers", herself: "herself" };
+    case "they":
+      return { pronoun: "they", they: "they", them: "them", their: "their", theirs: "theirs", themselves: "themselves" };
+    default:
+      return { pronoun: "they", they: "they", them: "them", their: "their", theirs: "theirs", themselves: "themselves" };
+  }
+}
+
 export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): string {
   const { userInfo, pageText, seed } = ctx;
+
+  const basePronoun = derivePronoun(userInfo);
+  const pronounSet = generatePronounSet(basePronoun);
+  
+  console.log(`🔍 [DEBUG] Generated pronoun set:`, pronounSet);
 
   const candidate: Record<string, string | undefined> = {
     // bridge from seed variables
@@ -126,7 +150,7 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     adjective: seed?.adjective,
 
     // micro tokens with mapping to canonical where sensible
-    pronoun: derivePronoun(userInfo),
+    pronoun: basePronoun,
     animal: seed?.animal || userInfo?.favoriteAnimal || scanForAnimalFromText(pageText) || pick(FALLBACK_POOLS.animal),
     food: seed?.food || userInfo?.favoriteFood || pick(FALLBACK_POOLS.food),
     setting: seed?.setting || pick(FALLBACK_POOLS.setting),
@@ -151,8 +175,12 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     action: candidate.action,
     adjective: adjective,
     color: candidate.color,
-    friend: candidate.friend
+    friend: candidate.friend,
+    // Add all pronoun forms
+    ...pronounSet
   };
+
+  console.log(`🔍 [DEBUG] Final mappings with pronouns:`, mappings);
 
   for (const [k, v] of Object.entries(mappings)) {
     if (v) out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
