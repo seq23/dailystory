@@ -63,6 +63,8 @@ Create a rich, detailed scene description that goes beyond simple keyword matchi
 - Lighting and composition ideas
 - Any magical or imaginative elements
 
+IMPORTANT: If there are secondary characters (like animals or companions), describe them as SINGULAR entities (one blue bird, not multiple birds). Focus on ONE main character and at most ONE secondary character per scene.
+
 Focus on creating a scene that would make a beautiful, engaging children's book illustration regardless of the setting (woods, city, home, fantasy, etc.). The AI should detect and enhance the natural visual appeal of ANY story context.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

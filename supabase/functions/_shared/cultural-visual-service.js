@@ -154,8 +154,8 @@ export class MulticulturalVisualService {
     const profile = this.getCulturalVisualProfile('en');
     const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
     
-    // Select from full spectrum of African American skin tones
-    const skinTone = this.selectRandomElement(profile.skinTones);
+    // Use the user's selected avatar skin tone
+    const skinTone = userInfo.avatar?.skinTone || this.selectRandomElement(profile.skinTones);
     
     // Get culturally appropriate hair style for African American heritage
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
