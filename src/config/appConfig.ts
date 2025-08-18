@@ -174,7 +174,7 @@ export const DIFFICULTY_STYLE_MAPPING = {
 
 export const IMAGE_STYLES = {
   'children-book-illustration': 'professional children\'s book illustration, vibrant colors, friendly atmosphere',
-  'cartoon': 'colorful cartoon style, playful and engaging', 
+  'illustrated-artwork': 'detailed illustrated artwork, vibrant and engaging, storybook style', 
   'watercolor': 'soft watercolor painting, gentle and artistic',
   'digital-art': 'high-quality digital art, detailed and polished'
 } as const;

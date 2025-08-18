@@ -561,8 +561,8 @@ serve(async (req) => {
     
     console.log('👤 Character Gender Info:', { avatarType, characterGender, pronouns, userName: config?.userName });
     
-    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is a ${characterGender} named ${config?.userName || 'the child'} (use ${pronouns} pronouns consistently throughout the story).`;
-    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}, who is a ${characterGender}. Use ${pronouns} pronouns consistently for the main character throughout the entire story.`;
+    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is named ${config?.userName || 'the child'}.`;
+    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}. Create an engaging story appropriate for the reading level.`;
 
     const maxTokens = readingLevel === 'beginner' ? 200 : 
                      readingLevel === 'easy' ? 400 : 

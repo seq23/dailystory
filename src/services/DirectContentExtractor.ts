@@ -215,7 +215,7 @@ export class DirectContentExtractor {
     const visualPrompt = `A ${style} showing ${visualScene}. Bright, cheerful, safe for children.`;
     
     const negativePrompt = [
-      '**NO TEXT**, **NO WORDS**, **NO LETTERS**, blurry, low quality, deformed anatomy, extra limbs, multiple arms, multiple legs, watermark, ugly, scary, inappropriate, adult content'
+      '**NO TEXT OF ANY KIND**, **NO SPEECH BUBBLES**, **NO CAPTIONS**, **NO WORDS**, **NO LETTERS**, blurry, low quality, deformed anatomy, extra limbs, multiple arms, multiple legs, anatomically incorrect children, animal-human hybrid, merged bodies, extra body parts, distorted human anatomy, cartoon animal features on humans, watermark, ugly, scary, inappropriate, adult content'
     ];
     
     return {
@@ -233,7 +233,28 @@ export class DirectContentExtractor {
       const ageGroup = age <= 5 ? 'young child' : age <= 8 ? 'child' : 'older child';
       const skinTone = userInfo.avatar?.skinTone || 'medium';
       
-      return `${ageGroup} named ${userInfo.name} with ${skinTone} skin`;
+      // Enhanced skin tone descriptions for better representation
+      const skinToneMap: Record<string, string> = {
+        'pale': 'pale skin',
+        'light': 'light skin',
+        'medium': 'medium skin',
+        'olive': 'olive skin',
+        'dark': 'rich brown skin, beautiful dark complexion, African American features'
+      };
+      
+      // Enhanced hair descriptions for texture representation
+      const hairTextureMap: Record<string, string> = {
+        'dark': ', natural curly hair, afro-textured hair',
+        'light': ', straight hair',
+        'medium': ', wavy hair',
+        'olive': ', dark wavy hair',
+        'pale': ', light hair'
+      };
+      
+      const skinDescription = skinToneMap[skinTone] || skinTone + ' skin';
+      const hairDescription = hairTextureMap[skinTone] || '';
+      
+      return `${ageGroup} named ${userInfo.name} with ${skinDescription}${hairDescription}, proper human anatomy, realistic child proportions`;
     }
     
     return subject;
