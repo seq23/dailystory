@@ -392,14 +392,30 @@ export class SimpleImageService {
     pageNumber?: number
   ): Promise<ImageResult> {
     try {
-      console.log('🎨 Simple Runware generation (no AI enhancement)');
+      console.log('🎨 Simple Runware generation with cultural adaptation');
 
-      // Create basic prompt without complex visual state management
-      const characterDesc = userInfo 
-        ? `${userInfo.name} (${userInfo.avatar?.type || 'child'})`
-        : 'friendly character';
+      // Enhanced cultural adaptation for Tier 2 fallback
+      let characterDesc = 'friendly character';
+      let culturalElements = '';
       
-      const simplePrompt = `Children's book illustration: ${characterDesc} ${cleanScene}. Bright, colorful, safe for children, consistent-face children-book bright-colors`;
+      if (userInfo) {
+        // Basic avatar-based character description
+        const avatarType = userInfo.avatar?.type || 'child';
+        const skinTone = userInfo.avatar?.skinTone || 'medium';
+        
+        // Enhanced cultural character description for dark skin avatars
+        if (skinTone === 'dark') {
+          characterDesc = `${userInfo.name} (beautiful ${avatarType} with dark skin, warm features, confident expression)`;
+          culturalElements = ', diversity positive representation';
+        } else if (skinTone === 'olive') {
+          characterDesc = `${userInfo.name} (${avatarType} with olive skin tone, warm features)`;
+          culturalElements = ', multicultural representation';
+        } else {
+          characterDesc = `${userInfo.name} (${avatarType} with ${skinTone} skin)`;
+        }
+      }
+      
+      const simplePrompt = `Children's book illustration: ${characterDesc} ${cleanScene}. Bright, colorful, safe for children, consistent-face children-book bright-colors${culturalElements}, high quality diverse representation`;
 
       const { data, error } = await supabase.functions.invoke('runware-test-simple', {
         body: {

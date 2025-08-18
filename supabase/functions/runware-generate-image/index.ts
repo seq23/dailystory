@@ -883,6 +883,14 @@ serve(async (req) => {
           console.log('🔐 Authentication message sent to Runware');
         };
 
+        // Capture framework data in WebSocket closure to avoid scope errors
+        const frameworkParams = {
+          steps: framework.parameters?.steps || 3,
+          cfgScale: framework.parameters?.cfgScale || Math.max(1.5, CFGScale),
+          scheduler: framework.parameters?.scheduler || scheduler,
+          strength: framework.parameters?.strength || strength
+        };
+
         ws.onmessage = (event) => {
           try {
             const response = JSON.parse(event.data);
@@ -919,10 +927,10 @@ serve(async (req) => {
                       height,
                       numberResults,
                       outputFormat,
-                      steps: framework.parameters?.steps || 3,
-                      CFGScale: framework.parameters?.cfgScale || Math.max(1.5, CFGScale),
-                      scheduler: framework.parameters?.scheduler || scheduler,
-                      strength: framework.parameters?.strength || strength,
+                      steps: frameworkParams.steps,
+                      CFGScale: frameworkParams.cfgScale,
+                      scheduler: frameworkParams.scheduler,
+                      strength: frameworkParams.strength,
                       ...(finalSeed && { seed: finalSeed })
                     }];
                     
