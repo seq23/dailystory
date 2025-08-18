@@ -68,15 +68,58 @@ const CULTURAL_VISUAL_PROFILES = {
     celebrations: ['French cultural festival', 'family feast', 'traditional celebration', 'elegant gathering', 'cultural event', 'African-French cultural celebration', 'Francophone heritage festival', 'multicultural community event'],
     negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate cultural elements', 'negative stereotypes']
   },
-  'en': {
-    skinTones: ['rich cocoa skin', 'deep ebony skin', 'warm mahogany skin', 'golden bronze skin', 'deep amber skin', 'caramel skin', 'honey bronze skin'],
-    hairStyles: ['natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls'],
-    facialFeatures: ['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing', 'kind eyes', 'proud posture'],
-    culturalElements: ['modern urban style', 'contemporary American fashion', 'diverse American culture', 'metropolitan diversity', 'cultural pride symbols', 'community strength'],
-    familyStructure: ['strong family bonds', 'community support', 'church family', 'multigenerational wisdom', 'extended family gathering', 'neighborhood community'],
-    settings: ['vibrant African American neighborhood', 'community center', 'beautiful church', 'family home', 'cultural center', 'historical landmark'],
-    clothing: ['jeans and sneakers', 'casual t-shirt', 'modern American fashion', 'contemporary urban style', 'hoodie and jeans', 'athletic wear', 'modern African American fashion', 'contemporary style'],
-    celebrations: ['Juneteenth celebration', 'family reunion', 'church gathering', 'community festival', 'cultural pride event', 'graduation celebration'],
+'en': {
+    // Full spectrum of African American skin tones
+    skinTones: [
+      'rich cocoa skin', 'deep ebony skin', 'warm mahogany skin', 'golden bronze skin', 
+      'deep amber skin', 'caramel skin', 'honey bronze skin', 'warm honey skin', 
+      'golden caramel skin', 'light bronze skin', 'peachy brown skin', 'fair brown skin'
+    ],
+    // Diverse African American hair textures and styles
+    hairStyles: [
+      'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 
+      'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls',
+      'loose natural curls', 'tight coily hair', 'soft waves', 'kinky textured hair',
+      '4C natural hair', '3B curly hair', 'box braids', 'goddess braids',
+      'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
+      'pressed curls', 'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
+    ],
+    // Mix of African American and general American facial features
+    facialFeatures: [
+      'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 
+      'regal bearing', 'kind eyes', 'proud posture', 'bright hazel eyes', 'gentle smile',
+      'expressive brown eyes', 'warm personality', 'friendly demeanor', 'intelligent gaze'
+    ],
+    // Mix of African American cultural pride and general American elements
+    culturalElements: [
+      'modern urban style', 'contemporary American fashion', 'diverse American culture', 
+      'metropolitan diversity', 'cultural pride symbols', 'community strength',
+      'mainstream American culture', 'suburban lifestyle', 'middle-class family values',
+      'American dream symbols', 'educational achievement', 'professional success'
+    ],
+    familyStructure: [
+      'strong family bonds', 'community support', 'church family', 'multigenerational wisdom', 
+      'extended family gathering', 'neighborhood community', 'nuclear family', 'suburban family',
+      'professional family', 'academic family', 'middle-class household', 'two-parent home'
+    ],
+    // Mix of urban African American and suburban/general American settings
+    settings: [
+      'vibrant African American neighborhood', 'community center', 'beautiful church', 
+      'family home', 'cultural center', 'historical landmark', 'suburban neighborhood',
+      'modern American suburb', 'middle-class community', 'well-maintained school',
+      'public library', 'shopping mall', 'local park', 'family restaurant'
+    ],
+    clothing: [
+      'jeans and sneakers', 'casual t-shirt', 'modern American fashion', 
+      'contemporary urban style', 'hoodie and jeans', 'athletic wear', 
+      'modern African American fashion', 'contemporary style', 'preppy clothes',
+      'school uniform', 'suburban casual wear', 'mainstream fashion', 'polo shirt'
+    ],
+    celebrations: [
+      'Juneteenth celebration', 'family reunion', 'church gathering', 'community festival', 
+      'cultural pride event', 'graduation celebration', 'birthday party', 'Christmas morning',
+      'Thanksgiving dinner', 'Fourth of July barbecue', 'school achievement ceremony', 'sports victory'
+    ],
     negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'negative stereotypes', 'inaccurate representation', 'degrading imagery']
   }
 };
@@ -87,6 +130,11 @@ export class MulticulturalVisualService {
   }
 
   static generateCulturalCharacterDescription(userInfo) {
+    // Special handling for English speakers with dark skin - mix African American and general American
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      return this.generateMixedAfricanAmericanDescription(userInfo);
+    }
+    
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     
     // Use actual user-selected attributes instead of random ones
@@ -100,6 +148,49 @@ export class MulticulturalVisualService {
     console.log(`🎭 Character generation: ${genderTerm} with ${skinTone} (from userInfo: ${userInfo.avatar?.skinTone})`);
     
     return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+  }
+
+  static generateMixedAfricanAmericanDescription(userInfo) {
+    const profile = this.getCulturalVisualProfile('en');
+    const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+    
+    // Select from full spectrum of African American skin tones
+    const skinTone = this.selectRandomElement(profile.skinTones);
+    
+    // Get culturally appropriate hair style for African American heritage
+    const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
+    
+    // Mix African American and general American facial features (50/50 chance)
+    const facialFeatures = Math.random() < 0.5 
+      ? this.selectRandomElement(['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing'])
+      : this.selectRandomElement(['bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 'friendly demeanor']);
+    
+    // Mix cultural pride elements with mainstream American (50/50 chance)  
+    const culturalElement = Math.random() < 0.5
+      ? this.selectRandomElement(['cultural pride symbols', 'community strength', 'modern urban style'])
+      : this.selectRandomElement(['mainstream American culture', 'suburban lifestyle', 'educational achievement']);
+    
+    console.log(`🎭 Mixed AA Character: ${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`);
+    
+    return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+  }
+
+  static getCulturallyAppropriateHairStyle(userInfo) {
+    // When language is English and skin tone is dark, use African American hair textures/styles
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      const africanAmericanHairStyles = [
+        'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 
+        'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls',
+        'loose natural curls', 'tight coily hair', 'kinky textured hair',
+        '4C natural hair', '3B curly hair', 'box braids', 'goddess braids',
+        'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
+        'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
+      ];
+      return this.selectRandomElement(africanAmericanHairStyles);
+    }
+    
+    const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
+    return this.selectRandomElement(profile.hairStyles);
   }
 
   static generateCulturalSecondaryCharacters(userInfo, count = 2) {
@@ -118,9 +209,33 @@ export class MulticulturalVisualService {
   }
 
   static generateCulturalSetting(userInfo) {
+    // Special handling for English speakers with dark skin - mix urban and suburban settings
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      return this.generateMixedAfricanAmericanSetting(userInfo);
+    }
+    
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     const setting = this.selectRandomElement(profile.settings);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
+    
+    return `${setting} with ${culturalElement}`;
+  }
+
+  static generateMixedAfricanAmericanSetting(userInfo) {
+    const profile = this.getCulturalVisualProfile('en');
+    
+    // 50/50 chance between African American urban settings and general American suburban settings
+    const isUrbanSetting = Math.random() < 0.5;
+    
+    const setting = isUrbanSetting 
+      ? this.selectRandomElement(['vibrant African American neighborhood', 'community center', 'beautiful church', 'cultural center', 'historical landmark'])
+      : this.selectRandomElement(['suburban neighborhood', 'modern American suburb', 'middle-class community', 'well-maintained school', 'public library', 'local park']);
+    
+    const culturalElement = isUrbanSetting
+      ? this.selectRandomElement(['cultural pride symbols', 'community strength', 'modern urban style'])
+      : this.selectRandomElement(['mainstream American culture', 'suburban lifestyle', 'middle-class family values']);
+    
+    console.log(`🏘️ Mixed AA Setting: ${setting} with ${culturalElement} (Urban: ${isUrbanSetting})`);
     
     return `${setting} with ${culturalElement}`;
   }
