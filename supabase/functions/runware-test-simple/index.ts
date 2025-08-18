@@ -13,14 +13,17 @@ serve(async (req) => {
       return createCorsErrorResponse('RUNWARE_API_KEY not configured', 500);
     }
 
-    const { pageText } = await req.json();
+    const { pageText, userInfo, difficultyLevel = 'medium' } = await req.json();
 
     // Import centralized style framework for consistency
     const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
     
-    // Use default difficulty for simple test
-    const framework = getStyleFramework('medium');
-    const enhancedPrompt = `${framework.prompt}: ${pageText || 'a friendly character'}. ${framework.quality}, ${framework.brandSuffix}.`;
+    // Extract scene with cultural context
+    const extractedScene = extractSceneWithCulture(pageText, userInfo);
+    
+    // Use framework for consistent styling
+    const framework = getStyleFramework(difficultyLevel);
+    const enhancedPrompt = `${extractedScene}. ${framework.prompt}. ${framework.quality}, ${framework.brandSuffix}.`;
 
     console.log('🎨 Testing Runware with prompt:', enhancedPrompt.substring(0, 100));
 
@@ -91,3 +94,72 @@ serve(async (req) => {
     return createCorsErrorResponse(`Error: ${error.message}`);
   }
 });
+
+// Scene extraction with cultural context and sea/dolphin priority
+function extractSceneWithCulture(pageText: string, userInfo?: any): string {
+  if (!pageText) return 'a friendly character in a beautiful scene';
+  
+  const text = pageText.toLowerCase();
+  const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
+  
+  // Enhanced scene scoring with sea/dolphin priority
+  let bestScene = sentences[0] || pageText;
+  let bestScore = 0;
+  
+  sentences.forEach(sentence => {
+    let score = 0;
+    const lowerSentence = sentence.toLowerCase();
+    
+    // High priority for sea/ocean/dolphin content
+    if (lowerSentence.includes('sea') || lowerSentence.includes('ocean') || lowerSentence.includes('beach')) score += 45;
+    if (lowerSentence.includes('dolphin') || lowerSentence.includes('wave') || lowerSentence.includes('swimming')) score += 40;
+    if (lowerSentence.includes('loved') && (lowerSentence.includes('dolphin') || lowerSentence.includes('sea'))) score += 30;
+    if (lowerSentence.includes('dreamed') && (lowerSentence.includes('sea') || lowerSentence.includes('ocean'))) score += 30;
+    
+    // Action and character-focused content
+    if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump')) score += 25;
+    if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy')) score += 20;
+    if (userInfo?.name && lowerSentence.includes(userInfo.name.toLowerCase())) score += 15;
+    
+    if (score > bestScore) {
+      bestScore = score;
+      bestScene = sentence;
+    }
+  });
+  
+  // Generate character description with cultural context
+  let characterDesc = 'child';
+  if (userInfo?.name) {
+    characterDesc = userInfo.name;
+  }
+  
+  // Simple avatar description with cultural clothing
+  if (userInfo?.avatar) {
+    const skinTone = userInfo.avatar.skinTone || 'medium';
+    const type = userInfo.avatar.type || 'child';
+    
+    const skinMap = {
+      'pale': 'fair skin', 'light': 'light skin', 'medium': 'medium skin',
+      'olive': 'olive skin', 'dark': 'dark skin'
+    };
+    
+    const hairMap = {
+      'pale': 'blonde hair', 'light': 'brown hair', 'medium': 'brown hair',
+      'olive': 'dark brown hair', 'dark': 'black hair'
+    };
+    
+    // Apply cultural clothing logic for English + Dark Skin
+    let clothingDesc = '';
+    if (userInfo.nativeLanguage === 'en' && skinTone === 'dark') {
+      clothingDesc = ' in modern American fashion';
+    } else if (userInfo.nativeLanguage === 'fr' && skinTone === 'dark') {
+      clothingDesc = ' in African-French fusion style';
+    } else if (userInfo.nativeLanguage === 'es' && skinTone === 'dark') {
+      clothingDesc = ' in contemporary Hispanic fashion';
+    }
+    
+    characterDesc = `${type} with ${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
+  }
+  
+  return `${characterDesc}. Scene: ${bestScene}`;
+}

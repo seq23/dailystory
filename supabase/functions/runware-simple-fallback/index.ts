@@ -111,9 +111,37 @@ serve(async (req) => {
 
 // Hardcoded scene extraction - no external dependencies
 function extractSimpleScene(pageText: string, userInfo?: any): string {
-  const text = pageText.toLowerCase();
+  if (!pageText) return 'a friendly character in a beautiful scene';
   
-  // Simple character detection
+  const text = pageText.toLowerCase();
+  const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
+  
+  // Enhanced scene scoring with sea/dolphin priority
+  let bestScene = sentences[0] || pageText;
+  let bestScore = 0;
+  
+  sentences.forEach(sentence => {
+    let score = 0;
+    const lowerSentence = sentence.toLowerCase();
+    
+    // High priority for sea/ocean/dolphin content
+    if (lowerSentence.includes('sea') || lowerSentence.includes('ocean') || lowerSentence.includes('beach')) score += 45;
+    if (lowerSentence.includes('dolphin') || lowerSentence.includes('wave') || lowerSentence.includes('swimming')) score += 40;
+    if (lowerSentence.includes('loved') && (lowerSentence.includes('dolphin') || lowerSentence.includes('sea'))) score += 30;
+    if (lowerSentence.includes('dreamed') && (lowerSentence.includes('sea') || lowerSentence.includes('ocean'))) score += 30;
+    
+    // Action and character-focused content
+    if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump')) score += 25;
+    if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy')) score += 20;
+    if (userInfo?.name && lowerSentence.includes(userInfo.name.toLowerCase())) score += 15;
+    
+    if (score > bestScore) {
+      bestScore = score;
+      bestScene = sentence;
+    }
+  });
+  
+  // Character detection with cultural clothing
   let character = 'child';
   if (userInfo?.name) {
     character = userInfo.name;
@@ -123,7 +151,7 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     character = 'boy';
   }
   
-  // Simple avatar description
+  // Enhanced avatar description with cultural clothing
   let avatarDesc = '';
   if (userInfo?.avatar) {
     const skinTone = userInfo.avatar.skinTone || 'medium';
@@ -145,32 +173,47 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
       'dark': 'black hair'
     };
     
-    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}`;
+    // Apply cultural clothing logic
+    let clothingDesc = '';
+    if (userInfo.nativeLanguage === 'en' && skinTone === 'dark') {
+      clothingDesc = ' in modern American fashion';
+    } else if (userInfo.nativeLanguage === 'fr' && skinTone === 'dark') {
+      clothingDesc = ' in African-French fusion style';
+    } else if (userInfo.nativeLanguage === 'es' && skinTone === 'dark') {
+      clothingDesc = ' in contemporary Hispanic fashion';
+    }
+    
+    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
   }
   
-  // Simple setting detection
+  // Enhanced setting detection with sea priority
   let setting = 'outdoor scene';
-  if (text.includes('house') || text.includes('home')) setting = 'indoor house scene';
+  if (text.includes('beach') || text.includes('ocean') || text.includes('sea')) setting = 'beach scene';
+  else if (text.includes('house') || text.includes('home')) setting = 'indoor house scene';
   else if (text.includes('forest') || text.includes('tree')) setting = 'forest scene';
-  else if (text.includes('beach') || text.includes('ocean')) setting = 'beach scene';
   else if (text.includes('school')) setting = 'school scene';
   else if (text.includes('park')) setting = 'park scene';
   
-  // Simple object detection
+  // Enhanced object detection with sea/dolphin priority
   const objects = [];
+  const priorityObjects = ['dolphin', 'whale', 'fish', 'shell'];
   const simpleObjects = ['ball', 'book', 'toy', 'dog', 'cat', 'car', 'bike', 'flower'];
-  simpleObjects.forEach(obj => {
+  
+  priorityObjects.forEach(obj => {
     if (text.includes(obj)) objects.push(obj);
   });
+  simpleObjects.forEach(obj => {
+    if (text.includes(obj) && objects.length < 3) objects.push(obj);
+  });
   
-  // Build scene description
+  // Build enhanced scene description
   let scene = `${character}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${setting}`;
   if (objects.length > 0) scene += ` with ${objects.slice(0, 2).join(' and ')}`;
   
-  // Add original text context
-  scene += `. Scene: ${pageText}`;
+  // Use best scene as primary context
+  scene += `. Scene: ${bestScene}`;
   
   return scene;
 }

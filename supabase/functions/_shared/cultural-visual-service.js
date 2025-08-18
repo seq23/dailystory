@@ -58,24 +58,24 @@ const CULTURAL_VISUAL_PROFILES = {
     negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate representation', 'negative stereotypes']
   },
   'fr': {
-    skinTones: ['fair rose skin', 'warm peach skin', 'golden olive skin', 'light tan skin', 'creamy complexion'],
-    hairStyles: ['elegant French braids', 'chic bob cut', 'sophisticated updo', 'natural wavy hair', 'stylish modern cut'],
-    facialFeatures: ['bright eyes', 'refined features', 'elegant smile', 'sophisticated expression', 'charming demeanor'],
-    culturalElements: ['French elegance', 'artistic elements', 'cultural sophistication', 'traditional patterns', 'refined aesthetics'],
-    familyStructure: ['intimate family gathering', 'grandparents storytelling', 'elegant family dinner', 'cultural tradition', 'family celebration'],
-    settings: ['charming French countryside', 'elegant Parisian street', 'beautiful French garden', 'traditional French home', 'cultural landmark'],
-    clothing: ['chic French fashion', 'elegant dress', 'sophisticated style', 'cultural formal wear', 'modern French clothing'],
-    celebrations: ['French cultural festival', 'family feast', 'traditional celebration', 'elegant gathering', 'cultural event'],
+    skinTones: ['fair rose skin', 'warm peach skin', 'golden olive skin', 'light tan skin', 'creamy complexion', 'rich ebony skin', 'warm mahogany skin', 'golden bronze skin', 'deep caramel skin'],
+    hairStyles: ['elegant French braids', 'chic bob cut', 'sophisticated updo', 'natural wavy hair', 'stylish modern cut', 'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs'],
+    facialFeatures: ['bright eyes', 'refined features', 'elegant smile', 'sophisticated expression', 'charming demeanor', 'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression'],
+    culturalElements: ['French elegance', 'artistic elements', 'cultural sophistication', 'traditional patterns', 'refined aesthetics', 'African-French heritage', 'Francophone African culture', 'Parisian diversity', 'West African French influence', 'multicultural France'],
+    familyStructure: ['intimate family gathering', 'grandparents storytelling', 'elegant family dinner', 'cultural tradition', 'family celebration', 'African diaspora family', 'Francophone community', 'multicultural gathering'],
+    settings: ['charming French countryside', 'elegant Parisian street', 'beautiful French garden', 'traditional French home', 'cultural landmark', 'multicultural Paris neighborhood', 'French colonial architecture', 'African community in France', 'modern Dakar street', 'Francophone African city', 'Abidjan marketplace', 'Bamako modern district'],
+    clothing: ['chic French fashion', 'elegant dress', 'sophisticated style', 'cultural formal wear', 'modern French clothing', 'African print with French cut', 'dashiki with modern jeans', 'kente accents on French fashion', 'traditional headwrap with chic outfit', 'Parisian style with African jewelry', 'French blazer with traditional patterns', 'modern Senegalese fashion', 'Ivorian-French fusion style'],
+    celebrations: ['French cultural festival', 'family feast', 'traditional celebration', 'elegant gathering', 'cultural event', 'African-French cultural celebration', 'Francophone heritage festival', 'multicultural community event'],
     negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate cultural elements', 'negative stereotypes']
   },
   'en': {
     skinTones: ['rich cocoa skin', 'deep ebony skin', 'warm mahogany skin', 'golden bronze skin', 'deep amber skin', 'caramel skin', 'honey bronze skin'],
     hairStyles: ['natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls'],
     facialFeatures: ['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing', 'kind eyes', 'proud posture'],
-    culturalElements: ['African patterns', 'cultural pride symbols', 'traditional textiles', 'African art', 'community strength', 'cultural heritage'],
+    culturalElements: ['modern urban style', 'contemporary American fashion', 'diverse American culture', 'metropolitan diversity', 'cultural pride symbols', 'community strength'],
     familyStructure: ['strong family bonds', 'community support', 'church family', 'multigenerational wisdom', 'extended family gathering', 'neighborhood community'],
     settings: ['vibrant African American neighborhood', 'community center', 'beautiful church', 'family home', 'cultural center', 'historical landmark'],
-    clothing: ['traditional African dress', 'modern African American fashion', 'cultural celebration attire', 'Sunday best clothing', 'contemporary style'],
+    clothing: ['jeans and sneakers', 'casual t-shirt', 'modern American fashion', 'contemporary urban style', 'hoodie and jeans', 'athletic wear', 'modern African American fashion', 'contemporary style'],
     celebrations: ['Juneteenth celebration', 'family reunion', 'church gathering', 'community festival', 'cultural pride event', 'graduation celebration'],
     negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'negative stereotypes', 'inaccurate representation', 'degrading imagery']
   }
