@@ -104,18 +104,28 @@ export class SynchronizedElevenLabsTTS {
       let wordEndTime = 0;
       let foundTimingData = false;
       
+      // Debug character timing data structure
+      console.log('🔍 Character timing data sample:', {
+        totalCharacters: alignment.characters.length,
+        firstChar: alignment.characters[0],
+        wordPos: { start: wordStartPos, end: wordEndPos },
+        wordText: word
+      });
+      
       // Search for character timing that corresponds to this word's position
       for (let i = charTimingIndex; i < alignment.characters.length; i++) {
         const charTiming = alignment.characters[i];
         if (!charTiming) continue;
         
-        // Check if this character timing is within our word's text range
-        if (i >= wordStartPos && i <= wordEndPos) {
+        // The character timing index should match the character position in text
+        // Check if this character index is within our word's character range in the text
+        if (i >= wordStartPos && i < wordEndPos) {
           if (!foundTimingData) {
-            wordStartTime = charTiming.start_time_ms;
+            wordStartTime = charTiming.start_time_ms || 0;
             foundTimingData = true;
+            console.log(`🎯 Found start timing for "${word}" at char ${i}: ${wordStartTime}ms`);
           }
-          wordEndTime = charTiming.start_time_ms + charTiming.duration_ms;
+          wordEndTime = (charTiming.start_time_ms || 0) + (charTiming.duration_ms || 200);
         }
       }
       

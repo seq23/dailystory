@@ -53,7 +53,7 @@ export class SimplifiedAudioEngine {
         window.dispatchEvent(new CustomEvent('audio:statechange', { 
           detail: { isPlaying: false } 
         }));
-        window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simplified' } }));
+        window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simple' } }));
       });
       
       this.audio.addEventListener('pause', () => { 
@@ -131,7 +131,7 @@ export class SimplifiedAudioEngine {
     });
     
     // Request exclusive audio access
-    window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simplified' } }));
+    window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simple' } }));
     
     // Stop any current playback
     this.stop();
