@@ -15,6 +15,11 @@ export interface PhoneticMapping {
 
 export class SmartPhoneticMapper {
   private static phoneticCache: Map<string, PhoneticMapping> = new Map();
+  
+  // Clear cache on initialization to ensure context-aware caching works properly
+  static {
+    this.phoneticCache.clear();
+  }
 
   /**
    * Gets the best available phonetic mapping for a word
@@ -24,9 +29,10 @@ export class SmartPhoneticMapper {
   static async getPhoneticMapping(word: string, context: 'learning' | 'conversation' = 'learning'): Promise<PhoneticMapping> {
     const normalized = word.toLowerCase().replace(/[^a-z]/g, '');
     
-    // Check cache first
-    if (this.phoneticCache.has(normalized)) {
-      return this.phoneticCache.get(normalized)!;
+    // Check cache first - use context-aware cache key
+    const cacheKey = `${normalized}-${context}`;
+    if (this.phoneticCache.has(cacheKey)) {
+      return this.phoneticCache.get(cacheKey)!;
     }
 
     let mapping: PhoneticMapping;
@@ -82,8 +88,8 @@ export class SmartPhoneticMapper {
       }
     }
 
-    // Cache the result
-    this.phoneticCache.set(normalized, mapping);
+    // Cache the result with context-aware key
+    this.phoneticCache.set(cacheKey, mapping);
     return mapping;
   }
 
@@ -162,7 +168,7 @@ export class SmartPhoneticMapper {
   /**
    * Generates mappings for a batch of words
    */
-  static async batchGeneratePhonetics(words: string[]): Promise<PhoneticMapping[]> {
+  static async batchGeneratePhonetics(words: string[], context: 'learning' | 'conversation' = 'learning'): Promise<PhoneticMapping[]> {
     const mappings: PhoneticMapping[] = [];
     
     console.log(`Generating phonetic mappings for ${words.length} words...`);
@@ -171,7 +177,7 @@ export class SmartPhoneticMapper {
     const batchSize = 50;
     for (let i = 0; i < words.length; i += batchSize) {
       const batch = words.slice(i, i + batchSize);
-      const batchPromises = batch.map(word => this.getPhoneticMapping(word));
+      const batchPromises = batch.map(word => this.getPhoneticMapping(word, context));
       
       try {
         const batchResults = await Promise.all(batchPromises);
@@ -186,7 +192,7 @@ export class SmartPhoneticMapper {
         // Continue with individual processing for this batch
         for (const word of batch) {
           try {
-            const mapping = await this.getPhoneticMapping(word);
+            const mapping = await this.getPhoneticMapping(word, context);
             mappings.push(mapping);
           } catch (wordError) {
             console.error(`Failed to process word "${word}":`, wordError);
