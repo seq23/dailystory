@@ -19,7 +19,7 @@ interface TextProcessorOptions {
  * Unified text processor that handles both mobile and desktop rendering
  * with consistent highlighting and word flow
  */
-export const processTextWithConsistentFlow = React.memo(({
+export const processTextWithConsistentFlow = ({
   text,
   className = "",
   difficulty = "easy",
@@ -110,15 +110,4 @@ export const processTextWithConsistentFlow = React.memo(({
       />
     );
   }).filter(Boolean);
-}, (prevProps, nextProps) => {
-  // Custom comparison to prevent unnecessary re-renders
-  return (
-    prevProps.text === nextProps.text &&
-    prevProps.highlightedWordIndex === nextProps.highlightedWordIndex &&
-    prevProps.className === nextProps.className &&
-    prevProps.difficulty === nextProps.difficulty &&
-    prevProps.isMobile === nextProps.isMobile &&
-    prevProps.isPremium === nextProps.isPremium &&
-    prevProps.userId === nextProps.userId
-  );
-});
+};
