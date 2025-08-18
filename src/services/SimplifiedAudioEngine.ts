@@ -187,11 +187,25 @@ export class SimplifiedAudioEngine {
   }
 
   private startWordHighlighting() {
-    if (!this.audio || !this.onWordHighlight || this.wordTimings.length === 0) return;
+    if (!this.audio || !this.onWordHighlight || this.wordTimings.length === 0) {
+      console.log('🎯 Cannot start word highlighting:', {
+        hasAudio: !!this.audio,
+        hasCallback: !!this.onWordHighlight,
+        timingsCount: this.wordTimings.length
+      });
+      return;
+    }
     
     this.stopWordHighlighting(); // Clear any existing highlighting
     
-    console.log('🎯 Starting native ElevenLabs word highlighting with', this.wordTimings.length, 'timings');
+    console.log('🎯 Starting native ElevenLabs word highlighting:', {
+      timingsCount: this.wordTimings.length,
+      firstWord: this.wordTimings[0]?.word,
+      lastWord: this.wordTimings[this.wordTimings.length - 1]?.word,
+      totalDuration: this.wordTimings[this.wordTimings.length - 1]?.endTime
+    });
+    
+    let lastHighlightedIndex = -1;
     
     // Use audio timeupdate for perfect synchronization
     const updateHighlight = () => {
@@ -199,13 +213,47 @@ export class SimplifiedAudioEngine {
       
       const currentTimeMs = this.audio.currentTime * 1000;
       
-      // Find the current word based on timing
-      const currentWordIndex = this.wordTimings.findIndex(timing => 
+      // Find the current word based on timing with more flexible matching
+      let currentWordIndex = -1;
+      
+      // First try exact match
+      currentWordIndex = this.wordTimings.findIndex(timing => 
         currentTimeMs >= timing.startTime && currentTimeMs <= timing.endTime
       );
       
-      if (currentWordIndex !== -1 && this.onWordHighlight) {
-        this.onWordHighlight(currentWordIndex);
+      // If no exact match, find the closest word (for timing gaps)
+      if (currentWordIndex === -1) {
+        let closestDistance = Infinity;
+        for (let i = 0; i < this.wordTimings.length; i++) {
+          const timing = this.wordTimings[i];
+          const distance = Math.min(
+            Math.abs(currentTimeMs - timing.startTime),
+            Math.abs(currentTimeMs - timing.endTime)
+          );
+          
+          // Allow some tolerance for timing gaps (±100ms)
+          if (distance < 100 && distance < closestDistance) {
+            closestDistance = distance;
+            currentWordIndex = i;
+          }
+        }
+      }
+      
+      // Only update if we found a word and it's different from last highlighted
+      if (currentWordIndex !== -1 && currentWordIndex !== lastHighlightedIndex) {
+        console.log(`🎯 Highlighting word ${currentWordIndex}: "${this.wordTimings[currentWordIndex].word}" at ${currentTimeMs}ms`);
+        this.onWordHighlight?.(currentWordIndex);
+        lastHighlightedIndex = currentWordIndex;
+      } else if (currentWordIndex === -1 && lastHighlightedIndex !== -1) {
+        // Clear highlighting if we're between words
+        console.log(`🎯 Clearing highlight at ${currentTimeMs}ms (between words)`);
+        this.onWordHighlight?.(-1);
+        lastHighlightedIndex = -1;
+      }
+      
+      // Debug logging every 500ms
+      if (Math.floor(currentTimeMs / 500) !== Math.floor((currentTimeMs - 50) / 500)) {
+        console.log(`🎵 Audio progress: ${currentTimeMs.toFixed(0)}ms, word: ${currentWordIndex}, timings available: ${this.wordTimings.length}`);
       }
     };
     
