@@ -355,9 +355,10 @@ function extractPrimaryScene(text: string): string {
   return fallback || text;
 }
 
-function detectSecondaryCharacters(text: string): string[] {
+function detectSecondaryCharacters(text: string, userInfo?: any): string[] {
   const secondaryCharacters: string[] = [];
   
+  // Enhanced character patterns including family members
   const characterPatterns = [
     /\b(cat|kitten|kitty)\b/gi,
     /\b(dog|puppy|doggy)\b/gi,
@@ -365,6 +366,13 @@ function detectSecondaryCharacters(text: string): string[] {
     /\b(rabbit|bunny)\b/gi,
     /\b(bear|teddy)\b/gi,
     /\b(tiger)\b/gi,
+    /\b(mom|mother|mama)\b/gi,
+    /\b(dad|father|papa)\b/gi,
+    /\b(grandma|grandmother)\b/gi,
+    /\b(grandpa|grandfather)\b/gi,
+    /\b(sister|brother|sibling)\b/gi,
+    /\b(friend|friends)\b/gi,
+    /\b(teacher|neighbor)\b/gi,
     /\b(frog|toad)\b/gi,
     /\b(fish|goldfish)\b/gi,
     /\b(friend|buddy|pal)\b/gi,
@@ -581,7 +589,19 @@ serve(async (req) => {
       
       const artStyle = difficultyStyleMapping[difficultyLevel] || difficultyStyleMapping['medium'];
       // Restructure prompt to prevent character name text overlays
-      enhancedPrompt = `Visual appearance: ${characterDesc.split(':')[1]?.trim() || characterDesc}${secondaryChars}. Scene: ${processedText}${environmentalContext}. Style: consistent-face ${artStyle}`;
+      // Import cultural visual service for enhanced character representation
+      const { MulticulturalVisualService } = await import('./cultural-visual-service.js');
+      
+      // Generate culturally appropriate character description
+      const culturalCharacterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+      const culturalSetting = MulticulturalVisualService.generateCulturalSetting(userInfo);
+      const culturalNegativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
+      const qualityEnhancement = MulticulturalVisualService.getQualityEnhancementTerms(userInfo);
+      
+      enhancedPrompt = `Visual appearance: ${culturalCharacterDesc}${secondaryChars}. Scene: ${processedText} in ${culturalSetting}${environmentalContext}. Style: consistent-face ${artStyle}, ${qualityEnhancement}`;
+      
+      // Update negative prompt with cultural sensitivity
+      finalNegativePrompt = culturalNegativePrompt;
       
       if (characterSeed) {
         finalSeed = characterSeed;
@@ -745,10 +765,10 @@ serve(async (req) => {
                       height,
                       numberResults,
                       outputFormat,
-                      steps: 3,
-                      CFGScale: Math.max(1.5, CFGScale),
-                      scheduler,
-                      strength,
+                      steps: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).steps : 3,
+                      CFGScale: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).cfgScale : Math.max(1.5, CFGScale),
+                      scheduler: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).scheduler : scheduler,
+                      strength: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).strength : strength,
                       ...(finalSeed && { seed: finalSeed })
                     }];
                     
