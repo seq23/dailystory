@@ -156,34 +156,50 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Stage 4: Quality Optimization
+  // Stage 4: Enhanced Quality Optimization (Phase 3)
   static async optimizeQuality(context) {
-    const { prompt, userInfo } = context;
+    const { prompt, userInfo, styleFramework } = context;
     
     // Add quality enhancement terms
     const qualityTerms = MulticulturalVisualService.getQualityEnhancementTerms(userInfo);
     const negativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
     
-    // Optimize prompt length
+    // Enhanced prompt length optimization with smart truncation
     let optimizedPrompt = prompt;
-    if (optimizedPrompt.length > 2800) {
-      // Simple truncation with quality preservation
-      optimizedPrompt = optimizedPrompt.substring(0, 2500) + '...';
-      console.log(`📏 Prompt truncated from ${prompt.length} to ${optimizedPrompt.length} characters`);
+    const maxLength = this.getOptimalPromptLength(styleFramework?.complexity || 'standard');
+    
+    if (optimizedPrompt.length > maxLength) {
+      // Smart truncation preserving key elements
+      const sentences = optimizedPrompt.split(/[,.]/);
+      let truncated = '';
+      let currentLength = 0;
+      
+      for (const sentence of sentences) {
+        if (currentLength + sentence.length + truncated.length > maxLength - 100) break;
+        truncated += (truncated ? ', ' : '') + sentence.trim();
+        currentLength += sentence.length;
+      }
+      
+      optimizedPrompt = truncated || optimizedPrompt.substring(0, maxLength - 50);
+      console.log(`📏 Smart prompt truncation: ${prompt.length} → ${optimizedPrompt.length} characters`);
     }
+    
+    // Enhanced negative prompt system
+    const enhancedNegativePrompt = this.buildEnhancedNegativePrompt(negativePrompt, styleFramework);
     
     const finalOptimizedPrompt = `${optimizedPrompt}, ${qualityTerms}`;
     
     return {
       optimizedPrompt: finalOptimizedPrompt,
-      negativePrompt,
-      prompt: finalOptimizedPrompt
+      negativePrompt: enhancedNegativePrompt,
+      prompt: finalOptimizedPrompt,
+      tokenEfficiency: this.calculateTokenEfficiency(prompt, finalOptimizedPrompt)
     };
   }
 
-  // Stage 5: Parameter Optimization
+  // Stage 5: Enhanced Parameter Optimization (Phase 2 & 4)
   static async optimizeParameters(context) {
-    const { userInfo, characters, styleFramework } = context;
+    const { userInfo, characters, styleFramework, sessionId, pageNumber } = context;
     
     // Import centralized parameter optimization
     const { getOptimizedParameters } = await import('../_shared/styleFrameworks.js');
@@ -192,11 +208,21 @@ export class MultiStageEnhancementPipeline {
     const culturalParams = MulticulturalVisualService.getOptimizedGenerationParams(userInfo);
     const defaultParams = this.getDefaultParameters();
     
-    // Get framework-specific parameters
+    // Get framework-specific parameters with progressive scaling
     const frameworkParams = styleFramework ? styleFramework.parameters : {};
     
-    // Merge all parameter sources (framework takes precedence)
-    const baseParameters = { ...defaultParams, ...culturalParams, ...frameworkParams };
+    // Progressive quality scaling based on difficulty (Phase 2)
+    const scaledParams = this.applyProgressiveQualityScaling(frameworkParams, styleFramework?.complexity);
+    
+    // Merge all parameter sources (scaled framework takes precedence)
+    const baseParameters = { ...defaultParams, ...culturalParams, ...scaledParams };
+    
+    // Enhanced seed management for character consistency (Phase 4)
+    const seedContext = await this.optimizeSeedConsistency(sessionId, characters, pageNumber);
+    if (seedContext.suggestedSeed) {
+      baseParameters.seed = seedContext.suggestedSeed;
+      console.log(`🌱 Using optimized seed for consistency: ${seedContext.suggestedSeed}`);
+    }
     
     // Apply character complexity optimization
     const characterComplexity = characters?.length || 1;
@@ -205,10 +231,15 @@ export class MultiStageEnhancementPipeline {
       characterComplexity
     );
     
-    console.log(`⚙️ Optimized parameters for ${characterComplexity} character(s):`, optimizedParameters);
+    console.log(`⚙️ Enhanced parameters for ${characterComplexity} character(s):`, {
+      ...optimizedParameters,
+      seedStrategy: seedContext.strategy,
+      qualityTier: styleFramework?.complexity || 'standard'
+    });
     
     return {
-      parameters: optimizedParameters
+      parameters: optimizedParameters,
+      seedContext
     };
   }
 
@@ -324,5 +355,144 @@ export class MultiStageEnhancementPipeline {
     if (context.optimizedPrompt) score += 5;
     
     return Math.min(score, 100);
+  }
+
+  // Phase 3: Enhanced Token Efficiency Methods
+  static getOptimalPromptLength(complexity) {
+    const lengthLimits = {
+      'minimal': 2200,
+      'standard': 2600,
+      'high': 3000,
+      'very_high': 3400
+    };
+    return lengthLimits[complexity] || 2600;
+  }
+
+  static buildEnhancedNegativePrompt(baseNegative, styleFramework) {
+    const universalNegatives = [
+      'text, letters, words, watermark, logo, signature',
+      'blurry, distorted, deformed, low quality',
+      'inappropriate content, violence, scary elements'
+    ];
+    
+    const styleSpecificNegatives = {
+      '3d_smooth': 'flat 2D, hand-drawn, sketch style',
+      'painterly': '3D render, photorealistic, plastic texture',
+      'advanced_digital_painting': 'amateur artwork, simple style',
+      'masterful_artistic_technique': 'beginner art, childish drawing'
+    };
+    
+    let enhancedNegative = baseNegative || '';
+    enhancedNegative += ', ' + universalNegatives.join(', ');
+    
+    if (styleFramework?.rendering && styleSpecificNegatives[styleFramework.rendering]) {
+      enhancedNegative += ', ' + styleSpecificNegatives[styleFramework.rendering];
+    }
+    
+    return enhancedNegative;
+  }
+
+  static calculateTokenEfficiency(originalPrompt, optimizedPrompt) {
+    const originalTokens = Math.ceil(originalPrompt.length / 4); // Rough token estimate
+    const optimizedTokens = Math.ceil(optimizedPrompt.length / 4);
+    return {
+      originalTokens,
+      optimizedTokens,
+      efficiency: ((originalTokens - optimizedTokens) / originalTokens * 100).toFixed(1) + '%'
+    };
+  }
+
+  // Phase 2: Progressive Quality Scaling
+  static applyProgressiveQualityScaling(baseParams, complexity) {
+    const qualityMultipliers = {
+      'minimal': { cfgScale: 1.0, steps: 1.0 },
+      'standard': { cfgScale: 1.1, steps: 1.1 },
+      'high': { cfgScale: 1.2, steps: 1.3 },
+      'very_high': { cfgScale: 1.3, steps: 1.5 }
+    };
+    
+    const multiplier = qualityMultipliers[complexity] || qualityMultipliers['standard'];
+    
+    return {
+      ...baseParams,
+      cfgScale: Math.min(baseParams.cfgScale * multiplier.cfgScale, 4.0),
+      steps: Math.min(Math.round(baseParams.steps * multiplier.steps), 15)
+    };
+  }
+
+  // Phase 4: Enhanced Seed Management
+  static async optimizeSeedConsistency(sessionId, characters, pageNumber) {
+    const seedHistory = this.getSeedHistory(sessionId);
+    const characterSeeds = this.getCharacterSeeds(sessionId, characters);
+    
+    // Strategy 1: Reuse character seed if same character appears
+    if (characters && characters.length === 1) {
+      const primaryChar = characters[0];
+      const existingSeed = characterSeeds[primaryChar.name];
+      if (existingSeed && pageNumber > 1) {
+        return {
+          strategy: 'character_consistency',
+          suggestedSeed: existingSeed,
+          confidence: 0.9
+        };
+      }
+    }
+    
+    // Strategy 2: Use best performing seed from recent pages
+    if (seedHistory.length > 0 && pageNumber > 3) {
+      const recentSeeds = seedHistory.slice(-3);
+      const bestSeed = recentSeeds.reduce((best, current) => 
+        current.qualityScore > best.qualityScore ? current : best
+      );
+      
+      if (bestSeed.qualityScore > 85) {
+        return {
+          strategy: 'high_quality_reuse',
+          suggestedSeed: bestSeed.seed,
+          confidence: 0.7
+        };
+      }
+    }
+    
+    // Strategy 3: Generate new seed with pattern optimization
+    const newSeed = this.generateOptimizedSeed(sessionId, pageNumber);
+    return {
+      strategy: 'optimized_new',
+      suggestedSeed: newSeed,
+      confidence: 0.5
+    };
+  }
+
+  static getSeedHistory(sessionId) {
+    // Simple in-memory storage for demo
+    if (!this.seedHistoryCache) this.seedHistoryCache = new Map();
+    return this.seedHistoryCache.get(sessionId) || [];
+  }
+
+  static getCharacterSeeds(sessionId, characters) {
+    // Extract character seeds from state management
+    const seeds = {};
+    if (characters) {
+      characters.forEach(char => {
+        if (char.seed) seeds[char.name] = char.seed;
+      });
+    }
+    return seeds;
+  }
+
+  static generateOptimizedSeed(sessionId, pageNumber) {
+    // Generate deterministic but varied seeds based on session and page
+    const baseHash = this.simpleHash(sessionId + pageNumber);
+    return Math.abs(baseHash) % 2147483647; // Max 32-bit signed int
+  }
+
+  static simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash;
   }
 }
