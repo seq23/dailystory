@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
-import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock, ChevronDown, ChevronUp } from "lucide-react";
 import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
 import { PronunciationAnalyzer } from "@/services/PronunciationAnalyzer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { useTranslation } from "react-i18next";
 
@@ -329,6 +331,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   // Per-word micro attempts tracking
   const [wordTries, setWordTries] = useState<Record<string, number>>({});
+  const [syllableExpanded, setSyllableExpanded] = useState(false);
+  const [wordsExpanded, setWordsExpanded] = useState(false);
+  const { isMobileOrTablet } = useIsMobile();
+  
   const onSayWithMe = async (w: string) => {
     const tries = wordTries[w] || 0;
     if (tries >= WORD_MICRO_ATTEMPTS) return;
@@ -458,43 +464,93 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
         {/* Syllable-specific feedback */}
         {passed === false && syllableFeedback.length > 0 && (
-          <div className="text-sm space-y-2">
-            <div className="font-medium">{t('coach.syllablePractice','Syllable practice:')}</div>
-            {syllableFeedback.slice(0, 2).map((feedback, idx) => (
-              <div key={idx} className="space-y-1">
-                <div className="font-medium text-blue-600 dark:text-blue-400">{feedback.word}</div>
-                <div className="text-xs text-muted-foreground">{feedback.feedback}</div>
-              </div>
-            ))}
-          </div>
+          <Collapsible open={syllableExpanded} onOpenChange={setSyllableExpanded}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
+                <span className="font-medium text-sm">{t('coach.syllablePractice','Syllable practice:')} ({syllableFeedback.length})</span>
+                {syllableExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2 pt-2">
+              {syllableFeedback.slice(0, 3).map((feedback, idx) => (
+                <div key={idx} className="space-y-1 text-sm">
+                  <div className="font-medium text-blue-600 dark:text-blue-400">{feedback.word}</div>
+                  <div className="text-xs text-muted-foreground">{feedback.feedback}</div>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
         {/* Top words coaching (only on fail) */}
         {passed === false && topWords.length > 0 && (
-          <div className="text-sm space-y-2">
-            <div className="font-medium">{t('coach.topWords','Top 3 words to practice:')}</div>
-            <div className="flex flex-col gap-2">
-              {topWords.map((w) => (
-                <div key={w} className="flex items-center justify-between gap-2">
-                  <span className="text-muted-foreground">{w}</span>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
-                      const audioEngine = SimpleAudioEngine.getInstance();
-                      audioEngine.playText({ 
-                        text: w,
-                        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-                      });
-                    }}>
-                      <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
-                    </Button>
-                    <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>
-                      {t('coach.sayWithMe','Say it with me')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
-                    </Button>
-                  </div>
+          <Collapsible open={wordsExpanded} onOpenChange={setWordsExpanded}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
+                <span className="font-medium text-sm">{t('coach.topWords','Words to practice:')} ({topWords.length})</span>
+                {wordsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2 pt-2">
+              {isMobileOrTablet ? (
+                // Mobile/Tablet: Compact grid layout, max 2 visible
+                <div className="space-y-3">
+                  {topWords.slice(0, 2).map((w) => (
+                    <div key={w} className="space-y-2">
+                      <div className="font-medium text-center text-primary">{w}</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="secondary" 
+                          className="text-xs px-2 py-1 h-8" 
+                          onClick={() => {
+                            const audioEngine = SimpleAudioEngine.getInstance();
+                            audioEngine.playText({ 
+                              text: w,
+                              voiceId: 'XB0fDUnXU5powFXDhCwa'
+                            });
+                          }}
+                        >
+                          <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','Hear')}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="text-xs px-2 py-1 h-8" 
+                          onClick={() => onSayWithMe(w)} 
+                          disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}
+                        >
+                          {t('coach.practice','Practice')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              ) : (
+                // Desktop: Original layout
+                <div className="flex flex-col gap-2">
+                  {topWords.map((w) => (
+                    <div key={w} className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">{w}</span>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
+                          const audioEngine = SimpleAudioEngine.getInstance();
+                          audioEngine.playText({ 
+                            text: w,
+                            voiceId: 'XB0fDUnXU5powFXDhCwa'
+                          });
+                        }}>
+                          <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
+                        </Button>
+                        <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>
+                          {t('coach.sayWithMe','Say it with me')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
         {/* Privacy note */}
