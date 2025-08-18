@@ -1,1 +1,56 @@
 project_id = "cpzeuogomaixamrtnnmj"
+
+# Add function configurations
+[functions.elevenlabs-tts]
+verify_jwt = false
+
+[functions.generate-adaptive-story]
+verify_jwt = false
+
+[functions.openai-tts]
+verify_jwt = false
+
+[functions.openai-image]
+verify_jwt = false
+
+[functions.runware-generate-image]
+verify_jwt = false
+
+[functions.word-dictionary]
+verify_jwt = false
+
+[functions.translate-word]
+verify_jwt = false
+
+[functions.translate-to-english]
+verify_jwt = false
+
+[functions.correct-spelling]
+verify_jwt = false
+
+[functions.elevenlabs-agent-signed-url]
+verify_jwt = false
+
+[functions.extract-visual-keywords]
+verify_jwt = false
+
+[functions.extract-story-elements]
+verify_jwt = false
+
+[functions.background-image-pregeneration]
+verify_jwt = false
+
+[functions.openai-realtime]
+verify_jwt = false
+
+[functions.test-runware-debug]
+verify_jwt = false
+
+[functions.runware-test-simple]
+verify_jwt = false
+
+[functions.runware-simple-fallback]
+verify_jwt = false
+
+[functions.runware-realtime-generation]
+verify_jwt = false

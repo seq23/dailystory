@@ -124,11 +124,9 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     let score = 0;
     const lowerSentence = sentence.toLowerCase();
     
-    // High priority for sea/ocean/dolphin content
-    if (lowerSentence.includes('sea') || lowerSentence.includes('ocean') || lowerSentence.includes('beach')) score += 45;
-    if (lowerSentence.includes('dolphin') || lowerSentence.includes('wave') || lowerSentence.includes('swimming')) score += 40;
-    if (lowerSentence.includes('loved') && (lowerSentence.includes('dolphin') || lowerSentence.includes('sea'))) score += 30;
-    if (lowerSentence.includes('dreamed') && (lowerSentence.includes('sea') || lowerSentence.includes('ocean'))) score += 30;
+    // Content-neutral scoring based on visual richness
+    if (lowerSentence.includes('color') || lowerSentence.includes('bright') || lowerSentence.includes('beautiful')) score += 20;
+    if (lowerSentence.includes('big') || lowerSentence.includes('small') || lowerSentence.includes('huge')) score += 15;
     
     // Action and character-focused content
     if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump')) score += 25;
@@ -186,23 +184,19 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
   }
   
-  // Enhanced setting detection with sea priority
+  // Content-neutral setting detection
   let setting = 'outdoor scene';
-  if (text.includes('beach') || text.includes('ocean') || text.includes('sea')) setting = 'beach scene';
-  else if (text.includes('house') || text.includes('home')) setting = 'indoor house scene';
+  if (text.includes('house') || text.includes('home')) setting = 'indoor house scene';
+  else if (text.includes('beach') || text.includes('ocean') || text.includes('sea')) setting = 'beach scene';
   else if (text.includes('forest') || text.includes('tree')) setting = 'forest scene';
   else if (text.includes('school')) setting = 'school scene';
   else if (text.includes('park')) setting = 'park scene';
   
-  // Enhanced object detection with sea/dolphin priority
+  // Content-neutral object detection
   const objects = [];
-  const priorityObjects = ['dolphin', 'whale', 'fish', 'shell'];
-  const simpleObjects = ['ball', 'book', 'toy', 'dog', 'cat', 'car', 'bike', 'flower'];
+  const allObjects = ['ball', 'book', 'toy', 'dog', 'cat', 'car', 'bike', 'flower', 'dolphin', 'whale', 'fish', 'shell'];
   
-  priorityObjects.forEach(obj => {
-    if (text.includes(obj)) objects.push(obj);
-  });
-  simpleObjects.forEach(obj => {
+  allObjects.forEach(obj => {
     if (text.includes(obj) && objects.length < 3) objects.push(obj);
   });
   

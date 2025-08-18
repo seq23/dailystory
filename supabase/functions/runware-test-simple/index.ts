@@ -110,11 +110,9 @@ function extractSceneWithCulture(pageText: string, userInfo?: any): string {
     let score = 0;
     const lowerSentence = sentence.toLowerCase();
     
-    // High priority for sea/ocean/dolphin content
-    if (lowerSentence.includes('sea') || lowerSentence.includes('ocean') || lowerSentence.includes('beach')) score += 45;
-    if (lowerSentence.includes('dolphin') || lowerSentence.includes('wave') || lowerSentence.includes('swimming')) score += 40;
-    if (lowerSentence.includes('loved') && (lowerSentence.includes('dolphin') || lowerSentence.includes('sea'))) score += 30;
-    if (lowerSentence.includes('dreamed') && (lowerSentence.includes('sea') || lowerSentence.includes('ocean'))) score += 30;
+    // Content-neutral scoring based on visual richness
+    if (lowerSentence.includes('color') || lowerSentence.includes('bright') || lowerSentence.includes('beautiful')) score += 20;
+    if (lowerSentence.includes('big') || lowerSentence.includes('small') || lowerSentence.includes('huge')) score += 15;
     
     // Action and character-focused content
     if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump')) score += 25;
