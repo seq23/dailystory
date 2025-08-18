@@ -291,8 +291,8 @@ useEffect(() => {
   const handleGlobalAudioStateChange = (event: any) => {
     const isPlaying = event.detail?.isPlaying || false;
     setIsAudioPlaying(isPlaying);
-    // Clear loading state when audio state changes
-    if (isPlaying || !isPlaying) {
+    // Only clear loading state when audio actually starts playing
+    if (isPlaying) {
       setIsAudioLoading(false);
     }
   };
