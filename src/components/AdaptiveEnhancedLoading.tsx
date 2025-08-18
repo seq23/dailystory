@@ -86,8 +86,8 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
             <p className="text-muted-foreground">{description}</p>
             <div className="text-sm text-muted-foreground/80 italic mb-2">
               {isPremium 
-                ? "⏰ Premium stories usually take 20-30 seconds to craft perfectly!"
-                : "⏰ Usually takes 15-25 seconds to create your adventure!"
+                ? "⏰ Premium stories take 20-30 seconds to craft perfectly!"
+                : "⏰ Stories take 15-25 seconds, then we add pictures!"
               }
             </div>
             <div className="flex items-center justify-center gap-2 text-muted-foreground">

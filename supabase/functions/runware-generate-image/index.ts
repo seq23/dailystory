@@ -740,39 +740,33 @@ serve(async (req) => {
         ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
         : comprehensiveNegativePrompt;
       
-      // Import and use centralized style framework early to avoid scope issues
-      let framework, artStyle;
-      try {
-        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-        framework = getStyleFramework(difficultyLevel);
-        artStyle = framework.prompt;
-        console.log(`🎨 Retrieved ${framework.name} style framework for difficulty: ${difficultyLevel}`);
-      } catch (error) {
-        console.error('Failed to load style framework, using defaults:', error);
-        framework = {
-          name: 'Digital Painterly Illustration',
-          prompt: 'digital painterly illustration style',
-          quality: 'ultra high resolution detailed digital art',
-          parameters: { steps: 3, cfgScale: 7, scheduler: 'FlowMatchEulerDiscreteScheduler', strength: 0.8 }
-        };
-        artStyle = framework.prompt;
-      }
-      
-      console.log(`🎨 Using ${framework.name} style for difficulty: ${difficultyLevel}`);
-      // Restructure prompt to prevent character name text overlays
-      // Import cultural visual service for enhanced character representation
+      // Import centralized style framework and buildCompletePrompt function
+      const { getStyleFramework, buildCompletePrompt } = await import('../_shared/styleFrameworks.js');
       const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
       
-      // Generate culturally appropriate character description
+      // Get style framework for difficulty level
+      const framework = getStyleFramework(difficultyLevel);
+      console.log(`🎨 Using ${framework.name} style framework for difficulty: ${difficultyLevel}`);
+      
+      // Generate culturally appropriate character description using actual userInfo
       const culturalCharacterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-      const culturalSetting = MulticulturalVisualService.generateCulturalSetting(userInfo);
-      const culturalNegativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
-      const qualityEnhancement = MulticulturalVisualService.getQualityEnhancementTerms(userInfo);
+      const culturalContext = MulticulturalVisualService.generateCulturalSetting(userInfo);
       
-      enhancedPrompt = `Visual appearance: ${culturalCharacterDesc}${secondaryChars}. Scene: ${processedText} in ${culturalSetting}${environmentalContext}${visualDetailsContext}. Style: consistent-face ${artStyle}, ${framework.quality}, ${qualityEnhancement}`;
+      // Use the centralized buildCompletePrompt function for consistent, high-quality prompts
+      enhancedPrompt = buildCompletePrompt(
+        framework,
+        processedText,  // scene description
+        culturalCharacterDesc,  // character description
+        culturalContext  // cultural context
+      );
       
-      // Update negative prompt with cultural sensitivity
-      finalNegativePrompt = culturalNegativePrompt;
+      // Add environmental and visual details context
+      enhancedPrompt += environmentalContext + visualDetailsContext;
+      
+      console.log(`🎯 Complete structured prompt created using buildCompletePrompt for ${userInfo.name}`);
+      
+      // Use cultural negative prompt for quality and cultural sensitivity
+      finalNegativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
       
       if (characterSeed) {
         finalSeed = characterSeed;

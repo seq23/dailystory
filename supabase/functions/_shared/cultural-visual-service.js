@@ -88,12 +88,16 @@ export class MulticulturalVisualService {
 
   static generateCulturalCharacterDescription(userInfo) {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
-    const skinTone = this.selectRandomElement(profile.skinTones);
+    
+    // Use actual user-selected attributes instead of random ones
+    const skinTone = userInfo.avatar?.skinTone || this.selectRandomElement(profile.skinTones);
     const hairStyle = this.selectRandomElement(profile.hairStyles);
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
 
-    const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 'girl';
+    const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+    
+    console.log(`🎭 Character generation: ${genderTerm} with ${skinTone} (from userInfo: ${userInfo.avatar?.skinTone})`);
     
     return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
   }

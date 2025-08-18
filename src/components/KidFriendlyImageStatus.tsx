@@ -66,35 +66,37 @@ export const KidFriendlyImageStatus = ({
 
   return (
     <div className={cn(
-      "bg-primary/5 border border-primary/20 rounded-lg p-3",
-      "text-center transition-all duration-300 ease-in-out",
-      "animate-fade-in text-sm",
+      "absolute inset-0 bg-background/95 backdrop-blur-sm rounded-lg",
+      "flex items-center justify-center z-10",
+      "transition-all duration-300 ease-in-out animate-fade-in",
       className
     )}>
-      <div className="space-y-2">
-        {isStoryLoading ? (
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary animate-pulse" />
-            <div>
-              <p className="font-medium text-primary">Your Story Comes First! 📖</p>
-              <p className="text-xs text-muted-foreground">{currentText}</p>
+      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 max-w-sm mx-4">
+        <div className="space-y-3 text-center">
+          {isStoryLoading ? (
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-primary animate-pulse" />
+              <div className="text-left">
+                <p className="font-medium text-primary">Your Story Comes First! 📖</p>
+                <p className="text-xs text-muted-foreground">{currentText}</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Palette className="w-5 h-5 text-primary animate-pulse" />
-            <div>
-              <p className="font-medium text-primary">Now Drawing Pictures! 🎨</p>
-              <p className="text-xs text-muted-foreground">{currentText}</p>
-              {batchProgress && (
-                <p className="text-xs text-muted-foreground/70">{batchProgress}</p>
-              )}
+          ) : (
+            <div className="flex items-center gap-3">
+              <Palette className="w-6 h-6 text-primary animate-pulse" />
+              <div className="text-left">
+                <p className="font-medium text-primary">Drawing Pictures! 🎨</p>
+                <p className="text-xs text-muted-foreground">{currentText}</p>
+                {batchProgress && (
+                  <p className="text-xs text-muted-foreground/70">{batchProgress}</p>
+                )}
+              </div>
             </div>
+          )}
+          
+          <div className="text-xs text-muted-foreground/60 italic">
+            Stories first, pictures second! ✨
           </div>
-        )}
-        
-        <div className="text-xs text-muted-foreground/60 italic">
-          Stories first, pictures second! ✨
         </div>
       </div>
     </div>
