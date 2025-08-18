@@ -1,5 +1,5 @@
 import { SupportedLanguage } from "@/types/multilingual";
-import { UserInfo } from "@/types";
+import { UserInfo, SkinTone } from "@/types";
 
 export interface CulturalVisualProfile {
   skinTones: string[];
@@ -100,14 +100,66 @@ export class MulticulturalVisualService {
 
   static generateCulturalCharacterDescription(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
-    const skinTone = this.selectRandomElement(profile.skinTones);
-    const hairStyle = this.selectRandomElement(profile.hairStyles);
+    
+    // FIXED: Respect user's avatar skin tone choice
+    const avatarSkinTone = this.getAvatarSkinToneDescription(userInfo.avatar.skinTone, userInfo.nativeLanguage);
+    const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo.avatar.skinTone, userInfo.nativeLanguage);
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
 
     const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 'girl';
     
-    return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+    return `${genderTerm} with ${avatarSkinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+  }
+
+  // New method: Map avatar skin tone to appropriate description
+  private static getAvatarSkinToneDescription(skinTone: SkinTone, nativeLanguage: SupportedLanguage): string {
+    const baseDescriptions = {
+      'pale': 'pale skin',
+      'light': 'light skin', 
+      'medium': 'medium skin',
+      'olive': 'olive skin',
+      'dark': 'rich brown skin'
+    };
+
+    // Add cultural context for authenticity
+    const culturalEnhancements = {
+      'dark': {
+        'es': 'rich Afro-Latina brown skin',
+        'ar': 'rich Middle Eastern brown skin',
+        'hi': 'rich South Asian brown skin',
+        'zh': 'warm East Asian skin',
+        'pt': 'rich Afro-Brazilian brown skin',
+        'fr': 'rich Afro-French brown skin',
+        'en': 'rich African American brown skin'
+      }
+    };
+
+    // Use cultural enhancement if available, otherwise use base description
+    if (skinTone === 'dark' && culturalEnhancements[skinTone][nativeLanguage]) {
+      return culturalEnhancements[skinTone][nativeLanguage];
+    }
+
+    return baseDescriptions[skinTone];
+  }
+
+  // New method: Get culturally appropriate hair style based on avatar skin tone
+  private static getCulturallyAppropriateHairStyle(skinTone: SkinTone, nativeLanguage: SupportedLanguage): string {
+    const profile = this.getCulturalVisualProfile(nativeLanguage);
+    
+    // Avatar-specific hair mappings that respect both user choice and cultural authenticity
+    const avatarHairMappings = {
+      'pale': ['flowing red hair', 'straight blonde hair', 'wavy auburn hair'],
+      'light': ['straight blonde hair', 'wavy light brown hair', 'flowing golden hair'],
+      'medium': ['wavy brown hair', 'straight dark brown hair', 'curly chestnut hair'],
+      'olive': ['wavy dark hair', 'straight dark brown hair', 'curly dark hair'],
+      'dark': profile.hairStyles.filter(style => 
+        style.includes('natural') || style.includes('curly') || style.includes('coily') || style.includes('braided')
+      )
+    };
+
+    const appropriateStyles = avatarHairMappings[skinTone];
+    return this.selectRandomElement(appropriateStyles.length > 0 ? appropriateStyles : profile.hairStyles);
   }
 
   static generateCulturalSecondaryCharacters(userInfo: UserInfo, count: number = 2): string[] {
