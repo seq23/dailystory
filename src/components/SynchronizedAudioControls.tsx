@@ -31,16 +31,18 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
 
   // Listen for audio state changes
   useEffect(() => {
-    const handleStateChange = (event: CustomEvent) => {
-      const playing = event.detail.isPlaying;
-      setIsPlaying(playing);
-      onPlayingChange?.(playing);
-      
-      if (!playing) {
-        setIsLoading(false);
-        setError(null);
-      }
-    };
+  const handleStateChange = (event: CustomEvent) => {
+    const playing = event.detail.isPlaying;
+    setIsPlaying(playing);
+    onPlayingChange?.(playing);
+    
+    // Clear loading state when audio state changes (start or stop)
+    setIsLoading(false);
+    
+    if (!playing) {
+      setError(null);
+    }
+  };
 
     window.addEventListener('audio:statechange', handleStateChange as EventListener);
     
