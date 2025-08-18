@@ -24,8 +24,131 @@ interface StoryElementsRequest {
   };
 }
 
+// Story Visual State Manager - Character Seeding Integration
+interface CharacterState {
+  name: string;
+  description: string;
+  seed?: number;
+  lastUsedPage: number;
+  successfulPrompts: string[];
+}
+
+interface StoryVisualState {
+  sessionId: string;
+  characters: Map<string, CharacterState>;
+  currentPage: number;
+  totalPages: number;
+}
+
+// In-memory character seeding storage (integrates with main StoryVisualStateManager)
+const storyStates = new Map<string, StoryVisualState>();
+
 interface StoryElementsResponse {
   enhancedDescription: string;
+}
+
+// Character seeding helper functions
+function getOrCreateStoryState(sessionId: string, totalPages: number = 10): StoryVisualState {
+  if (!storyStates.has(sessionId)) {
+    storyStates.set(sessionId, {
+      sessionId,
+      characters: new Map(),
+      currentPage: 1,
+      totalPages
+    });
+    console.log(`🎭 Created character seeding state for session: ${sessionId}`);
+  }
+  return storyStates.get(sessionId)!;
+}
+
+function updateCharacterWithSeed(
+  sessionId: string,
+  characterName: string,
+  description: string,
+  seed?: number,
+  pageNumber: number = 1
+): void {
+  const state = getOrCreateStoryState(sessionId);
+  
+  const existingChar = state.characters.get(characterName);
+  const characterState: CharacterState = {
+    name: characterName,
+    description,
+    seed: seed || existingChar?.seed || Math.floor(Math.random() * 999999),
+    lastUsedPage: pageNumber,
+    successfulPrompts: existingChar?.successfulPrompts || []
+  };
+  
+  state.characters.set(characterName, characterState);
+  
+  console.log(`🎭 Character "${characterName}" locked with seed: ${characterState.seed} for consistency`);
+}
+
+function getCharacterDescription(sessionId: string, characterName: string): string | undefined {
+  const state = storyStates.get(sessionId);
+  return state?.characters.get(characterName)?.description;
+}
+
+function buildCharacterConsistencyContext(sessionId: string, pageNumber: number, userInfo?: any): string {
+  const state = storyStates.get(sessionId);
+  if (!state) return '';
+
+  const contextParts: string[] = [];
+  
+  // Add main character consistency if exists
+  if (userInfo?.name) {
+    const mainCharDescription = getCharacterDescription(sessionId, userInfo.name);
+    if (mainCharDescription) {
+      contextParts.push(`MAIN CHARACTER LOCKED APPEARANCE: ${userInfo.name} - ${mainCharDescription}`);
+    } else {
+      // Lock main character on first appearance
+      const description = createMainCharacterDescription(userInfo);
+      updateCharacterWithSeed(sessionId, userInfo.name, description, undefined, pageNumber);
+      contextParts.push(`MAIN CHARACTER LOCKED APPEARANCE: ${userInfo.name} - ${description}`);
+    }
+  }
+
+  // Add secondary character consistency
+  const secondaryChars = Array.from(state.characters.values())
+    .filter(char => char.name !== userInfo?.name && char.lastUsedPage < pageNumber);
+  
+  if (secondaryChars.length > 0) {
+    const secondaryDescriptions = secondaryChars
+      .map(char => `${char.name} - ${char.description}`)
+      .join('\n');
+    contextParts.push(`SECONDARY CHARACTERS LOCKED APPEARANCE:\n${secondaryDescriptions}`);
+  }
+
+  return contextParts.length > 0 ? contextParts.join('\n\n') + '\n\n' : '';
+}
+
+function createMainCharacterDescription(userInfo: any): string {
+  const { name, age, avatar } = userInfo;
+  const avatarType = avatar?.type || 'child';
+  const skinTone = avatar?.skinTone || 'medium';
+  
+  // Enhanced African American hair texture descriptions for authenticity
+  const africanAmericanHairStyles = [
+    'beautiful natural afro hair texture',
+    'gorgeous kinky-curly hair texture', 
+    'lovely coily hair in a neat afro',
+    'stunning natural curls and coils',
+    'beautiful tightly coiled hair texture',
+    'gorgeous 4c natural hair texture',
+    'lovely natural hair in tight curls'
+  ];
+  
+  let hairDescription = 'neat hair';
+  let skinDescription = `${skinTone} skin tone`;
+  
+  // Authentic representation for African American characters
+  if (skinTone === 'dark') {
+    const randomHair = africanAmericanHairStyles[Math.floor(Math.random() * africanAmericanHairStyles.length)];
+    hairDescription = randomHair;
+    skinDescription = 'rich cocoa skin tone';
+  }
+  
+  return `${age} year old ${avatarType} with ${skinDescription}, ${hairDescription}, bright expressive eyes, and a joyful smile`;
 }
 
 serve(async (req) => {
@@ -41,42 +164,58 @@ serve(async (req) => {
 
     const { storyText, pageNumber, totalPages, difficultyLevel, sessionId, userInfo }: StoryElementsRequest = await req.json();
 
-    if (!storyText) {
-      throw new Error('Story text is required');
+    if (!storyText || !sessionId) {
+      throw new Error('Story text and session ID are required');
     }
 
-    console.log(`📖 Extracting story elements for ${difficultyLevel} level, page ${pageNumber}/${totalPages}`);
+    console.log(`📖 Extracting story elements with character seeding for ${difficultyLevel} level, page ${pageNumber}/${totalPages}, session: ${sessionId}`);
 
-    const systemPrompt = `You are an expert at analyzing children's stories to extract rich visual elements for illustration. Your primary goal is to create detailed visual descriptions that accurately reflect what is EXPLICITLY mentioned in the story text for the current page. Focus on: characters, settings, colors, objects, emotions, atmosphere, lighting, and composition. Create detailed, vivid descriptions that capture the essence of the scene. Output direct descriptive text suitable for children's book illustration prompts, not JSON. Keep age-appropriate and engaging.
+    // Initialize character seeding state
+    getOrCreateStoryState(sessionId, totalPages);
+    
+    // Build character consistency context
+    const characterContext = buildCharacterConsistencyContext(sessionId, pageNumber, userInfo);
 
-CRITICAL RULES:
-1. ONLY describe characters that are EXPLICITLY mentioned in this specific page's text
-2. Do NOT add or imagine secondary characters that aren't mentioned in the current page
-3. If no secondary character is mentioned on this page, focus ONLY on the main character and setting
-4. Do NOT carry over characters from your general knowledge - analyze ONLY what's written`;
+    const systemPrompt = `You are an expert at analyzing children's stories to extract rich visual elements for illustration with PERFECT CHARACTER CONSISTENCY. Your primary goal is to create detailed visual descriptions that accurately reflect what is EXPLICITLY mentioned in the story text while maintaining locked character appearance across all pages.
 
-    const userPrompt = `Analyze this ${difficultyLevel} level story text for page ${pageNumber} of ${totalPages} and extract the most visually compelling scene:
+CRITICAL CHARACTER CONSISTENCY RULES:
+1. ALWAYS use the EXACT locked character descriptions provided in the character context
+2. NEVER change or modify locked character appearances - they are SET IN STONE
+3. If a character has a locked appearance, use those EXACT details (skin tone, hair texture, facial features)
+4. ONLY describe characters that are EXPLICITLY mentioned in this specific page's text
+5. Do NOT add or imagine secondary characters that aren't mentioned in the current page
+6. Character appearance consistency is MORE IMPORTANT than creative description
+
+For African American characters with dark skin tone: ALWAYS maintain authentic features including specific hair textures (afro, kinky, coily, natural curls), rich skin tones, and consistent facial features.
+
+Focus on: settings, colors, objects, emotions, atmosphere, lighting, and composition while keeping character appearance LOCKED.`;
+
+    const userPrompt = `${characterContext}STORY TEXT ANALYSIS for page ${pageNumber} of ${totalPages}:
 
 "${storyText}"
 
-${userInfo ? `The main character is ${userInfo.name}, a ${userInfo.age} year old with ${userInfo.avatar?.type || 'friendly'} appearance and ${userInfo.avatar?.skinTone || 'warm'} skin tone.` : ''}
+CRITICAL CHARACTER CONSISTENCY REQUIREMENTS:
+- Use ONLY the locked character descriptions provided above
+- For ${userInfo?.name || 'the main character'}: NEVER change their locked appearance
+- Maintain African American authenticity if character has dark skin tone (afro/natural hair, rich skin tone)
+- Character appearance is LOCKED and cannot be modified
 
-Create a rich, detailed scene description that goes beyond simple keyword matching. Include:
+Create a rich, detailed scene description that includes:
 - The most visually interesting moment from the text
-- Character emotions and expressions  
-- Environmental details and atmosphere
+- Character emotions and expressions (using LOCKED appearance descriptions)
+- Environmental details and atmosphere  
 - Color palette suggestions based on mood
 - Lighting and composition ideas
 - Any magical or imaginative elements mentioned in the text
 
-CRITICAL INSTRUCTIONS:
+CHARACTER CONSISTENCY RULES:
 - ONLY describe characters that are EXPLICITLY mentioned in THIS PAGE'S text
-- Do NOT add secondary characters (animals, friends, companions) unless they are specifically mentioned in the current page text
-- If the text says "Sequoia sees a bird" then include ONE bird. If it doesn't mention any bird, don't include any bird
-- Focus on the main character and setting if no secondary characters are mentioned
-- Be faithful to what's actually written, not what might make a more interesting illustration
+- For characters with locked appearances, use their EXACT established descriptions
+- Do NOT add secondary characters unless they are specifically mentioned in the current page text
+- Do NOT modify locked character features (hair texture, skin tone, facial features)
+- Character consistency takes precedence over creative interpretation
 
-Focus on creating a scene that would make a beautiful, engaging children's book illustration based ONLY on what is described in the current page's text.`;
+Focus on creating a scene for a beautiful children's book illustration while maintaining PERFECT character consistency.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -109,13 +248,26 @@ Focus on creating a scene that would make a beautiful, engaging children's book 
 
     const enhancedDescription = data.choices[0].message.content.trim();
 
-    console.log(`📖 Successfully extracted story elements: ${enhancedDescription.substring(0, 100)}...`);
+    // Track successful character descriptions for future consistency
+    if (userInfo?.name) {
+      const state = getOrCreateStoryState(sessionId, totalPages);
+      const character = state.characters.get(userInfo.name);
+      if (character) {
+        character.successfulPrompts.push(enhancedDescription.substring(0, 200));
+        if (character.successfulPrompts.length > 3) {
+          character.successfulPrompts.shift();
+        }
+      }
+    }
+
+    console.log(`📖 Successfully extracted story elements with character seeding: ${enhancedDescription.substring(0, 100)}...`);
 
     return new Response(JSON.stringify({
       success: true,
       enhancedDescription,
       sessionId,
-      pageNumber
+      pageNumber,
+      charactersSeed: storyStates.get(sessionId)?.characters.size || 0
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
