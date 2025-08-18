@@ -415,103 +415,13 @@ function validateUserInfo(userInfo: any): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// Comprehensive negative prompt generation for high-quality, accurate images
+// Runware's professionally optimized negative prompt - single source of truth
 function generateComprehensiveNegativePrompt(text: string, secondaryCharacters: string[], userInfo?: any): string {
-  const negativePrompts: string[] = [];
+  // Use Runware's recommended negative prompt as the foundation
+  const runwareNegativePrompt = "text, watermark, signature, logos, blurry, low quality, bad anatomy, deformed, malformed, extra limbs, missing limbs, extra fingers, missing fingers, distorted faces, asymmetrical faces, ugly, scary, dark themes, violence, inappropriate content, adult themes, pixelated, jpeg artifacts, oversaturated, bad proportions, cropped, cut off";
   
-  // Core quality control - fundamental issues to avoid
-  negativePrompts.push(
-    "bad anatomy", "malformed", "deformed", "distorted", "disfigured", "ugly", "hideous", "gross", "disgusting",
-    "blurry", "out of focus", "low quality", "low resolution", "pixelated", "jpeg artifacts", "compression artifacts",
-    "bad art", "amateur", "poorly drawn", "sketch", "unfinished", "incomplete"
-  );
-  
-  // Character accuracy and completeness - address the head-only issue
-  negativePrompts.push(
-    "partial body", "cut off body", "cropped body", "missing body parts", "incomplete character", 
-    "headshot only", "portrait only", "close-up only", "head and shoulders only",
-    "missing arms", "missing legs", "missing torso", "floating head", "disembodied",
-    "character cutoff", "character cropped", "partial figure", "incomplete person"
-  );
-  
-  // Object count accuracy - address the "two birds" issue
-  const birdMatch = text.match(/\ba\s+(bird|robin|sparrow|blue\s+bird)\b/i);
-  if (birdMatch) {
-    negativePrompts.push(
-      "multiple birds", "two birds", "many birds", "flock of birds", "several birds", 
-      "extra birds", "duplicate birds", "too many birds", "bird crowd"
-    );
-  }
-  
-  // General quantity control for singular objects
-  const singularMatches = text.match(/\ba\s+(\w+)\b/gi);
-  if (singularMatches) {
-    for (const match of singularMatches) {
-      const object = match.replace(/^a\s+/i, '').trim();
-      if (object && !['the', 'and', 'or', 'but'].includes(object.toLowerCase())) {
-        negativePrompts.push(`multiple ${object}`, `many ${object}`, `several ${object}`);
-      }
-    }
-  }
-  
-  // Text and overlay prevention
-  negativePrompts.push(
-    "text", "words", "letters", "writing", "typography", "fonts", "labels", "signs", "banners",
-    "watermark", "logo", "signature", "copyright", "username", "name overlay", "title text",
-    "speech bubbles", "dialogue", "captions", "subtitles", "annotations"
-  );
-  
-  // Style consistency and appropriateness
-  negativePrompts.push(
-    "adult content", "inappropriate", "scary", "frightening", "dark themes", "violence",
-    "realistic photography", "photorealistic", "real people", "actual humans",
-    "noir", "gothic", "horror", "mature themes", "adult oriented"
-  );
-  
-  // Technical and artistic issues
-  negativePrompts.push(
-    "wrong perspective", "impossible anatomy", "extra limbs", "missing limbs", "wrong proportions",
-    "floating objects", "impossible poses", "unnatural positions", "gravity defying",
-    "inconsistent lighting", "harsh shadows", "overexposed", "underexposed",
-    "color bleeding", "muddy colors", "oversaturated", "washed out colors"
-  );
-  
-  // Background and composition issues
-  negativePrompts.push(
-    "busy background", "cluttered", "chaotic composition", "confusing layout",
-    "too many elements", "overcrowded", "messy", "disorganized", "random objects",
-    "irrelevant details", "distracting elements", "background noise"
-  );
-  
-  // Character consistency issues (if we have character info)
-  if (userInfo) {
-    negativePrompts.push(
-      "wrong gender", "gender swap", "age change", "different character",
-      "character inconsistency", "appearance change", "identity confusion",
-      "wrong hair color", "wrong skin tone", "different facial features"
-    );
-  }
-  
-  // Frame and format issues
-  negativePrompts.push(
-    "frame", "border", "white border", "black border", "picture frame",
-    "split screen", "collage", "multiple panels", "grid layout", "comic format",
-    "before and after", "comparison", "multiple views", "different angles"
-  );
-  
-  // AI generation artifacts
-  negativePrompts.push(
-    "ai artifacts", "generation errors", "prompt bleeding", "style mixing",
-    "uncanny valley", "artificial looking", "computer generated feel",
-    "digital noise", "rendering errors", "mesh problems", "texture issues"
-  );
-  
-  // Join all negative prompts with appropriate separators
-  const finalNegativePrompt = negativePrompts.join(", ");
-  
-  console.log(`🚫 Generated comprehensive negative prompt (${negativePrompts.length} terms): ${finalNegativePrompt.substring(0, 200)}...`);
-  
-  return finalNegativePrompt;
+  console.log(`🚫 Using Runware's optimized negative prompt strategy`);
+  return runwareNegativePrompt;
 }
 
 serve(async (req) => {

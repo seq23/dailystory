@@ -15,7 +15,7 @@ export interface DirectImagePrompt {
   visualPrompt: string;
   characterInfo: string;
   style: string;
-  negativePrompt: string[];
+  negativePrompt?: string[];
 }
 
 export class DirectContentExtractor {
@@ -214,15 +214,10 @@ export class DirectContentExtractor {
     // Simplified prompt - environmental context now handled server-side
     const visualPrompt = `A ${style} showing ${visualScene}. Bright, cheerful, safe for children.`;
     
-    const negativePrompt = [
-      '**NO TEXT OF ANY KIND**, **NO SPEECH BUBBLES**, **NO CAPTIONS**, **NO WORDS**, **NO LETTERS**, blurry, low quality, deformed anatomy, extra limbs, multiple arms, multiple legs, anatomically incorrect children, animal-human hybrid, merged bodies, extra body parts, distorted human anatomy, cartoon animal features on humans, watermark, ugly, scary, inappropriate, adult content'
-    ];
-    
     return {
       visualPrompt,
       characterInfo,
-      style,
-      negativePrompt
+      style
     };
   }
 

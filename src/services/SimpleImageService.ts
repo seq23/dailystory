@@ -156,7 +156,7 @@ export class SimpleImageService {
     userInfo: UserInfo,
     difficultyLevel: DifficultyLevel,
     sessionId?: string
-  ): { positivePrompt: string; negativePrompt: string } {
+  ): { positivePrompt: string; negativePrompt?: string } {
     console.log(`📝 Using simple rule-based extraction for: "${storyText}"`);
     
     const pageContent = DirectContentExtractor.extractPageContent(storyText);
@@ -215,9 +215,7 @@ export class SimpleImageService {
       console.log(`🔧 Simple optimizations: ${optimizations.join(', ')}`);
     }
     
-    const negativePrompt = 'bad anatomy, blurry, text, watermark, ugly, deformed';
-    
-    return { positivePrompt: optimizedPrompt, negativePrompt };
+    return { positivePrompt: optimizedPrompt };
   }
 
   // OPTIMIZED: Ultra-fast server-side processing
