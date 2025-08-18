@@ -262,7 +262,7 @@ export class SimpleImageService {
     try {
       // TIER 3: OpenAI DALL-E fallback
       console.log('🎯 Starting Tier 3: OpenAI DALL-E generation');
-      const tier3Result = await this.generateWithOpenAI(cleanScene, config, userInfo);
+      const tier3Result = await this.generateWithOpenAI(cleanScene, userInfo, difficulty, sessionId, pageNumber, totalPages);
       
       if (tier3Result.success) {
         console.log('✅ Tier 3 succeeded');
@@ -440,13 +440,23 @@ export class SimpleImageService {
   // TIER 3: OpenAI DALL-E
   private static async generateWithOpenAI(
     cleanScene: string, 
-    config: ImageGenerationConfig,
-    userInfo?: UserInfo
+    userInfo?: UserInfo,
+    difficulty?: string,
+    sessionId?: string,
+    pageNumber?: number,
+    totalPages?: number
   ): Promise<ImageResult> {
     try {
       console.log('🎯 OpenAI DALL-E generation');
 
       const enhancedPrompt = this.generateSimplePrompt(cleanScene, userInfo);
+
+      console.log('🎯 [DEBUG] Calling OpenAI with:', {
+        positivePrompt: enhancedPrompt?.substring(0, 50),
+        size: '1024x1024',
+        model: 'gpt-image-1',
+        quality: 'standard'
+      });
 
       const { data, error } = await supabase.functions.invoke('openai-image', {
         body: {

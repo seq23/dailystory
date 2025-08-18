@@ -86,6 +86,7 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  let positivePrompt = '';
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -95,7 +96,7 @@ serve(async (req) => {
 
     const requestData: OpenAIImageRequest = await req.json();
     const { 
-      positivePrompt, 
+      positivePrompt: requestPrompt, 
       negativePrompt, 
       width = 1024, 
       height = 1024,
@@ -106,6 +107,8 @@ serve(async (req) => {
       seed,
       sessionId
     } = requestData;
+    
+    positivePrompt = requestPrompt;
 
     // Validate required parameters first
     if (!positivePrompt || typeof positivePrompt !== 'string') {
@@ -115,6 +118,17 @@ serve(async (req) => {
 
     console.log(`🖼️ OpenAI Image Generation - Page ${pageNumber || 'unknown'}`);
     console.log(`📝 Prompt: ${positivePrompt.substring(0, 100)}...`);
+    console.log(`🔍 Full request data:`, { 
+      positivePrompt: positivePrompt?.length, 
+      width, 
+      height, 
+      quality, 
+      style,
+      hasUserInfo: !!userInfo,
+      pageNumber,
+      seed,
+      sessionId
+    });
 
     // Enhanced prompt with avatar support and cultural context
     let enhancedPrompt = positivePrompt;
@@ -204,7 +218,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in openai-image function:', error);
-    return createCorsErrorResponse(`OpenAI error: ${error.message}`);
+    console.error('❌ OpenAI generation error:', error);
+    console.error('❌ Error details:', error instanceof Error ? error.stack : 'No details available');
+    console.error('❌ Request was for prompt:', positivePrompt?.substring(0, 50));
+    return createCorsErrorResponse(`OpenAI error: ${error.message}`, 500);
   }
 });
