@@ -67,9 +67,9 @@ class StoryVisualStateManager {
   private static storyStates: Map<string, StoryVisualState> = new Map();
   
   private static readonly DEFAULT_RUNWARE_CONTEXT: RunwareContext = {
-    cfgScale: 1.5,
+    cfgScale: 3.0,
     model: "runware:100@1",
-    steps: 3,
+    steps: 8,
     scheduler: "FlowMatchEulerDiscreteScheduler"
   };
   

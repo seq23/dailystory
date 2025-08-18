@@ -301,8 +301,8 @@ export class MultiStageEnhancementPipeline {
   static getDefaultParameters() {
     return {
       model: "runware:100@1",
-      cfgScale: 1.5,
-      steps: 3,
+      cfgScale: 3.0,
+      steps: 8,
       scheduler: "FlowMatchEulerDiscreteScheduler",
       strength: 0.8,
       width: 1024,

@@ -20,10 +20,10 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: '3d_smooth',
     brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
     
-    // Technical parameters
+    // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 1.5,
-      steps: 3,
+      cfgScale: 2.5,
+      steps: 6,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.8
     }
@@ -47,10 +47,10 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: '3d_smooth',
     brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
     
-    // Technical parameters
+    // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 1.5,
-      steps: 3,
+      cfgScale: 2.5,
+      steps: 6,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.8
     }
@@ -74,10 +74,10 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: 'painterly',
     brandSuffix: 'children\'s book illustration, warm colors, safe wholesome content',
     
-    // Technical parameters
+    // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 1.4,
-      steps: 4,
+      cfgScale: 3.0,
+      steps: 8,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.75
     }
@@ -101,10 +101,10 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: 'advanced_digital_painting',
     brandSuffix: 'artistic children\'s book illustration, refined quality, diverse representation',
     
-    // Technical parameters
+    // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 1.6,
-      steps: 5,
+      cfgScale: 3.5,
+      steps: 10,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.8
     }
@@ -128,10 +128,10 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: 'masterful_artistic_technique',
     brandSuffix: 'masterful children\'s book art, sophisticated quality, diverse representation',
     
-    // Technical parameters
+    // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 1.7,
-      steps: 6,
+      cfgScale: 3.8,
+      steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.85
     }
@@ -195,10 +195,10 @@ export function buildCompletePrompt(framework, sceneDescription, characterDescri
 export function getOptimizedParameters(framework, characterComplexity = 1) {
   const baseParams = { ...framework.parameters };
   
-  // Adjust for character complexity
+  // Adjust for character complexity (Runware optimized)
   if (characterComplexity > 2) {
-    baseParams.steps = Math.min(baseParams.steps + 1, 6);
-    baseParams.cfgScale = Math.min(baseParams.cfgScale + 0.2, 2.0);
+    baseParams.steps = Math.min(baseParams.steps + 2, 15);
+    baseParams.cfgScale = Math.min(baseParams.cfgScale + 0.3, 4.0);
   }
   
   return baseParams;
