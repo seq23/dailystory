@@ -35,6 +35,7 @@ export interface CharacterDescriptor {
 
 export class StructuredPromptEngine {
   private static readonly STYLE_FRAMEWORKS: Record<DifficultyLevel, string> = {
+    'beginner': 'Very simple children\'s book illustration, minimal details, large clear shapes, bright basic colors',
     'easy': 'Simple children\'s book illustration, clear lines, bright cheerful colors, minimal background details',
     'medium': 'Children\'s book art style, detailed characters, vibrant scenes, engaging composition',
     'hard': 'Professional children\'s book illustration, rich details, dynamic composition, sophisticated lighting',

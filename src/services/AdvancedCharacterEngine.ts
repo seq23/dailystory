@@ -49,7 +49,7 @@ export class AdvancedCharacterEngine {
     
     // Primary character patterns (user)
     const primaryPatterns = [
-      userInfo.childName?.toLowerCase() || 'main character',
+      userInfo.name?.toLowerCase() || 'main character',
       'you', 'your', 'yourself'
     ];
     
