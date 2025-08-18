@@ -89,9 +89,150 @@ function getCharacterDescription(sessionId: string, characterName: string): stri
   return state?.characters.get(characterName)?.description;
 }
 
-function buildCharacterConsistencyContext(sessionId: string, pageNumber: number, userInfo?: any): string {
+// Dynamic character detection for ALL character types
+function detectCharactersInText(storyText: string, userInfo?: any): { name: string; type: string; description?: string }[] {
+  const characters: { name: string; type: string; description?: string }[] = [];
+  
+  // Add main character if mentioned
+  if (userInfo?.name && storyText.toLowerCase().includes(userInfo.name.toLowerCase())) {
+    characters.push({ name: userInfo.name, type: 'primary' });
+  }
+
+  // Animal patterns - detect animals with descriptive words
+  const animalPatterns = [
+    // Common animals with descriptors
+    /\b(?:a|the|this|that)?\s*(?:(blue|red|yellow|green|brown|black|white|gray|orange|purple|pink|big|small|little|tiny|fuzzy|fluffy)\s+)?(bird|cat|dog|rabbit|squirrel|mouse|horse|duck|fish|butterfly|bee|frog|turtle|bear|fox|owl|eagle|robin|sparrow|cardinal|jay|dove|crow|raven|parrot|puppy|kitten|bunny)\b/gi,
+    // Family animals with descriptors  
+    /\b(?:mama|papa|mother|father|baby|little|big)\s+(bird|cat|dog|rabbit|squirrel|mouse|horse|duck|fish|butterfly|bee|frog|turtle|bear|fox|owl|eagle|robin|sparrow|cardinal|jay|dove|crow|raven|parrot)\b/gi,
+    // Named animals (pets)
+    /\b([A-Z][a-z]+)\s+(?:the\s+)?(bird|cat|dog|rabbit|squirrel|mouse|horse|duck|fish|butterfly|bee|frog|turtle|bear|fox|owl|eagle|robin|sparrow|cardinal|jay|dove|crow|raven|parrot)\b/gi
+  ];
+
+  animalPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(storyText)) !== null) {
+      const fullMatch = match[0].trim();
+      const descriptor = match[1] || '';
+      const animal = match[2] || match[match.length - 1];
+      
+      // Create character name and description
+      const characterName = fullMatch.includes('the ') ? fullMatch : `the ${fullMatch}`;
+      const description = descriptor ? `${descriptor} ${animal}` : animal;
+      
+      if (!characters.some(c => c.name.toLowerCase() === characterName.toLowerCase())) {
+        characters.push({ 
+          name: characterName, 
+          type: 'animal',
+          description: `${description} with consistent ${descriptor || 'natural'} coloring and appearance`
+        });
+      }
+    }
+  });
+
+  // Family member patterns
+  const familyPatterns = [
+    /\b(mom|mother|mama|mommy|dad|father|papa|daddy|sister|brother|grandma|grandpa|grandmother|grandfather|aunt|uncle|cousin)\b/gi
+  ];
+
+  familyPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(storyText)) !== null) {
+      const familyMember = match[1].toLowerCase();
+      const characterName = familyMember;
+      
+      if (!characters.some(c => c.name.toLowerCase() === characterName)) {
+        characters.push({ 
+          name: characterName, 
+          type: 'family',
+          description: createFamilyMemberDescription(familyMember, userInfo)
+        });
+      }
+    }
+  });
+
+  // Named people (proper nouns that aren't the main character)
+  const namePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+  let match;
+  while ((match = namePattern.exec(storyText)) !== null) {
+    const name = match[1];
+    if (name !== userInfo?.name && 
+        !['The', 'And', 'But', 'Or', 'So', 'When', 'Where', 'What', 'How', 'Why'].includes(name) &&
+        !characters.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+      characters.push({ 
+        name, 
+        type: 'secondary',
+        description: createSecondaryCharacterDescription(name, userInfo)
+      });
+    }
+  }
+
+  return characters;
+}
+
+function createFamilyMemberDescription(familyRole: string, userInfo?: any): string {
+  const age = userInfo?.age || 6;
+  const skinTone = userInfo?.avatar?.skinTone || 'medium';
+  
+  const ageMap: { [key: string]: string } = {
+    'mom': 'adult woman',
+    'mother': 'adult woman', 
+    'mama': 'adult woman',
+    'mommy': 'adult woman',
+    'dad': 'adult man',
+    'father': 'adult man',
+    'papa': 'adult man', 
+    'daddy': 'adult man',
+    'sister': age > 8 ? 'older girl' : 'younger girl',
+    'brother': age > 8 ? 'older boy' : 'younger boy',
+    'grandma': 'elderly woman',
+    'grandmother': 'elderly woman',
+    'grandpa': 'elderly man',
+    'grandfather': 'elderly man'
+  };
+
+  const baseDescription = ageMap[familyRole] || 'adult person';
+  
+  // Match family skin tone for consistency
+  let skinDescription = `${skinTone} skin tone`;
+  if (skinTone === 'dark') {
+    skinDescription = 'rich cocoa skin tone, beautiful natural hair texture';
+  }
+  
+  return `${baseDescription} with ${skinDescription}, warm caring expression, family resemblance`;
+}
+
+function createSecondaryCharacterDescription(name: string, userInfo?: any): string {
+  const age = userInfo?.age || 6;
+  const isChild = age < 12;
+  
+  if (isChild) {
+    return `child around ${age} years old, friendly appearance, bright expressive eyes`;
+  } else {
+    return `person with kind appearance, warm friendly expression`;
+  }
+}
+
+function buildCharacterConsistencyContext(sessionId: string, pageNumber: number, storyText: string, userInfo?: any): string {
   const state = storyStates.get(sessionId);
   if (!state) return '';
+
+  // Detect ALL characters in current page text
+  const detectedCharacters = detectCharactersInText(storyText, userInfo);
+  
+  // Lock appearance for any new characters detected
+  detectedCharacters.forEach(char => {
+    if (!state.characters.has(char.name)) {
+      let description = char.description;
+      
+      // Create main character description if it's the primary character
+      if (char.type === 'primary' && userInfo?.name === char.name) {
+        description = createMainCharacterDescription(userInfo);
+      }
+      
+      updateCharacterWithSeed(sessionId, char.name, description || char.name, undefined, pageNumber);
+      console.log(`🎭 NEW CHARACTER DETECTED: ${char.name} (${char.type}) - locked for consistency`);
+    }
+  });
 
   const contextParts: string[] = [];
   
@@ -100,23 +241,18 @@ function buildCharacterConsistencyContext(sessionId: string, pageNumber: number,
     const mainCharDescription = getCharacterDescription(sessionId, userInfo.name);
     if (mainCharDescription) {
       contextParts.push(`MAIN CHARACTER LOCKED APPEARANCE: ${userInfo.name} - ${mainCharDescription}`);
-    } else {
-      // Lock main character on first appearance
-      const description = createMainCharacterDescription(userInfo);
-      updateCharacterWithSeed(sessionId, userInfo.name, description, undefined, pageNumber);
-      contextParts.push(`MAIN CHARACTER LOCKED APPEARANCE: ${userInfo.name} - ${description}`);
     }
   }
 
-  // Add secondary character consistency
-  const secondaryChars = Array.from(state.characters.values())
-    .filter(char => char.name !== userInfo?.name && char.lastUsedPage < pageNumber);
+  // Add ALL other character consistency (secondary, animals, family)
+  const allOtherChars = Array.from(state.characters.values())
+    .filter(char => char.name !== userInfo?.name);
   
-  if (secondaryChars.length > 0) {
-    const secondaryDescriptions = secondaryChars
+  if (allOtherChars.length > 0) {
+    const characterDescriptions = allOtherChars
       .map(char => `${char.name} - ${char.description}`)
       .join('\n');
-    contextParts.push(`SECONDARY CHARACTERS LOCKED APPEARANCE:\n${secondaryDescriptions}`);
+    contextParts.push(`ALL SECONDARY CHARACTERS LOCKED APPEARANCE:\n${characterDescriptions}`);
   }
 
   return contextParts.length > 0 ? contextParts.join('\n\n') + '\n\n' : '';
@@ -173,8 +309,8 @@ serve(async (req) => {
     // Initialize character seeding state
     getOrCreateStoryState(sessionId, totalPages);
     
-    // Build character consistency context
-    const characterContext = buildCharacterConsistencyContext(sessionId, pageNumber, userInfo);
+    // Build character consistency context with dynamic detection
+    const characterContext = buildCharacterConsistencyContext(sessionId, pageNumber, storyText, userInfo);
 
     const systemPrompt = `You are an expert at analyzing children's stories to extract rich visual elements for illustration with PERFECT CHARACTER CONSISTENCY. Your primary goal is to create detailed visual descriptions that accurately reflect what is EXPLICITLY mentioned in the story text while maintaining locked character appearance across all pages.
 
@@ -182,9 +318,10 @@ CRITICAL CHARACTER CONSISTENCY RULES:
 1. ALWAYS use the EXACT locked character descriptions provided in the character context
 2. NEVER change or modify locked character appearances - they are SET IN STONE
 3. If a character has a locked appearance, use those EXACT details (skin tone, hair texture, facial features)
-4. ONLY describe characters that are EXPLICITLY mentioned in this specific page's text
-5. Do NOT add or imagine secondary characters that aren't mentioned in the current page
+4. ALL characters (primary, secondary, animals, family) mentioned in text get consistent appearance
+5. Secondary characters like animals (blue bird, etc.) maintain EXACT same appearance across all pages
 6. Character appearance consistency is MORE IMPORTANT than creative description
+7. Animal characters keep consistent colors and features (e.g., blue bird stays blue with same features)
 
 For African American characters with dark skin tone: ALWAYS maintain authentic features including specific hair textures (afro, kinky, coily, natural curls), rich skin tones, and consistent facial features.
 
@@ -209,11 +346,13 @@ Create a rich, detailed scene description that includes:
 - Any magical or imaginative elements mentioned in the text
 
 CHARACTER CONSISTENCY RULES:
-- ONLY describe characters that are EXPLICITLY mentioned in THIS PAGE'S text
+- ALL characters mentioned in THIS PAGE'S text get consistent locked appearances
 - For characters with locked appearances, use their EXACT established descriptions
-- Do NOT add secondary characters unless they are specifically mentioned in the current page text
-- Do NOT modify locked character features (hair texture, skin tone, facial features)
+- Secondary characters (animals, family, friends) maintain EXACT same appearance across pages
+- Animal characters keep consistent colors/features (blue bird = always blue, same size/features)
+- Do NOT modify any locked character features (hair texture, skin tone, facial features, animal colors)
 - Character consistency takes precedence over creative interpretation
+- New characters detected get locked appearance immediately for future consistency
 
 Focus on creating a scene for a beautiful children's book illustration while maintaining PERFECT character consistency.`;
 
@@ -248,17 +387,14 @@ Focus on creating a scene for a beautiful children's book illustration while mai
 
     const enhancedDescription = data.choices[0].message.content.trim();
 
-    // Track successful character descriptions for future consistency
-    if (userInfo?.name) {
-      const state = getOrCreateStoryState(sessionId, totalPages);
-      const character = state.characters.get(userInfo.name);
-      if (character) {
-        character.successfulPrompts.push(enhancedDescription.substring(0, 200));
-        if (character.successfulPrompts.length > 3) {
-          character.successfulPrompts.shift();
-        }
+    // Track successful character descriptions for ALL characters for future consistency
+    const state = getOrCreateStoryState(sessionId, totalPages);
+    state.characters.forEach((character) => {
+      character.successfulPrompts.push(enhancedDescription.substring(0, 200));
+      if (character.successfulPrompts.length > 3) {
+        character.successfulPrompts.shift();
       }
-    }
+    });
 
     console.log(`📖 Successfully extracted story elements with character seeding: ${enhancedDescription.substring(0, 100)}...`);
 
