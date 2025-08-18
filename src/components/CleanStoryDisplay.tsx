@@ -2809,6 +2809,7 @@ const handleRestartTimer = () => {
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
+      <SimpleVoiceCommands />
       
       {/* Development Debug Panels */}
       {isDevelopment && (

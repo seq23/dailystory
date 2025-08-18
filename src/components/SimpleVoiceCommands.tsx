@@ -84,12 +84,12 @@ export const SimpleVoiceCommands: React.FC = () => {
   } = useConversation({ 
     clientTools,
     onConnect: () => {
-      console.log('🎤 Connected to Buddy');
+      console.log('🟢 Connected to Buddy');
       console.log('🎤 Voice session established successfully');
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
-        detail: { status: 'listening', system: 'elevenlabs' } 
+        detail: { status: 'connected', system: 'elevenlabs' } 
       }));
       
       const storyTitle = (window as any).__storyTitle || '';
@@ -97,7 +97,7 @@ export const SimpleVoiceCommands: React.FC = () => {
       toast.success(`${contextMessage} Try saying "play story"`);
     },
     onDisconnect: () => {
-      console.log('🎤 Disconnected from Buddy');
+      console.log('🔴 Disconnected from Buddy');
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -107,44 +107,67 @@ export const SimpleVoiceCommands: React.FC = () => {
       toast.info('Buddy disconnected');
     },
     onError: (error: any) => {
-      console.error('🎤 Voice error details:', error);
+      console.error('❌ Voice error details:', error);
+      console.error('❌ Error type:', typeof error);
+      console.error('❌ Error properties:', Object.keys(error || {}));
+      
+      // Dispatch error status
+      window.dispatchEvent(new CustomEvent('voice:status', { 
+        detail: { status: 'failed', system: 'elevenlabs', error } 
+      }));
+      
       const errorMessage = typeof error === 'string' ? error : error?.message || 'Connection failed';
       toast.error(`Voice error: ${errorMessage}`);
     },
     onMessage: (message) => {
-      console.log('🎤 Voice message received:', message);
+      console.log('📨 Voice message received:', message);
+      
+      // For now, just log the message - the @11labs/react library handles status updates
+      // The status from useConversation hook will automatically update UI
     }
   });
 
   const handleToggle = useCallback(async () => {
+    console.log('🎙️ Voice toggle clicked, current status:', status);
+    
     if (status === 'connected') {
-      console.log('🎤 Voice session already connected, ending...');
+      console.log('🛑 Voice session connected, ending...');
       await endSession();
     } else {
       try {
-        console.log('🎤 Starting voice command session...');
-        console.log('🎤 Current status:', status);
-        console.log('🎤 useConversation hook available:', !!useConversation);
+        console.log('🚀 Starting voice command session...');
+        console.log('🔍 Current status:', status);
+        console.log('🔍 useConversation hook available:', !!useConversation);
+        
+        // Dispatch connecting status
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'connecting', system: 'elevenlabs' } 
+        }));
         
         // Get signed URL from Supabase  
-        console.log('🎤 Requesting ElevenLabs agent signed URL...');
+        console.log('🔗 Requesting ElevenLabs agent signed URL...');
         const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url');
         
-        console.log('🎤 Supabase function response:', { data, error });
+        console.log('📨 Supabase function response:', { 
+          hasData: !!data, 
+          hasError: !!error,
+          dataKeys: data ? Object.keys(data) : [],
+          errorDetails: error || 'none'
+        });
         
         if (error) {
-          console.error('🎤 Supabase function error:', error);
+          console.error('❌ Supabase function error:', error);
           toast.error(`Voice connection failed: ${error.message}`);
           return;
         }
         
         if (!data?.signed_url) {
-          console.error('🎤 No signed URL in response:', data);
+          console.error('❌ No signed URL in response:', data);
           toast.error('No signed URL received from ElevenLabs');
           return;
         }
         
-        console.log('🎤 Got signed URL, starting session...');
+        console.log('✅ Got signed URL, testing microphone...');
         
         // Test microphone permissions first
         try {
@@ -152,17 +175,23 @@ export const SimpleVoiceCommands: React.FC = () => {
           console.log('🎤 Microphone access granted');
           stream.getTracks().forEach(track => track.stop()); // Clean up test stream
         } catch (micError) {
-          console.error('🎤 Microphone access denied:', micError);
+          console.error('🚫 Microphone access denied:', micError);
           toast.error('Microphone access required for voice commands');
           return;
         }
         
-        console.log('🎤 About to call startSession with signed URL...');
+        console.log('🚀 About to call startSession with signed URL...');
         const sessionResult = await startSession({ signedUrl: data.signed_url });
-        console.log('🎤 Session started successfully:', sessionResult);
+        console.log('🎉 Session started successfully:', sessionResult);
       } catch (error: any) {
-        console.error('🎤 Failed to start voice session:', error);
-        console.error('🎤 Error stack:', error.stack);
+        console.error('❌ Failed to start voice session:', error);
+        console.error('❌ Error stack:', error.stack);
+        
+        // Dispatch failed status
+        window.dispatchEvent(new CustomEvent('voice:status', { 
+          detail: { status: 'failed', system: 'elevenlabs', error } 
+        }));
+        
         toast.error(`Could not connect to Buddy: ${error.message || 'Unknown error'}`);
       }
     }
