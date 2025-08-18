@@ -46,6 +46,7 @@ import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
 import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStatusIndicator";
+import { KidFriendlyImageStatus } from "@/components/KidFriendlyImageStatus";
 import { LayoutDebugIndicator } from "@/components/dev/LayoutDebugIndicator";
 import { ImageGenerationDebugPanel } from "@/components/dev/ImageGenerationDebugPanel";
 
@@ -184,6 +185,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         lastUserInfoRef.current = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
         
         setIsLoading(false);
+        // For saved stories, mark as stable immediately
+        setIsStoryStable(true);
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -251,6 +254,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
   const [isStoryComplete, setIsStoryComplete] = useState(false);
+  const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
   // Image state
@@ -748,6 +752,7 @@ useEffect(() => {
     if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current && story.length > 0) {
       console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
       setIsLoading(false);
+      setIsStoryStable(true);
       return;
     }
     
@@ -772,21 +777,24 @@ useEffect(() => {
     }
   }, [userInfo.name, userInfo.age, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
-  // Generate image for current page with better diagnostics
+  // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
   useEffect(() => {
     console.log('🖼️ Image generation check:', {
       layout,
       storyLength: story.length,
       currentPage,
       hasCurrentImage: !!pageImages[currentPage],
+      isStoryStable,
       allImages: Object.keys(pageImages)
     });
     
-    if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage]) {
-      console.log('🖼️ Triggering image generation for page', currentPage);
+    if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage] && isStoryStable) {
+      console.log('🖼️ Triggering image generation for page', currentPage, '- story is stable');
       generateImageForCurrentPage();
+    } else if (!isStoryStable && story.length > 0) {
+      console.log('🖼️ Waiting for story to stabilize before generating images');
     }
-  }, [currentPage, story, pageImages, layout]);
+  }, [currentPage, story, pageImages, layout, isStoryStable]);
 
 // Timer countdown effect
 useEffect(() => {
@@ -964,6 +972,7 @@ const initializeStory = async () => {
             setLiveContext(ctx);
             const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
             setStorySource(srcPremium);
+            setIsStoryStable(true); // Mark cached story as stable
             return; // Early return
           }
         } else {
@@ -1026,6 +1035,7 @@ const initializeStory = async () => {
             setStoryTitle(`${userInfo.name}'s Adventure`);
             setIsStoryComplete(true);
             setStorySource('unknown');
+            setIsStoryStable(true); // Mark cached story as stable
             return; // Early return; finally will handle loader timing
           }
         } else {
@@ -1100,9 +1110,35 @@ const initializeStory = async () => {
     isGeneratingRef.current = false;
     
     if (remaining > 0) {
-      setTimeout(() => setIsLoading(false), remaining);
+      setTimeout(() => {
+        setIsLoading(false);
+        // Set story as stable 500ms after loading is complete
+        setTimeout(() => {
+          setIsStoryStable(true);
+          console.log('📚 Story is now stable - ready for image generation');
+          // Dispatch event for image generation to begin
+          window.dispatchEvent(new CustomEvent('story:stable', { 
+            detail: { 
+              storyText: story.join(' '), 
+              timestamp: Date.now() 
+            } 
+          }));
+        }, 500);
+      }, remaining);
     } else {
       setIsLoading(false);
+      // Set story as stable 500ms after loading is complete
+      setTimeout(() => {
+        setIsStoryStable(true);
+        console.log('📚 Story is now stable - ready for image generation');
+        // Dispatch event for image generation to begin
+        window.dispatchEvent(new CustomEvent('story:stable', { 
+          detail: { 
+            storyText: story.join(' '), 
+            timestamp: Date.now() 
+          } 
+        }));
+      }, 500);
     }
   }
 };
@@ -1128,6 +1164,12 @@ const initializeStory = async () => {
 
   const generateImageForCurrentPage = async () => {
     if (isGeneratingImage || pageImages[currentPage]) return;
+    
+    // CRITICAL: Only generate images AFTER story is stable
+    if (!isStoryStable) {
+      console.log('🖼️ Cannot generate image - story not yet stable');
+      return;
+    }
     
     // Enhanced cache validation with story continuity markers
     const storyText = displayedStory[currentPage];
@@ -2268,17 +2310,7 @@ const handleRestartTimer = () => {
                       </div>
                     )}
                   </div>
-                  {/* Image Generation Status Indicator */}
-                   <ImageGenerationStatusIndicator
-                     isGenerating={isGeneratingImage}
-                     isBatchGenerating={isBatchGenerating}
-                     batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
-                     hasImages={Object.keys(pageImages).length > 0}
-                     isNetworkAvailable={isNetworkAvailable}
-                     lastError={lastImageError}
-                     layout={layout}
-                     showLayoutInfo={isDevelopment}
-                   />
+                  {/* Image Status moved to main content area */}
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
@@ -2316,6 +2348,18 @@ const handleRestartTimer = () => {
                             </div>
                           </div>
                         )}
+                        
+                        {/* Kid-Friendly Image Status in main content */}
+                        <div className="mt-4">
+                          <KidFriendlyImageStatus
+                            isStoryLoading={isLoading}
+                            isStoryStable={isStoryStable}
+                            isGeneratingImages={isGeneratingImage}
+                            isBatchGenerating={isBatchGenerating}
+                            batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
+                            hasImages={Object.keys(pageImages).length > 0}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2414,17 +2458,29 @@ const handleRestartTimer = () => {
                               highlightedWordIndex: currentHighlightedWord,
                               isMobile: preferMobileModal
                             })
-                          ) : (
-                            <div className="flex items-center justify-center h-32">
-                              <div className="text-center">
-                                <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-                                <p className="text-sm text-muted-foreground">Loading story content...</p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                           ) : (
+                             <div className="flex items-center justify-center h-32">
+                               <div className="text-center">
+                                 <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
+                                 <p className="text-sm text-muted-foreground">Loading story content...</p>
+                               </div>
+                             </div>
+                           )}
+                           
+                           {/* Kid-Friendly Image Status in split view text column */}
+                           <div className="mt-4">
+                             <KidFriendlyImageStatus
+                               isStoryLoading={isLoading}
+                               isStoryStable={isStoryStable}
+                               isGeneratingImages={isGeneratingImage}
+                               isBatchGenerating={isBatchGenerating}
+                               batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
+                               hasImages={Object.keys(pageImages).length > 0}
+                             />
+                           </div>
+                         </div>
+                       </div>
+                     </div>
                   </div>
                 </div>
               </div>
