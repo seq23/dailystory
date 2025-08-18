@@ -2,6 +2,7 @@
  * Story refresh utility to force regeneration with updated user data
  */
 import { StorySessionCache } from '@/services/storySessionCache';
+import { StoryVisualStateManager } from '@/services/storyVisualState';
 import { supabase } from '@/integrations/supabase/client';
 
 export class StoryRefreshService {
@@ -9,7 +10,11 @@ export class StoryRefreshService {
    * Force refresh story generation with updated user profile data
    * This clears all cached content to ensure fresh generation with correct pronouns
    */
-  static async forceRefreshWithUserData(userId?: string): Promise<void> {
+  static async forceRefreshWithUserData(
+    userId?: string, 
+    characterSessionId?: string,
+    context: 'rewrite' | 'new-session' | 'general' = 'general'
+  ): Promise<void> {
     console.log('🔄 Force refreshing story with updated user data');
     
     try {
@@ -29,6 +34,12 @@ export class StoryRefreshService {
       
       // Clear all cached story content
       StorySessionCache.clearCachedSession(effectiveUserId);
+      
+      // Clear character visual state if provided
+      if (characterSessionId) {
+        StoryVisualStateManager.clearStoryState(characterSessionId);
+        console.log(`🎭 Cleared character state for session: ${characterSessionId}`);
+      }
       
       // Clear any additional caches that might interfere
       const cacheKeys = Object.keys(sessionStorage).filter(key => 
@@ -79,7 +90,7 @@ export class StoryRefreshService {
   /**
    * Clear just the pronoun-related caches to fix pronoun issues
    */
-  static clearPronounCaches(userId?: string): void {
+  static clearPronounCaches(userId?: string, characterSessionId?: string): void {
     console.log('🎯 Clearing pronoun-related caches');
     
     try {
@@ -87,6 +98,11 @@ export class StoryRefreshService {
       
       // Clear story session cache
       StorySessionCache.clearCachedSession(effectiveUserId);
+      
+      // Clear character state if provided
+      if (characterSessionId) {
+        StoryVisualStateManager.clearStoryState(characterSessionId);
+      }
       
       // Clear template caches that might have stale pronoun data
       const pronounKeys = Object.keys(sessionStorage).filter(key => 

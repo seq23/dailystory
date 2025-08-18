@@ -34,6 +34,10 @@ export interface RunwareContext {
 export interface StoryVisualState {
   sessionId: string;
   
+  // Session continuity tracking
+  sessionType: 'new' | 'continuation' | 'rewrite';
+  isPersistent: boolean; // Controls whether state persists across stories
+  
   // Character consistency with seeds
   characters: Map<string, CharacterState>;
   
@@ -92,10 +96,17 @@ export class StoryVisualStateManager {
     ['playground', ['school', 'park']]
   ]);
 
-  static getOrCreateStoryState(sessionId: string, totalPages: number = 10): StoryVisualState {
+  static getOrCreateStoryState(
+    sessionId: string, 
+    totalPages: number = 10,
+    sessionType: 'new' | 'continuation' | 'rewrite' = 'new',
+    isPersistent: boolean = false
+  ): StoryVisualState {
     if (!this.storyStates.has(sessionId)) {
       const newState: StoryVisualState = {
         sessionId,
+        sessionType,
+        isPersistent,
         characters: new Map(),
         objects: new Map(),
         visualDetails: [],
@@ -119,7 +130,7 @@ export class StoryVisualStateManager {
       };
       
       this.storyStates.set(sessionId, newState);
-      console.log(`📚 Created new story state for session: ${sessionId}`);
+      console.log(`📚 Created new story state for session: ${sessionId} (type: ${sessionType}, persistent: ${isPersistent})`);
     }
     
     return this.storyStates.get(sessionId)!;
@@ -307,6 +318,78 @@ export class StoryVisualStateManager {
     VisualDetailTracker.clearSessionDetails(sessionId);
     AdvancedPronounResolver.clearSession(sessionId);
     console.log(`🗑️ Cleared story state for session: ${sessionId}`);
+  }
+
+  /**
+   * Clear character state based on user type and context
+   */
+  static clearBasedOnContext(
+    sessionId: string, 
+    isPremium: boolean, 
+    context: 'next-story' | 'rewrite' | 'end-session' | 'new-session'
+  ): void {
+    const state = this.storyStates.get(sessionId);
+    
+    switch (context) {
+      case 'next-story':
+        // Free users: Always clear character state
+        // Premium users: Keep character state (no clearing)
+        if (!isPremium) {
+          this.clearStoryState(sessionId);
+          console.log(`🆓 Free user "Next Story": Cleared character state for fresh characters`);
+        } else {
+          console.log(`💎 Premium user "Next Story": Keeping character state for consistency`);
+        }
+        break;
+        
+      case 'rewrite':
+        // Both free and premium: Always clear for rewrites
+        this.clearStoryState(sessionId);
+        console.log(`🔄 Story rewrite: Cleared character state for fresh start`);
+        break;
+        
+      case 'end-session':
+      case 'new-session':
+        // Both free and premium: Always clear when ending/starting sessions
+        this.clearStoryState(sessionId);
+        console.log(`🏁 Session ended: Cleared character state`);
+        break;
+        
+      default:
+        console.warn(`Unknown context for cache clearing: ${context}`);
+    }
+  }
+
+  /**
+   * Create a continuation session that preserves character state
+   */
+  static createContinuationSession(
+    originalSessionId: string, 
+    newSessionId: string
+  ): boolean {
+    const originalState = this.storyStates.get(originalSessionId);
+    if (!originalState) {
+      console.warn(`Cannot create continuation: Original session ${originalSessionId} not found`);
+      return false;
+    }
+
+    // Clone the original state for continuation
+    const continuationState: StoryVisualState = {
+      ...originalState,
+      sessionId: newSessionId,
+      sessionType: 'continuation',
+      isPersistent: true,
+      currentPage: 1, // Reset to page 1 for new story
+      totalPages: 10, // Default for new story
+      visualDetails: [], // Reset visual details for new story
+      characterRelationships: [], // Reset relationships for new story
+      recentCharacterMentions: [], // Reset mentions for new story
+      // Keep characters, objects, and settings for consistency
+    };
+
+    this.storyStates.set(newSessionId, continuationState);
+    console.log(`🔗 Created continuation session ${newSessionId} from ${originalSessionId}`);
+    return true;
   }
 
   // Enhanced Object & Detail Memory System + Advanced Pronoun Resolution

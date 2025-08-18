@@ -10,6 +10,8 @@ interface CachedStorySession {
   currentPage: number;
   timestamp: number;
   isComplete: boolean;
+  characterSessionId?: string; // Link to character state
+  sessionType?: 'new' | 'continuation' | 'rewrite';
   metadata: {
     wordCount: number;
     sessionStartTime: number;
@@ -39,7 +41,9 @@ export class StorySessionCache {
     pages: string[],
     images: Array<{url?: string; prompt: string}>,
     currentPage: number = 0,
-    metadata: Partial<CachedStorySession['metadata']> = {}
+    metadata: Partial<CachedStorySession['metadata']> = {},
+    characterSessionId?: string,
+    sessionType?: 'new' | 'continuation' | 'rewrite'
   ): string {
     const sessionId = this.generateSessionId(userId, difficulty);
     const cacheKey = this.getCacheKey(userId);
@@ -53,6 +57,8 @@ export class StorySessionCache {
       currentPage,
       timestamp: Date.now(),
       isComplete: false,
+      characterSessionId,
+      sessionType,
       metadata: {
         wordCount: pages.join(' ').split(' ').length,
         sessionStartTime: Date.now(),
@@ -208,12 +214,30 @@ export class StorySessionCache {
   /**
    * Clear cached session for user
    */
-  static clearCachedSession(userId: string): void {
+  static async clearCachedSession(userId: string, clearCharacterState: boolean = true): Promise<void> {
     const cacheKey = this.getCacheKey(userId);
     
     try {
+      // Get characterSessionId before clearing if we need to clear character state
+      let characterSessionId: string | undefined;
+      if (clearCharacterState) {
+        const session = this.getCachedStorySession(userId);
+        characterSessionId = session?.characterSessionId;
+      }
+
       sessionStorage.removeItem(cacheKey);
       console.log(`🗑️ Cleared cached story session for user ${userId}`);
+      
+      // Clear character state if requested and we have a characterSessionId
+      if (clearCharacterState && characterSessionId) {
+        try {
+          const { StoryVisualStateManager } = await import('@/services/storyVisualState');
+          StoryVisualStateManager.clearStoryState(characterSessionId);
+          console.log(`🎭 Cleared character state for session: ${characterSessionId}`);
+        } catch (error) {
+          console.warn('Failed to clear character state:', error);
+        }
+      }
       
       // Also clear any generation cache that might have stale content
       console.log(`🧹 Force clearing generation cache to fix pronoun issues`);

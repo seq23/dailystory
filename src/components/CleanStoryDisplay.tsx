@@ -69,6 +69,8 @@ import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { StorySessionCache } from "@/services/storySessionCache";
+import { StoryVisualStateManager } from "@/services/storyVisualState";
+import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 
@@ -1618,9 +1620,17 @@ const handleDockCoach = () => {
 };
 
   // Manual end session logic exists below
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
     const totalWordsRead = sessionWordsRead;
+    
+    // Clear character state when session ends for both free and premium users
+    try {
+      StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'end-session');
+      console.log('🏁 Cleared character state on session end');
+    } catch (error) {
+      console.warn('Failed to clear character state on session end:', error);
+    }
     
     const sessionStats = {
       timeSpent,
@@ -1753,7 +1763,7 @@ const handleRestartTimer = () => {
   };
 
   // Magic wand functionality - Generate new story
-  const handleGenerateNewStory = async (specialRequestOverride?: string) => {
+  const handleGenerateNewStory = async (specialRequestOverride?: string, isRewrite: boolean = false) => {
     if (isGeneratingNewStory) return;
     setIsGeneratingNewStory(true);
     
@@ -1768,6 +1778,28 @@ const handleRestartTimer = () => {
       // Generate new story ID for cache isolation
       const newStoryId = `story_${Date.now()}_${Math.random().toString(36).substring(2)}`;
       setStoryId(newStoryId);
+      
+      // Generate new character session ID for new characters
+      const newCharacterSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      
+      // Clear character state based on user type and context
+      if (isRewrite) {
+        // Both free and premium: Always clear for rewrites
+        StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'rewrite');
+        // Force refresh all caches for rewrites
+        try {
+          const userId = isPremium ? 
+            ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 
+            'guest';
+          await StoryRefreshService.forceRefreshWithUserData(userId, characterSessionId, 'rewrite');
+        } catch (error) {
+          console.warn('Failed to force refresh for rewrite:', error);
+        }
+      } else {
+        // Free users: Clear character state for fresh characters
+        // Premium users: Keep character state (unless it's a rewrite)
+        StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'next-story');
+      }
       
       // Clear previous story cache for free users to prevent cache growth
       if (!isPremium) {
@@ -1845,6 +1877,11 @@ const handleRestartTimer = () => {
     }
   };
 
+  // Handle rewrite story (clear all caches for fresh start)
+  const handleRewriteStory = () => {
+    handleGenerateNewStory(undefined, true);
+  };
+
   // Submit special request and start generation
   const handleSpecialRequestSubmit = (value: string) => {
     setSpecialRequestDraft(value);
@@ -1855,6 +1892,24 @@ const handleRestartTimer = () => {
   // End Story follow-up actions (Premium)
 
   const handleStartSequel = () => {
+    // Premium users continuing to "Part II" - preserve character state
+    console.log('🔗 Premium user starting sequel - preserving character state');
+    
+    // Create new session ID for the sequel but keep character consistency
+    const newCharacterSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    
+    // Create continuation session to preserve character appearances
+    const success = StoryVisualStateManager.createContinuationSession(
+      characterSessionId, 
+      newCharacterSessionId
+    );
+    
+    if (success) {
+      console.log('✅ Character state preserved for sequel continuation');
+    } else {
+      console.warn('⚠️ Failed to preserve character state for sequel');
+    }
+    
     const newContext: LiveGenerationContext = {
       userInfo,
       difficulty: currentDifficulty,
@@ -1904,16 +1959,16 @@ const handleRestartTimer = () => {
     }
   };
   // Manual End Session (Premium): 5s celebration with music then stats
-  const handleManualEndSession = () => {
+  const handleManualEndSession = async () => {
     setShowManualCelebration(true);
     try {
       const audio = new Audio('/audio/celebration.mp3');
       audio.volume = 0.6;
       audio.play().catch(() => {});
     } catch {}
-    setTimeout(() => {
+    setTimeout(async () => {
       setShowManualCelebration(false);
-      handleEndSession();
+      await handleEndSession();
     }, 5000);
   };
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
