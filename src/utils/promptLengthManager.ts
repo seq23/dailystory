@@ -11,11 +11,11 @@ export interface PromptTier {
   detailed: string;
 }
 
-// Ultra-compressed tiered suffix system (reduced by ~60 chars each)
+// Enhanced tiered suffix system for optimal children's book quality
 export const QUALITY_SUFFIXES: PromptTier = {
-  minimal: "quality book art, safe",
-  standard: "quality book art, vibrant, text-free",
-  detailed: "award-winning book art, vibrant colors, perfect lighting, text-free"
+  minimal: "children's book illustration, warm colors, safe wholesome content",
+  standard: "children's book illustration, warm earth tones, diverse inclusive characters, professional artwork",
+  detailed: "professional children's book illustration, warm earth tones and soft natural lighting, diverse inclusive characters with expressive faces, contemporary storybook art style, safe wholesome content, high quality digital artwork, soft painterly texture, appealing composition"
 };
 
 // Ultra-compressed character consistency descriptions (reduced by ~40 chars each)  

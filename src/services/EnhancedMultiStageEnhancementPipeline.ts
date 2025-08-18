@@ -424,10 +424,10 @@ export class EnhancedMultiStageEnhancementPipeline {
   private static getDefaultParameters(): RunwareParameters {
     return {
       model: "runware:100@1",
-      cfgScale: 7,
-      steps: 20,
-      width: 512,
-      height: 512
+      cfgScale: 3.5, // Optimal for children's book style consistency
+      steps: 10, // Optimal quality/speed balance  
+      width: 1024,
+      height: 1024
     };
   }
 
@@ -438,24 +438,24 @@ export class EnhancedMultiStageEnhancementPipeline {
   ): RunwareParameters {
     const adjusted = { ...baseParams };
 
-    // Adjust based on character complexity
+    // Adjust based on character complexity (keep within optimal ranges)
     if (characterCount > 2) {
-      adjusted.steps = Math.min(30, adjusted.steps + 5);
-      adjusted.cfgScale = Math.min(9, adjusted.cfgScale + 1);
+      adjusted.steps = Math.min(12, adjusted.steps + 2); // Stay within 8-12 optimal range
+      adjusted.cfgScale = Math.min(4, adjusted.cfgScale + 0.5); // Stay within 3-4 optimal range
     }
 
-    // Adjust based on difficulty level
+    // Adjust based on difficulty level (minimal adjustments to maintain quality)
     const difficultyMultipliers = {
       'beginner': { steps: 1.0, cfg: 1.0 },
-      'easy': { steps: 1.1, cfg: 1.0 },
-      'medium': { steps: 1.2, cfg: 1.1 },
-      'hard': { steps: 1.3, cfg: 1.2 },
-      'expert': { steps: 1.4, cfg: 1.3 }
+      'easy': { steps: 1.0, cfg: 1.0 },
+      'medium': { steps: 1.1, cfg: 1.0 },
+      'hard': { steps: 1.2, cfg: 1.1 },
+      'expert': { steps: 1.2, cfg: 1.1 }
     };
 
     const multiplier = difficultyMultipliers[difficulty];
-    adjusted.steps = Math.round(adjusted.steps * multiplier.steps);
-    adjusted.cfgScale = Math.min(10, adjusted.cfgScale * multiplier.cfg);
+    adjusted.steps = Math.min(12, Math.round(adjusted.steps * multiplier.steps)); // Cap at 12
+    adjusted.cfgScale = Math.min(4, adjusted.cfgScale * multiplier.cfg); // Cap at 4
 
     return adjusted;
   }

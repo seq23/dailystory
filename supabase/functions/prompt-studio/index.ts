@@ -66,7 +66,18 @@ async function enhancePromptWithAI(
 
   const systemPrompt = `You are an expert prompt engineer for children's book illustrations. Transform simple scene descriptions into detailed, professional prompts for AI image generation.
 
-Focus on: character details, setting atmosphere, lighting, composition, art style, emotional tone.
+CRITICAL QUALITY RULES:
+- Always use specific descriptive details (colors, expressions, lighting, textures)
+- Include character emotions and facial expressions
+- Describe setting atmosphere and lighting conditions
+- Add composition and artistic style elements
+- Use warm, inviting tones suitable for children
+
+SCENE DESCRIPTION BEST PRACTICES:
+- Instead of "cat" → "Orange tabby cat with bright green eyes and friendly expression"  
+- Instead of "children playing" → "Two diverse children with curly hair, laughing while building colorful block tower"
+- Always include specific colors, lighting, and emotional context
+
 Keep content age-appropriate and suitable for children's books.
 Output only the enhanced prompt text, no explanations.`;
 
@@ -179,9 +190,9 @@ async function generateWithRunware(
                   height: parameters.height || 1024,
                   numberResults: parameters.numberResults || 1,
                   outputFormat: parameters.outputFormat || "WEBP",
-                  CFGScale: parameters.cfgScale || 1,
+                  CFGScale: parameters.cfgScale || 3,
                   scheduler: "FlowMatchEulerDiscreteScheduler",
-                  steps: parameters.steps || 4,
+                  steps: parameters.steps || 8,
                   ...(parameters.seed && { seed: parameters.seed })
                 }];
                 

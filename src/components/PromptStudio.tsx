@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Play, Download, Palette, Settings, Zap, Image as ImageIcon } from 'lucide-react';
+import { RunwareQualityControls } from './RunwareQualityControls';
 
 interface PromptStudioState {
   positivePrompt: string;
@@ -62,8 +63,8 @@ export function PromptStudio() {
     parameters: {
       width: 1024,
       height: 1024,
-      cfgScale: 1,
-      steps: 4,
+      cfgScale: 3,
+      steps: 8,
       model: 'runware:100@1',
       outputFormat: 'WEBP',
       seed: null,
@@ -373,7 +374,7 @@ export function PromptStudio() {
                 </div>
 
                 <div>
-                  <Label>CFG Scale: {state.parameters.cfgScale}</Label>
+                  <Label>CFG Scale: {state.parameters.cfgScale} (Optimal: 3-4)</Label>
                   <Slider
                     value={[state.parameters.cfgScale]}
                     onValueChange={([value]) => updateParameters({ cfgScale: value })}
@@ -382,10 +383,15 @@ export function PromptStudio() {
                     step={0.5}
                     className="mt-2"
                   />
+                  {(state.parameters.cfgScale < 3 || state.parameters.cfgScale > 4) && (
+                    <p className="text-xs text-warning mt-1">
+                      ⚠️ For best children's book style consistency, use CFG Scale 3-4
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <Label>Steps: {state.parameters.steps}</Label>
+                  <Label>Steps: {state.parameters.steps} (Optimal: 8-12)</Label>
                   <Slider
                     value={[state.parameters.steps]}
                     onValueChange={([value]) => updateParameters({ steps: value })}
@@ -394,6 +400,11 @@ export function PromptStudio() {
                     step={1}
                     className="mt-2"
                   />
+                  {(state.parameters.steps < 8 || state.parameters.steps > 12) && (
+                    <p className="text-xs text-warning mt-1">
+                      ⚠️ For optimal quality/speed balance, use 8-12 steps
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -408,6 +419,13 @@ export function PromptStudio() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quality Controls */}
+            <RunwareQualityControls
+              currentParameters={state.parameters}
+              onParametersChange={updateParameters}
+              onSeedChange={(seed) => updateParameters({ seed })}
+            />
 
             {/* Generation Controls */}
             <Card>
@@ -454,6 +472,36 @@ export function PromptStudio() {
                 >
                   Analyze Prompt
                 </Button>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Quality Presets</Label>
+                  <div className="grid grid-cols-1 gap-1">
+                    <Button
+                      onClick={() => updateParameters({ cfgScale: 3.5, steps: 10 })}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      📚 Optimal for Characters
+                    </Button>
+                    <Button
+                      onClick={() => updateParameters({ cfgScale: 3, steps: 12 })}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      🎨 Best for Scenes
+                    </Button>
+                    <Button
+                      onClick={() => updateParameters({ cfgScale: 4, steps: 10 })}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      ⭐ Maximum Quality
+                    </Button>
+                  </div>
+                </div>
 
                 {batchProgress.total > 0 && (
                   <div>

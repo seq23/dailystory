@@ -190,10 +190,10 @@ export class RunwareService {
         height: params.height || 1024,
         numberResults: params.numberResults || 1,
         outputFormat: params.outputFormat || "WEBP",
-        CFGScale: params.CFGScale || 1,
+        CFGScale: params.CFGScale || 3,
         scheduler: params.scheduler || "FlowMatchEulerDiscreteScheduler",
         strength: params.strength || 0.8,
-        steps: params.steps || 4,
+        steps: params.steps || 8,
         ...(params.seed && { seed: params.seed })
       }];
 
