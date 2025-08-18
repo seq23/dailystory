@@ -139,13 +139,13 @@ export class MulticulturalVisualService {
     
     // Use actual user-selected attributes instead of random ones
     const skinTone = userInfo.avatar?.skinTone || this.selectRandomElement(profile.skinTones);
-    const hairStyle = this.selectRandomElement(profile.hairStyles);
+    const hairStyle = this.getHairColorForSkinTone(userInfo.avatar?.skinTone, profile);
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
 
     const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
     
-    console.log(`🎭 Character generation: ${genderTerm} with ${skinTone} (from userInfo: ${userInfo.avatar?.skinTone})`);
+    console.log(`🎭 Character generation: ${genderTerm} with ${skinTone}, ${hairStyle} (mapped from skinTone: ${userInfo.avatar?.skinTone})`);
     
     return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
   }
@@ -258,6 +258,41 @@ export class MulticulturalVisualService {
   static getCulturalCelebration(userInfo) {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     return this.selectRandomElement(profile.celebrations);
+  }
+
+  static getHairColorForSkinTone(skinTone, profile) {
+    // Map skin tones to specific hair colors instead of random selection
+    if (!skinTone) {
+      return this.selectRandomElement(profile.hairStyles);
+    }
+    
+    switch (skinTone) {
+      case 'pale':
+        return this.selectRandomElement([
+          'ginger red hair', 'auburn wavy hair', 'copper-colored hair', 
+          'strawberry blonde hair', 'natural red curls', 'russet brown hair'
+        ]);
+      case 'light':
+        return this.selectRandomElement([
+          'golden blonde hair', 'honey blonde hair', 'platinum blonde hair',
+          'ash blonde hair', 'sandy blonde hair', 'light golden hair'
+        ]);
+      case 'medium':
+        return this.selectRandomElement([
+          'chestnut brown hair', 'chocolate brown hair', 'warm brown hair',
+          'caramel brown hair', 'rich brunette hair', 'mahogany brown hair'
+        ]);
+      case 'olive':
+        return this.selectRandomElement([
+          'dark brown hair', 'jet black hair', 'espresso brown hair',
+          'coal black hair', 'deep brunette hair', 'onyx black hair'
+        ]);
+      case 'dark':
+        // Already handled in generateMixedAfricanAmericanDescription
+        return this.selectRandomElement(profile.hairStyles);
+      default:
+        return this.selectRandomElement(profile.hairStyles);
+    }
   }
 
   static selectRandomElement(array) {

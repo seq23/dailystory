@@ -555,7 +555,25 @@ serve(async (req) => {
     // Otherwise, fall back to basic prompts for NetflixStyleStoryService
     
     // Extract gender information from userInfo for proper pronouns
-    const avatarType = config?.userInfo?.avatar?.type || 'boy';
+    // Handle "prefer-not-to-answer" explicitly
+    const rawAvatarType = config?.userInfo?.avatar?.type;
+    let avatarType = 'boy'; // Default fallback
+    
+    if (rawAvatarType === 'prefer-not-to-answer') {
+      console.log('🚨 AVATAR TYPE: User selected "prefer-not-to-answer", using default fallback to "boy"');
+      avatarType = 'boy';
+    } else if (rawAvatarType === 'girl') {
+      avatarType = 'girl';
+    } else if (rawAvatarType === 'boy') {
+      avatarType = 'boy';
+    } else if (rawAvatarType === undefined || rawAvatarType === null) {
+      console.log('🚨 AVATAR TYPE: Undefined/null avatar type, using default fallback to "boy"');
+      avatarType = 'boy';
+    } else {
+      console.log(`🚨 AVATAR TYPE: Unexpected avatar type "${rawAvatarType}", using default fallback to "boy"`);
+      avatarType = 'boy';
+    }
+    
     const characterGender = avatarType === 'girl' ? 'girl' : 'boy';
     const pronouns = avatarType === 'girl' ? 'she/her' : 'he/him';
     

@@ -47,7 +47,13 @@ serve(async (req) => {
 
     console.log(`📖 Extracting story elements for ${difficultyLevel} level, page ${pageNumber}/${totalPages}`);
 
-    const systemPrompt = `You are an expert at analyzing children's stories to extract rich visual elements for illustration. Focus on: characters, settings, colors, objects, emotions, atmosphere, lighting, and composition. Create detailed, vivid descriptions that capture the essence of the scene. Output direct descriptive text suitable for children's book illustration prompts, not JSON. Keep age-appropriate and engaging.`;
+    const systemPrompt = `You are an expert at analyzing children's stories to extract rich visual elements for illustration. Your primary goal is to create detailed visual descriptions that accurately reflect what is EXPLICITLY mentioned in the story text for the current page. Focus on: characters, settings, colors, objects, emotions, atmosphere, lighting, and composition. Create detailed, vivid descriptions that capture the essence of the scene. Output direct descriptive text suitable for children's book illustration prompts, not JSON. Keep age-appropriate and engaging.
+
+CRITICAL RULES:
+1. ONLY describe characters that are EXPLICITLY mentioned in this specific page's text
+2. Do NOT add or imagine secondary characters that aren't mentioned in the current page
+3. If no secondary character is mentioned on this page, focus ONLY on the main character and setting
+4. Do NOT carry over characters from your general knowledge - analyze ONLY what's written`;
 
     const userPrompt = `Analyze this ${difficultyLevel} level story text for page ${pageNumber} of ${totalPages} and extract the most visually compelling scene:
 
@@ -57,15 +63,20 @@ ${userInfo ? `The main character is ${userInfo.name}, a ${userInfo.age} year old
 
 Create a rich, detailed scene description that goes beyond simple keyword matching. Include:
 - The most visually interesting moment from the text
-- Character emotions and expressions
+- Character emotions and expressions  
 - Environmental details and atmosphere
 - Color palette suggestions based on mood
 - Lighting and composition ideas
-- Any magical or imaginative elements
+- Any magical or imaginative elements mentioned in the text
 
-IMPORTANT: If there are secondary characters (like animals or companions), describe them as SINGULAR entities (one blue bird, not multiple birds). Focus on ONE main character and at most ONE secondary character per scene.
+CRITICAL INSTRUCTIONS:
+- ONLY describe characters that are EXPLICITLY mentioned in THIS PAGE'S text
+- Do NOT add secondary characters (animals, friends, companions) unless they are specifically mentioned in the current page text
+- If the text says "Sequoia sees a bird" then include ONE bird. If it doesn't mention any bird, don't include any bird
+- Focus on the main character and setting if no secondary characters are mentioned
+- Be faithful to what's actually written, not what might make a more interesting illustration
 
-Focus on creating a scene that would make a beautiful, engaging children's book illustration regardless of the setting (woods, city, home, fantasy, etc.). The AI should detect and enhance the natural visual appeal of ANY story context.`;
+Focus on creating a scene that would make a beautiful, engaging children's book illustration based ONLY on what is described in the current page's text.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
