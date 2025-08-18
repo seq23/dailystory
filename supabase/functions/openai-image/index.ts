@@ -160,21 +160,48 @@ serve(async (req) => {
     // Enhanced children's book style with framework consistency
     enhancedPrompt += `. Style: ${framework.artStyle}, ${framework.quality}, ${framework.brandSuffix}`;
 
-    // Enhance prompt with full page scene analysis
-    const { DirectContentExtractor } = await import('../_shared/DirectContentExtractor.js');
-    const pageContent = DirectContentExtractor.extractPageContent(positivePrompt);
+    // Simple scene analysis (inlined to avoid import issues)
+    const extractSimpleScene = (text: string) => {
+      const lowerText = text.toLowerCase();
+      
+      // Simple character detection
+      let character = 'child';
+      if (userInfo?.name) character = userInfo.name;
+      else if (lowerText.includes('girl') || lowerText.includes('she')) character = 'girl';
+      else if (lowerText.includes('boy') || lowerText.includes('he')) character = 'boy';
+      
+      // Simple setting detection
+      let setting = 'outdoor scene';
+      if (lowerText.includes('house') || lowerText.includes('home')) setting = 'indoor scene';
+      else if (lowerText.includes('forest') || lowerText.includes('tree')) setting = 'forest scene';
+      else if (lowerText.includes('beach') || lowerText.includes('ocean')) setting = 'beach scene';
+      
+      return { character, setting, primaryScene: text };
+    };
+    
+    const pageContent = extractSimpleScene(positivePrompt);
     
     // Add emotional and visual context
     const emotionalKeywords = ['happy', 'sad', 'excited', 'scared', 'curious', 'surprised'];
     const detectedEmotion = emotionalKeywords.find(emotion => 
       positivePrompt.toLowerCase().includes(emotion)) || 'neutral';
     
-    // Build comprehensive scene description
-    const sceneAnalysis = `Scene: ${pageContent.primaryScene || positivePrompt}. 
-    Characters: ${pageContent.characters.length ? pageContent.characters.join(', ') : 'child protagonist'}. 
-    Setting: ${pageContent.setting || 'outdoor scene'}. 
-    Mood: ${detectedEmotion}. 
-    Objects: ${pageContent.objects.join(', ') || 'relevant scene objects'}`;
+    // Build comprehensive scene description with avatar details
+    let avatarDesc = '';
+    if (userInfo?.avatar) {
+      const skinTone = userInfo.avatar.skinTone || 'medium';
+      const skinMap = {
+        'pale': 'fair skin', 'light': 'light skin', 'medium': 'medium skin',
+        'olive': 'olive skin', 'dark': 'dark skin'
+      };
+      const hairMap = {
+        'pale': 'blonde hair', 'light': 'brown hair', 'medium': 'brown hair',
+        'olive': 'dark brown hair', 'dark': 'black hair'
+      };
+      avatarDesc = `, ${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}`;
+    }
+    
+    const sceneAnalysis = `${pageContent.character}${avatarDesc} in ${pageContent.setting}. Scene: ${pageContent.primaryScene}. Mood: ${detectedEmotion}`;
     
     // Create final enhanced prompt combining everything
     const finalPrompt = `${sceneAnalysis}. ${enhancedPrompt}. Ultra high resolution children's book illustration`;
