@@ -458,9 +458,9 @@ serve(async (req) => {
               audioBuffer = await response.arrayBuffer();
               console.log('✅ Audio buffer received:', { size: audioBuffer.byteLength });
             } catch (audioError) {
-            console.error('❌ Failed to read audio buffer:', audioError);
-            throw new Error(`Audio processing failed: ${audioError.message}`);
-          }
+              console.error('❌ Failed to read audio buffer:', audioError);
+              throw new Error(`Audio processing failed: ${audioError.message}`);
+            }
 
           // FIXED: Safe base64 conversion to prevent stack overflow
           console.log('🔄 Converting to base64...');
@@ -502,6 +502,7 @@ serve(async (req) => {
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
+          }
         } else {
           const errorText = await response.text();
           lastError = new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);

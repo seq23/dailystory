@@ -24,9 +24,10 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       if (currentUIHash && currentUIHash !== contentHash) {
         console.log(`🔄 Hash change detected: ${currentUIHash?.slice(0,10)} - notifying audio service`);
         // Notify audio service of hash change
-        if (typeof audioSyncService.syncContentHash === 'function') {
-          audioSyncService.syncContentHash(currentUIHash);
-        }
+        // TODO: Replace with SimplifiedAudioEngine.syncContentHash
+        // if (typeof SimplifiedAudioEngine.syncContentHash === 'function') {
+        //   SimplifiedAudioEngine.syncContentHash(currentUIHash);
+        // }
       }
     };
 
@@ -63,9 +64,10 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       if (currentUIHash && currentUIHash !== initialUIHash && currentUIHash !== expectedHash) {
         console.log(`🔄 UI hash changed during sync: ${currentUIHash?.slice(0,10)} - updating audio service`);
         // Force sync the audio service's hash
-        if (typeof audioSyncService.syncContentHash === 'function') {
-          audioSyncService.syncContentHash(currentUIHash);
-        }
+        // TODO: Replace with SimplifiedAudioEngine.syncContentHash
+        // if (typeof SimplifiedAudioEngine.syncContentHash === 'function') {
+        //   SimplifiedAudioEngine.syncContentHash(currentUIHash);
+        // }
         return true; // Consider this a successful sync to new content
       }
       

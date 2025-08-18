@@ -79,11 +79,14 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
     try {
       // Implement mutual exclusion with audio playback
       try {
-        const { audioSyncService } = await import('@/services/audioSyncService');
-        const status = audioSyncService.getPlaybackStatus();
+        // TODO: Replace with SimplifiedAudioEngine
+        // const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
+        // TODO: Replace with SimplifiedAudioEngine
+        // const status = SimplifiedAudioEngine.getInstance().getStatus();
+        const status = { isPlaying: false };
         if (status.isPlaying) {
           console.log('🛑 Voice: Audio is playing, stopping it first');
-          audioSyncService.stopAudio();
+          // SimplifiedAudioEngine.getInstance().stop();
           await new Promise(r => setTimeout(r, 500)); // Wait for audio cleanup
         }
       } catch (e) {

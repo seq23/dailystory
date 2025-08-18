@@ -29,9 +29,10 @@ export const useHashCoordination = (contentHash?: string) => {
     // Debounce hash updates to avoid rapid changes during content generation
     syncTimeoutRef.current = setTimeout(() => {
       // Sync audio service with new hash
-      if (typeof audioSyncService.syncContentHash === 'function') {
-        audioSyncService.syncContentHash(contentHash);
-      }
+      // TODO: Replace with SimplifiedAudioEngine
+      // if (typeof SimplifiedAudioEngine.syncContentHash === 'function') {
+      //   SimplifiedAudioEngine.syncContentHash(contentHash);
+      // }
 
       // Update global hash reference
       (window as any).__pageContentHash = contentHash;

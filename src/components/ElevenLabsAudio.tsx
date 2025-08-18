@@ -9,7 +9,7 @@ import { Play, Square, Crown, Mic, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { audioSyncService } from "@/services/audioSyncService";
+// Removed: import { audioSyncService } from "@/services/audioSyncService";
 import { VoiceCommandController } from "@/components/VoiceCommandController";
 import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
@@ -382,11 +382,14 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   // Voice command playback controls
   useEffect(() => {
     const onPause = () => {
-      try { audioSyncService.pauseAudio(); } catch {}
+      // TODO: Replace with SimplifiedAudioEngine
+      // try { SimplifiedAudioEngine.getInstance().pause(); } catch {}
     };
     const onResume = async () => {
-      try { await audioSyncService.resumeAudio(); }
-      catch { try { await playAudio(); } catch {} }
+      // TODO: Replace with SimplifiedAudioEngine resume
+      // try { await SimplifiedAudioEngine.getInstance().resume(); }
+      // catch { try { await playAudio(); } catch {} }
+      try { await playAudio(); } catch {}
     };
     const onRepeat = async () => {
       try { stopAudio(); await playAudio(); } catch {}

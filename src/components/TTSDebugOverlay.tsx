@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { audioSyncService } from "@/services/audioSyncService";
+// Removed: import { audioSyncService } from "@/services/audioSyncService";
 
 // Small, non-intrusive debug HUD for TTS highlighting & playback
 // Enable via query param: ?ttsdebug=1
@@ -9,7 +9,9 @@ export const TTSDebugOverlay: React.FC = () => {
   useEffect(() => {
     const iv = setInterval(() => {
       try {
-        const st = audioSyncService.getPlaybackStatus();
+        // TODO: Replace with SimplifiedAudioEngine status
+        // const st = SimplifiedAudioEngine.getInstance().getStatus();
+        const st = { isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' };
         setStatus(st as any);
       } catch {}
     }, 500);

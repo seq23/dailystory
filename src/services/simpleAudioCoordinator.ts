@@ -79,8 +79,10 @@ class SimpleAudioCoordinator {
     // Setup stop handlers for each system
     window.addEventListener('audio:stop:sync', async () => {
       try {
-        const { audioSyncService } = await import('@/services/audioSyncService');
-        audioSyncService.stopAudio();
+        // TODO: Replace with SimplifiedAudioEngine
+        // const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
+        // TODO: Replace with SimplifiedAudioEngine.stop()
+        // SimplifiedAudioEngine.getInstance().stop();
       } catch (e) {
         console.warn('Failed to stop sync audio:', e);
       }

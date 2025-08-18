@@ -301,8 +301,9 @@ useEffect(() => {
   const clearAudioOnPageChange = async () => {
     try {
       // Stop any active audio from previous pages
-      const { audioSyncService } = await import('@/services/audioSyncService');
-      audioSyncService.stopAudio();
+      // TODO: Replace with SimplifiedAudioEngine.stop()
+      // const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
+      // SimplifiedAudioEngine.getInstance().stop();
       
       // Reset audio UI state immediately
       setIsAudioPlaying(false);
