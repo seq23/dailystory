@@ -9,6 +9,7 @@ import { AdvancedCharacterEngine, CharacterDescriptor } from "./AdvancedCharacte
 import { StructuredPromptEngine, PromptTemplate } from "./StructuredPromptEngine";
 import { MulticulturalVisualService } from "./MulticulturalVisualService";
 import { StoryVisualStateManager } from "./storyVisualState";
+import { AdvancedQualityEngine } from "./AdvancedQualityEngine";
 
 export interface EnhancementStage {
   name: string;
@@ -152,7 +153,16 @@ export class EnhancedMultiStageEnhancementPipeline {
               input = StoryVisualStateManager.enhanceTextWithConsistentDetails(context.sessionId, input, context.pageNumber);
               break;
             case "Structured Prompt Composition":
+              // Apply advanced quality enhancement in final stage
+              const enhancementResult = AdvancedQualityEngine.optimizeForChildrensBooks(
+                input, 
+                context.sessionId, 
+                context.pageNumber, 
+                context.userInfo
+              );
+              input = enhancementResult.enhancedPrompt;
               template = stageResult.data.template;
+              console.log(`🎨 Applied quality enhancements: ${enhancementResult.optimizations.join(', ')}`);
               break;
             case "Parameter Optimization":
               parameters = stageResult.data.parameters;
