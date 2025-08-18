@@ -155,14 +155,16 @@ export class MulticulturalVisualService {
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
 
-    const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 'girl';
+    const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 
+                      userInfo.avatar.type === 'girl' ? 'girl' : 'child';
     
     return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
   }
 
   static generateMixedAfricanAmericanDescription(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile('en');
-    const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 'girl';
+    const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 
+                      userInfo.avatar.type === 'girl' ? 'girl' : 'child';
     
     // Use the user's selected avatar skin tone
     const skinTone = userInfo.avatar.skinTone;
