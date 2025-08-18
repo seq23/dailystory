@@ -414,64 +414,69 @@ class StoryVisualStateManager {
   }
 }
 
-function extractPrimaryScene(text: string): string {
+// AI-powered scene extraction using extract-story-elements function
+async function extractPrimarySceneWithAI(text: string, sessionId: string, pageNumber: number, userInfo?: any): Promise<string> {
+  try {
+    const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/extract-story-elements`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+      },
+      body: JSON.stringify({
+        storyText: text,
+        pageNumber: pageNumber,
+        totalPages: 10,
+        difficultyLevel: userInfo?.readingLevel || 'medium',
+        sessionId: sessionId,
+        userInfo: userInfo
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.enhancedDescription) {
+        console.log(`🤖 AI-Enhanced Scene: ${data.enhancedDescription.substring(0, 100)}...`);
+        return data.enhancedDescription;
+      }
+    }
+  } catch (error) {
+    console.log(`⚠️ AI scene extraction failed, using fallback: ${error.message}`);
+  }
+
+  // Fallback to simple sentence extraction
+  return extractPrimarySceneFallback(text);
+}
+
+// Simplified fallback scene extraction without bias
+function extractPrimarySceneFallback(text: string): string {
   const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
   
   if (sentences.length <= 1) return text;
   
-  // Enhanced scoring system for action-oriented, visually compelling scenes
+  // Simple scoring for visual interest without bias
   function scoreScene(sentence: string): number {
     let score = 0;
     
-    // High-value action verbs (primary activities)
-    const primaryActionPatterns = [
-      /\b(race|racing|zoom|zooming|run|running|jump|jumping|climb|climbing|swing|swinging|chase|chasing|play|playing)\b/i,
-      /\b(slide|sliding|roll|rolling|bounce|bouncing|spin|spinning|dance|dancing|laugh|laughing)\b/i
-    ];
+    // Action verbs get moderate priority
+    if (/\b(run|jump|play|climb|swing|slide|dance|laugh)\b/i.test(sentence)) score += 15;
     
-    // Location-action combinations (very visual)
-    const locationActionPatterns = [
-      /\b(park|playground|hill|field|garden|yard|beach|forest)\b.*\b(race|play|run|jump|climb|swing|slide)\b/i,
-      /\b(race|play|run|jump|climb|swing|slide)\b.*\b(park|playground|hill|field|garden|yard|beach|forest)\b/i
-    ];
+    // Character interaction gets priority
+    if (/\b[A-Z][a-z]+\b.*\b(with|and|together)\b/i.test(sentence)) score += 12;
     
-    // Emotional engagement with action
-    const emotionalActionPatterns = [
-      /\b(loved|enjoyed|excited|favorite|happy|delighted)\b.*\b(to|ing)\b.*\b(race|play|run|jump|climb|swing|slide)\b/i,
-      /\b(loved|enjoyed|excited|favorite|happy|delighted)\b.*\b(race|play|run|jump|climb|swing|slide)\b/i
-    ];
+    // Visual elements get moderate priority
+    if (/\b(colorful|bright|big|small|red|blue|green|yellow)\b/i.test(sentence)) score += 10;
     
-    // Visual elements
-    const visualElementPatterns = [
-      /\b(toy cars|cars|toys|ball|bike|bicycle|kite|bubbles|flowers|colorful|bright)\b/i,
-      /\b(steep|tall|big|small|red|blue|green|yellow|purple|orange)\b/i
-    ];
-    
-    // Character-focused actions
-    const characterActionPatterns = [
-      /\b[A-Z][a-z]+\b.*\b(loved|liked|enjoyed|wanted|decided|began|started)\b.*\b(to|ing)\b/i,
-      /\b[A-Z][a-z]+\b.*\b(race|play|run|jump|climb|swing|slide|laugh|smile|clap)\b/i
-    ];
-    
-    // Score based on patterns
-    if (primaryActionPatterns.some(p => p.test(sentence))) score += 20;
-    if (locationActionPatterns.some(p => p.test(sentence))) score += 25; // Highest priority
-    if (emotionalActionPatterns.some(p => p.test(sentence))) score += 22;
-    if (visualElementPatterns.some(p => p.test(sentence))) score += 15;
-    if (characterActionPatterns.some(p => p.test(sentence))) score += 18;
-    
-    // Bonus for specific high-visual combinations
-    if (/\b(toy cars|cars)\b.*\b(hill|steep|down|race|racing)\b/i.test(sentence)) score += 30;
-    if (/\b(magic|magical|imagining|world|adventure)\b/i.test(sentence)) score += 12;
+    // Emotional content gets priority
+    if (/\b(happy|excited|surprised|curious|delighted|loved)\b/i.test(sentence)) score += 13;
     
     // Penalty for purely descriptive introductions
-    if (/\b(in the|there was|there were|once upon|it was|the town|the city|the village)\b/i.test(sentence)) score -= 10;
-    if (/\b(lived|was|were)\b.*\b(a|an|the)\b.*\b(town|city|village|place|time)\b/i.test(sentence)) score -= 15;
+    if (/\b(in the|there was|once upon|lived in)\b/i.test(sentence)) score -= 8;
     
     return Math.max(0, score);
   }
   
-  // Score all sentences and find the most action-oriented one
+  // Score all sentences and find the most visually interesting one
   let bestScore = 0;
   let bestSentenceIndex = 0;
   
@@ -676,7 +681,7 @@ serve(async (req) => {
       // Track and enhance visual details for consistency
       const enhancedText = StoryVisualStateManager.enhanceTextWithConsistentDetails(sessionId, pronoun_resolved_text, pageNumber);
       
-      const processedText = extractPrimaryScene(enhancedText);
+      const processedText = await extractPrimarySceneWithAI(enhancedText, sessionId, pageNumber, userInfo);
       
       let characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
       

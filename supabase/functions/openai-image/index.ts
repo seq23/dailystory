@@ -160,26 +160,59 @@ serve(async (req) => {
     // Enhanced children's book style with framework consistency
     enhancedPrompt += `. Style: ${framework.artStyle}, ${framework.quality}, ${framework.brandSuffix}`;
 
-    // Simple scene analysis (inlined to avoid import issues)
-    const extractSimpleScene = (text: string) => {
+    // AI-enhanced scene analysis with fallback
+    const extractEnhancedScene = async (text: string) => {
+      try {
+        // Try to get AI-enhanced scene description
+        const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/extract-story-elements`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
+          body: JSON.stringify({
+            storyText: text,
+            pageNumber: pageNumber || 1,
+            totalPages: 10,
+            difficultyLevel: userInfo?.readingLevel || 'medium',
+            sessionId: sessionId || 'openai-session',
+            userInfo: userInfo
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.enhancedDescription) {
+            console.log(`🤖 AI-Enhanced Scene Description: ${data.enhancedDescription.substring(0, 100)}...`);
+            return {
+              character: userInfo?.name || 'child',
+              setting: 'contextual scene',
+              primaryScene: data.enhancedDescription,
+              isAIEnhanced: true
+            };
+          }
+        }
+      } catch (error) {
+        console.log(`⚠️ AI scene enhancement failed, using simple analysis: ${error.message}`);
+      }
+
+      // Fallback to simple scene detection
       const lowerText = text.toLowerCase();
       
-      // Simple character detection
       let character = 'child';
       if (userInfo?.name) character = userInfo.name;
       else if (lowerText.includes('girl') || lowerText.includes('she')) character = 'girl';
       else if (lowerText.includes('boy') || lowerText.includes('he')) character = 'boy';
       
-      // Simple setting detection
       let setting = 'outdoor scene';
       if (lowerText.includes('house') || lowerText.includes('home')) setting = 'indoor scene';
       else if (lowerText.includes('forest') || lowerText.includes('tree')) setting = 'forest scene';
-      else if (lowerText.includes('beach') || lowerText.includes('ocean')) setting = 'beach scene';
+      else if (lowerText.includes('park') || lowerText.includes('playground')) setting = 'park scene';
       
-      return { character, setting, primaryScene: text };
+      return { character, setting, primaryScene: text, isAIEnhanced: false };
     };
     
-    const pageContent = extractSimpleScene(positivePrompt);
+    const pageContent = await extractEnhancedScene(positivePrompt);
     
     // Add emotional and visual context
     const emotionalKeywords = ['happy', 'sad', 'excited', 'scared', 'curious', 'surprised'];
@@ -204,7 +237,8 @@ serve(async (req) => {
     const sceneAnalysis = `${pageContent.character}${avatarDesc} in ${pageContent.setting}. Scene: ${pageContent.primaryScene}. Mood: ${detectedEmotion}`;
     
     // Create final enhanced prompt combining everything
-    const finalPrompt = `${sceneAnalysis}. ${enhancedPrompt}. Ultra high resolution children's book illustration`;
+    const aiEnhancementNote = pageContent.isAIEnhanced ? 'AI-enhanced visual elements. ' : '';
+    const finalPrompt = `${sceneAnalysis}. ${enhancedPrompt}. ${aiEnhancementNote}Ultra high resolution children's book illustration`;
 
     // Determine size for gpt-image-1 (different sizes than DALL-E 3)
     let size = '1024x1024';

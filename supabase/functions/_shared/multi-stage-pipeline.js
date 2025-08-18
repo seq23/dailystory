@@ -90,12 +90,12 @@ export class MultiStageEnhancementPipeline {
     return result;
   }
 
-  // Stage 1: Scene Extraction & Cultural Enhancement
+  // Stage 1: AI-Enhanced Scene Extraction & Cultural Enhancement
   static async enhanceSceneWithCulture(context) {
-    const { originalText, userInfo } = context;
+    const { originalText, userInfo, sessionId, pageNumber } = context;
     
-    // Extract primary scene
-    const primaryScene = this.extractPrimaryScene(originalText);
+    // Extract primary scene using AI enhancement
+    const primaryScene = await this.extractPrimarySceneWithAI(originalText, sessionId, pageNumber, userInfo);
     
     // Add cultural context
     const culturalSetting = MulticulturalVisualService.generateCulturalSetting(userInfo);
@@ -245,16 +245,58 @@ export class MultiStageEnhancementPipeline {
 
   // Helper methods
 
-  static extractPrimaryScene(text) {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const actionWords = ['walk', 'run', 'play', 'look', 'see', 'go', 'find', 'hold', 'sit', 'stand', 'move'];
+  // AI-Enhanced Primary Scene Extraction with Fallback
+  static async extractPrimarySceneWithAI(storyText, sessionId, pageNumber, userInfo) {
+    try {
+      // Try AI-powered scene extraction first
+      const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/extract-story-elements`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+        },
+        body: JSON.stringify({
+          storyText: storyText,
+          pageNumber: pageNumber || 1,
+          totalPages: 10,
+          difficultyLevel: userInfo?.readingLevel || 'medium',
+          sessionId: sessionId || 'pipeline-session',
+          userInfo: userInfo
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.enhancedDescription) {
+          console.log(`🤖 AI-Enhanced Scene from Pipeline: ${data.enhancedDescription.substring(0, 100)}...`);
+          return data.enhancedDescription;
+        }
+      }
+    } catch (error) {
+      console.log(`⚠️ AI scene extraction failed in pipeline, using fallback: ${error.message}`);
+    }
+
+    // Fallback to simplified scene extraction
+    return this.extractPrimarySceneFallback(storyText);
+  }
+
+  // Fallback scene extraction without bias
+  static extractPrimarySceneFallback(storyText) {
+    const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const actionWords = ['walk', 'run', 'play', 'look', 'see', 'go', 'find', 'hold', 'sit', 'stand', 'move', 'explore', 'discover'];
     
-    let bestScene = sentences[0] || text;
+    let bestScene = sentences[0] || storyText;
     let highestScore = 0;
     
     for (const sentence of sentences) {
       const words = sentence.toLowerCase().split(/\s+/);
-      const score = words.filter(word => actionWords.includes(word)).length;
+      let score = words.filter(word => actionWords.includes(word)).length;
+      
+      // Boost for emotional and visual content
+      if (/\b(happy|excited|colorful|bright|beautiful)\b/i.test(sentence)) score += 2;
+      
+      // Slight reduction for purely introductory content
+      if (/\b(once upon|there was|lived in)\b/i.test(sentence)) score -= 1;
       
       if (score > highestScore) {
         highestScore = score;

@@ -47,15 +47,23 @@ serve(async (req) => {
 
     console.log(`📖 Extracting story elements for ${difficultyLevel} level, page ${pageNumber}/${totalPages}`);
 
-    const systemPrompt = `Extract visual elements from children's stories for image generation. Focus on: characters, setting, colors, objects, emotions, atmosphere. Output direct descriptive text for children's book illustration prompts, not JSON. Keep age-appropriate.`;
+    const systemPrompt = `You are an expert at analyzing children's stories to extract rich visual elements for illustration. Focus on: characters, settings, colors, objects, emotions, atmosphere, lighting, and composition. Create detailed, vivid descriptions that capture the essence of the scene. Output direct descriptive text suitable for children's book illustration prompts, not JSON. Keep age-appropriate and engaging.`;
 
-    const userPrompt = `Analyze this ${difficultyLevel} level story text for page ${pageNumber} of ${totalPages}:
+    const userPrompt = `Analyze this ${difficultyLevel} level story text for page ${pageNumber} of ${totalPages} and extract the most visually compelling scene:
 
 "${storyText}"
 
 ${userInfo ? `The main character is ${userInfo.name}, a ${userInfo.age} year old with ${userInfo.avatar?.type || 'friendly'} appearance and ${userInfo.avatar?.skinTone || 'warm'} skin tone.` : ''}
 
-Extract rich visual and narrative elements that will help create a compelling, detailed illustration. Focus on elements that might be missed by simple keyword matching - subtle emotions, implied colors, atmospheric details, character relationships, and visual composition suggestions.`;
+Create a rich, detailed scene description that goes beyond simple keyword matching. Include:
+- The most visually interesting moment from the text
+- Character emotions and expressions
+- Environmental details and atmosphere
+- Color palette suggestions based on mood
+- Lighting and composition ideas
+- Any magical or imaginative elements
+
+Focus on creating a scene that would make a beautiful, engaging children's book illustration regardless of the setting (woods, city, home, fantasy, etc.). The AI should detect and enhance the natural visual appeal of ANY story context.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -64,12 +72,12 @@ Extract rich visual and narrative elements that will help create a compelling, d
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-mini-2025-08-07',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 400
+        max_completion_tokens: 500
       }),
     });
 
