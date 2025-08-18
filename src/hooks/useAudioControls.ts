@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
-// Removed: import { audioSyncService } from '@/services/audioSyncService';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import type { UserInfo } from '@/types';
 
 interface AudioControlsOptions {
@@ -53,13 +53,7 @@ export const useAudioControls = ({
     return Math.max(0.4, Math.min(1.2, base * ageMultiplier));
   };
 
-  // Mobile audio initialization
-  useEffect(() => {
-    if (isMobileOrTablet) {
-      // Initialize mobile audio on component mount
-      // TODO: Replace with SimplifiedAudioEngine mobile initialization
-    }
-  }, [isMobileOrTablet]);
+  // Mobile audio initialization is handled by SimplifiedAudioEngine internally
 
   // Stop audio on text or page change to avoid stale playback and apply reduced stabilization
   useEffect(() => {
@@ -68,7 +62,7 @@ export const useAudioControls = ({
     setIsLoading(false);
     
     // Stop audio service
-    // TODO: Replace with SimplifiedAudioEngine.stop()
+    SimplifiedAudioEngine.getInstance().stop();
     
     setIsStabilizing(true);
     // Reduced stabilization timing: 500ms for optimal performance
@@ -139,23 +133,22 @@ export const useAudioControls = ({
     const speed = getBaseSpeed() * speedMultiplierRef.current;
     const playSnapshot = { text, page: currentPage, contentHash };
 
-    // TODO: Replace with SimplifiedAudioEngine.playTextWithSynchronization
-    /*
+    // Play with SimplifiedAudioEngine
     await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({
       text,
-      voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
-      context: 'conversation',
+      voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
+      context: 'learning',
+      contentHash,
       onWordHighlight: (wordIndex: number) => {
         console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
         onWordHighlight?.(wordIndex);
       }
     });
-    */
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
       console.warn('🛑 TTS aborted due to page/text/hash change during load');
-      // TODO: Replace with SimplifiedAudioEngine.stop()
+      SimplifiedAudioEngine.getInstance().stop();
       toast({ 
         title: t('audioReading.pageChanged', 'Page changed'), 
         description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), 
@@ -184,7 +177,7 @@ export const useAudioControls = ({
     onAudioStateChange?.(false);
     
     // Stop audio sync service
-    // TODO: Replace with SimplifiedAudioEngine.stop()
+    SimplifiedAudioEngine.getInstance().stop();
     
     // Emit state change for UI updates (but not stop events to prevent loops)
     window.dispatchEvent(new CustomEvent('audio:statechange', { 
@@ -197,7 +190,7 @@ export const useAudioControls = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // TODO: Replace with SimplifiedAudioEngine.stop()
+      SimplifiedAudioEngine.getInstance().stop();
     };
   }, []);
 
