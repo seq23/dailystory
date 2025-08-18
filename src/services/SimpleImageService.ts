@@ -450,7 +450,7 @@ export class SimpleImageService {
 
       const { data, error } = await supabase.functions.invoke('openai-image', {
         body: {
-          prompt: enhancedPrompt,
+          positivePrompt: enhancedPrompt,
           size: '1024x1024',
           model: 'gpt-image-1',
           quality: 'standard'
