@@ -2,7 +2,6 @@
 // Phase 2 & 3: Upgraded with character consistency and style integration
 
 import type { UserInfo, DifficultyLevel } from '@/types';
-import { DIFFICULTY_STYLE_MAPPING } from '@/config/appConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { PromptLengthManager } from '@/utils/promptLengthManager';
 
@@ -467,16 +466,16 @@ export class AdvancedStoryAnalyzer {
     sessionId: string,
     style: string = 'children-book-illustration'
   ): EnhancedImagePrompt {
-    // Apply style framework based on difficulty
-    const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
+    // Note: Style framework now handled server-side in styleFrameworks.js
+    // Frontend only generates basic prompt structure that server enhances
     const characterDesc = this.buildCharacterDescription(userInfo, difficultyLevel);
     const settingDesc = this.buildSettingDescription(analysis.setting);
     const moodDesc = this.buildMoodDescription(analysis);
     
-    // Combine scene content + style framework + character consistency + rendering + brand suffix
+    // Combine scene content - style framework applied server-side
     const coreContent = `${analysis.mainAction} in ${settingDesc}. ${moodDesc}. ${analysis.composition}, ${analysis.perspective}`;
-    const renderingStyle = styleFramework.rendering || '';
-    const brandSuffix = styleFramework.brandSuffix || '';
+    const renderingStyle = ''; // Server-side handles rendering
+    const brandSuffix = 'children\'s book illustration, safe wholesome content'; // Basic brand suffix
     
     // Use advanced prompt management with AI-enhanced preferences
     const userPreferences = {
@@ -488,7 +487,7 @@ export class AdvancedStoryAnalyzer {
     };
     
     const segments = PromptLengthManager.createSegments(
-      `${styleFramework.prompt}. ${characterDesc} ${coreContent}`,
+      `children's book illustration. ${characterDesc} ${coreContent}`,
       renderingStyle,
       characterDesc,
       brandSuffix,
@@ -507,9 +506,9 @@ export class AdvancedStoryAnalyzer {
     }
     
     const styleModifiers = [
-      `Color palette: ${styleFramework.colorPalette}`,
-      `Detail level: ${styleFramework.detailLevel}`,
-      `Complexity: ${styleFramework.complexity}`
+      `Color palette: bright cheerful colors`,
+      `Detail level: high quality`,
+      `Complexity: appropriate for children`
     ];
     
     const compositionHints = [
@@ -517,12 +516,12 @@ export class AdvancedStoryAnalyzer {
       analysis.perspective,
       `${analysis.intensity} energy level`,
       `${analysis.storyProgression} story moment`,
-      `${styleFramework.complexity} artistic complexity`
+      `child-appropriate artistic complexity`
     ];
     
     const colorPalette = analysis.colors.length > 0 
       ? analysis.colors.map(c => `rich ${c} tones`)
-      : [styleFramework.colorPalette];
+      : ['bright cheerful colors'];
     
     const negativePrompt = [
       '**NO TEXT**, **NO WORDS**, **NO LETTERS**, blurry, low quality, deformed anatomy, extra limbs, multiple arms, multiple legs, watermark, ugly, scary, inappropriate, adult content'

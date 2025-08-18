@@ -3,7 +3,10 @@
 
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { APP_CONFIG, IMAGE_STYLES, DIFFICULTY_STYLE_MAPPING, type ImageStyle } from '@/config/appConfig';
+import { APP_CONFIG } from '@/config/appConfig';
+
+// Image style type (previously imported from appConfig)
+export type ImageStyle = 'children-book-illustration' | 'illustrated-artwork' | 'watercolor' | 'digital-art';
 import { ErrorHandler, ErrorType } from '@/utils/errorHandling';
 import { AdvancedStoryAnalyzer } from './AdvancedStoryAnalyzer';
 import { DirectContentExtractor } from './DirectContentExtractor';
@@ -160,9 +163,9 @@ export class SimpleImageService {
     console.log(`📝 Using simple rule-based extraction for: "${storyText}"`);
     
     const pageContent = DirectContentExtractor.extractPageContent(storyText);
-    const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
-    const baseStyle = styleFramework?.prompt || DIFFICULTY_STYLE_MAPPING['beginner'].prompt;
-    const brandSuffix = styleFramework?.brandSuffix || DIFFICULTY_STYLE_MAPPING['beginner'].brandSuffix;
+    // Style framework now handled server-side - use basic defaults
+    const baseStyle = 'children\'s book illustration, bright colors, safe for children';
+    const brandSuffix = 'wholesome family content, safe for children';
     
     // Note: StoryVisualStateManager is handled server-side now
     // const { StoryVisualStateManager } = require('./storyVisualState');

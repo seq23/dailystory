@@ -298,10 +298,5 @@ export class AdvancedQualityEngine {
     }
   }
 
-  static integrateWithRunwareService(serviceInstance: any): void {
-    // Add parameter validation to Runware service
-    if (serviceInstance && typeof serviceInstance.addParameterValidator === 'function') {
-      serviceInstance.addParameterValidator('children_books', this.validateOptimalSettings);
-    }
-  }
+  // Note: RunwareService integration removed as it's no longer used
 }

@@ -2,9 +2,20 @@
 // Phase 2: Automated assessment and intelligent retries
 
 import { CharacterDescriptor } from "./AdvancedCharacterEngine";
-import { RunwareParameters } from "./MultiStageEnhancementPipeline";
 import { UserInfo, DifficultyLevel } from "@/types";
 import { SupportedLanguage } from "@/types/multilingual";
+
+// Local RunwareParameters interface (previously imported from MultiStageEnhancementPipeline)
+export interface RunwareParameters {
+  model: string;
+  cfgScale: number;
+  steps: number;
+  scheduler: string;
+  strength: number;
+  seed?: number;
+  width: number;
+  height: number;
+}
 
 export interface QualityMetrics {
   characterConsistency: number;

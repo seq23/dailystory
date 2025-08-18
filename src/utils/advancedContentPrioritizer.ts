@@ -2,7 +2,6 @@
 // Phase 3: Dynamic content prioritization and user preference optimization
 
 import type { UserInfo, DifficultyLevel } from '@/types';
-import { DIFFICULTY_STYLE_MAPPING } from '@/config/appConfig';
 
 export interface ContentAnalysis {
   coreElements: string[];          // Essential story elements (characters, main action)
@@ -225,13 +224,19 @@ export class AdvancedContentPrioritizer {
   }
   
   private static extractStyleElements(prompt: string, difficultyLevel: DifficultyLevel): string[] {
-    const styleFramework = DIFFICULTY_STYLE_MAPPING[difficultyLevel];
-    const styleText = `${styleFramework.prompt} ${styleFramework.rendering} ${styleFramework.colorPalette}`;
+    // Style framework now handled server-side - extract from existing prompt
+    const styleKeywords = prompt.match(/\b(illustration|digital|painting|artistic|sophisticated|simple|colorful|vibrant|detailed|complex|children|book)\w*/gi) || [];
     
-    // Extract style adjectives and descriptors
-    const styleKeywords = styleText.match(/\b(illustration|digital|painting|artistic|sophisticated|simple|colorful|vibrant|detailed|complex)\w*/gi) || [];
+    // Add default style elements based on difficulty level
+    const defaultStyles = {
+      'beginner': ['simple', 'colorful', 'children'],
+      'easy': ['bright', 'cheerful', 'illustration'],
+      'medium': ['detailed', 'artistic', 'book'],
+      'hard': ['sophisticated', 'complex', 'digital'],
+      'expert': ['masterful', 'intricate', 'painting']
+    };
     
-    return styleKeywords;
+    return [...styleKeywords, ...(defaultStyles[difficultyLevel] || [])];
   }
   
   private static extractCharacterElements(prompt: string, userInfo: UserInfo): string[] {
