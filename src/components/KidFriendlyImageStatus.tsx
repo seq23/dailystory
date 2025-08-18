@@ -65,70 +65,38 @@ export const KidFriendlyImageStatus = ({
   const currentText = messages[currentMessage];
 
   return (
-    <Card className={cn(
-      "border-2 border-primary/20 bg-gradient-to-br from-background to-primary/5",
-      "shadow-lg transition-all duration-500 ease-in-out",
-      "animate-fade-in",
+    <div className={cn(
+      "bg-primary/5 border border-primary/20 rounded-lg p-3",
+      "text-center transition-all duration-300 ease-in-out",
+      "animate-fade-in text-sm",
       className
     )}>
-      <CardContent className="p-6 text-center space-y-4">
+      <div className="space-y-2">
         {isStoryLoading ? (
-          <>
-            {/* Story Loading State */}
-            <div className="relative flex items-center justify-center">
-              <BookOpen className="w-12 h-12 text-primary animate-pulse" />
-              <Sparkles className="w-6 h-6 text-accent absolute -top-1 -right-1 animate-bounce" />
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-primary animate-pulse" />
+            <div>
+              <p className="font-medium text-primary">Your Story Comes First! 📖</p>
+              <p className="text-xs text-muted-foreground">{currentText}</p>
             </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-primary">
-                Your Story Comes First! 📖
-              </h3>
-              <p className="text-muted-foreground font-medium">
-                {currentText}
-              </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <LoadingSpinner size="sm" />
-                <span>Creating something amazing...</span>
-              </div>
-            </div>
-          </>
+          </div>
         ) : (
-          <>
-            {/* Image Loading State */}
-            <div className="relative flex items-center justify-center">
-              <div className="relative">
-                <Palette className="w-12 h-12 text-primary animate-pulse" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Wand2 className="w-6 h-6 text-accent animate-bounce" />
-                </div>
-              </div>
-              <Heart className="w-4 h-4 text-red-400 absolute -top-1 -right-1 animate-ping" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-primary">
-                Now Drawing Your Pictures! 🎨
-              </h3>
-              <p className="text-muted-foreground font-medium">
-                {currentText}
-              </p>
+          <div className="flex items-center gap-2">
+            <Palette className="w-5 h-5 text-primary animate-pulse" />
+            <div>
+              <p className="font-medium text-primary">Now Drawing Pictures! 🎨</p>
+              <p className="text-xs text-muted-foreground">{currentText}</p>
               {batchProgress && (
-                <p className="text-xs text-muted-foreground">
-                  {batchProgress}
-                </p>
+                <p className="text-xs text-muted-foreground/70">{batchProgress}</p>
               )}
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <LoadingSpinner size="sm" />
-                <span>Magic in progress...</span>
-              </div>
             </div>
-          </>
+          </div>
         )}
         
-        {/* Fun encouragement */}
-        <div className="text-xs text-muted-foreground italic pt-2 border-t border-border/50">
-          Stories first, pictures second - that's how we make the best adventures! ✨
+        <div className="text-xs text-muted-foreground/60 italic">
+          Stories first, pictures second! ✨
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

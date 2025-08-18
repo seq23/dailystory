@@ -1052,6 +1052,27 @@ const initializeStory = async () => {
         difficulty: userInfo.difficultyLevel,
         timestamp: new Date().toISOString()
       });
+      
+      // ✅ CRITICAL FIX: Debug userInfo gender before story generation
+      console.log('🚨 [GENDER DEBUG] UserInfo being passed to story generation:', {
+        name: effectiveUser.name,
+        avatarType: effectiveUser.avatar?.type,
+        avatarSkinTone: effectiveUser.avatar?.skinTone,
+        fullAvatar: effectiveUser.avatar,
+        effectiveUserFull: effectiveUser
+      });
+      
+      // ⚠️ VALIDATION: Ensure avatar type is set correctly
+      if (!effectiveUser.avatar?.type) {
+        console.error('🚨 [CRITICAL] Avatar type is missing! This will cause pronoun issues.');
+        toast({
+          title: "Character Error",
+          description: "Avatar information is missing. Please refresh and select your character again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
       
       console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
@@ -1786,13 +1807,23 @@ const handleRestartTimer = () => {
         setStoryTitle(`${userInfo.name}'s Live Adventure`);
       } else {
         const originalPageCount = story.length;
-        const result = await NetflixStyleStoryService.generateCompleteStory({
+        // ✅ CRITICAL FIX: Debug userInfo for story refresh
+        const refreshUserInfo = {
           ...userInfo,
           specialRequest: specialRequestOverride ?? userInfo.specialRequest,
           difficultyLevel: currentDifficulty,
           readingAbility: currentDifficulty,
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
-        } as UserInfo);
+        } as UserInfo;
+        
+        console.log('🚨 [GENDER DEBUG] Story refresh userInfo:', {
+          name: refreshUserInfo.name,
+          avatarType: refreshUserInfo.avatar?.type,
+          avatarSkinTone: refreshUserInfo.avatar?.skinTone,
+          fullAvatar: refreshUserInfo.avatar
+        });
+        
+        const result = await NetflixStyleStoryService.generateCompleteStory(refreshUserInfo);
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
         setStory(newStory);
         setCurrentPage(0);
