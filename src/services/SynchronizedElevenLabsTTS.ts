@@ -71,7 +71,7 @@ export class SynchronizedElevenLabsTTS {
   }
 
   /**
-   * Convert ElevenLabs character-level timing to word-level timing with improved debugging
+   * Convert ElevenLabs character-level timing to word-level timing with comprehensive debugging and fallbacks
    */
   private static convertCharacterTimingsToWords(
     text: string, 
@@ -79,8 +79,9 @@ export class SynchronizedElevenLabsTTS {
   ): Array<{ word: string; startTime: number; endTime: number }> {
     console.log('🔧 Converting character timings to word timings:', {
       textLength: text.length,
-      charactersCount: alignment.characters.length,
-      textPreview: text.substring(0, 50) + '...'
+      charactersCount: alignment.characters?.length || 0,
+      textPreview: text.substring(0, 50) + '...',
+      alignmentStructure: alignment
     });
     
     // Better word tokenization that handles punctuation
@@ -89,8 +90,16 @@ export class SynchronizedElevenLabsTTS {
     
     console.log('📝 Tokenized words:', words.slice(0, 10), words.length > 10 ? `... (${words.length} total)` : '');
     
+    // Check if we have valid timing data
+    if (!alignment || !alignment.characters || alignment.characters.length === 0) {
+      console.warn('⚠️ No character timing data available, using estimated timing');
+      return this.generateFallbackWordTimings(words);
+    }
+    
+    // Debug first few character entries to understand structure
+    console.log('🔍 First 3 character timing entries:', alignment.characters.slice(0, 3));
+    
     let textPosition = 0;
-    let charTimingIndex = 0;
     
     for (let wordIndex = 0; wordIndex < words.length; wordIndex++) {
       const word = words[wordIndex];
@@ -99,43 +108,42 @@ export class SynchronizedElevenLabsTTS {
       const wordStartPos = text.indexOf(word, textPosition);
       const wordEndPos = wordStartPos + word.length;
       
+      if (wordStartPos === -1) {
+        console.warn(`⚠️ Could not find word "${word}" in text at position ${textPosition}`);
+        continue;
+      }
+      
       // Find corresponding character timings
-      let wordStartTime = 0;
-      let wordEndTime = 0;
-      let foundTimingData = false;
+      let wordStartTime: number | undefined;
+      let wordEndTime: number | undefined;
+      let foundValidTiming = false;
       
-      // Debug character timing data structure
-      console.log('🔍 Character timing data sample:', {
-        totalCharacters: alignment.characters.length,
-        firstChar: alignment.characters[0],
-        wordPos: { start: wordStartPos, end: wordEndPos },
-        wordText: word
-      });
-      
-      // Search for character timing that corresponds to this word's position
-      for (let i = charTimingIndex; i < alignment.characters.length; i++) {
-        const charTiming = alignment.characters[i];
-        if (!charTiming) continue;
+      // Map character positions to timings
+      for (let charPos = wordStartPos; charPos < wordEndPos; charPos++) {
+        // Check if we have timing data for this character position
+        const charTiming = alignment.characters[charPos];
         
-        // The character timing index should match the character position in text
-        // Check if this character index is within our word's character range in the text
-        if (i >= wordStartPos && i < wordEndPos) {
-          if (!foundTimingData) {
-            wordStartTime = charTiming.start_time_ms || 0;
-            foundTimingData = true;
-            console.log(`🎯 Found start timing for "${word}" at char ${i}: ${wordStartTime}ms`);
+        if (charTiming && typeof charTiming.start_time_ms === 'number') {
+          if (wordStartTime === undefined) {
+            wordStartTime = charTiming.start_time_ms;
+            foundValidTiming = true;
+            console.log(`🎯 Found start timing for "${word}" at char ${charPos}: ${wordStartTime}ms`);
           }
-          wordEndTime = (charTiming.start_time_ms || 0) + (charTiming.duration_ms || 200);
+          // Update end time based on this character
+          const charEndTime = charTiming.start_time_ms + (charTiming.duration_ms || 200);
+          if (wordEndTime === undefined || charEndTime > wordEndTime) {
+            wordEndTime = charEndTime;
+          }
         }
       }
       
-      // If we didn't find timing data, use fallback logic
-      if (!foundTimingData) {
+      // If we didn't find valid timing data, use fallback
+      if (!foundValidTiming || wordStartTime === undefined || wordEndTime === undefined) {
         const estimatedDuration = Math.max(200, word.length * 120); // 120ms per character, min 200ms
         wordStartTime = wordTimings.length > 0 ? wordTimings[wordTimings.length - 1].endTime + 50 : 0;
         wordEndTime = wordStartTime + estimatedDuration;
         
-        console.log(`⚠️ No timing data found for word "${word}" at position ${wordStartPos}, using fallback:`, {
+        console.log(`⚠️ Using fallback timing for "${word}":`, {
           startTime: wordStartTime,
           endTime: wordEndTime,
           duration: estimatedDuration
@@ -164,7 +172,6 @@ export class SynchronizedElevenLabsTTS {
       console.log(`📍 Word ${wordIndex}: "${word}" → ${wordStartTime}ms - ${wordEndTime}ms (${wordEndTime - wordStartTime}ms)`);
       
       textPosition = wordEndPos;
-      charTimingIndex = Math.max(charTimingIndex, wordStartPos);
     }
     
     console.log(`✅ Word timing conversion complete: ${words.length} words → ${wordTimings.length} timings`, {
@@ -173,6 +180,32 @@ export class SynchronizedElevenLabsTTS {
         wordTimings.reduce((sum, t) => sum + (t.endTime - t.startTime), 0) / wordTimings.length : 0
     });
     
+    return wordTimings;
+  }
+
+  /**
+   * Generate fallback word timings when ElevenLabs timing data is unavailable
+   */
+  private static generateFallbackWordTimings(words: string[]): Array<{ word: string; startTime: number; endTime: number }> {
+    console.log('🔄 Generating fallback word timings for', words.length, 'words');
+    
+    const wordTimings: Array<{ word: string; startTime: number; endTime: number }> = [];
+    let currentTime = 0;
+    
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const estimatedDuration = Math.max(200, word.length * 120); // 120ms per character, min 200ms
+      
+      wordTimings.push({
+        word: word.trim(),
+        startTime: currentTime,
+        endTime: currentTime + estimatedDuration
+      });
+      
+      currentTime += estimatedDuration + 50; // 50ms gap between words
+    }
+    
+    console.log('✅ Fallback timing generated for', wordTimings.length, 'words');
     return wordTimings;
   }
 

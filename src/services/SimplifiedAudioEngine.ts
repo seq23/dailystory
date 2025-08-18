@@ -116,7 +116,7 @@ export class SimplifiedAudioEngine {
   }
 
   async playTextWithSynchronization(opts: SynchronizedPlayOptions) {
-    const { text, voiceId, contentHash, context = 'conversation', onWordHighlight } = opts;
+    const { text, voiceId, contentHash, context = 'learning', onWordHighlight } = opts;
     
     if (!AudioPermissions.canPlayAudio()) {
       const reason = AudioPermissions.getBlockReason('any-audio');
@@ -127,11 +127,17 @@ export class SimplifiedAudioEngine {
     console.log('🎵 SimplifiedAudioEngine: Starting synchronized playback:', {
       textLength: text.length,
       voice: voiceId || 'default',
-      contentHash: contentHash || 'none'
+      contentHash: contentHash || 'none',
+      isMobile: this.isMobile()
     });
     
-    // Request exclusive audio access
-    window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simple' } }));
+    // Request exclusive audio access with high priority for mobile
+    window.dispatchEvent(new CustomEvent('audio:request', { 
+      detail: { 
+        system: 'simple',
+        priority: this.isMobile() ? 'high' : 'normal'
+      } 
+    }));
     
     // Stop any current playback
     this.stop();
@@ -151,7 +157,8 @@ export class SimplifiedAudioEngine {
 
       console.log('🎵 SimplifiedAudioEngine: Requesting Synchronized ElevenLabs TTS...');
       
-      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, context, voiceId);
+      // Use 'learning' context for better word timing
+      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, 'learning', voiceId);
       
       if (signal.aborted) {
         console.log('🎵 SimplifiedAudioEngine: Request was aborted');
@@ -160,15 +167,26 @@ export class SimplifiedAudioEngine {
 
       // Store timing data for synchronization
       this.wordTimings = result.wordTimings;
+      console.log('🎯 Word timings loaded:', {
+        count: this.wordTimings.length,
+        firstWord: this.wordTimings[0],
+        lastWord: this.wordTimings[this.wordTimings.length - 1],
+        validTimings: this.wordTimings.filter(t => !isNaN(t.startTime) && !isNaN(t.endTime)).length
+      });
       
       const blob = new Blob([result.audioBuffer], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
 
       const audio = this.ensureAudio();
       
-      if (!this.mobileAudioUnlocked && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        console.log('🔊 Attempting to unlock mobile audio before playback');
+      // Enhanced mobile audio unlocking
+      if (this.isMobile()) {
+        console.log('📱 Mobile device detected, ensuring audio unlock');
         await this.unlockMobileAudioForPlayback();
+        
+        // Add mobile-specific audio settings
+        audio.setAttribute('playsinline', 'true');
+        audio.setAttribute('webkit-playsinline', 'true');
       }
       
       try { audio.pause(); } catch {}
@@ -367,6 +385,14 @@ export class SimplifiedAudioEngine {
     window.dispatchEvent(new CustomEvent('audio:statechange', { 
       detail: { isPlaying: false } 
     }));
+    
+    window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'simple' } }));
+  }
+
+  private isMobile(): boolean {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           ('ontouchstart' in window) ||
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
   }
 
   private async unlockMobileAudioForPlayback(): Promise<void> {
