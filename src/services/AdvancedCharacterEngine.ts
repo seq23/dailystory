@@ -1,9 +1,11 @@
 // Advanced Character Descriptor Engine
 // Phase 1: Consistent Secondary Character Tracking with Cultural Integration
+// Enhanced with placeholder integration
 
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo } from "@/types";
 import { MulticulturalVisualService } from "./MulticulturalVisualService";
+import { resolveAllPlaceholders } from "@/utils/placeholderResolver";
 
 export interface CharacterDescriptor {
   name: string;
@@ -45,10 +47,15 @@ export class AdvancedCharacterEngine {
     pageNumber: number
   ): CharacterDescriptor[] {
     const detectedCharacters: CharacterDescriptor[] = [];
-    const text = storyText.toLowerCase();
     
-    // Primary character patterns (user)
+    // Resolve placeholders in story text for accurate detection
+    const resolvedText = resolveAllPlaceholders(storyText, { userInfo });
+    const text = resolvedText.toLowerCase();
+    
+    // Primary character patterns (using resolved userName)
+    const resolvedUserName = resolveAllPlaceholders('{userName}', { userInfo });
     const primaryPatterns = [
+      resolvedUserName.toLowerCase(),
       userInfo.name?.toLowerCase() || 'main character',
       'you', 'your', 'yourself'
     ];
@@ -144,8 +151,11 @@ export class AdvancedCharacterEngine {
     // Create family group for shared traits
     this.createFamilyGroup(familyGroupId, userInfo.nativeLanguage as SupportedLanguage, culturalProfile);
     
+    // Use placeholder-resolved name for consistency
+    const resolvedUserName = resolveAllPlaceholders('{userName}', { userInfo });
+    
     const primaryCharacter: CharacterDescriptor = {
-      name: userInfo.name || 'Main Character',
+      name: resolvedUserName || userInfo.name || 'Main Character',
       type: 'primary',
       relationshipToMain: 'self',
       culturalRole: 'child protagonist',

@@ -1,9 +1,12 @@
 // Structured Prompt Template Engine
 // Phase 1: Enhanced Prompt Engineering with intelligent composition
+// Enhanced with placeholder integration and difficulty level mapping
 
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo, DifficultyLevel } from "@/types";
 import { MulticulturalVisualService } from "./MulticulturalVisualService";
+import { resolveAllPlaceholders } from "@/utils/placeholderResolver";
+import { DifficultyLevelMapper } from "./DifficultyLevelMapper";
 
 export interface PromptTemplate {
   visualAppearance: string;
@@ -83,23 +86,31 @@ export class StructuredPromptEngine {
     characterDescriptors: CharacterDescriptor[],
     emotionalContext?: EmotionalContext
   ): PromptTemplate {
-    // Analyze story text for emotional content
-    const detectedEmotion = this.analyzeEmotionalContent(storyText);
+    // Resolve all placeholders in story text first
+    const resolvedStoryText = resolveAllPlaceholders(storyText, { userInfo });
+    
+    // Analyze resolved story text for emotional content
+    const detectedEmotion = this.analyzeEmotionalContent(resolvedStoryText);
     const finalEmotionalContext = emotionalContext || detectedEmotion;
 
-    // Extract primary scene
-    const primaryScene = this.extractPrimaryScene(storyText);
+    // Extract primary scene from resolved text
+    const primaryScene = this.extractPrimaryScene(resolvedStoryText);
     
     // Generate cultural visual elements
     const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
     
-    // Compose template sections
+    // Map difficulty level properly
+    const normalizedDifficulty = DifficultyLevelMapper.normalizeLevel(
+      userInfo.readingLevel || userInfo.difficultyLevel || 'easy'
+    );
+    
+    // Compose template sections with placeholder-resolved data
     const template: PromptTemplate = {
       visualAppearance: this.composeVisualAppearance(userInfo, characterDescriptors),
       secondaryCharacters: this.composeSecondaryCharacters(characterDescriptors, culturalProfile),
-      sceneDescription: this.composeSceneDescription(primaryScene, finalEmotionalContext),
+      sceneDescription: this.composeSceneDescription(primaryScene, finalEmotionalContext, userInfo),
       culturalSetting: this.composeCulturalSetting(userInfo, culturalProfile),
-      styleFramework: this.composeStyleFramework(userInfo.readingLevel as DifficultyLevel, finalEmotionalContext),
+      styleFramework: this.composeStyleFramework(normalizedDifficulty, finalEmotionalContext),
       qualityEnhancement: this.composeQualityEnhancement(userInfo, culturalProfile)
     };
 
@@ -198,22 +209,47 @@ export class StructuredPromptEngine {
   }
 
   /**
-   * Compose scene description with emotional tone mapping
+   * Compose scene description with emotional tone mapping and placeholder integration
    */
-  private static composeSceneDescription(primaryScene: string, emotionalContext: EmotionalContext): string {
-    const baseScene = primaryScene;
-    const colorPalette = emotionalContext.colorPalette.join(', ');
+  private static composeSceneDescription(
+    primaryScene: string, 
+    emotionalContext: EmotionalContext,
+    userInfo: UserInfo
+  ): string {
+    // Resolve any remaining placeholders in scene description
+    const resolvedScene = resolveAllPlaceholders(primaryScene, { userInfo });
+    
+    // Integrate user preferences into scene composition
+    const userColorPreference = userInfo.favoriteColor;
+    let colorPalette = emotionalContext.colorPalette.join(', ');
+    
+    // Enhance color palette with user's favorite color if appropriate
+    if (userColorPreference && !colorPalette.toLowerCase().includes(userColorPreference.toLowerCase())) {
+      colorPalette = `${userColorPreference} tones, ${colorPalette}`;
+    }
+    
     const lighting = emotionalContext.lightingStyle;
     
-    return `${baseScene}, ${colorPalette}, ${lighting}`;
+    return `${resolvedScene}, ${colorPalette}, ${lighting}`;
   }
 
   /**
-   * Compose cultural setting with authentic elements
+   * Compose cultural setting with authentic elements and user preferences
    */
   private static composeCulturalSetting(userInfo: UserInfo, culturalProfile: any): string {
-    const setting = MulticulturalVisualService.generateCulturalSetting(userInfo);
+    let setting = MulticulturalVisualService.generateCulturalSetting(userInfo);
+    
+    // Resolve placeholders in setting
+    setting = resolveAllPlaceholders(setting, { userInfo });
+    
     const culturalElements = culturalProfile.culturalElements.slice(0, 2).join(', ');
+    
+    // Integrate user's special request into cultural setting if relevant
+    const specialRequest = userInfo.specialRequest;
+    if (specialRequest && specialRequest.includes('theme:')) {
+      const theme = specialRequest.replace('theme:', '').trim();
+      return `${setting}, ${culturalElements}, ${theme} atmosphere`;
+    }
     
     return `${setting}, ${culturalElements}`;
   }
@@ -263,8 +299,14 @@ export class StructuredPromptEngine {
     pageNumber: number,
     totalPages: number
   ): string {
-    const emotionalContext = this.analyzeEmotionalContent(storyText);
-    const difficulty = userInfo.readingLevel as DifficultyLevel;
+    // Resolve placeholders in story text
+    const resolvedStoryText = resolveAllPlaceholders(storyText, { userInfo });
+    const emotionalContext = this.analyzeEmotionalContent(resolvedStoryText);
+    
+    // Use proper difficulty level mapping
+    const difficulty = DifficultyLevelMapper.normalizeLevel(
+      userInfo.readingLevel || userInfo.difficultyLevel || 'easy'
+    );
     
     // Adjust complexity based on story progression
     const progressionFactor = pageNumber / totalPages;
