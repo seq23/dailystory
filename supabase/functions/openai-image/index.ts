@@ -2,6 +2,71 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
+// Avatar skin tone and cultural context integration
+interface UserInfo {
+  name: string;
+  nativeLanguage: string;
+  avatar: {
+    type: 'boy' | 'girl';
+    skinTone: 'pale' | 'light' | 'medium' | 'olive' | 'dark';
+  };
+}
+
+// Enhanced cultural character description generator
+class MulticulturalVisualService {
+  private static getCulturallyAppropriateDescription(userInfo: UserInfo): string {
+    const { avatar, nativeLanguage } = userInfo;
+    
+    // Map avatar skin tone to culturally appropriate descriptions
+    const skinToneDescriptions = {
+      'pale': 'pale skin with rosy cheeks',
+      'light': 'light skin with warm undertones', 
+      'medium': 'medium skin with golden undertones',
+      'olive': 'olive skin with warm bronze undertones',
+      'dark': this.getDarkSkinCulturalDescription(nativeLanguage)
+    };
+
+    // Get culturally appropriate hair styles
+    const hairStyle = this.getCulturallyAppropriateHairStyle(avatar.skinTone, nativeLanguage);
+    
+    const genderTerm = avatar.type === 'boy' ? 'boy' : 'girl';
+    const skinDescription = skinToneDescriptions[avatar.skinTone];
+    
+    return `${genderTerm} with ${skinDescription}, ${hairStyle}`;
+  }
+
+  private static getDarkSkinCulturalDescription(nativeLanguage: string): string {
+    const culturalDescriptions = {
+      'es': 'rich Afro-Latina brown skin',
+      'ar': 'rich Middle Eastern brown skin', 
+      'hi': 'rich South Asian brown skin',
+      'zh': 'warm East Asian skin',
+      'pt': 'rich Afro-Brazilian brown skin',
+      'fr': 'rich Afro-French brown skin',
+      'en': 'rich African American brown skin'
+    };
+    
+    return culturalDescriptions[nativeLanguage] || 'rich brown skin';
+  }
+
+  private static getCulturallyAppropriateHairStyle(skinTone: string, nativeLanguage: string): string {
+    const hairMappings = {
+      'pale': ['flowing red hair', 'straight blonde hair', 'wavy auburn hair'],
+      'light': ['straight blonde hair', 'wavy light brown hair', 'flowing golden hair'],
+      'medium': ['wavy brown hair', 'straight dark brown hair', 'curly chestnut hair'],
+      'olive': ['wavy dark hair', 'straight dark brown hair', 'curly dark hair'],
+      'dark': ['natural curly hair', 'beautiful braided hair', 'short coily hair', 'afro textured hair']
+    };
+
+    const styles = hairMappings[skinTone] || hairMappings['medium'];
+    return styles[Math.floor(Math.random() * styles.length)];
+  }
+
+  static generateCharacterDescription(userInfo: UserInfo): string {
+    return this.getCulturallyAppropriateDescription(userInfo);
+  }
+}
+
 interface OpenAIImageRequest {
   positivePrompt: string;
   negativePrompt?: string;
@@ -45,16 +110,30 @@ serve(async (req) => {
     console.log(`🖼️ OpenAI Image Generation - Page ${pageNumber || 'unknown'}`);
     console.log(`📝 Prompt: ${positivePrompt.substring(0, 100)}...`);
 
-    // Construct enhanced prompt for children's book illustration
+    // Enhanced prompt with avatar support and cultural context
     let enhancedPrompt = positivePrompt;
+    
+    // Add culturally appropriate character description if userInfo provided
+    if (userInfo && userInfo.avatar) {
+      const characterDesc = MulticulturalVisualService.generateCharacterDescription(userInfo);
+      enhancedPrompt = enhancedPrompt.replace(
+        new RegExp(`\\b${userInfo.name}\\b`, 'gi'), 
+        `${userInfo.name} (${characterDesc})`
+      );
+      
+      // If no character name replacement occurred, add character description
+      if (!enhancedPrompt.includes(characterDesc)) {
+        enhancedPrompt += ` featuring ${characterDesc}`;
+      }
+    }
     
     // Add negative prompt context if provided
     if (negativePrompt) {
       enhancedPrompt += `. Avoid: ${negativePrompt}`;
     }
 
-    // Add children's book style guidance
-    enhancedPrompt += ". Style: Children's book illustration, colorful, engaging, safe for kids, warm lighting, detailed but not overwhelming";
+    // Enhanced children's book style with cultural sensitivity
+    enhancedPrompt += ". Style: Children's book illustration, colorful, engaging, safe for kids, warm lighting, detailed but not overwhelming, culturally authentic, diverse representation";
 
     // Determine size based on width/height
     let size = '1024x1024';

@@ -246,21 +246,15 @@ export class SimpleImageService {
       // TIER 1: Enhanced Runware with full AI enhancement (server-side)
       let result = await this.generateWithRunware(cleanScene, finalConfig, undefined, userInfo, pageNumber, sessionId, difficultyLevel);
 
-      // TIER 2: Simple Runware with AI enhancement (server-side)  
+      // TIER 2: Simple Runware (minimal AI processing)  
       if (!result.success) {
-        console.log('⚠️ Enhanced Runware failed, trying simple Runware with AI...');
+        console.log('⚠️ Enhanced Runware failed, trying simple Runware...');
         result = await this.generateWithRunwareSimple(cleanScene, finalConfig, userInfo, pageNumber);
       }
 
-      // TIER 3: Enhanced Runware without AI (server-side style only)
+      // TIER 3: Enhanced OpenAI DALL-E (external provider with avatar support)
       if (!result.success) {
-        console.log('⚠️ Runware with AI failed, trying enhanced Runware without AI...');
-        result = await this.generateWithRunware(cleanScene, finalConfig, undefined, userInfo, pageNumber, sessionId, difficultyLevel);
-      }
-
-      // TIER 4: OpenAI with basic enhancement
-      if (!result.success) {
-        console.log('⚠️ Enhanced Runware failed, falling back to OpenAI...');
+        console.log('⚠️ Runware failed, falling back to Enhanced OpenAI...');
         
         // Try to preserve character seed for OpenAI fallback
         const existingSeed = this.getCharacterSeedFromCache(userInfo.name, sessionId);
@@ -281,24 +275,24 @@ export class SimpleImageService {
         }
       }
 
-      if (result.success) {
-        this.recordUsage(userKey, result.cost);
-        console.log(`✅ Generation successful with ${result.provider} (${userInfo.name}) - Tier ${this.getTierUsed(result.provider)}`);
-      } else {
-        console.error('❌ EMERGENCY FIX: All image providers failed after 3 tiers, providing fallback:', result.error);
-        
-        // ALWAYS generate fallback placeholder image - never return failure
-        console.log('🎨 EMERGENCY FIX: Generating guaranteed fallback placeholder image...');
+      // TIER 4: SVG Placeholder (guaranteed success)
+      if (!result.success) {
+        console.log('⚠️ All providers failed, generating SVG placeholder...');
         const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
         
         result = {
           url: fallbackUrl,
           success: true,
-          provider: 'fallback-guaranteed',
+          provider: 'svg-placeholder',
           error: undefined
         };
         
-        console.log('✅ EMERGENCY FIX: Guaranteed fallback placeholder generated successfully');
+        console.log('✅ SVG placeholder generated successfully');
+      }
+
+      if (result.success) {
+        this.recordUsage(userKey, result.cost);
+        console.log(`✅ Generation successful with ${result.provider} (${userInfo.name}) - Tier ${this.getTierUsed(result.provider)}`);
       }
       
       return result;
@@ -321,11 +315,10 @@ export class SimpleImageService {
   }
 
   private static getTierUsed(provider?: string): string {
-    if (provider === 'runware-enhanced') return '1 (Enhanced)';
-    if (provider === 'runware') return '2 (Simple)';
-    if (provider === 'openai') return '3 (OpenAI)';
-    if (provider === 'fallback') return '4 (Fallback)';
-    if (provider === 'emergency-fallback') return '5 (Emergency)';
+    if (provider === 'runware-enhanced') return '1 (Enhanced Runware)';
+    if (provider === 'runware') return '2 (Simple Runware)';
+    if (provider === 'openai') return '3 (Enhanced OpenAI)';
+    if (provider === 'svg-placeholder') return '4 (SVG Placeholder)';
     return 'Unknown';
   }
 
