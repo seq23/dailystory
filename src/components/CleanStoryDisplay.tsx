@@ -4,7 +4,7 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles, GraduationCap, Save } from "lucide-react";
+import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles, GraduationCap, Save, Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
@@ -37,7 +37,7 @@ import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
-import { SimpleVoiceCommands } from '@/components/SimpleVoiceCommands';
+import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
@@ -278,6 +278,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
+
+// Voice integration for desktop
+const { status: voiceStatus, isSpeaking, handleVoiceToggle, isConnected, isConnecting } = useVoiceIntegration();
+
 // Audio engine instance for direct control
 const audioEngineRef = useRef(SimplifiedAudioEngine.getInstance());
 
@@ -1516,8 +1520,7 @@ useEffect(() => {
   };
 
 const handleDockVoiceCommand = () => {
-  // Voice commands are handled separately, no longer part of audio component
-  console.log('Voice commands not implemented in SimplifiedAudioEngine');
+  window.dispatchEvent(new CustomEvent('voice:toggle'));
 };
 
 // Voice command handler for headless controller
@@ -2141,6 +2144,23 @@ const handleRestartTimer = () => {
                     onWordHighlight={onWordHighlight}
                     onPlayingChange={handleAudioStateChange}
                   />
+                  {isPremium && (
+                    <Button 
+                      variant={isConnected ? "default" : "outline"} 
+                      size="lg" 
+                      onClick={handleVoiceToggle}
+                      disabled={isConnecting}
+                      className={cn(
+                        "transition-all",
+                        isConnected && "ring-2 ring-primary/40",
+                        isSpeaking && "bg-warning text-warning-foreground"
+                      )}
+                      aria-label={isConnected ? "Stop talking to Buddy" : "Talk to Buddy"}
+                    >
+                      <Mic className={cn("w-4 h-4 mr-2", isSpeaking && "animate-pulse")} />
+                      {isConnecting ? "Connecting..." : isConnected ? "Buddy Listening" : "Talk to Buddy"}
+                    </Button>
+                  )}
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
@@ -2809,7 +2829,6 @@ const handleRestartTimer = () => {
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
-      <SimpleVoiceCommands />
       
       {/* Development Debug Panels */}
       {isDevelopment && (
