@@ -149,6 +149,12 @@ function generatePLSLexicon(vocabulary: string[], contextType: 'learning' | 'con
 // Get or create comprehensive dictionary for context
 async function getComprehensiveDictionary(context: 'learning' | 'conversation'): Promise<string | null> {
   try {
+    // SKIP DICTIONARY FOR CONVERSATION CONTEXT - let Charlotte speak naturally
+    if (context === 'conversation') {
+      console.log('🗣️ Conversation context - skipping dictionary for natural speech');
+      return null;
+    }
+    
     const now = Date.now();
     
     // Check cache first

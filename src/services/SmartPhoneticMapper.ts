@@ -18,8 +18,10 @@ export class SmartPhoneticMapper {
 
   /**
    * Gets the best available phonetic mapping for a word
+   * @param word - The word to get phonetic mapping for
+   * @param context - 'learning' for syllable emphasis or 'conversation' for natural speech
    */
-  static async getPhoneticMapping(word: string): Promise<PhoneticMapping> {
+  static async getPhoneticMapping(word: string, context: 'learning' | 'conversation' = 'learning'): Promise<PhoneticMapping> {
     const normalized = word.toLowerCase().replace(/[^a-z]/g, '');
     
     // Check cache first
@@ -29,8 +31,8 @@ export class SmartPhoneticMapper {
 
     let mapping: PhoneticMapping;
 
-    // Priority 1: Curated overrides (highest confidence)
-    if (normalized in phonicsMiniDict) {
+    // Priority 1: Curated overrides (highest confidence) - SKIP for conversation context
+    if (context === 'learning' && normalized in phonicsMiniDict) {
       const syllables = phonicsMiniDict[normalized];
       mapping = {
         word: normalized,
@@ -48,8 +50,8 @@ export class SmartPhoneticMapper {
         confidence: 'high'
       };
     }
-    // Priority 3: Auto-generated syllable breakdowns
-    else if (normalized in autoPhonicsFromVocab) {
+    // Priority 3: Auto-generated syllable breakdowns - SKIP for conversation context
+    else if (context === 'learning' && normalized in autoPhonicsFromVocab) {
       const syllables = autoPhonicsFromVocab[normalized];
       mapping = {
         word: normalized,
