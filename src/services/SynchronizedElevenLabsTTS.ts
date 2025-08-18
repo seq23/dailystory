@@ -137,16 +137,17 @@ export class SynchronizedElevenLabsTTS {
         }
       }
       
-      // If we didn't find valid timing data, use optimized fallback
+      // If we didn't find valid timing data, use natural fallback timing
       if (!foundValidTiming || wordStartTime === undefined || wordEndTime === undefined) {
-        // Optimized timing calculations for more natural highlighting
+        // Natural timing calculations for better speech synchronization
         const shortWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'and', 'or', 'but', 'in', 'on', 'at', 'by', 'for', 'with', 'from'];
         const isShortWord = shortWords.includes(word.toLowerCase().trim());
         
-        const baseDuration = isShortWord ? 80 : Math.max(100, word.length * 80); // Faster 80ms per character, min 100ms
+        // Restored natural timing: 120ms per character, min 150ms for short words, 200ms for regular
+        const baseDuration = isShortWord ? 150 : Math.max(200, word.length * 120);
         const estimatedDuration = baseDuration;
         
-        wordStartTime = wordTimings.length > 0 ? wordTimings[wordTimings.length - 1].endTime + 25 : 0; // Reduced gap to 25ms
+        wordStartTime = wordTimings.length > 0 ? wordTimings[wordTimings.length - 1].endTime + 75 : 0; // Natural 75ms gap
         wordEndTime = wordStartTime + estimatedDuration;
         
         console.log(`⚠️ Using fallback timing for "${word}":`, {
@@ -156,16 +157,16 @@ export class SynchronizedElevenLabsTTS {
         });
       }
       
-      // Ensure no overlapping times and add optimized gap between words
+      // Ensure no overlapping times and add natural gap between words
       if (wordTimings.length > 0) {
         const lastWordEnd = wordTimings[wordTimings.length - 1].endTime;
         if (wordStartTime < lastWordEnd) {
-          wordStartTime = lastWordEnd + 15; // Slightly larger 15ms gap for clarity
+          wordStartTime = lastWordEnd + 50; // Natural 50ms gap for clarity
           if (wordEndTime <= wordStartTime) {
             const shortWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'and', 'or', 'but', 'in', 'on', 'at', 'by', 'for', 'with', 'from'];
             const isShortWord = shortWords.includes(word.toLowerCase().trim());
-            const optimizedDuration = isShortWord ? 80 : Math.max(100, word.length * 80);
-            wordEndTime = wordStartTime + optimizedDuration;
+            const naturalDuration = isShortWord ? 150 : Math.max(200, word.length * 120);
+            wordEndTime = wordStartTime + naturalDuration;
           }
         }
       }
@@ -196,20 +197,20 @@ export class SynchronizedElevenLabsTTS {
    * Generate fallback word timings when ElevenLabs timing data is unavailable
    */
   private static generateFallbackWordTimings(words: string[]): Array<{ word: string; startTime: number; endTime: number }> {
-    console.log('🔄 Generating optimized fallback word timings for', words.length, 'words');
+    console.log('🔄 Generating natural fallback word timings for', words.length, 'words');
     
     const wordTimings: Array<{ word: string; startTime: number; endTime: number }> = [];
     let currentTime = 0;
     
-    // Common short words that should be spoken faster
+    // Common short words with natural timing
     const shortWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'and', 'or', 'but', 'in', 'on', 'at', 'by', 'for', 'with', 'from'];
     
     for (let i = 0; i < words.length; i++) {
       const word = words[i];
       const isShortWord = shortWords.includes(word.toLowerCase().trim());
       
-      // Optimized duration calculation: faster speech, shorter pauses
-      const baseDuration = isShortWord ? 80 : Math.max(100, word.length * 80); // 80ms per character, min 100ms
+      // Natural duration calculation: 120ms per character, realistic minimums
+      const baseDuration = isShortWord ? 150 : Math.max(200, word.length * 120); // Natural 120ms per character
       const estimatedDuration = baseDuration;
       
       wordTimings.push({
@@ -218,10 +219,10 @@ export class SynchronizedElevenLabsTTS {
         endTime: currentTime + estimatedDuration
       });
       
-      currentTime += estimatedDuration + 25; // Reduced gap to 25ms between words
+      currentTime += estimatedDuration + 75; // Natural 75ms gap between words
     }
     
-    console.log('✅ Fallback timing generated for', wordTimings.length, 'words');
+    console.log('✅ Natural fallback timing generated for', wordTimings.length, 'words');
     return wordTimings;
   }
 
