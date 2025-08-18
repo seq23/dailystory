@@ -8,6 +8,7 @@ import { DifficultyLevelMapper } from "./DifficultyLevelMapper";
 import { AdvancedCharacterEngine, CharacterDescriptor } from "./AdvancedCharacterEngine";
 import { StructuredPromptEngine, PromptTemplate } from "./StructuredPromptEngine";
 import { MulticulturalVisualService } from "./MulticulturalVisualService";
+import { StoryVisualStateManager } from "./storyVisualState";
 
 export interface EnhancementStage {
   name: string;
@@ -146,6 +147,9 @@ export class EnhancedMultiStageEnhancementPipeline {
             case "Character Detection & Consistency":
               characters = stageResult.data.characters;
               context.characters = characters;
+              // Track visual details for consistency
+              StoryVisualStateManager.analyzeAndTrackVisualDetails(context.sessionId, input, context.pageNumber);
+              input = StoryVisualStateManager.enhanceTextWithConsistentDetails(context.sessionId, input, context.pageNumber);
               break;
             case "Structured Prompt Composition":
               template = stageResult.data.template;

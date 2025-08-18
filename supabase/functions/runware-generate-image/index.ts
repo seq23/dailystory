@@ -11,6 +11,27 @@ interface CharacterState {
   successfulPrompts: string[];
 }
 
+interface VisualDetail {
+  id: string;
+  type: 'color' | 'clothing' | 'object' | 'animal' | 'vehicle' | 'accessory';
+  name: string;
+  description: string;
+  firstMentionedPage: number;
+  lastMentionedPage: number;
+  context: string;
+  attributes: Map<string, string>;
+}
+
+interface ObjectState {
+  name: string;
+  type: 'animal' | 'object' | 'vehicle' | 'clothing' | 'accessory';
+  description: string;
+  attributes: Map<string, string>;
+  firstSeenPage: number;
+  lastSeenPage: number;
+  consistencyPrompts: string[];
+}
+
 interface RunwareContext {
   seed?: number;
   cfgScale: number;
@@ -22,6 +43,8 @@ interface RunwareContext {
 interface StoryVisualState {
   sessionId: string;
   characters: Map<string, CharacterState>;
+  objects: Map<string, ObjectState>;
+  visualDetails: VisualDetail[];
   runwareContext: RunwareContext;
   setting: {
     primaryLocation: string;
@@ -66,6 +89,8 @@ class StoryVisualStateManager {
       const newState: StoryVisualState = {
         sessionId,
         characters: new Map(),
+        objects: new Map(),
+        visualDetails: [],
         runwareContext: { ...this.DEFAULT_RUNWARE_CONTEXT },
         setting: {
           primaryLocation: '',
@@ -259,6 +284,132 @@ class StoryVisualStateManager {
     if (/\b(rain|rainy|storm|cloudy)\b/i.test(text)) return 'rainy';
     if (/\b(snow|snowy|winter)\b/i.test(text)) return 'snowy';
     return '';
+  }
+
+  // Enhanced Object & Detail Memory System - Mirror from TypeScript service
+  static enhanceTextWithConsistentDetails(sessionId: string, text: string, pageNumber: number): string {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    // Simplified pattern detection for edge function
+    const detectionPatterns = [
+      { pattern: /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(bird|cat|dog|horse|rabbit|mouse|bear|elephant|lion|tiger|fox|owl|eagle|duck|frog|fish)\b/gi, type: 'animal' },
+      { pattern: /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(car|truck|bike|bicycle|boat|plane|train|bus)\b/gi, type: 'vehicle' },
+      { pattern: /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(shirt|dress|hat|shoes|coat|jacket|pants|skirt|sweater|backpack|bag)\b/gi, type: 'clothing' },
+      { pattern: /\b(big|small|tiny|huge|large|little)\s+(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(ball|balloon|flower|tree|house|castle|tower|book|toy)\b/gi, type: 'object' }
+    ];
+
+    // Track new visual details
+    for (const rule of detectionPatterns) {
+      const matches = [...text.matchAll(rule.pattern)];
+      for (const match of matches) {
+        const fullMatch = match[0];
+        const words = fullMatch.trim().split(/\s+/);
+        const detailName = words[words.length - 1].toLowerCase(); // last word is typically the noun
+        
+        const detailId = `${rule.type}_${detailName}`;
+        
+        // Store in objects registry if not exists
+        if (!state.objects.has(detailId)) {
+          const newObject: ObjectState = {
+            name: detailName,
+            type: rule.type as ObjectState['type'],
+            description: fullMatch,
+            attributes: new Map(),
+            firstSeenPage: pageNumber,
+            lastSeenPage: pageNumber,
+            consistencyPrompts: []
+          };
+          
+          // Extract color attribute
+          const colorMatch = fullMatch.match(/\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\b/i);
+          if (colorMatch) {
+            newObject.attributes.set('color', colorMatch[1]);
+          }
+          
+          // Extract size attribute
+          const sizeMatch = fullMatch.match(/\b(big|small|tiny|huge|large|little)\b/i);
+          if (sizeMatch) {
+            newObject.attributes.set('size', sizeMatch[1]);
+          }
+          
+          state.objects.set(detailId, newObject);
+          console.log(`🎨 Tracked new visual detail: ${fullMatch} (${rule.type}) on page ${pageNumber}`);
+        } else {
+          // Update last seen page
+          const existing = state.objects.get(detailId);
+          if (existing) {
+            existing.lastSeenPage = pageNumber;
+          }
+        }
+      }
+    }
+
+    // Enhance text with consistent descriptions
+    let enhancedText = text;
+    
+    for (const [detailId, obj] of state.objects) {
+      if (obj.lastSeenPage < pageNumber) {
+        // Look for vague references and replace with consistent descriptions
+        const vaguePatterns = [
+          new RegExp(`\\bthe\\s+${obj.name}\\b`, 'gi'),
+          new RegExp(`\\ba\\s+${obj.name}\\b`, 'gi')
+        ];
+
+        for (const pattern of vaguePatterns) {
+          const matches = [...enhancedText.matchAll(pattern)];
+          for (const match of matches) {
+            // Build consistent replacement
+            let replacement = obj.name;
+            
+            if (obj.attributes.has('color')) {
+              replacement = `${obj.attributes.get('color')} ${replacement}`;
+            }
+            
+            if (obj.attributes.has('size')) {
+              replacement = `${obj.attributes.get('size')} ${replacement}`;
+            }
+            
+            // Preserve article structure
+            if (match[0].toLowerCase().startsWith('the ')) {
+              replacement = `the ${replacement}`;
+            } else if (match[0].toLowerCase().startsWith('a ')) {
+              replacement = `a ${replacement}`;
+            }
+
+            enhancedText = enhancedText.replace(match[0], replacement);
+            console.log(`🔄 Enhanced "${match[0]}" → "${replacement}" for consistency`);
+          }
+        }
+      }
+    }
+
+    return enhancedText;
+  }
+
+  // Get visual details for prompt enhancement
+  static getVisualDetailsForPrompt(sessionId: string, pageNumber: number): string {
+    const state = this.storyStates.get(sessionId);
+    if (!state) return '';
+
+    const relevantDetails: string[] = [];
+    
+    for (const [_, obj] of state.objects) {
+      if (obj.lastSeenPage < pageNumber && obj.lastSeenPage > 0) {
+        let description = obj.name;
+        
+        if (obj.attributes.has('color')) {
+          description = `${obj.attributes.get('color')} ${description}`;
+        }
+        
+        if (obj.attributes.has('size')) {
+          description = `${obj.attributes.get('size')} ${description}`;
+        }
+        
+        relevantDetails.push(description);
+      }
+    }
+    
+    return relevantDetails.length > 0 ? `, maintain consistency with: ${relevantDetails.join(', ')}` : '';
   }
 }
 
@@ -518,9 +669,13 @@ serve(async (req) => {
       
       StoryVisualStateManager.trackCharacterMention(sessionId, userInfo.name);
       
-      const processedText = extractPrimaryScene(
-        StoryVisualStateManager.resolvePronouns(sessionId, pageText)
-      );
+      // Enhanced text processing with visual detail tracking
+      let pronoun_resolved_text = StoryVisualStateManager.resolvePronouns(sessionId, pageText);
+      
+      // Track and enhance visual details for consistency
+      const enhancedText = StoryVisualStateManager.enhanceTextWithConsistentDetails(sessionId, pronoun_resolved_text, pageNumber);
+      
+      const processedText = extractPrimaryScene(enhancedText);
       
       let characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
       
@@ -569,6 +724,7 @@ serve(async (req) => {
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
       
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
+      const visualDetailsContext = StoryVisualStateManager.getVisualDetailsForPrompt(sessionId, pageNumber);
       
       // Enhanced negative prompt system for high-quality, accurate images
       const comprehensiveNegativePrompt = generateComprehensiveNegativePrompt(processedText, secondaryCharacters, userInfo);
@@ -598,7 +754,7 @@ serve(async (req) => {
       const culturalNegativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
       const qualityEnhancement = MulticulturalVisualService.getQualityEnhancementTerms(userInfo);
       
-      enhancedPrompt = `Visual appearance: ${culturalCharacterDesc}${secondaryChars}. Scene: ${processedText} in ${culturalSetting}${environmentalContext}. Style: consistent-face ${artStyle}, ${qualityEnhancement}`;
+      enhancedPrompt = `Visual appearance: ${culturalCharacterDesc}${secondaryChars}. Scene: ${processedText} in ${culturalSetting}${environmentalContext}${visualDetailsContext}. Style: consistent-face ${artStyle}, ${qualityEnhancement}`;
       
       // Update negative prompt with cultural sensitivity
       finalNegativePrompt = culturalNegativePrompt;

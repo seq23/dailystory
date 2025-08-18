@@ -2,6 +2,7 @@
 // Maintains visual consistency, character seeds, and setting continuity
 
 import type { UserInfo } from '@/types';
+import { VisualDetailTracker, type VisualDetail } from './VisualDetailTracker';
 
 export interface CharacterState {
   name: string;
@@ -9,6 +10,16 @@ export interface CharacterState {
   seed?: number;
   lastUsedPage: number;
   successfulPrompts: string[];
+}
+
+export interface ObjectState {
+  name: string;
+  type: 'animal' | 'object' | 'vehicle' | 'clothing' | 'accessory';
+  description: string;
+  attributes: Map<string, string>;
+  firstSeenPage: number;
+  lastSeenPage: number;
+  consistencyPrompts: string[];
 }
 
 export interface RunwareContext {
@@ -24,6 +35,10 @@ export interface StoryVisualState {
   
   // Character consistency with seeds
   characters: Map<string, CharacterState>;
+  
+  // Object and detail consistency
+  objects: Map<string, ObjectState>;
+  visualDetails: VisualDetail[];
   
   // Runware parameter locking
   runwareContext: RunwareContext;
@@ -77,6 +92,8 @@ export class StoryVisualStateManager {
       const newState: StoryVisualState = {
         sessionId,
         characters: new Map(),
+        objects: new Map(),
+        visualDetails: [],
         runwareContext: { ...this.DEFAULT_RUNWARE_CONTEXT },
         setting: {
           primaryLocation: '',
@@ -267,7 +284,100 @@ export class StoryVisualStateManager {
 
   static clearStoryState(sessionId: string): void {
     this.storyStates.delete(sessionId);
+    VisualDetailTracker.clearSessionDetails(sessionId);
     console.log(`🗑️ Cleared story state for session: ${sessionId}`);
+  }
+
+  // Enhanced Object & Detail Memory System Methods
+  static analyzeAndTrackVisualDetails(sessionId: string, text: string, pageNumber: number): VisualDetail[] {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    // Use VisualDetailTracker to detect and track details
+    const newDetails = VisualDetailTracker.analyzeTextForDetails(sessionId, text, pageNumber);
+    
+    // Add new details to state
+    state.visualDetails.push(...newDetails);
+    
+    // Also detect complex objects and add them to objects registry
+    const complexObjects = VisualDetailTracker.detectComplexObjects(text);
+    for (const obj of complexObjects) {
+      const objectId = `${obj.type}_${obj.description.toLowerCase().replace(/\s+/g, '_')}`;
+      const objectState: ObjectState = {
+        name: obj.description,
+        type: obj.type as ObjectState['type'],
+        description: obj.description,
+        attributes: obj.attributes,
+        firstSeenPage: pageNumber,
+        lastSeenPage: pageNumber,
+        consistencyPrompts: []
+      };
+      
+      state.objects.set(objectId, objectState);
+      console.log(`🎯 Tracked complex object: ${obj.description}`);
+    }
+    
+    return newDetails;
+  }
+
+  static enhanceTextWithConsistentDetails(sessionId: string, text: string, pageNumber: number): string {
+    // First analyze current text for new details
+    this.analyzeAndTrackVisualDetails(sessionId, text, pageNumber);
+    
+    // Then inject consistent descriptions for previously seen details
+    return VisualDetailTracker.injectConsistentDetails(sessionId, text, pageNumber);
+  }
+
+  static getVisualDetailsForPrompt(sessionId: string, pageNumber: number): string {
+    const state = this.storyStates.get(sessionId);
+    if (!state) return '';
+
+    const relevantDetails: string[] = [];
+    
+    // Get details from VisualDetailTracker
+    const sessionDetails = VisualDetailTracker.getSessionDetails(sessionId);
+    
+    for (const detail of sessionDetails) {
+      if (detail.lastMentionedPage < pageNumber) {
+        // Build consistent description
+        let description = detail.name;
+        
+        if (detail.attributes.has('color')) {
+          description = `${detail.attributes.get('color')} ${description}`;
+        }
+        
+        if (detail.attributes.has('size')) {
+          description = `${detail.attributes.get('size')} ${description}`;
+        }
+        
+        relevantDetails.push(description);
+      }
+    }
+    
+    // Get objects from state
+    for (const [_, obj] of state.objects) {
+      if (obj.lastSeenPage < pageNumber) {
+        relevantDetails.push(obj.description);
+      }
+    }
+    
+    return relevantDetails.length > 0 ? `, maintain consistency with: ${relevantDetails.join(', ')}` : '';
+  }
+
+  static updateObjectConsistency(sessionId: string, objectName: string, successfulPrompt: string): void {
+    const state = this.storyStates.get(sessionId);
+    if (!state) return;
+
+    for (const [_, obj] of state.objects) {
+      if (obj.name.includes(objectName) || objectName.includes(obj.name)) {
+        obj.consistencyPrompts.push(successfulPrompt);
+        // Keep only last 2 successful prompts
+        if (obj.consistencyPrompts.length > 2) {
+          obj.consistencyPrompts.shift();
+        }
+        console.log(`✅ Added consistency prompt for object: ${obj.name}`);
+        break;
+      }
+    }
   }
 
   // Helper method to get setting for prompt generation
