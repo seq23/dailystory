@@ -107,6 +107,12 @@ serve(async (req) => {
       sessionId
     } = requestData;
 
+    // Validate required parameters first
+    if (!positivePrompt || typeof positivePrompt !== 'string') {
+      console.error('Invalid positivePrompt parameter:', positivePrompt);
+      return createCorsErrorResponse('Invalid prompt parameter: positivePrompt is required and must be a string', 400);
+    }
+
     console.log(`🖼️ OpenAI Image Generation - Page ${pageNumber || 'unknown'}`);
     console.log(`📝 Prompt: ${positivePrompt.substring(0, 100)}...`);
 

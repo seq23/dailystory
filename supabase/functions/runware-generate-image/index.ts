@@ -735,11 +735,23 @@ serve(async (req) => {
         ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
         : comprehensiveNegativePrompt;
       
-      // Import and use centralized style framework
-      const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-      
-      const framework = getStyleFramework(difficultyLevel);
-      const artStyle = framework.prompt;
+      // Import and use centralized style framework early to avoid scope issues
+      let framework, artStyle;
+      try {
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
+        framework = getStyleFramework(difficultyLevel);
+        artStyle = framework.prompt;
+        console.log(`🎨 Retrieved ${framework.name} style framework for difficulty: ${difficultyLevel}`);
+      } catch (error) {
+        console.error('Failed to load style framework, using defaults:', error);
+        framework = {
+          name: 'Digital Painterly Illustration',
+          prompt: 'digital painterly illustration style',
+          quality: 'ultra high resolution detailed digital art',
+          parameters: { steps: 3, cfgScale: 7, scheduler: 'FlowMatchEulerDiscreteScheduler', strength: 0.8 }
+        };
+        artStyle = framework.prompt;
+      }
       
       console.log(`🎨 Using ${framework.name} style for difficulty: ${difficultyLevel}`);
       // Restructure prompt to prevent character name text overlays
@@ -852,7 +864,7 @@ serve(async (req) => {
       const maxRetries = 3;
       let connectionState = 'disconnected'; // disconnected → connecting → connected → authenticating → ready
       
-      // Pre-validate framework to avoid scope errors
+      // Framework params should be available from the scope above
       const frameworkParams = {
         steps: framework?.parameters?.steps || 3,
         cfgScale: framework?.parameters?.cfgScale || Math.max(1.5, CFGScale || 7),
@@ -980,7 +992,7 @@ serve(async (req) => {
                   }
                   
                 } else if (item.taskType === "imageInference") {
-                  clearTimeout(timeout);
+                  clearTimeout(connectionTimeout);
                   ws.close();
                   
                   if (sessionId && userInfo && item.seed) {
@@ -1019,7 +1031,7 @@ serve(async (req) => {
             }
           } catch (parseError) {
             console.error("❌ Failed to parse WebSocket response:", parseError);
-            clearTimeout(timeout);
+            clearTimeout(connectionTimeout);
             ws.close();
             
             if (!resolved) {
@@ -1030,7 +1042,7 @@ serve(async (req) => {
         };
 
         ws.onerror = (error) => {
-          clearTimeout(timeout);
+          clearTimeout(connectionTimeout);
           console.error("❌ WebSocket error details:", {
             type: error.type || 'unknown',
             message: error.message || 'unknown error'
@@ -1047,7 +1059,7 @@ serve(async (req) => {
         };
 
         ws.onclose = (event) => {
-          clearTimeout(timeout);
+          clearTimeout(connectionTimeout);
           if (event.code !== 1000 && !resolved) {
             console.log("🔌 WebSocket closed unexpectedly:", {
               code: event.code,
