@@ -244,7 +244,7 @@ export class DirectContentExtractor {
       
       // Enhanced hair descriptions for texture representation
       const hairTextureMap: Record<string, string> = {
-        'dark': ', natural curly hair, afro-textured hair',
+        'dark': ', natural African American hair textures like afros curls braids and locs',
         'light': ', straight hair',
         'medium': ', wavy hair',
         'olive': ', dark wavy hair',
