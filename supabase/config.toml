@@ -48,3 +48,6 @@ verify_jwt = false
 
 [functions.runware-test-simple]
 verify_jwt = false
+
+[functions.runware-realtime-generation]
+verify_jwt = false
