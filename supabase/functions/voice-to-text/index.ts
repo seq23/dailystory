@@ -69,7 +69,7 @@ serve(async (req) => {
     formData.append("file", blob, `audio.${ext}`);
     formData.append("model", "whisper-1");
 
-    // Send to OpenAI
+    // Send to OpenAI with detailed response format
     const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: {
@@ -84,7 +84,43 @@ serve(async (req) => {
 
     const result = await response.json();
 
-    return new Response(JSON.stringify({ text: result.text }), {
+    // For pronunciation analysis, also make a verbose request if available
+    let detailedResult = null;
+    try {
+      const verboseFormData = new FormData();
+      verboseFormData.append("file", blob, `audio.${ext}`);
+      verboseFormData.append("model", "whisper-1");
+      verboseFormData.append("response_format", "verbose_json");
+      
+      const verboseResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+        },
+        body: verboseFormData,
+      });
+
+      if (verboseResponse.ok) {
+        detailedResult = await verboseResponse.json();
+      }
+    } catch (error) {
+      console.warn("Failed to get detailed transcription:", error);
+    }
+
+    const responseData: any = { 
+      text: result.text,
+      originalText: result.text // Basic fallback
+    };
+
+    // Include detailed data if available
+    if (detailedResult) {
+      responseData.segments = detailedResult.segments;
+      responseData.words = detailedResult.words;
+      responseData.confidence = detailedResult.segments?.[0]?.avg_logprob ? 
+        Math.exp(detailedResult.segments[0].avg_logprob) : 0.8;
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

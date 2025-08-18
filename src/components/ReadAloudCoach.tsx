@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { PronunciationAnalyzer } from "@/services/PronunciationAnalyzer";
 import type { UserInfo } from "@/types";
 import { useTranslation } from "react-i18next";
 
@@ -79,6 +80,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [passed, setPassed] = useState<boolean | null>(null);
   const [paceTip, setPaceTip] = useState<string>("");
   const [topWords, setTopWords] = useState<string[]>([]);
+  const [pronunciationFeedback, setPronunciationFeedback] = useState<string>("");
+  const [syllableFeedback, setSyllableFeedback] = useState<Array<{word: string; syllables: string[]; feedback: string}>>([]);
   const [attempts, setAttempts] = useState(0);
   const [dailyUsed, setDailyUsed] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
@@ -185,16 +188,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     } catch {}
   };
 
-  const analyzeResult = (reference: string, said: string, durationMs: number) => {
+  const analyzeResult = async (reference: string, said: string, durationMs: number, confidence: number = 0.8) => {
+    // Calculate reading pace
     const clean = (s: string) => s.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/).filter(Boolean);
-    const refWords = clean(reference);
     const saidWords = clean(said);
-
-    const refSet = new Set(refWords);
-    let hits = 0;
-    saidWords.forEach((w) => { if (refSet.has(w)) hits++; });
-    const acc = refWords.length ? Math.round((hits / refWords.length) * 100) : 0;
-
     const minutes = Math.max(0.001, durationMs / 60000);
     const wpm = Math.round(saidWords.length / minutes);
     let pace = "";
@@ -202,22 +199,24 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     else if (wpm > 120) pace = t('coach.paceSlower','Try a little slower');
     else pace = t('coach.paceNice','Nice pace');
 
-    // Top content words (up to 3) that were missed
-    // Exclude stopwords and simple proper names (capitalized in original text)
-    const originalWords = (reference.match(/[A-Za-z']+/g) || []).filter(Boolean);
-    const properNames = new Set(originalWords.filter(w => /[A-Z]/.test(w[0]) && w.length > 1).map(w => w.toLowerCase()));
+    // Use phonetic analysis for pronunciation accuracy
+    const pronunciationResult = await PronunciationAnalyzer.analyzePronunciation(
+      reference, 
+      said, 
+      confidence
+    );
 
-    const saidSet = new Set(saidWords);
-    const missing = refWords.filter(w => !saidSet.has(w));
-    const candidates = missing.filter(w => !STOPWORDS.has(w) && !properNames.has(w) && w.length >= 3);
-    // Prioritize by length (content words) and uniqueness
-    const unique: string[] = [];
-    for (const w of candidates.sort((a,b)=>b.length-a.length)) {
-      if (!unique.includes(w)) unique.push(w);
-      if (unique.length >= 3) break;
-    }
-
-    return { acc, pace, top: unique };
+    // Extract top problematic words
+    const topWordsFromAnalysis = pronunciationResult.mispronounced.slice(0, 3);
+    
+    return { 
+      acc: pronunciationResult.accuracy, 
+      pace, 
+      top: topWordsFromAnalysis,
+      pronunciationFeedback: pronunciationResult.overallFeedback,
+      syllableFeedback: pronunciationResult.syllableFeedback,
+      phonemeErrors: pronunciationResult.phonemeErrors
+    };
   };
 
   const startRecording = useCallback(async () => {
@@ -257,11 +256,16 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           return;
         }
         const text: string = data?.text || "";
+        const confidence: number = data?.confidence || 0.8;
         setTranscript(text);
 
         const durationMs = Math.max(250, Date.now() - (startTsRef.current || Date.now()));
-        const { acc, pace, top } = analyzeResult(sentences[idx], text, durationMs);
+        const analysisResult = await analyzeResult(sentences[idx], text, durationMs, confidence);
+        const { acc, pace, top, pronunciationFeedback, syllableFeedback } = analysisResult;
+        
         setPaceTip(pace);
+        setPronunciationFeedback(pronunciationFeedback);
+        setSyllableFeedback(syllableFeedback);
         const didPass = acc >= PASS_THRESHOLD;
         setPassed(didPass);
         if (!didPass) setTopWords(top); else setTopWords([]);
@@ -350,6 +354,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     setPassed(null);
     setPaceTip("");
     setTopWords([]);
+    setPronunciationFeedback("");
+    setSyllableFeedback([]);
     setAttempts(0);
     setWordTries({});
     setIdx((i) => Math.min(sentences.length - 1, i + 1));
@@ -359,6 +365,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     setPassed(null);
     setPaceTip("");
     setTopWords([]);
+    setPronunciationFeedback("");
+    setSyllableFeedback([]);
     setAttempts(0);
     setWordTries({});
     setIdx((i) => Math.max(0, i - 1));
@@ -409,7 +417,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             size="sm"
             variant="secondary"
             className="gap-2"
-            onClick={() => { setTranscript(""); setPassed(null); setPaceTip(""); setTopWords([]); setWordTries({}); }}
+            onClick={() => { setTranscript(""); setPassed(null); setPaceTip(""); setTopWords([]); setPronunciationFeedback(""); setSyllableFeedback([]); setWordTries({}); }}
             disabled={isRecording || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
           >
             <RotateCcw className="w-4 h-4" /> {t('coach.tryAgain','Try again')}
@@ -430,16 +438,34 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               <p className="text-muted-foreground mt-1">{transcript}</p>
             </div>
             {passed !== null && (
-              <div className="text-sm">
+              <div className="text-sm space-y-2">
                 <div className="font-medium">{t('coach.feedback','Feedback:')}</div>
                 {passed ? (
                   <p className="text-green-600 dark:text-green-400">{t('coach.pass','Great job! You matched the sentence.')}</p>
                 ) : (
-                  <p className="text-amber-600 dark:text-amber-400">{t('coach.almost','Almost there—let\'s fix a few words.')}</p>
+                  <div className="space-y-1">
+                    <p className="text-amber-600 dark:text-amber-400">{t('coach.almost','Almost there—let\'s fix a few words.')}</p>
+                    {pronunciationFeedback && (
+                      <p className="text-blue-600 dark:text-blue-400 text-xs">{pronunciationFeedback}</p>
+                    )}
+                  </div>
                 )}
                 {paceTip && <p className="text-muted-foreground mt-1">{t('coach.paceTip','Pace tip:')} {paceTip}</p>}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Syllable-specific feedback */}
+        {passed === false && syllableFeedback.length > 0 && (
+          <div className="text-sm space-y-2">
+            <div className="font-medium">{t('coach.syllablePractice','Syllable practice:')}</div>
+            {syllableFeedback.slice(0, 2).map((feedback, idx) => (
+              <div key={idx} className="space-y-1">
+                <div className="font-medium text-blue-600 dark:text-blue-400">{feedback.word}</div>
+                <div className="text-xs text-muted-foreground">{feedback.feedback}</div>
+              </div>
+            ))}
           </div>
         )}
 
