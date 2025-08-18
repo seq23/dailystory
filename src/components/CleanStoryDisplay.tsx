@@ -1520,7 +1520,8 @@ useEffect(() => {
   };
 
 const handleDockVoiceCommand = () => {
-  window.dispatchEvent(new CustomEvent('voice:toggle'));
+  // Voice functionality is now handled directly in MobileActionDock
+  console.log('🎤 Voice command handled by MobileActionDock integration');
 };
 
 // Voice command handler for headless controller

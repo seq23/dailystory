@@ -34,17 +34,15 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   className,
 }) => {
   const { t } = useTranslation();
-  // Voice integration removed from here - handled in CleanStoryDisplay (Fix #4)
+  
+  // Direct voice integration for mobile dock
+  const { status: voiceStatus, isSpeaking, handleVoiceToggle, isConnected, isConnecting } = useVoiceIntegration();
 
-  const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [vcLevel, setVcLevel] = useState(0);
   useEffect(() => {
-    const onStatus = (e: any) => setVcStatus((e?.detail?.status || 'idle'));
     const onLevel = (e: any) => setVcLevel(Math.max(0, Math.min(1, Number(e?.detail?.level ?? 0))));
-    window.addEventListener('voice:status', onStatus as EventListener);
     window.addEventListener('voice:level', onLevel as EventListener);
     return () => {
-      window.removeEventListener('voice:status', onStatus as EventListener);
       window.removeEventListener('voice:level', onLevel as EventListener);
     };
   }, []);
@@ -105,14 +103,20 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                   <span className="inline-flex">
                     <Button
                       variant="outline"
-                      className={`h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl ${vcStatus === 'listening' ? 'bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90' : ''}`}
-                      style={vcStatus === 'listening' ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.95 } : undefined}
-                      onClick={onVoiceCommand}
-                      disabled={!isPremium}
-                      aria-label={t("audioReading.voiceCommands", "Buddy")}
+                      className={cn(
+                        "h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all",
+                        isConnected && "bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90",
+                        isSpeaking && "ring-2 ring-primary/40"
+                      )}
+                      style={isConnected ? { boxShadow: `0 0 ${4 + vcLevel * 10}px hsl(var(--primary))`, opacity: 0.95 } : undefined}
+                      onClick={handleVoiceToggle}
+                      disabled={!isPremium || isConnecting}
+                      aria-label={isConnected ? "Stop talking to Buddy" : "Talk to Buddy"}
                     >
-                      <Mic className="w-5 h-5 transition-transform" style={{ transform: vcStatus === 'listening' ? `scale(${1 + vcLevel * 0.05})` : undefined }} />
-                      <span className="text-[11px] leading-none">{t("audioReading.voice", "Buddy")}</span>
+                      <Mic className={cn("w-5 h-5 transition-transform", isSpeaking && "animate-pulse")} style={{ transform: isConnected ? `scale(${1 + vcLevel * 0.05})` : undefined }} />
+                      <span className="text-[11px] leading-none">
+                        {isConnecting ? "Connecting..." : isConnected ? "Buddy" : "Buddy"}
+                      </span>
                     </Button>
                   </span>
                 </TooltipTrigger>

@@ -93,9 +93,10 @@ export class SmartElevenLabsTTS {
   }
 
   /**
-   * Generate natural speech for Charlotte's conversation
+   * Generate natural speech for Charlotte's conversation (ALWAYS uses conversation context)
    */
   static async generateConversationSpeech(text: string, voiceId?: string): Promise<ArrayBuffer> {
+    console.log('🗣️ Charlotte conversation speech - forcing conversation context');
     return this.generateSpeech(text, 'conversation', voiceId);
   }
 
