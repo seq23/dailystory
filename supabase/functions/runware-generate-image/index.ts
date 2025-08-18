@@ -843,67 +843,89 @@ serve(async (req) => {
       enhancedPrompt = enhancedPrompt.replace(/\b(NOT|bad|ugly|terrible|awful)\b/gi, '');
     }
 
-    // Create WebSocket connection with proper error handling
+    // Enhanced WebSocket connection with robust lifecycle management
     console.log('🌐 Attempting WebSocket connection to Runware...');
     
     return new Promise((resolve) => {
       let resolved = false;
       let retryCount = 0;
-      const maxRetries = 2;
+      const maxRetries = 3;
+      let connectionState = 'disconnected'; // disconnected → connecting → connected → authenticating → ready
+      
+      // Pre-validate framework to avoid scope errors
+      const frameworkParams = {
+        steps: framework?.parameters?.steps || 3,
+        cfgScale: framework?.parameters?.cfgScale || Math.max(1.5, CFGScale || 7),
+        scheduler: framework?.parameters?.scheduler || scheduler || 'FlowMatchEulerDiscreteScheduler',
+        strength: framework?.parameters?.strength || strength || 0.8
+      };
+      
+      console.log('🎯 Framework params validated:', frameworkParams);
       
       const attemptConnection = () => {
+        connectionState = 'connecting';
+        console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries + 1} - Connection state: ${connectionState}`);
+        
         const ws = new WebSocket("wss://ws-api.runware.ai/v1");
         let authenticated = false;
+        let authenticationTimeout: number;
         
-        const timeout = setTimeout(() => {
-          if (!resolved) {
+        // Enhanced timeout with connection health check
+        const connectionTimeout = setTimeout(() => {
+          if (!resolved && connectionState !== 'ready') {
+            console.log(`⏰ Connection timeout (state: ${connectionState}) after 20 seconds (attempt ${retryCount + 1})`);
             ws.close();
-            console.log(`⏰ Request timeout after 15 seconds (attempt ${retryCount + 1})`);
             
             if (retryCount < maxRetries) {
               retryCount++;
-              console.log(`🔄 Retrying connection (${retryCount}/${maxRetries})...`);
-              setTimeout(attemptConnection, 1000 * retryCount); // Exponential backoff
+              const backoffMs = Math.min(1000 * Math.pow(2, retryCount), 8000); // Exponential backoff with cap
+              console.log(`🔄 Retrying connection in ${backoffMs}ms (${retryCount}/${maxRetries})...`);
+              setTimeout(attemptConnection, backoffMs);
             } else {
               resolved = true;
-              resolve(createCorsErrorResponse("Connection timeout after retries", 408));
+              connectionState = 'failed';
+              resolve(createCorsErrorResponse("WebSocket connection failed after retries", 408));
             }
           }
-        }, 15000);
+        }, 20000);
 
         ws.onopen = () => {
-          console.log("🌐 WebSocket connected to Runware, authenticating...");
+          connectionState = 'connected';
+          console.log("🌐 WebSocket connected to Runware, initiating authentication...");
+          
+          // Set authentication timeout
+          authenticationTimeout = setTimeout(() => {
+            if (!authenticated) {
+              console.log("🚨 Authentication timeout - closing connection");
+              ws.close();
+            }
+          }, 10000);
           
           const authMessage = [{
             taskType: "authentication",
             apiKey: runwareApiKey
           }];
           
+          connectionState = 'authenticating';
           ws.send(JSON.stringify(authMessage));
           console.log('🔐 Authentication message sent to Runware');
-        };
-
-        // Capture framework data in WebSocket closure to avoid scope errors
-        const frameworkParams = {
-          steps: framework.parameters?.steps || 3,
-          cfgScale: framework.parameters?.cfgScale || Math.max(1.5, CFGScale),
-          scheduler: framework.parameters?.scheduler || scheduler,
-          strength: framework.parameters?.strength || strength
         };
 
         ws.onmessage = (event) => {
           try {
             const response = JSON.parse(event.data);
-            console.log("📨 Runware response received");
+            console.log(`📨 Runware response received (state: ${connectionState})`);
             
             if (response.error || response.errors) {
-              clearTimeout(timeout);
+              clearTimeout(connectionTimeout);
+              clearTimeout(authenticationTimeout);
               ws.close();
               const errorMsg = response.errorMessage || response.errors?.[0]?.message || "Generation failed";
               console.error("❌ Runware API error:", errorMsg);
               
               if (!resolved) {
                 resolved = true;
+                connectionState = 'error';
                 resolve(createCorsErrorResponse(errorMsg, 500));
               }
               return;
@@ -912,9 +934,12 @@ serve(async (req) => {
             if (response.data) {
               response.data.forEach((item: any) => {
                 if (item.taskType === "authentication") {
+                  clearTimeout(authenticationTimeout);
+                  
                   if (item.connectionSessionUUID || item.success !== false) {
                     authenticated = true;
-                    console.log("✅ Authenticated with Runware successfully");
+                    connectionState = 'ready';
+                    console.log("✅ Authenticated with Runware successfully - connection ready");
                     
                     const taskUUID = crypto.randomUUID();
                     const imageMessage = [{
@@ -938,13 +963,15 @@ serve(async (req) => {
                       prompt: enhancedPrompt.substring(0, 100) + '...',
                       model,
                       seed: finalSeed,
-                      taskUUID
+                      taskUUID,
+                      framework: frameworkParams
                     });
                     ws.send(JSON.stringify(imageMessage));
                   } else {
-                    clearTimeout(timeout);
+                    clearTimeout(connectionTimeout);
                     ws.close();
                     console.error("❌ Runware authentication failed");
+                    connectionState = 'auth_failed';
                     
                     if (!resolved) {
                       resolved = true;
