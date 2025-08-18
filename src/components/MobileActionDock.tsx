@@ -16,6 +16,7 @@ interface MobileActionDockProps {
   isSaving?: boolean;
   audioDisabled?: boolean;
   isAudioPlaying?: boolean;
+  isAudioLoading?: boolean;
   className?: string;
 }
 
@@ -29,6 +30,7 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
   isSaving = false,
   audioDisabled = false,
   isAudioPlaying = false,
+  isAudioLoading = false,
   className,
 }) => {
   const { t } = useTranslation();
@@ -70,24 +72,30 @@ export const MobileActionDock: React.FC<MobileActionDockProps> = ({
                       variant="outline"
                       className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl"
                       onClick={onPlayAudio}
-                      disabled={audioDisabled && !isAudioPlaying}
-                      aria-label={isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Read to me")}
+                      disabled={(audioDisabled && !isAudioPlaying) || isAudioLoading}
+                      aria-label={isAudioLoading ? t("audioReading.syncing", "Syncing") : isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.playAudio", "Read to me")}
                     >
-                      {isAudioPlaying ? (
+                      {isAudioLoading ? (
+                        <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+                      ) : isAudioPlaying ? (
                         <Square className="w-5 h-5" />
                       ) : (
                         <Volume2 className="w-5 h-5" />
                       )}
-                      <span className="text-[11px] leading-none">{isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Read")}</span>
+                      <span className="text-[11px] leading-none">
+                        {isAudioLoading ? t("audioReading.syncing", "Syncing") : isAudioPlaying ? t("audioReading.stop", "Stop") : t("audioReading.play", "Read")}
+                      </span>
                     </Button>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  {isAudioPlaying
-                    ? t("tooltips.dock.stop", "Stop playback")
-                    : audioDisabled
-                      ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)")
-                      : t("tooltips.dock.play", "Read this page to me")}
+                  {isAudioLoading
+                    ? t("tooltips.dock.syncing", "Preparing audio...")
+                    : isAudioPlaying
+                      ? t("tooltips.dock.stop", "Stop playback")
+                      : audioDisabled
+                        ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)")
+                        : t("tooltips.dock.play", "Read this page to me")}
                 </TooltipContent>
               </Tooltip>
 

@@ -139,15 +139,15 @@ export class SynchronizedElevenLabsTTS {
       
       // If we didn't find valid timing data, use natural fallback timing
       if (!foundValidTiming || wordStartTime === undefined || wordEndTime === undefined) {
-        // Natural timing calculations for better speech synchronization
+        // Balanced timing calculations for natural speech synchronization
         const shortWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'and', 'or', 'but', 'in', 'on', 'at', 'by', 'for', 'with', 'from'];
         const isShortWord = shortWords.includes(word.toLowerCase().trim());
         
-        // Restored natural timing: 120ms per character, min 150ms for short words, 200ms for regular
-        const baseDuration = isShortWord ? 150 : Math.max(200, word.length * 120);
+        // Balanced timing: 100ms per character, min 120ms for short words, 180ms for regular
+        const baseDuration = isShortWord ? 120 : Math.max(180, word.length * 100);
         const estimatedDuration = baseDuration;
         
-        wordStartTime = wordTimings.length > 0 ? wordTimings[wordTimings.length - 1].endTime + 75 : 0; // Natural 75ms gap
+        wordStartTime = wordTimings.length > 0 ? wordTimings[wordTimings.length - 1].endTime + 50 : 0; // Balanced 50ms gap
         wordEndTime = wordStartTime + estimatedDuration;
         
         console.log(`⚠️ Using fallback timing for "${word}":`, {
@@ -161,12 +161,12 @@ export class SynchronizedElevenLabsTTS {
       if (wordTimings.length > 0) {
         const lastWordEnd = wordTimings[wordTimings.length - 1].endTime;
         if (wordStartTime < lastWordEnd) {
-          wordStartTime = lastWordEnd + 50; // Natural 50ms gap for clarity
+          wordStartTime = lastWordEnd + 40; // Balanced 40ms gap for clarity
           if (wordEndTime <= wordStartTime) {
             const shortWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'and', 'or', 'but', 'in', 'on', 'at', 'by', 'for', 'with', 'from'];
             const isShortWord = shortWords.includes(word.toLowerCase().trim());
-            const naturalDuration = isShortWord ? 150 : Math.max(200, word.length * 120);
-            wordEndTime = wordStartTime + naturalDuration;
+            const balancedDuration = isShortWord ? 120 : Math.max(180, word.length * 100);
+            wordEndTime = wordStartTime + balancedDuration;
           }
         }
       }
@@ -209,8 +209,8 @@ export class SynchronizedElevenLabsTTS {
       const word = words[i];
       const isShortWord = shortWords.includes(word.toLowerCase().trim());
       
-      // Natural duration calculation: 120ms per character, realistic minimums
-      const baseDuration = isShortWord ? 150 : Math.max(200, word.length * 120); // Natural 120ms per character
+      // Balanced duration calculation: 100ms per character, realistic minimums
+      const baseDuration = isShortWord ? 120 : Math.max(180, word.length * 100); // Balanced 100ms per character
       const estimatedDuration = baseDuration;
       
       wordTimings.push({
@@ -219,7 +219,7 @@ export class SynchronizedElevenLabsTTS {
         endTime: currentTime + estimatedDuration
       });
       
-      currentTime += estimatedDuration + 75; // Natural 75ms gap between words
+      currentTime += estimatedDuration + 50; // Balanced 50ms gap between words
     }
     
     console.log('✅ Natural fallback timing generated for', wordTimings.length, 'words');

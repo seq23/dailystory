@@ -271,6 +271,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
   const [sessionStartTime] = useState(Date.now());
   const [wordsInteracted, setWordsInteracted] = useState(0);
@@ -290,6 +291,10 @@ useEffect(() => {
   const handleGlobalAudioStateChange = (event: any) => {
     const isPlaying = event.detail?.isPlaying || false;
     setIsAudioPlaying(isPlaying);
+    // Clear loading state when audio state changes
+    if (isPlaying || !isPlaying) {
+      setIsAudioLoading(false);
+    }
   };
   
   window.addEventListener('audio:statechange', handleGlobalAudioStateChange);
@@ -1484,6 +1489,7 @@ useEffect(() => {
     
     if (isAudioPlaying) {
       setIsAudioPlaying(false);
+      setIsAudioLoading(false);
       try { 
         audioEngineRef.current.stop(); 
       } catch (error) {
@@ -1491,6 +1497,7 @@ useEffect(() => {
       }
     } else {
       try {
+        setIsAudioLoading(true);
         await audioEngineRef.current.playTextWithSynchronization({
           text: currentStoryText || "",
           context: 'conversation',
@@ -1498,10 +1505,12 @@ useEffect(() => {
         });
         // State will be updated via callback, but ensure it's set for immediate feedback
         setIsAudioPlaying(true);
+        setIsAudioLoading(false);
         if (!isPremium) setAudioPlayedPage(currentPage);
       } catch (error) {
         console.warn('Dock play failed:', error);
         setIsAudioPlaying(false); // Reset on error
+        setIsAudioLoading(false);
       }
     }
   };
@@ -2724,6 +2733,7 @@ const handleRestartTimer = () => {
             onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
             isSaving={isSaving}
             isAudioPlaying={isAudioPlaying}
+            isAudioLoading={isAudioLoading}
             audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
           />
         </>
