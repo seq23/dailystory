@@ -218,7 +218,7 @@ export class SimpleImageService {
     return { positivePrompt: optimizedPrompt };
   }
 
-  // OPTIMIZED: Ultra-fast server-side processing
+  // OPTIMIZED: Clean scene extraction with enhanced backend processing
   static async generateStoryImage(
     storyText: string,
     userInfo: UserInfo,
@@ -236,28 +236,37 @@ export class SimpleImageService {
       // Force consistent 1024x1024 output - no degradation
       const finalConfig = { ...mergedConfig, width: 1024, height: 1024 };
 
-      console.log(`🚀 Ultra-fast generation for page ${pageNumber}/${totalPages}: "${storyText}"`);
+      console.log(`🚀 Clean scene extraction for page ${pageNumber}/${totalPages}: "${storyText}"`);
 
-      // TIER 1: Enhanced Runware with AI character consistency
-      let result = await this.generateWithRunware(storyText, finalConfig, undefined, userInfo, pageNumber, sessionId, difficultyLevel);
+      // Extract clean scene description - all enhancement happens server-side
+      const cleanScene = DirectContentExtractor.extractPageContent(storyText).subject || storyText;
       
-      console.log(`🎯 Token-optimized generation for ${userInfo.name} on page ${pageNumber}`);
+      console.log(`🎯 Clean scene for ${userInfo.name}: "${cleanScene}"`);
 
-      // TIER 2: Simple Runware fallback (original way)
+      // TIER 1: Enhanced Runware with full AI enhancement (server-side)
+      let result = await this.generateWithRunware(cleanScene, finalConfig, undefined, userInfo, pageNumber, sessionId, difficultyLevel);
+
+      // TIER 2: Simple Runware with AI enhancement (server-side)  
       if (!result.success) {
-        console.log('⚠️ Enhanced Runware failed, trying simple Runware...');
-        result = await this.generateWithRunwareSimple(storyText, finalConfig, userInfo, pageNumber);
+        console.log('⚠️ Enhanced Runware failed, trying simple Runware with AI...');
+        result = await this.generateWithRunwareSimple(cleanScene, finalConfig, userInfo, pageNumber);
       }
 
-      // TIER 3: OpenAI fallback
+      // TIER 3: Enhanced Runware without AI (server-side style only)
       if (!result.success) {
-        console.log('⚠️ Simple Runware failed, falling back to OpenAI...');
+        console.log('⚠️ Runware with AI failed, trying enhanced Runware without AI...');
+        result = await this.generateWithRunware(cleanScene, finalConfig, undefined, userInfo, pageNumber, sessionId, difficultyLevel);
+      }
+
+      // TIER 4: OpenAI with basic enhancement
+      if (!result.success) {
+        console.log('⚠️ Enhanced Runware failed, falling back to OpenAI...');
         
         // Try to preserve character seed for OpenAI fallback
         const existingSeed = this.getCharacterSeedFromCache(userInfo.name, sessionId);
         
         result = await this.generateWithOpenAI(
-          storyText, 
+          cleanScene, 
           finalConfig, 
           undefined, 
           userInfo, 
@@ -381,9 +390,9 @@ export class SimpleImageService {
 
   // NEW: TIER 2 - Simple Runware without AI enhancement (original way)
   private static async generateWithRunwareSimple(
-    storyText: string, 
-    config: ImageGenerationConfig, 
-    userInfo?: UserInfo, 
+    cleanScene: string, 
+    config: ImageGenerationConfig,
+    userInfo?: UserInfo,
     pageNumber?: number
   ): Promise<ImageResult> {
     try {
@@ -394,7 +403,7 @@ export class SimpleImageService {
         ? `${userInfo.name} (${userInfo.avatar?.type || 'child'})`
         : 'friendly character';
       
-      const simplePrompt = `Children's book illustration: ${characterDesc} ${storyText}. Bright, colorful, safe for children, consistent-face children-book bright-colors`;
+      const simplePrompt = `Children's book illustration: ${characterDesc} ${cleanScene}. Bright, colorful, safe for children, consistent-face children-book bright-colors`;
 
       const { data, error } = await supabase.functions.invoke('runware-test-simple', {
         body: {
