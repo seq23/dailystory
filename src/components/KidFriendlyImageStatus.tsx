@@ -66,38 +66,36 @@ export const KidFriendlyImageStatus = ({
 
   return (
     <div className={cn(
-      "fixed top-4 right-4 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg",
-      "flex items-center justify-center z-[50] max-w-sm",
+      "w-full bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4",
       "transition-all duration-300 ease-in-out animate-fade-in",
+      "md:p-4", // More padding on larger screens
       className
     )}>
-      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 max-w-sm mx-4">
-        <div className="space-y-3 text-center">
-          {isStoryLoading ? (
-            <div className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-primary animate-pulse" />
-              <div className="text-left">
-                <p className="font-medium text-primary">Your Story Comes First! 📖</p>
-                <p className="text-xs text-muted-foreground">{currentText}</p>
-              </div>
+      <div className="flex items-center gap-3 w-full">
+        {isStoryLoading ? (
+          <>
+            <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-primary animate-pulse flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-primary text-sm md:text-base">Your Story Comes First! 📖</p>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">{currentText}</p>
             </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Palette className="w-6 h-6 text-primary animate-pulse" />
-              <div className="text-left">
-                <p className="font-medium text-primary">Drawing Pictures! 🎨</p>
-                <p className="text-xs text-muted-foreground">{currentText}</p>
-                {batchProgress && (
-                  <p className="text-xs text-muted-foreground/70">{batchProgress}</p>
-                )}
-              </div>
+          </>
+        ) : (
+          <>
+            <Palette className="w-5 h-5 md:w-6 md:h-6 text-primary animate-pulse flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-primary text-sm md:text-base">Drawing Pictures! 🎨</p>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">{currentText}</p>
+              {batchProgress && (
+                <p className="text-xs text-muted-foreground/70 truncate">{batchProgress}</p>
+              )}
             </div>
-          )}
-          
-          <div className="text-xs text-muted-foreground/60 italic">
-            Stories first, pictures second! ✨
-          </div>
-        </div>
+          </>
+        )}
+      </div>
+      
+      <div className="text-xs text-muted-foreground/60 italic text-center mt-2 md:mt-3">
+        Stories first, pictures second! ✨
       </div>
     </div>
   );
