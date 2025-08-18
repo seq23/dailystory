@@ -123,51 +123,96 @@ export const APP_CONFIG: AppConfig = {
   }
 };
 
-// Style framework by difficulty level - Phase 1 Implementation
+// Style framework by difficulty level - Synchronized with backend
 export const DIFFICULTY_STYLE_MAPPING = {
   'beginner': {
-    name: 'Playful & Colorful',
+    // Level 0 - Pre-reader
+    name: 'High-Quality 3D Children\'s Art',
+    artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics (NO TEXT)',
+    colorPalette: 'Bright, cheerful colors with blue/turquoise dominant tones',
+    lighting: 'Natural daylight with soft shadows and highlights',
+    texture: 'Smooth, polished surfaces with subtle material definition',
+    composition: 'Clear, focused composition with appealing depth',
+    quality: 'Premium children\'s book illustration with depth and dimension',
+    
+    // Prompt components
     prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
     complexity: 'standard',
-    colorPalette: 'bright_vibrant',
+    colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
     brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork'
   },
   'easy': {
-    name: 'Playful & Colorful', 
+    // Level 1 - Beginner (identical to Level 0)
+    name: 'High-Quality 3D Children\'s Art',
+    artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics (NO TEXT)',
+    colorPalette: 'Bright, cheerful colors with blue/turquoise dominant tones',
+    lighting: 'Natural daylight with soft shadows and highlights',
+    texture: 'Smooth, polished surfaces with subtle material definition',
+    composition: 'Clear, focused composition with appealing depth',
+    quality: 'Premium children\'s book illustration with depth and dimension',
+    
+    // Prompt components
     prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
     complexity: 'standard',
-    colorPalette: 'bright_vibrant',
+    colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
     brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork'
   },
   'medium': {
-    name: 'Rich & Engaging',
+    // Level 2 - Developing
+    name: 'Digital Painterly Illustration',
+    artStyle: 'Digital illustration with painterly qualities, soft brush strokes',
+    colorPalette: 'Warm, muted tones with soft pastels',
+    lighting: 'Gentle, diffused natural lighting with subtle rim lighting',
+    texture: 'Smooth gradients with subtle texture overlay',
+    composition: 'Clean, focused composition with depth of field',
+    quality: 'Professional children\'s book illustration standard',
+    
+    // Prompt components
     prompt: 'children\'s book illustration, soft pastels, warm lighting, digital art',
     complexity: 'minimal',
-    colorPalette: 'warm_pastels',
+    colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
     brandSuffix: 'children\'s book illustration, warm colors, safe wholesome content'
   },
   'hard': {
-    name: 'Artistic & Sophisticated',
-    prompt: '2D digital illustration (sophisticated artistic style)',
+    // Level 3 - Sophisticated
+    name: 'Sophisticated 2D Digital Art',
+    artStyle: '2D digital illustration (sophisticated artistic style)',
+    colorPalette: 'Nuanced color gradients, artistic palette',
+    lighting: 'Advanced lighting with sophisticated shadows and highlights',
+    texture: 'Refined digital textures with artistic depth',
+    composition: 'Sophisticated artistic composition with visual hierarchy',
+    quality: 'Sophisticated artistic children\'s book illustration',
+    
+    // Prompt components
+    prompt: '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed, advanced digital painting techniques',
     complexity: 'high',
-    colorPalette: 'nuanced color gradients, artistic palette',
+    colorPaletteKey: 'nuanced_artistic',
     detailLevel: 'highly detailed',
-    rendering: 'Advanced digital painting techniques with nuanced lighting, refined textures, and sophisticated color blending',
-    brandSuffix: 'artistic children\'s book illustration, refined quality, inclusive'
+    rendering: 'advanced_digital_painting',
+    brandSuffix: 'artistic children\'s book illustration, refined quality, diverse representation'
   },
   'expert': {
-    name: 'Masterful & Complex',
-    prompt: '2D digital illustration (masterful artistic technique)',
-    complexity: 'very high',
-    colorPalette: 'complex color theory, professional artist palette',
+    // Level 4 - Masterful
+    name: 'Masterful 2D Digital Art',
+    artStyle: '2D digital illustration (masterful artistic technique)',
+    colorPalette: 'Complex color theory, professional artist palette',
+    lighting: 'Complex artistic lighting with intricate shadow work',
+    texture: 'Intricate artistic textures with masterful detail',
+    composition: 'Masterful artistic composition with complex visual storytelling',
+    quality: 'Masterful children\'s book art with diverse representation',
+    
+    // Prompt components
+    prompt: '2D digital illustration (masterful artistic technique), complex color theory, intricate details',
+    complexity: 'very_high',
+    colorPaletteKey: 'complex_professional',
     detailLevel: 'intricate and complex',
-    rendering: 'Complex artistic techniques with intricate details, sophisticated lighting systems, and advanced composition methods',
+    rendering: 'masterful_artistic_technique',
     brandSuffix: 'masterful children\'s book art, sophisticated quality, diverse representation'
   }
 } as const;

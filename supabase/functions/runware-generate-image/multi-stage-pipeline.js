@@ -130,23 +130,28 @@ export class MultiStageEnhancementPipeline {
   static async applyStyleFramework(context) {
     const { userInfo, pageNumber, totalPages, sceneDescription } = context;
     
-    const difficulty = userInfo.readingLevel || 'medium';
-    const styleFrameworks = {
-      'beginner': 'Simple children\'s book illustration, clear lines, bright cheerful colors',
-      'medium': 'Children\'s book art style, detailed characters, vibrant scenes',
-      'hard': 'Professional children\'s book illustration, rich details, dynamic composition',
-      'expert': 'Award-winning children\'s book art, cinematic composition, masterful storytelling'
-    };
+    // Import centralized style framework
+    const { getStyleFramework, buildCompletePrompt } = await import('../_shared/styleFrameworks.js');
     
-    const dynamicStyle = styleFrameworks[difficulty] || styleFrameworks['medium'];
+    const difficulty = userInfo.readingLevel || 'medium';
+    const framework = getStyleFramework(difficulty);
+    
+    console.log(`🎨 Applying ${framework.name} style for difficulty: ${difficulty}`);
     
     // Analyze emotional content
     const emotionalContext = this.analyzeEmotionalContent(sceneDescription);
     
-    const finalPrompt = `${sceneDescription}, ${context.characterDescriptions || ''}, ${dynamicStyle}, ${emotionalContext}`;
+    // Build complete prompt using centralized framework
+    const finalPrompt = buildCompletePrompt(
+      framework,
+      sceneDescription,
+      context.characterDescriptions || '',
+      emotionalContext
+    );
     
     return {
-      styleElements: [dynamicStyle, emotionalContext],
+      styleFramework: framework,
+      styleElements: [framework.artStyle, framework.quality, emotionalContext],
       prompt: finalPrompt
     };
   }
@@ -178,21 +183,29 @@ export class MultiStageEnhancementPipeline {
 
   // Stage 5: Parameter Optimization
   static async optimizeParameters(context) {
-    const { userInfo, characters } = context;
+    const { userInfo, characters, styleFramework } = context;
+    
+    // Import centralized parameter optimization
+    const { getOptimizedParameters } = await import('../_shared/styleFrameworks.js');
     
     // Get culturally optimized parameters
     const culturalParams = MulticulturalVisualService.getOptimizedGenerationParams(userInfo);
     const defaultParams = this.getDefaultParameters();
     
-    // Merge with defaults
-    const optimizedParameters = { ...defaultParams, ...culturalParams };
+    // Get framework-specific parameters
+    const frameworkParams = styleFramework ? styleFramework.parameters : {};
     
-    // Adjust for character complexity
+    // Merge all parameter sources (framework takes precedence)
+    const baseParameters = { ...defaultParams, ...culturalParams, ...frameworkParams };
+    
+    // Apply character complexity optimization
     const characterComplexity = characters?.length || 1;
-    if (characterComplexity > 2) {
-      optimizedParameters.steps = Math.min(optimizedParameters.steps + 1, 6);
-      optimizedParameters.cfgScale = Math.min(optimizedParameters.cfgScale + 0.2, 2.0);
-    }
+    const optimizedParameters = getOptimizedParameters(
+      { parameters: baseParameters }, 
+      characterComplexity
+    );
+    
+    console.log(`⚙️ Optimized parameters for ${characterComplexity} character(s):`, optimizedParameters);
     
     return {
       parameters: optimizedParameters

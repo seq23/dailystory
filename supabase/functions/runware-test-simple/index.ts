@@ -15,8 +15,12 @@ serve(async (req) => {
 
     const { pageText } = await req.json();
 
-    // Simple test: create basic prompt and try to connect to Runware
-    const enhancedPrompt = `Children's book illustration: ${pageText || 'a friendly character'}. Bright, colorful, safe for children.`;
+    // Import centralized style framework for consistency
+    const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
+    
+    // Use default difficulty for simple test
+    const framework = getStyleFramework('medium');
+    const enhancedPrompt = `${framework.prompt}: ${pageText || 'a friendly character'}. ${framework.quality}, ${framework.brandSuffix}.`;
 
     console.log('🎨 Testing Runware with prompt:', enhancedPrompt.substring(0, 100));
 

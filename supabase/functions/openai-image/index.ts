@@ -132,8 +132,13 @@ serve(async (req) => {
       enhancedPrompt += `. Avoid: ${negativePrompt}`;
     }
 
-    // Enhanced children's book style with cultural sensitivity
-    enhancedPrompt += ". Style: Children's book illustration, colorful, engaging, safe for kids, warm lighting, detailed but not overwhelming, culturally authentic, diverse representation";
+    // Import and apply centralized style framework
+    const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
+    const userDifficulty = userInfo?.readingLevel || 'medium';
+    const framework = getStyleFramework(userDifficulty);
+    
+    // Enhanced children's book style with framework consistency
+    enhancedPrompt += `. Style: ${framework.artStyle}, ${framework.quality}, ${framework.brandSuffix}`;
 
     // Determine size based on width/height
     let size = '1024x1024';

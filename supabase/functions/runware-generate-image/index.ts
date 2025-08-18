@@ -734,16 +734,13 @@ serve(async (req) => {
         ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
         : comprehensiveNegativePrompt;
       
-      // Use centralized style mapping from appConfig
-      const difficultyStyleMapping: Record<string, string> = {
-        'beginner': '3D children\'s book art, bright colors, smooth rendering, cheerful',
-        'easy': '3D children\'s book art, bright colors, smooth rendering, cheerful',
-        'medium': 'children\'s book illustration, soft pastels, warm lighting, digital art',
-        'hard': '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed',
-        'expert': '2D digital illustration (masterful artistic technique), complex color theory, professional artist palette, intricate and complex details'
-      };
+      // Import and use centralized style framework
+      const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
       
-      const artStyle = difficultyStyleMapping[difficultyLevel] || difficultyStyleMapping['medium'];
+      const framework = getStyleFramework(difficultyLevel);
+      const artStyle = framework.prompt;
+      
+      console.log(`🎨 Using ${framework.name} style for difficulty: ${difficultyLevel}`);
       // Restructure prompt to prevent character name text overlays
       // Import cultural visual service for enhanced character representation
       const { MulticulturalVisualService } = await import('./cultural-visual-service.js');
@@ -754,7 +751,7 @@ serve(async (req) => {
       const culturalNegativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
       const qualityEnhancement = MulticulturalVisualService.getQualityEnhancementTerms(userInfo);
       
-      enhancedPrompt = `Visual appearance: ${culturalCharacterDesc}${secondaryChars}. Scene: ${processedText} in ${culturalSetting}${environmentalContext}${visualDetailsContext}. Style: consistent-face ${artStyle}, ${qualityEnhancement}`;
+      enhancedPrompt = `Visual appearance: ${culturalCharacterDesc}${secondaryChars}. Scene: ${processedText} in ${culturalSetting}${environmentalContext}${visualDetailsContext}. Style: consistent-face ${artStyle}, ${framework.quality}, ${qualityEnhancement}`;
       
       // Update negative prompt with cultural sensitivity
       finalNegativePrompt = culturalNegativePrompt;
@@ -921,10 +918,10 @@ serve(async (req) => {
                       height,
                       numberResults,
                       outputFormat,
-                      steps: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).steps : 3,
-                      CFGScale: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).cfgScale : Math.max(1.5, CFGScale),
-                      scheduler: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).scheduler : scheduler,
-                      strength: userInfo ? (await import('./cultural-visual-service.js')).MulticulturalVisualService.getOptimizedGenerationParams(userInfo).strength : strength,
+                      steps: framework.parameters?.steps || 3,
+                      CFGScale: framework.parameters?.cfgScale || Math.max(1.5, CFGScale),
+                      scheduler: framework.parameters?.scheduler || scheduler,
+                      strength: framework.parameters?.strength || strength,
                       ...(finalSeed && { seed: finalSeed })
                     }];
                     
