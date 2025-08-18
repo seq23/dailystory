@@ -36,8 +36,10 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
     setIsPlaying(playing);
     onPlayingChange?.(playing);
     
-    // Clear loading state when audio state changes (start or stop)
-    setIsLoading(false);
+    // Only clear loading state when audio actually starts playing
+    if (playing) {
+      setIsLoading(false);
+    }
     
     if (!playing) {
       setError(null);
