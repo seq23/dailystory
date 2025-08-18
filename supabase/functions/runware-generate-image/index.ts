@@ -744,7 +744,7 @@ serve(async (req) => {
       console.log(`🎨 Using ${framework.name} style for difficulty: ${difficultyLevel}`);
       // Restructure prompt to prevent character name text overlays
       // Import cultural visual service for enhanced character representation
-      const { MulticulturalVisualService } = await import('./cultural-visual-service.js');
+      const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
       
       // Generate culturally appropriate character description
       const culturalCharacterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
