@@ -280,11 +280,6 @@ export function generateCulturalCharacterDescription(userInfo) {
   console.warn('⚠️ generateCulturalCharacterDescription() is deprecated - use frontend StructuredPromptEngine');
   return 'child with warm friendly appearance';
 }
-  }
-  
-  // Fallback case
-  return 'child with warm friendly appearance';
-}
 
 // Simple avatar-based description for English non-dark skin users
 function generateSimpleAvatarDescription(userInfo) {
