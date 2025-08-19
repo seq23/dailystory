@@ -20,6 +20,10 @@ export interface CulturalVisualProfile {
   clothing: string[];
   celebrations: string[];
   negativePrompts: string[];
+  // Optional fields for English speakers
+  boysHairStyles?: string[];
+  girlsHairStyles?: string[];
+  mainstreamSettings?: string[];
 }
 
 export class MulticulturalVisualService {
@@ -30,7 +34,12 @@ export class MulticulturalVisualService {
         'deep amber skin', 'honey-toned skin', 'rich caramel skin', 'warm mahogany skin',
         'deep bronze skin', 'rich mocha skin', 'dark olive skin', 'deep umber skin'
       ],
-      hairStyles: ['flowing dark wavy hair', 'elegant braided hair', 'thick curly dark hair', 'straight black hair with silk scarf', 'traditional updo with decorative pins'],
+      hairStyles: [
+        'flowing dark wavy hair', 'elegant braided hair', 'thick curly dark hair', 'straight black hair with silk scarf', 
+        'traditional updo with decorative pins', 'long straight hair with hijab', 'wavy shoulder-length hair', 
+        'natural curly texture', 'sleek straight hair', 'twisted updo style', 'layered wavy hair',
+        'traditional braided crown', 'modern hijab styles', 'elegant chignon', 'loose flowing curls'
+      ],
       facialFeatures: ['expressive dark eyes', 'elegant eyebrows', 'warm smile', 'gentle facial features', 'kind expression'],
       culturalElements: ['traditional Arabic patterns', 'geometric decorations', 'ornate designs', 'cultural jewelry', 'henna art'],
       familyStructure: ['extended family gathering', 'grandmother telling stories', 'multiple generations together', 'community elders', 'family celebration'],
@@ -45,7 +54,12 @@ export class MulticulturalVisualService {
         'rich copper skin', 'golden olive skin', 'warm mahogany skin', 'deep bronze skin',
         'rich mocha skin', 'deep caramel skin', 'dark bronze skin', 'rich umber skin'
       ],
-      hairStyles: ['thick wavy dark hair', 'long straight black hair', 'curly brown hair', 'braided hair with colorful ribbons', 'natural wavy hair'],
+      hairStyles: [
+        'thick wavy dark hair', 'long straight black hair', 'curly brown hair', 'braided hair with colorful ribbons', 
+        'natural wavy hair', 'sleek bob cut', 'layered shoulder-length hair', 'loose beach waves',
+        'traditional braided styles', 'modern textured cut', 'voluminous curly hair', 'straight hair with bangs',
+        'twisted updo with flowers', 'side-swept bangs', 'natural texture with highlights'
+      ],
       facialFeatures: ['warm brown eyes', 'expressive eyebrows', 'radiant smile', 'strong facial features', 'joyful expression'],
       culturalElements: ['vibrant colors', 'traditional patterns', 'festive decorations', 'cultural art', 'family symbols'],
       familyStructure: ['large extended family', 'abuela figure', 'many cousins playing', 'family celebration', 'multigenerational gathering'],
@@ -60,7 +74,12 @@ export class MulticulturalVisualService {
         'golden tan skin', 'light olive skin', 'soft peachy skin', 'medium tan skin',
         'warm bronze skin', 'deep honey skin', 'rich tan skin', 'deep bronze skin'
       ],
-      hairStyles: ['straight black hair', 'elegant hair bun', 'hair with traditional ornaments', 'sleek bob cut', 'braided hair with silk ribbons'],
+      hairStyles: [
+        'straight black hair', 'elegant hair bun', 'hair with traditional ornaments', 'sleek bob cut', 
+        'braided hair with silk ribbons', 'long straight hair with side part', 'layered straight hair',
+        'traditional chinese bun with pins', 'modern asian pixie cut', 'shoulder-length straight hair',
+        'elegant updo with chopsticks', 'natural straight texture', 'blunt cut bob', 'wispy bangs style'
+      ],
       facialFeatures: ['almond-shaped eyes', 'delicate features', 'gentle smile', 'serene expression', 'kind eyes'],
       culturalElements: ['traditional Chinese patterns', 'dragon motifs', 'cherry blossoms', 'calligraphy art', 'jade jewelry'],
       familyStructure: ['multigenerational family', 'grandparents with wisdom', 'respect for elders', 'family harmony', 'traditional family structure'],
@@ -75,7 +94,12 @@ export class MulticulturalVisualService {
         'warm amber skin', 'rich mahogany skin', 'deep bronze skin', 'warm caramel skin',
         'deep amber skin', 'rich mocha skin', 'dark bronze skin', 'deep umber skin'
       ],
-      hairStyles: ['long braided hair', 'hair decorated with flowers', 'traditional hair jewelry', 'elegant bun with ornaments', 'flowing dark hair'],
+      hairStyles: [
+        'long braided hair', 'hair decorated with flowers', 'traditional hair jewelry', 'elegant bun with ornaments', 
+        'flowing dark hair', 'coconut oil-treated hair', 'henna-decorated hair', 'traditional plait styles',
+        'modern layered cut', 'natural wavy texture', 'straight hair with traditional accessories', 
+        'twisted updo with gold ornaments', 'loose curls with jasmine flowers', 'side braid with ribbons'
+      ],
       facialFeatures: ['expressive dark eyes', 'elegant eyebrows', 'warm smile', 'gentle features', 'kind expression'],
       culturalElements: ['traditional Indian patterns', 'henna designs', 'colorful rangoli', 'spiritual symbols', 'cultural jewelry'],
       familyStructure: ['joint family system', 'multiple generations', 'traditional family roles', 'community celebration', 'extended family gathering'],
@@ -90,7 +114,12 @@ export class MulticulturalVisualService {
         'sun-kissed bronze skin', 'tropical tan skin', 'rich mocha skin', 'deep bronze skin',
         'warm mahogany skin', 'deep caramel skin', 'rich umber skin', 'deep ebony skin'
       ],
-      hairStyles: ['beach wave hair', 'natural curly hair', 'long flowing hair', 'textured natural hair', 'modern Brazilian styles'],
+      hairStyles: [
+        'beach wave hair', 'natural curly hair', 'long flowing hair', 'textured natural hair', 'modern Brazilian styles',
+        'loose beachy curls', 'straight hair with highlights', 'voluminous natural texture', 'layered wavy hair',
+        'afro-textured natural hair', 'relaxed straight styles', 'twist-out curls', 'braided protective styles',
+        'natural coily texture', 'beach wave bob', 'curly pixie cut', 'long natural curls with coconut oil'
+      ],
       facialFeatures: ['warm brown eyes', 'radiant smile', 'expressive features', 'joyful expression', 'vibrant personality'],
       culturalElements: ['tropical patterns', 'beach culture', 'vibrant colors', 'carnival elements', 'natural beauty'],
       familyStructure: ['beach family gathering', 'community celebration', 'large family party', 'neighborhood festival', 'extended family'],
@@ -105,7 +134,12 @@ export class MulticulturalVisualService {
         'creamy complexion', 'warm caramel skin', 'rich bronze skin', 'deep amber skin',
         'warm mahogany skin', 'rich ebony skin', 'deep mocha skin', 'dark umber skin'
       ],
-      hairStyles: ['elegant French braids', 'chic bob cut', 'sophisticated updo', 'natural wavy hair', 'stylish modern cut'],
+      hairStyles: [
+        'elegant French braids', 'chic bob cut', 'sophisticated updo', 'natural wavy hair', 'stylish modern cut',
+        'sleek straight hair', 'loose romantic curls', 'pixie cut with texture', 'shoulder-length layers',
+        'classic French twist', 'modern asymmetrical cut', 'natural texture with highlights', 'vintage-inspired waves',
+        'effortless beach waves', 'elegant chignon', 'textured lob cut', 'side-swept bangs with layers'
+      ],
       facialFeatures: ['bright eyes', 'refined features', 'elegant smile', 'sophisticated expression', 'charming demeanor'],
       culturalElements: ['French elegance', 'artistic elements', 'cultural sophistication', 'traditional patterns', 'refined aesthetics'],
       familyStructure: ['intimate family gathering', 'grandparents storytelling', 'elegant family dinner', 'cultural tradition', 'family celebration'],
@@ -123,15 +157,34 @@ export class MulticulturalVisualService {
         'cool espresso skin', 'dark chocolate skin', 'deep umber skin', 'cool walnut skin',
         'rich coffee skin', 'deep chestnut skin', 'rich cocoa skin', 'deep ebony skin'
       ],
-      // Diverse African American hair textures and styles
-      hairStyles: [
-        'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 
-        'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls',
-        'loose natural curls', 'tight coily hair', 'soft waves', 'kinky textured hair',
-        '4C natural hair', '3B curly hair', 'box braids', 'goddess braids',
-        'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
-        'pressed curls', 'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
+      // Boys' styles
+      boysHairStyles: [
+        'buzz cut', 'fade cut', 'taper fade', 'high top fade', 'low fade', 'crew cut', 'caesar cut', 
+        'curly top fade', 'curly high fade', 'curly low fade', 'curly taper fade', 'curly high top', 
+        'curly mohawk', 'curly faux hawk', 'curly undercut', 'fade with curls on top', 'textured crop', 
+        'curly fringe fade', 'twisted top fade', 'undercut design', 'hair tattoo', 'geometric patterns', 
+        'mini afro', 'medium afro', 'tapered afro', 'wash and go', 'finger coils', 'two strand twists', 
+        'flat twists', 'mini twists', 'locs', 'starter locs', 'freeform locs', 'twisted locs', 
+        'side part locs', 'middle part locs', 'ponytail with locs', 'nape area tapered'
       ],
+      // Girls' styles
+      girlsHairStyles: [
+        'short natural hair', 'medium natural hair', 'long natural hair', 'shoulder-length hair', 'chin-length hair',
+        'twist out', 'bantu knots', 'rod set', 'braid out', 'pineapple updo', 'high puff', 'low puff', 
+        'side puff', 'double puff', 'space buns', 'top knot bun', 'low bun', 'messy bun', 'sleek bun',
+        'cornrows', 'box braids', 'micro braids', 'jumbo braids', 'goddess braids', 'dutch braids', 
+        'french braids', 'fishtail braids', 'halo braid', 'crown braid', 'side braids', 'three strand twists',
+        'senegalese twists', 'marley twists', 'havana twists', 'passion twists', 'spring twists', 
+        'kinky twists', 'chunky twists', 'protective twists', 'sisterlocs', 'microlocs', 'traditional locs',
+        'interlocked locs', 'braided locs', 'loc updo', 'half up half down locs', 'afro puffs', 'large afro',
+        'picked out afro', 'shaped afro', 'curly afro', 'coily afro', 'kinky afro', 'twist and pin style',
+        'bobby pin curls', 'hair accessories with bows', 'headbands', 'hair clips', 'barrettes', 'scrunchies',
+        'silk scarves', 'bandanas', 'side swept bangs', 'face framing layers', 'layered cut', 'blunt cut',
+        'asymmetrical cut', 'zigzag parts', 'curved parts', 'triangle parts', 'diamond parts', 
+        'heart shaped parts', 'star patterns'
+      ],
+      // Legacy field for backward compatibility
+      hairStyles: [],
       // Comprehensive African American facial features system
       facialFeatures: {
         eyes: [
@@ -169,6 +222,13 @@ export class MulticulturalVisualService {
         'metropolitan diversity', 'cultural pride symbols', 'community strength',
         'mainstream American culture', 'suburban lifestyle', 'middle-class family values',
         'American dream symbols', 'educational achievement', 'professional success'
+      ],
+      // Mainstream American settings for non-dark skin English speakers
+      mainstreamSettings: [
+        'suburban neighborhood', 'modern American suburb', 'middle-class community',
+        'well-maintained school', 'public library', 'shopping mall', 'local park',
+        'family restaurant', 'community center', 'beautiful church', 'family home',
+        'historical landmark', 'cultural center'
       ],
       familyStructure: [
         'strong family bonds', 'community support', 'church family', 'multigenerational wisdom', 
@@ -235,11 +295,14 @@ export class MulticulturalVisualService {
     // Generate comprehensive facial features description
     const facialFeatures = this.generateFacialFeaturesDescription(profile.facialFeatures);
     
-    // Weighted selection with expanded African American cultural elements (60/40)
+    // Weighted selection with expanded African American and Creole cultural elements (60/40)
     const africanAmericanCulture = [
       'cultural pride symbols', 'community strength', 'modern urban style', 'rich heritage',
       'historical legacy', 'community leadership', 'artistic expression', 'musical heritage',
-      'strong family bonds', 'educational excellence', 'entrepreneurial spirit', 'social justice values'
+      'strong family bonds', 'educational excellence', 'entrepreneurial spirit', 'social justice values',
+      'French colonial influence', 'Catholic traditions', 'Bayou culture', 'Caribbean heritage',
+      'zydeco musical traditions', 'Creole jazz heritage', 'French Quarter culture', 'Louisiana Creole traditions',
+      'mixed language heritage', 'Caribbean food culture', 'second line parade traditions', 'Mardi Gras cultural elements'
     ];
     const mainstreamAmericanCulture = [
       'mainstream American culture', 'suburban lifestyle', 'educational achievement', 
@@ -254,17 +317,13 @@ export class MulticulturalVisualService {
   }
 
   private static getCulturallyAppropriateHairStyle(userInfo: UserInfo): string {
-    // When language is English and skin tone is dark, use African American hair textures/styles
+    // When language is English and skin tone is dark, use comprehensive African American hair styles
     if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      const africanAmericanHairStyles = [
-        'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 
-        'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls',
-        'loose natural curls', 'tight coily hair', 'kinky textured hair',
-        '4C natural hair', '3B curly hair', 'box braids', 'goddess braids',
-        'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
-        'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
-      ];
-      return this.selectRandomElement(africanAmericanHairStyles);
+      const profile = this.getCulturalVisualProfile('en') as any;
+      const genderSpecificStyles = userInfo.avatar?.type === 'boy' 
+        ? profile.boysHairStyles 
+        : profile.girlsHairStyles;
+      return this.selectRandomElement(genderSpecificStyles);
     }
     
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
@@ -292,6 +351,14 @@ export class MulticulturalVisualService {
       return this.generateMixedAfricanAmericanSetting(userInfo);
     }
     
+    // For English speakers with non-dark skin, use mainstream settings only
+    if (userInfo.nativeLanguage === 'en') {
+      const profile = this.getCulturalVisualProfile('en') as any;
+      const setting = this.selectRandomElement(profile.mainstreamSettings);
+      const culturalElement = this.selectRandomElement(['mainstream American culture', 'suburban lifestyle', 'middle-class family values']);
+      return `${setting} with ${culturalElement}`;
+    }
+    
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     const setting = this.selectRandomElement(profile.settings);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
@@ -306,17 +373,18 @@ export class MulticulturalVisualService {
     const isAfricanAmericanSetting = Math.random() < 0.65;
     
     const africanAmericanSettings = [
-      'vibrant African American neighborhood', 'community center', 'beautiful church', 
-      'cultural center', 'historical landmark', 'HBCU campus', 'community garden',
-      'Black-owned business district', 'cultural arts center', 'jazz club venue',
-      'soul food restaurant', 'barbershop community space', 'family reunion park',
-      'African American museum', 'community library', 'neighborhood basketball court',
-      'church fellowship hall', 'mentorship program center', 'youth development center'
+      'vibrant African American neighborhood', 'modern urban style', 'Black-owned business district', 
+      'cultural arts center', 'jazz club venue', 'soul food restaurant', 'barbershop community space', 
+      'family reunion park', 'African American museum', 'HBCU campus',
+      'French Quarter architecture with wrought iron balconies', 'Creole cottages', 
+      'Bayou landscapes with cypress trees and Spanish moss', 'Caribbean-influenced spaces with bright colors', 
+      'Catholic church settings', 'New Orleans jazz venues', 'second line parade routes', 'Mardi Gras celebration spaces'
     ];
     const generalAmericanSettings = [
-      'suburban neighborhood', 'modern American suburb', 'middle-class community', 
-      'well-maintained school', 'public library', 'local park', 'shopping center',
-      'community recreation center', 'family-friendly restaurant'
+      'suburban neighborhood', 'modern American suburb', 'middle-class community',
+      'well-maintained school', 'public library', 'shopping mall', 'local park',
+      'family restaurant', 'community center', 'beautiful church', 'family home',
+      'historical landmark', 'cultural center'
     ];
     
     const setting = isAfricanAmericanSetting 
