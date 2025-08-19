@@ -1029,9 +1029,10 @@ const initializeStory = async () => {
         const resumeEnabled = APP_CONFIG.features.resumeOnRefresh.guest || viaUrl;
 
         if (resumeEnabled) {
-          const cached = StorySessionCache.getCachedStorySession('guest');
+          const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
+          const cached = StorySessionCache.getCachedStorySession('guest', avatarType);
           if (cached && cached.pages?.length) {
-            console.log('♻️ Restoring guest story from cache');
+            console.log(`♻️ Restoring guest story from cache (avatar: ${avatarType})`);
             setStory(cached.pages);
             setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
             setStoryTitle(`${userInfo.name}'s Adventure`);
@@ -1101,16 +1102,21 @@ const initializeStory = async () => {
       console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
       setStorySource(srcFree as any);
 
-      // Persist guest story for refresh-resume
+      // Persist guest story for refresh-resume with avatar-aware cache key
       try {
+        const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
         StorySessionCache.cacheStorySession(
           'guest',
           currentDifficulty as any,
           result.pages,
           result.pages.map(() => ({ prompt: '' })),
           0,
-          { isPremium: false, sessionStartTime }
+          { isPremium: false, sessionStartTime },
+          undefined,
+          undefined,
+          avatarType
         );
+        console.log(`📚 Guest story cached with avatar type: ${avatarType}`);
       } catch (e) { console.warn('Story cache failed', e); }
     }
     
@@ -1496,7 +1502,8 @@ useEffect(() => {
     (async () => {
       try {
         const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
-        StorySessionCache.updateCurrentPage(cacheId, currentPage);
+        const avatarType = !isPremium && userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
+        StorySessionCache.updateCurrentPage(cacheId, currentPage, avatarType);
       } catch {}
     })();
   }

@@ -102,7 +102,9 @@ const handleFormSubmit = (info: UserInfo) => {
 
   setUserInfo(info);
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
-  try { StorySessionCache.clearCachedSession('guest'); } catch {}
+  // Clear cache with avatar-aware key to ensure clean separation
+  const avatarType = info.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : info.avatar?.type;
+  try { StorySessionCache.clearCachedSession('guest', true, avatarType); } catch {}
   setCurrentState("reading");
 };
 

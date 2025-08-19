@@ -28,7 +28,12 @@ export class StorySessionCache {
     return `${userId}_${difficulty}_${Date.now()}`;
   }
 
-  private static getCacheKey(userId: string): string {
+  private static getCacheKey(userId: string, avatarType?: string): string {
+    // Avatar-aware cache keys for guest users to prevent cross-session contamination
+    if (userId === 'guest' && avatarType) {
+      const normalizedAvatar = avatarType === 'prefer-not-to-answer' ? 'neutral' : avatarType;
+      return `${CACHE_KEY_PREFIX}${userId}_${normalizedAvatar}`;
+    }
     return `${CACHE_KEY_PREFIX}${userId}`;
   }
 
@@ -43,10 +48,11 @@ export class StorySessionCache {
     currentPage: number = 0,
     metadata: Partial<CachedStorySession['metadata']> = {},
     characterSessionId?: string,
-    sessionType?: 'new' | 'continuation' | 'rewrite'
+    sessionType?: 'new' | 'continuation' | 'rewrite',
+    avatarType?: string
   ): string {
     const sessionId = this.generateSessionId(userId, difficulty);
-    const cacheKey = this.getCacheKey(userId);
+    const cacheKey = this.getCacheKey(userId, avatarType);
     
     const session: CachedStorySession = {
       id: sessionId,
@@ -70,7 +76,8 @@ export class StorySessionCache {
 
     try {
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
-      console.log(`📚 Story session cached for user ${userId} with difficulty ${difficulty}`);
+      const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
+      console.log(`📚 Story session cached for user ${userId} with difficulty ${difficulty}${avatarInfo}`);
       return sessionId;
     } catch (error) {
       console.warn('Failed to cache story session:', error);
@@ -81,8 +88,8 @@ export class StorySessionCache {
   /**
    * Retrieve cached story session
    */
-  static getCachedStorySession(userId: string): CachedStorySession | null {
-    const cacheKey = this.getCacheKey(userId);
+  static getCachedStorySession(userId: string, avatarType?: string): CachedStorySession | null {
+    const cacheKey = this.getCacheKey(userId, avatarType);
     
     try {
       const cached = sessionStorage.getItem(cacheKey);
@@ -92,11 +99,12 @@ export class StorySessionCache {
       
       // Check if cache is expired
       if (Date.now() - session.timestamp > CACHE_DURATION) {
-        this.clearCachedSession(userId);
+        this.clearCachedSession(userId, true, avatarType);
         return null;
       }
 
-      console.log(`📖 Retrieved cached story session for user ${userId}`);
+      const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
+      console.log(`📖 Retrieved cached story session for user ${userId}${avatarInfo}`);
       return session;
     } catch (error) {
       console.warn('Failed to retrieve cached story session:', error);
@@ -107,15 +115,15 @@ export class StorySessionCache {
   /**
    * Update current page in cached session
    */
-  static updateCurrentPage(userId: string, currentPage: number): void {
-    const session = this.getCachedStorySession(userId);
+  static updateCurrentPage(userId: string, currentPage: number, avatarType?: string): void {
+    const session = this.getCachedStorySession(userId, avatarType);
     if (!session) return;
 
     session.currentPage = currentPage;
     session.timestamp = Date.now(); // Update timestamp
 
     try {
-      const cacheKey = this.getCacheKey(userId);
+      const cacheKey = this.getCacheKey(userId, avatarType);
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
     } catch (error) {
       console.warn('Failed to update current page in cache:', error);
@@ -127,16 +135,17 @@ export class StorySessionCache {
    */
   static updateSessionMetadata(
     userId: string, 
-    metadata: Partial<CachedStorySession['metadata']>
+    metadata: Partial<CachedStorySession['metadata']>,
+    avatarType?: string
   ): void {
-    const session = this.getCachedStorySession(userId);
+    const session = this.getCachedStorySession(userId, avatarType);
     if (!session) return;
 
     session.metadata = { ...session.metadata, ...metadata };
     session.timestamp = Date.now();
 
     try {
-      const cacheKey = this.getCacheKey(userId);
+      const cacheKey = this.getCacheKey(userId, avatarType);
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
     } catch (error) {
       console.warn('Failed to update session metadata:', error);
@@ -150,11 +159,12 @@ export class StorySessionCache {
     userId: string,
     pages: string[],
     currentPage?: number,
-    images: Array<{url?: string; prompt: string}> = []
+    images: Array<{url?: string; prompt: string}> = [],
+    avatarType?: string
   ): void {
-    const cacheKey = this.getCacheKey(userId);
+    const cacheKey = this.getCacheKey(userId, avatarType);
     try {
-      const existing = this.getCachedStorySession(userId);
+      const existing = this.getCachedStorySession(userId, avatarType);
       const session: CachedStorySession = existing ? {
         ...existing,
         pages,
@@ -185,15 +195,15 @@ export class StorySessionCache {
   /**
    * Mark session as complete
    */
-  static async markSessionComplete(userId: string): Promise<void> {
-    const session = this.getCachedStorySession(userId);
+  static async markSessionComplete(userId: string, avatarType?: string): Promise<void> {
+    const session = this.getCachedStorySession(userId, avatarType);
     if (!session) return;
 
     session.isComplete = true;
     session.timestamp = Date.now();
 
     try {
-      const cacheKey = this.getCacheKey(userId);
+      const cacheKey = this.getCacheKey(userId, avatarType);
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
       
       // Phase 2: Post-completion caching - cache all images with story hash
@@ -214,67 +224,86 @@ export class StorySessionCache {
   /**
    * Clear cached session for user
    */
-  static async clearCachedSession(userId: string, clearCharacterState: boolean = true): Promise<void> {
-    const cacheKey = this.getCacheKey(userId);
-    
-    try {
-      // Get characterSessionId before clearing if we need to clear character state
-      let characterSessionId: string | undefined;
-      if (clearCharacterState) {
-        const session = this.getCachedStorySession(userId);
-        characterSessionId = session?.characterSessionId;
-      }
-
-      sessionStorage.removeItem(cacheKey);
-      console.log(`🗑️ Cleared cached story session for user ${userId}`);
-      
-      // Clear character state if requested and we have a characterSessionId
-      if (clearCharacterState && characterSessionId) {
+  static async clearCachedSession(userId: string, clearCharacterState: boolean = true, avatarType?: string): Promise<void> {
+    // For guest users, clear all 3 possible avatar cache variants to ensure clean separation
+    if (userId === 'guest') {
+      const avatarTypes = ['boy', 'girl', 'neutral'];
+      for (const avatar of avatarTypes) {
+        const cacheKey = this.getCacheKey(userId, avatar);
         try {
-          const { StoryVisualStateManager } = await import('@/services/storyVisualState');
-          StoryVisualStateManager.clearStoryState(characterSessionId);
-          console.log(`🎭 Cleared character state for session: ${characterSessionId}`);
+          sessionStorage.removeItem(cacheKey);
+          console.log(`🗑️ Cleared cached story session for user ${userId} (avatar: ${avatar})`);
         } catch (error) {
-          console.warn('Failed to clear character state:', error);
+          console.warn(`Failed to clear ${avatar} cache:`, error);
         }
       }
-      
-      // Also clear any generation cache that might have stale content
-      console.log(`🧹 Force clearing generation cache to fix pronoun issues`);
+    } else {
+      const cacheKey = this.getCacheKey(userId, avatarType);
       try {
-        // Clear any cached generation data to force fresh generation
-        const generationCacheKeys = Object.keys(sessionStorage).filter(key => 
-          key.includes('generation') || key.includes('story') || key.includes('cache')
-        );
-        generationCacheKeys.forEach(key => {
-          sessionStorage.removeItem(key);
-          console.log(`🧹 Cleared cache key: ${key}`);
-        });
+        sessionStorage.removeItem(cacheKey);
+        console.log(`🗑️ Cleared cached story session for user ${userId}`);
       } catch (error) {
-        console.warn('Failed to clear generation cache:', error);
+        console.warn('Failed to clear cache:', error);
       }
+    }
+    
+    // Get characterSessionId before clearing if we need to clear character state
+    let characterSessionId: string | undefined;
+    if (clearCharacterState) {
+      const session = this.getCachedStorySession(userId, avatarType);
+      characterSessionId = session?.characterSessionId;
+    }
+    
+    // Clear character state if requested and we have a characterSessionId
+    if (clearCharacterState && characterSessionId) {
+      try {
+        const { StoryVisualStateManager } = await import('@/services/storyVisualState');
+        StoryVisualStateManager.clearStoryState(characterSessionId);
+        console.log(`🎭 Cleared character state for session: ${characterSessionId}`);
+      } catch (error) {
+        console.warn('Failed to clear character state:', error);
+      }
+    }
+    
+    // Comprehensive cache clearing for cross-session contamination prevention
+    console.log(`🧹 Comprehensive cache clearing to prevent cross-session contamination`);
+    try {
+      // Clear any cached generation data that might have stale avatar/pronoun content
+      const allKeys = Object.keys(sessionStorage);
+      const cacheKeys = allKeys.filter(key => 
+        key.includes('generation') || 
+        key.includes('story') || 
+        key.includes('cache') ||
+        key.includes('time2read') ||
+        key.includes('guest')
+      );
+      
+      cacheKeys.forEach(key => {
+        sessionStorage.removeItem(key);
+        console.log(`🧹 Cleared cache key: ${key}`);
+      });
     } catch (error) {
-      console.warn('Failed to clear cached session:', error);
+      console.warn('Failed to clear comprehensive cache:', error);
     }
   }
 
   /**
    * Check if user has a valid cached session
    */
-  static hasCachedSession(userId: string): boolean {
-    return this.getCachedStorySession(userId) !== null;
+  static hasCachedSession(userId: string, avatarType?: string): boolean {
+    return this.getCachedStorySession(userId, avatarType) !== null;
   }
 
   /**
    * Get session analytics
    */
-  static getSessionAnalytics(userId: string): {
+  static getSessionAnalytics(userId: string, avatarType?: string): {
     hasCachedSession: boolean;
     sessionAge?: number;
     difficulty?: DifficultyLevel;
     progress?: number;
   } {
-    const session = this.getCachedStorySession(userId);
+    const session = this.getCachedStorySession(userId, avatarType);
     
     if (!session) {
       return { hasCachedSession: false };
