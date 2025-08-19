@@ -5,25 +5,26 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   'beginner': {
     // Level 0 - Pre-reader
     name: 'High-Quality 3D Children\'s Art',
-    artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics (NO TEXT)',
+    artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics, single main character focus',
     colorPalette: 'Bright, cheerful colors with natural color harmony',
-    lighting: 'Natural daylight with soft shadows and highlights',
+    lighting: 'Natural daylight with soft shadows and highlights, clear lighting',
     texture: 'Smooth, polished surfaces with subtle material definition',
-    composition: 'Clear, focused composition with appealing depth',
-    quality: 'Premium children\'s book illustration with depth and dimension',
+    composition: 'Clear, focused single character composition, minimal clean background',
+    quality: 'Ultra premium children\'s book illustration with depth and dimension',
     
     // Prompt components
-    prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
+    prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful, single main character',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
+    brandSuffix: 'professional children\'s book illustration, Pixar-style quality, diverse inclusive characters',
+    negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 2.5,
-      steps: 6,
+      cfgScale: 3.0,
+      steps: 8,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.8
     }
@@ -59,25 +60,26 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   'medium': {
     // Level 2 - Developing
     name: 'Digital Painterly Illustration',
-    artStyle: 'Digital illustration with painterly qualities, soft brush strokes',
-    colorPalette: 'Warm, muted tones with soft pastels',
-    lighting: 'Gentle, diffused natural lighting with subtle rim lighting',
-    texture: 'Smooth gradients with subtle texture overlay',
-    composition: 'Clean, focused composition with depth of field',
-    quality: 'Professional children\'s book illustration standard',
+    artStyle: 'Digital illustration with painterly qualities, soft brush strokes, focused character presentation',
+    colorPalette: 'Warm, muted tones with soft pastels, harmonious palette',
+    lighting: 'Gentle, diffused natural lighting with subtle rim lighting, clear visibility',
+    texture: 'Smooth gradients with subtle texture overlay, clean finish',
+    composition: 'Clean, focused single character composition with depth of field, minimal background',
+    quality: 'Ultra professional children\'s book illustration standard',
     
     // Prompt components
-    prompt: 'children\'s book illustration, soft pastels, warm lighting, digital art',
+    prompt: 'children\'s book illustration, soft pastels, warm lighting, digital art, single main character focus',
     complexity: 'minimal',
     colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
-    brandSuffix: 'children\'s book illustration, warm colors, safe wholesome content',
+    brandSuffix: 'professional children\'s book illustration, warm colors, safe wholesome content, Caldecott Medal style',
+    negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Runware optimized)
     parameters: {
-      cfgScale: 3.0,
-      steps: 8,
+      cfgScale: 3.5,
+      steps: 10,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.75
     }
@@ -169,7 +171,7 @@ export function getStyleFramework(difficulty) {
 }
 
 // Helper function to build complete prompt from framework
-export function buildCompletePrompt(framework, sceneDescription, characterDescription = '', culturalContext = '') {
+export function buildCompletePrompt(framework, sceneDescription, characterDescription = '', culturalContext = '', storyElements = null) {
   const basePrompt = `${sceneDescription}, ${framework.prompt}`;
   
   let enhancedPrompt = basePrompt;
@@ -182,13 +184,25 @@ export function buildCompletePrompt(framework, sceneDescription, characterDescri
     enhancedPrompt += `, ${culturalContext}`;
   }
   
+  // Add specific story elements if provided (animals, objects)
+  if (storyElements && storyElements.animals && storyElements.animals.length > 0) {
+    const primaryAnimal = storyElements.animals[0];
+    enhancedPrompt += `, featuring ${primaryAnimal}`;
+  }
+  
   // Add framework-specific quality terms
   enhancedPrompt += `, ${framework.artStyle}, ${framework.quality}`;
   
   // Add brand suffix
   enhancedPrompt += `, ${framework.brandSuffix}`;
   
-  return enhancedPrompt;
+  const negativePrompt = framework.negativePrompt || 
+    "multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words";
+  
+  return {
+    positivePrompt: enhancedPrompt,
+    negativePrompt
+  };
 }
 
 // Helper function to get optimized parameters

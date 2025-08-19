@@ -698,6 +698,15 @@ serve(async (req) => {
       // Enhanced character description with gender specificity
       const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinToneForPrompt}`;
       
+      // Extract story elements for image alignment
+      const storyElements = extractStoryElements(pageText);
+      
+      console.log(`🎨 Extracted story elements:`, { 
+        animals: storyElements.animals.slice(0, 3), 
+        characters: storyElements.characters.slice(0, 3),
+        objects: storyElements.objects.slice(0, 3) 
+      });
+      
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
       
       const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
@@ -723,21 +732,22 @@ serve(async (req) => {
       const culturalCharacterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
       const culturalContext = MulticulturalVisualService.generateCulturalSetting(userInfo);
       
-      // Use the centralized buildCompletePrompt function for consistent, high-quality prompts
-      enhancedPrompt = buildCompletePrompt(
+      // Use the centralized buildCompletePrompt function with story elements for consistent, high-quality prompts
+      const promptResult = buildCompletePrompt(
         framework,
         processedText,  // scene description
         culturalCharacterDesc,  // character description
-        culturalContext  // cultural context
+        culturalContext,  // cultural context
+        storyElements  // story elements for alignment
       );
+      
+      enhancedPrompt = promptResult.positivePrompt;
+      finalNegativePrompt = promptResult.negativePrompt;
       
       // Add environmental and visual details context
       enhancedPrompt += environmentalContext + visualDetailsContext;
       
-      console.log(`🎯 Complete structured prompt created using buildCompletePrompt for ${userInfo.name}`);
-      
-      // Use cultural negative prompt for quality and cultural sensitivity
-      finalNegativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
+      console.log(`🎯 Complete structured prompt created using buildCompletePrompt for ${userInfo.name} with story elements`);
       
       if (characterSeed) {
         finalSeed = characterSeed;
