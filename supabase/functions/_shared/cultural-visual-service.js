@@ -130,32 +130,48 @@ export class MulticulturalVisualService {
   }
 
   static generateCulturalCharacterDescription(userInfo) {
+    if (!userInfo || !userInfo.avatar) {
+      console.warn('⚠️ Missing userInfo or avatar, using default character');
+      return 'friendly child with warm smile';
+    }
+
+    // Handle "prefer not to answer" avatar type
+    const genderTerm = userInfo.avatar.type === 'neutral' || userInfo.avatar.type === 'prefer not to answer' 
+      ? 'child' 
+      : userInfo.avatar.type === 'boy' ? 'boy' : 'girl';
+
     // Special handling for English speakers with dark skin - mix African American and general American
     if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      return this.generateMixedAfricanAmericanDescription(userInfo);
+      return this.generateMixedAfricanAmericanDescription(userInfo, genderTerm);
     }
     
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     
-    // Use actual user-selected attributes instead of random ones
-    const skinTone = userInfo.avatar?.skinTone || this.selectRandomElement(profile.skinTones);
-    const hairStyle = this.getHairColorForSkinTone(userInfo.avatar?.skinTone, profile);
+    // Map skin tone properly
+    const skinToneMapping = {
+      'pale': 'fair skin with rosy cheeks',
+      'light': 'light skin with warm undertones',
+      'medium': 'medium skin with golden undertones', 
+      'olive': 'olive skin with warm bronze undertones',
+      'dark': this.getDarkSkinCulturalDescription(userInfo.nativeLanguage)
+    };
+
+    const skinTone = skinToneMapping[userInfo.avatar.skinTone] || skinToneMapping['medium'];
+    const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
-
-    const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
     
-    console.log(`🎭 Character generation: ${genderTerm} with ${skinTone}, ${hairStyle} (mapped from skinTone: ${userInfo.avatar?.skinTone})`);
+    console.log(`🎭 Unified Character: ${genderTerm} with ${skinTone}, ${hairStyle}`);
     
     return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
   }
 
-  static generateMixedAfricanAmericanDescription(userInfo) {
+  static generateMixedAfricanAmericanDescription(userInfo, genderTerm = null) {
     const profile = this.getCulturalVisualProfile('en');
-    const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 'girl';
+    const finalGenderTerm = genderTerm || (userInfo.avatar?.type === 'boy' ? 'boy' : 'girl');
     
-    // Use the user's selected avatar skin tone
-    const skinTone = userInfo.avatar?.skinTone || this.selectRandomElement(profile.skinTones);
+    // Use specific African American skin tone description
+    const skinTone = 'rich African American brown skin';
     
     // Get culturally appropriate hair style for African American heritage
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
@@ -170,9 +186,23 @@ export class MulticulturalVisualService {
       ? this.selectRandomElement(['cultural pride symbols', 'community strength', 'modern urban style'])
       : this.selectRandomElement(['mainstream American culture', 'suburban lifestyle', 'educational achievement']);
     
-    console.log(`🎭 Mixed AA Character: ${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`);
+    console.log(`🎭 Mixed AA Character: ${finalGenderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`);
     
-    return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+    return `${finalGenderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+  }
+
+  static getDarkSkinCulturalDescription(nativeLanguage) {
+    const culturalDescriptions = {
+      'es': 'rich Afro-Latina brown skin',
+      'ar': 'rich Middle Eastern brown skin', 
+      'hi': 'rich South Asian brown skin',
+      'zh': 'warm East Asian skin',
+      'pt': 'rich Afro-Brazilian brown skin',
+      'fr': 'rich Afro-French brown skin',
+      'en': 'rich African American brown skin'
+    };
+    
+    return culturalDescriptions[nativeLanguage] || 'rich brown skin';
   }
 
   static getCulturallyAppropriateHairStyle(userInfo) {

@@ -195,37 +195,8 @@ class StoryVisualStateManager {
     return newIndex > currentIndex;
   }
 
-  static resolvePronouns(sessionId: string, text: string): string {
-    const state = this.storyStates.get(sessionId);
-    if (!state) return text;
-    
-    let resolvedText = text;
-    
-    // Resolve "they" to last mentioned character pair or all characters
-    if (resolvedText.includes('they') && state.lastMentionedCharacters.length >= 2) {
-      const characterPair = state.lastMentionedCharacters.slice(-2).join(' and ');
-      resolvedText = resolvedText.replace(/\bthey\b/gi, characterPair);
-      console.log(`🔄 Resolved "they" to: ${characterPair}`);
-    } else if (resolvedText.includes('they') && state.characters.size >= 2) {
-      const allCharacters = Array.from(state.characters.keys()).join(' and ');
-      resolvedText = resolvedText.replace(/\bthey\b/gi, allCharacters);
-      console.log(`🔄 Resolved "they" to all characters: ${allCharacters}`);
-    }
-    
-    // Track character mentions for future pronoun resolution
-    const mentionedChars: string[] = [];
-    for (const [charName] of state.characters) {
-      if (text.toLowerCase().includes(charName.toLowerCase())) {
-        mentionedChars.push(charName);
-      }
-    }
-    
-    if (mentionedChars.length > 0) {
-      state.lastMentionedCharacters = mentionedChars;
-    }
-    
-    return resolvedText;
-  }
+  // REMOVED: Pronoun resolution is handled at story generation level, not image generation
+  // This ensures consistency between story text and image prompts
 
   static trackCharacterMention(sessionId: string, characterName: string): void {
     const state = this.getOrCreateStoryState(sessionId);
@@ -676,10 +647,10 @@ serve(async (req) => {
       StoryVisualStateManager.trackCharacterMention(sessionId, userInfo.name);
       
       // Enhanced text processing with visual detail tracking
-      let pronoun_resolved_text = StoryVisualStateManager.resolvePronouns(sessionId, pageText);
+      // REMOVED: Pronoun resolution - text is already resolved at story generation level
       
       // Track and enhance visual details for consistency
-      const enhancedText = StoryVisualStateManager.enhanceTextWithConsistentDetails(sessionId, pronoun_resolved_text, pageNumber);
+      const enhancedText = StoryVisualStateManager.enhanceTextWithConsistentDetails(sessionId, pageText, pageNumber);
       
       const processedText = await extractPrimarySceneWithAI(enhancedText, sessionId, pageNumber, userInfo);
       

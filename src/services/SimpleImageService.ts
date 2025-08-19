@@ -177,30 +177,36 @@ export class SimpleImageService {
     }
   }
 
-  // Simple prompt generation for basic fallbacks
-  private static generateSimplePrompt(pageText: string, userInfo?: UserInfo): string {
-    const characterDesc = userInfo 
-      ? `${userInfo.name} (${userInfo.avatar?.type || 'child'})`
-      : 'friendly character';
+  // Simple prompt generation using unified cultural service
+  private static async generateSimplePrompt(pageText: string, userInfo?: UserInfo): Promise<string> {
+    let characterDesc = 'friendly character';
     
-    // Extract key elements using simple rules
-    const lowerText = pageText.toLowerCase();
-    const keyObjects = [];
-    
-    // Look for important objects
-    if (lowerText.includes('locket') || lowerText.includes('golden')) {
-      keyObjects.push('golden locket');
-    }
-    if (lowerText.includes('water') || lowerText.includes('pond') || lowerText.includes('lake')) {
-      keyObjects.push('water surface');
-    }
-    if (lowerText.includes('tree') || lowerText.includes('forest')) {
-      keyObjects.push('trees');
+    if (userInfo && userInfo.avatar) {
+      // Import and use the shared cultural visual service
+      const { MulticulturalVisualService } = await import('../../supabase/functions/_shared/cultural-visual-service.js');
+      characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+      
+      // Replace character name in the text
+      if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
+        // Character is mentioned in the text, use it directly  
+        characterDesc = `${userInfo.name} (${characterDesc})`;
+      }
     }
     
-    const objectsDesc = keyObjects.length > 0 ? ` with ${keyObjects.join(', ')}` : '';
-    
-    return `Children's book illustration: ${characterDesc} ${pageText}${objectsDesc}. Bright, colorful, safe for children, consistent-face children-book bright-colors`;
+    // Use intelligent content extraction instead of hardcoded rules
+    try {
+      const { DirectContentExtractor } = await import('./DirectContentExtractor');
+      const extractedContent = DirectContentExtractor.extractPageContent(pageText);
+      
+      const visualElements = extractedContent.object 
+        ? ` featuring ${extractedContent.object}` 
+        : '';
+      
+      return `Children's book illustration: ${characterDesc}. Scene: ${pageText}${visualElements}. Bright, colorful, safe for children, consistent character appearance`;
+    } catch (error) {
+      console.warn('⚠️ DirectContentExtractor not available, using basic prompt');
+      return `Children's book illustration: ${characterDesc}. Scene: ${pageText}. Bright, colorful, safe for children, consistent character appearance`;
+    }
   }
 
   // Main generation method with tiered approach
@@ -408,11 +414,8 @@ export class SimpleImageService {
       
       console.log('🎨 Generated structured prompt:', enhancedPrompt.substring(0, 200) + '...');
 
-      // Use simple prompt for now (DirectContentExtractor integration pending)
-      const simplePrompt = this.generateSimplePrompt(cleanScene, userInfo);
-
-      // Combine both approaches for maximum quality
-      const finalPrompt = `${simplePrompt}. ${promptTemplate.styleFramework}. ${promptTemplate.qualityEnhancement}`;
+      // Use ONLY the structured prompt engine for consistency
+      const finalPrompt = StructuredPromptEngine.templateToPrompt(promptTemplate);
 
       const { data, error } = await supabase.functions.invoke('runware-test-simple', {
         body: {
@@ -465,7 +468,7 @@ export class SimpleImageService {
     try {
       console.log('🎯 OpenAI DALL-E generation');
 
-      const enhancedPrompt = this.generateSimplePrompt(cleanScene, userInfo);
+      const enhancedPrompt = await this.generateSimplePrompt(cleanScene, userInfo);
 
       console.log('🎯 [DEBUG] Calling OpenAI with:', {
         positivePrompt: enhancedPrompt?.substring(0, 50),

@@ -19,7 +19,7 @@ serve(async (req) => {
     const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
     
     // Extract scene with cultural context
-    const extractedScene = extractSceneWithCulture(pageText, userInfo);
+    const extractedScene = await extractSceneWithCulture(pageText, userInfo);
     
     // Use framework for consistent styling
     const framework = getStyleFramework(difficultyLevel);
@@ -95,14 +95,13 @@ serve(async (req) => {
   }
 });
 
-// Scene extraction with cultural context and sea/dolphin priority
-function extractSceneWithCulture(pageText: string, userInfo?: any): string {
+// Scene extraction using unified cultural service
+async function extractSceneWithCulture(pageText: string, userInfo?: any): Promise<string> {
   if (!pageText) return 'a friendly character in a beautiful scene';
   
-  const text = pageText.toLowerCase();
   const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
   
-  // Enhanced scene scoring with sea/dolphin priority
+  // Intelligent scene scoring based on visual richness
   let bestScene = sentences[0] || pageText;
   let bestScore = 0;
   
@@ -125,38 +124,23 @@ function extractSceneWithCulture(pageText: string, userInfo?: any): string {
     }
   });
   
-  // Generate character description with cultural context
-  let characterDesc = 'child';
-  if (userInfo?.name) {
-    characterDesc = userInfo.name;
-  }
-  
-  // Simple avatar description with cultural clothing
-  if (userInfo?.avatar) {
-    const skinTone = userInfo.avatar.skinTone || 'medium';
-    const type = userInfo.avatar.type || 'child';
-    
-    const skinMap = {
-      'pale': 'fair skin', 'light': 'light skin', 'medium': 'medium skin',
-      'olive': 'olive skin', 'dark': 'dark skin'
-    };
-    
-    const hairMap = {
-      'pale': 'blonde hair', 'light': 'brown hair', 'medium': 'brown hair',
-      'olive': 'dark brown hair', 'dark': 'black hair'
-    };
-    
-    // Apply cultural clothing logic for English + Dark Skin
-    let clothingDesc = '';
-    if (userInfo.nativeLanguage === 'en' && skinTone === 'dark') {
-      clothingDesc = ' in modern American fashion';
-    } else if (userInfo.nativeLanguage === 'fr' && skinTone === 'dark') {
-      clothingDesc = ' in African-French fusion style';
-    } else if (userInfo.nativeLanguage === 'es' && skinTone === 'dark') {
-      clothingDesc = ' in contemporary Hispanic fashion';
+  // Generate character description using unified cultural service
+  let characterDesc = 'friendly child';
+  if (userInfo && userInfo.avatar) {
+    try {
+      const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
+      characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+      
+      // Use character name if mentioned in the scene
+      if (userInfo.name && bestScene.toLowerCase().includes(userInfo.name.toLowerCase())) {
+        characterDesc = `${userInfo.name} (${characterDesc})`;
+      }
+      
+      console.log(`🎭 Unified character for Tier 2.5: ${characterDesc}`);
+    } catch (error) {
+      console.warn('⚠️ Failed to load cultural service, using fallback:', error);
+      characterDesc = `${userInfo.name || 'child'} with ${userInfo.avatar?.type || 'child'} appearance`;
     }
-    
-    characterDesc = `${type} with ${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
   }
   
   return `${characterDesc}. Scene: ${bestScene}`;
