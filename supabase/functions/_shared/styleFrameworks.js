@@ -175,82 +175,22 @@ export function getStyleFramework(difficulty) {
   return framework;
 }
 
-// Helper function to build complete prompt from framework with Phase 3 optimization
+// STRIPPED - Prompt building moved to frontend StructuredPromptEngine
+// Legacy function for backwards compatibility - DO NOT USE
 export function buildCompletePrompt(framework, sceneDescription, characterDescription = '', culturalContext = '', storyElements = null) {
-  // Phase 3: Priority-based prompt assembly
-  const components = [
-    { priority: 1, content: sceneDescription, essential: true },
-    { priority: 2, content: framework.prompt, essential: true },
-    { priority: 3, content: characterDescription, essential: false },
-    { priority: 4, content: framework.artStyle, essential: true },
-    { priority: 5, content: culturalContext, essential: false },
-    { priority: 6, content: framework.quality, essential: true }
-  ];
+  console.warn('⚠️ buildCompletePrompt() is deprecated - use frontend StructuredPromptEngine');
   
-  // Add story elements if provided
-  if (storyElements && storyElements.animals && storyElements.animals.length > 0) {
-    const primaryAnimal = storyElements.animals[0];
-    components.push({ priority: 7, content: `featuring ${primaryAnimal}`, essential: false });
-  }
-  
-  // Add brand suffix last
-  components.push({ priority: 8, content: framework.brandSuffix, essential: true });
-  
-  // Phase 3: Smart deduplication system
-  const deduplicatedComponents = components
-    .filter(comp => comp.content && comp.content.trim().length > 0)
-    .map(comp => comp.content.trim())
-    .reduce((acc, current) => {
-      // Check for significant word overlap with existing components
-      const existingWords = acc.join(' ').toLowerCase().split(/\s+/);
-      const currentWords = current.toLowerCase().split(/\s+/);
-      const overlap = currentWords.filter(word => existingWords.includes(word) && word.length > 3).length;
-      
-      // Only add if overlap is minimal (less than 30% of words)
-      if (overlap / currentWords.length < 0.3) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
-  
-  // Phase 3: Token budget management (target: 200-300 tokens)
-  let enhancedPrompt = deduplicatedComponents.join(', ');
-  const estimatedTokens = estimateTokenCount(enhancedPrompt);
-  
-  if (estimatedTokens > 300) {
-    // Trim non-essential components first
-    const essentialOnly = components
-      .filter(comp => comp.essential && comp.content)
-      .map(comp => comp.content.trim())
-      .join(', ');
-    
-    if (estimateTokenCount(essentialOnly) <= 300) {
-      enhancedPrompt = essentialOnly;
-    } else {
-      // Aggressively trim even essential components
-      enhancedPrompt = enhancedPrompt.substring(0, Math.floor(300 * 4.5)); // ~4.5 chars per token
-    }
-  }
-  
-  const negativePrompt = framework.negativePrompt || 
-    "multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words";
-  
-  console.log(`📝 Prompt optimization: ${estimatedTokens} tokens → ${estimateTokenCount(enhancedPrompt)} tokens`);
+  // Simple fallback for emergency use only
+  const simplePrompt = `${sceneDescription}, ${framework.prompt}, ${framework.brandSuffix}`;
+  const negativePrompt = framework.negativePrompt || "text, words, scary, dark";
   
   return {
-    positivePrompt: enhancedPrompt,
+    positivePrompt: simplePrompt,
     negativePrompt
   };
 }
 
-// Phase 3: Token estimation helper
-function estimateTokenCount(text) {
-  if (!text) return 0;
-  // Rough estimation: ~4.5 characters per token for English
-  return Math.ceil(text.length / 4.5);
-}
-
-// Helper function to get optimized parameters
+// Helper function to get optimized parameters - KEEP THIS (technical only)
 export function getOptimizedParameters(framework, characterComplexity = 1) {
   const baseParams = { ...framework.parameters };
   
@@ -263,7 +203,7 @@ export function getOptimizedParameters(framework, characterComplexity = 1) {
   return baseParams;
 }
 
-// Validation function to ensure framework completeness
+// Validation function - KEEP THIS (technical validation)
 export function validateStyleFramework(difficulty) {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
   const framework = COMPREHENSIVE_STYLE_FRAMEWORKS[normalizedDifficulty] || COMPREHENSIVE_STYLE_FRAMEWORKS['medium'];

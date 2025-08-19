@@ -267,52 +267,19 @@ export const FrontendIntelligence = {
   ]
 };
 
-// African American Weighted Selection
+// STRIPPED FUNCTIONS - Data only export
+// All prompt building logic moved to frontend StructuredPromptEngine
+
+// Legacy function stubs for backwards compatibility - DO NOT USE for new code
 export function selectAfricanAmericanSkinTone() {
-  const skinTones = FrontendIntelligence.culturalProfiles.en?.skinTones || [];
-  if (skinTones.length === 0) return 'warm caramel skin';
-  
-  // Weighted selection favoring diversity across the spectrum
-  const weights = skinTones.map((_, index) => {
-    const position = index / (skinTones.length - 1);
-    // Higher weight for middle and darker tones (60% of selections from darker half)
-    return position > 0.4 ? 1.8 : 1.0;
-  });
-  
-  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-  const random = Math.random() * totalWeight;
-  
-  let cumulativeWeight = 0;
-  for (let i = 0; i < skinTones.length; i++) {
-    cumulativeWeight += weights[i];
-    if (random <= cumulativeWeight) {
-      return skinTones[i];
-    }
-  }
-  
-  return skinTones[Math.floor(Math.random() * skinTones.length)];
+  console.warn('⚠️ selectAfricanAmericanSkinTone() is deprecated - use frontend StructuredPromptEngine');
+  return 'warm caramel skin';
 }
 
-// Enhanced Cultural Character Generation
 export function generateCulturalCharacterDescription(userInfo) {
-  const language = userInfo?.nativeLanguage || 'en';
-  const profile = FrontendIntelligence.culturalProfiles[language] || FrontendIntelligence.culturalProfiles.en;
-  
-  if (!profile) return 'child with warm friendly appearance';
-  
-  // Special handling for English speakers with dark skin - weighted randomization
-  if (language === 'en' && userInfo.avatar?.skinTone === 'dark') {
-    return generateMixedAfricanAmericanDescription(userInfo, profile);
-  }
-  
-  // For English speakers with non-dark skin, use simple avatar-based description
-  if (language === 'en' && userInfo.avatar?.skinTone !== 'dark') {
-    return generateSimpleAvatarDescription(userInfo);
-  }
-  
-  // For other languages, ensure appropriate cultural context
-  if (language !== 'en') {
-    return generateStandardCulturalDescription(userInfo, profile);
+  console.warn('⚠️ generateCulturalCharacterDescription() is deprecated - use frontend StructuredPromptEngine');
+  return 'child with warm friendly appearance';
+}
   }
   
   // Fallback case

@@ -608,14 +608,13 @@ serve(async (req) => {
     console.log('🔑 RUNWARE_API_KEY configured');
 
     const requestData = await req.json();
+    
+    // STRIPPED TO API WRAPPER ONLY - Accept processed data from frontend
     const { 
-      pageText,
-      sessionId,
-      userInfo,
-      pageNumber = 1,
-      difficultyLevel = 'medium',
+      // Complete prompt data from frontend StructuredPromptEngine
       positivePrompt,
       negativePrompt,
+      // Technical parameters
       width = 1024,
       height = 1024,
       numberResults = 1,
@@ -624,239 +623,31 @@ serve(async (req) => {
       scheduler = "FlowMatchEulerDiscreteScheduler",
       strength = 0.8,
       seed,
-      characterName,
-      characterDescription,
-      skinTone,
-      avatarType,
-      storyTheme,
-      pageIndex = 0
+      // Metadata for logging
+      sessionId,
+      pageNumber = 1,
+      userInfo
     } = requestData;
     
+    // STRIPPED - No processing logic, simple API wrapper
     const model = "runware:100@1";
     
-    let enhancedPrompt: string;
-    let finalSeed = seed;
-    let finalNegativePrompt: string;
-    let optimalParams = {};
+    // Validate required parameters
+    if (!positivePrompt) {
+      return createCorsErrorResponse('positivePrompt is required', 400);
+    }
     
-    if (pageText && sessionId && userInfo) {
-      // Validate userInfo
-      const validation = validateUserInfo(userInfo);
-      if (!validation.valid) {
-        return createCorsErrorResponse(`Invalid userInfo: ${validation.error}`, 400);
-      }
-      
-      const state = StoryVisualStateManager.getOrCreateStoryState(sessionId, 10);
-      state.currentPage = pageNumber;
-      
-      // Apply comprehensive character info to state with gender consistency
-      if (userInfo.avatar.skinTone) {
-        StoryVisualStateManager.updateSetting(sessionId, pageNumber, {
-          skinTone: userInfo.avatar.skinTone
-        });
-      }
-      
-      // Ensure character consistency across pages
-      const mainCharacterDesc = `${userInfo.avatar.type} ${userInfo.avatar.skinTone} skin character`;
-      StoryVisualStateManager.updateCharacterWithSeed(
-        sessionId, 
-        userInfo.name, 
-        mainCharacterDesc, 
-        undefined, 
-        pageNumber
-      );
-      
-      const secondaryCharacters = detectSecondaryCharacters(pageText);
-      for (const charName of secondaryCharacters) {
-        StoryVisualStateManager.updateCharacterWithSeed(
-          sessionId, 
-          charName, 
-          `friendly ${charName}`, 
-          undefined, 
-          pageNumber
-        );
-        StoryVisualStateManager.trackCharacterMention(sessionId, charName);
-      }
-      
-      StoryVisualStateManager.trackCharacterMention(sessionId, userInfo.name);
-      
-      // Enhanced text processing with visual detail tracking
-      // REMOVED: Pronoun resolution - text is already resolved at story generation level
-      
-      // Track and enhance visual details for consistency
-      const enhancedText = StoryVisualStateManager.enhanceTextWithConsistentDetails(sessionId, pageText, pageNumber);
-      
-      const processedText = await extractPrimarySceneWithAI(enhancedText, sessionId, pageNumber, userInfo);
-      
-      let characterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
-      
-      // Generate seed if none exists for character consistency
-      if (!characterSeed) {
-        characterSeed = Math.floor(Math.random() * 2147483647);
-        StoryVisualStateManager.updateCharacterWithSeed(
-          sessionId, 
-          userInfo.name, 
-          mainCharacterDesc,
-          characterSeed,
-          pageNumber
-        );
-        console.log(`🔒 Saved seed ${characterSeed} for ${userInfo.name} consistency`);
-      }
-      
-      const skinToneMap = {
-        'pale': 'pale skin',
-        'light': 'light skin', 
-        'medium': 'medium skin',
-        'olive': 'olive skin',
-        'dark': 'dark skin'
-      };
-      
-      const hairColorMap = {
-        'light-girl': 'blonde hair',
-        'light-boy': 'light brown hair',
-        'pale-girl': 'blonde hair',
-        'pale-boy': 'blonde hair',
-        'medium-girl': 'brown hair',
-        'medium-boy': 'brown hair',
-        'olive-girl': 'dark brown hair',
-        'olive-boy': 'dark brown hair',
-        'dark-girl': 'black hair',
-        'dark-boy': 'black hair'
-      };
-      
-      const avatarKey = `${userInfo.avatar.skinTone}-${userInfo.avatar.type}`;
-      const hairColor = hairColorMap[avatarKey] || 'brown hair';
-      
-      const skinToneForPrompt = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
-      
-      // Enhanced character description with gender specificity
-      const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinToneForPrompt}`;
-      
-      // Use the lean multi-stage enhancement pipeline for all processing
-      const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
-        processedText,
-        userInfo,
-        sessionId,
-        pageNumber,
-        10 // totalPages
-      );
-      
-      console.log(`🎨 Enhanced prompt via lean pipeline: ${enhancementResult.enhancedPrompt.substring(0, 100)}...`);
-      
-      const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
-      
-      const environmentalContext = StoryVisualStateManager.getSettingForPrompt(sessionId);
-      const visualDetailsContext = StoryVisualStateManager.getVisualDetailsForPrompt(sessionId, pageNumber);
-      
-      // Enhanced negative prompt system for high-quality, accurate images
-      const comprehensiveNegativePrompt = generateComprehensiveNegativePrompt(processedText, secondaryCharacters, userInfo);
-      
-      // Combine provided negative prompt with comprehensive quality controls
-      finalNegativePrompt = negativePrompt 
-        ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
-        : comprehensiveNegativePrompt;
-      
-      // Use the enhanced prompt from the lean pipeline
-      enhancedPrompt = enhancementResult.enhancedPrompt;
-      finalNegativePrompt = enhancementResult.negativePrompt || comprehensiveNegativePrompt;
-      
-      // Get optimal generation parameters from the pipeline
-      optimalParams = enhancementResult.generationParams || {};
-      
-      // Add environmental and visual details context
-      enhancedPrompt += environmentalContext + visualDetailsContext;
-      
-      console.log(`🎨 Using consolidated pipeline for ${userInfo.name} (page ${pageNumber})`);
-      
-      console.log(`🎯 Complete structured prompt created using buildCompletePrompt for ${userInfo.name} with story elements`);
-      
-      if (characterSeed) {
-        finalSeed = characterSeed;
-        console.log(`🎯 Using persistent seed ${characterSeed} for ${userInfo.name} consistency`);
-      } else {
-        const newSeed = Math.floor(Math.random() * 2147483647);
-        StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, newSeed, pageNumber);
-        finalSeed = newSeed;
-        console.log(`🔒 Locked new seed ${newSeed} for ${userInfo.name} on page ${pageNumber}`);
-      }
-      
-      const settingUpdates: any = {};
-      if (processedText.includes('sunny') || processedText.includes('bright')) {
-        settingUpdates.weather = 'sunny';
-      }
-      if (processedText.includes('rain') || processedText.includes('stormy')) {
-        settingUpdates.weather = 'rainy';
-      }
-      if (processedText.includes('night') || processedText.includes('dark')) {
-        settingUpdates.timeOfDay = 'nighttime';
-      }
-      if (Object.keys(settingUpdates).length > 0) {
-        StoryVisualStateManager.updateSetting(sessionId, pageNumber, settingUpdates);
-      }
-      
-      console.log(`🎨 Server-side enhanced prompt for ${userInfo.name} (page ${pageNumber}): "${processedText}" → enhanced`);
-      
-    } else {
-      enhancedPrompt = positivePrompt || "children-book character bright-colors";
-      
-      // Generate comprehensive negative prompt for non-story images too
-      const comprehensiveNegativePrompt = generateComprehensiveNegativePrompt("", [], null);
-      finalNegativePrompt = negativePrompt 
-        ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
-        : comprehensiveNegativePrompt;
-      
-      if (characterName && characterDescription) {
-        const skinToneMap = {
-          'pale': 'pale skin',
-          'light': 'light skin', 
-          'medium': 'medium skin',
-          'olive': 'olive skin',
-          'dark': 'dark skin'
-        };
-        
-        const hairColorMap = {
-          'light-girl': 'blonde hair',
-          'light-boy': 'light brown hair',
-          'pale-girl': 'blonde hair',
-          'pale-boy': 'blonde hair',
-          'medium-girl': 'brown hair',
-          'medium-boy': 'brown hair',
-          'olive-girl': 'dark brown hair',
-          'olive-boy': 'dark brown hair',
-          'dark-girl': 'black hair',
-          'dark-boy': 'black hair'
-        };
-        
-        const avatarKey = `${skinTone}-${avatarType}`;
-        const hairColor = hairColorMap[avatarKey] || 'brown hair';
-        const skin = skinToneMap[skinTone] || 'medium skin';
-        
-        const safeName = characterName || 'character';
-        const characterDesc = `${safeName}: ${avatarType} ${hairColor} ${skin}`;
-        enhancedPrompt = `${characterDesc} ${enhancedPrompt} consistent-face children-book`;
-      }
-    }
+    // Use provided prompts and parameters directly - no processing
+    const finalPrompt = positivePrompt;
+    const finalNegativePrompt = negativePrompt || "text, words, scary, dark";
+    const finalSeed = seed;
+    
+    // STRIPPED - All processing removed
+    console.log(`🎯 API wrapper: Using provided prompts directly`);
+    console.log(`📝 Positive prompt: ${finalPrompt.substring(0, 100)}...`);
+    console.log(`📝 Negative prompt: ${finalNegativePrompt.substring(0, 50)}...`);
 
-    // Validate and truncate prompt length
-    if (enhancedPrompt.length > 2800) {
-      console.log(`Prompt too long (${enhancedPrompt.length} chars), truncating...`);
-      
-      const coreContent = enhancedPrompt.substring(0, 2000);
-      const qualitySuffix = ", quality art, vibrant, text-free";
-      enhancedPrompt = coreContent + qualitySuffix;
-      
-      console.log(`Truncated prompt to ${enhancedPrompt.length} characters`);
-    } else {
-      enhancedPrompt += `, quality children's book art, vibrant, text-free`;
-    }
-
-    // Safety: Prevent negative prompt inversions
-    if (enhancedPrompt.includes('NOT') || enhancedPrompt.includes('bad') || enhancedPrompt.includes('ugly')) {
-      console.log('🚨 Detected negative terms in positive prompt, cleaning...');
-      enhancedPrompt = enhancedPrompt.replace(/\b(NOT|bad|ugly|terrible|awful)\b/gi, '');
-    }
-
-    // Enhanced WebSocket connection with robust lifecycle management
+    // STRIPPED - API wrapper only, make Runware WebSocket call
     console.log('🌐 Attempting WebSocket connection to Runware...');
     
     return new Promise((resolve) => {
@@ -865,12 +656,12 @@ serve(async (req) => {
       const maxRetries = 3;
       let connectionState = 'disconnected'; // disconnected → connecting → connected → authenticating → ready
       
-      // Use optimal parameters from consolidated pipeline with fallbacks
+      // Use provided parameters directly
       const frameworkParams = {
-        steps: optimalParams.steps || 3,
-        cfgScale: optimalParams.cfgScale || Math.max(1.5, CFGScale || 1.5),
-        scheduler: optimalParams.scheduler || scheduler || 'FlowMatchEulerDiscreteScheduler',
-        strength: optimalParams.strength || strength || 0.8
+        steps: 4,
+        cfgScale: CFGScale,
+        scheduler: scheduler,
+        strength: strength
       };
       
       console.log('🎯 Framework params validated:', frameworkParams);
@@ -958,7 +749,7 @@ serve(async (req) => {
                     const imageMessage = [{
                       taskType: "imageInference",
                       taskUUID,
-                      positivePrompt: enhancedPrompt,
+                      positivePrompt: finalPrompt,
                       negativePrompt: finalNegativePrompt,
                       model,
                       width,
@@ -972,8 +763,8 @@ serve(async (req) => {
                       ...(finalSeed && { seed: finalSeed })
                     }];
                     
-                    console.log("🎨 Sending enhanced image generation request:", {
-                      prompt: enhancedPrompt.substring(0, 100) + '...',
+                    console.log("🎨 Sending image generation request:", {
+                      prompt: finalPrompt.substring(0, 100) + '...',
                       model,
                       seed: finalSeed,
                       taskUUID,
@@ -996,21 +787,7 @@ serve(async (req) => {
                   clearTimeout(connectionTimeout);
                   ws.close();
                   
-                  if (sessionId && userInfo && item.seed) {
-                    const characterDesc = `${userInfo.name}: ${userInfo.avatar.type}`;
-                    StoryVisualStateManager.updateCharacterWithSeed(
-                      sessionId,
-                      userInfo.name,
-                      characterDesc,
-                      item.seed,
-                      pageNumber
-                    );
-                    console.log(`🔒 Saved seed ${item.seed} for ${userInfo.name} consistency`);
-                  }
-                  
-                  if (userInfo) {
-                    console.log(`✅ Generated consistent image for ${userInfo.name} (page ${pageNumber})`);
-                  }
+                  console.log(`✅ Generated image successfully`);
                   
                   if (!resolved) {
                     resolved = true;
@@ -1020,9 +797,9 @@ serve(async (req) => {
                       seed: item.seed,
                       cost: item.cost || 0.002,
                       NSFWContent: item.NSFWContent,
-                      characterName: userInfo?.name || characterName || undefined,
-                      pageIndex: pageNumber - 1,
-                      prompt: enhancedPrompt,
+                      sessionId: sessionId,
+                      pageNumber: pageNumber,
+                      prompt: finalPrompt,
                       provider: 'runware',
                       model: 'runware:100@1'
                     }));
