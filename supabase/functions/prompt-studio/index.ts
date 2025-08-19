@@ -64,7 +64,11 @@ async function enhancePromptWithPipeline(
     
     // Map difficulty level for pipeline
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo || { readingLevel: difficultyLevel });
-    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from input: ${difficultyLevel}`);
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from input: ${difficultyLevel}`, {
+      originalInput: difficultyLevel,
+      userReadingLevel: userInfo?.readingLevel,
+      finalMappedLevel: mappedDifficulty
+    });
 
     // Process through the comprehensive pipeline
     const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(

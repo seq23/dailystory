@@ -198,15 +198,37 @@ export class MulticulturalVisualService {
     // Get culturally appropriate hair style for African American heritage
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     
-    // Mix African American and general American facial features (50/50 chance)
-    const facialFeatures = Math.random() < 0.5 
-      ? this.selectRandomElement(['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing'])
-      : this.selectRandomElement(['bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 'friendly demeanor']);
+    // Weighted selection favoring African American facial features (70/30)
+    const africanAmericanFeatures = [
+      'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 
+      'regal bearing', 'warm deep brown eyes', 'expressive dark eyes', 'proud smile',
+      'bright intelligent eyes', 'strong jawline', 'dignified bearing', 'gentle dark eyes',
+      'radiant warm smile', 'noble features', 'kind dark eyes', 'confident gaze',
+      'warm personality', 'strong facial structure', 'graceful features', 'wise eyes'
+    ];
+    const generalAmericanFeatures = [
+      'bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 
+      'friendly demeanor', 'kind green eyes', 'cheerful expression', 'bright blue eyes'
+    ];
     
-    // Mix cultural pride elements with mainstream American (50/50 chance)  
-    const culturalElement = Math.random() < 0.5
-      ? this.selectRandomElement(['cultural pride symbols', 'community strength', 'modern urban style'])
-      : this.selectRandomElement(['mainstream American culture', 'suburban lifestyle', 'educational achievement']);
+    const facialFeatures = Math.random() < 0.7 
+      ? this.selectRandomElement(africanAmericanFeatures)
+      : this.selectRandomElement(generalAmericanFeatures);
+    
+    // Weighted selection with expanded African American cultural elements (60/40)
+    const africanAmericanCulture = [
+      'cultural pride symbols', 'community strength', 'modern urban style', 'rich heritage',
+      'historical legacy', 'community leadership', 'artistic expression', 'musical heritage',
+      'strong family bonds', 'educational excellence', 'entrepreneurial spirit', 'social justice values'
+    ];
+    const mainstreamAmericanCulture = [
+      'mainstream American culture', 'suburban lifestyle', 'educational achievement', 
+      'middle-class values', 'professional success', 'academic excellence'
+    ];
+    
+    const culturalElement = Math.random() < 0.6
+      ? this.selectRandomElement(africanAmericanCulture)
+      : this.selectRandomElement(mainstreamAmericanCulture);
     
     return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
   }
@@ -260,15 +282,29 @@ export class MulticulturalVisualService {
   static generateMixedAfricanAmericanSetting(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile('en');
     
-    // 50/50 chance between African American urban settings and general American suburban settings
-    const isUrbanSetting = Math.random() < 0.5;
+    // Weighted selection: 65% diverse African American settings, 35% general American settings
+    const isAfricanAmericanSetting = Math.random() < 0.65;
     
-    const setting = isUrbanSetting 
-      ? this.selectRandomElement(['vibrant African American neighborhood', 'community center', 'beautiful church', 'cultural center', 'historical landmark'])
-      : this.selectRandomElement(['suburban neighborhood', 'modern American suburb', 'middle-class community', 'well-maintained school', 'public library', 'local park']);
+    const africanAmericanSettings = [
+      'vibrant African American neighborhood', 'community center', 'beautiful church', 
+      'cultural center', 'historical landmark', 'HBCU campus', 'community garden',
+      'Black-owned business district', 'cultural arts center', 'jazz club venue',
+      'soul food restaurant', 'barbershop community space', 'family reunion park',
+      'African American museum', 'community library', 'neighborhood basketball court',
+      'church fellowship hall', 'mentorship program center', 'youth development center'
+    ];
+    const generalAmericanSettings = [
+      'suburban neighborhood', 'modern American suburb', 'middle-class community', 
+      'well-maintained school', 'public library', 'local park', 'shopping center',
+      'community recreation center', 'family-friendly restaurant'
+    ];
     
-    const culturalElement = isUrbanSetting
-      ? this.selectRandomElement(['cultural pride symbols', 'community strength', 'modern urban style'])
+    const setting = isAfricanAmericanSetting 
+      ? this.selectRandomElement(africanAmericanSettings)
+      : this.selectRandomElement(generalAmericanSettings);
+    
+    const culturalElement = isAfricanAmericanSetting
+      ? this.selectRandomElement(['cultural pride symbols', 'community strength', 'modern urban style', 'rich heritage', 'strong community bonds'])
       : this.selectRandomElement(['mainstream American culture', 'suburban lifestyle', 'middle-class family values']);
     
     return `${setting} with ${culturalElement}`;

@@ -79,7 +79,11 @@ serve(async (req) => {
 
     // Use lean enhancement pipeline for consistent processing
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`);
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`, {
+      userReadingLevel: userInfo?.readingLevel,
+      userDifficultyLevel: userInfo?.difficultyLevel,
+      finalMappedLevel: mappedDifficulty
+    });
 
     const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
       positivePrompt,

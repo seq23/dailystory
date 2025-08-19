@@ -26,7 +26,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
       cfgScale: 4.0,
       steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9
+      strength: 0.9,
+      outputFormat: 'WEBP'
     }
   },
   
@@ -53,7 +54,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
       cfgScale: 4.0,
       steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9
+      strength: 0.9,
+      outputFormat: 'WEBP'
     }
   },
   
@@ -81,7 +83,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
       cfgScale: 4.0,
       steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9
+      strength: 0.9,
+      outputFormat: 'WEBP'
     }
   },
   
@@ -108,7 +111,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
       cfgScale: 4.0,
       steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9
+      strength: 0.9,
+      outputFormat: 'WEBP'
     }
   },
   
@@ -135,7 +139,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
       cfgScale: 4.0,
       steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9
+      strength: 0.9,
+      outputFormat: 'WEBP'
     }
   }
 };

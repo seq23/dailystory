@@ -536,7 +536,13 @@ serve(async (req) => {
       bodyKeys: Object.keys(requestBody || {})
     });
     
-    const { readingLevel, interests, config, sessionType } = requestBody
+    const { readingLevel, interests, config, sessionType } = requestBody;
+    
+    // Import difficulty mapper for consistent difficulty handling
+    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+    const normalizedDifficulty = DifficultyLevelMapper.mapToImageDifficulty({ readingLevel });
+    
+    console.log(`🔄 Normalized reading level: ${readingLevel} → ${normalizedDifficulty}`);
     
     // Log sessionType for debugging rewrites
     console.log(`🔄 Session Type: ${sessionType || 'not provided'} - Context isolation: ${sessionType === 'rewrite' ? 'ENABLED' : 'disabled'}`)
