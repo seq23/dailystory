@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,14 +15,18 @@ serve(async (req) => {
     }
 
     const { pageText, userInfo, difficultyLevel = 'medium' } = await req.json();
+    
+    // Use DifficultyLevelMapper for consistent difficulty handling
+    const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo) || difficultyLevel;
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user info or fallback: ${difficultyLevel}`);
 
     console.log('🎨 Tier 2.5: Simple fallback generation with hardcoded extraction');
 
     // Hardcoded scene extraction (no dependencies)
     const extractedScene = extractSimpleScene(pageText, userInfo);
     
-    // Hardcoded style based on difficulty
-    const style = getHardcodedStyle(difficultyLevel);
+    // Hardcoded style based on mapped difficulty
+    const style = getHardcodedStyle(mappedDifficulty);
     
     // Build final prompt with enhanced negative prompts
     const negativePrompt = getEnhancedNegativePrompt(userInfo);

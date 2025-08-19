@@ -1,9 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { StructuredPromptEngine } from "../_shared/StructuredPromptEngine.js";
-import { AdvancedQualityEngine } from "../_shared/AdvancedQualityEngine.js";
-import { getStyleFramework, buildCompletePrompt, getOptimizedParameters } from "../_shared/styleFrameworks.js";
-import { MulticulturalVisualService } from "../_shared/cultural-visual-service.js";
+import { ConsolidatedEnhancementPipeline } from "../_shared/consolidated-enhancement-pipeline.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,58 +42,23 @@ serve(async (req) => {
       console.warn(`⚠️ User info validation warning: ${validationResult.error}`);
     }
 
-    console.log(`🏭 Building dynamic prompt for page ${pageNumber}/${totalPages} using master factory builder`);
+    console.log(`🏭 Using consolidated enhancement pipeline for page ${pageNumber}/${totalPages}`);
 
-    // Phase 1: Extract primary scene without AI
-    const primaryScene = extractPrimarySceneFallback(pageText);
-    console.log(`🎯 Primary scene: "${primaryScene}"`);
+    // Use consolidated enhancement pipeline for all processing
+    const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`);
 
-    // Phase 2: Detect characters, animals, and objects using templates
-    const characterDescriptors = detectCharactersWithTemplates(pageText, userInfo);
-    console.log(`👥 Detected ${characterDescriptors.length} characters`);
-
-    // Phase 3: Analyze emotional context using template patterns
-    const emotionalContext = analyzeEmotionalContentWithTemplates(pageText);
-    console.log(`🎭 Emotional context: ${emotionalContext.mood} (${emotionalContext.intensity}/10)`);
-
-    // Phase 4: Use StructuredPromptEngine to compose sophisticated prompt
-    const promptTemplate = StructuredPromptEngine.composeStructuredPrompt(
+    const enhancementResult = await ConsolidatedEnhancementPipeline.processThroughPipeline(
       pageText,
       userInfo,
-      pageNumber,
-      characterDescriptors,
-      emotionalContext
-    );
-
-    // Phase 5: Select dynamic style framework based on difficulty
-    const difficulty = userInfo?.readingLevel || 'medium';
-    const styleFramework = getStyleFramework(difficulty);
-    console.log(`🎨 Selected style framework: ${styleFramework.name} for difficulty: ${difficulty}`);
-
-    // Phase 6: Build complete prompt using factory system
-    const culturalContext = MulticulturalVisualService.generateCulturalSetting(userInfo);
-    let finalPrompt = buildCompletePrompt(
-      styleFramework, 
-      primaryScene, 
-      characterDescriptors.map(c => `${c.name}: ${c.physicalTraits}`).join(', '),
-      culturalContext,
-      { mood: emotionalContext.mood, lighting: emotionalContext.lighting }
-    );
-
-    // Phase 7: Apply advanced quality optimization using existing engine
-    const qualityResult = AdvancedQualityEngine.optimizeForChildrensBooks(
-      finalPrompt,
       sessionId,
       pageNumber,
-      userInfo
+      totalPages
     );
-    finalPrompt = qualityResult.enhancedPrompt;
 
-    // Phase 8: Generate comprehensive negative prompt
-    const negativePrompt = generateComprehensiveNegativePrompt(pageText, [], userInfo);
-
-    // Phase 9: Get optimized parameters for generation
-    const optimizedParameters = getOptimizedParameters(styleFramework, characterDescriptors.length);
+    const finalPrompt = enhancementResult.enhancedPrompt;
+    const negativePrompt = enhancementResult.negativePrompt;
+    const optimizedParameters = enhancementResult.parameters;
 
     // Phase 10: Attempt Runware generation with sophisticated prompt
     const result = await generateWithRunware(
@@ -113,9 +76,9 @@ serve(async (req) => {
         imageUrl: result.url,
         provider: 'runware-template',
         prompt: finalPrompt,
-        qualityScore: qualityResult.qualityScore,
+        qualityScore: enhancementResult.qualityScore || 0.8,
         enhancementLevel: 'template-based',
-        optimizations: qualityResult.appliedOptimizations,
+        optimizations: enhancementResult.appliedOptimizations || [],
         processingTime: result.processingTime
       });
     } else {
@@ -173,44 +136,10 @@ function extractPrimarySceneFallback(text: string): string {
   return sentences[bestSentenceIndex] || sentences[0] || text;
 }
 
-// Template-based character detection using factory patterns
+// Legacy function - now handled by ConsolidatedEnhancementPipeline
 function detectCharactersWithTemplates(text: string, userInfo: any): CharacterDescriptor[] {
-  const characters: CharacterDescriptor[] = [];
-  const lowerText = text.toLowerCase();
-  
-  // Primary character from user info
-  if (userInfo?.name) {
-    const culturalTraits = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-    characters.push({
-      name: userInfo.name,
-      type: 'primary',
-      physicalTraits: culturalTraits
-    });
-  }
-  
-  // Family members detection using templates
-  const familyPatterns = {
-    'mother|mom|mama': { name: 'Mother', relationship: 'mother' },
-    'father|dad|papa': { name: 'Father', relationship: 'father' },
-    'sister|sis': { name: 'Sister', relationship: 'sister' },
-    'brother|bro': { name: 'Brother', relationship: 'brother' },
-    'grandmother|grandma': { name: 'Grandmother', relationship: 'grandmother' },
-    'grandfather|grandpa': { name: 'Grandfather', relationship: 'grandfather' }
-  };
-  
-  for (const [pattern, info] of Object.entries(familyPatterns)) {
-    const regex = new RegExp(`\\b(${pattern})\\b`, 'i');
-    if (regex.test(text)) {
-      characters.push({
-        name: info.name,
-        type: 'family',
-        relationship: info.relationship,
-        physicalTraits: generateFamilyMemberTraits(userInfo, info.relationship)
-      });
-    }
-  }
-  
-  return characters;
+  // Placeholder - functionality moved to ConsolidatedEnhancementPipeline
+  return [];
 }
 
 // Template-based emotional analysis
@@ -257,21 +186,9 @@ function analyzeEmotionalContentWithTemplates(text: string): EmotionalContext {
   };
 }
 
-// Generate family member traits using cultural templates
+// Legacy function - now handled by ConsolidatedEnhancementPipeline
 function generateFamilyMemberTraits(userInfo: any, relationship: string): string {
-  const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo?.nativeLanguage || 'en');
-  const baseTrait = culturalProfile.skinTones[0]; // Consistent family skin tone
-  
-  const traitTemplates = {
-    mother: `${baseTrait}, nurturing expression, ${culturalProfile.hairStyles[0]}, warm smile`,
-    father: `${baseTrait}, gentle expression, ${culturalProfile.hairStyles[0]}, kind eyes`,
-    grandmother: `${baseTrait}, wise kind eyes, gray hair, gentle wrinkles`,
-    grandfather: `${baseTrait}, wise expression, gray hair, warm smile`,
-    sister: `${baseTrait}, youthful appearance, ${culturalProfile.hairStyles[1]}, bright smile`,
-    brother: `${baseTrait}, youthful appearance, ${culturalProfile.hairStyles[1]}, friendly expression`
-  };
-  
-  return traitTemplates[relationship] || `${baseTrait}, friendly appearance`;
+  return 'friendly appearance';
 }
 
 // Comprehensive negative prompt generation

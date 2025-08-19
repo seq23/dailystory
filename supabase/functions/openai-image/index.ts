@@ -1,7 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { MulticulturalVisualService } from '../_shared/cultural-visual-service.js';
+import { ConsolidatedEnhancementPipeline } from '../_shared/consolidated-enhancement-pipeline.js';
+import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 
 // Avatar skin tone and cultural context integration
 interface UserInfo {
@@ -76,120 +77,23 @@ serve(async (req) => {
       sessionId
     });
 
-    // Enhanced prompt with avatar support and cultural context
-    let enhancedPrompt = positivePrompt;
-    
-    // Add culturally appropriate character description if userInfo provided
-    if (userInfo && userInfo.avatar) {
-      const characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-      enhancedPrompt = enhancedPrompt.replace(
-        new RegExp(`\\b${userInfo.name}\\b`, 'gi'), 
-        `${userInfo.name} (${characterDesc})`
-      );
-      
-      // If no character name replacement occurred, add character description
-      if (!enhancedPrompt.includes(characterDesc)) {
-        enhancedPrompt += ` featuring ${characterDesc}`;
-      }
-      
-      console.log(`🎭 OpenAI character description: ${characterDesc}`);
-    }
-    
-    // Apply comprehensive negative prompt for children's safety and image quality
-    const comprehensiveNegativePrompt = negativePrompt || "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
-    
-    // Add negative prompt guidance to the main prompt for OpenAI
-    enhancedPrompt += `. Avoid: ${comprehensiveNegativePrompt}`;
-    
-    console.log(`🚫 Applied comprehensive negative prompt for safety and quality`);
+    // Use consolidated enhancement pipeline for consistent processing
+    const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`);
 
-    // Import and apply centralized style framework
-    const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-    const userDifficulty = userInfo?.readingLevel || 'medium';
-    const framework = getStyleFramework(userDifficulty);
-    
-    // Enhanced children's book style with framework consistency
-    enhancedPrompt += `. Style: ${framework.artStyle}, ${framework.quality}, ${framework.brandSuffix}`;
+    const enhancementResult = await ConsolidatedEnhancementPipeline.processThroughPipeline(
+      positivePrompt,
+      userInfo,
+      sessionId || 'openai-session',
+      pageNumber || 1,
+      10 // totalPages
+    );
 
-    // AI-enhanced scene analysis with fallback
-    const extractEnhancedScene = async (text: string) => {
-      try {
-        // Try to get AI-enhanced scene description
-        const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/extract-story-elements`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
-          },
-          body: JSON.stringify({
-            storyText: text,
-            pageNumber: pageNumber || 1,
-            totalPages: 10,
-            difficultyLevel: userInfo?.readingLevel || 'medium',
-            sessionId: sessionId || 'openai-session',
-            userInfo: userInfo
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.enhancedDescription) {
-            console.log(`🤖 AI-Enhanced Scene Description: ${data.enhancedDescription.substring(0, 100)}...`);
-            return {
-              character: userInfo?.name || 'child',
-              setting: 'contextual scene',
-              primaryScene: data.enhancedDescription,
-              isAIEnhanced: true
-            };
-          }
-        }
-      } catch (error) {
-        console.log(`⚠️ AI scene enhancement failed, using simple analysis: ${error.message}`);
-      }
-
-      // Fallback to simple scene detection
-      const lowerText = text.toLowerCase();
-      
-      let character = 'child';
-      if (userInfo?.name) character = userInfo.name;
-      else if (lowerText.includes('girl') || lowerText.includes('she')) character = 'girl';
-      else if (lowerText.includes('boy') || lowerText.includes('he')) character = 'boy';
-      
-      let setting = 'outdoor scene';
-      if (lowerText.includes('house') || lowerText.includes('home')) setting = 'indoor scene';
-      else if (lowerText.includes('forest') || lowerText.includes('tree')) setting = 'forest scene';
-      else if (lowerText.includes('park') || lowerText.includes('playground')) setting = 'park scene';
-      
-      return { character, setting, primaryScene: text, isAIEnhanced: false };
-    };
+    let finalPrompt = enhancementResult.enhancedPrompt;
+    const comprehensiveNegativePrompt = enhancementResult.negativePrompt;
     
-    const pageContent = await extractEnhancedScene(positivePrompt);
-    
-    // Add emotional and visual context
-    const emotionalKeywords = ['happy', 'sad', 'excited', 'scared', 'curious', 'surprised'];
-    const detectedEmotion = emotionalKeywords.find(emotion => 
-      positivePrompt.toLowerCase().includes(emotion)) || 'neutral';
-    
-    // Build comprehensive scene description with avatar details
-    let avatarDesc = '';
-    if (userInfo?.avatar) {
-      const skinTone = userInfo.avatar.skinTone || 'medium';
-      const skinMap = {
-        'pale': 'fair skin', 'light': 'light skin', 'medium': 'medium skin',
-        'olive': 'olive skin', 'dark': 'dark skin'
-      };
-      const hairMap = {
-        'pale': 'blonde hair', 'light': 'brown hair', 'medium': 'brown hair',
-        'olive': 'dark brown hair', 'dark': 'black hair'
-      };
-      avatarDesc = `, ${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}`;
-    }
-    
-    const sceneAnalysis = `${pageContent.character}${avatarDesc} in ${pageContent.setting}. Scene: ${pageContent.primaryScene}. Mood: ${detectedEmotion}`;
-    
-    // Create final enhanced prompt combining everything
-    const aiEnhancementNote = pageContent.isAIEnhanced ? 'AI-enhanced visual elements. ' : '';
-    const finalPrompt = `${sceneAnalysis}. ${enhancedPrompt}. ${aiEnhancementNote}Ultra high resolution children's book illustration`;
+    console.log(`🎨 Enhanced prompt: ${finalPrompt.substring(0, 100)}...`);
+    console.log(`🚫 Enhanced negative prompt: ${comprehensiveNegativePrompt.substring(0, 50)}...`);
 
     // Determine size for gpt-image-1 (different sizes than DALL-E 3)
     let size = '1024x1024';
