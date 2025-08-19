@@ -1,0 +1,345 @@
+#!/usr/bin/env node
+// Build-Time Frontend to Backend Intelligence Sync
+// Extracts frontend cultural intelligence and converts to backend-compatible JavaScript
+
+const fs = require('fs');
+const path = require('path');
+
+class FrontendToBackendSync {
+  constructor() {
+    this.extractedIntelligence = {
+      culturalProfiles: {},
+      emotionalMappings: {},
+      qualityPatterns: [],
+      characterGeneration: {},
+      settingGeneration: {},
+      skinToneDistribution: {}
+    };
+  }
+
+  async syncIntelligence() {
+    console.log('🔄 Starting frontend-to-backend intelligence sync...');
+    
+    try {
+      // Extract cultural intelligence from MulticulturalVisualService
+      await this.extractCulturalIntelligence();
+      
+      // Extract emotional context from StructuredPromptEngine
+      await this.extractEmotionalIntelligence();
+      
+      // Extract quality optimization from AdvancedQualityEngine
+      await this.extractQualityIntelligence();
+      
+      // Generate JavaScript version for backend injection
+      await this.generateBackendIntelligence();
+      
+      console.log('✅ Frontend-to-backend sync completed successfully');
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Sync failed:', error.message);
+      throw error;
+    }
+  }
+
+  async extractCulturalIntelligence() {
+    const multiculturalPath = path.join(__dirname, '../src/services/MulticulturalVisualService.ts');
+    const content = fs.readFileSync(multiculturalPath, 'utf8');
+    
+    // Extract cultural profiles with regex parsing
+    const profileMatch = content.match(/CULTURAL_VISUAL_PROFILES:\s*Record<[^>]+>\s*=\s*{([\s\S]*?)};/);
+    if (profileMatch) {
+      const profilesStr = profileMatch[1];
+      
+      // Parse each language profile
+      const languageMatches = profilesStr.matchAll(/'([^']+)':\s*{([\s\S]*?)(?=},?\s*'|\s*})/g);
+      
+      for (const [, language, profileContent] of languageMatches) {
+        this.extractedIntelligence.culturalProfiles[language] = {
+          skinTones: this.parseStringArray(profileContent, 'skinTones'),
+          hairStyles: this.parseStringArray(profileContent, 'hairStyles'),
+          facialFeatures: this.parseStringArray(profileContent, 'facialFeatures'),
+          culturalElements: this.parseStringArray(profileContent, 'culturalElements'),
+          familyStructure: this.parseStringArray(profileContent, 'familyStructure'),
+          settings: this.parseStringArray(profileContent, 'settings'),
+          clothing: this.parseStringArray(profileContent, 'clothing'),
+          celebrations: this.parseStringArray(profileContent, 'celebrations'),
+          negativePrompts: this.parseStringArray(profileContent, 'negativePrompts')
+        };
+      }
+    }
+    
+    // Extract African American weighted randomization logic
+    const africanAmericanMatch = content.match(/generateMixedAfricanAmericanDescription[\s\S]*?return `[^`]*`;/);
+    if (africanAmericanMatch) {
+      this.extractedIntelligence.characterGeneration.africanAmericanLogic = africanAmericanMatch[0];
+    }
+    
+    console.log('📋 Extracted cultural profiles for languages:', Object.keys(this.extractedIntelligence.culturalProfiles));
+  }
+
+  async extractEmotionalIntelligence() {
+    const structuredPath = path.join(__dirname, '../src/services/StructuredPromptEngine.ts');
+    const content = fs.readFileSync(structuredPath, 'utf8');
+    
+    // Extract emotional mappings
+    const emotionalMatch = content.match(/EMOTIONAL_MAPPINGS:\s*Record<[^>]+>\s*=\s*{([\s\S]*?)};/);
+    if (emotionalMatch) {
+      const mappingsStr = emotionalMatch[1];
+      
+      // Parse emotional contexts
+      const contextMatches = mappingsStr.matchAll(/'([^']+)':\s*{([\s\S]*?)(?=},?\s*'|\s*})/g);
+      
+      for (const [, emotion, contextContent] of contextMatches) {
+        this.extractedIntelligence.emotionalMappings[emotion] = {
+          mood: this.parseStringValue(contextContent, 'mood'),
+          intensity: this.parseStringValue(contextContent, 'intensity'),
+          colorPalette: this.parseStringArray(contextContent, 'colorPalette'),
+          lightingStyle: this.parseStringValue(contextContent, 'lightingStyle'),
+          compositionStyle: this.parseStringValue(contextContent, 'compositionStyle')
+        };
+      }
+    }
+    
+    // Extract style frameworks
+    const styleMatch = content.match(/STYLE_FRAMEWORKS:\s*Record<[^>]+>\s*=\s*{([\s\S]*?)};/);
+    if (styleMatch) {
+      const stylesStr = styleMatch[1];
+      
+      const styleMatches = stylesStr.matchAll(/'([^']+)':\s*'([^']*)',?/g);
+      this.extractedIntelligence.emotionalMappings.styleFrameworks = {};
+      
+      for (const [, difficulty, style] of styleMatches) {
+        this.extractedIntelligence.emotionalMappings.styleFrameworks[difficulty] = style;
+      }
+    }
+    
+    console.log('🎭 Extracted emotional mappings:', Object.keys(this.extractedIntelligence.emotionalMappings));
+  }
+
+  async extractQualityIntelligence() {
+    const qualityPath = path.join(__dirname, '../src/services/AdvancedQualityEngine.ts');
+    const content = fs.readFileSync(qualityPath, 'utf8');
+    
+    // Extract quality enhancement patterns
+    const patternsMatch = content.match(/QUALITY_ENHANCEMENT_PATTERNS\s*=\s*\[([\s\S]*?)\];/);
+    if (patternsMatch) {
+      const patternsStr = patternsMatch[1];
+      
+      // Parse pattern objects
+      const patternMatches = patternsStr.matchAll(/{[\s\S]*?name:\s*"([^"]*)"[\s\S]*?pattern:\s*([^,]*),[\s\S]*?enhancement:\s*\([^)]*\)\s*=>\s*{[\s\S]*?return\s*`([^`]*)`[\s\S]*?}[\s\S]*?}/g);
+      
+      for (const [, name, pattern, enhancement] of patternMatches) {
+        this.extractedIntelligence.qualityPatterns.push({
+          name,
+          pattern: pattern.trim(),
+          enhancement: enhancement.trim()
+        });
+      }
+    }
+    
+    // Extract optimal parameters
+    const paramsMatch = content.match(/CHILDREN_BOOK_OPTIMAL_PARAMS\s*=\s*{([\s\S]*?)};/);
+    if (paramsMatch) {
+      const paramsStr = paramsMatch[1];
+      this.extractedIntelligence.qualityPatterns.optimalParams = {
+        cfgScale: this.parseNumberValue(paramsStr, 'cfgScale'),
+        steps: this.parseNumberValue(paramsStr, 'steps'),
+        model: this.parseStringValue(paramsStr, 'model'),
+        scheduler: this.parseStringValue(paramsStr, 'scheduler'),
+        outputFormat: this.parseStringValue(paramsStr, 'outputFormat')
+      };
+    }
+    
+    console.log('🎯 Extracted quality patterns:', this.extractedIntelligence.qualityPatterns.length);
+  }
+
+  parseStringArray(content, key) {
+    const match = content.match(new RegExp(`${key}:\\s*\\[([\\s\\S]*?)\\]`));
+    if (!match) return [];
+    
+    const arrayStr = match[1];
+    const items = arrayStr.match(/'([^']*?)'/g);
+    return items ? items.map(item => item.slice(1, -1)) : [];
+  }
+
+  parseStringValue(content, key) {
+    const match = content.match(new RegExp(`${key}:\\s*'([^']*)'`));
+    return match ? match[1] : '';
+  }
+
+  parseNumberValue(content, key) {
+    const match = content.match(new RegExp(`${key}:\\s*(\\d+(?:\\.\\d+)?)`));
+    return match ? parseFloat(match[1]) : 0;
+  }
+
+  async generateBackendIntelligence() {
+    const intelligenceJs = `// Auto-generated Frontend Intelligence for Backend
+// Generated: ${new Date().toISOString()}
+// DO NOT EDIT MANUALLY - Regenerated on each build
+
+export const FrontendIntelligence = ${JSON.stringify(this.extractedIntelligence, null, 2)};
+
+// African American Weighted Selection
+export function selectAfricanAmericanSkinTone() {
+  const skinTones = FrontendIntelligence.culturalProfiles.en?.skinTones || [];
+  if (skinTones.length === 0) return 'warm caramel skin';
+  
+  // Weighted selection favoring diversity across the spectrum
+  const weights = skinTones.map((_, index) => {
+    const position = index / (skinTones.length - 1);
+    // Higher weight for middle and darker tones
+    return position > 0.3 ? 1.5 : 1.0;
+  });
+  
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+  const random = Math.random() * totalWeight;
+  
+  let cumulativeWeight = 0;
+  for (let i = 0; i < skinTones.length; i++) {
+    cumulativeWeight += weights[i];
+    if (random <= cumulativeWeight) {
+      return skinTones[i];
+    }
+  }
+  
+  return skinTones[Math.floor(Math.random() * skinTones.length)];
+}
+
+// Enhanced Cultural Character Generation
+export function generateCulturalCharacterDescription(userInfo) {
+  const language = userInfo?.nativeLanguage || 'en';
+  const profile = FrontendIntelligence.culturalProfiles[language] || FrontendIntelligence.culturalProfiles.en;
+  
+  if (!profile) return 'child with warm friendly appearance';
+  
+  // Special handling for English speakers with dark skin
+  if (language === 'en' && userInfo.avatar?.skinTone === 'dark') {
+    return generateMixedAfricanAmericanDescription(userInfo, profile);
+  }
+  
+  const skinTone = selectWeightedElement(profile.skinTones);
+  const hairStyle = selectWeightedElement(profile.hairStyles);
+  const facialFeatures = selectWeightedElement(profile.facialFeatures);
+  const culturalElement = selectWeightedElement(profile.culturalElements);
+  
+  const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
+                    userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
+  
+  return \`\${genderTerm} with \${skinTone}, \${hairStyle}, \${facialFeatures}, \${culturalElement}\`;
+}
+
+function generateMixedAfricanAmericanDescription(userInfo, profile) {
+  const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
+                    userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
+  
+  const skinTone = selectAfricanAmericanSkinTone();
+  
+  // African American hair styles
+  const africanAmericanHairStyles = [
+    'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 
+    'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls',
+    'loose natural curls', 'tight coily hair', 'kinky textured hair',
+    '4C natural hair', '3B curly hair', 'box braids', 'goddess braids',
+    'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
+    'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
+  ];
+  
+  const hairStyle = selectWeightedElement(africanAmericanHairStyles);
+  
+  // 50/50 mix of African American and general American features
+  const facialFeatures = Math.random() < 0.5 
+    ? selectWeightedElement(['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing'])
+    : selectWeightedElement(['bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 'friendly demeanor']);
+  
+  // 50/50 mix of cultural elements
+  const culturalElement = Math.random() < 0.5
+    ? selectWeightedElement(['cultural pride symbols', 'community strength', 'modern urban style'])
+    : selectWeightedElement(['mainstream American culture', 'suburban lifestyle', 'educational achievement']);
+  
+  return \`\${genderTerm} with \${skinTone}, \${hairStyle}, \${facialFeatures}, \${culturalElement}\`;
+}
+
+function selectWeightedElement(array) {
+  if (!array || array.length === 0) return '';
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+// Enhanced Scene Analysis
+export function analyzeEmotionalContent(storyText) {
+  const text = storyText.toLowerCase();
+  const mappings = FrontendIntelligence.emotionalMappings;
+  
+  // Happy/celebration patterns
+  if (text.includes('laugh') || text.includes('smile') || text.includes('joy') || 
+      text.includes('celebrate') || text.includes('party') || text.includes('happy')) {
+    return mappings['happy celebration'] || getDefaultEmotionalContext();
+  }
+  
+  // Adventure/exciting patterns
+  if (text.includes('adventure') || text.includes('explore') || text.includes('discover') ||
+      text.includes('journey') || text.includes('exciting') || text.includes('climb')) {
+    return mappings['adventure scene'] || getDefaultEmotionalContext();
+  }
+  
+  // Cozy/family patterns
+  if (text.includes('family') || text.includes('home') || text.includes('cozy') ||
+      text.includes('together') || text.includes('warm') || text.includes('hug')) {
+    return mappings['cozy family time'] || getDefaultEmotionalContext();
+  }
+  
+  // Default to peaceful
+  return mappings['peaceful moment'] || getDefaultEmotionalContext();
+}
+
+function getDefaultEmotionalContext() {
+  return {
+    mood: 'calm',
+    intensity: 'medium',
+    colorPalette: ['soft pastels', 'gentle colors', 'warm tones'],
+    lightingStyle: 'soft natural lighting',
+    compositionStyle: 'balanced composition'
+  };
+}
+`;
+
+    // Write the generated intelligence file
+    const outputPath = path.join(__dirname, '../supabase/functions/_shared/FrontendIntelligence.js');
+    fs.writeFileSync(outputPath, intelligenceJs);
+    
+    console.log('📝 Generated backend intelligence file:', outputPath);
+  }
+
+  async validateSync() {
+    const outputPath = path.join(__dirname, '../supabase/functions/_shared/FrontendIntelligence.js');
+    
+    if (!fs.existsSync(outputPath)) {
+      throw new Error('Sync failed: Backend intelligence file not generated');
+    }
+    
+    const stats = fs.statSync(outputPath);
+    if (stats.size < 1000) {
+      throw new Error('Sync failed: Generated file appears incomplete');
+    }
+    
+    console.log('✅ Sync validation passed');
+    return true;
+  }
+}
+
+// Execute sync if run directly
+if (require.main === module) {
+  const sync = new FrontendToBackendSync();
+  sync.syncIntelligence()
+    .then(() => sync.validateSync())
+    .then(() => {
+      console.log('🎉 Frontend-to-backend sync completed successfully');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('💥 Sync failed:', error.message);
+      process.exit(1);
+    });
+}
+
+module.exports = { FrontendToBackendSync };

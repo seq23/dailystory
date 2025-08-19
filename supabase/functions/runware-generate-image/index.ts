@@ -399,7 +399,7 @@ async function extractPrimarySceneWithAI(text: string, sessionId: string, pageNu
         storyText: text,
         pageNumber: pageNumber,
         totalPages: 10,
-        difficultyLevel: userInfo?.readingLevel || 'medium',
+        difficultyLevel: DifficultyLevelMapper.mapToImageDifficulty(userInfo) || 'medium',
         sessionId: sessionId,
         userInfo: userInfo
       })
