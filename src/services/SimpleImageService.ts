@@ -8,6 +8,7 @@ interface ImageGenerationConfig {
   dimensions: { width: number; height: number };
   style?: string;
   difficultyLevel?: DifficultyLevel;
+  sessionId?: string;
 }
 
 interface ImageResult {
@@ -247,7 +248,8 @@ export class SimpleImageService {
     }
   }
 
-  // Main generation method with tiered approach
+  // Main generation method with NEW tiered approach
+  // Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
   static async generateStoryImage(
     pageText: string,
     userInfo: UserInfo,
@@ -266,7 +268,8 @@ export class SimpleImageService {
 
     const config: ImageGenerationConfig = {
       ...this.DEFAULT_CONFIG,
-      difficultyLevel: difficulty
+      difficultyLevel: difficulty,
+      sessionId
     };
 
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
@@ -470,11 +473,13 @@ export class SimpleImageService {
       // Use ONLY the structured prompt engine for consistency
       const finalPrompt = StructuredPromptEngine.templateToPrompt(promptTemplate);
 
-      const { data, error } = await supabase.functions.invoke('runware-test-simple', {
+      const { data, error } = await supabase.functions.invoke('runware-template-generation', {
         body: {
-          pageText: finalPrompt,
+          pageText: cleanScene, // Use original text, not the structured prompt
           userInfo,
           pageNumber,
+          totalPages,
+          sessionId: config.sessionId,
           difficultyLevel: config.difficultyLevel || 'medium'
         }
       });

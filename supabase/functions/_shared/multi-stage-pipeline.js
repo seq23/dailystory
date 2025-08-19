@@ -39,41 +39,32 @@ export class MultiStageEnhancementPipeline {
     };
 
     try {
-      if (enhancementLevel === 'minimal') {
-        // Tier 2.5: Minimal hardcoded processing
-        console.log('🎯 Tier 2.5: Minimal processing mode');
-        pipelineContext.sceneDescription = this.extractPrimarySceneFallback(storyText);
-        pipelineContext.characters = this.detectCharactersSimple(storyText, userInfo);
-        pipelineContext.prompt = this.createFallbackPrompt(storyText, userInfo);
-        pipelineContext.negativePrompt = this.buildStandardizedNegativePrompt(userInfo);
-        stagesCompleted.push('Minimal Processing');
-      } else {
-        // Tier 1: Full AI-enhanced processing
-        console.log('🎯 Stage 1: AI Scene & Cultural Enhancement');
-        const stage1Result = await this.enhanceSceneWithCulture(pipelineContext);
-        pipelineContext = { ...pipelineContext, ...stage1Result };
-        stagesCompleted.push('AI Scene & Cultural Enhancement');
+      // Tier 1: Full AI-enhanced processing ONLY
+      // Removed 'minimal' mode - Tier 2.5 is now completely isolated
+      console.log('🎯 Stage 1: AI Scene & Cultural Enhancement');
+      const stage1Result = await this.enhanceSceneWithCulture(pipelineContext);
+      pipelineContext = { ...pipelineContext, ...stage1Result };
+      stagesCompleted.push('AI Scene & Cultural Enhancement');
 
-        console.log('🎭 Stage 2: Enhanced Character Detection');
-        const stage2Result = await this.detectAndEnhanceCharacters(pipelineContext);
-        pipelineContext = { ...pipelineContext, ...stage2Result };
-        stagesCompleted.push('Enhanced Character Detection');
+      console.log('🎭 Stage 2: Enhanced Character Detection');
+      const stage2Result = await this.detectAndEnhanceCharacters(pipelineContext);
+      pipelineContext = { ...pipelineContext, ...stage2Result };
+      stagesCompleted.push('Enhanced Character Detection');
 
-        console.log('🎨 Stage 3: Style Framework');
-        const stage3Result = await this.applyStyleFramework(pipelineContext);
-        pipelineContext = { ...pipelineContext, ...stage3Result };
-        stagesCompleted.push('Style Framework');
+      console.log('🎨 Stage 3: Style Framework');
+      const stage3Result = await this.applyStyleFramework(pipelineContext);
+      pipelineContext = { ...pipelineContext, ...stage3Result };
+      stagesCompleted.push('Style Framework');
 
-        console.log('✨ Stage 4: Quality Optimization');
-        const stage4Result = await this.optimizeQuality(pipelineContext);
-        pipelineContext = { ...pipelineContext, ...stage4Result };
-        stagesCompleted.push('Quality Optimization');
+      console.log('✨ Stage 4: Quality Optimization');
+      const stage4Result = await this.optimizeQuality(pipelineContext);
+      pipelineContext = { ...pipelineContext, ...stage4Result };
+      stagesCompleted.push('Quality Optimization');
 
-        console.log('⚙️ Stage 5: Parameter Optimization');
-        const stage5Result = await this.optimizeParameters(pipelineContext);
-        pipelineContext = { ...pipelineContext, ...stage5Result };
-        stagesCompleted.push('Parameter Optimization');
-      }
+      console.log('⚙️ Stage 5: Parameter Optimization');
+      const stage5Result = await this.optimizeParameters(pipelineContext);
+      pipelineContext = { ...pipelineContext, ...stage5Result };
+      stagesCompleted.push('Parameter Optimization');
 
     } catch (error) {
       console.error('❌ Pipeline stage failed:', error);

@@ -43,5 +43,8 @@ verify_jwt = false
 [functions.runware-test-simple]
 verify_jwt = false
 
+[functions.runware-template-generation]
+verify_jwt = false
+
 [functions.runware-simple-fallback]
 verify_jwt = false
