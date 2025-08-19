@@ -1,9 +1,10 @@
+
 // Phase 2: Quality Standardization System
 // Ensures consistent quality parameters across all image generation services
 
 export class QualityStandardizationEngine {
   // Standardized quality tiers with optimal parameters for each use case
-  static readonly QUALITY_TIERS = {
+  static QUALITY_TIERS = {
     // High-quality story images
     story: {
       steps: 4,
