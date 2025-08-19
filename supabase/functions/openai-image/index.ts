@@ -95,10 +95,13 @@ serve(async (req) => {
       console.log(`🎭 OpenAI character description: ${characterDesc}`);
     }
     
-    // Add negative prompt context if provided
-    if (negativePrompt) {
-      enhancedPrompt += `. Avoid: ${negativePrompt}`;
-    }
+    // Apply comprehensive negative prompt for children's safety and image quality
+    const comprehensiveNegativePrompt = negativePrompt || "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
+    
+    // Add negative prompt guidance to the main prompt for OpenAI
+    enhancedPrompt += `. Avoid: ${comprehensiveNegativePrompt}`;
+    
+    console.log(`🚫 Applied comprehensive negative prompt for safety and quality`);
 
     // Import and apply centralized style framework
     const { getStyleFramework } = await import('../_shared/styleFrameworks.js');

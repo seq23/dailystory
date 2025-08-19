@@ -59,6 +59,7 @@ import { DiagnosticTool } from "@/utils/diagnostics";
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import { EnhancedPostProcessor } from "@/services/EnhancedPostProcessor";
 import { AudioFallbackNotification } from "@/components/AudioFallbackNotification";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -1095,7 +1096,24 @@ const initializeStory = async () => {
         pagesCount: result.pages.length,
         firstPage: result.pages[0]?.substring(0, 100)
       });
-      setStory(result.pages);
+
+      // Post-process pages for placeholder resolution and character consistency
+      let processedPages = result.pages;
+      try {
+        const { EnhancedPostProcessor } = await import('@/services/EnhancedPostProcessor');
+        processedPages = await EnhancedPostProcessor.processStoryContent(
+          result.pages,
+          userInfo,
+          characterSessionId
+        );
+        console.log('✅ Post-processed story pages for placeholder resolution');
+      } catch (error) {
+        console.warn('Failed to post-process story pages:', error);
+        // Use original pages if post-processing fails
+        processedPages = result.pages;
+      }
+
+      setStory(processedPages);
       setStoryTitle(result.title);
       setIsStoryComplete(true);
       const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';

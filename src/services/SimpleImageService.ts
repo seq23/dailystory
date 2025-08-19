@@ -127,9 +127,47 @@ export class SimpleImageService {
     }
   }
 
-  // Character seed caching for consistency
+  // Character seed caching for consistency - now properly integrated
   private static getCharacterSeedKey(userInfo: UserInfo, sessionId?: string): string {
     return `char_seed_${userInfo.name}_${sessionId || 'global'}`;
+  }
+
+  // Get cached character seed for consistency
+  private static async getStoredCharacterSeed(userInfo: UserInfo, sessionId?: string): Promise<number | undefined> {
+    try {
+      const { StoryVisualStateManager } = await import('./storyVisualState');
+      if (sessionId && userInfo.name) {
+        return StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
+      }
+    } catch (error) {
+      console.warn('Failed to get character seed:', error);
+    }
+    return undefined;
+  }
+
+  // Store successful character seed for consistency
+  private static async storeCharacterSeed(userInfo: UserInfo, sessionId: string, seed: number, pageNumber: number): Promise<void> {
+    try {
+      const { StoryVisualStateManager } = await import('./storyVisualState');
+      if (userInfo.name) {
+        const characterDesc = await this.generateCulturalCharacterDescription(userInfo);
+        StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, seed, pageNumber);
+        console.log(`✅ Stored character seed ${seed} for ${userInfo.name} in session ${sessionId}`);
+      }
+    } catch (error) {
+      console.warn('Failed to store character seed:', error);
+    }
+  }
+
+  // Generate cultural character description
+  private static async generateCulturalCharacterDescription(userInfo: UserInfo): Promise<string> {
+    try {
+      const { MulticulturalVisualService } = await import('../../supabase/functions/_shared/cultural-visual-service.js');
+      return MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+    } catch (error) {
+      console.warn('Failed to generate cultural description:', error);
+      return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
+    }
   }
 
   private static async throttleAndQueue(userKey: string): Promise<void> {
@@ -311,7 +349,7 @@ export class SimpleImageService {
     return 'Unknown';
   }
 
-  // TIER 1: Enhanced Runware with full AI enhancement
+  // TIER 1: Enhanced Runware with full AI enhancement and seed consistency
   private static async generateWithRunware(
     cleanScene: string, 
     config: ImageGenerationConfig,
@@ -320,7 +358,16 @@ export class SimpleImageService {
     pageNumber?: number
   ): Promise<ImageResult> {
     try {
-      console.log('🎨 Enhanced Runware generation with full AI enhancement');
+      console.log('🎨 Enhanced Runware generation with full AI enhancement and seed consistency');
+
+      // Get stored character seed for consistency
+      let characterSeed: number | undefined;
+      if (userInfo && sessionId) {
+        characterSeed = await this.getStoredCharacterSeed(userInfo, sessionId);
+        if (characterSeed) {
+          console.log(`🎯 Using stored character seed ${characterSeed} for consistency`);
+        }
+      }
 
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
@@ -330,7 +377,8 @@ export class SimpleImageService {
           pageNumber,
           difficultyLevel: config.difficultyLevel || 'medium',
           width: config.dimensions.width,
-          height: config.dimensions.height
+          height: config.dimensions.height,
+          seed: characterSeed // Pass stored seed for consistency
         }
       });
 
@@ -340,6 +388,11 @@ export class SimpleImageService {
 
       if (!data?.success) {
         throw new Error(data?.error || 'Enhanced Runware generation failed');
+      }
+
+      // Store successful seed for future consistency
+      if (data.seed && userInfo && sessionId && pageNumber) {
+        await this.storeCharacterSeed(userInfo, sessionId, data.seed, pageNumber);
       }
 
       return {
@@ -469,9 +522,13 @@ export class SimpleImageService {
       console.log('🎯 OpenAI DALL-E generation');
 
       const enhancedPrompt = await this.generateSimplePrompt(cleanScene, userInfo);
+      
+      // Add comprehensive negative prompt for OpenAI
+      const negativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
 
       console.log('🎯 [DEBUG] Calling OpenAI with:', {
         positivePrompt: enhancedPrompt?.substring(0, 50),
+        negativePrompt: negativePrompt.substring(0, 50) + '...',
         size: '1024x1024',
         model: 'gpt-image-1',
         quality: 'standard'
@@ -480,6 +537,7 @@ export class SimpleImageService {
       const { data, error } = await supabase.functions.invoke('openai-image', {
         body: {
           positivePrompt: enhancedPrompt,
+          negativePrompt: negativePrompt,
           size: '1024x1024',
           model: 'gpt-image-1',
           quality: 'standard'

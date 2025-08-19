@@ -754,10 +754,55 @@ serve(async (req) => {
     const userName = config?.userName || 'the child';
     console.log(`Generated story for ${userName} with ${cleanPages.length} clean pages`);
 
-    console.log('EDGE SOURCE=ai', { readingLevel, pagesCount: cleanPages.length });
+    // Post-process pages for placeholder resolution and character consistency
+    let processedPages = cleanPages;
+    try {
+      // Import post-processor for placeholder resolution
+      const { resolveAllPlaceholders } = await import('../_shared/placeholder-resolver.js');
+      
+      const userInfo = {
+        name: userName,
+        avatar: config?.avatar || { type: 'child', skinTone: 'medium' },
+        favoriteColor: config?.favoriteColor,
+        favoriteAnimal: config?.favoriteAnimal,
+        favoriteFood: config?.favoriteFood,
+        hobbies: config?.hobbies,
+        specialRequest: config?.specialRequest
+      };
+
+      processedPages = cleanPages.map(page => {
+        const resolved = resolveAllPlaceholders(page, { userInfo, pageText: page });
+        console.log(`✅ Resolved placeholders in page: ${resolved.substring(0, 50)}...`);
+        return resolved;
+      });
+
+      // Initialize character context for visual consistency if session exists
+      if (config?.sessionId && userName) {
+        try {
+          const { StoryVisualStateManager } = await import('../_shared/story-visual-state.js');
+          StoryVisualStateManager.getOrCreateStoryState(config.sessionId, processedPages.length);
+          
+          // Store character description for consistency
+          const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
+          const characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+          StoryVisualStateManager.updateCharacterWithSeed(config.sessionId, userName, characterDesc, undefined, 1);
+          
+          console.log(`✅ Initialized character context for ${userName} in session ${config.sessionId}`);
+        } catch (error) {
+          console.warn('Failed to initialize character context:', error);
+        }
+      }
+
+    } catch (error) {
+      console.warn('Failed to post-process story content:', error);
+      // Use clean pages if post-processing fails
+      processedPages = cleanPages;
+    }
+
+    console.log('EDGE SOURCE=ai', { readingLevel, pagesCount: processedPages.length });
     return new Response(JSON.stringify({
       source: 'ai',
-      pages: cleanPages,
+      pages: processedPages,
       difficulty: readingLevel || 'easy',
       title: `${userName}'s Story`,
       isComplete: true

@@ -551,13 +551,13 @@ function validateUserInfo(userInfo: any): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// Runware's professionally optimized negative prompt - single source of truth
+// Comprehensive negative prompt for high-quality children's book illustrations
 function generateComprehensiveNegativePrompt(text: string, secondaryCharacters: string[], userInfo?: any): string {
-  // Use Runware's recommended negative prompt as the foundation
-  const runwareNegativePrompt = "text, watermark, signature, logos, blurry, low quality, bad anatomy, deformed, malformed, extra limbs, missing limbs, extra fingers, missing fingers, distorted faces, asymmetrical faces, ugly, scary, dark themes, violence, inappropriate content, adult themes, pixelated, jpeg artifacts, oversaturated, bad proportions, cropped, cut off";
+  // Comprehensive negative prompt covering all image quality and content safety issues
+  const comprehensiveNegativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos, signature, jpeg artifacts, oversaturated, bad proportions, cut off, distorted faces, asymmetrical faces, extra fingers, missing fingers, extra limbs, missing limbs, malformed, pixelated";
   
-  console.log(`🚫 Using Runware's optimized negative prompt strategy`);
-  return runwareNegativePrompt;
+  console.log(`🚫 Using comprehensive negative prompt for children's safety and image quality`);
+  return comprehensiveNegativePrompt;
 }
 
 serve(async (req) => {
