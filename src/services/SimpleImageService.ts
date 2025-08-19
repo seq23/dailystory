@@ -160,13 +160,13 @@ export class SimpleImageService {
     }
   }
 
-  // Generate cultural character description
+  // Generate cultural character description using frontend service
   private static async generateCulturalCharacterDescription(userInfo: UserInfo): Promise<string> {
     try {
-      const { MulticulturalVisualService } = await import('../../supabase/functions/_shared/cultural-visual-service.js');
+      const { MulticulturalVisualService } = await import('./MulticulturalVisualService');
       return MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
     } catch (error) {
-      console.warn('Failed to generate cultural description:', error);
+      console.warn('Failed to generate cultural description, using basic fallback:', error);
       return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
     }
   }
@@ -216,19 +216,23 @@ export class SimpleImageService {
     }
   }
 
-  // Simple prompt generation using unified cultural service
+  // Simple prompt generation using frontend cultural service
   private static async generateSimplePrompt(pageText: string, userInfo?: UserInfo): Promise<string> {
     let characterDesc = 'friendly character';
     
     if (userInfo && userInfo.avatar) {
-      // Import and use the shared cultural visual service
-      const { MulticulturalVisualService } = await import('../../supabase/functions/_shared/cultural-visual-service.js');
-      characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-      
-      // Replace character name in the text
-      if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
-        // Character is mentioned in the text, use it directly  
-        characterDesc = `${userInfo.name} (${characterDesc})`;
+      // Use frontend MulticulturalVisualService
+      try {
+        const { MulticulturalVisualService } = await import('./MulticulturalVisualService');
+        characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+        
+        // Replace character name in the text
+        if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
+          characterDesc = `${userInfo.name} (${characterDesc})`;
+        }
+      } catch (error) {
+        console.warn('MulticulturalVisualService not available, using basic description:', error);
+        characterDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
       }
     }
     

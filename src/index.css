@@ -1,9 +1,9 @@
+/* Import custom story display styles */
+@import "./styles/storyDisplay.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import custom story display styles */
-@import "./styles/storyDisplay.css";
 
 /* Scrollbar styling */
 .scrollbar-thin {
