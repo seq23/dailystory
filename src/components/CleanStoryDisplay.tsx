@@ -1850,7 +1850,9 @@ const handleRestartTimer = () => {
           readingAbility: currentDifficulty,
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
         } as UserInfo;
-        const first = await LiveGenerationService.generateFirstPage(effectiveUser);
+        const sessionTypeParam = isRewrite ? 'rewrite' : 'new';
+        console.log(`🔄 Premium rewrite: Passing sessionType '${sessionTypeParam}' to LiveGenerationService`);
+        const first = await LiveGenerationService.generateFirstPage(effectiveUser, sessionTypeParam);
         if ((first as any).error) {
           throw new Error((first as any).error);
         }

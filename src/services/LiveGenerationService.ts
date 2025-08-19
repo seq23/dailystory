@@ -32,7 +32,12 @@ export interface LivePageResult {
 export class LiveGenerationService {
   private static fallbackManager = new EnhancedFallbackManager();
 
-  static async generateFirstPage(userInfo: UserInfo): Promise<LivePageResult> {
+  /**
+   * Generate the first page of a story for premium users
+   * @param userInfo - User information
+   * @param sessionType - Optional session type for context isolation ('new' | 'continuation' | 'rewrite')
+   */
+  static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite'): Promise<LivePageResult> {
     try {
       console.log('🚀 Live Generation: Starting first page for', userInfo.name);
       
@@ -75,10 +80,13 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
         }
       } catch {}
       
+      console.log(`🔄 Live Generation: Calling generate-adaptive-story with sessionType: ${sessionType || 'default'}`);
+      
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
           readingLevel: difficulty,
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
+          sessionType, // Pass sessionType for context isolation
           config: {
             userName: userInfo.name,
             age: userInfo.age,

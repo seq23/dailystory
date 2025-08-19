@@ -536,7 +536,10 @@ serve(async (req) => {
       bodyKeys: Object.keys(requestBody || {})
     });
     
-    const { readingLevel, interests, config } = requestBody
+    const { readingLevel, interests, config, sessionType } = requestBody
+    
+    // Log sessionType for debugging rewrites
+    console.log(`🔄 Session Type: ${sessionType || 'not provided'} - Context isolation: ${sessionType === 'rewrite' ? 'ENABLED' : 'disabled'}`)
     
     // Validate OpenAI API key first
     const keyValidation = validateOpenAIApiKey();
@@ -579,8 +582,26 @@ serve(async (req) => {
     
     console.log('👤 Character Gender Info:', { avatarType, characterGender, pronouns, userName: config?.userName });
     
-    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is named ${config?.userName || 'the child'} and is a ${characterGender}. Always use ${pronouns} pronouns when referring to the main character.`;
-    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'} who is a ${characterGender}. Use ${pronouns} pronouns consistently throughout the story. Create an engaging story appropriate for the reading level.`;
+    // Add context isolation for rewrites to prevent theme carryover
+    let contextIsolationPrompt = '';
+    let negativePrompt = '';
+    
+    if (sessionType === 'rewrite') {
+      contextIsolationPrompt = `
+      
+    CRITICAL: This is a REWRITE request. You must:
+    - COMPLETELY IGNORE any previous story themes, characters, or settings
+    - Focus ONLY on the new theme/interests provided by the user
+    - Do NOT carry over any elements from previous stories
+    - Create a fresh, independent story based solely on current inputs`;
+      
+      negativePrompt = `
+      
+    AVOID: Do not include themes from previous stories like ocean/sea/water themes, animal themes that weren't specifically requested, or any settings/characters from earlier generations.`;
+    }
+
+    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is named ${config?.userName || 'the child'} and is a ${characterGender}. Always use ${pronouns} pronouns when referring to the main character.${contextIsolationPrompt}`;
+    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'} who is a ${characterGender}. Use ${pronouns} pronouns consistently throughout the story. Create an engaging story appropriate for the reading level.${negativePrompt}`;
 
     const maxTokens = readingLevel === 'beginner' ? 200 : 
                      readingLevel === 'easy' ? 400 : 
