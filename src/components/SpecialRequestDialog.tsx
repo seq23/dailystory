@@ -71,7 +71,7 @@ Setting: magical forest AND cozy cottage --> Enter`}
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isGenerating}>
-            {isGenerating ? "Generating..." : "Start new story"}
+            {isGenerating ? "Refreshing..." : "Refresh story"}
           </Button>
         </DialogFooter>
       </DialogContent>

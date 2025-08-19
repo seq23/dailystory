@@ -340,15 +340,16 @@ export const ResponsiveStoryHeader = ({
             {/* Story Controls */}
             {showLevelControls && (
               <div className="flex items-center gap-2">
-                {onNewStory && (
+                 {onNewStory && (
                   <NewStoryCTA
                     isPremium={true}
-                    iconOnly={isMobileOrTablet}
+                    iconOnly={true}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
                     wandPulse={wandPulse}
                     isGeneratingRewrite={isGeneratingRewrite}
+                    tooltipText="Refresh story"
                   />
                 )}
                 

@@ -197,7 +197,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           <span className={cn("relative inline-flex items-center")}
           >
             {isGeneratingRewrite ? (
-              <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} />
+              <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} aria-label="Refreshing story" />
             ) : (
               <MagicRefreshIcon
                 size={iconPx}
@@ -219,7 +219,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           <span className="relative inline-grid grid-cols-[auto,1fr] items-center w-full min-w-0">
             <span className="col-span-1 flex items-center justify-start md:justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
               {isGeneratingRewrite ? (
-                <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} />
+                <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} aria-label="Refreshing story" />
               ) : (
                 <MagicRefreshIcon
                   size={iconPx}
@@ -301,7 +301,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
 
   const defaultIconOnlyTooltip = isLocked
     ? t("tooltips.newStoryPremium", "Premium only. Refresh story")
-    : t("tooltips.newStory", "Start a fresh story");
+    : t("tooltips.refreshStory", "Refresh story");
   const resolvedTooltip = tooltipText ?? (iconOnly ? defaultIconOnlyTooltip : undefined);
 
   if (resolvedTooltip) {
