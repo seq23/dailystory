@@ -13,7 +13,8 @@ class FrontendToBackendSync {
       qualityPatterns: [],
       characterGeneration: {},
       settingGeneration: {},
-      skinToneDistribution: {}
+      skinToneDistribution: {},
+      imageGeneration: {}
     };
   }
 
@@ -95,13 +96,65 @@ class FrontendToBackendSync {
   }
 
   extractSimpleImageServiceLogic(content) {
+    // Extract DEFAULT_CONFIG
+    const configMatch = content.match(/DEFAULT_CONFIG:\s*ImageGenerationConfig\s*=\s*{([\s\S]*?)};/);
+    if (configMatch) {
+      const configStr = configMatch[1];
+      this.extractedIntelligence.imageGeneration = {
+        defaultProvider: this.parseStringValue(configStr, 'provider'),
+        defaultDimensions: {
+          width: this.parseNumberValue(configStr, 'width') || 1024,
+          height: this.parseNumberValue(configStr, 'height') || 1024
+        },
+        defaultStyle: this.parseStringValue(configStr, 'style'),
+        defaultDifficulty: this.parseStringValue(configStr, 'difficultyLevel')
+      };
+    }
+
+    // Extract hair color mapping
+    const hairColorMatch = content.match(/hairColorMap\s*=\s*{([\s\S]*?)};/);
+    if (hairColorMatch) {
+      const hairMapStr = hairColorMatch[1];
+      const hairMapping = {};
+      const hairMatches = hairMapStr.matchAll(/'([^']+)':\s*'([^']+)',?/g);
+      for (const [, key, value] of hairMatches) {
+        hairMapping[key] = value;
+      }
+      this.extractedIntelligence.imageGeneration.hairColorMapping = hairMapping;
+    }
+
+    // Extract emotional context patterns
+    const emotionMatch = content.match(/emotions\s*=\s*{([\s\S]*?)};/);
+    if (emotionMatch) {
+      const emotionsStr = emotionMatch[1];
+      const emotionPatterns = {};
+      const patternMatches = emotionsStr.matchAll(/(\w+):\s*\/([^\/]*)\//gi);
+      for (const [, emotion, pattern] of patternMatches) {
+        emotionPatterns[emotion] = pattern;
+      }
+      this.extractedIntelligence.imageGeneration.emotionalPatterns = emotionPatterns;
+    }
+
+    // Extract concurrency and rate limits
+    const concurrencyMatch = content.match(/CONCURRENCY_LIMIT\s*=\s*(\d+)/);
+    const rateLimitMatch = content.match(/RATE_LIMIT_PER_SEC\s*=\s*(\d+)/);
+    const costCeilingMatch = content.match(/DAILY_COST_CEILING_USD\s*=\s*(\d+)/);
+    const estimatedCostMatch = content.match(/ESTIMATED_COST_PER_IMAGE_USD\s*=\s*([\d.]+)/);
+
+    if (concurrencyMatch || rateLimitMatch || costCeilingMatch || estimatedCostMatch) {
+      this.extractedIntelligence.imageGeneration.limits = {
+        concurrency: concurrencyMatch ? parseInt(concurrencyMatch[1]) : 4,
+        rateLimit: rateLimitMatch ? parseInt(rateLimitMatch[1]) : 2,
+        dailyCostCeiling: costCeilingMatch ? parseInt(costCeilingMatch[1]) : 50,
+        estimatedCost: estimatedCostMatch ? parseFloat(estimatedCostMatch[1]) : 0.002
+      };
+    }
+
     // Extract tier generation methods for backend use
     const tierMethods = content.match(/generateWith\w+.*?Promise<ImageResult>/g);
     if (tierMethods) {
-      this.extractedIntelligence.imageGeneration = {
-        tierMethods: tierMethods.map(method => method.split('(')[0]),
-        tierCount: tierMethods.length
-      };
+      this.extractedIntelligence.imageGeneration.tierMethods = tierMethods.map(method => method.split('(')[0]);
+      this.extractedIntelligence.imageGeneration.tierCount = tierMethods.length;
     }
     
     // Extract prompt generation logic
@@ -404,17 +457,15 @@ function getDefaultEmotionalContext() {
 
 // Execute sync if run directly
 if (require.main === module) {
-  const sync = new FrontendToBackendSync();
-  sync.syncIntelligence()
-    .then(() => sync.validateSync())
-    .then(() => {
-      console.log('🎉 Frontend-to-backend sync completed successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('💥 Sync failed:', error.message);
-      process.exit(1);
-    });
+  (async () => {
+    const sync = new FrontendToBackendSync();
+    await sync.syncIntelligence();
+    await sync.validateSync();
+    console.log('🎉 Frontend-to-backend sync completed successfully');
+  })().catch((error) => {
+    console.error('💥 Sync failed:', error.message);
+    process.exit(1);
+  });
 }
 
 module.exports = { FrontendToBackendSync };

@@ -201,6 +201,48 @@ export const FrontendIntelligence = {
       "compositionStyle": "balanced peaceful composition"
     }
   },
+  "imageGeneration": {
+    "defaultProvider": "runware",
+    "defaultDimensions": {
+      "width": 1024,
+      "height": 1024
+    },
+    "defaultStyle": "children-book",
+    "defaultDifficulty": "medium",
+    "hairColorMapping": {
+      "light-girl": "blonde",
+      "light-boy": "light brown",
+      "pale-girl": "blonde",
+      "pale-boy": "blonde",
+      "medium-girl": "brown",
+      "medium-boy": "brown",
+      "olive-girl": "dark brown",
+      "olive-boy": "dark brown",
+      "dark-girl": "black",
+      "dark-boy": "black"
+    },
+    "emotionalPatterns": {
+      "curiosity": "curious|wonder|explore|discover|interested",
+      "excitement": "excited|happy|joy|thrilled|amazing",
+      "sadness": "sad|cry|tear|upset|disappointed",
+      "surprise": "surprise|shocked|unexpected|wow|gasp",
+      "determination": "determined|brave|strong|confident|bold"
+    },
+    "limits": {
+      "concurrency": 4,
+      "rateLimit": 2,
+      "dailyCostCeiling": 50,
+      "estimatedCost": 0.002
+    },
+    "tierMethods": [
+      "generateWithRunware",
+      "generateWithRunwareSimple", 
+      "generateWithOpenAI",
+      "generateSVGPlaceholder",
+      "generateWithRunwareSimpleFallback"
+    ],
+    "tierCount": 5
+  },
   "qualityPatterns": [
     {
       "name": "Character Focus Enhancement",
