@@ -1,9 +1,10 @@
+
 // Phase 3: Prompt Overhaul System
 // Smart deduplication and token budget management
 
 export class PromptOptimizationEngine {
   // Token limits by difficulty level
-  static readonly TOKEN_LIMITS = {
+  static TOKEN_LIMITS = {
     beginner: 150,
     easy: 200,
     medium: 250,
@@ -12,7 +13,7 @@ export class PromptOptimizationEngine {
   };
 
   // Essential quality keywords that should never be removed
-  static readonly PROTECTED_KEYWORDS = [
+  static PROTECTED_KEYWORDS = [
     'children', 'book', 'illustration', 'vibrant', 'friendly', 
     'safe', 'educational', 'colorful', 'bright', 'clear'
   ];
