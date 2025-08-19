@@ -175,8 +175,8 @@ export class MulticulturalVisualService {
     
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     
-    // Use the user's selected avatar skin tone
-    const skinTone = userInfo.avatar.skinTone;
+    // Map user's basic skin tone choice to detailed skin tone description
+    const skinTone = this.mapSkinToneToDescription(userInfo.avatar.skinTone, profile);
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     const facialFeatures = this.selectRandomElement(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
@@ -192,8 +192,8 @@ export class MulticulturalVisualService {
     const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 
                       userInfo.avatar.type === 'girl' ? 'girl' : 'child';
     
-    // Use the user's selected avatar skin tone
-    const skinTone = userInfo.avatar.skinTone;
+    // Map user's basic skin tone choice to detailed African American skin tone description
+    const skinTone = this.mapSkinToneToDescription(userInfo.avatar.skinTone, profile);
     
     // Get culturally appropriate hair style for African American heritage
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
@@ -292,6 +292,56 @@ export class MulticulturalVisualService {
   static getCulturalCelebration(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
     return this.selectRandomElement(profile.celebrations);
+  }
+
+  private static mapSkinToneToDescription(basicSkinTone: SkinTone, profile: CulturalVisualProfile): string {
+    const skinTones = profile.skinTones;
+    const totalTones = skinTones.length;
+    
+    // Map basic skin tone to appropriate ranges within the detailed skin tone array
+    switch (basicSkinTone) {
+      case 'light':
+        // Select from first third of the skin tone array (lightest)
+        const lightRange = skinTones.slice(0, Math.ceil(totalTones / 3));
+        return this.selectRandomElement(lightRange);
+        
+      case 'medium':
+        // Select from middle third of the skin tone array
+        const mediumStart = Math.ceil(totalTones / 3);
+        const mediumEnd = Math.ceil(totalTones * 2 / 3);
+        const mediumRange = skinTones.slice(mediumStart, mediumEnd);
+        return this.selectRandomElement(mediumRange);
+        
+      case 'dark':
+        // Select from last third of the skin tone array (darkest)
+        const darkStart = Math.ceil(totalTones * 2 / 3);
+        const darkRange = skinTones.slice(darkStart);
+        return this.selectRandomElement(darkRange);
+        
+      case 'olive':
+        // For olive, select from skin tones that contain "olive" or middle range if none
+        const oliveTones = skinTones.filter(tone => tone.includes('olive'));
+        if (oliveTones.length > 0) {
+          return this.selectRandomElement(oliveTones);
+        }
+        // Fallback to medium range if no olive tones available
+        const oliveMediumStart = Math.ceil(totalTones / 3);
+        const oliveMediumEnd = Math.ceil(totalTones * 2 / 3);
+        const oliveMediumRange = skinTones.slice(oliveMediumStart, oliveMediumEnd);
+        return this.selectRandomElement(oliveMediumRange);
+        
+      case 'pale':
+        // Select from very first entries (lightest possible)
+        const paleRange = skinTones.slice(0, Math.max(1, Math.ceil(totalTones / 4)));
+        return this.selectRandomElement(paleRange);
+        
+      default:
+        // Fallback to random selection from middle range
+        const defaultStart = Math.ceil(totalTones / 3);
+        const defaultEnd = Math.ceil(totalTones * 2 / 3);
+        const defaultRange = skinTones.slice(defaultStart, defaultEnd);
+        return this.selectRandomElement(defaultRange);
+    }
   }
 
   private static selectRandomElement<T>(array: T[]): T {
