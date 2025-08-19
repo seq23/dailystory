@@ -2946,7 +2946,7 @@ const handleRestartTimer = () => {
             isPremium={isPremium}
             onPlayAudio={isTimerPaused ? undefined : handleDockPlayAudio}
             onVoiceCommand={isTimerPaused ? undefined : (isPremium ? handleDockVoiceCommand : undefined)}
-            onCoach={isTimerPaused ? undefined : handleDockCoach}
+            onCoach={handleDockCoach}
             onSave={isPremium ? handleSaveStoryNow : undefined}
             onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
             isSaving={isSaving}
