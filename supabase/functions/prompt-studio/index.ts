@@ -52,87 +52,45 @@ interface PromptStudioResponse {
   error?: string;
 }
 
-// Advanced prompt enhancement using GPT-4o-mini
-async function enhancePromptWithAI(
+// Enhanced prompt processing using MultiStageEnhancementPipeline
+async function enhancePromptWithPipeline(
   prompt: string, 
   userInfo?: any, 
   difficultyLevel: string = 'medium',
   enhancementLevel: string = 'standard'
 ): Promise<{ enhancedPrompt: string; analysis: any }> {
-  if (!openAIApiKey) {
-    return { 
-      enhancedPrompt: prompt, 
-      analysis: { error: 'OpenAI API key not configured' } 
-    };
-  }
-
-  const systemPrompt = `You are an expert prompt engineer for children's book illustrations. Transform simple scene descriptions into detailed, professional prompts for AI image generation.
-
-CRITICAL QUALITY RULES:
-- Always use specific descriptive details (colors, expressions, lighting, textures)
-- Include character emotions and facial expressions
-- Describe setting atmosphere and lighting conditions
-- Add composition and artistic style elements
-- Use warm, inviting tones suitable for children
-
-SCENE DESCRIPTION BEST PRACTICES:
-- Instead of "cat" → "Orange tabby cat with bright green eyes and friendly expression"  
-- Instead of "children playing" → "Two diverse children with curly hair, laughing while building colorful block tower"
-- Always include specific colors, lighting, and emotional context
-
-Keep content age-appropriate and suitable for children's books.
-Output only the enhanced prompt text, no explanations.`;
-
-  const enhancementInstructions = {
-    minimal: "Add basic visual details and children's book style",
-    standard: "Add comprehensive visual details, lighting, and artistic style",
-    detailed: "Add extensive visual details, composition, artistic techniques, and emotional atmosphere"
-  };
-
-  const userPrompt = `Transform this ${difficultyLevel} level scene for a children's book:
-"${prompt}"
-
-${userInfo ? `Main character: ${userInfo.name}, ${userInfo.age} years old, ${userInfo.avatar?.type || 'friendly'} appearance, ${userInfo.avatar?.skinTone || 'warm'} skin tone.` : ''}
-
-Enhancement level: ${enhancementInstructions[enhancementLevel as keyof typeof enhancementInstructions]}
-
-Create a professional illustration prompt suitable for children's book art.`;
-
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 400
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const enhancedPrompt = data.choices?.[0]?.message?.content?.trim() || prompt;
+    console.log(`🎨 Prompt Studio using MultiStageEnhancementPipeline for: "${prompt.substring(0, 50)}..."`);
     
+    // Map difficulty level for pipeline
+    const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo || { readingLevel: difficultyLevel });
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from input: ${difficultyLevel}`);
+
+    // Process through the comprehensive pipeline
+    const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
+      prompt,
+      userInfo,
+      crypto.randomUUID(), // sessionId
+      1, // pageNumber
+      1  // totalPages
+    );
+
+    console.log(`✅ Pipeline enhancement completed with quality score: ${enhancementResult.qualityScore}`);
+
     return {
-      enhancedPrompt,
+      enhancedPrompt: enhancementResult.enhancedPrompt,
       analysis: {
         originalLength: prompt.length,
-        enhancedLength: enhancedPrompt.length,
-        optimizations: ['AI enhancement', 'Children\'s book style', 'Character consistency'],
-        strategy: enhancementLevel
+        enhancedLength: enhancementResult.enhancedPrompt.length,
+        optimizations: enhancementResult.appliedOptimizations || ['Cultural intelligence', 'Emotional context', 'Quality enhancement'],
+        strategy: enhancementLevel,
+        qualityScore: enhancementResult.qualityScore,
+        culturalContext: enhancementResult.culturalContext,
+        emotionalContext: enhancementResult.emotionalContext
       }
     };
   } catch (error) {
-    console.error('AI enhancement failed:', error);
+    console.error('❌ Pipeline enhancement failed:', error);
     return { 
       enhancedPrompt: prompt, 
       analysis: { error: error.message } 
@@ -262,8 +220,8 @@ serve(async (req) => {
         const request: PromptStudioRequest = JSON.parse(event.data);
         
         if (request.type === 'generate') {
-          // Enhance prompt with AI
-          const { enhancedPrompt, analysis } = await enhancePromptWithAI(
+          // Enhance prompt with MultiStageEnhancementPipeline
+          const { enhancedPrompt, analysis } = await enhancePromptWithPipeline(
             request.positivePrompt,
             request.userInfo,
             request.difficultyLevel || 'medium',
@@ -287,7 +245,7 @@ serve(async (req) => {
           
         } else if (request.type === 'analyze') {
           // Just analyze and enhance the prompt without generation
-          const { enhancedPrompt, analysis } = await enhancePromptWithAI(
+          const { enhancedPrompt, analysis } = await enhancePromptWithPipeline(
             request.positivePrompt,
             request.userInfo,
             request.difficultyLevel || 'medium',
@@ -308,7 +266,7 @@ serve(async (req) => {
           const results = [];
 
           for (let i = 0; i < batchCount; i++) {
-            const { enhancedPrompt } = await enhancePromptWithAI(
+            const { enhancedPrompt } = await enhancePromptWithPipeline(
               request.positivePrompt,
               request.userInfo,
               request.difficultyLevel || 'medium',
@@ -364,7 +322,7 @@ serve(async (req) => {
       return createCorsErrorResponse('RUNWARE_API_KEY not configured', 500);
     }
 
-    const { enhancedPrompt, analysis } = await enhancePromptWithAI(
+    const { enhancedPrompt, analysis } = await enhancePromptWithPipeline(
       request.positivePrompt,
       request.userInfo,
       request.difficultyLevel || 'medium',
