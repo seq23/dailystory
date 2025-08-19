@@ -77,8 +77,8 @@ serve(async (req) => {
                 height: 1024,
                 numberResults: 1,
                 outputFormat: "WEBP",
-                steps: style.steps,
-                CFGScale: style.cfgScale,
+                steps: 12,
+                CFGScale: 4.0,
                 scheduler: "FlowMatchEulerDiscreteScheduler",
                 strength: style.strength
               }]));

@@ -128,17 +128,18 @@ async function extractSceneWithCulture(pageText: string, userInfo?: any): Promis
   let characterDesc = 'friendly child';
   if (userInfo && userInfo.avatar) {
     try {
-      const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
-      characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+      const { MultiStageEnhancementPipeline } = await import('../_shared/MultiStageEnhancementPipeline.js');
+      const pipeline = new MultiStageEnhancementPipeline();
+      const characterDesc = pipeline.generateCharacterDescription(userInfo);
       
       // Use character name if mentioned in the scene
       if (userInfo.name && bestScene.toLowerCase().includes(userInfo.name.toLowerCase())) {
         characterDesc = `${userInfo.name} (${characterDesc})`;
       }
       
-      console.log(`🎭 Unified character for Tier 2.5: ${characterDesc}`);
+      console.log(`🎭 Unified pipeline character for test: ${characterDesc}`);
     } catch (error) {
-      console.warn('⚠️ Failed to load cultural service, using fallback:', error);
+      console.warn('⚠️ Failed to load MultiStageEnhancementPipeline, using fallback:', error);
       characterDesc = `${userInfo.name || 'child'} with ${userInfo.avatar?.type || 'child'} appearance`;
     }
   }
