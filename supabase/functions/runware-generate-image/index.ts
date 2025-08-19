@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { MultiStageEnhancementPipeline } from "../_shared/multi-stage-pipeline.js";
+import { ConsolidatedEnhancementPipeline } from "../_shared/consolidated-enhancement-pipeline.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 // Comprehensive Visual State Management
 interface CharacterState {
@@ -612,6 +613,7 @@ serve(async (req) => {
     let enhancedPrompt: string;
     let finalSeed = seed;
     let finalNegativePrompt: string;
+    let optimalParams = {};
     
     if (pageText && sessionId && userInfo) {
       // Validate userInfo
@@ -706,17 +708,16 @@ serve(async (req) => {
       // Enhanced character description with gender specificity
       const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinToneForPrompt}`;
       
-      // Import the multi-stage pipeline
-      const { MultiStageEnhancementPipeline } = await import('../_shared/multi-stage-pipeline.js');
+      // Use the consolidated enhancement pipeline for all processing
+      const enhancementResult = await ConsolidatedEnhancementPipeline.processThroughPipeline(
+        processedText,
+        userInfo,
+        sessionId,
+        pageNumber,
+        10 // totalPages
+      );
       
-      // Extract story elements using the consolidated pipeline
-      const storyElements = MultiStageEnhancementPipeline.detectCharactersInText(pageText, userInfo);
-      
-      console.log(`🎨 Extracted story elements:`, { 
-        animals: storyElements.animals?.slice(0, 3) || [], 
-        characters: storyElements.characters?.slice(0, 3) || [],
-        objects: storyElements.objects?.slice(0, 3) || []
-      });
+      console.log(`🎨 Enhanced prompt via consolidated pipeline: ${enhancementResult.prompt.substring(0, 100)}...`);
       
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
       
@@ -731,32 +732,17 @@ serve(async (req) => {
         ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
         : comprehensiveNegativePrompt;
       
-      // Import centralized style framework and buildCompletePrompt function
-      const { getStyleFramework, buildCompletePrompt } = await import('../_shared/styleFrameworks.js');
-      const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
+      // Use the enhanced prompt from the consolidated pipeline
+      enhancedPrompt = enhancementResult.prompt;
+      finalNegativePrompt = enhancementResult.negativePrompt || comprehensiveNegativePrompt;
       
-      // Get style framework for difficulty level
-      const framework = getStyleFramework(difficultyLevel);
-      console.log(`🎨 Using ${framework.name} style framework for difficulty: ${difficultyLevel}`);
-      
-      // Generate culturally appropriate character description using actual userInfo
-      const culturalCharacterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-      const culturalContext = MulticulturalVisualService.generateCulturalSetting(userInfo);
-      
-      // Use the centralized buildCompletePrompt function with story elements for consistent, high-quality prompts
-      const promptResult = buildCompletePrompt(
-        framework,
-        processedText,  // scene description
-        culturalCharacterDesc,  // character description
-        culturalContext,  // cultural context
-        storyElements  // story elements for alignment
-      );
-      
-      enhancedPrompt = promptResult.positivePrompt;
-      finalNegativePrompt = promptResult.negativePrompt;
+      // Get optimal generation parameters from the pipeline
+      optimalParams = enhancementResult.parameters || {};
       
       // Add environmental and visual details context
       enhancedPrompt += environmentalContext + visualDetailsContext;
+      
+      console.log(`🎨 Using consolidated pipeline for ${userInfo.name} (page ${pageNumber})`);
       
       console.log(`🎯 Complete structured prompt created using buildCompletePrompt for ${userInfo.name} with story elements`);
       
@@ -855,13 +841,12 @@ serve(async (req) => {
       const maxRetries = 3;
       let connectionState = 'disconnected'; // disconnected → connecting → connected → authenticating → ready
       
-      // Framework params should be available from the scope above
-      // Create safe framework params with fallbacks
+      // Use optimal parameters from consolidated pipeline with fallbacks
       const frameworkParams = {
-        steps: (typeof framework !== 'undefined' && framework?.parameters?.steps) || 3,
-        cfgScale: (typeof framework !== 'undefined' && framework?.parameters?.cfgScale) || Math.max(1.5, CFGScale || 7),
-        scheduler: (typeof framework !== 'undefined' && framework?.parameters?.scheduler) || scheduler || 'FlowMatchEulerDiscreteScheduler',
-        strength: (typeof framework !== 'undefined' && framework?.parameters?.strength) || strength || 0.8
+        steps: optimalParams.steps || 3,
+        cfgScale: optimalParams.cfgScale || Math.max(1.5, CFGScale || 1.5),
+        scheduler: optimalParams.scheduler || scheduler || 'FlowMatchEulerDiscreteScheduler',
+        strength: optimalParams.strength || strength || 0.8
       };
       
       console.log('🎯 Framework params validated:', frameworkParams);

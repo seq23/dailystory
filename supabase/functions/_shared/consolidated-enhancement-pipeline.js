@@ -1,6 +1,11 @@
-// CONSOLIDATED ENHANCEMENT PIPELINE - Phase 4.7 Implementation
-// Single source of truth absorbing all frontend service logic
-// Eliminates manual synchronization between frontend and backend
+// CONSOLIDATED ENHANCEMENT PIPELINE - Master Integration (All Phases Complete)
+// Integrates: Phase 1 (Difficulty Mapping), Phase 2 (Quality Standards), 
+// Phase 3 (Prompt Optimization), Phase 4 (Cultural Fixes), Phase 4.7 (Consolidation)
+
+import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
+import { QualityStandardizationEngine } from './quality-standardization.js';
+import { PromptOptimizationEngine } from './prompt-optimization.js';
+import { CulturalRepresentationEngine } from './cultural-representation-fixes.js';
 
 export class ConsolidatedEnhancementPipeline {
   // ========== ABSORBED MULTICULTURAL VISUAL SERVICE LOGIC ==========
@@ -236,9 +241,9 @@ export class ConsolidatedEnhancementPipeline {
       // Stage 2: Character Detection with Cultural Consistency
       const characterInfo = this.detectAndEnhanceCharacters(storyText, userInfo);
       
-      // Stage 3: Emotional Analysis and Style Framework
+      // Stage 3: Emotional Analysis and Style Framework (Phase 1 Integration)
       const emotionalContext = this.analyzeEmotionalContent(storyText);
-      const difficulty = this.normalizeDifficultyLevel(userInfo.readingLevel || userInfo.difficultyLevel || 'easy');
+      const difficulty = DifficultyLevelMapper.normalizeLevel(userInfo.readingLevel || userInfo.difficultyLevel || 'easy');
       const styleFramework = this.STYLE_FRAMEWORKS[difficulty];
 
       // Stage 4: Complete Prompt Composition
@@ -250,22 +255,33 @@ export class ConsolidatedEnhancementPipeline {
         userInfo
       );
 
-      // Stage 5: Quality Enhancement
-      const enhancedResult = this.optimizeForChildrensBooks(template.finalPrompt, sessionId, pageNumber, userInfo);
+      // Stage 5: Quality Enhancement + Prompt Optimization (Phase 2 & 3 Integration)
+      let enhancedPrompt = this.applyQualityEnhancements(template.finalPrompt);
+      enhancedPrompt = PromptOptimizationEngine.optimizeForTokenBudget(enhancedPrompt, difficulty);
       
-      // Stage 6: Parameter Optimization
-      const optimizedParameters = this.getOptimalParameters(difficulty, userInfo);
+      // Stage 6: Cultural Validation (Phase 4 Integration)
+      const culturalWarnings = CulturalRepresentationEngine.validateCulturalRepresentation(enhancedPrompt, userInfo);
+      if (culturalWarnings.length > 0) {
+        console.log('🌍 Cultural representation warnings:', culturalWarnings);
+      }
+      
+      // Stage 7: Parameter Optimization (Phase 2 Integration)
+      const optimizedParameters = QualityStandardizationEngine.getParametersForDifficulty(difficulty);
 
       const processingTime = Date.now() - startTime;
       
       return {
-        finalPrompt: enhancedResult.enhancedPrompt,
+        prompt: enhancedPrompt,
         negativePrompt: this.generateCulturalNegativePrompt(userInfo),
+        parameters: optimizedParameters,
         enhancedCharacters: characterInfo.characters,
-        optimizedParameters,
-        qualityScore: enhancedResult.qualityScore,
+        qualityScore: this.calculateQualityScore(enhancedPrompt),
         processingTime,
-        enhancementLevel: 'consolidated'
+        enhancementLevel: 'all-phases-integrated',
+        validation: {
+          tokenCount: PromptOptimizationEngine.estimateTokenCount(enhancedPrompt),
+          culturalWarnings
+        }
       };
 
     } catch (error) {
@@ -280,21 +296,12 @@ export class ConsolidatedEnhancementPipeline {
   }
 
   static generateCulturalCharacterDescription(userInfo) {
-    // CRITICAL FIX: English + dark skin gets African American treatment
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      return this.generateMixedAfricanAmericanDescription(userInfo);
+    if (!userInfo) {
+      return 'friendly child character with warm features and expressive eyes';
     }
-    
-    // CRITICAL FIX: English + non-dark skin gets STANDARD descriptions (not cultural)
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone !== 'dark') {
-      return this.generateStandardAmericanDescription(userInfo);
-    }
-    
-    // Non-English gets cultural variations
-    const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage);
-    const skinTone = this.mapSkinToneToDescription(userInfo.avatar?.skinTone, profile);
-    const hairStyle = this.selectRandomElement(profile.hairStyles);
-    const facialFeatures = this.selectRandomElement(profile.facialFeatures);
+
+    // Phase 4 Integration: Use enhanced cultural representation engine
+    return CulturalRepresentationEngine.generateCulturalCharacterDescription(userInfo);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
     const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
                       userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
@@ -721,15 +728,8 @@ Transform this into a visual prompt sentence for page ${pageNumber || 1}. Consid
   }
 
   static normalizeDifficultyLevel(level) {
-    const mapping = {
-      'pre-reader': 'beginner',
-      'beginner': 'easy',
-      'developing': 'medium',
-      'independent': 'hard',
-      'advanced': 'expert'
-    };
-    
-    return mapping[level?.toLowerCase()] || level || 'easy';
+    // Phase 1 Integration: Use DifficultyLevelMapper
+    return DifficultyLevelMapper.normalizeLevel(level);
   }
 
   static createFallbackResult(storyText, userInfo) {
