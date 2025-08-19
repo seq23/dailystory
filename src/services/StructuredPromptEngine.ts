@@ -5,7 +5,6 @@
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo, DifficultyLevel } from "@/types";
 import { MulticulturalVisualService } from "./MulticulturalVisualService";
-import { resolveAllPlaceholders } from "@/utils/placeholderResolver";
 import { DifficultyLevelMapper } from "./DifficultyLevelMapper";
 
 export interface PromptTemplate {
@@ -86,15 +85,13 @@ export class StructuredPromptEngine {
     characterDescriptors: CharacterDescriptor[],
     emotionalContext?: EmotionalContext
   ): PromptTemplate {
-    // Resolve all placeholders in story text first
-    const resolvedStoryText = resolveAllPlaceholders(storyText, { userInfo });
-    
-    // Analyze resolved story text for emotional content
-    const detectedEmotion = this.analyzeEmotionalContent(resolvedStoryText);
+    // Guard: Story text from OpenAI is already resolved, don't re-process
+    // Analyze story text for emotional content directly
+    const detectedEmotion = this.analyzeEmotionalContent(storyText);
     const finalEmotionalContext = emotionalContext || detectedEmotion;
 
-    // Extract primary scene from resolved text
-    const primaryScene = this.extractPrimaryScene(resolvedStoryText);
+    // Extract primary scene from story text
+    const primaryScene = this.extractPrimaryScene(storyText);
     
     // Generate cultural visual elements
     const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
@@ -216,9 +213,7 @@ export class StructuredPromptEngine {
     emotionalContext: EmotionalContext,
     userInfo: UserInfo
   ): string {
-    // Resolve any remaining placeholders in scene description
-    const resolvedScene = resolveAllPlaceholders(primaryScene, { userInfo });
-    
+    // Guard: Scene from generated story is already resolved
     // Integrate user preferences into scene composition
     const userColorPreference = userInfo.favoriteColor;
     let colorPalette = emotionalContext.colorPalette.join(', ');
@@ -230,7 +225,7 @@ export class StructuredPromptEngine {
     
     const lighting = emotionalContext.lightingStyle;
     
-    return `${resolvedScene}, ${colorPalette}, ${lighting}`;
+    return `${primaryScene}, ${colorPalette}, ${lighting}`;
   }
 
   /**
@@ -239,8 +234,7 @@ export class StructuredPromptEngine {
   private static composeCulturalSetting(userInfo: UserInfo, culturalProfile: any): string {
     let setting = MulticulturalVisualService.generateCulturalSetting(userInfo);
     
-    // Resolve placeholders in setting
-    setting = resolveAllPlaceholders(setting, { userInfo });
+    // Note: Setting generation should handle user info directly, not through placeholders
     
     const culturalElements = culturalProfile.culturalElements.slice(0, 2).join(', ');
     
@@ -299,9 +293,8 @@ export class StructuredPromptEngine {
     pageNumber: number,
     totalPages: number
   ): string {
-    // Resolve placeholders in story text
-    const resolvedStoryText = resolveAllPlaceholders(storyText, { userInfo });
-    const emotionalContext = this.analyzeEmotionalContent(resolvedStoryText);
+    // Guard: Story text is already resolved from generation
+    const emotionalContext = this.analyzeEmotionalContent(storyText);
     
     // Use proper difficulty level mapping
     const difficulty = DifficultyLevelMapper.normalizeLevel(

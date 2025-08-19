@@ -5,7 +5,6 @@
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo } from "@/types";
 import { MulticulturalVisualService } from "./MulticulturalVisualService";
-import { resolveAllPlaceholders } from "@/utils/placeholderResolver";
 
 export interface CharacterDescriptor {
   name: string;
@@ -48,14 +47,14 @@ export class AdvancedCharacterEngine {
   ): CharacterDescriptor[] {
     const detectedCharacters: CharacterDescriptor[] = [];
     
-    // Resolve placeholders in story text for accurate detection
-    const resolvedText = resolveAllPlaceholders(storyText, { userInfo });
-    const text = resolvedText.toLowerCase();
+    // Guard: Don't re-process already generated story content
+    // Story text from OpenAI should already be resolved
+    const text = storyText.toLowerCase();
     
-    // Primary character patterns (using resolved userName)
-    const resolvedUserName = resolveAllPlaceholders('{userName}', { userInfo });
+    // Primary character patterns (use user info directly, not placeholders)
+    const userName = userInfo.name?.split(' ')[0] || 'child';
     const primaryPatterns = [
-      resolvedUserName.toLowerCase(),
+      userName.toLowerCase(),
       userInfo.name?.toLowerCase() || 'main character',
       'you', 'your', 'yourself'
     ];
@@ -151,11 +150,11 @@ export class AdvancedCharacterEngine {
     // Create family group for shared traits
     this.createFamilyGroup(familyGroupId, userInfo.nativeLanguage as SupportedLanguage, culturalProfile);
     
-    // Use placeholder-resolved name for consistency
-    const resolvedUserName = resolveAllPlaceholders('{userName}', { userInfo });
+    // Use first name from user info directly (no placeholder resolution needed)
+    const firstName = userInfo.name?.split(' ')[0] || 'Child';
     
     const primaryCharacter: CharacterDescriptor = {
-      name: resolvedUserName || userInfo.name || 'Main Character',
+      name: firstName,
       type: 'primary',
       relationshipToMain: 'self',
       culturalRole: 'child protagonist',
