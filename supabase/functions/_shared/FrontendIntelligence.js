@@ -305,20 +305,44 @@ export function generateCulturalCharacterDescription(userInfo) {
     return generateMixedAfricanAmericanDescription(userInfo, profile);
   }
   
+  // For English speakers with non-dark skin, use simple avatar-based description
+  if (language === 'en' && userInfo.avatar?.skinTone !== 'dark') {
+    return generateSimpleAvatarDescription(userInfo);
+  }
+  
   // For other languages, ensure appropriate cultural context
-  if (language !== 'en' && userInfo.avatar?.skinTone !== 'dark') {
+  if (language !== 'en') {
     return generateStandardCulturalDescription(userInfo, profile);
   }
   
-  const skinTone = selectWeightedElement(profile.skinTones);
-  const hairStyle = selectWeightedElement(profile.hairStyles);
-  const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
-  const culturalElement = selectWeightedElement(profile.culturalElements);
-  
+  // Fallback case
+  return 'child with warm friendly appearance';
+}
+
+// Simple avatar-based description for English non-dark skin users
+function generateSimpleAvatarDescription(userInfo) {
   const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
                     userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
   
-  return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
+  const hairColor = getAvatarHairColor(userInfo.avatar?.hairColor);
+  
+  return `${genderTerm} with ${hairColor}`;
+}
+
+// Map avatar hair color to simple descriptions
+function getAvatarHairColor(hairColor) {
+  const hairColorMap = {
+    'blonde': 'blonde hair',
+    'brown': 'brown hair',
+    'black': 'black hair',
+    'red': 'red hair',
+    'auburn': 'auburn hair',
+    'light-brown': 'light brown hair',
+    'dark-brown': 'dark brown hair',
+    'strawberry-blonde': 'strawberry blonde hair'
+  };
+  
+  return hairColorMap[hairColor] || 'brown hair';
 }
 
 function generateStandardCulturalDescription(userInfo, profile) {
