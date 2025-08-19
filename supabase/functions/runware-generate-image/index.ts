@@ -706,13 +706,16 @@ serve(async (req) => {
       // Enhanced character description with gender specificity
       const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinToneForPrompt}`;
       
-      // Extract story elements for image alignment
-      const storyElements = extractStoryElements(pageText);
+      // Import the multi-stage pipeline
+      const { MultiStageEnhancementPipeline } = await import('../_shared/multi-stage-pipeline.js');
+      
+      // Extract story elements using the consolidated pipeline
+      const storyElements = MultiStageEnhancementPipeline.detectCharactersInText(pageText, userInfo);
       
       console.log(`🎨 Extracted story elements:`, { 
-        animals: storyElements.animals.slice(0, 3), 
-        characters: storyElements.characters.slice(0, 3),
-        objects: storyElements.objects.slice(0, 3) 
+        animals: storyElements.animals?.slice(0, 3) || [], 
+        characters: storyElements.characters?.slice(0, 3) || [],
+        objects: storyElements.objects?.slice(0, 3) || []
       });
       
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';

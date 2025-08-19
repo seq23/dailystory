@@ -1,5 +1,5 @@
-// Multi-Stage Enhancement Pipeline - Edge Function Implementation
-// Serverless version of the enhancement system
+// Multi-Stage Enhancement Pipeline - Consolidated Edition
+// Single source of truth for all extraction and enhancement logic
 
 // Import cultural visual service
 import { MulticulturalVisualService } from './cultural-visual-service.js';
@@ -10,13 +10,14 @@ export class MultiStageEnhancementPipeline {
     userInfo,
     sessionId,
     pageNumber,
-    totalPages = 10
+    totalPages = 10,
+    enhancementLevel = 'full' // 'minimal' for Tier 2.5, 'full' for Tier 1
   ) {
     const startTime = Date.now();
     const stagesCompleted = [];
     const fallbacksUsed = [];
     
-    console.log(`🔄 Starting multi-stage enhancement pipeline for page ${pageNumber}`);
+    console.log(`🔄 Starting ${enhancementLevel} enhancement pipeline for page ${pageNumber}`);
     
     // Initial context
     let pipelineContext = {
@@ -25,44 +26,54 @@ export class MultiStageEnhancementPipeline {
       sessionId,
       pageNumber,
       totalPages,
+      enhancementLevel,
       sceneDescription: '',
       characters: [],
+      animals: [],
+      objects: [],
       styleElements: [],
       prompt: '',
+      negativePrompt: '',
       parameters: this.getDefaultParameters(),
       qualityScore: 0
     };
 
     try {
-      // Stage 1: Scene Extraction & Cultural Enhancement
-      console.log('🎯 Stage 1: Scene & Cultural Enhancement');
-      const stage1Result = await this.enhanceSceneWithCulture(pipelineContext);
-      pipelineContext = { ...pipelineContext, ...stage1Result };
-      stagesCompleted.push('Scene & Cultural Enhancement');
+      if (enhancementLevel === 'minimal') {
+        // Tier 2.5: Minimal hardcoded processing
+        console.log('🎯 Tier 2.5: Minimal processing mode');
+        pipelineContext.sceneDescription = this.extractPrimarySceneFallback(storyText);
+        pipelineContext.characters = this.detectCharactersSimple(storyText, userInfo);
+        pipelineContext.prompt = this.createFallbackPrompt(storyText, userInfo);
+        pipelineContext.negativePrompt = this.buildStandardizedNegativePrompt(userInfo);
+        stagesCompleted.push('Minimal Processing');
+      } else {
+        // Tier 1: Full AI-enhanced processing
+        console.log('🎯 Stage 1: AI Scene & Cultural Enhancement');
+        const stage1Result = await this.enhanceSceneWithCulture(pipelineContext);
+        pipelineContext = { ...pipelineContext, ...stage1Result };
+        stagesCompleted.push('AI Scene & Cultural Enhancement');
 
-      // Stage 2: Character Detection & Consistency
-      console.log('🎭 Stage 2: Character Detection');
-      const stage2Result = await this.detectAndEnhanceCharacters(pipelineContext);
-      pipelineContext = { ...pipelineContext, ...stage2Result };
-      stagesCompleted.push('Character Detection');
+        console.log('🎭 Stage 2: Enhanced Character Detection');
+        const stage2Result = await this.detectAndEnhanceCharacters(pipelineContext);
+        pipelineContext = { ...pipelineContext, ...stage2Result };
+        stagesCompleted.push('Enhanced Character Detection');
 
-      // Stage 3: Style Framework Application
-      console.log('🎨 Stage 3: Style Framework');
-      const stage3Result = await this.applyStyleFramework(pipelineContext);
-      pipelineContext = { ...pipelineContext, ...stage3Result };
-      stagesCompleted.push('Style Framework');
+        console.log('🎨 Stage 3: Style Framework');
+        const stage3Result = await this.applyStyleFramework(pipelineContext);
+        pipelineContext = { ...pipelineContext, ...stage3Result };
+        stagesCompleted.push('Style Framework');
 
-      // Stage 4: Quality Optimization
-      console.log('✨ Stage 4: Quality Optimization');
-      const stage4Result = await this.optimizeQuality(pipelineContext);
-      pipelineContext = { ...pipelineContext, ...stage4Result };
-      stagesCompleted.push('Quality Optimization');
+        console.log('✨ Stage 4: Quality Optimization');
+        const stage4Result = await this.optimizeQuality(pipelineContext);
+        pipelineContext = { ...pipelineContext, ...stage4Result };
+        stagesCompleted.push('Quality Optimization');
 
-      // Stage 5: Parameter Optimization
-      console.log('⚙️ Stage 5: Parameter Optimization');
-      const stage5Result = await this.optimizeParameters(pipelineContext);
-      pipelineContext = { ...pipelineContext, ...stage5Result };
-      stagesCompleted.push('Parameter Optimization');
+        console.log('⚙️ Stage 5: Parameter Optimization');
+        const stage5Result = await this.optimizeParameters(pipelineContext);
+        pipelineContext = { ...pipelineContext, ...stage5Result };
+        stagesCompleted.push('Parameter Optimization');
+      }
 
     } catch (error) {
       console.error('❌ Pipeline stage failed:', error);
@@ -70,6 +81,7 @@ export class MultiStageEnhancementPipeline {
       
       // Fallback to basic enhancement
       pipelineContext.prompt = this.createFallbackPrompt(storyText, userInfo);
+      pipelineContext.negativePrompt = this.buildStandardizedNegativePrompt(userInfo);
       pipelineContext.parameters = this.getDefaultParameters();
     }
 
@@ -77,15 +89,19 @@ export class MultiStageEnhancementPipeline {
     
     const result = {
       finalPrompt: pipelineContext.prompt,
+      negativePrompt: pipelineContext.negativePrompt,
       enhancedCharacters: pipelineContext.characters,
+      animals: pipelineContext.animals,
+      objects: pipelineContext.objects,
       optimizedParameters: pipelineContext.parameters,
       qualityScore: this.calculateQualityScore(pipelineContext),
       stagesCompleted,
       fallbacksUsed,
-      processingTime
+      processingTime,
+      enhancementLevel
     };
 
-    console.log(`🏁 Pipeline completed in ${processingTime}ms. Quality score: ${result.qualityScore}/100`);
+    console.log(`🏁 ${enhancementLevel} pipeline completed in ${processingTime}ms. Quality score: ${result.qualityScore}/100`);
     
     return result;
   }
@@ -99,7 +115,7 @@ export class MultiStageEnhancementPipeline {
     
     // Add cultural context
     const culturalSetting = MulticulturalVisualService.generateCulturalSetting(userInfo);
-    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage);
+    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo?.nativeLanguage || 'en');
     
     const enhancedScene = `${primaryScene}, ${culturalSetting}, ${culturalProfile.culturalElements.slice(0, 2).join(', ')}`;
     
@@ -109,19 +125,21 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Stage 2: Character Detection & Enhancement
+  // Stage 2: Enhanced Character Detection & Enhancement
   static async detectAndEnhanceCharacters(context) {
     const { originalText, userInfo } = context;
     
-    const detectedCharacters = this.detectCharactersInText(originalText, userInfo);
+    const detectionResult = this.detectCharactersInText(originalText, userInfo);
     
     // Generate character descriptions with cultural consistency
-    const characterDescriptions = detectedCharacters.map(char => {
+    const characterDescriptions = detectionResult.characters.map(char => {
       return `${char.name}: ${char.physicalTraits}`;
     });
     
     return {
-      characters: detectedCharacters,
+      characters: detectionResult.characters,
+      animals: detectionResult.animals,
+      objects: detectionResult.objects,
       characterDescriptions: characterDescriptions.join(', ')
     };
   }
@@ -131,9 +149,9 @@ export class MultiStageEnhancementPipeline {
     const { userInfo, pageNumber, totalPages, sceneDescription } = context;
     
     // Import centralized style framework
-    const { getStyleFramework, buildCompletePrompt } = await import('../_shared/styleFrameworks.js');
+    const { getStyleFramework, buildCompletePrompt } = await import('./styleFrameworks.js');
     
-    const difficulty = userInfo.readingLevel || 'medium';
+    const difficulty = userInfo?.readingLevel || 'medium';
     const framework = getStyleFramework(difficulty);
     
     console.log(`🎨 Applying ${framework.name} style for difficulty: ${difficulty}`);
@@ -156,13 +174,12 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Stage 4: Enhanced Quality Optimization (Phase 3)
+  // Stage 4: Enhanced Quality Optimization
   static async optimizeQuality(context) {
     const { prompt, userInfo, styleFramework } = context;
     
     // Add quality enhancement terms
     const qualityTerms = MulticulturalVisualService.getQualityEnhancementTerms(userInfo);
-    const negativePrompt = MulticulturalVisualService.generateCulturalNegativePrompt(userInfo);
     
     // Enhanced prompt length optimization with smart truncation
     let optimizedPrompt = prompt;
@@ -184,8 +201,8 @@ export class MultiStageEnhancementPipeline {
       console.log(`📏 Smart prompt truncation: ${prompt.length} → ${optimizedPrompt.length} characters`);
     }
     
-    // Enhanced negative prompt system
-    const enhancedNegativePrompt = this.buildEnhancedNegativePrompt(negativePrompt, styleFramework);
+    // Standardized negative prompt system
+    const enhancedNegativePrompt = this.buildStandardizedNegativePrompt(userInfo);
     
     const finalOptimizedPrompt = `${optimizedPrompt}, ${qualityTerms}`;
     
@@ -197,12 +214,12 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Stage 5: Enhanced Parameter Optimization (Phase 2 & 4)
+  // Stage 5: Enhanced Parameter Optimization
   static async optimizeParameters(context) {
     const { userInfo, characters, styleFramework, sessionId, pageNumber } = context;
     
     // Import centralized parameter optimization
-    const { getOptimizedParameters } = await import('../_shared/styleFrameworks.js');
+    const { getOptimizedParameters } = await import('./styleFrameworks.js');
     
     // Get culturally optimized parameters
     const culturalParams = MulticulturalVisualService.getOptimizedGenerationParams(userInfo);
@@ -211,13 +228,13 @@ export class MultiStageEnhancementPipeline {
     // Get framework-specific parameters with progressive scaling
     const frameworkParams = styleFramework ? styleFramework.parameters : {};
     
-    // Progressive quality scaling based on difficulty (Phase 2)
+    // Progressive quality scaling based on difficulty
     const scaledParams = this.applyProgressiveQualityScaling(frameworkParams, styleFramework?.complexity);
     
-    // Merge all parameter sources (scaled framework takes precedence)
+    // Merge all parameter sources
     const baseParameters = { ...defaultParams, ...culturalParams, ...scaledParams };
     
-    // Enhanced seed management for character consistency (Phase 4)
+    // Enhanced seed management for character consistency
     const seedContext = await this.optimizeSeedConsistency(sessionId, characters, pageNumber);
     if (seedContext.suggestedSeed) {
       baseParameters.seed = seedContext.suggestedSeed;
@@ -243,41 +260,84 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Helper methods
+  // CONSOLIDATED EXTRACTION METHODS
 
-  // AI-Enhanced Primary Scene Extraction with Fallback
+  // Direct AI-powered scene extraction (no external calls)
   static async extractPrimarySceneWithAI(storyText, sessionId, pageNumber, userInfo) {
+    console.log(`🤖 Using integrated AI for scene extraction: "${storyText.substring(0, 60)}..."`);
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      console.log(`⚠️ No OpenAI API key, using fallback extraction`);
+      return this.extractPrimarySceneFallback(storyText);
+    }
+    
     try {
-      // Try AI-powered scene extraction first
-      const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/extract-story-elements`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
-        },
-        body: JSON.stringify({
-          storyText: storyText,
-          pageNumber: pageNumber || 1,
-          totalPages: 10,
-          difficultyLevel: userInfo?.readingLevel || 'medium',
-          sessionId: sessionId || 'pipeline-session',
-          userInfo: userInfo
-        })
+      // Build character context for consistency
+      const characterContext = userInfo?.name ? 
+        `\n\nMain Character: ${userInfo.name} (${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin tone)` : '';
+      
+      const systemPrompt = `Extract visual elements from children's story text into a prompt-ready format.
+
+Focus on:
+- Visual descriptors (colors, sizes, textures)
+- Key objects and characters  
+- Setting and atmosphere
+- Actions and emotions
+
+Output format: Single descriptive sentence ready for image generation.
+
+Example input: "Lucy found a sparkly blue shell on the sandy beach"
+Example output: "young girl discovering shiny blue seashell on sunny beach, warm golden sand, ocean waves in background"
+
+Keep prompts:
+- Under 200 characters when possible
+- Focused on visual elements only
+- Child-appropriate and wholesome
+- Ready to append to style suffixes`;
+
+      const userPrompt = `Text: "${storyText}"${characterContext}
+
+Transform this into a visual prompt sentence for page ${pageNumber || 1}. Consider character continuity.`;
+
+      // Call OpenAI directly with timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('OpenAI timeout')), 8000);
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.enhancedDescription) {
-          console.log(`🤖 AI-Enhanced Scene from Pipeline: ${data.enhancedDescription.substring(0, 100)}...`);
-          return data.enhancedDescription;
-        }
-      }
-    } catch (error) {
-      console.log(`⚠️ AI scene extraction failed in pipeline, using fallback: ${error.message}`);
-    }
+      const response = await Promise.race([
+        fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            max_tokens: 150
+          }),
+        }),
+        timeoutPromise
+      ]);
 
-    // Fallback to simplified scene extraction
-    return this.extractPrimarySceneFallback(storyText);
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const enhancedScene = data.choices[0].message.content.trim();
+      
+      console.log(`🤖 AI-Enhanced Scene: ${enhancedScene.substring(0, 100)}...`);
+      return enhancedScene;
+      
+    } catch (error) {
+      console.log(`⚠️ AI scene extraction failed, using fallback: ${error.message}`);
+      return this.extractPrimarySceneFallback(storyText);
+    }
   }
 
   // Fallback scene extraction without bias
@@ -307,12 +367,15 @@ export class MultiStageEnhancementPipeline {
     return bestScene;
   }
 
+  // CONSOLIDATED CHARACTER, ANIMAL, AND OBJECT DETECTION
   static detectCharactersInText(text, userInfo) {
     const characters = [];
+    const animals = [];
+    const objects = [];
     const lowerText = text.toLowerCase();
     
     // Primary character
-    if (userInfo.name) {
+    if (userInfo?.name) {
       characters.push({
         name: userInfo.name,
         type: 'primary',
@@ -320,13 +383,14 @@ export class MultiStageEnhancementPipeline {
       });
     }
     
-    // Family members
+    // Family members detection (consolidated from extract-story-elements)
     const familyPatterns = {
       'mother|mom|mama': { name: 'Mother', relationship: 'mother' },
       'father|dad|papa': { name: 'Father', relationship: 'father' },
       'sister|sis': { name: 'Sister', relationship: 'sister' },
       'brother|bro': { name: 'Brother', relationship: 'brother' },
-      'grandmother|grandma': { name: 'Grandmother', relationship: 'grandmother' }
+      'grandmother|grandma': { name: 'Grandmother', relationship: 'grandmother' },
+      'grandfather|grandpa': { name: 'Grandfather', relationship: 'grandfather' }
     };
     
     for (const [pattern, info] of Object.entries(familyPatterns)) {
@@ -340,12 +404,58 @@ export class MultiStageEnhancementPipeline {
         });
       }
     }
+
+    // Animal detection (consolidated from multiple sources)
+    const animalTerms = [
+      'cat', 'kitten', 'kitty', 'dog', 'puppy', 'doggy', 'bird', 'robin', 'sparrow',
+      'rabbit', 'bunny', 'bear', 'teddy', 'tiger', 'lion', 'elephant', 'horse',
+      'duck', 'fish', 'goldfish', 'frog', 'toad', 'turtle', 'mouse', 'hamster',
+      'owl', 'eagle', 'fox', 'deer', 'squirrel', 'butterfly'
+    ];
+    
+    for (const animal of animalTerms) {
+      if (lowerText.includes(animal)) {
+        if (!animals.includes(animal)) {
+          animals.push(animal);
+        }
+      }
+    }
+
+    // Object detection (consolidated from visual keywords)
+    const objectTerms = [
+      'ball', 'toy', 'book', 'flower', 'tree', 'house', 'car', 'bike', 'bicycle',
+      'kite', 'swing', 'slide', 'balloon', 'castle', 'tower', 'boat', 'plane',
+      'train', 'bus', 'truck', 'hat', 'shoes', 'backpack', 'bag', 'coat', 'dress'
+    ];
+    
+    for (const obj of objectTerms) {
+      if (lowerText.includes(obj)) {
+        if (!objects.includes(obj)) {
+          objects.push(obj);
+        }
+      }
+    }
+    
+    return { characters, animals, objects };
+  }
+
+  // Simple character detection for Tier 2.5
+  static detectCharactersSimple(text, userInfo) {
+    const characters = [];
+    
+    if (userInfo?.name) {
+      characters.push({
+        name: userInfo.name,
+        type: 'primary',
+        physicalTraits: `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`
+      });
+    }
     
     return characters;
   }
 
   static generateFamilyMemberTraits(userInfo, relationship) {
-    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage);
+    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo?.nativeLanguage || 'en');
     const baseTrait = culturalProfile.skinTones[0]; // Use consistent skin tone for family
     
     if (relationship === 'mother' || relationship === 'father') {
@@ -371,6 +481,23 @@ export class MultiStageEnhancementPipeline {
     }
   }
 
+  // STANDARDIZED NEGATIVE PROMPT SYSTEM
+  static buildStandardizedNegativePrompt(userInfo) {
+    // Use the standardized 95-word negative prompt for all tiers
+    let standardNegative = 'NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos';
+
+    // Avatar-based character consistency enforcement
+    if (userInfo?.avatar?.type === 'girl') {
+      standardNegative += ', boy character, male character, masculine features, he, him, his, male clothing, boy hairstyle';
+    } else if (userInfo?.avatar?.type === 'boy') {
+      standardNegative += ', girl character, female character, feminine features, she, her, hers, female clothing, girl hairstyle, dress, skirt';
+    }
+
+    console.log(`📝 Using standardized negative prompt (~95 words) for token efficiency`);
+    return standardNegative;
+  }
+
+  // UTILITY METHODS
   static getDefaultParameters() {
     return {
       model: "runware:100@1",
@@ -399,7 +526,6 @@ export class MultiStageEnhancementPipeline {
     return Math.min(score, 100);
   }
 
-  // Phase 3: Enhanced Token Efficiency Methods
   static getOptimalPromptLength(complexity) {
     const lengthLimits = {
       'minimal': 2200,
@@ -410,32 +536,8 @@ export class MultiStageEnhancementPipeline {
     return lengthLimits[complexity] || 2600;
   }
 
-  static buildEnhancedNegativePrompt(baseNegative, styleFramework) {
-    const universalNegatives = [
-      'text, letters, words, watermark, logo, signature',
-      'blurry, distorted, deformed, low quality',
-      'inappropriate content, violence, scary elements'
-    ];
-    
-    const styleSpecificNegatives = {
-      '3d_smooth': 'flat 2D, hand-drawn, sketch style',
-      'painterly': '3D render, photorealistic, plastic texture',
-      'advanced_digital_painting': 'amateur artwork, simple style',
-      'masterful_artistic_technique': 'beginner art, childish drawing'
-    };
-    
-    let enhancedNegative = baseNegative || '';
-    enhancedNegative += ', ' + universalNegatives.join(', ');
-    
-    if (styleFramework?.rendering && styleSpecificNegatives[styleFramework.rendering]) {
-      enhancedNegative += ', ' + styleSpecificNegatives[styleFramework.rendering];
-    }
-    
-    return enhancedNegative;
-  }
-
   static calculateTokenEfficiency(originalPrompt, optimizedPrompt) {
-    const originalTokens = Math.ceil(originalPrompt.length / 4); // Rough token estimate
+    const originalTokens = Math.ceil(originalPrompt.length / 4);
     const optimizedTokens = Math.ceil(optimizedPrompt.length / 4);
     return {
       originalTokens,
@@ -444,7 +546,6 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Phase 2: Progressive Quality Scaling
   static applyProgressiveQualityScaling(baseParams, complexity) {
     const qualityMultipliers = {
       'minimal': { cfgScale: 1.0, steps: 1.0 },
@@ -462,7 +563,7 @@ export class MultiStageEnhancementPipeline {
     };
   }
 
-  // Phase 4: Enhanced Seed Management
+  // SEED MANAGEMENT SYSTEM
   static async optimizeSeedConsistency(sessionId, characters, pageNumber) {
     const seedHistory = this.getSeedHistory(sessionId);
     const characterSeeds = this.getCharacterSeeds(sessionId, characters);
@@ -506,13 +607,11 @@ export class MultiStageEnhancementPipeline {
   }
 
   static getSeedHistory(sessionId) {
-    // Simple in-memory storage for demo
     if (!this.seedHistoryCache) this.seedHistoryCache = new Map();
     return this.seedHistoryCache.get(sessionId) || [];
   }
 
   static getCharacterSeeds(sessionId, characters) {
-    // Extract character seeds from state management
     const seeds = {};
     if (characters) {
       characters.forEach(char => {
@@ -523,9 +622,8 @@ export class MultiStageEnhancementPipeline {
   }
 
   static generateOptimizedSeed(sessionId, pageNumber) {
-    // Generate deterministic but varied seeds based on session and page
     const baseHash = this.simpleHash(sessionId + pageNumber);
-    return Math.abs(baseHash) % 2147483647; // Max 32-bit signed int
+    return Math.abs(baseHash) % 2147483647;
   }
 
   static simpleHash(str) {
@@ -533,7 +631,7 @@ export class MultiStageEnhancementPipeline {
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+      hash = hash & hash;
     }
     return hash;
   }

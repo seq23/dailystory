@@ -31,12 +31,6 @@ verify_jwt = false
 [functions.elevenlabs-agent-signed-url]
 verify_jwt = false
 
-[functions.extract-visual-keywords]
-verify_jwt = false
-
-[functions.extract-story-elements]
-verify_jwt = false
-
 [functions.background-image-pregeneration]
 verify_jwt = false
 
@@ -50,7 +44,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.runware-simple-fallback]
-verify_jwt = false
-
-[functions.runware-realtime-generation]
 verify_jwt = false
