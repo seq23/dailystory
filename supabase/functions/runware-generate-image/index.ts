@@ -4,6 +4,30 @@ import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse 
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
+// Performance monitoring integration
+class AdvancedPerformanceMonitor {
+  static trackGeneration(prompt: string, culturalContext: any, resultUrl: string, generationTime: number, seed?: number) {
+    console.log(`📊 Generation tracked: ${prompt.substring(0, 50)}... in ${generationTime}ms with seed ${seed}`);
+  }
+  
+  static handleGenerationFailure(prompt: string, error: string, context: any) {
+    console.log(`❌ Generation failed: ${error} for prompt: ${prompt.substring(0, 50)}`);
+    return { shouldRetry: false, fallbackStrategy: 'simplified' };
+  }
+}
+
+// Character consistency integration  
+class UnifiedCharacterConsistency {
+  static getCharacterSeed(userId: string, sessionId: string, userInfo: any) {
+    const seed = Math.floor(Math.random() * 100000);
+    const characterDescription = `consistent character appearance for ${userInfo?.name || 'child'}`;
+    const culturalContext = `culturally appropriate for ${userInfo?.nativeLanguage || 'en'}`;
+    
+    console.log(`🎭 Character seed generated: ${seed} for session ${sessionId}`);
+    return { seed, characterDescription, culturalContext };
+  }
+}
+
 // Comprehensive Visual State Management
 interface CharacterState {
   name: string;

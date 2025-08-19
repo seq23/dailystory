@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,7 +34,13 @@ serve(async (req) => {
 
   try {
     console.log('ElevenLabs TTS function called');
-    const { text, voice, model } = await req.json();
+    const { text, voice, model, userInfo } = await req.json();
+    
+    // Log difficulty mapping for consistency with other functions
+    if (userInfo) {
+      const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+      console.log(`🎯 Mapped user info to difficulty: ${difficulty} for TTS generation`);
+    }
     
     console.log('TTS Request details:', {
       textLength: text?.length,

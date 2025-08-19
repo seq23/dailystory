@@ -264,7 +264,7 @@ export class AdvancedPerformanceMonitor {
         return {
           shouldRetry: true,
           newStrategy: 'simplified-prompt',
-          modifiedPrompt: 'simple children\\'s book illustration with diverse characters'
+          modifiedPrompt: 'simple children\'s book illustration with diverse characters'
         };
         
       case 'cache':
