@@ -757,41 +757,13 @@ serve(async (req) => {
     // Post-process pages for placeholder resolution and character consistency
     let processedPages = cleanPages;
     try {
-      // Import post-processor for placeholder resolution
-      const { resolveAllPlaceholders } = await import('../_shared/placeholder-resolver.js');
+      // Note: Placeholder resolution and character consistency 
+      // are handled by EnhancedPostProcessor in CleanStoryDisplay on the client side
+      // This keeps the edge function lean while leveraging existing robust systems
       
-      const userInfo = {
-        name: userName,
-        avatar: config?.avatar || { type: 'child', skinTone: 'medium' },
-        favoriteColor: config?.favoriteColor,
-        favoriteAnimal: config?.favoriteAnimal,
-        favoriteFood: config?.favoriteFood,
-        hobbies: config?.hobbies,
-        specialRequest: config?.specialRequest
-      };
-
-      processedPages = cleanPages.map(page => {
-        const resolved = resolveAllPlaceholders(page, { userInfo, pageText: page });
-        console.log(`✅ Resolved placeholders in page: ${resolved.substring(0, 50)}...`);
-        return resolved;
-      });
-
-      // Initialize character context for visual consistency if session exists
-      if (config?.sessionId && userName) {
-        try {
-          const { StoryVisualStateManager } = await import('../_shared/story-visual-state.js');
-          StoryVisualStateManager.getOrCreateStoryState(config.sessionId, processedPages.length);
-          
-          // Store character description for consistency
-          const { MulticulturalVisualService } = await import('../_shared/cultural-visual-service.js');
-          const characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-          StoryVisualStateManager.updateCharacterWithSeed(config.sessionId, userName, characterDesc, undefined, 1);
-          
-          console.log(`✅ Initialized character context for ${userName} in session ${config.sessionId}`);
-        } catch (error) {
-          console.warn('Failed to initialize character context:', error);
-        }
-      }
+      processedPages = cleanPages;
+      
+      console.log(`✅ Story generated, will be post-processed by client-side EnhancedPostProcessor`);
 
     } catch (error) {
       console.warn('Failed to post-process story content:', error);
