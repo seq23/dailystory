@@ -2886,15 +2886,17 @@ const handleRestartTimer = () => {
         </div>
       )}
 
-      {/* Timer Pause Overlay for Free Users */}
+      {/* Timer Pause Subtle Overlay for Free Users */}
       {isTimerPaused && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-          <div className="relative z-[91] bg-card border border-border rounded-2xl shadow-2xl p-6 text-center animate-scale-in max-w-sm mx-4">
-            <div className="text-4xl mb-3">⏸️</div>
-            <h3 className="text-lg font-bold text-primary mb-2">Timer Paused</h3>
-            <p className="text-sm text-muted-foreground mb-4">Resume your timer to continue reading and using story features.</p>
-            <p className="text-xs text-muted-foreground/70">All navigation and story controls are disabled while paused.</p>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-background/30" />
+          <div className="absolute inset-4 border-2 border-primary/30 rounded-lg animate-pulse" />
+          <div className="absolute top-6 right-6 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+              <span className="text-muted-foreground font-medium">Timer Paused</span>
+            </div>
+            <p className="text-xs text-muted-foreground/70 mt-1">Resume to continue</p>
           </div>
         </div>
       )}
