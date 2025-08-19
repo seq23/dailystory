@@ -1,10 +1,19 @@
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo, SkinTone } from "@/types";
 
+export interface FacialFeaturesSystem {
+  eyes: string[];
+  eyebrows: string[];
+  eyelashes: string[];
+  nose: string[];
+  lips: string[];
+  facialStructure: string[];
+}
+
 export interface CulturalVisualProfile {
   skinTones: string[];
   hairStyles: string[];
-  facialFeatures: string[];
+  facialFeatures: string[] | FacialFeaturesSystem;
   culturalElements: string[];
   familyStructure: string[];
   settings: string[];
@@ -123,12 +132,37 @@ export class MulticulturalVisualService {
         'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
         'pressed curls', 'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
       ],
-      // Mix of African American and general American facial features
-      facialFeatures: [
-        'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 
-        'regal bearing', 'kind eyes', 'proud posture', 'bright hazel eyes', 'gentle smile',
-        'expressive brown eyes', 'warm personality', 'friendly demeanor', 'intelligent gaze'
-      ],
+      // Comprehensive African American facial features system
+      facialFeatures: {
+        eyes: [
+          'almond-shaped dark brown eyes', 'round rich brown eyes', 'deep-set hazel eyes', 
+          'prominent amber eyes', 'almond-shaped hazel-green eyes', 'round dark brown eyes',
+          'deep-set rich brown eyes', 'prominent hazel eyes', 'almond-shaped amber eyes',
+          'round hazel-green eyes', 'expressive dark brown eyes', 'bright amber eyes',
+          'warm hazel eyes', 'intelligent dark brown eyes', 'sparkling hazel-green eyes'
+        ],
+        eyebrows: [
+          'full well-defined eyebrows', 'naturally arched eyebrows', 'thick expressive eyebrows',
+          'elegantly shaped eyebrows', 'bold natural eyebrows', 'gracefully arched eyebrows'
+        ],
+        eyelashes: [
+          'long curved eyelashes', 'naturally thick eyelashes', 'beautifully curled eyelashes',
+          'full dark eyelashes', 'elegantly long eyelashes'
+        ],
+        nose: [
+          'wider nasal bridge', 'fuller rounded nostrils', 'broad noble nose', 'narrow refined nose',
+          'button nose shape', 'straight elegant nose', 'distinctive nose bridge', 'well-proportioned nose'
+        ],
+        lips: [
+          'fuller well-defined lips', 'naturally full lips', 'heart-shaped lips', 'bow-shaped lips',
+          'beautifully full lips', 'expressive full lips', 'naturally defined lips'
+        ],
+        facialStructure: [
+          'high cheekbones', 'strong jawline', 'rounded face shape', 'oval face shape',
+          'smooth facial contours', 'natural facial symmetry', 'elegant bone structure',
+          'defined cheekbones', 'graceful jawline', 'harmonious facial features'
+        ]
+      },
       // Mix of African American cultural pride and general American elements
       culturalElements: [
         'modern urban style', 'contemporary American fashion', 'diverse American culture', 
@@ -178,7 +212,7 @@ export class MulticulturalVisualService {
     // Map user's basic skin tone choice to detailed skin tone description
     const skinTone = this.mapSkinToneToDescription(userInfo.avatar.skinTone, profile);
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
-    const facialFeatures = this.selectRandomElement(profile.facialFeatures);
+    const facialFeatures = this.generateFacialFeaturesDescription(profile.facialFeatures);
     const culturalElement = this.selectRandomElement(profile.culturalElements);
 
     const genderTerm = userInfo.avatar.type === 'boy' ? 'boy' : 
@@ -198,22 +232,8 @@ export class MulticulturalVisualService {
     // Get culturally appropriate hair style for African American heritage
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     
-    // Weighted selection favoring African American facial features (70/30)
-    const africanAmericanFeatures = [
-      'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 
-      'regal bearing', 'warm deep brown eyes', 'expressive dark eyes', 'proud smile',
-      'bright intelligent eyes', 'strong jawline', 'dignified bearing', 'gentle dark eyes',
-      'radiant warm smile', 'noble features', 'kind dark eyes', 'confident gaze',
-      'warm personality', 'strong facial structure', 'graceful features', 'wise eyes'
-    ];
-    const generalAmericanFeatures = [
-      'bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 
-      'friendly demeanor', 'kind green eyes', 'cheerful expression', 'bright blue eyes'
-    ];
-    
-    const facialFeatures = Math.random() < 0.7 
-      ? this.selectRandomElement(africanAmericanFeatures)
-      : this.selectRandomElement(generalAmericanFeatures);
+    // Generate comprehensive facial features description
+    const facialFeatures = this.generateFacialFeaturesDescription(profile.facialFeatures);
     
     // Weighted selection with expanded African American cultural elements (60/40)
     const africanAmericanCulture = [
@@ -382,6 +402,27 @@ export class MulticulturalVisualService {
 
   private static selectRandomElement<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
+  }
+
+  static generateFacialFeaturesDescription(facialFeatures: any): string {
+    // Handle comprehensive facial features system for English speakers
+    if (typeof facialFeatures === 'object' && facialFeatures.eyes) {
+      const eyes = this.selectRandomElement(facialFeatures.eyes);
+      const eyebrows = this.selectRandomElement(facialFeatures.eyebrows);
+      const eyelashes = this.selectRandomElement(facialFeatures.eyelashes);
+      const nose = this.selectRandomElement(facialFeatures.nose);
+      const lips = this.selectRandomElement(facialFeatures.lips);
+      const structure = this.selectRandomElement(facialFeatures.facialStructure);
+      
+      return `${eyes} with ${eyebrows}, ${eyelashes}, ${nose}, ${lips}, ${structure}`;
+    }
+    
+    // Handle simple array format for other languages
+    if (Array.isArray(facialFeatures)) {
+      return this.selectRandomElement(facialFeatures);
+    }
+    
+    return 'warm friendly features';
   }
 
   // Melanin-optimized generation parameters for better skin tone rendering

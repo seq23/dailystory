@@ -46,6 +46,10 @@ class FrontendToBackendSync {
     const multiculturalPath = path.join(__dirname, '../src/services/MulticulturalVisualService.ts');
     const content = fs.readFileSync(multiculturalPath, 'utf8');
     
+    // Also extract from SimpleImageService for consistent tiered generation
+    const simpleImagePath = path.join(__dirname, '../src/services/SimpleImageService.ts');
+    const simpleImageContent = fs.readFileSync(simpleImagePath, 'utf8');
+    
     // Extract cultural profiles with regex parsing
     const profileMatch = content.match(/CULTURAL_VISUAL_PROFILES:\s*Record<[^>]+>\s*=\s*{([\s\S]*?)};/);
     if (profileMatch) {
@@ -55,10 +59,19 @@ class FrontendToBackendSync {
       const languageMatches = profilesStr.matchAll(/'([^']+)':\s*{([\s\S]*?)(?=},?\s*'|\s*})/g);
       
       for (const [, language, profileContent] of languageMatches) {
+        // Extract facial features with support for comprehensive system
+        let facialFeatures = this.parseStringArray(profileContent, 'facialFeatures');
+        
+        // Check for comprehensive facial features system (English)
+        const facialFeaturesObject = this.parseFacialFeaturesObject(profileContent);
+        if (facialFeaturesObject) {
+          facialFeatures = facialFeaturesObject;
+        }
+        
         this.extractedIntelligence.culturalProfiles[language] = {
           skinTones: this.parseStringArray(profileContent, 'skinTones'),
           hairStyles: this.parseStringArray(profileContent, 'hairStyles'),
-          facialFeatures: this.parseStringArray(profileContent, 'facialFeatures'),
+          facialFeatures: facialFeatures,
           culturalElements: this.parseStringArray(profileContent, 'culturalElements'),
           familyStructure: this.parseStringArray(profileContent, 'familyStructure'),
           settings: this.parseStringArray(profileContent, 'settings'),
@@ -75,7 +88,48 @@ class FrontendToBackendSync {
       this.extractedIntelligence.characterGeneration.africanAmericanLogic = africanAmericanMatch[0];
     }
     
+    // Extract SimpleImageService tiered generation logic
+    this.extractSimpleImageServiceLogic(simpleImageContent);
+    
     console.log('📋 Extracted cultural profiles for languages:', Object.keys(this.extractedIntelligence.culturalProfiles));
+  }
+
+  extractSimpleImageServiceLogic(content) {
+    // Extract tier generation methods for backend use
+    const tierMethods = content.match(/generateWith\w+.*?Promise<ImageResult>/g);
+    if (tierMethods) {
+      this.extractedIntelligence.imageGeneration = {
+        tierMethods: tierMethods.map(method => method.split('(')[0]),
+        tierCount: tierMethods.length
+      };
+    }
+    
+    // Extract prompt generation logic
+    const promptLogic = content.match(/generateSimplePrompt.*?return[^}]*}/s);
+    if (promptLogic) {
+      this.extractedIntelligence.imageGeneration.promptGeneration = promptLogic[0];
+    }
+  }
+
+  parseFacialFeaturesObject(content) {
+    // Parse comprehensive facial features object for English
+    const facialMatch = content.match(/facialFeatures:\s*{([\s\S]*?)},?\s*culturalElements/);
+    if (facialMatch) {
+      const facialContent = facialMatch[1];
+      const facialObj = {};
+      
+      // Extract each facial feature category
+      const categories = ['eyes', 'eyebrows', 'eyelashes', 'nose', 'lips', 'facialStructure'];
+      categories.forEach(category => {
+        const categoryArray = this.parseStringArray(facialContent, category);
+        if (categoryArray.length > 0) {
+          facialObj[category] = categoryArray;
+        }
+      });
+      
+      return Object.keys(facialObj).length > 0 ? facialObj : null;
+    }
+    return null;
   }
 
   async extractEmotionalIntelligence() {
@@ -180,6 +234,28 @@ class FrontendToBackendSync {
 
 export const FrontendIntelligence = ${JSON.stringify(this.extractedIntelligence, null, 2)};
 
+// Comprehensive Facial Features Generation
+export function generateFacialFeaturesDescription(facialFeatures) {
+  // Handle comprehensive facial features system for English speakers
+  if (typeof facialFeatures === 'object' && facialFeatures.eyes) {
+    const eyes = selectWeightedElement(facialFeatures.eyes);
+    const eyebrows = selectWeightedElement(facialFeatures.eyebrows);
+    const eyelashes = selectWeightedElement(facialFeatures.eyelashes);
+    const nose = selectWeightedElement(facialFeatures.nose);
+    const lips = selectWeightedElement(facialFeatures.lips);
+    const structure = selectWeightedElement(facialFeatures.facialStructure);
+    
+    return \`\${eyes} with \${eyebrows}, \${eyelashes}, \${nose}, \${lips}, \${structure}\`;
+  }
+  
+  // Handle simple array format for other languages
+  if (Array.isArray(facialFeatures)) {
+    return selectWeightedElement(facialFeatures);
+  }
+  
+  return 'warm friendly features';
+}
+
 // African American Weighted Selection
 export function selectAfricanAmericanSkinTone() {
   const skinTones = FrontendIntelligence.culturalProfiles.en?.skinTones || [];
@@ -220,7 +296,7 @@ export function generateCulturalCharacterDescription(userInfo) {
   
   const skinTone = selectWeightedElement(profile.skinTones);
   const hairStyle = selectWeightedElement(profile.hairStyles);
-  const facialFeatures = selectWeightedElement(profile.facialFeatures);
+  const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
   const culturalElement = selectWeightedElement(profile.culturalElements);
   
   const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
@@ -247,10 +323,9 @@ function generateMixedAfricanAmericanDescription(userInfo, profile) {
   
   const hairStyle = selectWeightedElement(africanAmericanHairStyles);
   
-  // 50/50 mix of African American and general American features
-  const facialFeatures = Math.random() < 0.5 
-    ? selectWeightedElement(['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing'])
-    : selectWeightedElement(['bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 'friendly demeanor']);
+  // Use comprehensive facial features system
+  const profile = FrontendIntelligence.culturalProfiles.en;
+  const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
   
   // 50/50 mix of cultural elements
   const culturalElement = Math.random() < 0.5
