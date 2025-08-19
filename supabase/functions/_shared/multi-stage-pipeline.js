@@ -312,9 +312,9 @@ export class MultiStageEnhancementPipeline {
     const lowerText = text.toLowerCase();
     
     // Primary character
-    if (userInfo.childName) {
+    if (userInfo.name) {
       characters.push({
-        name: userInfo.childName,
+        name: userInfo.name,
         type: 'primary',
         physicalTraits: MulticulturalVisualService.generateCulturalCharacterDescription(userInfo)
       });
