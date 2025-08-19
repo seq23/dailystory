@@ -551,13 +551,21 @@ function validateUserInfo(userInfo: any): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// Comprehensive negative prompt for high-quality children's book illustrations
+// Standardized negative prompt for all tiers (token-efficient)
 function generateComprehensiveNegativePrompt(text: string, secondaryCharacters: string[], userInfo?: any): string {
-  // Comprehensive negative prompt covering all image quality and content safety issues
-  const comprehensiveNegativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos, signature, jpeg artifacts, oversaturated, bad proportions, cut off, distorted faces, asymmetrical faces, extra fingers, missing fingers, extra limbs, missing limbs, malformed, pixelated";
+  // Use the standardized Tier 1 negative prompt for all tiers
+  let baseNegative = 'NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos';
+
+  // Avatar-based character consistency enforcement (replace story-text analysis)
+  if (userInfo?.avatar?.type === 'girl') {
+    baseNegative += ', boy character, male character, masculine features, he, him, his, male clothing, boy hairstyle';
+  } else if (userInfo?.avatar?.type === 'boy') {
+    baseNegative += ', girl character, female character, feminine features, she, her, hers, female clothing, girl hairstyle, dress, skirt';
+  }
+
+  console.log(`📝 Using standardized negative prompt (~95 words) for token efficiency`);
   
-  console.log(`🚫 Using comprehensive negative prompt for children's safety and image quality`);
-  return comprehensiveNegativePrompt;
+  return baseNegative;
 }
 
 serve(async (req) => {

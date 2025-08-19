@@ -285,19 +285,19 @@ function getHardcodedStyle(difficulty: string) {
   return styles[difficulty] || styles['medium'];
 }
 
-// Enhanced negative prompt for safety and quality
+// Standardized negative prompt for all tiers (token-efficient)
 function getEnhancedNegativePrompt(userInfo?: any): string {
-  let baseNegative = 'inappropriate content, adult content, violence, scary, frightening, disturbing, dark themes, weapons, blood, gore, nudity, sexual content, profanity, drugs, alcohol, smoking, unsafe activities, dangerous situations, horror, nightmare, evil, demon, monster, ghost, zombie, skull, death, sad, crying, angry, fighting, bullying, discrimination, hate, racism, sexism';
+  // Use the standardized Tier 1 negative prompt for all tiers
+  let baseNegative = 'NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos';
   
-  // Add gender-specific negatives to enforce correct character representation
+  // Avatar-based character consistency enforcement (replace story-text analysis)
   if (userInfo?.avatar?.type === 'girl') {
     baseNegative += ', boy character, male character, masculine features, he, him, his, male clothing, boy hairstyle';
   } else if (userInfo?.avatar?.type === 'boy') {
     baseNegative += ', girl character, female character, feminine features, she, her, hers, female clothing, girl hairstyle, dress, skirt';
   }
   
-  // Add quality negatives
-  baseNegative += ', blurry, low quality, pixelated, distorted, deformed, ugly, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, poorly drawn hands, mutated hands, extra fingers, fused fingers, missing fingers, long neck, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, out of frame, ugly, extra limbs, bad anatomy, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, mutated hands, fused fingers, too many fingers, long neck';
+  console.log(`📝 Using standardized negative prompt (~95 words) for token efficiency`);
   
   return baseNegative;
 }
