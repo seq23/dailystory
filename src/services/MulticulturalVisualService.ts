@@ -16,7 +16,11 @@ export interface CulturalVisualProfile {
 export class MulticulturalVisualService {
   private static readonly CULTURAL_VISUAL_PROFILES: Record<SupportedLanguage, CulturalVisualProfile> = {
     'ar': {
-      skinTones: ['warm olive skin', 'golden bronze skin', 'deep amber skin', 'honey-toned skin', 'rich caramel skin'],
+      skinTones: [
+        'fair olive skin', 'light honey skin', 'golden bronze skin', 'warm olive skin', 
+        'deep amber skin', 'honey-toned skin', 'rich caramel skin', 'warm mahogany skin',
+        'deep bronze skin', 'rich mocha skin', 'dark olive skin', 'deep umber skin'
+      ],
       hairStyles: ['flowing dark wavy hair', 'elegant braided hair', 'thick curly dark hair', 'straight black hair with silk scarf', 'traditional updo with decorative pins'],
       facialFeatures: ['expressive dark eyes', 'elegant eyebrows', 'warm smile', 'gentle facial features', 'kind expression'],
       culturalElements: ['traditional Arabic patterns', 'geometric decorations', 'ornate designs', 'cultural jewelry', 'henna art'],
@@ -27,7 +31,11 @@ export class MulticulturalVisualService {
       negativePrompts: ['stereotypical', 'caricature', 'offensive', 'inaccurate cultural representation', 'negative stereotypes']
     },
     'es': {
-      skinTones: ['warm caramel skin', 'sun-kissed bronze skin', 'rich copper skin', 'golden olive skin', 'warm tan skin'],
+      skinTones: [
+        'fair olive skin', 'light tan skin', 'warm caramel skin', 'sun-kissed bronze skin', 
+        'rich copper skin', 'golden olive skin', 'warm mahogany skin', 'deep bronze skin',
+        'rich mocha skin', 'deep caramel skin', 'dark bronze skin', 'rich umber skin'
+      ],
       hairStyles: ['thick wavy dark hair', 'long straight black hair', 'curly brown hair', 'braided hair with colorful ribbons', 'natural wavy hair'],
       facialFeatures: ['warm brown eyes', 'expressive eyebrows', 'radiant smile', 'strong facial features', 'joyful expression'],
       culturalElements: ['vibrant colors', 'traditional patterns', 'festive decorations', 'cultural art', 'family symbols'],
@@ -38,7 +46,11 @@ export class MulticulturalVisualService {
       negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate representation', 'negative stereotypes']
     },
     'zh': {
-      skinTones: ['porcelain skin', 'warm honey skin', 'golden tan skin', 'light olive skin', 'soft peachy skin'],
+      skinTones: [
+        'porcelain skin', 'fair peachy skin', 'light honey skin', 'warm honey skin', 
+        'golden tan skin', 'light olive skin', 'soft peachy skin', 'medium tan skin',
+        'warm bronze skin', 'deep honey skin', 'rich tan skin', 'deep bronze skin'
+      ],
       hairStyles: ['straight black hair', 'elegant hair bun', 'hair with traditional ornaments', 'sleek bob cut', 'braided hair with silk ribbons'],
       facialFeatures: ['almond-shaped eyes', 'delicate features', 'gentle smile', 'serene expression', 'kind eyes'],
       culturalElements: ['traditional Chinese patterns', 'dragon motifs', 'cherry blossoms', 'calligraphy art', 'jade jewelry'],
@@ -49,7 +61,11 @@ export class MulticulturalVisualService {
       negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate cultural elements', 'negative stereotypes']
     },
     'hi': {
-      skinTones: ['warm wheat skin', 'rich mahogany skin', 'deep bronze skin', 'golden brown skin', 'warm amber skin'],
+      skinTones: [
+        'fair wheat skin', 'light golden skin', 'warm wheat skin', 'golden brown skin', 
+        'warm amber skin', 'rich mahogany skin', 'deep bronze skin', 'warm caramel skin',
+        'deep amber skin', 'rich mocha skin', 'dark bronze skin', 'deep umber skin'
+      ],
       hairStyles: ['long braided hair', 'hair decorated with flowers', 'traditional hair jewelry', 'elegant bun with ornaments', 'flowing dark hair'],
       facialFeatures: ['expressive dark eyes', 'elegant eyebrows', 'warm smile', 'gentle features', 'kind expression'],
       culturalElements: ['traditional Indian patterns', 'henna designs', 'colorful rangoli', 'spiritual symbols', 'cultural jewelry'],
@@ -60,7 +76,11 @@ export class MulticulturalVisualService {
       negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate cultural representation', 'negative stereotypes']
     },
     'pt': {
-      skinTones: ['golden olive skin', 'warm caramel skin', 'rich mocha skin', 'sun-kissed bronze skin', 'tropical tan skin'],
+      skinTones: [
+        'fair olive skin', 'light caramel skin', 'golden olive skin', 'warm caramel skin', 
+        'sun-kissed bronze skin', 'tropical tan skin', 'rich mocha skin', 'deep bronze skin',
+        'warm mahogany skin', 'deep caramel skin', 'rich umber skin', 'deep ebony skin'
+      ],
       hairStyles: ['beach wave hair', 'natural curly hair', 'long flowing hair', 'textured natural hair', 'modern Brazilian styles'],
       facialFeatures: ['warm brown eyes', 'radiant smile', 'expressive features', 'joyful expression', 'vibrant personality'],
       culturalElements: ['tropical patterns', 'beach culture', 'vibrant colors', 'carnival elements', 'natural beauty'],
@@ -71,7 +91,11 @@ export class MulticulturalVisualService {
       negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate representation', 'negative stereotypes']
     },
     'fr': {
-      skinTones: ['fair rose skin', 'warm peach skin', 'golden olive skin', 'light tan skin', 'creamy complexion'],
+      skinTones: [
+        'fair rose skin', 'warm peach skin', 'light tan skin', 'golden olive skin', 
+        'creamy complexion', 'warm caramel skin', 'rich bronze skin', 'deep amber skin',
+        'warm mahogany skin', 'rich ebony skin', 'deep mocha skin', 'dark umber skin'
+      ],
       hairStyles: ['elegant French braids', 'chic bob cut', 'sophisticated updo', 'natural wavy hair', 'stylish modern cut'],
       facialFeatures: ['bright eyes', 'refined features', 'elegant smile', 'sophisticated expression', 'charming demeanor'],
       culturalElements: ['French elegance', 'artistic elements', 'cultural sophistication', 'traditional patterns', 'refined aesthetics'],
@@ -82,11 +106,13 @@ export class MulticulturalVisualService {
       negativePrompts: ['stereotypical', 'caricature', 'offensive portrayal', 'inaccurate cultural elements', 'negative stereotypes']
     },
     'en': {
-      // Full spectrum of African American skin tones
+      // Full spectrum of African American skin tones (very light to very dark)
       skinTones: [
-        'rich cocoa skin', 'deep ebony skin', 'warm mahogany skin', 'golden bronze skin', 
-        'deep amber skin', 'caramel skin', 'honey bronze skin', 'warm honey skin', 
-        'golden caramel skin', 'light bronze skin', 'peachy brown skin', 'fair brown skin'
+        'fair brown skin', 'light caramel skin', 'warm beige skin', 'peachy brown skin',
+        'light bronze skin', 'warm honey skin', 'golden caramel skin', 'honey bronze skin',
+        'caramel skin', 'deep amber skin', 'golden bronze skin', 'warm mahogany skin',
+        'cool espresso skin', 'dark chocolate skin', 'deep umber skin', 'cool walnut skin',
+        'rich coffee skin', 'deep chestnut skin', 'rich cocoa skin', 'deep ebony skin'
       ],
       // Diverse African American hair textures and styles
       hairStyles: [
