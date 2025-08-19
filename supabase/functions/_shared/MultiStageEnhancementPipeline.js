@@ -114,11 +114,36 @@ const CULTURAL_VISUAL_PROFILES = {
       'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
       'pressed curls', 'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
     ],
-    facialFeatures: [
-      'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 
-      'regal bearing', 'kind eyes', 'proud posture', 'bright hazel eyes', 'gentle smile',
-      'expressive brown eyes', 'warm personality', 'friendly demeanor', 'intelligent gaze'
-    ],
+    facialFeatures: {
+      eyes: [
+        'almond-shaped dark brown eyes', 'round rich brown eyes', 'deep-set hazel eyes', 
+        'prominent amber eyes', 'almond-shaped hazel-green eyes', 'round dark brown eyes',
+        'deep-set rich brown eyes', 'prominent hazel eyes', 'almond-shaped amber eyes',
+        'round hazel-green eyes', 'expressive dark brown eyes', 'bright amber eyes',
+        'warm hazel eyes', 'intelligent dark brown eyes', 'sparkling hazel-green eyes'
+      ],
+      eyebrows: [
+        'full well-defined eyebrows', 'naturally arched eyebrows', 'thick expressive eyebrows',
+        'elegantly shaped eyebrows', 'bold natural eyebrows', 'gracefully arched eyebrows'
+      ],
+      eyelashes: [
+        'long curved eyelashes', 'naturally thick eyelashes', 'beautifully curled eyelashes',
+        'full dark eyelashes', 'elegantly long eyelashes'
+      ],
+      nose: [
+        'wider nasal bridge', 'fuller rounded nostrils', 'broad noble nose', 'narrow refined nose',
+        'button nose shape', 'straight elegant nose', 'distinctive nose bridge', 'well-proportioned nose'
+      ],
+      lips: [
+        'fuller well-defined lips', 'naturally full lips', 'heart-shaped lips', 'bow-shaped lips',
+        'beautifully full lips', 'expressive full lips', 'naturally defined lips'
+      ],
+      facialStructure: [
+        'high cheekbones', 'strong jawline', 'rounded face shape', 'oval face shape',
+        'smooth facial contours', 'natural facial symmetry', 'elegant bone structure',
+        'defined cheekbones', 'graceful jawline', 'harmonious facial features'
+      ]
+    },
     culturalElements: [
       'modern urban style', 'contemporary American fashion', 'diverse American culture', 
       'metropolitan diversity', 'cultural pride symbols', 'community strength',
@@ -231,6 +256,7 @@ function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
   return array[Math.floor(Math.random() * array.length)];
 }
+
 
 export class MultiStageEnhancementPipeline {
   /**
@@ -357,7 +383,7 @@ export class MultiStageEnhancementPipeline {
     
     const skinTone = this.mapSkinToneToDescription(userInfo.avatar?.skinTone, profile);
     const hairStyle = selectWeightedElement(profile.hairStyles);
-    const facialFeatures = selectWeightedElement(profile.facialFeatures);
+    const facialFeatures = this.generateFacialFeaturesDescription(profile.facialFeatures);
     const culturalElement = selectWeightedElement(profile.culturalElements);
     
     const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
@@ -388,10 +414,8 @@ export class MultiStageEnhancementPipeline {
     
     const hairStyle = selectWeightedElement(africanAmericanHairStyles);
     
-    // 50/50 mix of African American and general American facial features
-    const facialFeatures = Math.random() < 0.5 
-      ? selectWeightedElement(['beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 'regal bearing'])
-      : selectWeightedElement(['bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 'friendly demeanor']);
+    // Use the comprehensive facial features system from the English profile
+    const facialFeatures = this.generateFacialFeaturesDescription(CULTURAL_VISUAL_PROFILES.en.facialFeatures);
     
     // 50/50 mix of cultural pride elements with mainstream American
     const culturalElement = Math.random() < 0.5
@@ -439,6 +463,37 @@ export class MultiStageEnhancementPipeline {
 
   /**
    * Map user's basic skin tone choice to detailed cultural description
+   */
+  /**
+   * Generate comprehensive facial features description from component-based system
+   */
+  static generateFacialFeaturesDescription(facialFeatures) {
+    // Handle both old array format and new component-based format
+    if (Array.isArray(facialFeatures)) {
+      return selectWeightedElement(facialFeatures);
+    }
+    
+    // New component-based format - select one from each category
+    if (facialFeatures && typeof facialFeatures === 'object') {
+      const eyes = selectWeightedElement(facialFeatures.eyes || []);
+      const eyebrows = selectWeightedElement(facialFeatures.eyebrows || []);
+      const eyelashes = selectWeightedElement(facialFeatures.eyelashes || []);
+      const nose = selectWeightedElement(facialFeatures.nose || []);
+      const lips = selectWeightedElement(facialFeatures.lips || []);
+      const facialStructure = selectWeightedElement(facialFeatures.facialStructure || []);
+      
+      // Combine 2-3 components for natural description
+      const components = [eyes, eyebrows, nose, lips, facialStructure].filter(Boolean);
+      const selectedComponents = components.slice(0, 3); // Use first 3 non-empty components
+      
+      return selectedComponents.join(', ');
+    }
+    
+    return 'gentle friendly features';
+  }
+
+  /**
+   * Maps a general skin tone to a more specific description based on cultural profile
    */
   static mapSkinToneToDescription(skinTone, profile) {
     if (!skinTone || !profile.skinTones) return selectWeightedElement(profile.skinTones);

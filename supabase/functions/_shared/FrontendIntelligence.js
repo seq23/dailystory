@@ -110,11 +110,36 @@ export const FrontendIntelligence = {
         "passion twists", "flat twists", "relaxed straight hair", "blown out hair",
         "pressed curls", "tapered natural cut", "fade with curls on top", "twist out", "braid out"
       ],
-      "facialFeatures": [
-        "beautiful dark eyes", "strong cheekbones", "radiant smile", "confident expression", 
-        "regal bearing", "kind eyes", "proud posture", "bright hazel eyes", "gentle smile",
-        "expressive brown eyes", "warm personality", "friendly demeanor", "intelligent gaze"
-      ],
+      "facialFeatures": {
+        "eyes": [
+          "almond-shaped dark brown eyes", "round rich brown eyes", "deep-set hazel eyes", 
+          "prominent amber eyes", "almond-shaped hazel-green eyes", "round dark brown eyes",
+          "deep-set rich brown eyes", "prominent hazel eyes", "almond-shaped amber eyes",
+          "round hazel-green eyes", "expressive dark brown eyes", "bright amber eyes",
+          "warm hazel eyes", "intelligent dark brown eyes", "sparkling hazel-green eyes"
+        ],
+        "eyebrows": [
+          "full well-defined eyebrows", "naturally arched eyebrows", "thick expressive eyebrows",
+          "elegantly shaped eyebrows", "bold natural eyebrows", "gracefully arched eyebrows"
+        ],
+        "eyelashes": [
+          "long curved eyelashes", "naturally thick eyelashes", "beautifully curled eyelashes",
+          "full dark eyelashes", "elegantly long eyelashes"
+        ],
+        "nose": [
+          "wider nasal bridge", "fuller rounded nostrils", "broad noble nose", "narrow refined nose",
+          "button nose shape", "straight elegant nose", "distinctive nose bridge", "well-proportioned nose"
+        ],
+        "lips": [
+          "fuller well-defined lips", "naturally full lips", "heart-shaped lips", "bow-shaped lips",
+          "beautifully full lips", "expressive full lips", "naturally defined lips"
+        ],
+        "facialStructure": [
+          "high cheekbones", "strong jawline", "rounded face shape", "oval face shape",
+          "smooth facial contours", "natural facial symmetry", "elegant bone structure",
+          "defined cheekbones", "graceful jawline", "harmonious facial features"
+        ]
+      },
       "culturalElements": [
         "modern urban style", "contemporary American fashion", "diverse American culture", 
         "metropolitan diversity", "cultural pride symbols", "community strength",
@@ -245,7 +270,7 @@ export function generateCulturalCharacterDescription(userInfo) {
   
   const skinTone = selectWeightedElement(profile.skinTones);
   const hairStyle = selectWeightedElement(profile.hairStyles);
-  const facialFeatures = selectWeightedElement(profile.facialFeatures);
+  const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
   const culturalElement = selectWeightedElement(profile.culturalElements);
   
   const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
@@ -260,7 +285,7 @@ function generateStandardCulturalDescription(userInfo, profile) {
   
   const skinTone = selectWeightedElement(profile.skinTones);
   const hairStyle = selectWeightedElement(profile.hairStyles);
-  const facialFeatures = selectWeightedElement(profile.facialFeatures);
+  const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
   const culturalElement = selectWeightedElement(profile.culturalElements);
   
   return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
@@ -285,22 +310,8 @@ function generateMixedAfricanAmericanDescription(userInfo, profile) {
   
   const hairStyle = selectWeightedElement(africanAmericanHairStyles);
   
-  // Weighted selection: 70% African American features, 30% general features
-  const africanAmericanFeatures = [
-    'beautiful dark eyes', 'strong cheekbones', 'radiant smile', 'confident expression', 
-    'regal bearing', 'warm deep brown eyes', 'expressive dark eyes', 'proud smile',
-    'bright intelligent eyes', 'strong jawline', 'dignified bearing', 'gentle dark eyes',
-    'radiant warm smile', 'noble features', 'kind dark eyes', 'confident gaze',
-    'warm personality', 'strong facial structure', 'graceful features', 'wise eyes'
-  ];
-  const generalFeatures = [
-    'bright hazel eyes', 'gentle smile', 'expressive brown eyes', 'warm personality', 
-    'friendly demeanor', 'kind green eyes', 'cheerful expression', 'bright blue eyes'
-  ];
-  
-  const facialFeatures = Math.random() < 0.7 
-    ? selectWeightedElement(africanAmericanFeatures)
-    : selectWeightedElement(generalFeatures);
+  // Use the comprehensive facial features system from the English profile
+  const facialFeatures = generateFacialFeaturesDescription(FrontendIntelligence.culturalProfiles.en.facialFeatures);
   
   // Weighted selection: 60% African American culture, 40% mainstream American
   const africanAmericanCulture = [
@@ -323,6 +334,31 @@ function generateMixedAfricanAmericanDescription(userInfo, profile) {
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
   return array[Math.floor(Math.random() * array.length)];
+}
+
+function generateFacialFeaturesDescription(facialFeatures) {
+  // Handle both old array format and new component-based format
+  if (Array.isArray(facialFeatures)) {
+    return selectWeightedElement(facialFeatures);
+  }
+  
+  // New component-based format - select one from each category
+  if (facialFeatures && typeof facialFeatures === 'object') {
+    const eyes = selectWeightedElement(facialFeatures.eyes || []);
+    const eyebrows = selectWeightedElement(facialFeatures.eyebrows || []);
+    const eyelashes = selectWeightedElement(facialFeatures.eyelashes || []);
+    const nose = selectWeightedElement(facialFeatures.nose || []);
+    const lips = selectWeightedElement(facialFeatures.lips || []);
+    const facialStructure = selectWeightedElement(facialFeatures.facialStructure || []);
+    
+    // Combine 2-3 components for natural description
+    const components = [eyes, eyebrows, nose, lips, facialStructure].filter(Boolean);
+    const selectedComponents = components.slice(0, 3); // Use first 3 non-empty components
+    
+    return selectedComponents.join(', ');
+  }
+  
+  return 'gentle friendly features';
 }
 
 // Enhanced Scene Analysis
