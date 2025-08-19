@@ -560,8 +560,8 @@ serve(async (req) => {
     let avatarType = 'boy'; // Default fallback
     
     if (rawAvatarType === 'prefer-not-to-answer') {
-      console.log('🚨 AVATAR TYPE: User selected "prefer-not-to-answer", using default fallback to "boy"');
-      avatarType = 'boy';
+      console.log('✅ AVATAR TYPE: User selected "prefer-not-to-answer", using neutral');
+      avatarType = 'neutral';
     } else if (rawAvatarType === 'girl') {
       avatarType = 'girl';
     } else if (rawAvatarType === 'boy') {
@@ -574,13 +574,13 @@ serve(async (req) => {
       avatarType = 'boy';
     }
     
-    const characterGender = avatarType === 'girl' ? 'girl' : 'boy';
-    const pronouns = avatarType === 'girl' ? 'she/her' : 'he/him';
+    const characterGender = avatarType === 'girl' ? 'girl' : avatarType === 'neutral' ? 'child' : 'boy';
+    const pronouns = avatarType === 'girl' ? 'she/her' : avatarType === 'neutral' ? 'they/them' : 'he/him';
     
     console.log('👤 Character Gender Info:', { avatarType, characterGender, pronouns, userName: config?.userName });
     
-    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is named ${config?.userName || 'the child'}.`;
-    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'}. Create an engaging story appropriate for the reading level.`;
+    const systemPrompt = config?.systemPrompt || `You are a children's story writer. Create an engaging story for ${readingLevel} level readers. The main character is named ${config?.userName || 'the child'} and is a ${characterGender}. Always use ${pronouns} pronouns when referring to the main character.`;
+    const userPrompt = config?.userPrompt || `Create a unique story for ${config?.userName || 'the child'} who is a ${characterGender}. Use ${pronouns} pronouns consistently throughout the story. Create an engaging story appropriate for the reading level.`;
 
     const maxTokens = readingLevel === 'beginner' ? 200 : 
                      readingLevel === 'easy' ? 400 : 
