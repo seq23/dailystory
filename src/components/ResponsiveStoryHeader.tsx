@@ -30,6 +30,7 @@ interface ResponsiveStoryHeaderProps {
   highlightSave?: boolean;
   isPremium?: boolean;
   wandPulse?: boolean;
+  isGeneratingRewrite?: boolean;
 }
 
 export const ResponsiveStoryHeader = ({
@@ -52,6 +53,7 @@ export const ResponsiveStoryHeader = ({
   highlightSave = false,
   isPremium,
   wandPulse = false,
+  isGeneratingRewrite = false,
 }: ResponsiveStoryHeaderProps) => {
   const { t } = useTranslation();
   const { isMobile, isTablet, isMobileOrTablet } = useIsMobile();
@@ -346,6 +348,7 @@ export const ResponsiveStoryHeader = ({
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
                     wandPulse={wandPulse}
+                    isGeneratingRewrite={isGeneratingRewrite}
                   />
                 )}
                 
@@ -736,6 +739,7 @@ export const ResponsiveStoryHeader = ({
                     tooltipText={isMobile ? "Re-write this story" : "you will get to update any special requests"}
                     className={!isMobile ? "rounded-full px-6" : undefined}
                     showCoachOnSignIn={false}
+                    isGeneratingRewrite={isGeneratingRewrite}
                   />
                 )}
               </div>

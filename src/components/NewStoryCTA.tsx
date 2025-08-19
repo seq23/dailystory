@@ -18,6 +18,7 @@ interface NewStoryCTAProps {
   labelOverride?: string;
   tooltipText?: string;
   showCoachOnSignIn?: boolean; // show coach only on premium home sign-in
+  isGeneratingRewrite?: boolean;
 }
 
 const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
@@ -31,6 +32,7 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   labelOverride,
   tooltipText,
   showCoachOnSignIn = true,
+  isGeneratingRewrite = false,
 }) => {
   const { t } = useTranslation();
   const label = labelOverride ?? t("common.newStory", "New Story");
@@ -188,30 +190,15 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
           className
         )}
         aria-label={isLocked ? `${label} (${t("badges.premium", "Premium")})` : label}
-        disabled={isLocked}
-        aria-disabled={isLocked}
+        disabled={isLocked || isGeneratingRewrite}
+        aria-disabled={isLocked || isGeneratingRewrite}
       >
         {iconOnly ? (
           <span className={cn("relative inline-flex items-center")}
           >
-            <MagicRefreshIcon
-              size={iconPx}
-              ringScale={0.92}
-              wandScale={0.58}
-              wandRotate={-12}
-              ringRotate={0}
-              ringStrokeWidth={2}
-              wandStrokeWidth={2}
-              absoluteStrokeWidth
-              sparkleGap
-              ariaLabel={label}
-              ringClassName="text-current"
-              wandClassName="text-current"
-            />
-          </span>
-        ) : (
-          <span className="relative inline-grid grid-cols-[auto,1fr] items-center w-full min-w-0">
-            <span className="col-span-1 flex items-center justify-start md:justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
+            {isGeneratingRewrite ? (
+              <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} />
+            ) : (
               <MagicRefreshIcon
                 size={iconPx}
                 ringScale={0.92}
@@ -226,6 +213,29 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
                 ringClassName="text-current"
                 wandClassName="text-current"
               />
+            )}
+          </span>
+        ) : (
+          <span className="relative inline-grid grid-cols-[auto,1fr] items-center w-full min-w-0">
+            <span className="col-span-1 flex items-center justify-start md:justify-center pr-1 md:pr-2" style={{ width: iconPx }}>
+              {isGeneratingRewrite ? (
+                <div className="animate-spin rounded-full border-2 border-current border-t-transparent" style={{ width: iconPx, height: iconPx }} />
+              ) : (
+                <MagicRefreshIcon
+                  size={iconPx}
+                  ringScale={0.92}
+                  wandScale={0.58}
+                  wandRotate={-12}
+                  ringRotate={0}
+                  ringStrokeWidth={2}
+                  wandStrokeWidth={2}
+                  absoluteStrokeWidth
+                  sparkleGap
+                  ariaLabel={label}
+                  ringClassName="text-current"
+                  wandClassName="text-current"
+                />
+              )}
             </span>
             <span className="col-span-1 min-w-0 text-left whitespace-nowrap text-xs sm:text-sm">{label}</span>
           </span>

@@ -482,6 +482,8 @@ useEffect(() => {
   }, [timeRemaining, initialTimerSeconds]);
 // Magic wand state
 const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
+const [isGeneratingRewrite, setIsGeneratingRewrite] = useState(false);
+const [isRewriteMode, setIsRewriteMode] = useState(false);
 const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
 const [wandPulse, setWandPulse] = useState(false);
 const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
@@ -1789,8 +1791,13 @@ const handleRestartTimer = () => {
 
   // Magic wand functionality - Generate new story
   const handleGenerateNewStory = async (specialRequestOverride?: string, isRewrite: boolean = false) => {
-    if (isGeneratingNewStory) return;
-    setIsGeneratingNewStory(true);
+    if (isGeneratingNewStory || isGeneratingRewrite) return;
+    
+    if (isRewrite) {
+      setIsGeneratingRewrite(true);
+    } else {
+      setIsGeneratingNewStory(true);
+    }
     
     // Reset generation protection flags for new story
     storyGeneratedRef.current = false;
@@ -1817,6 +1824,11 @@ const handleRestartTimer = () => {
             ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 
             'guest';
           await StoryRefreshService.forceRefreshWithUserData(userId, characterSessionId, 'rewrite');
+          
+          // Clear image cache for rewrites to ensure new images
+          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionId);
+          setPageImages({});
+          console.log('🔄 Cleared image cache for rewrite - new images will be generated');
         } catch (error) {
           console.warn('Failed to force refresh for rewrite:', error);
         }
@@ -1892,6 +1904,7 @@ const handleRestartTimer = () => {
       toast({ title: 'Magic Failed', description: 'Please try again in a moment.', variant: 'destructive' });
     } finally {
       setIsGeneratingNewStory(false);
+      setIsGeneratingRewrite(false);
     }
   };
   // Open special request dialog for premium users, or generate immediately for free
@@ -1904,6 +1917,17 @@ const handleRestartTimer = () => {
     }
   };
 
+  // Handle rewrite story with dialog for premium users (correct context isolation)
+  const handleRewriteWithDialog = () => {
+    if (isPremium) {
+      setSpecialRequestDraft(userInfo?.specialRequest || "");
+      setShowSpecialRequestDialog(true);
+      setIsRewriteMode(true); // Mark as rewrite mode
+    } else {
+      handleGenerateNewStory(undefined, true);
+    }
+  };
+
   // Handle rewrite story (clear all caches for fresh start)
   const handleRewriteStory = () => {
     handleGenerateNewStory(undefined, true);
@@ -1913,7 +1937,12 @@ const handleRestartTimer = () => {
   const handleSpecialRequestSubmit = (value: string) => {
     setSpecialRequestDraft(value);
     setShowSpecialRequestDialog(false);
-    handleGenerateNewStory(value);
+    if (isRewriteMode) {
+      setIsRewriteMode(false); // Reset rewrite mode
+      handleGenerateNewStory(value, true); // Call with isRewrite = true
+    } else {
+      handleGenerateNewStory(value);
+    }
   };
 
   // End Story follow-up actions (Premium)
@@ -2236,7 +2265,7 @@ const handleRestartTimer = () => {
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
           onHome={onHome}
-          onNewStory={handleNewStoryClick}
+          onNewStory={isPremium && story.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
           onDecreaseDifficulty={() => handleDifficultyChange('down')}
           showLevelControls={true}
@@ -2250,6 +2279,7 @@ const handleRestartTimer = () => {
           highlightSave={highlightSave}
           isPremium={isPremium}
           wandPulse={wandPulse}
+          isGeneratingRewrite={isGeneratingRewrite}
         />
 
 
