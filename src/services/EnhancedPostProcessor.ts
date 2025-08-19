@@ -62,13 +62,20 @@ export class EnhancedPostProcessor {
       
       // Generate character description for consistency
       if (userInfo.name) {
-        const { MulticulturalVisualService } = await import('../../supabase/functions/_shared/cultural-visual-service.js');
-        const characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
-        
-        // Store character without seed initially - will be added when first image is generated
-        StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, undefined, 1);
-        
-        console.log(`✅ Initialized character context for ${userInfo.name} in session ${sessionId}`);
+        try {
+          const { MulticulturalVisualService } = await import('./MulticulturalVisualService');
+          const characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+          
+          // Store character without seed initially - will be added when first image is generated
+          StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, undefined, 1);
+          
+          console.log(`✅ Initialized character context for ${userInfo.name} in session ${sessionId}`);
+        } catch (error) {
+          console.warn('MulticulturalVisualService not available, using basic character description:', error);
+          // Fallback character description
+          const basicDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
+          StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, basicDesc, undefined, 1);
+        }
       }
       
     } catch (error) {
