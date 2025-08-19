@@ -46,7 +46,6 @@ import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
 import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStatusIndicator";
-import { KidFriendlyImageStatus } from "@/components/KidFriendlyImageStatus";
 import { LayoutDebugIndicator } from "@/components/dev/LayoutDebugIndicator";
 import { ImageGenerationDebugPanel } from "@/components/dev/ImageGenerationDebugPanel";
 
@@ -389,6 +388,10 @@ useEffect(() => {
   const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
+  
+  // Free user timer pause blocking - disable all interaction when timer is paused for non-premium users
+  const isTimerPaused = !isPremium && !isTimerRunning && !isTimerCanceled;
+  
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
@@ -2264,11 +2267,11 @@ const handleRestartTimer = () => {
           storyTitle={storyTitle}
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
-          onHome={onHome}
-          onNewStory={isPremium && story.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
-          onIncreaseDifficulty={() => handleDifficultyChange('up')}
-          onDecreaseDifficulty={() => handleDifficultyChange('down')}
-          showLevelControls={true}
+          onHome={isTimerPaused ? undefined : onHome}
+          onNewStory={isTimerPaused ? undefined : (isPremium && story.length > 0 ? handleRewriteWithDialog : handleNewStoryClick)}
+          onIncreaseDifficulty={isTimerPaused ? undefined : () => handleDifficultyChange('up')}
+          onDecreaseDifficulty={isTimerPaused ? undefined : () => handleDifficultyChange('down')}
+          showLevelControls={!isTimerPaused}
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
           canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== "10th")}
@@ -2297,7 +2300,7 @@ const handleRestartTimer = () => {
                     variant="outline"
                     size="sm"
                     onClick={handlePrevious}
-                    disabled={currentPage === 0 || controlsBlocked}
+                    disabled={currentPage === 0 || controlsBlocked || isTimerPaused}
                     aria-label={t('nav.prev','Back')}
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -2310,7 +2313,7 @@ const handleRestartTimer = () => {
                     variant="default"
                     size="sm"
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5)}
+                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5) || isTimerPaused}
                     aria-label={t('nav.next','Next')}
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -2324,18 +2327,22 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                  <SynchronizedAudioControls
-                    text={currentStoryText || ""}
-                    contentHash={contentHash}
-                    onWordHighlight={onWordHighlight}
-                    onPlayingChange={handleAudioStateChange}
-                  />
+                  {!isTimerPaused ? (
+                    <SynchronizedAudioControls
+                      text={currentStoryText || ""}
+                      contentHash={contentHash}
+                      onWordHighlight={onWordHighlight}
+                      onPlayingChange={handleAudioStateChange}
+                    />
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Audio controls disabled while timer is paused</div>
+                  )}
                   {isPremium && (
                     <Button 
                       variant={isConnected ? "default" : "outline"} 
                       size="lg" 
                       onClick={handleVoiceToggle}
-                      disabled={isConnecting}
+                      disabled={isConnecting || isTimerPaused}
                       className={cn(
                         "transition-all",
                         isConnected && "ring-2 ring-primary/40",
@@ -2363,7 +2370,7 @@ const handleRestartTimer = () => {
                     </DialogContent>
                   </Dialog>
                   {isPremium && (
-                    <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
+                    <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving || isTimerPaused} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
                       {isSaving ? (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       ) : (
@@ -2391,7 +2398,7 @@ const handleRestartTimer = () => {
                   <div className="relative flex-[0.62] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                       <div className="absolute top-3 right-3 z-20">
-                        <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Fix missing illustrations">
+                         <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={isTimerPaused} aria-label="Fix missing illustrations">
                           <Sparkles className="w-4 h-4 mr-1" />
                           Fix Images
                         </Button>
@@ -2439,7 +2446,7 @@ const handleRestartTimer = () => {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Button
                           onClick={generateImageForCurrentPage}
-                          disabled={isGeneratingImage}
+                          disabled={isGeneratingImage || isTimerPaused}
                           size="lg"
                           aria-label="Generate illustration"
                         >
@@ -2491,18 +2498,6 @@ const handleRestartTimer = () => {
                             </div>
                           </div>
                         )}
-                        
-                        {/* Kid-Friendly Image Status in main content */}
-                        <div className="mt-4">
-                          <KidFriendlyImageStatus
-                            isStoryLoading={isLoading}
-                            isStoryStable={isStoryStable}
-                            isGeneratingImages={isGeneratingImage}
-                            isBatchGenerating={isBatchGenerating}
-                            batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
-                            hasImages={Object.keys(pageImages).length > 0}
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -2516,7 +2511,7 @@ const handleRestartTimer = () => {
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                           <div className="absolute top-3 right-3 z-20">
-                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} aria-label="Fix missing illustrations">
+                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={isTimerPaused} aria-label="Fix missing illustrations">
                               <Sparkles className="w-4 h-4 mr-1" />
                               Fix Images
                             </Button>
@@ -2555,7 +2550,7 @@ const handleRestartTimer = () => {
                           <div className="w-full h-full flex items-center justify-center">
                             <Button
                               onClick={generateImageForCurrentPage}
-                              disabled={isGeneratingImage}
+                              disabled={isGeneratingImage || isTimerPaused}
                               size="lg"
                               aria-label="Generate illustration"
                             >
@@ -2608,19 +2603,7 @@ const handleRestartTimer = () => {
                                  <p className="text-sm text-muted-foreground">Loading story content...</p>
                                </div>
                              </div>
-                           )}
-                           
-                           {/* Kid-Friendly Image Status in split view text column */}
-                           <div className="mt-4">
-                             <KidFriendlyImageStatus
-                               isStoryLoading={isLoading}
-                               isStoryStable={isStoryStable}
-                               isGeneratingImages={isGeneratingImage}
-                               isBatchGenerating={isBatchGenerating}
-                               batchProgress={isBatchGenerating ? `${batchDone}/${batchTotal}` : undefined}
-                               hasImages={Object.keys(pageImages).length > 0}
-                             />
-                           </div>
+                            )}
                          </div>
                        </div>
                      </div>
@@ -2903,6 +2886,19 @@ const handleRestartTimer = () => {
         </div>
       )}
 
+      {/* Timer Pause Overlay for Free Users */}
+      {isTimerPaused && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+          <div className="relative z-[91] bg-card border border-border rounded-2xl shadow-2xl p-6 text-center animate-scale-in max-w-sm mx-4">
+            <div className="text-4xl mb-3">⏸️</div>
+            <h3 className="text-lg font-bold text-primary mb-2">Timer Paused</h3>
+            <p className="text-sm text-muted-foreground mb-4">Resume your timer to continue reading and using story features.</p>
+            <p className="text-xs text-muted-foreground/70">All navigation and story controls are disabled while paused.</p>
+          </div>
+        </div>
+      )}
+
       {/* Unified Timer for All Users (guest always on) */}
       {(!isPremium || timerEnabled) && (
         <CollapsibleFloatingTimer
@@ -2946,9 +2942,9 @@ const handleRestartTimer = () => {
         <>
           <MobileActionDock
             isPremium={isPremium}
-            onPlayAudio={handleDockPlayAudio}
-            onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
-            onCoach={handleDockCoach}
+            onPlayAudio={isTimerPaused ? undefined : handleDockPlayAudio}
+            onVoiceCommand={isTimerPaused ? undefined : (isPremium ? handleDockVoiceCommand : undefined)}
+            onCoach={isTimerPaused ? undefined : handleDockCoach}
             onSave={isPremium ? handleSaveStoryNow : undefined}
             onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
             isSaving={isSaving}
