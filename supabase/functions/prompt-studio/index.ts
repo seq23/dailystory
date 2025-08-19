@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
-import { ConsolidatedEnhancementPipeline } from "../_shared/consolidated-enhancement-pipeline.js";
+import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');

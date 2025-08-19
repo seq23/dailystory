@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { ConsolidatedEnhancementPipeline } from "../_shared/consolidated-enhancement-pipeline.js";
+import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 const corsHeaders = {
@@ -42,13 +42,13 @@ serve(async (req) => {
       console.warn(`⚠️ User info validation warning: ${validationResult.error}`);
     }
 
-    console.log(`🏭 Using consolidated enhancement pipeline for page ${pageNumber}/${totalPages}`);
+    console.log(`🏭 Using lean enhancement pipeline for page ${pageNumber}/${totalPages}`);
 
-    // Use consolidated enhancement pipeline for all processing
+    // Use lean multi-stage enhancement pipeline for all processing
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
     console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`);
 
-    const enhancementResult = await ConsolidatedEnhancementPipeline.processThroughPipeline(
+    const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
       pageText,
       userInfo,
       sessionId,
@@ -58,7 +58,7 @@ serve(async (req) => {
 
     const finalPrompt = enhancementResult.enhancedPrompt;
     const negativePrompt = enhancementResult.negativePrompt;
-    const optimizedParameters = enhancementResult.parameters;
+    const optimizedParameters = enhancementResult.generationParams;
 
     // Phase 10: Attempt Runware generation with sophisticated prompt
     const result = await generateWithRunware(
@@ -136,9 +136,9 @@ function extractPrimarySceneFallback(text: string): string {
   return sentences[bestSentenceIndex] || sentences[0] || text;
 }
 
-// Legacy function - now handled by ConsolidatedEnhancementPipeline
+// Legacy function - now handled by MultiStageEnhancementPipeline
 function detectCharactersWithTemplates(text: string, userInfo: any): CharacterDescriptor[] {
-  // Placeholder - functionality moved to ConsolidatedEnhancementPipeline
+  // Placeholder - functionality moved to MultiStageEnhancementPipeline
   return [];
 }
 
@@ -186,7 +186,7 @@ function analyzeEmotionalContentWithTemplates(text: string): EmotionalContext {
   };
 }
 
-// Legacy function - now handled by ConsolidatedEnhancementPipeline
+// Legacy function - now handled by MultiStageEnhancementPipeline
 function generateFamilyMemberTraits(userInfo: any, relationship: string): string {
   return 'friendly appearance';
 }

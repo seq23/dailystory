@@ -21,12 +21,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     brandSuffix: 'professional children\'s book illustration, Pixar-style quality, diverse inclusive characters',
     negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
-    // Technical parameters (Runware optimized)
+    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 3.0,
-      steps: 8,
+      cfgScale: 4.0,
+      steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.8
+      strength: 0.9
     }
   },
   
@@ -48,12 +48,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: '3d_smooth',
     brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
     
-    // Technical parameters (Runware optimized)
+    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 2.5,
-      steps: 6,
+      cfgScale: 4.0,
+      steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.8
+      strength: 0.9
     }
   },
   
@@ -76,12 +76,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     brandSuffix: 'professional children\'s book illustration, warm colors, safe wholesome content, Caldecott Medal style',
     negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
-    // Technical parameters (Runware optimized)
+    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 3.5,
-      steps: 10,
+      cfgScale: 4.0,
+      steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.75
+      strength: 0.9
     }
   },
   
@@ -103,12 +103,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: 'advanced_digital_painting',
     brandSuffix: 'artistic children\'s book illustration, refined quality, diverse representation',
     
-    // Technical parameters (Runware optimized)
+    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 3.5,
-      steps: 10,
+      cfgScale: 4.0,
+      steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.8
+      strength: 0.9
     }
   },
   
@@ -130,12 +130,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     rendering: 'masterful_artistic_technique',
     brandSuffix: 'masterful children\'s book art, sophisticated quality, diverse representation',
     
-    // Technical parameters (Runware optimized)
+    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 3.8,
+      cfgScale: 4.0,
       steps: 12,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.85
+      strength: 0.9
     }
   }
 };
@@ -170,39 +170,79 @@ export function getStyleFramework(difficulty) {
   return framework;
 }
 
-// Helper function to build complete prompt from framework
+// Helper function to build complete prompt from framework with Phase 3 optimization
 export function buildCompletePrompt(framework, sceneDescription, characterDescription = '', culturalContext = '', storyElements = null) {
-  const basePrompt = `${sceneDescription}, ${framework.prompt}`;
+  // Phase 3: Priority-based prompt assembly
+  const components = [
+    { priority: 1, content: sceneDescription, essential: true },
+    { priority: 2, content: framework.prompt, essential: true },
+    { priority: 3, content: characterDescription, essential: false },
+    { priority: 4, content: framework.artStyle, essential: true },
+    { priority: 5, content: culturalContext, essential: false },
+    { priority: 6, content: framework.quality, essential: true }
+  ];
   
-  let enhancedPrompt = basePrompt;
-  
-  if (characterDescription) {
-    enhancedPrompt += `, ${characterDescription}`;
-  }
-  
-  if (culturalContext) {
-    enhancedPrompt += `, ${culturalContext}`;
-  }
-  
-  // Add specific story elements if provided (animals, objects)
+  // Add story elements if provided
   if (storyElements && storyElements.animals && storyElements.animals.length > 0) {
     const primaryAnimal = storyElements.animals[0];
-    enhancedPrompt += `, featuring ${primaryAnimal}`;
+    components.push({ priority: 7, content: `featuring ${primaryAnimal}`, essential: false });
   }
   
-  // Add framework-specific quality terms
-  enhancedPrompt += `, ${framework.artStyle}, ${framework.quality}`;
+  // Add brand suffix last
+  components.push({ priority: 8, content: framework.brandSuffix, essential: true });
   
-  // Add brand suffix
-  enhancedPrompt += `, ${framework.brandSuffix}`;
+  // Phase 3: Smart deduplication system
+  const deduplicatedComponents = components
+    .filter(comp => comp.content && comp.content.trim().length > 0)
+    .map(comp => comp.content.trim())
+    .reduce((acc, current) => {
+      // Check for significant word overlap with existing components
+      const existingWords = acc.join(' ').toLowerCase().split(/\s+/);
+      const currentWords = current.toLowerCase().split(/\s+/);
+      const overlap = currentWords.filter(word => existingWords.includes(word) && word.length > 3).length;
+      
+      // Only add if overlap is minimal (less than 30% of words)
+      if (overlap / currentWords.length < 0.3) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+  
+  // Phase 3: Token budget management (target: 200-300 tokens)
+  let enhancedPrompt = deduplicatedComponents.join(', ');
+  const estimatedTokens = estimateTokenCount(enhancedPrompt);
+  
+  if (estimatedTokens > 300) {
+    // Trim non-essential components first
+    const essentialOnly = components
+      .filter(comp => comp.essential && comp.content)
+      .map(comp => comp.content.trim())
+      .join(', ');
+    
+    if (estimateTokenCount(essentialOnly) <= 300) {
+      enhancedPrompt = essentialOnly;
+    } else {
+      // Aggressively trim even essential components
+      enhancedPrompt = enhancedPrompt.substring(0, Math.floor(300 * 4.5)); // ~4.5 chars per token
+    }
+  }
   
   const negativePrompt = framework.negativePrompt || 
     "multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words";
+  
+  console.log(`📝 Prompt optimization: ${estimatedTokens} tokens → ${estimateTokenCount(enhancedPrompt)} tokens`);
   
   return {
     positivePrompt: enhancedPrompt,
     negativePrompt
   };
+}
+
+// Phase 3: Token estimation helper
+function estimateTokenCount(text) {
+  if (!text) return 0;
+  // Rough estimation: ~4.5 characters per token for English
+  return Math.ceil(text.length / 4.5);
 }
 
 // Helper function to get optimized parameters

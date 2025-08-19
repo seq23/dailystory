@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { ConsolidatedEnhancementPipeline } from "../_shared/consolidated-enhancement-pipeline.js";
+import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 // Comprehensive Visual State Management
@@ -708,8 +708,8 @@ serve(async (req) => {
       // Enhanced character description with gender specificity
       const characterDesc = `${userInfo.name}: ${userInfo.avatar.type} ${hairColor} ${skinToneForPrompt}`;
       
-      // Use the consolidated enhancement pipeline for all processing
-      const enhancementResult = await ConsolidatedEnhancementPipeline.processThroughPipeline(
+      // Use the lean multi-stage enhancement pipeline for all processing
+      const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
         processedText,
         userInfo,
         sessionId,
@@ -717,7 +717,7 @@ serve(async (req) => {
         10 // totalPages
       );
       
-      console.log(`🎨 Enhanced prompt via consolidated pipeline: ${enhancementResult.prompt.substring(0, 100)}...`);
+      console.log(`🎨 Enhanced prompt via lean pipeline: ${enhancementResult.enhancedPrompt.substring(0, 100)}...`);
       
       const secondaryChars = secondaryCharacters.length > 0 ? ` ${secondaryCharacters.join(' ')}` : '';
       
@@ -732,12 +732,12 @@ serve(async (req) => {
         ? `${negativePrompt}, ${comprehensiveNegativePrompt}`
         : comprehensiveNegativePrompt;
       
-      // Use the enhanced prompt from the consolidated pipeline
-      enhancedPrompt = enhancementResult.prompt;
+      // Use the enhanced prompt from the lean pipeline
+      enhancedPrompt = enhancementResult.enhancedPrompt;
       finalNegativePrompt = enhancementResult.negativePrompt || comprehensiveNegativePrompt;
       
       // Get optimal generation parameters from the pipeline
-      optimalParams = enhancementResult.parameters || {};
+      optimalParams = enhancementResult.generationParams || {};
       
       // Add environmental and visual details context
       enhancedPrompt += environmentalContext + visualDetailsContext;

@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { ConsolidatedEnhancementPipeline } from '../_shared/consolidated-enhancement-pipeline.js';
+import { MultiStageEnhancementPipeline } from '../_shared/MultiStageEnhancementPipeline.js';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 
 // Avatar skin tone and cultural context integration
@@ -77,11 +77,11 @@ serve(async (req) => {
       sessionId
     });
 
-    // Use consolidated enhancement pipeline for consistent processing
+    // Use lean enhancement pipeline for consistent processing
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
     console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`);
 
-    const enhancementResult = await ConsolidatedEnhancementPipeline.processThroughPipeline(
+    const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
       positivePrompt,
       userInfo,
       sessionId || 'openai-session',
