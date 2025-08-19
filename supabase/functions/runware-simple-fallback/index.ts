@@ -23,7 +23,8 @@ serve(async (req) => {
     // Hardcoded style based on difficulty
     const style = getHardcodedStyle(difficultyLevel);
     
-    // Build final prompt
+    // Build final prompt with enhanced negative prompts
+    const negativePrompt = getEnhancedNegativePrompt(userInfo);
     const finalPrompt = `${extractedScene}. ${style.prompt}. ${style.quality}. ${style.suffix}`;
     
     console.log('🎨 Tier 2.5 prompt:', finalPrompt.substring(0, 150) + '...');
@@ -65,6 +66,7 @@ serve(async (req) => {
                 taskType: "imageInference",
                 taskUUID,
                 positivePrompt: finalPrompt,
+                negativePrompt: negativePrompt,
                 model: "runware:100@1",
                 width: 1024,
                 height: 1024,
@@ -109,14 +111,14 @@ serve(async (req) => {
   }
 });
 
-// Hardcoded scene extraction - no external dependencies
+// Enhanced scene extraction with better story analysis
 function extractSimpleScene(pageText: string, userInfo?: any): string {
   if (!pageText) return 'a friendly character in a beautiful scene';
   
   const text = pageText.toLowerCase();
   const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
   
-  // Enhanced scene scoring with sea/dolphin priority
+  // Enhanced scene scoring with better visual prioritization
   let bestScene = sentences[0] || pageText;
   let bestScore = 0;
   
@@ -124,14 +126,22 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     let score = 0;
     const lowerSentence = sentence.toLowerCase();
     
-    // Content-neutral scoring based on visual richness
+    // Visual richness indicators
     if (lowerSentence.includes('color') || lowerSentence.includes('bright') || lowerSentence.includes('beautiful')) score += 20;
     if (lowerSentence.includes('big') || lowerSentence.includes('small') || lowerSentence.includes('huge')) score += 15;
+    if (lowerSentence.includes('red') || lowerSentence.includes('blue') || lowerSentence.includes('green') || lowerSentence.includes('yellow')) score += 18;
     
-    // Action and character-focused content
-    if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump')) score += 25;
-    if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy')) score += 20;
+    // Action and emotional content
+    if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump') || lowerSentence.includes('run') || lowerSentence.includes('play')) score += 25;
+    if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy') || lowerSentence.includes('excited') || lowerSentence.includes('smiled')) score += 20;
     if (userInfo?.name && lowerSentence.includes(userInfo.name.toLowerCase())) score += 15;
+    
+    // Animals and objects boost
+    if (lowerSentence.includes('luna') || lowerSentence.includes('rabbit') || lowerSentence.includes('bunny') || lowerSentence.includes('cat') || lowerSentence.includes('dog')) score += 22;
+    if (lowerSentence.includes('flower') || lowerSentence.includes('tree') || lowerSentence.includes('garden') || lowerSentence.includes('park')) score += 18;
+    
+    // Dialogue and interaction
+    if (lowerSentence.includes('"') || lowerSentence.includes('said') || lowerSentence.includes('called') || lowerSentence.includes('asked')) score += 20;
     
     if (score > bestScore) {
       bestScore = score;
@@ -139,21 +149,27 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     }
   });
   
-  // Character detection with cultural clothing
+  // Character detection with gender enforcement
   let character = 'child';
+  let genderType = 'child';
+  
   if (userInfo?.name) {
     character = userInfo.name;
+    genderType = userInfo.avatar?.type || 'child';
   } else if (text.includes('girl') || text.includes('she')) {
     character = 'girl';
+    genderType = 'girl';
   } else if (text.includes('boy') || text.includes('he')) {
     character = 'boy';
+    genderType = 'boy';
   }
   
-  // Enhanced avatar description with cultural clothing
+  // Enhanced avatar description with stronger gender enforcement
   let avatarDesc = '';
   if (userInfo?.avatar) {
     const skinTone = userInfo.avatar.skinTone || 'medium';
     const type = userInfo.avatar.type || 'child';
+    genderType = type; // Ensure we use the avatar type
     
     const skinMap = {
       'pale': 'fair skin',
@@ -184,27 +200,36 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
   }
   
-  // Content-neutral setting detection
+  // Enhanced setting detection with more options
   let setting = 'outdoor scene';
-  if (text.includes('house') || text.includes('home')) setting = 'indoor house scene';
-  else if (text.includes('beach') || text.includes('ocean') || text.includes('sea')) setting = 'beach scene';
-  else if (text.includes('forest') || text.includes('tree')) setting = 'forest scene';
-  else if (text.includes('school')) setting = 'school scene';
-  else if (text.includes('park')) setting = 'park scene';
+  if (text.includes('house') || text.includes('home') || text.includes('bedroom') || text.includes('kitchen')) setting = 'indoor house scene';
+  else if (text.includes('beach') || text.includes('ocean') || text.includes('sea') || text.includes('sand')) setting = 'beach scene';
+  else if (text.includes('forest') || text.includes('tree') || text.includes('woods')) setting = 'forest scene';
+  else if (text.includes('school') || text.includes('classroom')) setting = 'school scene';
+  else if (text.includes('park') || text.includes('playground')) setting = 'park scene';
+  else if (text.includes('garden') || text.includes('flower')) setting = 'garden scene';
+  else if (text.includes('field') || text.includes('meadow')) setting = 'outdoor field scene';
   
-  // Content-neutral object detection
+  // Enhanced object and animal detection
   const objects = [];
-  const allObjects = ['ball', 'book', 'toy', 'dog', 'cat', 'car', 'bike', 'flower', 'dolphin', 'whale', 'fish', 'shell'];
+  const animals = [];
+  const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide'];
+  const allAnimals = ['luna', 'rabbit', 'bunny', 'cat', 'dog', 'bird', 'butterfly', 'dolphin', 'whale', 'fish'];
   
   allObjects.forEach(obj => {
-    if (text.includes(obj) && objects.length < 3) objects.push(obj);
+    if (text.includes(obj) && objects.length < 2) objects.push(obj);
   });
   
-  // Build enhanced scene description
+  allAnimals.forEach(animal => {
+    if (text.includes(animal) && animals.length < 2) animals.push(animal);
+  });
+  
+  // Build enhanced scene description with gender enforcement
   let scene = `${character}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${setting}`;
-  if (objects.length > 0) scene += ` with ${objects.slice(0, 2).join(' and ')}`;
+  if (animals.length > 0) scene += ` with ${animals.join(' and ')}`;
+  if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;
   
   // Use best scene as primary context
   scene += `. Scene: ${bestScene}`;
@@ -258,4 +283,21 @@ function getHardcodedStyle(difficulty: string) {
   };
   
   return styles[difficulty] || styles['medium'];
+}
+
+// Enhanced negative prompt for safety and quality
+function getEnhancedNegativePrompt(userInfo?: any): string {
+  let baseNegative = 'inappropriate content, adult content, violence, scary, frightening, disturbing, dark themes, weapons, blood, gore, nudity, sexual content, profanity, drugs, alcohol, smoking, unsafe activities, dangerous situations, horror, nightmare, evil, demon, monster, ghost, zombie, skull, death, sad, crying, angry, fighting, bullying, discrimination, hate, racism, sexism';
+  
+  // Add gender-specific negatives to enforce correct character representation
+  if (userInfo?.avatar?.type === 'girl') {
+    baseNegative += ', boy character, male character, masculine features, he, him, his, male clothing, boy hairstyle';
+  } else if (userInfo?.avatar?.type === 'boy') {
+    baseNegative += ', girl character, female character, feminine features, she, her, hers, female clothing, girl hairstyle, dress, skirt';
+  }
+  
+  // Add quality negatives
+  baseNegative += ', blurry, low quality, pixelated, distorted, deformed, ugly, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, poorly drawn hands, mutated hands, extra fingers, fused fingers, missing fingers, long neck, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, out of frame, ugly, extra limbs, bad anatomy, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, mutated hands, fused fingers, too many fingers, long neck';
+  
+  return baseNegative;
 }

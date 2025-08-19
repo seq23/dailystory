@@ -131,24 +131,33 @@ export class EnhancedPostProcessor {
     const correctPronouns = this.getPronounsForAvatar(avatarType);
     let correctedContent = content;
     
-    // Replace incorrect pronouns with correct ones
-    const pronounMap = {
-      'he': correctPronouns.subject,
-      'him': correctPronouns.object,
-      'his': correctPronouns.possessive,
-      'He': correctPronouns.subject.charAt(0).toUpperCase() + correctPronouns.subject.slice(1),
-      'Him': correctPronouns.object.charAt(0).toUpperCase() + correctPronouns.object.slice(1),
-      'His': correctPronouns.possessive.charAt(0).toUpperCase() + correctPronouns.possessive.slice(1)
+    // Comprehensive pronoun replacement maps for all avatar types
+    const pronounMaps = {
+      girl: {
+        'he': 'she', 'him': 'her', 'his': 'her',
+        'He': 'She', 'Him': 'Her', 'His': 'Her',
+        'himself': 'herself', 'Himself': 'Herself',
+        'they': 'she', 'them': 'her', 'their': 'her', 'theirs': 'hers',
+        'They': 'She', 'Them': 'Her', 'Their': 'Her', 'Theirs': 'Hers',
+        'themselves': 'herself', 'Themselves': 'Herself'
+      },
+      boy: {
+        'she': 'he', 'her': 'him', 'hers': 'his',
+        'She': 'He', 'Her': 'Him', 'Hers': 'His',
+        'herself': 'himself', 'Herself': 'Himself',
+        'they': 'he', 'them': 'him', 'their': 'his', 'theirs': 'his',
+        'They': 'He', 'Them': 'Him', 'Their': 'His', 'Theirs': 'His',
+        'themselves': 'himself', 'Themselves': 'Himself'
+      }
     };
+
+    const pronounMap = pronounMaps[avatarType] || pronounMaps.boy;
     
-    // Only replace if avatar type is girl (avoid changing when pronouns are already correct)
-    if (avatarType === 'girl') {
-      Object.entries(pronounMap).forEach(([incorrect, correct]) => {
-        // Use word boundaries to avoid partial matches
-        const regex = new RegExp(`\\b${incorrect}\\b`, 'g');
-        correctedContent = correctedContent.replace(regex, correct);
-      });
-    }
+    // Apply pronoun corrections with word boundaries
+    Object.entries(pronounMap).forEach(([incorrect, correct]) => {
+      const regex = new RegExp(`\\b${incorrect}\\b`, 'g');
+      correctedContent = correctedContent.replace(regex, correct as string);
+    });
     
     return correctedContent;
   }
