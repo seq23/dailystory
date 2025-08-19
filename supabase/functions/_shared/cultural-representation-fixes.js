@@ -1,9 +1,10 @@
+
 // Phase 4: Cultural Representation Fixes
 // Addresses African American representation and cultural variation issues
 
 export class CulturalRepresentationEngine {
   // Enhanced African American character profiles with authentic representation
-  static readonly AFRICAN_AMERICAN_PROFILES = {
+  static AFRICAN_AMERICAN_PROFILES = {
     skinTones: {
       light: 'warm light brown skin with golden undertones',
       medium: 'rich caramel skin with warm undertones', 
@@ -33,7 +34,7 @@ export class CulturalRepresentationEngine {
   };
 
   // Comprehensive cultural variations by language/region
-  static readonly CULTURAL_VARIATIONS = {
+  static CULTURAL_VARIATIONS = {
     'en-aa': { // African American
       skinTones: ['warm light brown', 'rich caramel', 'deep brown', 'dark chocolate'],
       hairStyles: ['natural afro', 'braids', 'twists', 'locs'],
