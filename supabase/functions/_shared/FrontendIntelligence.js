@@ -249,8 +249,8 @@ export class FrontendIntelligence {
   static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}) {
     const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
     
-    // Use existing setting if available, otherwise select new one
-    let setting = visualStateData.existingSetting || this.selectCulturalSetting(userInfo, culturalProfile);
+    // Use enhanced setting from MultiStageEnhancementPipeline (already culturally enhanced)
+    let setting = visualStateData.existingSetting || "indoor scene";
     
     // Build base prompt with scene and character
     let prompt = `${sceneContext} featuring ${characterDescription} in ${setting}`;
