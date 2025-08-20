@@ -190,11 +190,93 @@ export class FrontendIntelligence {
     return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
   }
   
-  static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, qualityEnhancements) {
+  static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework) {
     const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
     const setting = this.selectCulturalSetting(userInfo, culturalProfile);
     
-    return `${storyText} featuring ${characterDescription} in ${setting}. ${qualityEnhancements}. Children's book illustration style, safe for children, consistent character appearance.`;
+    // Build base prompt with scene and character
+    let prompt = `${sceneContext} featuring ${characterDescription} in ${setting}`;
+    
+    // Add emotional context
+    if (emotionalContext && emotionalContext.mood !== 'neutral') {
+      prompt += `, ${emotionalContext.mood} mood and atmosphere`;
+    }
+    
+    // Integrate style framework specifications
+    if (styleFramework) {
+      // Add art style
+      if (styleFramework.artStyle) {
+        prompt += `, ${styleFramework.artStyle}`;
+      }
+      
+      // Add color palette with emotional enhancement
+      if (styleFramework.colorPalette) {
+        const enhancedColorPalette = this.enhanceColorPaletteWithEmotion(styleFramework.colorPalette, emotionalContext);
+        prompt += `, ${enhancedColorPalette}`;
+      }
+      
+      // Add lighting
+      if (styleFramework.lighting) {
+        prompt += `, ${styleFramework.lighting}`;
+      }
+      
+      // Add texture and composition
+      if (styleFramework.texture) {
+        prompt += `, ${styleFramework.texture}`;
+      }
+      
+      if (styleFramework.composition) {
+        prompt += `, ${styleFramework.composition}`;
+      }
+      
+      // Add quality specifications
+      if (styleFramework.quality) {
+        prompt += `, ${styleFramework.quality}`;
+      }
+      
+      // Add style framework's specific prompt
+      if (styleFramework.prompt) {
+        prompt += `, ${styleFramework.prompt}`;
+      }
+    } else {
+      // Fallback quality enhancements if no style framework
+      prompt += ', ultra high resolution, professional children\'s book illustration, vibrant colors, perfect lighting';
+    }
+    
+    // Add children's book context
+    prompt += ', children\'s book illustration style, safe for children, consistent character appearance';
+    
+    return prompt;
+  }
+
+  /**
+   * Enhance color palette based on emotional context
+   */
+  static enhanceColorPaletteWithEmotion(colorPalette, emotionalContext) {
+    if (!emotionalContext || !emotionalContext.mood || emotionalContext.mood === 'neutral') {
+      return colorPalette;
+    }
+    
+    // Map emotions to color enhancements
+    const emotionColorMap = {
+      happy: 'bright and cheerful colors',
+      sad: 'muted and gentle colors', 
+      excited: 'vibrant and energetic colors',
+      calm: 'soft and soothing colors',
+      mysterious: 'deep and atmospheric colors',
+      adventure: 'bold and dynamic colors',
+      joyful: 'luminous and uplifting colors',
+      peaceful: 'serene and harmonious colors'
+    };
+    
+    // Find matching emotion
+    for (const [emotion, colorEnhancement] of Object.entries(emotionColorMap)) {
+      if (emotionalContext.mood.toLowerCase().includes(emotion)) {
+        return `${colorPalette} with ${colorEnhancement}`;
+      }
+    }
+    
+    return colorPalette;
   }
   
   static detectEmotionalContext(text) {

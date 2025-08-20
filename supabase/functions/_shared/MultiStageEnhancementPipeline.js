@@ -2,7 +2,7 @@
 // Now uses real AI functions from FrontendIntelligence.js
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
-import { getStyleFramework } from './styleFrameworks.js';
+import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -11,31 +11,37 @@ function selectWeightedElement(array) {
 
 export class MultiStageEnhancementPipeline {
   
-  // ============= TIER 1: PREMIUM AI-ENHANCED PROCESSING =============
+  // ============= TIER 1: PREMIUM AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
   static async processTier1Premium(storyText, userInfo, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔥 Tier 1 Premium AI Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔥 Tier 1 Premium AI Pipeline with Style Frameworks: ${sessionId} page ${pageNumber}/${totalPages}`);
       
       // Import fresh frontend intelligence
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
       
-      // 1. Generate stable character seed for consistency
+      // 1. Determine difficulty level and get style framework
+      const imageDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+      const styleFramework = getStyleFramework(imageDifficulty);
+      
+      // Validate style framework
+      if (!validateStyleFramework(imageDifficulty)) {
+        console.warn('⚠️ Style framework validation failed for', imageDifficulty, 'using fallback');
+      }
+      
+      console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
+      
+      // 2. Generate stable character seed for consistency
       const characterSeed = this.generateStableSeed(userInfo, sessionId);
       
-      // 2. Get cultural profile
+      // 3. Get cultural profile
       const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
-      
-      // 3. Use comprehensive arrays for African American processing
-      const characterDescription = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo)
-        ? FrontendIntelligence.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed)
-        : FrontendIntelligence.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
       
       // 4. Extract scene and emotional context
       const sceneContext = this.extractSceneContent(storyText);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(storyText);
       
-      // 5. Build premium prompt with real AI functions
+      // 5. Build premium prompt with AI intelligence AND style framework
       const enhancedPrompt = FrontendIntelligence.buildPremiumPrompt(
         storyText,
         userInfo,
@@ -43,24 +49,26 @@ export class MultiStageEnhancementPipeline {
         culturalProfile,
         sceneContext,
         emotionalContext,
-        'Ultra high resolution, professional children\'s book illustration, vibrant colors, consistent character appearance'
+        styleFramework
       );
       
-      // 6. Generate advanced negative prompt with cultural awareness
-      const negativePrompt = this.buildAdvancedNegativePrompt(userInfo, culturalProfile);
+      // 6. Generate advanced negative prompt with style framework considerations
+      const negativePrompt = this.buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework);
       
-      // 7. Premium generation parameters
+      // 7. Premium generation parameters using style framework
       const generationParams = {
         model: 'runware:100@1',
-        steps: 8,
-        cfgScale: 2.0,
+        steps: styleFramework.parameters?.steps || 8, // Use framework steps or premium default
+        cfgScale: styleFramework.parameters?.cfgScale || 2.0,
         scheduler: 'FlowMatchEulerDiscreteScheduler',
         width: 1024,
         height: 1024,
         outputFormat: 'WEBP'
       };
       
-      console.log('✨ Tier 1 Premium AI processing completed with comprehensive arrays:', {
+      console.log('✨ Tier 1 Premium AI processing completed with style framework:', {
+        styleFramework: styleFramework.name,
+        difficulty: imageDifficulty,
         hasSkinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
         hasBoysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
         hasGirlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
@@ -73,8 +81,10 @@ export class MultiStageEnhancementPipeline {
         negativePrompt,
         generationParams,
         metadata: {
-          tier: 'premium-ai-comprehensive',
+          tier: 'premium-ai-styled',
           characterSeed,
+          styleFramework: styleFramework.name,
+          difficulty: imageDifficulty,
           culturalProfile: userInfo.nativeLanguage,
           emotionalContext: emotionalContext.mood,
           africanAmericanProcessing: FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo),
@@ -166,9 +176,14 @@ export class MultiStageEnhancementPipeline {
     return `${name} (${gender} with ${skinMap[skinTone] || 'medium skin'})`;
   }
   
-  // ============= SMART NEGATIVE PROMPTS =============
-  static buildAdvancedNegativePrompt(userInfo, culturalProfile) {
+  // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============
+  static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework = null) {
     let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
+    
+    // Add style framework negative prompts
+    if (styleFramework && styleFramework.negativePrompt) {
+      baseNegative += `, ${styleFramework.negativePrompt}`;
+    }
     
     // Add gender consistency
     if (userInfo?.avatar?.type === 'girl') {
