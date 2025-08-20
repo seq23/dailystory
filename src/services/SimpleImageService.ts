@@ -216,17 +216,46 @@ export class SimpleImageService {
     }
   }
 
-  // Simple prompt generation using frontend cultural service
-  private static async generateSimplePrompt(pageText: string, userInfo?: UserInfo): Promise<string> {
+  // Enhanced prompt generation using EnhancedPromptBuilder
+  private static async generateEnhancedPrompt(
+    pageText: string, 
+    userInfo: UserInfo, 
+    pageNumber: number, 
+    sessionId: string
+  ): Promise<string> {
+    try {
+      const { EnhancedPromptBuilder } = await import('./EnhancedPromptBuilder');
+      
+      const result = await EnhancedPromptBuilder.buildCompletePrompt(
+        pageText,
+        userInfo,
+        pageNumber,
+        sessionId,
+        {
+          maxTokens: 300,
+          enableDeduplication: true,
+          enableCharacterConsistency: true,
+          prioritizeCharacterDetails: true
+        }
+      );
+      
+      console.log('✨ Enhanced prompt generated with deduplication and caching');
+      return result.prompt;
+    } catch (error) {
+      console.warn('EnhancedPromptBuilder not available, falling back to legacy prompt generation:', error);
+      return this.generateLegacyPrompt(pageText, userInfo);
+    }
+  }
+
+  // Legacy prompt generation as fallback
+  private static async generateLegacyPrompt(pageText: string, userInfo?: UserInfo): Promise<string> {
     let characterDesc = 'friendly character';
     
     if (userInfo && userInfo.avatar) {
-      // Use frontend StructuredPromptEngine
       try {
         const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
         characterDesc = StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
         
-        // Replace character name in the text
         if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
           characterDesc = `${userInfo.name} (${characterDesc})`;
         }
@@ -236,7 +265,6 @@ export class SimpleImageService {
       }
     }
     
-    // Use intelligent content extraction instead of hardcoded rules
     try {
       const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
       const extractedContent = StructuredPromptEngine.extractPageContent(pageText);
@@ -279,8 +307,8 @@ export class SimpleImageService {
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
     try {
-      // TIER 1: Enhanced Runware with full AI enhancement and robust WebSocket handling
-      console.log('🚀 Starting Tier 1: Enhanced Runware with robust WebSocket management');
+      // TIER 1: Enhanced Runware with EnhancedPromptBuilder integration
+      console.log('🚀 Starting Tier 1: Enhanced Runware with sophisticated prompt pipeline');
       const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber);
       
       if (tier1Result.success) {
@@ -365,7 +393,12 @@ export class SimpleImageService {
     pageNumber?: number
   ): Promise<ImageResult> {
     try {
-      console.log('🎨 Enhanced Runware generation with full AI enhancement and seed consistency');
+      console.log('🎨 Enhanced Runware generation with sophisticated prompt pipeline');
+
+      // Generate enhanced prompt using the new pipeline
+      const prompt = userInfo && sessionId && pageNumber 
+        ? await this.generateEnhancedPrompt(cleanScene, userInfo, pageNumber, sessionId)
+        : await this.generateLegacyPrompt(cleanScene, userInfo);
 
       // Get stored character seed for consistency
       let characterSeed: number | undefined;
@@ -378,6 +411,7 @@ export class SimpleImageService {
 
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
+          positivePrompt: prompt,
           pageText: cleanScene,
           userInfo,
           sessionId,
@@ -530,7 +564,7 @@ export class SimpleImageService {
     try {
       console.log('🎯 OpenAI DALL-E generation');
 
-      const enhancedPrompt = await this.generateSimplePrompt(cleanScene, userInfo);
+      const enhancedPrompt = await this.generateLegacyPrompt(cleanScene, userInfo);
       
       // Add comprehensive negative prompt for OpenAI
       const negativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";

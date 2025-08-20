@@ -4,6 +4,7 @@
 import { StructuredPromptEngine, type PromptTemplate } from './StructuredPromptEngine';
 import { characterConsistency } from './UnifiedCharacterConsistency';
 import { validateTokenLimit, type TokenValidationResult } from '@/utils/tokenLimitValidator';
+import { PromptCacheService } from './PromptCacheService';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import type { CharacterDescriptor } from './AdvancedCharacterEngine';
 
@@ -45,9 +46,43 @@ export class EnhancedPromptBuilder {
       prioritizeCharacterDetails = true
     } = config;
 
-    // 1. Generate character seed for consistency
+    // 1. Check cache first using PromptCacheService
+    const userHashCode = (userInfo.name || 'guest').split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    const cacheResult = PromptCacheService.getCachedPrompt(
+      sessionId, 
+      pageNumber, 
+      userHashCode, 
+      storyText
+    );
+    
+    if (cacheResult.cached && cacheResult.prompt) {
+      console.log('📋 Using cached prompt with enhancements');
+      const estimatedTokens = Math.ceil(cacheResult.prompt.length / 4);
+      const tokenValidation: TokenValidationResult = {
+        isValid: estimatedTokens <= maxTokens,
+        actualTokens: estimatedTokens,
+        maxAllowed: maxTokens,
+        exceededBy: estimatedTokens > maxTokens ? estimatedTokens - maxTokens : undefined,
+        warnings: estimatedTokens > maxTokens ? ['Cached prompt exceeds token limit'] : []
+      };
+      
+      return {
+        prompt: cacheResult.prompt,
+        tokenValidation,
+        characterSeed: userHashCode,
+        culturalContext: 'cached',
+        usedComponents: cacheResult.enhancements || [],
+        deduplicated: []
+      };
+    }
+
+    // 2. Generate character seed for consistency
     const { seed: characterSeed, characterDescription, culturalContext } = 
-      enableCharacterConsistency 
+      enableCharacterConsistency
         ? characterConsistency.getCharacterSeed(userInfo.name || 'guest', sessionId, userInfo)
         : { seed: 0, characterDescription: '', culturalContext: '' };
 
@@ -89,7 +124,18 @@ export class EnhancedPromptBuilder {
     );
 
     // 7. Validate final result
-    const tokenValidation = validateTokenLimit(finalPrompt, difficulty);
+    const tokenValidation = validateTokenLimit(finalPrompt, 'medium');
+
+    // Cache the result for future use
+    PromptCacheService.cachePrompt(
+      sessionId,
+      pageNumber,
+      userHashCode,
+      storyText,
+      finalPrompt,
+      userInfo,
+      tokenValidation.isValid
+    );
 
     console.log(`🔧 Enhanced prompt built:`, {
       sessionId,
@@ -176,7 +222,7 @@ export class EnhancedPromptBuilder {
     maxTokens: number,
     prioritizeCharacterDetails: boolean
   ): { finalPrompt: string; usedComponents: string[] } {
-    const validation = validateTokenLimit(prompt, difficulty);
+    const validation = validateTokenLimit(prompt, 'medium');
     
     if (validation.isValid) {
       return { 
@@ -304,6 +350,7 @@ export class EnhancedPromptBuilder {
         physicalTraits: `${userInfo.avatar?.skinTone || 'medium'} skin`,
         clothingStyle: 'casual clothing',
         lastUsedPage: 1,
+        seed: characterSeed,
         ageCategory: 'child'
       }];
     }
