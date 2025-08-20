@@ -3,6 +3,8 @@
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
+import './storyVisualState.js'; // Loads StoryVisualStateManager globally
+import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -14,10 +16,17 @@ export class MultiStageEnhancementPipeline {
   // ============= TIER 1: PREMIUM AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
   static async processTier1Premium(storyText, userInfo, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔥 Tier 1 Premium AI Pipeline with Style Frameworks: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔥 Tier 1 Premium AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
       
       // Import fresh frontend intelligence
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      
+      // 0. Initialize and analyze visual state for consistency
+      const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
+      globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+      
+      // Detect and update setting/environment from story text
+      this.updateSettingFromText(sessionId, storyText);
       
       // 1. Determine difficulty level and get style framework
       const imageDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
@@ -30,8 +39,12 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
       
-      // 2. Generate stable character seed for consistency
-      const characterSeed = this.generateStableSeed(userInfo, sessionId);
+      // 2. Generate stable character seed for consistency (check visual state first)
+      let characterSeed = globalThis.StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name || 'Alex');
+      if (!characterSeed) {
+        characterSeed = this.generateStableSeed(userInfo, sessionId);
+        globalThis.StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name || 'Alex', characterSeed, null);
+      }
       
       // 3. Get cultural profile
       const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
@@ -41,7 +54,12 @@ export class MultiStageEnhancementPipeline {
       const sceneContext = this.extractSceneContent(storyText);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(storyText);
       
-      // 5. Build premium prompt with AI intelligence AND style framework
+      // 5. Get existing visual state for consistency
+      const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
+      const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+      const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+      
+      // 6. Build premium prompt with AI intelligence, style framework AND visual state
       const enhancedPrompt = FrontendIntelligence.buildPremiumPrompt(
         storyText,
         userInfo,
@@ -49,7 +67,14 @@ export class MultiStageEnhancementPipeline {
         culturalProfile,
         sceneContext,
         emotionalContext,
-        styleFramework
+        styleFramework,
+        {
+          existingSetting,
+          visualDetails,
+          storyStateDetails,
+          pageNumber,
+          totalPages
+        }
       );
       
       // 6. Generate advanced negative prompt with style framework considerations
@@ -66,9 +91,13 @@ export class MultiStageEnhancementPipeline {
         outputFormat: 'WEBP'
       };
       
-      console.log('✨ Tier 1 Premium AI processing completed with style framework:', {
+      console.log('✨ Tier 1 Premium AI processing completed with style framework + visual state:', {
         styleFramework: styleFramework.name,
         difficulty: imageDifficulty,
+        characterSeed,
+        existingSetting: existingSetting ? 'YES' : 'NO',
+        visualDetails: visualDetails ? 'YES' : 'NO',
+        trackedObjects: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
         hasSkinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
         hasBoysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
         hasGirlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
@@ -81,13 +110,17 @@ export class MultiStageEnhancementPipeline {
         negativePrompt,
         generationParams,
         metadata: {
-          tier: 'premium-ai-styled',
+          tier: 'premium-ai-styled-visual-state',
           characterSeed,
           styleFramework: styleFramework.name,
           difficulty: imageDifficulty,
           culturalProfile: userInfo.nativeLanguage,
           emotionalContext: emotionalContext.mood,
           africanAmericanProcessing: FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo),
+          visualStateEnabled: true,
+          hasExistingSetting: !!existingSetting,
+          hasVisualDetails: !!visualDetails,
+          trackedObjectsCount: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
           processingTime: Date.now(),
           arrayStats: {
             skinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
@@ -230,6 +263,80 @@ export class MultiStageEnhancementPipeline {
   static extractSceneContent(storyText) {
     // Simple scene extraction for prompt building
     return storyText.substring(0, 200); // Take first 200 chars as primary scene
+  }
+
+  static updateSettingFromText(sessionId, storyText) {
+    const text = storyText.toLowerCase();
+    let detectedSetting = {};
+    
+    // Detect location
+    const locations = {
+      'park': 'park',
+      'school': 'school',
+      'home': 'home',
+      'house': 'home',
+      'library': 'library',
+      'store': 'store',
+      'playground': 'playground',
+      'garden': 'garden',
+      'kitchen': 'kitchen',
+      'bedroom': 'bedroom',
+      'forest': 'forest',
+      'beach': 'beach',
+      'mountain': 'mountain'
+    };
+    
+    for (const [keyword, location] of Object.entries(locations)) {
+      if (text.includes(keyword)) {
+        detectedSetting.location = location;
+        break;
+      }
+    }
+    
+    // Detect time of day
+    const times = {
+      'morning': 'morning',
+      'afternoon': 'afternoon',
+      'evening': 'evening',
+      'night': 'night',
+      'sunrise': 'morning',
+      'sunset': 'evening',
+      'dawn': 'morning',
+      'dusk': 'evening'
+    };
+    
+    for (const [keyword, time] of Object.entries(times)) {
+      if (text.includes(keyword)) {
+        detectedSetting.timeOfDay = time;
+        break;
+      }
+    }
+    
+    // Detect weather
+    const weather = {
+      'sunny': 'sunny',
+      'rainy': 'rainy',
+      'cloudy': 'cloudy',
+      'snowy': 'snowy',
+      'foggy': 'foggy',
+      'stormy': 'stormy',
+      'rain': 'rainy',
+      'snow': 'snowy',
+      'storm': 'stormy'
+    };
+    
+    for (const [keyword, weatherType] of Object.entries(weather)) {
+      if (text.includes(keyword)) {
+        detectedSetting.weather = weatherType;
+        break;
+      }
+    }
+    
+    // Update setting if any new elements detected
+    if (Object.keys(detectedSetting).length > 0) {
+      globalThis.StoryVisualStateManager.updateSetting(sessionId, detectedSetting);
+      console.log('🌍 Updated story setting:', detectedSetting);
+    }
   }
 
   // ============= FALLBACK SYSTEM =============

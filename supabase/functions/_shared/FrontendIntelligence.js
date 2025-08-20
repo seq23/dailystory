@@ -190,12 +190,28 @@ export class FrontendIntelligence {
     return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
   }
   
-  static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework) {
+  static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}) {
     const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
-    const setting = this.selectCulturalSetting(userInfo, culturalProfile);
+    
+    // Use existing setting if available, otherwise select new one
+    let setting = visualStateData.existingSetting || this.selectCulturalSetting(userInfo, culturalProfile);
     
     // Build base prompt with scene and character
     let prompt = `${sceneContext} featuring ${characterDescription} in ${setting}`;
+    
+    // Add visual consistency from tracked objects and details
+    if (visualStateData.visualDetails) {
+      prompt += `, with ${visualStateData.visualDetails}`;
+    }
+    
+    if (visualStateData.storyStateDetails) {
+      prompt += `, maintaining ${visualStateData.storyStateDetails}`;
+    }
+    
+    // Add page progression context for environmental consistency
+    if (visualStateData.pageNumber > 1 && visualStateData.totalPages) {
+      prompt += `, story progression ${visualStateData.pageNumber}/${visualStateData.totalPages}, maintaining visual continuity`;
+    }
     
     // Add emotional context
     if (emotionalContext && emotionalContext.mood !== 'neutral') {

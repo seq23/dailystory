@@ -108,6 +108,37 @@ serve(async (req) => {
               
             } else if (item.taskType === "imageInference") {
               console.log('🎯 Premium image generated successfully:', item.imageURL);
+              
+              // Store successful generation in visual state for consistency
+              if (sessionId && enhancementResult?.metadata?.characterSeed) {
+                try {
+                  const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
+                  
+                  // Store successful prompt and seed for character consistency
+                  StoryVisualStateManager.addSuccessfulPrompt(
+                    sessionId, 
+                    enhancementResult.enhancedPrompt, 
+                    enhancementResult.generationParams, 
+                    item.seed || enhancementResult.metadata.characterSeed
+                  );
+                  
+                  // Update character appearance if we have character description
+                  if (userInfo?.name) {
+                    const characterDescription = `Generated with seed ${item.seed}, ${enhancementResult.metadata.difficulty} style`;
+                    StoryVisualStateManager.updateCharacterWithSeed(
+                      sessionId, 
+                      userInfo.name, 
+                      item.seed || enhancementResult.metadata.characterSeed,
+                      characterDescription
+                    );
+                  }
+                  
+                  console.log('📝 Stored visual state for session:', sessionId);
+                } catch (visualStateError) {
+                  console.warn('⚠️ Failed to store visual state (non-critical):', visualStateError);
+                }
+              }
+              
               clearTimeout(timeout);
               ws.close();
               resolve({
@@ -147,7 +178,9 @@ serve(async (req) => {
         promptLength: positivePrompt.length,
         sessionId: sessionId || 'unknown',
         pageNumber,
-        totalPages
+        totalPages,
+        visualStateEnabled: true,
+        enhancementMetadata: enhancementResult.metadata
       }
     });
 
