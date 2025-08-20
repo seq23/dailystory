@@ -130,7 +130,9 @@ export class BackendTokenManager {
       'visual state', 'style framework', 'scene context',
       'natural lighting for dark skin', 'culturally accurate', 'professional children\'s book digital illustration',
       // African American hair style terms to protect
-      'detailed', 'textured', 'curly top fade', 'authentic facial features'
+      'detailed', 'textured', 'curly top fade', 'authentic facial features',
+      // Compound eye colors to protect from compression
+      'hazel-green'
     ];
     
     let compressed = text;
