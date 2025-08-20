@@ -24,6 +24,7 @@ export class MultiStageEnhancementPipeline {
       // 0. Initialize and analyze visual state for consistency
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+      globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
       
       // Detect and update setting/environment from story text
       this.updateSettingFromText(sessionId, storyText);
