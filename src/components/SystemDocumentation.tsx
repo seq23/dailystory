@@ -83,7 +83,7 @@ export const SystemDocumentation: React.FC = () => {
       causes: ["Insufficient cultural profile data", "Weighted randomization not working", "Cache serving stale prompts"],
       solutions: [
         "Verify FrontendIntelligence.js is up to date",
-        "Check MulticulturalVisualService feature distribution",
+        "Check FixedCulturalLogic feature distribution",
         "Clear prompt cache and regenerate",
         "Review cultural balance in recent generations"
       ]
@@ -127,7 +127,7 @@ export const SystemDocumentation: React.FC = () => {
     {
       title: "Adding New Cultural Profiles",
       steps: [
-        "Update MulticulturalVisualService with new profile",
+        "Update FixedCulturalLogic with new profile",
         "Add facial features and cultural markers",
         "Create setting variations and clothing options",
         "Update FrontendIntelligence.js generation",
@@ -143,7 +143,7 @@ const newProfile = {
   settings: ['setting1', 'setting2']
 };
 
-MulticulturalVisualService.addCulturalProfile(newProfile);`
+FixedCulturalLogic.addCulturalProfile(newProfile);`
     },
     {
       title: "Extending Style Frameworks",
@@ -194,12 +194,12 @@ performanceMonitor.trackGeneration(
 
   const apiReference = [
     {
-      service: "MulticulturalVisualService",
+      service: "FixedCulturalLogic",
       methods: [
-        "generateCulturalCharacterDescription(userInfo): string",
-        "getCulturalProfile(userInfo): CulturalProfile",
-        "generateCulturalSetting(profile): string",
-        "getWeightedFeatureSelection(features): string[]"
+        "shouldApplyAfricanAmericanCulturalVariations(userInfo): boolean",
+        "generateExpandedAfricanAmericanFeatures(): string",
+        "selectCulturalSetting(userInfo, culturalProfile): string",
+        "selectCulturalClothing(userInfo, culturalProfile): string"
       ]
     },
     {
