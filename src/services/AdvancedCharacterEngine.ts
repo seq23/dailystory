@@ -4,7 +4,7 @@
 
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo } from "@/types";
-import { MulticulturalVisualService } from "./MulticulturalVisualService";
+import { StructuredPromptEngine } from "./StructuredPromptEngine";
 
 export interface CharacterDescriptor {
   name: string;
@@ -158,7 +158,7 @@ export class AdvancedCharacterEngine {
       type: 'primary',
       relationshipToMain: 'self',
       culturalRole: 'child protagonist',
-      physicalTraits: MulticulturalVisualService.generateCulturalCharacterDescription(userInfo),
+      physicalTraits: StructuredPromptEngine.generateCulturalCharacterDescription(userInfo),
       clothingStyle: MulticulturalVisualService.getCulturalClothing(userInfo),
       lastUsedPage: pageNumber,
       familyGroupId,
