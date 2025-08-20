@@ -77,7 +77,7 @@ serve(async (req) => {
       console.log(`✅ Tier 2 generation successful using template-based enhancement`);
       return createCorsResponse({
         success: true,
-        imageUrl: result.url,
+        imageURL: result.url,
         provider: 'runware-template',
         prompt: finalPrompt,
         qualityScore: enhancementResult.qualityScore || 0.8,

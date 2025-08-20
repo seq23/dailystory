@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.runware-simple-fallback]
 verify_jwt = false
+
+[functions.model-performance-monitor]
+verify_jwt = false

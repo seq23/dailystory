@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
                 }
               });
 
-              return result?.imageUrl || null;
+              return result?.imageURL || null;
             } catch (error) {
               console.warn(`Failed to generate image for page ${pageIndex}:`, error);
               return null;

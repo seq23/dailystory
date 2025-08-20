@@ -1,24 +1,35 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsOptionsResponse();
   }
 
-  try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not found');
-    }
+  return EdgeErrorHandler.withPerformanceTracking(
+    'ai-story-enhancer',
+    'gpt-5-mini-2025-08-07',
+    async () => {
+      try {
+        const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+        EdgeErrorHandler.validateRequest({
+          pageText: undefined,
+          positivePrompt: undefined,
+          apiKey: openAIApiKey,
+          functionName: 'ai-story-enhancer'
+        });
 
-    const { storyText, userInfo, sessionId, pageNumber, totalPages } = await req.json();
+        const { storyText, userInfo, sessionId, pageNumber, totalPages } = await req.json();
+
+        if (!storyText) {
+          throw {
+            type: EdgeErrorType.VALIDATION,
+            message: 'Missing required parameter: storyText'
+          };
+        }
 
     console.log(`🧠 AI Story Enhancer: Processing page ${pageNumber}/${totalPages} for session ${sessionId}`);
 
@@ -111,37 +122,39 @@ Extract all visual elements, characters, settings, objects, lighting, mood, and 
       }
     };
 
-    console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects`);
+        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects`);
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+        return createCorsResponse(result);
 
-  } catch (error) {
-    console.error('Error in ai-story-enhancer:', error);
-    
-    // Return basic fallback structure on error
-    const fallbackResult = {
-      enhancedStoryData: {
-        characters: [{ name: "character", description: "child character", emotions: "curious" }],
-        setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "spring" },
-        objects: ["book"],
-        mood: "cheerful",
-        lighting: "soft natural light",
-        composition: "centered",
-        colors: ["warm tones"],
-        visualStyle: "children's book illustration",
-        narrativeElements: { action: "reading", focus: "character", perspective: "eye level" }
-      },
-      extractedElements: { characterCount: 1, objectCount: 1, complexity: 'simple' },
-      contextualInfo: { pageNumber: 1, totalPages: 1, sessionId: '', processingTimestamp: new Date().toISOString() },
-      narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
-      error: error.message
-    };
+      } catch (error) {
+        // Return basic fallback structure on error with tracking
+        const fallbackResult = {
+          enhancedStoryData: {
+            characters: [{ name: "character", description: "child character", emotions: "curious" }],
+            setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "spring" },
+            objects: ["book"],
+            mood: "cheerful",
+            lighting: "soft natural light",
+            composition: "centered",
+            colors: ["warm tones"],
+            visualStyle: "children's book illustration",
+            narrativeElements: { action: "reading", focus: "character", perspective: "eye level" }
+          },
+          extractedElements: { characterCount: 1, objectCount: 1, complexity: 'simple' },
+          contextualInfo: { pageNumber: 1, totalPages: 1, sessionId: '', processingTimestamp: new Date().toISOString() },
+          narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
+          error: error.message,
+          fallbackUsed: true,
+          performanceData: {
+            gptModel: 'gpt-5-mini-2025-08-07',
+            tokenUsage: 'unknown',
+            responseTime: 'failed'
+          }
+        };
 
-    return new Response(JSON.stringify(fallbackResult), {
-      status: 200, // Return 200 with error in payload for fallback handling
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+        console.log('🔄 Using fallback content due to AI analysis failure');
+        return createCorsResponse(fallbackResult);
+      }
+    }
+  );
 });
