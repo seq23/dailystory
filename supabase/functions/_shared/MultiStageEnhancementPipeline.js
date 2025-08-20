@@ -132,7 +132,7 @@ export class MultiStageEnhancementPipeline {
       );
       
       // 8. Generate advanced negative prompt with style framework considerations
-      const negativePrompt = this.buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework);
+      const negativePrompt = this.buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber);
       
       // 9. Premium generation parameters using style framework
       const generationParams = {
@@ -228,7 +228,7 @@ export class MultiStageEnhancementPipeline {
         userInfo
       );
       
-      const negativePrompt = this.buildSimpleNegativePrompt(userInfo);
+      const negativePrompt = this.buildSimpleNegativePrompt(userInfo, pageNumber);
       
       return {
         enhancedPrompt,
@@ -281,8 +281,18 @@ export class MultiStageEnhancementPipeline {
   }
   
   // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============
-  static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework = null) {
-    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
+  static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework = null, pageNumber = 1) {
+    // Build negative prompt with new priority structure
+    const pageSpecific = this.buildPageSpecificNegatives(pageNumber, userInfo);
+    const selectiveText = this.buildSelectiveTextPrevention();
+    const bodyCompleteness = "floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body";
+    const qualityControl = "ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error";
+    const contentSafety = "adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons";
+    const stylePrevention = "photorealistic, anime, copyrighted characters, brand logos";
+    
+    let baseNegative = [pageSpecific, selectiveText, bodyCompleteness, qualityControl, contentSafety, stylePrevention]
+      .filter(Boolean)
+      .join(', ');
     
     // Add style framework negative prompts
     if (styleFramework && styleFramework.negativePrompt) {
@@ -304,8 +314,18 @@ export class MultiStageEnhancementPipeline {
     return baseNegative;
   }
   
-  static buildSimpleNegativePrompt(userInfo) {
-    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
+  static buildSimpleNegativePrompt(userInfo, pageNumber = 1) {
+    // Build negative prompt with new priority structure
+    const pageSpecific = this.buildPageSpecificNegatives(pageNumber, userInfo);
+    const selectiveText = this.buildSelectiveTextPrevention();
+    const bodyCompleteness = "floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body";
+    const qualityControl = "ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error";
+    const contentSafety = "adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons";
+    const stylePrevention = "photorealistic, anime, copyrighted characters, brand logos";
+    
+    let baseNegative = [pageSpecific, selectiveText, bodyCompleteness, qualityControl, contentSafety, stylePrevention]
+      .filter(Boolean)
+      .join(', ');
     
     // Add gender consistency
     if (userInfo?.avatar?.type === 'girl') {
@@ -320,6 +340,19 @@ export class MultiStageEnhancementPipeline {
     }
     
     return baseNegative;
+  }
+
+  // ============= PAGE-SPECIFIC AND SELECTIVE TEXT PREVENTION =============
+  static buildPageSpecificNegatives(pageNumber, userInfo) {
+    if (pageNumber === 1 && userInfo?.name) {
+      const characterName = userInfo.name.toLowerCase();
+      return `${characterName} text, ${characterName} title, character name title, comic book style title, name across top, title page text, character name banner, name in large letters`;
+    }
+    return null;
+  }
+
+  static buildSelectiveTextPrevention() {
+    return "illegible text, garbled text, nonsensical text, random letters, floating text, overlaid text, character name text, title text, comic book title, name sprawled across image, large character names, promotional text";
   }
 
   // ============= UTILITY METHODS =============
@@ -422,7 +455,7 @@ export class MultiStageEnhancementPipeline {
     
     return {
       enhancedPrompt: `${storyText}, ${framework.prompt}, children's book illustration`,
-      negativePrompt: "text, words, scary, dark, adult themes",
+      negativePrompt: this.buildSimpleNegativePrompt(userInfo, 1),
       generationParams: framework.parameters,
       metadata: {
         tier: tier,
