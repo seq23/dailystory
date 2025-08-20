@@ -45,7 +45,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an AI story analyzer for children's book illustrations. Extract detailed visual elements for image generation.
+            content: `You are an AI story analyzer for children's book illustrations. Give the most concise breakdown prioritizing: 1) Characters and actions 2) Emotional state 3) Environment 4) Key objects. Be token-efficient.
 
 CRITICAL: Return ONLY valid JSON with this exact structure:
 {
@@ -60,7 +60,7 @@ CRITICAL: Return ONLY valid JSON with this exact structure:
   "narrativeElements": {"action": "string", "focus": "string", "perspective": "string"}
 }
 
-Focus on visual details that would help an artist create the perfect illustration. Be specific about character appearances, environmental details, lighting conditions, and emotional atmosphere.`
+Focus on essential visual elements only. Be specific but concise about character appearances, key environmental details, lighting, and emotional atmosphere.`
           },
           {
             role: 'user',
@@ -71,7 +71,7 @@ Focus on visual details that would help an artist create the perfect illustratio
 Extract all visual elements, characters, settings, objects, lighting, mood, and composition that would be needed to create a perfect children's book illustration for this scene.`
           }
         ],
-        max_completion_tokens: 1000
+        max_completion_tokens: 600
       }),
     });
 

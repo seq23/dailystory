@@ -3,6 +3,7 @@
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
+import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
 import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 import './AnimalCharacterManager.js'; // Loads AnimalCharacterManager globally
@@ -84,8 +85,8 @@ export class MultiStageEnhancementPipeline {
       const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
-      // 5. Extract scene and emotional context from enhanced text
-      const sceneContext = this.extractSceneContent(enhancedStoryText);
+      // 5. Extract scene and emotional context from enhanced text using AI-enhanced method
+      const sceneContext = this.extractAIEnhancedSceneContext(enhancedStoryText, enhancedStoryData);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
       
       // 6. Get existing visual state for consistency AND enhance with cultural context
@@ -145,13 +146,31 @@ export class MultiStageEnhancementPipeline {
         outputFormat: 'WEBP'
       };
       
-      console.log('✨ Tier 1 High-Quality AI processing completed with style framework + visual state:', {
+      // Apply token optimization before returning
+      const promptSegments = BackendTokenManager.createPromptSegments(
+        sceneContext,
+        `${userInfo?.name || 'Alex'} character`,
+        styleFramework.prompt || 'children\'s book illustration',
+        styleFramework.brandSuffix || '',
+        visualDetails || ''
+      );
+      
+      const optimization = BackendTokenManager.optimizePrompt(promptSegments);
+      const finalEnhancedPrompt = optimization.optimizedPrompt;
+      
+      console.log('✨ Tier 1 High-Quality AI processing completed with style framework + visual state + token optimization:', {
         styleFramework: styleFramework.name,
         difficulty: imageDifficulty,
         characterSeed,
         existingSetting: existingSetting ? 'YES' : 'NO',
         visualDetails: visualDetails ? 'YES' : 'NO',
         trackedObjects: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
+        tokenOptimization: {
+          originalLength: optimization.originalLength,
+          finalLength: optimization.finalLength,
+          applied: optimization.applied,
+          truncated: optimization.truncated
+        },
         hasSkinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
         hasBoysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
         hasGirlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
@@ -160,7 +179,7 @@ export class MultiStageEnhancementPipeline {
       });
       
       return {
-        enhancedPrompt,
+        enhancedPrompt: finalEnhancedPrompt,
         negativePrompt,
         generationParams,
         metadata: {
@@ -230,8 +249,26 @@ export class MultiStageEnhancementPipeline {
       
       const negativePrompt = this.buildSimpleNegativePrompt(userInfo, pageNumber);
       
+      // Apply token optimization to simple template as well
+      const promptSegments = BackendTokenManager.createPromptSegments(
+        enhancedStoryText,
+        characterDescription,
+        framework.prompt || 'children\'s book illustration',
+        framework.brandSuffix || '',
+        ''
+      );
+      
+      const optimization = BackendTokenManager.optimizePrompt(promptSegments);
+      const finalEnhancedPrompt = optimization.optimizedPrompt;
+      
+      console.log('✨ Tier 2 Simple processing with token optimization:', {
+        originalLength: optimization.originalLength,
+        finalLength: optimization.finalLength,
+        applied: optimization.applied
+      });
+      
       return {
-        enhancedPrompt,
+        enhancedPrompt: finalEnhancedPrompt,
         negativePrompt,
         // Simple template parameters
         generationParams: {
@@ -372,6 +409,63 @@ export class MultiStageEnhancementPipeline {
   static extractSceneContent(storyText) {
     // Simple scene extraction for prompt building
     return storyText.substring(0, 200); // Take first 200 chars as primary scene
+  }
+
+  // NEW: AI-Enhanced Scene Context Method
+  static extractAIEnhancedSceneContext(storyText, enhancedStoryData = null) {
+    console.log('🧠 Using AI-enhanced scene context extraction');
+    
+    if (enhancedStoryData) {
+      // Build rich context from AI analysis
+      const characters = enhancedStoryData.characters?.map(char => 
+        `${char.name || 'character'} (${char.description || 'child'}, feeling ${char.emotions || 'neutral'})`
+      ).join(', ') || '';
+      
+      const setting = enhancedStoryData.setting ? 
+        `${enhancedStoryData.setting.location || 'indoor scene'} during ${enhancedStoryData.setting.timeOfDay || 'daytime'} with ${enhancedStoryData.setting.weather || 'clear'} weather` : '';
+      
+      const objects = enhancedStoryData.objects?.length > 0 ? 
+        `, featuring ${enhancedStoryData.objects.slice(0, 3).join(', ')}` : '';
+      
+      const mood = enhancedStoryData.mood ? `, ${enhancedStoryData.mood} mood` : '';
+      
+      const lighting = enhancedStoryData.lighting ? `, ${enhancedStoryData.lighting}` : '';
+      
+      const action = enhancedStoryData.narrativeElements?.action ? 
+        `, ${enhancedStoryData.narrativeElements.action}` : '';
+      
+      const richContext = `${characters} in ${setting}${objects}${mood}${lighting}${action}`;
+      
+      console.log('✅ Built rich AI-enhanced context:', {
+        hasCharacters: !!characters,
+        hasSetting: !!setting,
+        hasObjects: !!objects,
+        contextLength: richContext.length
+      });
+      
+      return richContext;
+    } else {
+      // Fallback to intelligent text analysis (not substring)
+      console.log('⚠️ No AI data available, using intelligent text analysis');
+      
+      // Extract key sentences and actions
+      const sentences = storyText.split('.').filter(s => s.trim().length > 10);
+      const keyContent = sentences.slice(0, 3).join('. ').trim();
+      
+      // Detect action words
+      const actionWords = ['walks', 'runs', 'plays', 'reads', 'looks', 'finds', 'goes', 'sees', 'opens', 'sits'];
+      const hasAction = actionWords.some(action => storyText.toLowerCase().includes(action));
+      
+      const intelligentContext = keyContent + (hasAction ? ' [action scene]' : ' [static scene]');
+      
+      console.log('✅ Built intelligent fallback context:', {
+        sentences: sentences.length,
+        hasAction,
+        contextLength: intelligentContext.length
+      });
+      
+      return intelligentContext;
+    }
   }
 
   static updateSettingFromText(sessionId, storyText) {
