@@ -2,7 +2,7 @@
 // Phase 2 & 3: Upgraded with character consistency and style integration
 
 import type { UserInfo, DifficultyLevel } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client'; // Removed - not needed
 import { PromptLengthManager } from '@/utils/promptLengthManager';
 
 export interface StoryAnalysis {
@@ -37,9 +37,7 @@ export interface StoryAnalysis {
   enhancementSource?: 'static' | 'ai' | 'hybrid';
 }
 
-export interface AIStoryResponse {
-  enhancedDescription: string;
-}
+// Removed unused AIStoryResponse interface
 
 export interface EnhancedImagePrompt {
   mainPrompt: string;
@@ -50,8 +48,7 @@ export interface EnhancedImagePrompt {
 }
 
 export class AdvancedStoryAnalyzer {
-  private static aiEnhancementCache: Map<string, { analysis: StoryAnalysis; timestamp: number }> = new Map();
-  private static readonly CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+  // Removed unused AI enhancement cache - now handled in backend
   private static readonly CHARACTER_PATTERNS = [
     /\b([A-Z][a-z]+)\b(?:\s+(?:said|asked|walked|ran|jumped|smiled|laughed|cried|helped|found|saw|went|came|looked|felt|thought|knew|wanted|needed|liked|loved))/gi,
     /\b(?:the\s+)?([a-z]+(?:\s+[a-z]+)?)\s+(?:character|person|child|boy|girl|friend|teacher|parent|family)/gi
@@ -158,116 +155,7 @@ export class AdvancedStoryAnalyzer {
     return analysis;
   }
 
-  static async enhanceAnalysisWithAI(
-    storyText: string,
-    pageNumber: number,
-    totalPages: number,
-    difficultyLevel: DifficultyLevel,
-    sessionId: string,
-    userInfo?: UserInfo,
-    previousAnalysis?: StoryAnalysis
-  ): Promise<StoryAnalysis> {
-    const cacheKey = `${sessionId}_${pageNumber}_${storyText.substring(0, 50)}`;
-    
-    // Check cache first
-    const cached = this.aiEnhancementCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION_MS) {
-      console.log(`🧠 Using cached AI analysis for page ${pageNumber}`);
-      return cached.analysis;
-    }
-
-    // Get static analysis first with session tracking
-    const staticAnalysis = this.analyzeStoryContent(storyText, pageNumber, totalPages, previousAnalysis, sessionId);
-    
-    // Determine if AI enhancement is needed
-    if (!this.shouldEnhanceWithAI(staticAnalysis, storyText, difficultyLevel)) {
-      console.log(`🧠 Static analysis sufficient for page ${pageNumber}`);
-      return staticAnalysis;
-    }
-
-    try {
-      console.log(`🧠 Enhancing analysis with AI for ${difficultyLevel} level, page ${pageNumber}`);
-      
-      const { data, error } = await supabase.functions.invoke('extract-story-elements', {
-        body: {
-          storyText,
-          pageNumber,
-          totalPages,
-          difficultyLevel,
-          sessionId,
-          userInfo
-        }
-      });
-
-      if (error || !data?.success || !data?.enhancedDescription) {
-        console.warn('🧠 AI enhancement failed, using static analysis:', error);
-        return staticAnalysis;
-      }
-
-      const enhancedAnalysis = this.parseAIDescription(staticAnalysis, data.enhancedDescription);
-      
-      // Cache the result
-      this.aiEnhancementCache.set(cacheKey, {
-        analysis: enhancedAnalysis,
-        timestamp: Date.now()
-      });
-
-      console.log(`🧠 AI enhancement complete: enriched ${enhancedAnalysis.colors.length} colors, ${enhancedAnalysis.objects.length} objects`);
-      return enhancedAnalysis;
-
-    } catch (error) {
-      console.warn('🧠 AI enhancement error, using static fallback:', error);
-      return staticAnalysis;
-    }
-  }
-
-  private static shouldEnhanceWithAI(staticAnalysis: StoryAnalysis, storyText: string, difficultyLevel: DifficultyLevel): boolean {
-    // Always enhance for medium and above difficulty levels
-    if (['medium', 'hard', 'expert'].includes(difficultyLevel)) {
-      return true;
-    }
-
-    // For easy level, enhance if static analysis is lacking
-    const lacksVisualDetails = staticAnalysis.colors.length < 2 || staticAnalysis.objects.length < 2;
-    const hasComplexLanguage = storyText.length > 100 || /[A-Z][a-z]+\s+(said|asked|thought|wondered|felt)/.test(storyText);
-    
-    return lacksVisualDetails || hasComplexLanguage;
-  }
-
-  private static parseAIDescription(staticAnalysis: StoryAnalysis, aiDescription: string): StoryAnalysis {
-    const description = aiDescription.toLowerCase();
-    
-    // Extract colors from AI description
-    const colorWords = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'black', 'white', 'gray', 'gold', 'silver', 'bright', 'dark', 'colorful'];
-    const foundColors = colorWords.filter(color => description.includes(color));
-    
-    // Extract objects/props
-    const objectWords = description.match(/\b(tree|house|car|book|ball|toy|chair|table|door|window|flower|grass|sky|sun|moon|star|cloud|mountain|river|forest|garden|park|school|playground|bedroom|kitchen|living room|castle|ship|boat|airplane|train|bike|dog|cat|bird|fish|horse|rabbit|bear|lion|elephant|princess|prince|king|queen|knight|fairy|dragon|wizard|magic|wand|crown|dress|hat|shoes|backpack|pencil|crayon|paint|brush|cake|ice cream|cookie|apple|banana|orange|sandwich|pizza|milk|juice|water|cup|plate|bowl|spoon|fork|knife)\b/g) || [];
-    
-    // Extract emotions
-    const emotionWords = ['happy', 'sad', 'excited', 'scared', 'angry', 'surprised', 'curious', 'proud', 'shy', 'brave', 'worried', 'joyful', 'peaceful', 'adventurous', 'friendly', 'kind'];
-    const foundEmotions = emotionWords.filter(emotion => description.includes(emotion));
-    
-    // Extract characters (proper nouns and character descriptors)
-    const characterWords = description.match(/\b[A-Z][a-z]+\b/g) || [];
-    const characterDescriptors = description.match(/\b(boy|girl|child|kid|children|mother|father|mom|dad|parent|teacher|friend|family|brother|sister|grandma|grandpa|baby|toddler|teenager)\b/g) || [];
-    
-    return {
-      ...staticAnalysis,
-      primaryCharacters: [...new Set([...staticAnalysis.primaryCharacters, ...characterWords, ...characterDescriptors])],
-      colors: [...new Set([...staticAnalysis.colors, ...foundColors])],
-      objects: [...new Set([...staticAnalysis.objects, ...objectWords])],
-      emotions: [...new Set([...staticAnalysis.emotions, ...foundEmotions])],
-      // Use AI description for narrative elements if they seem richer
-      setting: {
-        ...staticAnalysis.setting,
-        location: aiDescription.length > 50 ? aiDescription.substring(0, 100) : staticAnalysis.setting.location
-      },
-      mood: foundEmotions.length > 0 ? foundEmotions[0] : staticAnalysis.mood,
-      aiEnhanced: true,
-      enhancementSource: 'hybrid'
-    };
-  }
+  // Removed unused enhanceAnalysisWithAI method that called non-existent extract-story-elements
 
   private static extractCharacters(text: string, type: 'primary' | 'secondary'): string[] {
     const characters = new Set<string>();
