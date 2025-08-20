@@ -5,14 +5,9 @@ import type { UserInfo, SkinTone } from '@/types';
 
 export interface ExpandedFacialFeatures {
   eyes: string[];
-  eyebrows: string[];
-  eyelashes: string[];
   nose: string[];
   lips: string[];
   facialStructure: string[];
-  cheekbones: string[];
-  jawline: string[];
-  forehead: string[];
 }
 
 export interface WeightedCulturalElement {
@@ -21,7 +16,7 @@ export interface WeightedCulturalElement {
 }
 
 export class FixedCulturalLogic {
-  // CRITICAL FIX: Expanded African American facial features from 9 to 20+ variations
+  // CRITICAL FIX: Simplified African American facial features - focused on core elements
   static readonly EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES: ExpandedFacialFeatures = {
     eyes: [
       'almond-shaped dark brown eyes', 'round rich brown eyes', 'deep-set hazel eyes', 
@@ -31,17 +26,6 @@ export class FixedCulturalLogic {
       'warm hazel eyes', 'intelligent dark brown eyes', 'sparkling hazel-green eyes',
       'wide-set brown eyes', 'close-set amber eyes', 'upturned dark eyes',
       'downturned warm eyes', 'monolid brown eyes'
-    ],
-    eyebrows: [
-      'full well-defined eyebrows', 'naturally arched eyebrows', 'thick expressive eyebrows',
-      'elegantly shaped eyebrows', 'bold natural eyebrows', 'gracefully arched eyebrows',
-      'straight thick eyebrows', 'curved natural eyebrows', 'angular defined eyebrows',
-      'soft rounded eyebrows'
-    ],
-    eyelashes: [
-      'long curved eyelashes', 'naturally thick eyelashes', 'beautifully curled eyelashes',
-      'full dark eyelashes', 'elegantly long eyelashes', 'dense natural eyelashes',
-      'softly curled lashes', 'dramatically long lashes'
     ],
     nose: [
       'wider nasal bridge', 'fuller rounded nostrils', 'broad noble nose', 'narrow refined nose',
@@ -56,23 +40,7 @@ export class FixedCulturalLogic {
       'soft full lips', 'defined lip corners', 'naturally plump lips'
     ],
     facialStructure: [
-      'high cheekbones', 'strong jawline', 'rounded face shape', 'oval face shape',
-      'smooth facial contours', 'natural facial symmetry', 'elegant bone structure',
-      'defined cheekbones', 'graceful jawline', 'harmonious facial features',
-      'angular face shape', 'soft facial curves', 'prominent chin', 'delicate chin',
-      'wide face structure', 'narrow face profile'
-    ],
-    cheekbones: [
-      'high prominent cheekbones', 'subtly defined cheekbones', 'naturally sculpted cheekbones',
-      'graceful cheek contours', 'strong cheekbone structure', 'soft cheek definition'
-    ],
-    jawline: [
-      'strong defined jawline', 'soft rounded jawline', 'angular jaw structure',
-      'graceful jaw curve', 'prominent jaw definition', 'delicate jaw shape'
-    ],
-    forehead: [
-      'smooth broad forehead', 'gently curved forehead', 'prominent forehead',
-      'balanced forehead proportion', 'high intelligent forehead', 'rounded forehead shape'
+      'authentic facial features'
     ]
   };
 
@@ -142,7 +110,7 @@ export class FixedCulturalLogic {
   }
 
   /**
-   * Generate comprehensive African American facial features description
+   * Generate simplified African American facial features description
    */
   static generateExpandedAfricanAmericanFeatures(): string {
     const features = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES;
@@ -151,9 +119,8 @@ export class FixedCulturalLogic {
     const nose = this.selectWeightedRandomElement(features.nose, 'natural');
     const lips = this.selectWeightedRandomElement(features.lips, 'natural');
     const structure = this.selectWeightedRandomElement(features.facialStructure, 'natural');
-    const cheekbones = this.selectWeightedRandomElement(features.cheekbones, 'natural');
     
-    return `${eyes}, ${nose}, ${lips}, ${structure}, ${cheekbones}`;
+    return `${eyes}, ${nose}, ${lips}, ${structure}`;
   }
 
   /**
