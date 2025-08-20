@@ -39,7 +39,7 @@ serve(async (req) => {
 
     // Use MultiStageEnhancementPipeline for premium AI processing
     const { MultiStageEnhancementPipeline } = await import("../_shared/MultiStageEnhancementPipeline.js");
-    const enhancementResult = await MultiStageEnhancementPipeline.processTier1Premium(
+    const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
       pageText, 
       userInfo, 
       sessionId, 

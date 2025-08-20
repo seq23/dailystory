@@ -16,7 +16,7 @@ function selectWeightedElement(array) {
 export class MultiStageEnhancementPipeline {
   
   // ============= TIER 1: HIGH-QUALITY AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
-  static async processTier1Premium(storyText, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
+  static async processTier1HighQuality(storyText, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
     try {
       console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
       console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);

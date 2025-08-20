@@ -99,7 +99,7 @@ serve(async (req) => {
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
     console.log(`🔧 Mapped difficulty: ${mappedDifficulty} for Tier 3 premium processing`);
 
-    const enhancementResult = await MultiStageEnhancementPipeline.processTier1Premium(
+    const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
       positivePrompt,
       userInfo,
       sessionId || 'openai-session',
