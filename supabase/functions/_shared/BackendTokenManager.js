@@ -127,7 +127,10 @@ export class BackendTokenManager {
     const protectedTerms = [
       'children\'s book illustration', 'soft lighting', 'warm colors', 'character consistency',
       'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'cultural elements',
-      'visual state', 'style framework', 'scene context'
+      'visual state', 'style framework', 'scene context',
+      // African American hair style terms to protect
+      'curly top fade', 'half up half down', 'box braids', 'cornrows', 'afro', 'twist out',
+      'locs', 'taper fade', 'high top fade', 'space buns', 'natural hair', 'silk press'
     ];
     
     let compressed = text;
