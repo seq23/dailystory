@@ -128,9 +128,9 @@ export class BackendTokenManager {
       'children\'s book illustration', 'soft lighting', 'warm colors', 'character consistency',
       'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'cultural elements',
       'visual state', 'style framework', 'scene context',
+      'natural lighting for dark skin', 'culturally accurate', 'professional children\'s book digital illustration',
       // African American hair style terms to protect
-      'curly top fade', 'half up half down', 'box braids', 'cornrows', 'afro', 'twist out',
-      'locs', 'taper fade', 'high top fade', 'space buns', 'natural hair', 'silk press'
+      'detailed', 'textured', 'curly top fade'
     ];
     
     let compressed = text;
