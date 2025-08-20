@@ -345,12 +345,12 @@ export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>):
         const enhanced = InputEnhancementEngine.enhanceUserInputs(userInfo as UserInfo);
         if (enhanced.storyElements?.length > 0) {
           enhancedThemes = enhanced.storyElements
-            .filter(el => el.category === 'theme' || el.category === 'setting')
-            .map(el => el.value)
+            .filter(el => el.description.includes('theme') || el.description.includes('setting'))
+            .map(el => el.narrativeHook)
             .slice(0, 3);
         }
       } catch (error) {
-        console.warn('InputEnhancementEngine not available for theme extraction');
+        // Fallback gracefully if inputEnhancementEngine is not available
       }
       
       if (enhancedThemes.length > 0) {
