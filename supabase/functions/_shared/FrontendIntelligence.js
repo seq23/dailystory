@@ -242,11 +242,18 @@ export class FrontendIntelligence {
   static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}) {
     const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
     
+    // CRITICAL LOGGING: Track character description integration
+    console.log('🎭 Character Description Built:', characterDescription);
+    console.log('🎯 African American Processing:', this.shouldApplyAfricanAmericanCulturalVariations(userInfo));
+    
     // Use enhanced setting from MultiStageEnhancementPipeline (already culturally enhanced)
     let setting = visualStateData.existingSetting || "indoor scene";
     
-    // Build base prompt with scene and character
+    // Build base prompt with scene and character - ENSURE CHARACTER DESCRIPTION IS PROMINENT
     let prompt = `${sceneContext} featuring ${characterDescription} in ${setting}`;
+    
+    // CRITICAL: Log the base prompt to verify character integration
+    console.log('📝 Base Prompt Built:', prompt);
     
     // Add visual consistency from tracked objects and details
     if (visualStateData.visualDetails) {
@@ -274,11 +281,19 @@ export class FrontendIntelligence {
       }
       if (styleFramework.brandSuffix) {
         prompt += `, ${styleFramework.brandSuffix}`;
+        // CRITICAL: Log brand suffix inclusion for African American characters
+        if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
+          console.log('🔒 Brand suffix added for African American character:', styleFramework.brandSuffix);
+        }
       }
     } else {
       // Fallback quality enhancements if no style framework
       prompt += ', contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork';
     }
+    
+    // CRITICAL: Log final prompt before returning
+    console.log('🎨 Final Prompt Before Token Optimization:', prompt);
+    console.log('📏 Final Prompt Length:', prompt.length);
     
     return prompt;
   }

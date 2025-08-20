@@ -45,26 +45,43 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an AI story analyzer for children's book illustrations. Give the most concise breakdown prioritizing: 1) Characters and actions 2) Emotional state 3) Environment 4) Key objects. Be token-efficient.
+            content: `NO HALLUCINATIONS. NO ASSUMPTIONS. EXTRACT ONLY WHAT IS EXPLICITLY MENTIONED.
 
-CRITICAL: Return ONLY valid JSON with this exact structure:
+You analyze children's story text ONLY for what is directly stated. Do NOT add details, assumptions, or interpretations.
+
+CRITICAL RULES:
+- If characters are not named, use "character" not made-up names
+- If location is not specified, use "indoor scene" or "outdoor scene" based only on clear context
+- If emotions are not stated, use "neutral" 
+- If objects are not mentioned, return empty array
+- If actions are not clear, use "general activity"
+- NEVER add descriptive details not in the original text
+
+Return ONLY valid JSON:
 {
-  "characters": [{"name": "string", "description": "string", "emotions": "string"}],
-  "setting": {"location": "string", "timeOfDay": "string", "weather": "string", "season": "string"},
-  "objects": ["string"],
-  "mood": "string",
-  "narrativeElements": {"action": "string", "focus": "string", "perspective": "string"}
+  "characters": [{"name": "character", "description": "child", "emotions": "neutral"}],
+  "setting": {"location": "indoor scene", "timeOfDay": "daytime", "weather": "clear", "season": "unspecified"},
+  "objects": [],
+  "mood": "neutral",
+  "narrativeElements": {"action": "general activity", "focus": "character", "perspective": "eye level"}
 }
 
-Focus on essential visual elements only. Be specific but concise about character appearances, key environmental details, lighting, and emotional atmosphere.`
+Extract ONLY what is explicitly written. Add nothing extra.`
           },
           {
             role: 'user',
-            content: `Analyze this story text for page ${pageNumber} of ${totalPages}:
+            content: `Story text for page ${pageNumber} of ${totalPages}:
 
 "${storyText}"
 
-Extract all visual elements, characters, settings, objects, lighting, mood, and composition that would be needed to create a perfect children's book illustration for this scene.`
+Extract ONLY what is explicitly stated in this text. Do not infer, assume, or add details. Focus on:
+- Characters mentioned by name (if any)  
+- Actions explicitly described
+- Objects specifically mentioned
+- Location if clearly stated
+- Emotions if directly expressed
+
+Return only facts from the text.`
           }
         ],
         max_completion_tokens: 600
@@ -78,21 +95,77 @@ Extract all visual elements, characters, settings, objects, lighting, mood, and 
     }
 
     let enhancedStoryData;
+    let aiValidationPassed = false;
+    
     try {
       enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
+      
+      // AI VALIDATION LAYER - Check for hallucinations
+      const originalText = storyText.toLowerCase();
+      const aiResponse = JSON.stringify(enhancedStoryData).toLowerCase();
+      
+      // Check if AI added details not in original text
+      const suspiciousAdditions = [];
+      
+      // Check character names
+      if (enhancedStoryData.characters) {
+        for (const char of enhancedStoryData.characters) {
+          if (char.name && char.name !== "character" && !originalText.includes(char.name.toLowerCase())) {
+            suspiciousAdditions.push(`character name: ${char.name}`);
+          }
+        }
+      }
+      
+      // Check for specific objects that weren't mentioned
+      if (enhancedStoryData.objects) {
+        for (const obj of enhancedStoryData.objects) {
+          if (!originalText.includes(obj.toLowerCase())) {
+            suspiciousAdditions.push(`object: ${obj}`);
+          }
+        }
+      }
+      
+      // Check for specific location details
+      if (enhancedStoryData.setting?.location && 
+          enhancedStoryData.setting.location !== "indoor scene" && 
+          enhancedStoryData.setting.location !== "outdoor scene" &&
+          !originalText.includes(enhancedStoryData.setting.location.toLowerCase())) {
+        suspiciousAdditions.push(`location: ${enhancedStoryData.setting.location}`);
+      }
+      
+      if (suspiciousAdditions.length > 0) {
+        console.warn(`🚨 AI Hallucination detected: ${suspiciousAdditions.join(', ')}`);
+        console.log(`📝 Original text: "${storyText}"`);
+        console.log(`🤖 AI response: ${JSON.stringify(enhancedStoryData)}`);
+        
+        // Use safe fallback to prevent hallucinations
+        enhancedStoryData = {
+          characters: [{ name: "character", description: "child", emotions: "neutral" }],
+          setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
+          objects: [],
+          mood: "neutral",
+          narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
+        };
+        aiValidationPassed = false;
+      } else {
+        aiValidationPassed = true;
+        console.log('✅ AI validation passed - no hallucinations detected');
+      }
+      
     } catch (parseError) {
       console.error('Failed to parse AI response:', aiResult.choices[0].message.content);
       // Fallback to basic structure
       enhancedStoryData = {
-        characters: [{ name: "character", description: "child character", emotions: "curious" }],
-        setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "spring" },
-        objects: ["book"],
-        mood: "cheerful",
-        narrativeElements: { action: "reading", focus: "character", perspective: "eye level" }
+        characters: [{ name: "character", description: "child", emotions: "neutral" }],
+        setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
+        objects: [],
+        mood: "neutral",
+        narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
       };
+      aiValidationPassed = false;
     }
 
-    // Add context and metadata
+    // Add context and metadata with validation info
     const result = {
       enhancedStoryData,
       extractedElements: {
@@ -108,13 +181,18 @@ Extract all visual elements, characters, settings, objects, lighting, mood, and 
         processingTimestamp: new Date().toISOString()
       },
       narrativeEnhancements: {
-        sceneType: enhancedStoryData.narrativeElements?.action || 'general',
+        sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
         emotionalTone: enhancedStoryData.mood || 'neutral',
-        visualFocus: enhancedStoryData.narrativeElements?.focus || 'balanced'
+        visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
+      },
+      validation: {
+        aiValidationPassed,
+        hallucinationCheck: aiValidationPassed ? 'passed' : 'failed',
+        originalTextPreserved: true
       }
     };
 
-        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects`);
+        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, validation: ${aiValidationPassed ? 'PASSED' : 'FAILED'}`);
 
         return createCorsResponse(result);
 

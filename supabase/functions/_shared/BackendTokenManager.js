@@ -132,7 +132,19 @@ export class BackendTokenManager {
       // African American hair style terms to protect
       'detailed', 'textured', 'curly top fade', 'authentic facial features',
       // Compound eye colors to protect from compression
-      'hazel-green'
+      'hazel-green', 'hazel-brown', 'almond-shaped', 'deep-set', 'wide-set',
+      // African American skin tone terms to protect
+      'fair brown skin', 'light caramel skin', 'warm beige skin', 'peachy brown skin',
+      'light bronze skin', 'warm honey skin', 'golden caramel skin', 'honey bronze skin',
+      'caramel skin', 'deep amber skin', 'golden bronze skin', 'warm mahogany skin',
+      'cool espresso skin', 'dark chocolate skin', 'deep umber skin', 'cool walnut skin',
+      'rich coffee skin', 'deep chestnut skin', 'rich cocoa skin', 'deep ebony skin',
+      // African American hair styles to protect from compression
+      'twist out', 'bantu knots', 'braid out', 'cornrows', 'box braids', 'senegalese twists',
+      'marley twists', 'havana twists', 'passion twists', 'sisterlocs', 'traditional locs',
+      'fuller well-defined lips', 'naturally full lips', 'wider nasal bridge', 'fuller rounded nostrils',
+      // Cultural pride elements
+      'cultural pride symbols', 'community strength', 'rich heritage', 'strong family bonds'
     ];
     
     let compressed = text;
@@ -171,8 +183,13 @@ export class BackendTokenManager {
     const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.LOW;
     const brandSuffixTruncatable = !isAfricanAmericanCharacter;
     
+    // CRITICAL: Also protect character description for African American characters
+    const characterPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.HIGH;
+    const characterTruncatable = !isAfricanAmericanCharacter; // Never truncate African American character descriptions
+    
     if (isAfricanAmericanCharacter) {
-      console.log('🔒 Protecting brand suffix with HIGH priority for African American character');
+      console.log('🔒 Protecting brand suffix and character description with HIGH priority for African American character');
+      console.log('👤 Character Description to Protect:', characterDescription);
     }
     
     return [
@@ -184,8 +201,8 @@ export class BackendTokenManager {
       },
       {
         content: characterDescription, 
-        priority: PromptPriority.HIGH,
-        canTruncate: false,
+        priority: characterPriority,
+        canTruncate: characterTruncatable,
         type: 'character-description'
       },
       {
