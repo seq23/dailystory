@@ -47,7 +47,7 @@ serve(async (req) => {
             role: 'system',
             content: `NO HALLUCINATIONS. NO ASSUMPTIONS. EXTRACT ONLY WHAT IS EXPLICITLY MENTIONED.
 
-You analyze children's story text ONLY for what is directly stated. Do NOT add details, assumptions, or interpretations.
+Extract specific details from the provided text ONLY for what is directly stated. Do NOT add details, assumptions, or interpretations.
 
 CRITICAL RULES:
 - If characters are not named, use "character" not made-up names
@@ -70,7 +70,7 @@ Extract ONLY what is explicitly written. Add nothing extra.`
           },
           {
             role: 'user',
-            content: `Story text for page ${pageNumber} of ${totalPages}:
+            content: `Text content for page ${pageNumber} of ${totalPages}:
 
 "${storyText}"
 
@@ -200,11 +200,11 @@ Return only facts from the text.`
         // Return basic fallback structure on error with tracking
         const fallbackResult = {
           enhancedStoryData: {
-            characters: [{ name: "character", description: "child character", emotions: "curious" }],
-            setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "spring" },
-            objects: ["book"],
-            mood: "cheerful",
-            narrativeElements: { action: "reading", focus: "character", perspective: "eye level" }
+            characters: [{ name: "character", description: "child", emotions: "neutral" }],
+            setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
+            objects: [],
+            mood: "neutral",
+            narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
           },
           extractedElements: { characterCount: 1, objectCount: 1, complexity: 'simple' },
           contextualInfo: { pageNumber: 1, totalPages: 1, sessionId: '', processingTimestamp: new Date().toISOString() },
