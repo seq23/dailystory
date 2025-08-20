@@ -26,7 +26,8 @@ serve(async (req) => {
       sessionId,
       pageNumber = 1,
       totalPages = 10,
-      seed
+      seed,
+      enhancedStoryData // New parameter for AI-enhanced data
     } = await req.json();
 
     if (!pageText) {
@@ -34,6 +35,7 @@ serve(async (req) => {
     }
 
     console.log(`🎨 Tier 1 premium processing: page ${pageNumber}/${totalPages}`);
+    console.log(`🧠 AI Enhancement Data: ${enhancedStoryData ? 'Available' : 'Not provided'}`);
 
     // Use MultiStageEnhancementPipeline for premium AI processing
     const { MultiStageEnhancementPipeline } = await import("../_shared/MultiStageEnhancementPipeline.js");
@@ -42,7 +44,8 @@ serve(async (req) => {
       userInfo, 
       sessionId, 
       pageNumber, 
-      totalPages
+      totalPages,
+      enhancedStoryData // Pass AI-enhanced data if available
     );
     
     const positivePrompt = enhancementResult.enhancedPrompt;

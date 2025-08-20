@@ -298,8 +298,8 @@ export class SimpleImageService {
     }
   }
 
-  // Main generation method with NEW tiered approach
-  // Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
+  // Main generation method with AI-enhanced tiered approach
+  // AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
   static async generateStoryImage(
     pageText: string,
     userInfo: UserInfo,
@@ -325,12 +325,35 @@ export class SimpleImageService {
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
     try {
-      // TIER 1: Premium AI-Enhanced with EnhancedPromptBuilder
-      console.log('🚀 Starting Tier 1: Premium AI-Enhanced Runware');
-      const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber, totalPages);
+      // TIER 1: AI-Enhanced Premium Runware
+      console.log('🧠 Starting Tier 1: AI-Enhanced Premium Runware');
+      
+      // Step 1: Get AI enhancement data
+      let enhancedStoryData = null;
+      try {
+        const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-story-enhancer', {
+          body: {
+            storyText: cleanScene,
+            userInfo,
+            sessionId,
+            pageNumber,
+            totalPages
+          }
+        });
+        
+        if (aiData && !aiError) {
+          enhancedStoryData = aiData.enhancedStoryData;
+          console.log('🧠 AI enhancement successful:', aiData.extractedElements);
+        }
+      } catch (aiError) {
+        console.warn('⚠️ AI enhancement failed, proceeding without:', aiError);
+      }
+      
+      // Step 2: Generate with Runware using AI-enhanced data
+      const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData);
       
       if (tier1Result.success) {
-        console.log('✅ Tier 1 Premium AI-Enhanced succeeded');
+        console.log(`✅ Tier 1 ${enhancedStoryData ? 'AI-Enhanced' : 'Standard'} Premium succeeded`);
         await this.recordUsage(tier1Result, userInfo?.name);
         return tier1Result;
       }
@@ -403,14 +426,15 @@ export class SimpleImageService {
     return 'Unknown';
   }
 
-  // TIER 1: Premium AI-Enhanced Runware (uses EnhancedPromptBuilder)
+  // TIER 1: AI-Enhanced Premium Runware (uses EnhancedPromptBuilder + AI analysis)
   private static async generateWithRunware(
     cleanScene: string, 
     config: ImageGenerationConfig,
     userInfo?: UserInfo,
     sessionId?: string,
     pageNumber?: number,
-    totalPages?: number
+    totalPages?: number,
+    enhancedStoryData?: any
   ): Promise<ImageResult> {
     try {
       console.log('🎨 Tier 1: Premium AI-Enhanced Runware generation');
@@ -431,7 +455,8 @@ export class SimpleImageService {
           sessionId,
           pageNumber,
           totalPages: totalPages || 10,
-          seed: characterSeed // Pass stored seed for consistency
+          seed: characterSeed, // Pass stored seed for consistency
+          enhancedStoryData // Pass AI-enhanced data if available
         }
       });
 

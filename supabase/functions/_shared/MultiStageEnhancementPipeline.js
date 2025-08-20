@@ -14,9 +14,10 @@ function selectWeightedElement(array) {
 export class MultiStageEnhancementPipeline {
   
   // ============= TIER 1: PREMIUM AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
-  static async processTier1Premium(storyText, userInfo, sessionId, pageNumber, totalPages) {
+  static async processTier1Premium(storyText, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
     try {
       console.log(`🔥 Tier 1 Premium AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);
       
       // Import fresh frontend intelligence
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
@@ -27,10 +28,25 @@ export class MultiStageEnhancementPipeline {
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
       
       // 1. Enhance story text with consistent visual details before prompt building
-      const enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      let enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      
+      // If AI enhancement data is available, incorporate it into the story context
+      if (enhancedStoryData && enhancedStoryData.characters) {
+        console.log('🧠 Incorporating AI-enhanced character and setting data');
+        // Enrich the story text with AI-discovered details for better cultural processing
+        const aiCharacterDescriptions = enhancedStoryData.characters.map(char => 
+          `${char.name || 'character'}: ${char.description || ''} (${char.emotions || 'neutral'})`
+        ).join(', ');
+        const aiSettingInfo = enhancedStoryData.setting ? 
+          `Setting: ${enhancedStoryData.setting.location || ''} at ${enhancedStoryData.setting.timeOfDay || 'daytime'} with ${enhancedStoryData.setting.weather || 'clear'} weather` : '';
+        
+        enhancedStoryText = `${enhancedStoryText}\n[AI Context: ${aiCharacterDescriptions}. ${aiSettingInfo}. Mood: ${enhancedStoryData.mood || 'neutral'}]`;
+      }
+      
       console.log('🎯 Visual detail enhancement applied:', {
         originalLength: storyText.length,
         enhancedLength: enhancedStoryText.length,
+        aiEnhanced: !!enhancedStoryData,
         changed: storyText !== enhancedStoryText,
         trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length
       });
