@@ -1,5 +1,5 @@
 // Auto-generated Frontend Intelligence for Backend
-// Generated: 2025-01-20T21:47:23.123Z
+// Generated: 2025-01-20T22:15:00.000Z
 // DO NOT EDIT MANUALLY - Regenerated on each build
 
 export const FrontendIntelligence = {
@@ -201,120 +201,232 @@ export const FrontendIntelligence = {
       "compositionStyle": "balanced peaceful composition"
     }
   },
-  "imageGeneration": {
-    "defaultProvider": "runware",
-    "defaultDimensions": {
-      "width": 1024,
-      "height": 1024
+  "enhancedPrompting": {
+    "priorityOrders": {
+      "characterFirst": ["character", "scene", "setting", "style", "quality"],
+      "sceneFirst": ["scene", "character", "setting", "style", "quality"]
     },
-    "defaultStyle": "children-book",
-    "defaultDifficulty": "medium",
-    "hairColorMapping": {
-      "light-girl": "blonde",
-      "light-boy": "light brown",
-      "pale-girl": "blonde",
-      "pale-boy": "blonde",
-      "medium-girl": "brown",
-      "medium-boy": "brown",
-      "olive-girl": "dark brown",
-      "olive-boy": "dark brown",
-      "dark-girl": "black",
-      "dark-boy": "black"
-    },
-    "emotionalPatterns": {
-      "curiosity": "curious|wonder|explore|discover|interested",
-      "excitement": "excited|happy|joy|thrilled|amazing",
-      "sadness": "sad|cry|tear|upset|disappointed",
-      "surprise": "surprise|shocked|unexpected|wow|gasp",
-      "determination": "determined|brave|strong|confident|bold"
-    },
-    "limits": {
-      "concurrency": 4,
-      "rateLimit": 2,
-      "dailyCostCeiling": 50,
-      "estimatedCost": 0.002
-    },
-    "tierMethods": [
-      "generateWithRunware",
-      "generateWithRunwareSimple", 
-      "generateWithOpenAI",
-      "generateSVGPlaceholder",
-      "generateWithRunwareSimpleFallback"
-    ],
-    "tierCount": 5
-  },
-  "qualityPatterns": [
-    {
-      "name": "Character Focus Enhancement",
-      "pattern": "/\\b(child|boy|girl|character)\\b/gi",
-      "enhancement": "detailed character illustration with expressive features"
-    },
-    {
-      "name": "Setting Atmosphere",
-      "pattern": "/\\b(in|at|near|around)\\b/gi", 
-      "enhancement": "immersive atmospheric setting with rich environmental details"
-    },
-    {
-      "name": "Action Enhancement",
-      "pattern": "/\\b(running|jumping|playing|dancing)\\b/gi",
-      "enhancement": "dynamic movement with clear action poses"
-    },
-    {
-      "name": "Emotion Amplification",
-      "pattern": "/\\b(happy|sad|excited|curious)\\b/gi",
-      "enhancement": "expressive emotional storytelling through body language"
+    "sectionKeywords": {
+      "character": ["child with", "features", "hair", "skin", "eyes"],
+      "scene": ["standing", "sitting", "playing", "looking", "smiling"],
+      "setting": ["in a", "at the", "near", "background", "environment"],
+      "style": ["illustration", "artwork", "style", "painting"],
+      "quality": ["high quality", "detailed", "professional", "vibrant"]
     }
-  ]
+  },
+  "characterConsistency": {
+    "styleProfiles": {
+      "african-american": {
+        "clothing": ["modern streetwear", "casual contemporary", "athletic wear", "school uniform"],
+        "accessories": ["backpack", "sneakers", "baseball cap", "colorful headband"],
+        "markers": ["natural hairstyle", "urban setting elements", "diverse community"]
+      },
+      "hispanic-latino": {
+        "clothing": ["colorful casual wear", "family gathering attire", "school clothes"],
+        "accessories": ["bright accessories", "family jewelry", "cultural patterns"],
+        "markers": ["warm family setting", "community elements", "vibrant colors"]
+      },
+      "african-french": {
+        "clothing": ["European casual style", "African-inspired patterns", "modern fusion"],
+        "accessories": ["cultural textiles", "modern accessories", "stylish items"],
+        "markers": ["multicultural environment", "French aesthetic", "cultural fusion"]
+      },
+      "chinese-asian": {
+        "clothing": ["modern casual", "traditional elements", "school attire"],
+        "accessories": ["educational items", "cultural symbols", "modern tech"],
+        "markers": ["academic setting", "cultural pride", "family values"]
+      },
+      "european-american": {
+        "clothing": ["classic casual", "all-American style", "seasonal appropriate"],
+        "accessories": ["sports equipment", "books", "outdoor gear"],
+        "markers": ["suburban setting", "outdoor activities", "traditional values"]
+      },
+      "multicultural": {
+        "clothing": ["globally inspired", "fusion styles", "modern casual"],
+        "accessories": ["diverse cultural items", "international elements"],
+        "markers": ["diverse community", "global awareness", "inclusive environment"]
+      }
+    }
+  }
 };
 
-// STRIPPED FUNCTIONS - Data only export
-// All prompt building logic moved to frontend StructuredPromptEngine
+// ============= AUTO-EXTRACTED AI FUNCTIONS =============
 
-// Legacy function stubs for backwards compatibility - DO NOT USE for new code
-export function selectAfricanAmericanSkinTone() {
-  console.warn('⚠️ selectAfricanAmericanSkinTone() is deprecated - use frontend StructuredPromptEngine');
-  return 'warm caramel skin';
-}
-
-export function generateCulturalCharacterDescription(userInfo) {
-  console.warn('⚠️ generateCulturalCharacterDescription() is deprecated - use frontend StructuredPromptEngine');
-  return 'child with warm friendly appearance';
-}
-
-// Simple avatar-based description for English non-dark skin users
-function generateSimpleAvatarDescription(userInfo) {
-  const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
-                    userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
+// Comprehensive Facial Features Generation
+export function generateFacialFeaturesDescription(facialFeatures) {
+  // Handle comprehensive facial features system for English speakers
+  if (typeof facialFeatures === 'object' && facialFeatures.eyes) {
+    const eyes = selectWeightedElement(facialFeatures.eyes);
+    const eyebrows = selectWeightedElement(facialFeatures.eyebrows);
+    const eyelashes = selectWeightedElement(facialFeatures.eyelashes);
+    const nose = selectWeightedElement(facialFeatures.nose);
+    const lips = selectWeightedElement(facialFeatures.lips);
+    const structure = selectWeightedElement(facialFeatures.facialStructure);
+    
+    return `${eyes} with ${eyebrows}, ${eyelashes}, ${nose}, ${lips}, ${structure}`;
+  }
   
-  const hairColor = getAvatarHairColor(userInfo.avatar?.hairColor);
+  // Handle simple array format for other languages
+  if (Array.isArray(facialFeatures)) {
+    return selectWeightedElement(facialFeatures);
+  }
   
-  return `${genderTerm} with ${hairColor}`;
+  return 'warm friendly features';
 }
 
-// Map avatar hair color to simple descriptions
-function getAvatarHairColor(hairColor) {
-  const hairColorMap = {
-    'blonde': 'blonde hair',
-    'brown': 'brown hair',
-    'black': 'black hair',
-    'red': 'red hair',
-    'auburn': 'auburn hair',
-    'light-brown': 'light brown hair',
-    'dark-brown': 'dark brown hair',
-    'strawberry-blonde': 'strawberry blonde hair'
+// Character Consistency System
+export function createSeededRandom(seed) {
+  let currentSeed = seed;
+  return () => {
+    currentSeed = (currentSeed * 16807) % 2147483647;
+    return (currentSeed - 1) / 2147483646;
+  };
+}
+
+export function generateStableSeed(userId, characterName) {
+  let hash = 0;
+  const input = `${userId}-${characterName}`;
+  
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  return Math.abs(hash);
+}
+
+export function determineCulturalProfile(userInfo) {
+  if (!userInfo?.avatar) return 'multicultural';
+  
+  const { nativeLanguage, avatar } = userInfo;
+  const skinTone = avatar.skinTone || 'medium';
+  
+  // Enhanced cultural mapping
+  if (nativeLanguage === 'en') {
+    if (skinTone === 'dark') return 'african-american';
+    if (skinTone === 'light' || skinTone === 'pale') return 'european-american';
+    return 'multicultural-american';
+  }
+  
+  if (nativeLanguage === 'es') {
+    if (skinTone === 'dark') return 'afro-hispanic';
+    if (skinTone === 'olive' || skinTone === 'medium') return 'hispanic-latino';
+    return 'hispanic-multicultural';
+  }
+  
+  if (nativeLanguage === 'fr') {
+    if (skinTone === 'dark') return 'african-french';
+    return 'french-multicultural';
+  }
+  
+  if (nativeLanguage === 'zh') return 'chinese-asian';
+  if (nativeLanguage === 'hi') return 'indian-south-asian';
+  if (nativeLanguage === 'ar') return 'middle-eastern';
+  
+  return 'global-multicultural';
+}
+
+// Enhanced Prompt Building
+export function extractPrimaryScene(storyText) {
+  if (!storyText || storyText.length < 10) {
+    return 'A colorful children\'s book scene';
+  }
+  
+  const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 5);
+  const longestSentence = sentences.reduce((a, b) => a.length > b.length ? a : b, '');
+  
+  return longestSentence.trim() || storyText.substring(0, 100);
+}
+
+export function buildCharacterDescription(userInfo, culturalProfile) {
+  if (!userInfo) return 'friendly child character';
+  
+  const { characterName, physicalTraits, culturalElements } = userInfo;
+  
+  if (physicalTraits && culturalElements) {
+    // Full character consistency system
+    const parts = [
+      characterName || 'child',
+      `${physicalTraits.height || 'average height'} child with ${physicalTraits.skinTone || 'medium'} skin`,
+      `${physicalTraits.hairColor || 'brown'} hair and ${physicalTraits.eyeColor || 'brown'} eyes`,
+      `${physicalTraits.build || 'average'} build`,
+      `wearing ${culturalElements.clothing || 'casual clothing'}`
+    ];
+    
+    if (culturalElements.accessories && culturalElements.accessories.length > 0) {
+      parts.push(`with ${culturalElements.accessories.slice(0, 2).join(' and ')}`);
+    }
+    
+    return parts.join(', ');
+  }
+  
+  // Fallback to simple description
+  let desc = userInfo.name || 'child';
+  
+  if (userInfo.avatar) {
+    const skinToneMap = {
+      'pale': 'fair skin',
+      'light': 'light skin', 
+      'medium': 'medium skin',
+      'olive': 'olive skin',
+      'dark': 'dark skin'
+    };
+    
+    const hairMap = {
+      'pale': 'blonde hair',
+      'light': 'brown hair',
+      'medium': 'brown hair', 
+      'olive': 'dark brown hair',
+      'dark': 'black hair'
+    };
+    
+    const skinTone = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
+    const hairColor = hairMap[userInfo.avatar.skinTone] || 'brown hair';
+    const gender = userInfo.avatar.type || 'child';
+    
+    desc += ` (${gender} with ${skinTone} and ${hairColor})`;
+  }
+  
+  return desc;
+}
+
+export function buildCulturalContext(userInfo) {
+  if (!userInfo?.nativeLanguage || userInfo.nativeLanguage === 'en') {
+    return 'diverse American setting';
+  }
+  
+  const culturalMap = {
+    'es': 'Latino cultural setting',
+    'fr': 'French cultural elements', 
+    'zh': 'Chinese cultural background',
+    'ar': 'Arabic cultural context',
+    'hi': 'Indian cultural heritage',
+    'pt': 'Brazilian cultural warmth'
   };
   
-  return hairColorMap[hairColor] || 'brown hair';
+  return culturalMap[userInfo.nativeLanguage] || 'multicultural setting';
 }
 
-function generateStandardCulturalDescription(userInfo, profile) {
-  const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
-                    userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
+// Enhanced Cultural Character Generation
+export function generateCulturalCharacterDescription(userInfo) {
+  const language = userInfo?.nativeLanguage || 'en';
+  const profile = FrontendIntelligence.culturalProfiles[language] || FrontendIntelligence.culturalProfiles.en;
+  
+  if (!profile) return 'child with warm friendly appearance';
+  
+  // Special handling for English speakers with dark skin
+  if (language === 'en' && userInfo.avatar?.skinTone === 'dark') {
+    return generateMixedAfricanAmericanDescription(userInfo, profile);
+  }
   
   const skinTone = selectWeightedElement(profile.skinTones);
   const hairStyle = selectWeightedElement(profile.hairStyles);
   const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
   const culturalElement = selectWeightedElement(profile.culturalElements);
+  
+  const genderTerm = userInfo.avatar?.type === 'boy' ? 'boy' : 
+                    userInfo.avatar?.type === 'girl' ? 'girl' : 'child';
   
   return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
 }
@@ -325,68 +437,27 @@ function generateMixedAfricanAmericanDescription(userInfo, profile) {
   
   const skinTone = selectAfricanAmericanSkinTone();
   
-  // African American hair styles with enhanced variety
+  // African American hair styles
   const africanAmericanHairStyles = [
     'natural afro hair', 'protective braids', 'twist hairstyles', 'beautiful locs', 
     'silk press hair', 'cornrow braids', 'bantu knots', 'wash and go curls',
     'loose natural curls', 'tight coily hair', 'kinky textured hair',
     '4C natural hair', '3B curly hair', 'box braids', 'goddess braids',
     'passion twists', 'flat twists', 'relaxed straight hair', 'blown out hair',
-    'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out',
-    'finger coils', 'high top fade', 'natural protective style', 'twist crown'
+    'tapered natural cut', 'fade with curls on top', 'twist out', 'braid out'
   ];
   
   const hairStyle = selectWeightedElement(africanAmericanHairStyles);
   
-  // Use the comprehensive facial features system from the English profile
-  const facialFeatures = generateFacialFeaturesDescription(FrontendIntelligence.culturalProfiles.en.facialFeatures);
+  // Use comprehensive facial features system
+  const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
   
-  // Weighted selection: 60% African American culture, 40% mainstream American
-  const africanAmericanCulture = [
-    'cultural pride symbols', 'community strength', 'modern urban style', 'rich heritage',
-    'historical legacy', 'community leadership', 'artistic expression', 'musical heritage',
-    'strong family bonds', 'educational excellence', 'entrepreneurial spirit', 'social justice values'
-  ];
-  const mainstreamCulture = [
-    'mainstream American culture', 'suburban lifestyle', 'educational achievement', 
-    'middle-class values', 'professional success', 'academic excellence'
-  ];
-  
-  const culturalElement = Math.random() < 0.6
-    ? selectWeightedElement(africanAmericanCulture)
-    : selectWeightedElement(mainstreamCulture);
+  // 50/50 mix of cultural elements
+  const culturalElement = Math.random() < 0.5
+    ? selectWeightedElement(['cultural pride symbols', 'community strength', 'modern urban style'])
+    : selectWeightedElement(['mainstream American culture', 'suburban lifestyle', 'educational achievement']);
   
   return `${genderTerm} with ${skinTone}, ${hairStyle}, ${facialFeatures}, ${culturalElement}`;
-}
-
-function selectWeightedElement(array) {
-  if (!array || array.length === 0) return '';
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-function generateFacialFeaturesDescription(facialFeatures) {
-  // Handle both old array format and new component-based format
-  if (Array.isArray(facialFeatures)) {
-    return selectWeightedElement(facialFeatures);
-  }
-  
-  // New component-based format - select one from each category
-  if (facialFeatures && typeof facialFeatures === 'object') {
-    const eyes = selectWeightedElement(facialFeatures.eyes || []);
-    const eyebrows = selectWeightedElement(facialFeatures.eyebrows || []);
-    const eyelashes = selectWeightedElement(facialFeatures.eyelashes || []);
-    const nose = selectWeightedElement(facialFeatures.nose || []);
-    const lips = selectWeightedElement(facialFeatures.lips || []);
-    const facialStructure = selectWeightedElement(facialFeatures.facialStructure || []);
-    
-    // Combine 2-3 components for natural description
-    const components = [eyes, eyebrows, nose, lips, facialStructure].filter(Boolean);
-    const selectedComponents = components.slice(0, 3); // Use first 3 non-empty components
-    
-    return selectedComponents.join(', ');
-  }
-  
-  return 'gentle friendly features';
 }
 
 // Enhanced Scene Analysis
@@ -421,7 +492,38 @@ function getDefaultEmotionalContext() {
     mood: 'calm',
     intensity: 'medium',
     colorPalette: ['soft pastels', 'gentle colors', 'warm tones'],
-    lightingStyle: 'soft natural lighting',
-    compositionStyle: 'balanced composition'
+    lightingStyle: 'gentle natural lighting',
+    compositionStyle: 'balanced children\'s book composition'
   };
+}
+
+// African American Weighted Selection
+export function selectAfricanAmericanSkinTone() {
+  const skinTones = FrontendIntelligence.culturalProfiles.en?.skinTones || [];
+  if (skinTones.length === 0) return 'warm caramel skin';
+  
+  // Weighted selection favoring diversity across the spectrum
+  const weights = skinTones.map((_, index) => {
+    const position = index / (skinTones.length - 1);
+    // Higher weight for middle and darker tones
+    return position > 0.3 ? 1.5 : 1.0;
+  });
+  
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+  const random = Math.random() * totalWeight;
+  
+  let cumulativeWeight = 0;
+  for (let i = 0; i < skinTones.length; i++) {
+    cumulativeWeight += weights[i];
+    if (random <= cumulativeWeight) {
+      return skinTones[i];
+    }
+  }
+  
+  return skinTones[Math.floor(Math.random() * skinTones.length)];
+}
+
+export function selectWeightedElement(array) {
+  if (!array || array.length === 0) return '';
+  return array[Math.floor(Math.random() * array.length)];
 }

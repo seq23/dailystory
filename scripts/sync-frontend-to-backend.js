@@ -14,7 +14,11 @@ class FrontendToBackendSync {
       characterGeneration: {},
       settingGeneration: {},
       skinToneDistribution: {},
-      imageGeneration: {}
+      imageGeneration: {},
+      enhancedPrompting: {},
+      characterConsistency: {},
+      tokenManagement: {},
+      deduplication: {}
     };
   }
 
@@ -30,6 +34,12 @@ class FrontendToBackendSync {
       
       // Extract quality optimization from AdvancedQualityEngine
       await this.extractQualityIntelligence();
+      
+      // NEW: Extract EnhancedPromptBuilder AI logic
+      await this.extractEnhancedPromptIntelligence();
+      
+      // NEW: Extract UnifiedCharacterConsistency logic
+      await this.extractCharacterConsistencyIntelligence();
       
       // Generate JavaScript version for backend injection
       await this.generateBackendIntelligence();
@@ -261,6 +271,88 @@ class FrontendToBackendSync {
     console.log('🎯 Extracted quality patterns:', this.extractedIntelligence.qualityPatterns.length);
   }
 
+  async extractEnhancedPromptIntelligence() {
+    const enhancedPromptPath = path.join(__dirname, '../src/services/EnhancedPromptBuilder.ts');
+    const content = fs.readFileSync(enhancedPromptPath, 'utf8');
+    
+    // Extract token management logic
+    const tokenManagementMatch = content.match(/applyTokenManagement\(([\s\S]*?)return\s*{\s*finalPrompt[\s\S]*?}\s*;/);
+    if (tokenManagementMatch) {
+      this.extractedIntelligence.tokenManagement.applyTokenManagement = tokenManagementMatch[0];
+    }
+    
+    // Extract deduplication logic
+    const deduplicationMatch = content.match(/applySmartDeduplication\(([\s\S]*?)return\s*{\s*deduplicatedTemplate[\s\S]*?}\s*;/);
+    if (deduplicationMatch) {
+      this.extractedIntelligence.deduplication.applySmartDeduplication = deduplicationMatch[0];
+    }
+    
+    // Extract priority ordering
+    const priorityMatch = content.match(/priorities\s*=\s*prioritizeCharacterDetails\s*\?\s*\[([\s\S]*?)\]\s*:\s*\[([\s\S]*?)\];/);
+    if (priorityMatch) {
+      this.extractedIntelligence.enhancedPrompting.priorityOrders = {
+        characterFirst: priorityMatch[1].split(',').map(s => s.trim().replace(/'/g, '')),
+        sceneFirst: priorityMatch[2].split(',').map(s => s.trim().replace(/'/g, ''))
+      };
+    }
+    
+    // Extract section detection keywords
+    const keywordsMatch = content.match(/keywords\s*=\s*{([\s\S]*?)};/);
+    if (keywordsMatch) {
+      const keywordsStr = keywordsMatch[1];
+      const sectionKeywords = {};
+      const sectionMatches = keywordsStr.matchAll(/(\w+):\s*\[([\s\S]*?)\]/g);
+      for (const [, section, keywordList] of sectionMatches) {
+        sectionKeywords[section] = keywordList.split(',').map(s => s.trim().replace(/'/g, ''));
+      }
+      this.extractedIntelligence.enhancedPrompting.sectionKeywords = sectionKeywords;
+    }
+    
+    console.log('🧠 Extracted enhanced prompting intelligence');
+  }
+
+  async extractCharacterConsistencyIntelligence() {
+    const characterPath = path.join(__dirname, '../src/services/UnifiedCharacterConsistency.ts');
+    const content = fs.readFileSync(characterPath, 'utf8');
+    
+    // Extract cultural profile mapping
+    const culturalMappingMatch = content.match(/determineCulturalProfile\([\s\S]*?return\s*'[^']*';[\s\S]*?}/);
+    if (culturalMappingMatch) {
+      this.extractedIntelligence.characterConsistency.culturalMapping = culturalMappingMatch[0];
+    }
+    
+    // Extract character style mappings
+    const styleMappingMatch = content.match(/culturalStyleMap:\s*Record<[^>]+>\s*=\s*{([\s\S]*?)};/);
+    if (styleMappingMatch) {
+      const mappingStr = styleMappingMatch[1];
+      const styleProfiles = {};
+      const profileMatches = mappingStr.matchAll(/'([^']+)':\s*{([\s\S]*?)(?=},?\s*'|\s*})/g);
+      
+      for (const [, profile, profileContent] of profileMatches) {
+        styleProfiles[profile] = {
+          clothing: this.parseStringArray(profileContent, 'clothing'),
+          accessories: this.parseStringArray(profileContent, 'accessories'),
+          markers: this.parseStringArray(profileContent, 'markers')
+        };
+      }
+      this.extractedIntelligence.characterConsistency.styleProfiles = styleProfiles;
+    }
+    
+    // Extract seeded random generation
+    const seededRandomMatch = content.match(/createSeededRandom\([\s\S]*?return\s*\(\)\s*=>\s*{[\s\S]*?};/);
+    if (seededRandomMatch) {
+      this.extractedIntelligence.characterConsistency.seededRandom = seededRandomMatch[0];
+    }
+    
+    // Extract stable seed generation
+    const stableSeedMatch = content.match(/generateStableSeed\([\s\S]*?return\s*Math\.abs\(hash\);/);
+    if (stableSeedMatch) {
+      this.extractedIntelligence.characterConsistency.stableSeedGeneration = stableSeedMatch[0];
+    }
+    
+    console.log('👤 Extracted character consistency intelligence');
+  }
+
   parseStringArray(content, key) {
     const match = content.match(new RegExp(`${key}:\\s*\\[([\\s\\S]*?)\\]`));
     if (!match) return [];
@@ -287,6 +379,8 @@ class FrontendToBackendSync {
 
 export const FrontendIntelligence = ${JSON.stringify(this.extractedIntelligence, null, 2)};
 
+// ============= AUTO-EXTRACTED AI FUNCTIONS =============
+
 // Comprehensive Facial Features Generation
 export function generateFacialFeaturesDescription(facialFeatures) {
   // Handle comprehensive facial features system for English speakers
@@ -307,6 +401,140 @@ export function generateFacialFeaturesDescription(facialFeatures) {
   }
   
   return 'warm friendly features';
+}
+
+// Character Consistency System
+export function createSeededRandom(seed) {
+  let currentSeed = seed;
+  return () => {
+    currentSeed = (currentSeed * 16807) % 2147483647;
+    return (currentSeed - 1) / 2147483646;
+  };
+}
+
+export function generateStableSeed(userId, characterName) {
+  let hash = 0;
+  const input = \`\${userId}-\${characterName}\`;
+  
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  return Math.abs(hash);
+}
+
+export function determineCulturalProfile(userInfo) {
+  if (!userInfo?.avatar) return 'multicultural';
+  
+  const { nativeLanguage, avatar } = userInfo;
+  const skinTone = avatar.skinTone || 'medium';
+  
+  // Enhanced cultural mapping
+  if (nativeLanguage === 'en') {
+    if (skinTone === 'dark') return 'african-american';
+    if (skinTone === 'light' || skinTone === 'pale') return 'european-american';
+    return 'multicultural-american';
+  }
+  
+  if (nativeLanguage === 'es') {
+    if (skinTone === 'dark') return 'afro-hispanic';
+    if (skinTone === 'olive' || skinTone === 'medium') return 'hispanic-latino';
+    return 'hispanic-multicultural';
+  }
+  
+  if (nativeLanguage === 'fr') {
+    if (skinTone === 'dark') return 'african-french';
+    return 'french-multicultural';
+  }
+  
+  if (nativeLanguage === 'zh') return 'chinese-asian';
+  if (nativeLanguage === 'hi') return 'indian-south-asian';
+  if (nativeLanguage === 'ar') return 'middle-eastern';
+  
+  return 'global-multicultural';
+}
+
+// Enhanced Prompt Building
+export function extractPrimaryScene(storyText) {
+  if (!storyText || storyText.length < 10) {
+    return 'A colorful children\\'s book scene';
+  }
+  
+  const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 5);
+  const longestSentence = sentences.reduce((a, b) => a.length > b.length ? a : b, '');
+  
+  return longestSentence.trim() || storyText.substring(0, 100);
+}
+
+export function buildCharacterDescription(userInfo, culturalProfile) {
+  if (!userInfo) return 'friendly child character';
+  
+  const { characterName, physicalTraits, culturalElements } = userInfo;
+  
+  if (physicalTraits && culturalElements) {
+    // Full character consistency system
+    const parts = [
+      characterName || 'child',
+      \`\${physicalTraits.height || 'average height'} child with \${physicalTraits.skinTone || 'medium'} skin\`,
+      \`\${physicalTraits.hairColor || 'brown'} hair and \${physicalTraits.eyeColor || 'brown'} eyes\`,
+      \`\${physicalTraits.build || 'average'} build\`,
+      \`wearing \${culturalElements.clothing || 'casual clothing'}\`
+    ];
+    
+    if (culturalElements.accessories && culturalElements.accessories.length > 0) {
+      parts.push(\`with \${culturalElements.accessories.slice(0, 2).join(' and ')}\`);
+    }
+    
+    return parts.join(', ');
+  }
+  
+  // Fallback to simple description
+  let desc = userInfo.name || 'child';
+  
+  if (userInfo.avatar) {
+    const skinToneMap = {
+      'pale': 'fair skin',
+      'light': 'light skin', 
+      'medium': 'medium skin',
+      'olive': 'olive skin',
+      'dark': 'dark skin'
+    };
+    
+    const hairMap = {
+      'pale': 'blonde hair',
+      'light': 'brown hair',
+      'medium': 'brown hair', 
+      'olive': 'dark brown hair',
+      'dark': 'black hair'
+    };
+    
+    const skinTone = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
+    const hairColor = hairMap[userInfo.avatar.skinTone] || 'brown hair';
+    const gender = userInfo.avatar.type || 'child';
+    
+    desc += \` (\${gender} with \${skinTone} and \${hairColor})\`;
+  }
+  
+  return desc;
+}
+
+export function buildCulturalContext(userInfo) {
+  if (!userInfo?.nativeLanguage || userInfo.nativeLanguage === 'en') {
+    return 'diverse American setting';
+  }
+  
+  const culturalMap = {
+    'es': 'Latino cultural setting',
+    'fr': 'French cultural elements', 
+    'zh': 'Chinese cultural background',
+    'ar': 'Arabic cultural context',
+    'hi': 'Indian cultural heritage',
+    'pt': 'Brazilian cultural warmth'
+  };
+  
+  return culturalMap[userInfo.nativeLanguage] || 'multicultural setting';
 }
 
 // African American Weighted Selection

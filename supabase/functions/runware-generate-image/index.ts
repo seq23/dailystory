@@ -35,10 +35,17 @@ serve(async (req) => {
 
     console.log(`🎨 Tier 1 premium processing: page ${pageNumber}/${totalPages}`);
 
-    // Use EnhancedPromptBuilder for premium AI processing
-    const enhancementResult = await buildEnhancedPrompt(pageText, userInfo, sessionId, pageNumber);
+    // Use MultiStageEnhancementPipeline for premium AI processing
+    const { MultiStageEnhancementPipeline } = await import("../_shared/MultiStageEnhancementPipeline.js");
+    const enhancementResult = await MultiStageEnhancementPipeline.processTier1Premium(
+      pageText, 
+      userInfo, 
+      sessionId, 
+      pageNumber, 
+      totalPages
+    );
     
-    const positivePrompt = enhancementResult.prompt;
+    const positivePrompt = enhancementResult.enhancedPrompt;
     const negativePrompt = enhancementResult.negativePrompt;
 
     console.log(`🎨 Premium AI-enhanced prompt: "${positivePrompt.substring(0, 100)}..."`);
@@ -154,141 +161,5 @@ serve(async (req) => {
   }
 });
 
-// Premium AI Enhancement using simplified EnhancedPromptBuilder logic
-async function buildEnhancedPrompt(pageText, userInfo, sessionId, pageNumber) {
-  try {
-    // Simplified character consistency and prompt building
-    const characterSeed = getCharacterSeed(userInfo, sessionId);
-    
-    // Extract primary scene from page text
-    const primaryScene = extractPrimaryScene(pageText);
-    
-    // Build character description
-    const characterDesc = buildCharacterDescription(userInfo);
-    
-    // Get cultural context
-    const culturalContext = getCulturalContext(userInfo);
-    
-    // Build enhancement styles
-    const styleElements = getStyleElements(userInfo);
-    
-    // Compose premium prompt
-    const prompt = `${primaryScene} featuring ${characterDesc}, ${culturalContext}, ${styleElements}, premium children's book illustration, masterful digital art, perfect composition, professional quality`;
-    
-    // Build comprehensive negative prompt
-    const negativePrompt = buildNegativePrompt(userInfo);
-    
-    return {
-      prompt,
-      negativePrompt,
-      qualityScore: 95,
-      characterSeed
-    };
-    
-  } catch (error) {
-    console.error('❌ Enhancement error:', error);
-    return {
-      prompt: `${pageText}, beautiful children's book illustration`,
-      negativePrompt: "text, words, scary, dark",
-      qualityScore: 70
-    };
-  }
-}
-
-function getCharacterSeed(userInfo, sessionId) {
-  if (!userInfo?.name) return null;
-  // Simple character consistency - hash name + session for seed
-  let hash = 0;
-  const str = (userInfo.name + sessionId).toLowerCase();
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash) % 1000000;
-}
-
-function extractPrimaryScene(pageText) {
-  if (!pageText) return 'a beautiful children\'s book scene';
-  
-  const sentences = pageText.split(/[.!?]+/).filter(s => s.trim().length > 5);
-  const longestSentence = sentences.reduce((a, b) => a.length > b.length ? a : b, '');
-  
-  return longestSentence.trim() || pageText.substring(0, 100);
-}
-
-function buildCharacterDescription(userInfo) {
-  if (!userInfo) return 'friendly child character';
-  
-  let desc = userInfo.name || 'child';
-  
-  if (userInfo.avatar) {
-    const skinToneMap = {
-      'pale': 'fair skin',
-      'light': 'light skin',
-      'medium': 'medium skin',
-      'olive': 'olive skin', 
-      'dark': 'dark skin'
-    };
-    
-    const hairMap = {
-      'pale': 'blonde hair',
-      'light': 'brown hair',
-      'medium': 'brown hair',
-      'olive': 'dark brown hair',
-      'dark': 'black hair'
-    };
-    
-    const skinTone = skinToneMap[userInfo.avatar.skinTone] || 'medium skin';
-    const hairColor = hairMap[userInfo.avatar.skinTone] || 'brown hair';
-    const gender = userInfo.avatar.type || 'child';
-    
-    desc += ` (${gender} with ${skinTone} and ${hairColor})`;
-  }
-  
-  return desc;
-}
-
-function getCulturalContext(userInfo) {
-  if (!userInfo?.nativeLanguage || userInfo.nativeLanguage === 'en') {
-    return 'diverse American setting';
-  }
-  
-  const culturalMap = {
-    'es': 'Latino cultural setting',
-    'fr': 'French cultural elements',
-    'zh': 'Chinese cultural background',
-    'ar': 'Arabic cultural context',
-    'hi': 'Indian cultural heritage',
-    'pt': 'Brazilian cultural warmth'
-  };
-  
-  return culturalMap[userInfo.nativeLanguage] || 'multicultural setting';
-}
-
-function getStyleElements(userInfo) {
-  const difficulty = userInfo?.difficultyLevel || userInfo?.readingLevel || 'medium';
-  
-  const styleMap = {
-    'beginner': '3D children\'s book art, bright cheerful colors, smooth rendering',
-    'easy': '3D children\'s book art, bright cheerful colors, smooth rendering',
-    'medium': 'digital children\'s book illustration, warm colors, soft lighting',
-    'hard': 'sophisticated digital art, nuanced colors, artistic composition',
-    'expert': 'masterful illustration, complex color theory, intricate details'
-  };
-  
-  return styleMap[difficulty] || styleMap['medium'];
-}
-
-function buildNegativePrompt(userInfo) {
-  let negative = 'NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos';
-  
-  // Add gender consistency
-  if (userInfo?.avatar?.type === 'girl') {
-    negative += ', boy character, male character, masculine features';
-  } else if (userInfo?.avatar?.type === 'boy') {
-    negative += ', girl character, female character, feminine features, dress, skirt';
-  }
-  
-  return negative;
-}
+// All AI enhancement logic moved to MultiStageEnhancementPipeline
+// This ensures single source of truth and no code duplication
