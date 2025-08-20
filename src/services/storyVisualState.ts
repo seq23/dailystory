@@ -3,7 +3,17 @@
 
 import type { UserInfo } from '@/types';
 // VisualDetailTracker functionality merged into this class
-import { AdvancedPronounResolver, type CharacterRelationship } from './AdvancedPronounResolver';
+// Note: AdvancedPronounResolver is now handled in backend only
+
+export interface CharacterRelationship {
+  characterA: string;
+  characterB: string;
+  relationshipType: 'friend' | 'sibling' | 'parent' | 'classmate' | 'neighbor' | 'pet' | 'companion';
+  context: string;
+  firstMentionedPage: number;
+  lastMentionedPage: number;
+  interactionHistory: string[];
+}
 
 export interface VisualDetail {
   id: string;
@@ -311,15 +321,16 @@ export class StoryVisualStateManager {
     const state = this.storyStates.get(sessionId);
     if (!state) return text;
     
-    // Use advanced pronoun resolution first
-    let resolvedText = AdvancedPronounResolver.resolveComplexPronouns(sessionId, text, state.currentPage);
+    // Note: Advanced pronoun resolution is now handled in backend only
+    // This frontend method now only does simple fallback resolution
     
-    // Fall back to simple resolution for any remaining pronouns
-    // Resolve "they" to last mentioned character pair
+    let resolvedText = text;
+    
+    // Simple fallback: Resolve "they" to last mentioned character pair
     if (resolvedText.includes('they') && state.lastMentionedCharacters.length >= 2) {
       const characterPair = state.lastMentionedCharacters.slice(-2).join(' and ');
       resolvedText = resolvedText.replace(/\bthey\b/gi, characterPair);
-      console.log(`🔄 Simple fallback resolved "they" to: ${characterPair}`);
+      console.log(`🔄 Frontend simple fallback resolved "they" to: ${characterPair}`);
     }
     
     // Track character mentions for future pronoun resolution
@@ -333,16 +344,6 @@ export class StoryVisualStateManager {
     if (mentionedChars.length > 0) {
       state.lastMentionedCharacters = mentionedChars;
       state.recentCharacterMentions = mentionedChars;
-      
-      // Track character interactions for advanced resolution
-      if (mentionedChars.length >= 2) {
-        AdvancedPronounResolver.trackCharacterInteraction(
-          sessionId, 
-          mentionedChars, 
-          text.slice(0, 100), // First 100 chars as context
-          state.currentPage
-        );
-      }
     }
     
     return resolvedText;
@@ -359,8 +360,8 @@ export class StoryVisualStateManager {
 
   static clearStoryState(sessionId: string): void {
     this.storyStates.delete(sessionId);
-    AdvancedPronounResolver.clearSession(sessionId);
-    console.log(`🗑️ Cleared story state for session: ${sessionId}`);
+    // Note: AdvancedPronounResolver clearing is now handled in backend only
+    console.log(`🗑️ Cleared frontend story state for session: ${sessionId}`);
   }
 
   /**
@@ -578,9 +579,8 @@ export class StoryVisualStateManager {
   static analyzeAndTrackVisualDetails(sessionId: string, text: string, pageNumber: number): VisualDetail[] {
     const state = this.getOrCreateStoryState(sessionId);
     
-    // Analyze character relationships first
-    const relationships = AdvancedPronounResolver.analyzeRelationships(sessionId, text, pageNumber);
-    state.characterRelationships.push(...relationships);
+    // Note: Character relationship analysis is now handled in backend only
+    // This frontend method focuses on visual details only
     
     // Analyze text for visual details using merged functionality
     const newDetails = this.analyzeTextForDetails(sessionId, text, pageNumber);

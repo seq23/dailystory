@@ -6,6 +6,7 @@ import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js'
 import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 import './AnimalCharacterManager.js'; // Loads AnimalCharacterManager globally
+import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -29,8 +30,12 @@ export class MultiStageEnhancementPipeline {
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
       globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
       
-      // 1. Enhance story text with consistent visual details before prompt building
-      let enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      // 1. Analyze relationships and resolve pronouns first
+      globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
+      
+      // 2. Enhance story text with consistent visual details AND pronoun resolution
+      let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
+      enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
       enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
       
       // If AI enhancement data is available, incorporate it into the story context
@@ -192,9 +197,13 @@ export class MultiStageEnhancementPipeline {
     try {
       console.log(`🔄 Tier 2 Simple Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
       
-      // 1. Enhance story text with consistent visual details (same as Tier 1)
+      // 1. Analyze relationships and resolve pronouns first (same as Tier 1)
+      globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
+      
+      // 2. Enhance story text with consistent visual details AND pronoun resolution
       globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
-      let enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
+      enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
       enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
       
       console.log('🎯 Tier 2 Visual detail enhancement applied:', {

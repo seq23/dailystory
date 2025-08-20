@@ -1,5 +1,5 @@
 // StoryVisualStateManager - Backend JavaScript version
-// Maintains visual consistency across story pages
+// Maintains visual consistency across story pages with pronoun resolution
 
 class StoryVisualStateManager {
   static storyStates = new Map();
@@ -194,6 +194,27 @@ class StoryVisualStateManager {
 
   static clearStoryState(sessionId) {
     this.storyStates.delete(sessionId);
+    // Also clear pronoun resolution data
+    if (globalThis.AdvancedPronounResolver) {
+      globalThis.AdvancedPronounResolver.clearSession(sessionId);
+    }
+  }
+
+  // New method: Resolve pronouns in text using AdvancedPronounResolver
+  static resolvePronouns(sessionId, text, pageNumber = 1) {
+    if (!globalThis.AdvancedPronounResolver) {
+      console.warn('AdvancedPronounResolver not available, returning original text');
+      return text;
+    }
+    
+    // Use advanced pronoun resolution
+    const resolvedText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, text, pageNumber);
+    
+    if (resolvedText !== text) {
+      console.log(`🔄 Backend pronoun resolution applied: "${text.slice(0, 50)}..." → "${resolvedText.slice(0, 50)}..."`);
+    }
+    
+    return resolvedText;
   }
 
   static getStoryState(sessionId) {
