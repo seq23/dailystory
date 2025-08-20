@@ -4,17 +4,20 @@
 class StoryVisualStateManager {
   static storyStates = new Map();
 
-  static getOrCreateStoryState(sessionId) {
+  static getOrCreateStoryState(sessionId, isNeverEnding = false, totalPages = null) {
     if (!this.storyStates.has(sessionId)) {
       this.storyStates.set(sessionId, {
         sessionId,
+        isNeverEnding,
+        totalPages: isNeverEnding ? null : totalPages,
         characters: new Map(),
         objects: new Map(),
         relationships: [],
         runwareContext: {
-          promptHistory: [], // Store last 5 prompts with metadata
+          promptHistory: [], // Store last 10 prompts for never-ending stories
           consistentSeed: null,
-          qualityScore: 0
+          qualityScore: 0,
+          maxHistorySize: isNeverEnding ? 10 : 5
         },
         setting: {
           location: null,
@@ -196,10 +199,11 @@ class StoryVisualStateManager {
       promptLength: prompt ? prompt.length : 0
     };
     
-    // Add to beginning of array and keep only last 5
+    // Add to beginning of array and keep appropriate history size
+    const maxSize = state.runwareContext.maxHistorySize || (state.isNeverEnding ? 10 : 5);
     state.runwareContext.promptHistory.unshift(promptEntry);
-    if (state.runwareContext.promptHistory.length > 5) {
-      state.runwareContext.promptHistory = state.runwareContext.promptHistory.slice(0, 5);
+    if (state.runwareContext.promptHistory.length > maxSize) {
+      state.runwareContext.promptHistory = state.runwareContext.promptHistory.slice(0, maxSize);
     }
     
     state.runwareContext.consistentSeed = seed;
@@ -209,12 +213,62 @@ class StoryVisualStateManager {
     console.log(`📝 Stored prompt history entry ${promptEntry.promptLength} chars for session ${sessionId}, total entries: ${state.runwareContext.promptHistory.length}`);
   }
 
-  static getPromptHistory(sessionId, limit = 5) {
+  static getPromptHistory(sessionId, limit = null) {
     const state = this.getStoryState(sessionId);
     if (!state || !state.runwareContext.promptHistory) {
       return [];
     }
-    return state.runwareContext.promptHistory.slice(0, limit);
+    const defaultLimit = state.isNeverEnding ? 7 : 5; // Sliding window for never-ending stories
+    const actualLimit = limit || defaultLimit;
+    return state.runwareContext.promptHistory.slice(0, actualLimit);
+  }
+  
+  // New context retrieval methods for never-ending stories
+  static getRecentStoryContext(sessionId, pages = 3) {
+    const history = this.getPromptHistory(sessionId, pages);
+    return history.map(entry => ({
+      pageNumber: entry.pageNumber,
+      context: entry.fullPrompt ? entry.fullPrompt.substring(0, 200) + '...' : 'No context',
+      timestamp: entry.timestamp
+    }));
+  }
+  
+  static getCharacterEvolution(sessionId, characterName) {
+    const state = this.getStoryState(sessionId);
+    if (!state) return null;
+    
+    const character = state.characters.get(characterName);
+    return character ? {
+      name: character.name,
+      appearance: character.appearance,
+      firstMentioned: character.firstMentionedPage,
+      lastMentioned: character.lastMentionedPage,
+      consistency: character.seed ? 'locked' : 'variable'
+    } : null;
+  }
+  
+  static getSettingHistory(sessionId) {
+    const state = this.getStoryState(sessionId);
+    return state ? {
+      currentSetting: state.setting,
+      locationHistory: state.locationHistory,
+      isNeverEnding: state.isNeverEnding
+    } : null;
+  }
+  
+  static getObjectTrajectory(sessionId, objectName) {
+    const state = this.getStoryState(sessionId);
+    if (!state) return null;
+    
+    const object = state.objects.get(objectName);
+    return object ? {
+      name: object.name,
+      description: object.description,
+      type: object.type,
+      firstSeen: object.firstMentionedPage,
+      lastSeen: object.lastMentionedPage,
+      attributes: Array.from(object.attributes.entries())
+    } : null;
   }
 
   static getLastSuccessfulPrompt(sessionId) {

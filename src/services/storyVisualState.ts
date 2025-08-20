@@ -58,6 +58,7 @@ export interface StoryVisualState {
   // Session continuity tracking
   sessionType: 'new' | 'continuation' | 'rewrite';
   isPersistent: boolean; // Controls whether state persists across stories
+  isNeverEnding?: boolean; // Never-ending story support
   
   // Character consistency with seeds
   characters: Map<string, CharacterState>;
@@ -89,7 +90,7 @@ export interface StoryVisualState {
   
   // Page tracking
   currentPage: number;
-  totalPages: number;
+  totalPages: number | null; // null for never-ending stories
   
   // Pronoun resolution
   lastMentionedCharacters: string[];
@@ -152,9 +153,10 @@ export class StoryVisualStateManager {
 
   static getOrCreateStoryState(
     sessionId: string, 
-    totalPages: number = 10,
+    totalPages: number | null = 10,
     sessionType: 'new' | 'continuation' | 'rewrite' = 'new',
-    isPersistent: boolean = false
+    isPersistent: boolean = false,
+    isNeverEnding: boolean = false
   ): StoryVisualState {
     if (!this.storyStates.has(sessionId)) {
       const newState: StoryVisualState = {
@@ -178,9 +180,10 @@ export class StoryVisualStateManager {
         locationHistory: [],
         allowedTransitions: new Map(this.LOCATION_TRANSITIONS),
         currentPage: 1,
-        totalPages,
+        totalPages: isNeverEnding ? null : totalPages,
         lastMentionedCharacters: [],
-        characterPairs: new Map()
+        characterPairs: new Map(),
+        isNeverEnding
       };
       
       this.storyStates.set(sessionId, newState);

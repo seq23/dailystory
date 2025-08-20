@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
+import { scoreAndValidateAIExtraction } from "../_shared/AIValidationService.js";
 
 // AI Model Fallback Chain Configuration
 const AI_MODELS = [
@@ -106,48 +107,76 @@ serve(async (req) => {
           };
         }
 
-    console.log(`🧠 AI Story Enhancer: Processing page ${pageNumber}/${totalPages} for session ${sessionId}`);
+    const pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
+    console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
+
+    // Get previous pages context for consistency
+    const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
+    const previousPages = StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
+    
+    let previousContext = '';
+    if (previousPages.length > 0) {
+      previousContext = `\n\nPREVIOUS STORY CONTEXT:\n`;
+      previousPages.reverse().forEach((page, index) => {
+        previousContext += `Page ${page.pageNumber}: Previous story elements established\n`;
+      });
+      
+      const knownCharacters = StoryVisualStateManager?.getStoryState?.(sessionId)?.characters || new Map();
+      const knownSetting = StoryVisualStateManager?.getSettingForPrompt?.(sessionId);
+      const knownObjects = StoryVisualStateManager?.getVisualDetailsForPrompt?.(sessionId);
+      
+      if (knownCharacters.size > 0) {
+        const charNames = Array.from(knownCharacters.keys()).join(', ');
+        previousContext += `ESTABLISHED CHARACTERS: ${charNames}\n`;
+      }
+      if (knownSetting) {
+        previousContext += `ESTABLISHED SETTING: ${knownSetting}\n`;
+      }
+      if (knownObjects) {
+        previousContext += `ESTABLISHED OBJECTS: ${knownObjects}\n`;
+      }
+    }
 
     const messages = [
       {
         role: 'system',
-        content: `NO HALLUCINATIONS. NO ASSUMPTIONS. EXTRACT ONLY WHAT IS EXPLICITLY MENTIONED.
+        content: `You are analyzing ${pageText} in an ${totalPages ? 'ongoing story' : 'never-ending story adventure'}.${previousContext}
 
-Extract specific details from the provided text ONLY for what is directly stated. Do NOT add details, assumptions, or interpretations.
+Extract story elements while maintaining consistency with established elements. You may reasonably infer details that maintain story continuity.
 
-CRITICAL RULES:
-- If characters are not named, use "character" not made-up names
-- If location is not specified, use "indoor scene" or "outdoor scene" based only on clear context
-- If emotions are not stated, use "neutral" 
-- If objects are not mentioned, return empty array
-- If actions are not clear, use "general activity"
-- NEVER add descriptive details not in the original text
+ENHANCED RULES:
+- Use established character names (e.g., 'Sequoia' if previously mentioned) 
+- Maintain setting consistency unless story explicitly changes location
+- Include objects from previous pages if they logically remain present
+- Enhance emotional context based on story progression
+- For never-ending stories, focus on continuity and character development
+- Build upon established relationships and story elements
 
 Return ONLY valid JSON:
 {
-  "characters": [{"name": "character", "description": "child", "emotions": "neutral"}],
-  "setting": {"location": "indoor scene", "timeOfDay": "daytime", "weather": "clear", "season": "unspecified"},
-  "objects": [],
-  "mood": "neutral",
-  "narrativeElements": {"action": "general activity", "focus": "character", "perspective": "eye level"}
+  "characters": [{"name": "character_name", "description": "enhanced_description", "emotions": "contextual_emotion"}],
+  "setting": {"location": "consistent_location", "timeOfDay": "progressive_time", "weather": "contextual_weather", "season": "established_season"},
+  "objects": ["contextual_objects"],
+  "mood": "progressive_mood",
+  "narrativeElements": {"action": "specific_action", "focus": "story_focus", "perspective": "appropriate_perspective"}
 }
 
-Extract ONLY what is explicitly written. Add nothing extra.`
+Maintain story consistency while extracting meaningful details.`
       },
       {
         role: 'user',
-        content: `Text content for page ${pageNumber} of ${totalPages}:
+        content: `Text content for ${pageText}:
 
 "${storyText}"
 
-Extract ONLY what is explicitly stated in this text. Do not infer, assume, or add details. Focus on:
-- Characters mentioned by name (if any)  
-- Actions explicitly described
-- Objects specifically mentioned
-- Location if clearly stated
-- Emotions if directly expressed
+Analyze this text considering the established story context. Focus on:
+- Characters and their development (use established names when available)
+- Actions and emotions in context of story progression  
+- Objects and their continued presence or new introductions
+- Setting evolution and transitions
+- Mood progression throughout the story
 
-Return only facts from the text.`
+Maintain consistency with previous pages while extracting rich story elements.`
       }
     ];
 
@@ -159,66 +188,18 @@ Return only facts from the text.`
     }
 
     let enhancedStoryData;
-    let aiValidationPassed = false;
+    let validationResult;
     
     try {
       enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
       
-      // AI VALIDATION LAYER - Check for hallucinations
-      const originalText = storyText.toLowerCase();
-      const aiResponse = JSON.stringify(enhancedStoryData).toLowerCase();
-      
-      // Check if AI added details not in original text
-      const suspiciousAdditions = [];
-      
-      // Check character names
-      if (enhancedStoryData.characters) {
-        for (const char of enhancedStoryData.characters) {
-          if (char.name && char.name !== "character" && !originalText.includes(char.name.toLowerCase())) {
-            suspiciousAdditions.push(`character name: ${char.name}`);
-          }
-        }
-      }
-      
-      // Check for specific objects that weren't mentioned
-      if (enhancedStoryData.objects) {
-        for (const obj of enhancedStoryData.objects) {
-          if (!originalText.includes(obj.toLowerCase())) {
-            suspiciousAdditions.push(`object: ${obj}`);
-          }
-        }
-      }
-      
-      // Check for specific location details
-      if (enhancedStoryData.setting?.location && 
-          enhancedStoryData.setting.location !== "indoor scene" && 
-          enhancedStoryData.setting.location !== "outdoor scene" &&
-          !originalText.includes(enhancedStoryData.setting.location.toLowerCase())) {
-        suspiciousAdditions.push(`location: ${enhancedStoryData.setting.location}`);
-      }
-      
-      if (suspiciousAdditions.length > 0) {
-        console.warn(`🚨 AI Hallucination detected: ${suspiciousAdditions.join(', ')}`);
-        console.log(`📝 Original text: "${storyText}"`);
-        console.log(`🤖 AI response: ${JSON.stringify(enhancedStoryData)}`);
-        
-        // Use safe fallback to prevent hallucinations
-        enhancedStoryData = {
-          characters: [{ name: "character", description: "child", emotions: "neutral" }],
-          setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
-          objects: [],
-          mood: "neutral",
-          narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
-        };
-        aiValidationPassed = false;
-      } else {
-        aiValidationPassed = true;
-        console.log('✅ AI validation passed - no hallucinations detected');
-      }
+      // SMART VALIDATION & ENHANCEMENT LAYER - Score and enhance AI output
+      validationResult = await scoreAndValidateAIExtraction(enhancedStoryData, storyText, sessionId, pageNumber);
+      enhancedStoryData = validationResult.enhancedData;
       
     } catch (parseError) {
       console.error('Failed to parse AI response:', aiResult.choices[0].message.content);
-      // Fallback to basic structure
+      // Fallback with basic validation scoring
       enhancedStoryData = {
         characters: [{ name: "character", description: "child", emotions: "neutral" }],
         setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
@@ -226,7 +207,7 @@ Return only facts from the text.`
         mood: "neutral",
         narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
       };
-      aiValidationPassed = false;
+      validationResult = { qualityScore: { totalScore: 0 }, enhancedData: enhancedStoryData };
     }
 
     // Add context and metadata with validation info
@@ -239,10 +220,11 @@ Return only facts from the text.`
       },
       contextualInfo: {
         pageNumber,
-        totalPages,
+        totalPages: totalPages || 'unlimited',
         sessionId,
         originalTextLength: storyText.length,
-        processingTimestamp: new Date().toISOString()
+        processingTimestamp: new Date().toISOString(),
+        isNeverEnding: !totalPages
       },
       narrativeEnhancements: {
         sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
@@ -250,14 +232,17 @@ Return only facts from the text.`
         visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
       },
       validation: {
-        aiValidationPassed,
-        hallucinationCheck: aiValidationPassed ? 'passed' : 'failed',
-        originalTextPreserved: true,
+        qualityScore: validationResult?.qualityScore?.totalScore || 0,
+        characterConsistency: validationResult?.qualityScore?.characterConsistency || 0,
+        settingLogic: validationResult?.qualityScore?.settingLogic || 0,
+        objectRelevance: validationResult?.qualityScore?.objectRelevance || 0,
+        storyCoherence: validationResult?.qualityScore?.storyCoherence || 0,
+        aiProcessingMethod: validationResult?.qualityScore?.totalScore >= 60 ? 'accepted' : 'enhanced',
         modelUsed: aiResult.model || 'fallback-chain'
       }
     };
 
-        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, validation: ${aiValidationPassed ? 'PASSED' : 'FAILED'}`);
+        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, quality score: ${validationResult?.qualityScore?.totalScore || 0}/100`);
 
         return createCorsResponse(result);
 
@@ -271,8 +256,8 @@ Return only facts from the text.`
             mood: "neutral",
             narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
           },
-          extractedElements: { characterCount: 1, objectCount: 1, complexity: 'simple' },
-          contextualInfo: { pageNumber: 1, totalPages: 1, sessionId: '', processingTimestamp: new Date().toISOString() },
+          extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
+          contextualInfo: { pageNumber: 1, totalPages: 'unlimited', sessionId: '', processingTimestamp: new Date().toISOString(), isNeverEnding: true },
           narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
           error: error.message,
           fallbackUsed: true,
