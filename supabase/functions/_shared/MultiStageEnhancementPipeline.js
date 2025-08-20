@@ -229,23 +229,24 @@ export class MultiStageEnhancementPipeline {
   // ============= TIER 2: SIMPLE TEMPLATE-BASED PROCESSING =============
   static async processThroughPipeline(storyText, userInfo, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔄 Tier 2 Simple Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔄 Tier 2 Template Pipeline (with enhanced character detection): ${sessionId} page ${pageNumber}/${totalPages}`);
       
       // 1. Analyze relationships and resolve pronouns first (same as Tier 1)
       globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
       
-      // 2. Enhance story text with consistent visual details AND pronoun resolution
+      // 2. Enhanced animal character detection for missing characters like Mr. Hops
       globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
       let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
       enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
       enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
       
-      console.log('🎯 Tier 2 Visual detail enhancement applied:', {
+      console.log('🎯 Tier 2 Enhanced character detection applied:', {
         originalLength: storyText.length,
         enhancedLength: enhancedStoryText.length,
         changed: storyText !== enhancedStoryText,
         trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-        trackedAnimals: globalThis.AnimalCharacterManager.getSessionAnimals(sessionId).length
+        trackedAnimals: globalThis.AnimalCharacterManager.getSessionAnimals(sessionId).length,
+        animalCharacters: globalThis.AnimalCharacterManager.getSessionAnimals(sessionId).map(a => a.name)
       });
       
       // 2. Simple template-based processing - NO AI functions

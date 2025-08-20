@@ -328,39 +328,64 @@ export class SimpleImageService {
       // TIER 1: AI-Enhanced High-Quality Runware
       console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Runware');
       
-      // Step 1: Get AI enhancement data
+      // Step 1: Get AI enhancement data with retry logic
       let enhancedStoryData = null;
-      try {
-        const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-story-enhancer', {
-          body: {
-            storyText: cleanScene,
-            userInfo,
-            sessionId,
-            pageNumber,
-            totalPages
+      const maxRetries = 2;
+      let lastError = null;
+      
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-story-enhancer', {
+            body: {
+              storyText: cleanScene,
+              userInfo,
+              sessionId,
+              pageNumber,
+              totalPages
+            }
+          });
+          
+          if (aiData && !aiError) {
+            enhancedStoryData = aiData.enhancedStoryData;
+            console.log('🧠 AI enhancement successful:', aiData.extractedElements);
+            break; // Success, exit retry loop
+          } else if (aiError) {
+            lastError = aiError;
+            console.warn(`⚠️ AI enhancement attempt ${attempt + 1} failed:`, aiError);
           }
-        });
-        
-        if (aiData && !aiError) {
-          enhancedStoryData = aiData.enhancedStoryData;
-          console.log('🧠 AI enhancement successful:', aiData.extractedElements);
+        } catch (aiError) {
+          lastError = aiError;
+          console.warn(`⚠️ AI enhancement attempt ${attempt + 1} error:`, aiError);
+          
+          // If it's a 503 error and we have retries left, wait and retry
+          if (aiError.message?.includes('503') && attempt < maxRetries) {
+            const backoffTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s
+            console.log(`🔄 503 error detected, retrying in ${backoffTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, backoffTime));
+            continue;
+          }
+          break; // Non-503 error or out of retries
         }
-      } catch (aiError) {
-        console.warn('⚠️ AI enhancement failed, proceeding without:', aiError);
+      }
+      
+      // If AI enhancement failed completely, jump directly to Tier 2
+      if (!enhancedStoryData) {
+        console.log('⚠️ AI enhancement failed after retries, jumping to Tier 2 Template-based for better character detection');
+        throw new Error('AI enhancement failed - using Tier 2 fallback');
       }
       
       // Step 2: Generate with Runware using AI-enhanced data
       const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData);
       
       if (tier1Result.success) {
-        console.log(`✅ Tier 1 ${enhancedStoryData ? 'AI-Enhanced' : 'Standard'} High-Quality succeeded`);
+        console.log('✅ Tier 1 AI-Enhanced High-Quality succeeded');
         await this.recordUsage(tier1Result, userInfo?.name);
         return tier1Result;
       }
       
-      console.log('⚠️ Tier 1 failed, falling back to Tier 2 Template-based');
+      console.log('⚠️ Tier 1 generation failed, falling back to Tier 2 Template-based');
     } catch (error) {
-      console.log('⚠️ Tier 1 error, falling back to Tier 2 Template-based:', error);
+      console.log('⚠️ Tier 1 error, falling back to Tier 2 Template-based:', error.message);
     }
 
     try {
