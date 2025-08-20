@@ -18,7 +18,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'professional children\'s book digital illustration, safe wholesome content, high quality professional artwork',
+    brandSuffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
     negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
@@ -47,7 +47,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'professional children\'s book digital illustration, safe wholesome content, high quality professional artwork',
+    brandSuffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
@@ -75,7 +75,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
-    brandSuffix: 'professional children\'s book digital illustration, safe wholesome content, high quality professional artwork',
+    brandSuffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
     negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
