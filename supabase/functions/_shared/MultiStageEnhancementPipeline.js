@@ -151,9 +151,19 @@ export class MultiStageEnhancementPipeline {
       
       // Apply token optimization before returning
       const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
+      
+      // CRITICAL FIX: Extract the full character description that was built by buildPremiumPrompt()
+      const fullCharacterDescription = FrontendIntelligence.buildAdvancedCharacterDescription(
+        userInfo, 
+        culturalProfile, 
+        characterSeed
+      );
+      
+      console.log('🔧 Token Manager - Full Character Description:', fullCharacterDescription);
+      
       const promptSegments = BackendTokenManager.createPromptSegments(
         sceneContext,
-        `${userInfo?.name || 'Alex'} character`,
+        fullCharacterDescription, // Pass the complete description instead of just "Alex character"
         styleFramework.prompt || 'children\'s book illustration',
         styleFramework.brandSuffix || '',
         visualDetails || '',

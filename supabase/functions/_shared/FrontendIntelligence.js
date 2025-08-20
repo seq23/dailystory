@@ -209,7 +209,18 @@ export class FrontendIntelligence {
 
   static getAfricanAmericanSkinTone(userInfo) {
     if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
-      return this.selectRandomElement(this.AFRICAN_AMERICAN_SKIN_TONES);
+      // CRITICAL FIX: Implement equal-weight group selection for African American skin tones
+      // Divide 20 tones into three equal groups: Light (0-6), Middle (7-13), Darker (14-19)
+      const lightGroup = this.AFRICAN_AMERICAN_SKIN_TONES.slice(0, 7);    // indices 0-6 (7 tones)
+      const middleGroup = this.AFRICAN_AMERICAN_SKIN_TONES.slice(7, 14);  // indices 7-13 (7 tones)
+      const darkerGroup = this.AFRICAN_AMERICAN_SKIN_TONES.slice(14, 20); // indices 14-19 (6 tones)
+      
+      // First randomly select one of the three groups with equal probability (33.33% each)
+      const groups = [lightGroup, middleGroup, darkerGroup];
+      const selectedGroup = groups[Math.floor(Math.random() * groups.length)];
+      
+      // Then randomly select a tone from within the chosen group
+      return this.selectRandomElement(selectedGroup);
     }
     
     // Fallback for other users
@@ -233,7 +244,8 @@ export class FrontendIntelligence {
       const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
       const gender = this.detectGender(userInfo);
       
-      return `${userInfo.name || 'Alex'} (${gender} with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
+      // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier
+      return `${userInfo.name || 'Alex'} (African-American ${gender} with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
     }
     
     return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;

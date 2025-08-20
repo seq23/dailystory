@@ -13,7 +13,7 @@ export const PromptPriority = {
 export class BackendTokenManager {
   
   static optimizePrompt(promptSegments) {
-    console.log('🔧 BackendTokenManager: Starting prompt optimization');
+    console.log('🔧 BackendTokenManager: Starting surgical prompt optimization');
     
     // Calculate total length
     const totalLength = promptSegments.reduce((sum, segment) => sum + segment.content.length, 0);
@@ -29,7 +29,7 @@ export class BackendTokenManager {
       };
     }
     
-    console.log(`⚠️ Prompt over limit: ${totalLength}/${MAX_LENGTH} characters - optimizing`);
+    console.log(`⚠️ Prompt over limit: ${totalLength}/${MAX_LENGTH} characters - applying surgical optimization`);
     
     // Sort segments by priority (HIGH = 1, MEDIUM = 2, LOW = 3)
     const sortedSegments = [...promptSegments].sort((a, b) => a.priority - b.priority);
@@ -37,74 +37,88 @@ export class BackendTokenManager {
     let optimizedSegments = sortedSegments.map(segment => ({ ...segment }));
     let appliedOptimizations = [];
     
-    // Strategy 1: Remove LOW priority segments
+    // PHASE 1: Remove redundant spaces and punctuation
     if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
-      const beforeRemoval = optimizedSegments.length;
-      optimizedSegments = optimizedSegments.filter(s => s.priority !== PromptPriority.LOW);
-      if (optimizedSegments.length < beforeRemoval) {
-        appliedOptimizations.push('removed-low-priority');
-        console.log('🗑️ Removed LOW priority segments');
+      optimizedSegments = optimizedSegments.map(segment => ({
+        ...segment,
+        content: segment.content.replace(/\s+/g, ' ').replace(/,\s*,/g, ',').trim()
+      }));
+      if (this.calculateLength(optimizedSegments) < totalLength) {
+        appliedOptimizations.push('removed-redundant-spaces');
+        console.log('🧹 Removed redundant spaces and punctuation');
       }
     }
     
-    // Strategy 2: Compress MEDIUM priority segments
+    // PHASE 2: Target verbose adjectives in non-critical segments only
     if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
       optimizedSegments = optimizedSegments.map(segment => {
-        if (segment.priority === PromptPriority.MEDIUM && segment.canTruncate) {
+        if (segment.priority !== PromptPriority.HIGH && segment.canTruncate) {
           const compressed = this.smartCompress(segment.content);
           if (compressed !== segment.content) {
-            appliedOptimizations.push('compressed-medium-priority');
+            appliedOptimizations.push('compressed-verbose-adjectives');
           }
           return { ...segment, content: compressed };
         }
         return segment;
       });
-      console.log('🗜️ Compressed MEDIUM priority segments');
+      console.log('🎯 Targeted verbose adjectives in non-critical segments');
     }
     
-    // Strategy 3: Progressive truncation of truncatable segments
+    // PHASE 3: Character-by-character trimming from longest segments while preserving meaning
     if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
       const overageAmount = this.calculateLength(optimizedSegments) - MAX_LENGTH;
-      const truncatableSegments = optimizedSegments.filter(s => s.canTruncate);
       
-      if (truncatableSegments.length > 0) {
-        const truncationPerSegment = Math.ceil(overageAmount / truncatableSegments.length);
+      // Find the longest truncatable segments and trim them character by character
+      const truncatableSegments = optimizedSegments
+        .filter(s => s.canTruncate)
+        .sort((a, b) => b.content.length - a.content.length);
+      
+      let remainingToTrim = overageAmount;
+      
+      for (const segment of truncatableSegments) {
+        if (remainingToTrim <= 0) break;
         
-        optimizedSegments = optimizedSegments.map(segment => {
-          if (segment.canTruncate && segment.content.length > truncationPerSegment) {
-            const newLength = Math.max(segment.content.length - truncationPerSegment, 50);
-            const truncated = segment.content.substring(0, newLength) + '...';
-            if (truncated !== segment.content) {
-              appliedOptimizations.push('progressive-truncation');
-            }
-            return { ...segment, content: truncated };
+        const segmentIndex = optimizedSegments.findIndex(s => s === segment);
+        const originalLength = segment.content.length;
+        
+        // Determine minimum safe length based on content type
+        let minLength = 30;
+        if (segment.type === 'character-description') {
+          minLength = 100; // Never truncate African American character descriptions below 100 chars
+        } else if (segment.type === 'brand-suffix') {
+          minLength = 20; // Brand suffixes need minimal truncation
+        }
+        
+        const trimAmount = Math.min(remainingToTrim, Math.max(0, originalLength - minLength));
+        
+        if (trimAmount > 0) {
+          const newLength = originalLength - trimAmount;
+          optimizedSegments[segmentIndex].content = segment.content.substring(0, newLength).trim();
+          remainingToTrim -= trimAmount;
+          
+          if (!appliedOptimizations.includes('surgical-character-trimming')) {
+            appliedOptimizations.push('surgical-character-trimming');
           }
-          return segment;
-        });
-        console.log('✂️ Applied progressive truncation');
+          
+          console.log(`✂️ Surgically trimmed ${segment.type}: ${originalLength} → ${newLength} chars`);
+        }
       }
     }
     
-    // Strategy 4: Emergency truncation of HIGH priority if still over limit
+    // PHASE 4: Remove LOW priority segments only as last resort
     if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
-      const overageAmount = this.calculateLength(optimizedSegments) - MAX_LENGTH;
-      
-      for (let i = optimizedSegments.length - 1; i >= 0; i--) {
-        if (optimizedSegments[i].canTruncate) {
-          const currentLength = optimizedSegments[i].content.length;
-          const newLength = Math.max(currentLength - overageAmount, 30);
-          optimizedSegments[i].content = optimizedSegments[i].content.substring(0, newLength) + '...';
-          appliedOptimizations.push('emergency-truncation');
-          console.log('🚨 Applied emergency truncation');
-          break;
-        }
+      const beforeRemoval = optimizedSegments.length;
+      optimizedSegments = optimizedSegments.filter(s => s.priority !== PromptPriority.LOW);
+      if (optimizedSegments.length < beforeRemoval) {
+        appliedOptimizations.push('removed-low-priority-last-resort');
+        console.log('🗑️ Removed LOW priority segments as last resort');
       }
     }
     
     const finalLength = this.calculateLength(optimizedSegments);
     const finalPrompt = optimizedSegments.map(s => s.content).join(' ');
     
-    console.log(`✅ Optimization complete: ${totalLength} → ${finalLength} characters`);
+    console.log(`✅ Surgical optimization complete: ${totalLength} → ${finalLength} characters`);
     console.log(`🔧 Applied: ${appliedOptimizations.join(', ')}`);
     
     return {
@@ -123,17 +137,17 @@ export class BackendTokenManager {
   static smartCompress(text) {
     if (!text || text.length < 100) return text;
     
-    // Protect technical terms and important descriptors
+    // ENHANCED PROTECTION: Strengthen cultural term protection with explicit "African-American"
     const protectedTerms = [
       'children\'s book illustration', 'soft lighting', 'warm colors', 'character consistency',
-      'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'cultural elements',
+      'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'African-American', 'cultural elements',
       'visual state', 'style framework', 'scene context',
       'natural lighting for dark skin', 'culturally accurate', 'professional children\'s book digital illustration',
       // African American hair style terms to protect
       'detailed', 'textured', 'curly top fade', 'authentic facial features',
       // Compound eye colors to protect from compression
       'hazel-green', 'hazel-brown', 'almond-shaped', 'deep-set', 'wide-set',
-      // African American skin tone terms to protect
+      // African American skin tone terms to protect (full list)
       'fair brown skin', 'light caramel skin', 'warm beige skin', 'peachy brown skin',
       'light bronze skin', 'warm honey skin', 'golden caramel skin', 'honey bronze skin',
       'caramel skin', 'deep amber skin', 'golden bronze skin', 'warm mahogany skin',
@@ -144,27 +158,48 @@ export class BackendTokenManager {
       'marley twists', 'havana twists', 'passion twists', 'sisterlocs', 'traditional locs',
       'fuller well-defined lips', 'naturally full lips', 'wider nasal bridge', 'fuller rounded nostrils',
       // Cultural pride elements
-      'cultural pride symbols', 'community strength', 'rich heritage', 'strong family bonds'
+      'cultural pride symbols', 'community strength', 'rich heritage', 'strong family bonds',
+      // African American facial features to protect
+      'almond-shaped dark brown eyes', 'round rich brown eyes', 'deep-set hazel eyes',
+      'prominent amber eyes', 'almond-shaped hazel-green eyes', 'expressive dark brown eyes',
+      'broader noble nose', 'narrow refined nose', 'slightly upturned nose', 'well-proportioned nose'
     ];
     
     let compressed = text;
     
-    // Remove redundant adjectives but preserve protected terms
+    // Check if this text contains protected African American descriptors
+    const containsAfricanAmericanContent = protectedTerms.some(term => 
+      compressed.toLowerCase().includes(term.toLowerCase())
+    );
+    
+    if (containsAfricanAmericanContent) {
+      console.log('🔒 Protecting African American cultural content from aggressive compression');
+      // Apply minimal compression only to preserve cultural integrity
+      compressed = compressed.replace(/\s+/g, ' ').trim();
+      return compressed;
+    }
+    
+    // Apply standard compression for non-cultural content
     const adjectives = ['very', 'quite', 'rather', 'extremely', 'highly', 'beautifully', 'perfectly'];
     for (const adj of adjectives) {
-      // Only remove if not part of protected terms
       const regex = new RegExp(`\\b${adj}\\s+`, 'gi');
       if (!protectedTerms.some(term => term.toLowerCase().includes(adj.toLowerCase()))) {
         compressed = compressed.replace(regex, '');
       }
     }
     
-    // Remove duplicate phrases
+    // Remove duplicate phrases (with protection)
     const words = compressed.split(' ');
     const seen = new Set();
     const filtered = words.filter(word => {
       const clean = word.toLowerCase().replace(/[^\w]/g, '');
       if (clean.length < 3) return true; // Keep short words
+      
+      // Protect important cultural terms from deduplication
+      if (protectedTerms.some(term => term.toLowerCase().includes(clean))) {
+        return true;
+      }
+      
       if (seen.has(clean)) return false;
       seen.add(clean);
       return true;
