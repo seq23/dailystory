@@ -122,7 +122,7 @@ export class PromptLengthManager {
   }
   
   /**
-   * Legacy optimization method (Phase 2) - maintained for compatibility
+   * Legacy optimization method (Phase 2) - ENHANCED with style framework protection
    */
   static optimizePrompt(segments: PromptSegment[]): {
     optimizedPrompt: string;
@@ -197,17 +197,18 @@ export class PromptLengthManager {
         }
       }
       
-      // Strategy 4: Truncate style framework if still too long
+      // Strategy 4: SMART style framework compression (protect technical terms)
       if (prompt.length > this.MAX_LENGTH) {
         const styleSegment = segments.find(s => s.priority === PromptPriority.STYLE_FRAMEWORK);
         if (styleSegment && styleSegment.canTruncate) {
-          const maxStyleLength = 200; // Reasonable limit for style framework
-          if (styleSegment.content.length > maxStyleLength) {
-            styleSegment.content = styleSegment.content.substring(0, maxStyleLength) + '...';
-            optimizations.push('Truncated style framework');
+          // Apply smart compression to style framework
+          const compressedStyle = this.smartCompressStyleFramework(styleSegment.content);
+          if (compressedStyle !== styleSegment.content) {
+            styleSegment.content = compressedStyle;
+            optimizations.push('Smart compressed style framework (preserved technical terms)');
             
             prompt = segments.map(s => s.content).join(' ');
-            console.log(`📉 After style truncation: ${prompt.length} chars`);
+            console.log(`📉 After smart style compression: ${prompt.length} chars`);
           }
         }
       }
@@ -330,5 +331,50 @@ export class PromptLengthManager {
     ];
     
     return segments.filter(Boolean).join(' ');
+  }
+  
+  // NEW: Smart compression method that protects technical style terms
+  private static smartCompressStyleFramework(styleContent: string): string {
+    // Protected technical terms that should NEVER be removed
+    const protectedTerms = [
+      'painterly', '3D-rendered', 'volumetric lighting', 'cinematic framing',
+      'photorealistic', 'masterful artistic technique', 'museum-quality artwork',
+      'soft_painting', 'detailed_realism', 'award-winning illustration',
+      'professional children\'s book illustration', 'exceptional detail',
+      'rule_of_thirds', 'dynamic_angle', 'artistic_mastery'
+    ];
+    
+    // Generic adjectives that can be removed for compression
+    const removableAdjectives = [
+      'beautiful', 'gorgeous', 'stunning', 'amazing', 'fantastic', 'wonderful',
+      'excellent', 'perfect', 'incredible', 'breathtaking', 'magnificent'
+    ];
+    
+    let compressed = styleContent;
+    
+    // Remove generic adjectives but preserve technical terms
+    for (const adjective of removableAdjectives) {
+      // Only remove if not part of a protected term
+      const regex = new RegExp(`\\b${adjective}\\b(?!\\s+(?:${protectedTerms.join('|')}))`, 'gi');
+      compressed = compressed.replace(regex, '');
+    }
+    
+    // Clean up extra spaces
+    compressed = compressed.replace(/\s+/g, ' ').trim();
+    
+    // If still too long, apply careful truncation while preserving protected terms
+    if (compressed.length > 250) {
+      const words = compressed.split(' ');
+      const essential = words.filter(word => 
+        protectedTerms.some(term => term.toLowerCase().includes(word.toLowerCase())) ||
+        ['children', 'book', 'illustration', 'art', 'style'].some(key => word.toLowerCase().includes(key))
+      );
+      
+      if (essential.length > 0 && essential.join(' ').length < compressed.length) {
+        compressed = essential.join(' ');
+      }
+    }
+    
+    return compressed;
   }
 }

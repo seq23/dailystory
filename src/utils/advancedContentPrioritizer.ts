@@ -95,33 +95,47 @@ export class AdvancedContentPrioritizer {
       targetLength = 2600; // Allow more detail if content isn't complex
     }
     
-    // Create priority weights based on user preferences
+    // Create priority weights based on user preferences with ENHANCED STYLE FRAMEWORK PRIORITY
     const priorityWeights = {
       coreElements: 1.0,                                                    // Always highest priority
+      styleElements: 0.95,                                                  // MAXIMUM PROTECTION for style framework
       characterElements: preferences.prioritizeCharacterConsistency ? 0.9 : 0.6,
       contextElements: 0.7,
-      styleElements: preferences.preferDetailedStyle ? 0.8 : 0.5,
       qualityElements: preferences.optimizeForSpeed ? 0.3 : 0.6
     };
     
-    // Create compression rules based on preferences
+    // Create compression rules based on preferences with ENHANCED STYLE FRAMEWORK PROTECTION
     const compressionRules: CompressionRule[] = [
       {
         elementType: 'styleElements',
         reductionRatio: preferences.allowStyleReduction ? 0.6 : 0.8,
-        preserveKeywords: ['children\'s book', 'illustration', 'safe', 'inclusive'],
+        preserveKeywords: [
+          // Essential style framework terms - MAXIMUM PROTECTION
+          'painterly', '3D-rendered', 'volumetric lighting', 'cinematic framing', 
+          'photorealistic', 'masterful artistic technique', 'museum-quality artwork',
+          'soft_painting', 'detailed_realism', 'FlowMatchEulerDiscreteScheduler',
+          'award-winning illustration', 'professional children\'s book illustration',
+          'exceptional detail', 'rule_of_thirds', 'dynamic_angle', 'artistic_mastery',
+          // Original essential terms
+          'children\'s book', 'illustration', 'safe', 'inclusive'
+        ],
         compressionMethod: 'remove_adjectives'
       },
       {
         elementType: 'qualityElements', 
         reductionRatio: 0.4,
-        preserveKeywords: ['high quality', 'children\'s book', 'safe'],
+        preserveKeywords: [
+          // Protected quality terms
+          'high quality', 'children\'s book', 'safe', 'masterful artistic technique',
+          'museum-quality artwork', 'award-winning illustration', 'professional',
+          'exceptional detail', 'cinematic lighting', 'photorealistic quality'
+        ],
         compressionMethod: 'keep_essentials'
       },
       {
         elementType: 'contextElements',
         reductionRatio: 0.7,
-        preserveKeywords: ['lighting', 'atmosphere'],
+        preserveKeywords: ['lighting', 'atmosphere', 'volumetric lighting', 'cinematic lighting'],
         compressionMethod: 'simplify'
       }
     ];
@@ -306,29 +320,59 @@ export class AdvancedContentPrioritizer {
   }
   
   private static removeAdjectives(text: string, preserveKeywords: string[]): string {
-    // Remove excessive adjectives while preserving essential keywords
+    // ENHANCED: Remove excessive adjectives while preserving TECHNICAL STYLE TERMS
     const words = text.split(' ');
     const essential = words.filter(word => 
       preserveKeywords.some(keyword => 
         word.toLowerCase().includes(keyword.toLowerCase())
       ) || 
-      this.isEssentialWord(word)
+      this.isEssentialWord(word) ||
+      this.isTechnicalStyleTerm(word)
     );
     
     return essential.join(' ');
   }
   
   private static simplifyElement(element: string): string {
-    // Simplify complex phrases to essential meaning
-    return element
-      .replace(/\b(extremely|incredibly|absolutely|completely|totally|very|quite|rather|highly|exceptionally)\s+/gi, '')
-      .replace(/\b(beautiful|gorgeous|stunning|amazing|fantastic|wonderful|excellent|perfect|masterful)\b/gi, 'quality')
-      .trim();
+    // ENHANCED: Simplify complex phrases but PROTECT technical style terms
+    let simplified = element;
+    
+    // Remove generic intensifiers but preserve technical terms
+    simplified = simplified.replace(/\b(extremely|incredibly|absolutely|completely|totally|very|quite|rather|highly|exceptionally)\s+/gi, '');
+    
+    // Replace generic adjectives with 'quality' but preserve technical terms
+    simplified = simplified.replace(/\b(beautiful|gorgeous|stunning|amazing|fantastic|wonderful|excellent|perfect)\b/gi, 'quality');
+    
+    // PROTECT technical style terms from simplification
+    const protectedTerms = [
+      'masterful artistic technique', 'museum-quality artwork', 'painterly', '3D-rendered',
+      'volumetric lighting', 'cinematic framing', 'photorealistic', 'award-winning illustration',
+      'professional children\'s book illustration', 'exceptional detail'
+    ];
+    
+    // Don't simplify protected terms
+    for (const term of protectedTerms) {
+      if (element.toLowerCase().includes(term.toLowerCase())) {
+        return element.trim(); // Return original if it contains protected terms
+      }
+    }
+    
+    return simplified.trim();
   }
   
   private static isEssentialWord(word: string): boolean {
     const essentialWords = ['children', 'book', 'illustration', 'safe', 'character', 'quality', 'art', 'style'];
     return essentialWords.some(essential => word.toLowerCase().includes(essential));
+  }
+  
+  // NEW: Check if word is a technical style term that should be protected
+  private static isTechnicalStyleTerm(word: string): boolean {
+    const technicalTerms = [
+      'painterly', '3d-rendered', 'volumetric', 'cinematic', 'photorealistic',
+      'masterful', 'museum-quality', 'award-winning', 'professional', 'exceptional',
+      'artistic', 'technique', 'lighting', 'framing', 'rendering', 'scheduler'
+    ];
+    return technicalTerms.some(term => word.toLowerCase().includes(term));
   }
   
   private static calculateContentLength(analysis: ContentAnalysis): number {

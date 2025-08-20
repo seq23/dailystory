@@ -80,10 +80,28 @@ export class MultiStageEnhancementPipeline {
       const sceneContext = this.extractSceneContent(enhancedStoryText);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
       
-      // 6. Get existing visual state for consistency
+      // 6. Get existing visual state for consistency AND enhance with cultural context
       const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
       const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
       const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+      
+      // NEW: Use enhanced cultural setting logic instead of override
+      let enhancedSetting = existingSetting;
+      if (!enhancedSetting && enhancedStoryData) {
+        // Use AI-determined setting and enhance it with cultural context
+        enhancedSetting = FrontendIntelligence.enhanceAISettingWithCulture(
+          enhancedStoryData, 
+          userInfo, 
+          culturalProfile
+        );
+      } else if (!enhancedSetting) {
+        // Fallback: enhance default setting
+        enhancedSetting = FrontendIntelligence.enhanceAISettingWithCulture(
+          { location: "indoor scene" }, 
+          userInfo, 
+          culturalProfile
+        );
+      }
       
       // 7. Build premium prompt with AI intelligence, style framework AND enhanced story text
       const enhancedPrompt = FrontendIntelligence.buildPremiumPrompt(
@@ -95,7 +113,7 @@ export class MultiStageEnhancementPipeline {
         emotionalContext,
         styleFramework,
         {
-          existingSetting,
+          existingSetting: enhancedSetting, // Use enhanced setting instead of raw existing
           visualDetails,
           storyStateDetails,
           pageNumber,

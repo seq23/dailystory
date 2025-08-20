@@ -114,7 +114,63 @@ export class FrontendIntelligence {
     return `${eyes}, ${nose}, ${lips}, ${structure}, ${cheekbones}`;
   }
   
+  // NEW: Enhanced Cultural Setting Logic - ENHANCE AI settings instead of overriding
+  static enhanceAISettingWithCulture(aiSettingData, userInfo, culturalProfile) {
+    const aiLocation = aiSettingData?.setting?.location || aiSettingData?.location || "indoor scene";
+    
+    if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
+      // Enhancement mapping for African American cultural context
+      const culturalEnhancements = {
+        'bedroom': 'cozy bedroom with African American family photos and cultural artwork',
+        'home': 'family home with cultural heritage displays and family pictures', 
+        'kitchen': 'warm kitchen with soul food ingredients and family recipes',
+        'living room': 'comfortable living room with African American art and family memorabilia',
+        'school': 'diverse classroom with multicultural learning materials',
+        'classroom': 'diverse classroom with multicultural learning materials',
+        'park': 'community park with diverse families and cultural celebration elements',
+        'library': 'public library with African American literature and cultural resources',
+        'restaurant': 'family-friendly restaurant with diverse community atmosphere',
+        'playground': 'neighborhood playground with diverse children and families',
+        'garden': 'community garden with diverse gardeners and cultural plants',
+        'store': 'neighborhood store with diverse community members',
+        'church': 'beautiful church with strong community fellowship',
+        'museum': 'cultural museum celebrating African American heritage'
+      };
+      
+      // Find best match or add generic cultural context
+      for (const [key, enhancement] of Object.entries(culturalEnhancements)) {
+        if (aiLocation.toLowerCase().includes(key)) {
+          return enhancement;
+        }
+      }
+      
+      // Fallback: enhance with generic cultural modifiers
+      return `${aiLocation} with African American cultural elements and community atmosphere`;
+    }
+    
+    // For International routes (non-English), add appropriate cultural context
+    if (userInfo.nativeLanguage !== 'en') {
+      const culturalModifiers = {
+        'es': 'with Latino/Hispanic cultural elements',
+        'fr': 'with French cultural touches',
+        'zh': 'with Chinese cultural elements',
+        'ar': 'with Arabic cultural atmosphere',
+        'hi': 'with Indian cultural elements',
+        'pt': 'with Portuguese/Brazilian cultural touches'
+      };
+      
+      const modifier = culturalModifiers[userInfo.nativeLanguage] || 'with appropriate cultural elements';
+      return `${aiLocation} ${modifier}`;
+    }
+    
+    // For Standard American Route (English + Non-Dark skin) - CULTURAL BYPASS
+    // Return AI setting as-is with minimal enhancement
+    return aiLocation;
+  }
+  
+  // LEGACY: Keep for backward compatibility but mark as deprecated
   static selectCulturalSetting(userInfo, culturalProfile) {
+    console.warn('⚠️ selectCulturalSetting is deprecated. Use enhanceAISettingWithCulture instead.');
     if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
       return this.selectRandomElement(this.AFRICAN_AMERICAN_SETTINGS);
     }
