@@ -18,7 +18,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork',
+    brandSuffix: 'professional children\'s book digital illustration, safe wholesome content, high quality professional artwork',
     negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
@@ -47,7 +47,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork',
+    brandSuffix: 'professional children\'s book digital illustration, safe wholesome content, high quality professional artwork',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
@@ -70,12 +70,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Ultra professional children\'s book illustration standard',
     
     // Prompt components
-    prompt: 'soft pastels, warm lighting, painterly, medium detail, minimal complexity',
+    prompt: '2D painterly digital illustration style, soft natural lighting, expressive design, masterful composition, warm tones, light rays',
     complexity: 'minimal',
     colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
-    brandSuffix: 'contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork, Caldecott Medal style',
+    brandSuffix: 'professional children\'s book digital illustration, safe wholesome content, high quality professional artwork',
     negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
