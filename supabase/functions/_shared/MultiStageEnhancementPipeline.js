@@ -27,9 +27,12 @@ export class MultiStageEnhancementPipeline {
       
       // 0. Initialize and analyze visual state for consistency
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
+      
+      // CRITICAL: Analyze animals FIRST before any text processing to ensure immediate inclusion
+      globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
+      
       globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
-      globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
       
       // 1. Analyze relationships and resolve pronouns first
       globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
@@ -395,7 +398,7 @@ export class MultiStageEnhancementPipeline {
   }
 
   static buildSelectiveTextPrevention() {
-    return "illegible text, garbled text, nonsensical text, random letters, floating text, overlaid text, character name text, title text, comic book title, name sprawled across image, large character names, promotional text";
+    return "text, letters, words, writing, symbols, numbers, characters, alphabet, readable text, visible text, any text, illegible text, garbled text, nonsensical text, random letters, floating text, overlaid text, character name text, title text, comic book title, name sprawled across image, large character names, promotional text, text on book, words on book, book title, letters on book";
   }
 
   // ============= UTILITY METHODS =============
