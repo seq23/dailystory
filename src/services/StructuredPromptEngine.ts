@@ -6,6 +6,7 @@ import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo, DifficultyLevel, SkinTone } from "@/types";
 import { DifficultyLevelMapper } from "./DifficultyLevelMapper";
 import { FixedCulturalLogic } from "./FixedCulturalLogic";
+import { getStyleFramework } from "@/utils/styleFrameworks";
 
 // ============= CONSOLIDATED INTERFACES =============
 
@@ -329,13 +330,8 @@ export class StructuredPromptEngine {
 
   // ============= STYLE FRAMEWORKS & EMOTIONAL MAPPINGS =============
   
-  private static readonly STYLE_FRAMEWORKS: Record<DifficultyLevel, string> = {
-    'beginner': 'Very simple children\'s book illustration, minimal details, large clear shapes, bright basic colors',
-    'easy': 'Simple children\'s book illustration, clear lines, bright cheerful colors, minimal background details',
-    'medium': 'Children\'s book art style, detailed characters, vibrant scenes, engaging composition',
-    'hard': 'Professional children\'s book illustration, rich details, dynamic composition, sophisticated lighting',
-    'expert': 'Award-winning children\'s book art, cinematic composition, masterful storytelling through visuals, complex scenes'
-  };
+  // DELETED: Simple STYLE_FRAMEWORKS replaced with sophisticated frontend version
+  // Now using imported sophisticated style frameworks from utils/styleFrameworks.ts
 
   private static readonly EMOTIONAL_MAPPINGS: Record<string, EmotionalContext> = {
     'happy celebration': {
@@ -504,8 +500,8 @@ export class StructuredPromptEngine {
   }
 
   static generateCulturalCharacterDescription(userInfo: UserInfo): string {
-    // Use FixedCulturalLogic for proper cultural assignment
-    if (FixedCulturalLogic.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
+    // SIMPLIFIED: Only use FixedCulturalLogic for English + dark skin
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
       const profile = this.getCulturalVisualProfile('en');
       const skinTone = this.selectRandomElement(profile.skinTones.slice(10, 20)); // Use darker range
       
@@ -533,10 +529,9 @@ export class StructuredPromptEngine {
   }
 
   private static getCulturallyAppropriateHairStyle(userInfo: UserInfo): string {
-    const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
-    
-    // Use FixedCulturalLogic for proper cultural assignment
-    if (FixedCulturalLogic.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
+    // SIMPLIFIED: Only special handling for English + dark skin
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      const profile = this.getCulturalVisualProfile('en');
       const isGirl = userInfo.name?.toLowerCase().includes('a');
       
       if (isGirl && profile.girlsHairStyles) {
@@ -544,9 +539,11 @@ export class StructuredPromptEngine {
       } else if (!isGirl && profile.boysHairStyles) {
         return this.selectRandomElement(profile.boysHairStyles);
       }
+      return 'natural textured hair';
     }
     
-    // Default hair style selection
+    // For everyone else, use standard cultural hair styles
+    const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
     return this.selectRandomElement(profile.hairStyles);
   }
 
@@ -1020,10 +1017,11 @@ export class StructuredPromptEngine {
    * Compose style framework based on difficulty and emotion
    */
   private static composeStyleFramework(difficulty: DifficultyLevel, emotionalContext: EmotionalContext): string {
-    const baseStyle = this.STYLE_FRAMEWORKS[difficulty];
+    // Use sophisticated style frameworks from utils/styleFrameworks.ts
+    const styleFramework = getStyleFramework(difficulty);
     const composition = emotionalContext.compositionStyle;
     
-    return `${baseStyle}, ${composition}`;
+    return `${styleFramework.artStyle}, ${composition}`;
   }
 
   /**
@@ -1057,7 +1055,8 @@ export class StructuredPromptEngine {
     
     // Increase visual complexity in later pages for advanced readers
     if (difficulty === 'expert' && progressionFactor > 0.7) {
-      return `${this.STYLE_FRAMEWORKS[difficulty]}, ${emotionalContext.compositionStyle}, increasingly sophisticated visual storytelling`;
+      const styleFramework = getStyleFramework(difficulty);
+      return `${styleFramework.artStyle}, ${emotionalContext.compositionStyle}, increasingly sophisticated visual storytelling`;
     }
     
     return this.composeStyleFramework(difficulty, emotionalContext);

@@ -35,25 +35,40 @@ export class SimpleImageService {
   private static readonly DAILY_COST_CEILING_USD = 50;
   private static readonly ESTIMATED_COST_PER_IMAGE_USD = 0.002;
 
-  // Helper methods for enhanced Tier 2
+  // UNIVERSAL HAIR MAPPING - Single source of truth for all systems
   private static getHairColorFromAvatar(avatar: any): string {
-    if (!avatar) return 'brown';
+    if (!avatar?.skinTone) return 'brown';
     
-    const hairColorMap = {
-      'light-girl': 'blonde',
-      'light-boy': 'light brown',
-      'pale-girl': 'blonde',
-      'pale-boy': 'blonde',
-      'medium-girl': 'brown',
-      'medium-boy': 'brown',
-      'olive-girl': 'dark brown',
-      'olive-boy': 'dark brown',
-      'dark-girl': 'black',
-      'dark-boy': 'black'
+    // Universal mapping: pale → red, light → blonde, medium → brown, olive → black
+    const universalHairMap = {
+      'pale': 'red',
+      'light': 'blonde', 
+      'medium': 'brown',
+      'olive': 'black',
+      'dark': 'textured black hair variety' // Special handling below
     };
     
-    const avatarKey = `${avatar.skinTone}-${avatar.type}`;
-    return hairColorMap[avatarKey] || 'brown';
+    // For dark skin tone, route to FixedCulturalLogic for African American hair variety
+    if (avatar.skinTone === 'dark') {
+      // Return indicator that requires special cultural logic processing
+      return 'requires_cultural_processing';
+    }
+    
+    return universalHairMap[avatar.skinTone] || 'brown';
+  }
+
+  // NEW: Universal hair mapping that handles cultural logic
+  private static getUniversalHairMapping(userInfo: UserInfo): string {
+    if (!userInfo?.avatar?.skinTone) return 'brown';
+    
+    // Check if we need cultural processing for dark skin + English
+    if (userInfo.avatar.skinTone === 'dark' && userInfo.nativeLanguage === 'en') {
+      // Import FixedCulturalLogic for African American hair variety
+      return 'natural textured hair'; // Simplified representation
+    }
+    
+    // Use standard universal mapping
+    return this.getHairColorFromAvatar(userInfo.avatar);
   }
 
   private static detectEmotionalContext(text: string): any {
@@ -486,7 +501,7 @@ export class SimpleImageService {
           culturalRole: 'main character',
           physicalTraits: {
             skinTone: userInfo.avatar?.skinTone || 'medium',
-            hairColor: this.getHairColorFromAvatar(userInfo.avatar),
+            hairColor: this.getUniversalHairMapping(userInfo),
             age: userInfo.avatar?.type || 'child',
             gender: userInfo.avatar?.type?.includes('girl') ? 'female' : 'male'
           }

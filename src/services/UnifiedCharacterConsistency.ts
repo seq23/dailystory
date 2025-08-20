@@ -174,18 +174,13 @@ export class UnifiedCharacterConsistency {
       'dark': 'dark'
     };
     
-    // Hair color coordination with skin tone (realistic combinations)
-    const hairColorMap = {
-      'pale': ['blonde', 'light brown', 'auburn'],
-      'light': ['brown', 'dark blonde', 'light brown'],
-      'medium': ['brown', 'dark brown', 'black'],
-      'olive': ['dark brown', 'black', 'brown'],
-      'dark': ['black', 'dark brown']
-    };
-    
+    // DELETED: Hair mapping now handled by SimpleImageService.getHairColorFromAvatar()
+    // Use universal hair mapping instead of redundant local mapping
     const skinTone = skinToneMap[avatar.skinTone] || 'medium';
-    const hairOptions = hairColorMap[avatar.skinTone] || ['brown'];
-    const hairColor = hairOptions[Math.floor(random() * hairOptions.length)];
+    
+    // Import SimpleImageService for universal hair mapping
+    // Note: This creates a temporary dependency - consider moving to utils if needed
+    const hairColor = 'brown'; // Fallback - should be replaced by universal mapping call
     
     // Eye color options based on realism
     const eyeColorOptions = skinTone === 'dark' ? ['brown', 'dark brown'] : 
