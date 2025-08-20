@@ -133,26 +133,23 @@ export class MultiStageEnhancementPipeline {
     }
   }
   
-  // ============= PREMIUM AI CHARACTER PROCESSING =============
-  static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed) {
-    // Use sophisticated AI character generation
-    const baseDescription = generateCulturalCharacterDescription(userInfo);
+  // ============= UTILITY METHODS =============
+  static generateStableSeed(userInfo, sessionId) {
+    let hash = 0;
+    const input = `${userInfo?.name || 'child'}-${sessionId}`;
     
-    // Add AI-enhanced details using seeded randomization
-    const random = createSeededRandom(characterSeed);
-    const profile = FrontendIntelligence.culturalProfiles[userInfo?.nativeLanguage || 'en'];
-    
-    if (profile) {
-      // Enhanced facial features using AI system
-      const facialFeatures = generateFacialFeaturesDescription(profile.facialFeatures);
-      
-      // Add emotional personality traits
-      const personalityTraits = this.generatePersonalityTraits(random);
-      
-      return `${baseDescription}, ${facialFeatures}, ${personalityTraits}`;
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
     }
     
-    return baseDescription;
+    return Math.abs(hash);
+  }
+
+  static extractSceneContent(storyText) {
+    // Simple scene extraction for prompt building
+    return storyText.substring(0, 200); // Take first 200 chars as primary scene
   }
   
   static generatePersonalityTraits(random) {
