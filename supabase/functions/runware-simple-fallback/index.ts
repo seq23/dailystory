@@ -22,10 +22,10 @@ serve(async (req) => {
 
     console.log('🎨 Tier 2.5: Simple fallback generation with hardcoded extraction');
 
-    // Hardcoded scene extraction (no dependencies)
-    const extractedScene = extractSimpleScene(pageText, userInfo);
+    // Enhanced hardcoded scene extraction with cultural bypass
+    const extractedScene = extractSimpleSceneWithCulturalBypass(pageText, userInfo);
     
-    // Hardcoded style based on mapped difficulty
+    // Enhanced hardcoded style with exact styleFrameworks.js verbiage
     const style = getHardcodedStyle(mappedDifficulty);
     
     // Build final prompt with enhanced negative prompts
@@ -116,8 +116,8 @@ serve(async (req) => {
   }
 });
 
-// Enhanced scene extraction with better story analysis
-function extractSimpleScene(pageText: string, userInfo?: any): string {
+// Enhanced scene extraction with cultural bypass and improved analysis  
+function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any): string {
   if (!pageText) return 'a friendly character in a beautiful scene';
   
   const text = pageText.toLowerCase();
@@ -205,15 +205,20 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
   }
   
-  // Enhanced setting detection with more options
-  let setting = 'outdoor scene';
-  if (text.includes('house') || text.includes('home') || text.includes('bedroom') || text.includes('kitchen')) setting = 'indoor house scene';
-  else if (text.includes('beach') || text.includes('ocean') || text.includes('sea') || text.includes('sand')) setting = 'beach scene';
-  else if (text.includes('forest') || text.includes('tree') || text.includes('woods')) setting = 'forest scene';
-  else if (text.includes('school') || text.includes('classroom')) setting = 'school scene';
-  else if (text.includes('park') || text.includes('playground')) setting = 'park scene';
-  else if (text.includes('garden') || text.includes('flower')) setting = 'garden scene';
-  else if (text.includes('field') || text.includes('meadow')) setting = 'outdoor field scene';
+  // Comprehensive setting detection with 15+ categories
+  let baseSetting = 'outdoor scene';
+  if (text.includes('house') || text.includes('home') || text.includes('bedroom') || text.includes('kitchen') || text.includes('living room')) baseSetting = 'home';
+  else if (text.includes('beach') || text.includes('ocean') || text.includes('sea') || text.includes('sand')) baseSetting = 'beach';
+  else if (text.includes('forest') || text.includes('tree') || text.includes('woods')) baseSetting = 'forest';
+  else if (text.includes('school') || text.includes('classroom') || text.includes('library')) baseSetting = 'school';
+  else if (text.includes('park') || text.includes('playground')) baseSetting = 'park';
+  else if (text.includes('garden') || text.includes('flower')) baseSetting = 'garden';
+  else if (text.includes('field') || text.includes('meadow')) baseSetting = 'field';
+  else if (text.includes('restaurant') || text.includes('cafe') || text.includes('store')) baseSetting = 'restaurant';
+  else if (text.includes('bed') || text.includes('sleep') || text.includes('pillow')) baseSetting = 'bedroom';
+  
+  // Apply cultural enhancement bypass logic
+  const culturallyEnhancedSetting = applyCulturalSettingEnhancement(baseSetting, userInfo);
   
   // Enhanced object and animal detection
   const objects = [];
@@ -229,12 +234,16 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
     if (text.includes(animal) && animals.length < 2) animals.push(animal);
   });
   
-  // Build enhanced scene description with gender enforcement
+  // Build enhanced scene description with cultural bypass and emotion detection
   let scene = `${character}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
-  scene += ` in ${setting}`;
+  scene += ` in ${culturallyEnhancedSetting}`;
   if (animals.length > 0) scene += ` with ${animals.join(' and ')}`;
   if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;
+  
+  // Add emotion detection without AI
+  const emotionalContext = detectEmotionFromText(text);
+  if (emotionalContext) scene += `, ${emotionalContext}`;
   
   // Use best scene as primary context
   scene += `. Scene: ${bestScene}`;
@@ -242,48 +251,48 @@ function extractSimpleScene(pageText: string, userInfo?: any): string {
   return scene;
 }
 
-// Hardcoded styles - no external dependencies
+// Enhanced hardcoded styles with exact styleFrameworks.js verbiage
 function getHardcodedStyle(difficulty: string) {
   const styles = {
     'beginner': {
-      prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
-      quality: 'Premium children\'s book illustration with depth and dimension',
-      suffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
-      steps: 6,
-      cfgScale: 2.5,
-      strength: 0.8
+      prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics, single main character focus',
+      quality: 'Ultra premium children\'s book illustration with depth and dimension', 
+      suffix: 'professional children\'s book illustration, Pixar-style quality, diverse inclusive characters',
+      steps: 12,
+      cfgScale: 4.0,
+      strength: 0.9
     },
     'easy': {
-      prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful', 
+      prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics',
       quality: 'Premium children\'s book illustration with depth and dimension',
       suffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
-      steps: 6,
-      cfgScale: 2.5,
-      strength: 0.8
+      steps: 12,
+      cfgScale: 4.0,
+      strength: 0.9
     },
     'medium': {
-      prompt: 'children\'s book illustration, soft pastels, warm lighting, digital art',
-      quality: 'Professional children\'s book illustration standard',
-      suffix: 'children\'s book illustration, warm colors, safe wholesome content',
-      steps: 8,
-      cfgScale: 3.0,
-      strength: 0.75
+      prompt: 'Digital illustration with painterly qualities, soft brush strokes, focused character presentation',
+      quality: 'Ultra professional children\'s book illustration standard',
+      suffix: 'professional children\'s book illustration, warm colors, safe wholesome content, Caldecott Medal style',
+      steps: 12,
+      cfgScale: 4.0,
+      strength: 0.9
     },
     'hard': {
-      prompt: '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed',
+      prompt: '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed, advanced digital painting techniques',
       quality: 'Sophisticated artistic children\'s book illustration',
       suffix: 'artistic children\'s book illustration, refined quality, diverse representation',
-      steps: 10,
-      cfgScale: 3.5,
-      strength: 0.8
+      steps: 12,
+      cfgScale: 4.0,
+      strength: 0.9
     },
     'expert': {
       prompt: '2D digital illustration (masterful artistic technique), complex color theory, intricate details',
       quality: 'Masterful children\'s book art with diverse representation',
       suffix: 'masterful children\'s book art, sophisticated quality, diverse representation',
       steps: 12,
-      cfgScale: 3.8,
-      strength: 0.85
+      cfgScale: 4.0,
+      strength: 0.9
     }
   };
   
@@ -305,4 +314,53 @@ function getEnhancedNegativePrompt(userInfo?: any): string {
   console.log(`📝 Using standardized negative prompt (~95 words) for token efficiency`);
   
   return baseNegative;
+}
+
+// Cultural bypass implementation for Tier 2.5
+function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any): string {
+  if (userInfo?.nativeLanguage === 'en' && userInfo?.avatar?.skinTone === 'dark') {
+    // African American Route: Full cultural enhancement
+    const culturalEnhancements = {
+      'home': 'cozy home with African American family photos and cultural artwork',
+      'bedroom': 'cozy bedroom with African American family photos and cultural displays',
+      'kitchen': 'warm kitchen with soul food ingredients and family recipes',
+      'school': 'diverse classroom with multicultural learning materials',
+      'park': 'community park with diverse families and cultural celebration elements',
+      'restaurant': 'family-friendly restaurant with diverse community atmosphere'
+    };
+    return culturalEnhancements[baseSetting] || `${baseSetting} with African American cultural elements and community atmosphere`;
+  } else if (userInfo?.nativeLanguage === 'en') {
+    // Standard American Route: BYPASS - minimal processing
+    return `${baseSetting} scene`;
+  } else {
+    // International Route: Basic cultural adaptation
+    const language = userInfo?.nativeLanguage || 'international';
+    return `${baseSetting} with ${language} cultural elements`;
+  }
+}
+
+// Emotion detection without AI for enhanced scene analysis
+function detectEmotionFromText(text: string): string {
+  const emotions = {
+    happy: ['happy', 'smiled', 'laughed', 'giggled', 'cheerful', 'joy', 'excited', 'delighted'],
+    sad: ['sad', 'cried', 'tears', 'sobbed', 'upset', 'disappointed'],
+    excited: ['excited', 'thrilled', 'amazed', 'wonderful', 'incredible', 'fantastic'],
+    peaceful: ['calm', 'peaceful', 'quiet', 'gentle', 'serene', 'relaxed'],
+    surprised: ['surprised', 'amazed', 'shocked', 'wow', 'incredible', 'unbelievable']
+  };
+  
+  for (const [emotion, keywords] of Object.entries(emotions)) {
+    if (keywords.some(keyword => text.includes(keyword))) {
+      const contextMap = {
+        happy: 'cheerful and joyful atmosphere',
+        sad: 'gentle and comforting mood',
+        excited: 'energetic and thrilling atmosphere',
+        peaceful: 'calm and serene environment',
+        surprised: 'magical and wonder-filled scene'
+      };
+      return contextMap[emotion] || 'positive atmosphere';
+    }
+  }
+  
+  return 'warm and engaging atmosphere';
 }

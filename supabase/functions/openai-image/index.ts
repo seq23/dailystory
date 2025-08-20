@@ -63,41 +63,57 @@ serve(async (req) => {
       return createCorsErrorResponse('Invalid prompt parameter: positivePrompt is required and must be a string', 400);
     }
 
-    console.log(`🖼️ OpenAI Image Generation - Page ${pageNumber || 'unknown'}`);
-    console.log(`📝 Prompt: ${positivePrompt.substring(0, 100)}...`);
-    console.log(`🔍 Full request data:`, { 
-      positivePrompt: positivePrompt?.length, 
-      width, 
-      height, 
-      quality, 
-      style,
-      hasUserInfo: !!userInfo,
-      pageNumber,
-      seed,
-      sessionId
-    });
+    console.log(`🖼️ Tier 3: OpenAI with Full AI Enhancement - Page ${pageNumber || 'unknown'}`);
+    console.log(`📝 Initial prompt: ${positivePrompt.substring(0, 100)}...`);
 
-    // Use lean enhancement pipeline for consistent processing
+    // STEP 1: AI Story Enhancement Integration
+    let aiEnhancedStoryData = {};
+    try {
+      const aiEnhancementResult = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-story-enhancer`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storyText: positivePrompt,
+          userInfo,
+          sessionId: sessionId || 'openai-session',
+          pageNumber: pageNumber || 1,
+          totalPages: 10
+        })
+      });
+      
+      if (aiEnhancementResult.ok) {
+        const aiData = await aiEnhancementResult.json();
+        aiEnhancedStoryData = aiData.enhancedStoryData || {};
+        console.log(`🤖 AI story enhancement successful:`, Object.keys(aiEnhancedStoryData));
+      } else {
+        console.warn('⚠️ AI story enhancer failed, proceeding without AI enhancement');
+      }
+    } catch (error) {
+      console.warn('⚠️ AI story enhancer error:', error.message);
+    }
+
+    // STEP 2: Use Premium Pipeline with AI Enhancement
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`, {
-      userReadingLevel: userInfo?.readingLevel,
-      userDifficultyLevel: userInfo?.difficultyLevel,
-      finalMappedLevel: mappedDifficulty
-    });
+    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} for Tier 3 premium processing`);
 
-    const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
+    const enhancementResult = await MultiStageEnhancementPipeline.processTier1Premium(
       positivePrompt,
       userInfo,
       sessionId || 'openai-session',
       pageNumber || 1,
-      10 // totalPages
+      10, // totalPages
+      aiEnhancedStoryData // Add AI story data
     );
 
     let finalPrompt = enhancementResult.enhancedPrompt;
     const comprehensiveNegativePrompt = enhancementResult.negativePrompt;
     
-    console.log(`🎨 Enhanced prompt: ${finalPrompt.substring(0, 100)}...`);
-    console.log(`🚫 Enhanced negative prompt: ${comprehensiveNegativePrompt.substring(0, 50)}...`);
+    console.log(`🎨 Tier 3 AI-enhanced prompt: ${finalPrompt.substring(0, 100)}...`);
+    console.log(`🚫 Premium negative prompt: ${comprehensiveNegativePrompt.substring(0, 50)}...`);
+    console.log(`✅ Tier 3 using premium pipeline with style framework protection`);
 
     // Determine size for gpt-image-1 (different sizes than DALL-E 3)
     let size = '1024x1024';
