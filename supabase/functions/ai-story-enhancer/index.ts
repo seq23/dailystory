@@ -53,10 +53,6 @@ CRITICAL: Return ONLY valid JSON with this exact structure:
   "setting": {"location": "string", "timeOfDay": "string", "weather": "string", "season": "string"},
   "objects": ["string"],
   "mood": "string",
-  "lighting": "string", 
-  "composition": "string",
-  "colors": ["string"],
-  "visualStyle": "string",
   "narrativeElements": {"action": "string", "focus": "string", "perspective": "string"}
 }
 
@@ -92,10 +88,6 @@ Extract all visual elements, characters, settings, objects, lighting, mood, and 
         setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "spring" },
         objects: ["book"],
         mood: "cheerful",
-        lighting: "soft natural light",
-        composition: "centered",
-        colors: ["warm tones"],
-        visualStyle: "children's book illustration",
         narrativeElements: { action: "reading", focus: "character", perspective: "eye level" }
       };
     }
@@ -134,10 +126,6 @@ Extract all visual elements, characters, settings, objects, lighting, mood, and 
             setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "spring" },
             objects: ["book"],
             mood: "cheerful",
-            lighting: "soft natural light",
-            composition: "centered",
-            colors: ["warm tones"],
-            visualStyle: "children's book illustration",
             narrativeElements: { action: "reading", focus: "character", perspective: "eye level" }
           },
           extractedElements: { characterCount: 1, objectCount: 1, complexity: 'simple' },

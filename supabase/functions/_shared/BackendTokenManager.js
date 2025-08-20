@@ -167,7 +167,7 @@ export class BackendTokenManager {
         content: sceneContext,
         priority: PromptPriority.HIGH,
         canTruncate: true,
-        type: 'scene-context'
+        type: 'ai-scene-context'
       },
       {
         content: characterDescription, 
@@ -179,7 +179,7 @@ export class BackendTokenManager {
         content: styleFramework,
         priority: PromptPriority.MEDIUM,
         canTruncate: true,
-        type: 'style-framework'
+        type: 'framework-concise-prompt'
       },
       {
         content: visualDetails,
@@ -191,7 +191,7 @@ export class BackendTokenManager {
         content: qualitySuffixes,
         priority: PromptPriority.LOW,
         canTruncate: true,
-        type: 'quality-suffixes'
+        type: 'brand-suffix'
       }
     ].filter(segment => segment.content && segment.content.length > 0);
   }

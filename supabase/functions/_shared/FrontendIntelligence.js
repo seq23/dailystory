@@ -274,49 +274,18 @@ export class FrontendIntelligence {
       prompt += `, ${emotionalContext.mood} mood and atmosphere`;
     }
     
-    // Integrate style framework specifications
+    // Add concise style framework prompt and brand suffix
     if (styleFramework) {
-      // Add art style
-      if (styleFramework.artStyle) {
-        prompt += `, ${styleFramework.artStyle}`;
-      }
-      
-      // Add color palette with emotional enhancement
-      if (styleFramework.colorPalette) {
-        const enhancedColorPalette = this.enhanceColorPaletteWithEmotion(styleFramework.colorPalette, emotionalContext);
-        prompt += `, ${enhancedColorPalette}`;
-      }
-      
-      // Add lighting
-      if (styleFramework.lighting) {
-        prompt += `, ${styleFramework.lighting}`;
-      }
-      
-      // Add texture and composition
-      if (styleFramework.texture) {
-        prompt += `, ${styleFramework.texture}`;
-      }
-      
-      if (styleFramework.composition) {
-        prompt += `, ${styleFramework.composition}`;
-      }
-      
-      // Add quality specifications
-      if (styleFramework.quality) {
-        prompt += `, ${styleFramework.quality}`;
-      }
-      
-      // Add style framework's specific prompt
       if (styleFramework.prompt) {
         prompt += `, ${styleFramework.prompt}`;
       }
+      if (styleFramework.brandSuffix) {
+        prompt += `, ${styleFramework.brandSuffix}`;
+      }
     } else {
       // Fallback quality enhancements if no style framework
-      prompt += ', ultra high resolution, professional children\'s book illustration, vibrant colors, perfect lighting';
+      prompt += ', contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork';
     }
-    
-    // Add children's book context
-    prompt += ', children\'s book illustration style, safe for children, consistent character appearance';
     
     return prompt;
   }

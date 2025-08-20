@@ -13,12 +13,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Ultra premium children\'s book illustration with depth and dimension',
     
     // Prompt components
-    prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful, single main character',
+    prompt: '2D digital illustration, clean cel-shading, crisp line art, bright natural lighting, full-body centered character, child-friendly proportions, warm cheerful palette',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'professional children\'s book illustration, Pixar-style quality, diverse inclusive characters',
+    brandSuffix: 'contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork',
     negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
@@ -42,12 +42,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Premium children\'s book illustration with depth and dimension',
     
     // Prompt components
-    prompt: '3D children\'s book art, bright colors, smooth rendering, cheerful',
+    prompt: '2D digital illustration, clean cel-shading, crisp line art, bright natural lighting, full-body centered character, child-friendly proportions, warm cheerful palette',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: '3d_smooth',
-    brandSuffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
+    brandSuffix: 'contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
@@ -70,12 +70,12 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Ultra professional children\'s book illustration standard',
     
     // Prompt components
-    prompt: 'children\'s book illustration, soft pastels, warm lighting, digital art, single main character focus',
+    prompt: 'soft pastels, warm lighting, painterly, medium detail, minimal complexity',
     complexity: 'minimal',
     colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
-    brandSuffix: 'professional children\'s book illustration, warm colors, safe wholesome content, Caldecott Medal style',
+    brandSuffix: 'contemporary children\'s book illustration, diverse and inclusive, high quality professional artwork, Caldecott Medal style',
     negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
