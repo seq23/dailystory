@@ -5,6 +5,7 @@
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo, DifficultyLevel, SkinTone } from "@/types";
 import { DifficultyLevelMapper } from "./DifficultyLevelMapper";
+import { FixedCulturalLogic } from "./FixedCulturalLogic";
 
 // ============= CONSOLIDATED INTERFACES =============
 
@@ -503,24 +504,22 @@ export class StructuredPromptEngine {
   }
 
   static generateCulturalCharacterDescription(userInfo: UserInfo): string {
-    // Special handling for English speakers with dark skin - mix African American and general American
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+    // Use FixedCulturalLogic for proper cultural assignment
+    if (FixedCulturalLogic.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
       const profile = this.getCulturalVisualProfile('en');
       const skinTone = this.selectRandomElement(profile.skinTones.slice(10, 20)); // Use darker range
       
-      // Generate comprehensive facial features
-      const facialFeatures = profile.facialFeatures as FacialFeaturesSystem;
-      const eyes = this.selectRandomElement(facialFeatures.eyes);
-      const facialStructure = this.selectRandomElement(facialFeatures.facialStructure);
+      // Use FixedCulturalLogic for expanded facial features
+      const facialFeatures = FixedCulturalLogic.generateExpandedAfricanAmericanFeatures();
       
       // Select appropriate hair style based on avatar gender
       const isGirl = userInfo.name?.toLowerCase().includes('a') || userInfo.interests?.includes('princess');
       const hairStyles = isGirl ? (profile.girlsHairStyles || []) : (profile.boysHairStyles || []);
       const hairStyle = this.selectRandomElement(hairStyles.length > 0 ? hairStyles : ['natural short hair']);
       
-      const culturalClothing = this.getCulturalClothing(userInfo);
+      const culturalClothing = FixedCulturalLogic.selectCulturalClothing(userInfo, profile);
       
-      return `child with ${skinTone}, ${eyes}, ${facialStructure}, ${hairStyle}, ${culturalClothing}, authentic African American features`;
+      return `child with ${skinTone}, ${facialFeatures}, ${hairStyle}, ${culturalClothing}, authentic African American features`;
     }
     
     // Standard cultural character generation for other languages/contexts
@@ -528,7 +527,7 @@ export class StructuredPromptEngine {
     const skinTone = this.mapSkinToneToDescription(userInfo.avatar?.skinTone as SkinTone, profile);
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     const facialFeatures = this.generateFacialFeaturesDescription(profile.facialFeatures);
-    const culturalClothing = this.getCulturalClothing(userInfo);
+    const culturalClothing = FixedCulturalLogic.selectCulturalClothing(userInfo, profile);
     
     return `child with ${skinTone}, ${facialFeatures}, ${hairStyle}, ${culturalClothing}`;
   }
@@ -536,8 +535,8 @@ export class StructuredPromptEngine {
   private static getCulturallyAppropriateHairStyle(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
     
-    // Special handling for English speakers with dark skin tone
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+    // Use FixedCulturalLogic for proper cultural assignment
+    if (FixedCulturalLogic.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
       const isGirl = userInfo.name?.toLowerCase().includes('a');
       
       if (isGirl && profile.girlsHairStyles) {
@@ -553,18 +552,12 @@ export class StructuredPromptEngine {
 
   private static getCulturalClothing(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
-    return this.selectRandomElement(profile.clothing);
+    return FixedCulturalLogic.selectCulturalClothing(userInfo, profile);
   }
 
   private static generateCulturalSetting(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
-    
-    // For English speakers with non-dark skin, use mainstream settings if available
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone !== 'dark' && profile.mainstreamSettings) {
-      return this.selectRandomElement(profile.mainstreamSettings);
-    }
-    
-    return this.selectRandomElement(profile.settings);
+    return FixedCulturalLogic.selectCulturalSetting(userInfo, profile);
   }
 
   private static generateCulturalNegativePrompt(userInfo: UserInfo): string {
