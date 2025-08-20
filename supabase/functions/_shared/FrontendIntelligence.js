@@ -5,32 +5,34 @@ export class FrontendIntelligence {
   
   // ============= COMPREHENSIVE AFRICAN AMERICAN ARRAYS =============
   
-  // Boys' Hair Styles (34 styles)
+  // Boys' Hair Styles (36 styles)
   static BOYS_HAIR_STYLES = [
-    'buzz cut', 'fade cut', 'taper fade', 'high top fade', 'low fade', 'crew cut', 'caesar cut', 
-    'curly top fade', 'curly high fade', 'curly low fade', 'curly taper fade', 'curly high top', 
-    'curly mohawk', 'curly faux hawk', 'curly undercut', 'fade with curls on top', 'textured crop', 
-    'curly fringe fade', 'twisted top fade', 'undercut design', 'hair tattoo', 'geometric patterns', 
-    'mini afro', 'medium afro', 'tapered afro', 'wash and go', 'finger coils', 'two strand twists', 
-    'flat twists', 'mini twists', 'locs', 'starter locs', 'freeform locs', 'twisted locs', 
-    'side part locs', 'middle part locs', 'ponytail with locs', 'nape area tapered'
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 'textured low fade', 'detailed crew cut', 'textured caesar cut', 
+    'detailed curly top fade', 'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 'detailed curly high top', 
+    'textured curly mohawk', 'detailed curly faux hawk', 'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 'textured hair tattoo', 'detailed geometric patterns', 
+    'textured mini afro', 'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 'textured finger coils', 'detailed two strand twists', 
+    'textured flat twists', 'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 'detailed twisted locs', 
+    'textured side part locs', 'detailed middle part locs', 'textured ponytail with locs', 'detailed nape area tapered'
   ];
 
-  // Girls' Hair Styles (60+ styles)
+  // Girls' Hair Styles (52 styles)
   static GIRLS_HAIR_STYLES = [
-    'short natural hair', 'medium natural hair', 'long natural hair', 'shoulder-length hair', 'chin-length hair',
-    'twist out', 'bantu knots', 'rod set', 'braid out', 'pineapple updo', 'high puff', 'low puff', 
-    'side puff', 'double puff', 'space buns', 'top knot bun', 'low bun', 'messy bun', 'sleek bun',
-    'cornrows', 'box braids', 'micro braids', 'jumbo braids', 'goddess braids', 'dutch braids', 
-    'french braids', 'fishtail braids', 'halo braid', 'crown braid', 'side braids', 'three strand twists',
-    'senegalese twists', 'marley twists', 'havana twists', 'passion twists', 'spring twists', 
-    'kinky twists', 'chunky twists', 'protective twists', 'sisterlocs', 'microlocs', 'traditional locs',
-    'interlocked locs', 'braided locs', 'loc updo', 'half up half down locs', 'afro puffs', 'large afro',
-    'picked out afro', 'shaped afro', 'curly afro', 'coily afro', 'kinky afro', 'twist and pin style',
-    'bobby pin curls', 'hair accessories with bows', 'headbands', 'hair clips', 'barrettes', 'scrunchies',
-    'silk scarves', 'bandanas', 'side swept bangs', 'face framing layers', 'layered cut', 'blunt cut',
-    'asymmetrical cut', 'zigzag parts', 'curved parts', 'triangle parts', 'diamond parts', 
-    'heart shaped parts', 'star patterns'
+    'textured short natural hair', 'textured medium natural hair', 'textured long natural hair', 
+    'textured shoulder-length hair', 'textured chin-length hair',
+    'detailed twist out', 'detailed bantu knots', 'detailed rod set', 'detailed braid out', 
+    'textured pineapple updo', 'textured high puff', 'textured low puff', 'textured side puff', 
+    'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
+    'detailed messy bun', 'detailed sleek bun',
+    'detailed cornrows', 'detailed box braids', 'detailed micro braids', 'detailed jumbo braids', 
+    'detailed goddess braids', 'detailed dutch braids', 'detailed french braids', 'detailed fishtail braids', 
+    'detailed halo braid', 'detailed crown braid', 'detailed side braids', 'detailed three strand twists',
+    'detailed senegalese twists', 'detailed marley twists', 'detailed havana twists', 'detailed passion twists', 
+    'detailed spring twists', 'detailed kinky twists', 'detailed chunky twists', 'detailed protective twists', 
+    'textured sisterlocs', 'textured microlocs', 'textured traditional locs', 'textured interlocked locs', 
+    'detailed braided locs', 'detailed loc updo', 'textured half up half down locs', 'textured afro puffs', 
+    'textured large afro', 'textured picked out afro', 'textured shaped afro', 'textured curly afro', 
+    'textured coily afro', 'textured kinky afro'
   ];
 
   // African American Skin Tones (20 variations)
