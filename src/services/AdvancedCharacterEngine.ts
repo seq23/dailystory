@@ -144,7 +144,7 @@ export class AdvancedCharacterEngine {
       return existing;
     }
     
-    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+    const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
     const familyGroupId = `${sessionId}_family`;
     
     // Create family group for shared traits
@@ -159,7 +159,7 @@ export class AdvancedCharacterEngine {
       relationshipToMain: 'self',
       culturalRole: 'child protagonist',
       physicalTraits: StructuredPromptEngine.generateCulturalCharacterDescription(userInfo),
-      clothingStyle: MulticulturalVisualService.getCulturalClothing(userInfo),
+      clothingStyle: this.getCommunityClothing('child', 'child', culturalProfile),
       lastUsedPage: pageNumber,
       familyGroupId,
       ageCategory: 'child'
@@ -195,12 +195,12 @@ export class AdvancedCharacterEngine {
     
     if (!familyGroup) {
       // Create family group if it doesn't exist
-      const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+      const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
       this.createFamilyGroup(familyGroupId, userInfo.nativeLanguage as SupportedLanguage, culturalProfile);
     }
     
     const familyTraits = this.familyGroups.get(familyGroupId)!.sharedTraits;
-    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+    const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
     
     // Generate age-appropriate description with family resemblance
     const physicalTraits = this.generateFamilyMemberTraits(
@@ -247,7 +247,7 @@ export class AdvancedCharacterEngine {
       return existing;
     }
     
-    const culturalProfile = MulticulturalVisualService.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+    const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
     
     const communityCharacter: CharacterDescriptor = {
       name: this.generateCulturalName(relationship, userInfo.nativeLanguage as SupportedLanguage),

@@ -163,8 +163,8 @@ export class SimpleImageService {
   // Generate cultural character description using frontend service
   private static async generateCulturalCharacterDescription(userInfo: UserInfo): Promise<string> {
     try {
-      const { MulticulturalVisualService } = await import('./MulticulturalVisualService');
-      return MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+      const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
+      return StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
     } catch (error) {
       console.warn('Failed to generate cultural description, using basic fallback:', error);
       return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
@@ -221,25 +221,25 @@ export class SimpleImageService {
     let characterDesc = 'friendly character';
     
     if (userInfo && userInfo.avatar) {
-      // Use frontend MulticulturalVisualService
+      // Use frontend StructuredPromptEngine
       try {
-        const { MulticulturalVisualService } = await import('./MulticulturalVisualService');
-        characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+        const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
+        characterDesc = StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
         
         // Replace character name in the text
         if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
           characterDesc = `${userInfo.name} (${characterDesc})`;
         }
       } catch (error) {
-        console.warn('MulticulturalVisualService not available, using basic description:', error);
+        console.warn('StructuredPromptEngine not available, using basic description:', error);
         characterDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
       }
     }
     
     // Use intelligent content extraction instead of hardcoded rules
     try {
-      const { DirectContentExtractor } = await import('./DirectContentExtractor');
-      const extractedContent = DirectContentExtractor.extractPageContent(pageText);
+      const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
+      const extractedContent = StructuredPromptEngine.extractPageContent(pageText);
       
       const visualElements = extractedContent.object 
         ? ` featuring ${extractedContent.object}` 
@@ -247,7 +247,7 @@ export class SimpleImageService {
       
       return `Children's book illustration: ${characterDesc}. Scene: ${pageText}${visualElements}. Bright, colorful, safe for children, consistent character appearance`;
     } catch (error) {
-      console.warn('⚠️ DirectContentExtractor not available, using basic prompt');
+      console.warn('⚠️ StructuredPromptEngine not available, using basic prompt');
       return `Children's book illustration: ${characterDesc}. Scene: ${pageText}. Bright, colorful, safe for children, consistent character appearance`;
     }
   }
@@ -436,10 +436,10 @@ export class SimpleImageService {
 
       // Import structured engines for sophisticated prompt generation
       const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
-      const { DirectContentExtractor } = await import('./DirectContentExtractor');
+      // All functionality now in StructuredPromptEngine
 
-      // Extract rich scene content using DirectContentExtractor
-      const pageContent = DirectContentExtractor.extractPageContent(cleanScene);
+      // Extract rich scene content using StructuredPromptEngine
+      const pageContent = StructuredPromptEngine.extractPageContent(cleanScene);
       console.log('🔍 Extracted page content:', pageContent);
 
       // Create character descriptors for consistency

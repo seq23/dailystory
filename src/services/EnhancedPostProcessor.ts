@@ -63,15 +63,15 @@ export class EnhancedPostProcessor {
       // Generate character description for consistency
       if (userInfo.name) {
         try {
-          const { MulticulturalVisualService } = await import('./MulticulturalVisualService');
-          const characterDesc = MulticulturalVisualService.generateCulturalCharacterDescription(userInfo);
+          const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
+          const characterDesc = StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
           
           // Store character without seed initially - will be added when first image is generated
           StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, undefined, 1);
           
           console.log(`✅ Initialized character context for ${userInfo.name} in session ${sessionId}`);
         } catch (error) {
-          console.warn('MulticulturalVisualService not available, using basic character description:', error);
+          console.warn('StructuredPromptEngine not available, using basic character description:', error);
           // Fallback character description
           const basicDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
           StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, basicDesc, undefined, 1);
