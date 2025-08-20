@@ -523,38 +523,56 @@ export class StructuredPromptEngine {
     const skinTone = this.mapSkinToneToDescription(userInfo.avatar?.skinTone as SkinTone, profile);
     const hairStyle = this.getCulturallyAppropriateHairStyle(userInfo);
     const facialFeatures = this.generateFacialFeaturesDescription(profile.facialFeatures);
-    const culturalClothing = FixedCulturalLogic.selectCulturalClothing(userInfo, profile);
+    
+    // FIXED: Only use FixedCulturalLogic for English + dark skin users
+    const culturalClothing = (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') 
+      ? FixedCulturalLogic.selectCulturalClothing(userInfo, profile)
+      : this.selectRandomElement(profile.clothing);
     
     return `child with ${skinTone}, ${facialFeatures}, ${hairStyle}, ${culturalClothing}`;
   }
 
   private static getCulturallyAppropriateHairStyle(userInfo: UserInfo): string {
-    // SIMPLIFIED: Only special handling for English + dark skin
+    // Import SimpleImageService for universal hair mapping
+    const { SimpleImageService } = require('./SimpleImageService');
+    
+    // FIXED: Use universal hair mapping for everyone
     if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      const profile = this.getCulturalVisualProfile('en');
-      const isGirl = userInfo.name?.toLowerCase().includes('a');
-      
-      if (isGirl && profile.girlsHairStyles) {
-        return this.selectRandomElement(profile.girlsHairStyles);
-      } else if (!isGirl && profile.boysHairStyles) {
-        return this.selectRandomElement(profile.boysHairStyles);
-      }
-      return 'natural textured hair';
+      // Special case: African American textured hair variety
+      return FixedCulturalLogic.generateExpandedAfricanAmericanFeatures().split(',')[0]; // Get hair part only
     }
     
-    // For everyone else, use standard cultural hair styles
-    const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
-    return this.selectRandomElement(profile.hairStyles);
+    // For everyone else: Use universal hair color mapping
+    const hairColor = SimpleImageService.getHairColorFromAvatar(userInfo.avatar);
+    const hairTextures = ['straight', 'wavy', 'curly'];
+    const hairLengths = ['short', 'medium-length', 'long'];
+    
+    const texture = hairTextures[Math.floor(Math.random() * hairTextures.length)];
+    const length = hairLengths[Math.floor(Math.random() * hairLengths.length)];
+    
+    return `${length} ${texture} ${hairColor} hair`;
   }
 
   private static getCulturalClothing(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
-    return FixedCulturalLogic.selectCulturalClothing(userInfo, profile);
+    
+    // FIXED: Only use FixedCulturalLogic for English + dark skin users
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      return FixedCulturalLogic.selectCulturalClothing(userInfo, profile);
+    }
+    
+    return this.selectRandomElement(profile.clothing);
   }
 
   private static generateCulturalSetting(userInfo: UserInfo): string {
     const profile = this.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
-    return FixedCulturalLogic.selectCulturalSetting(userInfo, profile);
+    
+    // FIXED: Only use FixedCulturalLogic for English + dark skin users
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      return FixedCulturalLogic.selectCulturalSetting(userInfo, profile);
+    }
+    
+    return this.selectRandomElement(profile.settings);
   }
 
   private static generateCulturalNegativePrompt(userInfo: UserInfo): string {

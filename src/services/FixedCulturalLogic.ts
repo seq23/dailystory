@@ -83,10 +83,8 @@ export class FixedCulturalLogic {
     return userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark';
   }
 
-  static shouldApplyMainstreamAmericanCulture(userInfo: UserInfo): boolean {
-    // Apply mainstream American culture for English speakers with non-dark skin
-    return userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone !== 'dark';
-  }
+  // DELETED: shouldApplyMainstreamAmericanCulture - no longer needed
+  // All non-English+dark users now use standard cultural profiles
 
   /**
    * PHASE 5: Weighted randomization for more natural cultural feature variation
@@ -162,16 +160,7 @@ export class FixedCulturalLogic {
    * Fix the cultural setting selection logic
    */
   static selectCulturalSetting(userInfo: UserInfo, culturalProfile: any): string {
-    // FIXED: Use mainstream settings for English + non-dark skin
-    if (this.shouldApplyMainstreamAmericanCulture(userInfo)) {
-      const mainstreamSettings = [
-        'suburban neighborhood', 'modern American suburb', 'middle-class community',
-        'well-maintained school', 'public library', 'shopping mall', 'local park',
-        'family restaurant', 'community center', 'beautiful church', 'family home',
-        'historical landmark', 'cultural center'
-      ];
-      return this.selectWeightedRandomElement(mainstreamSettings, 'natural');
-    }
+    // DELETED: Mainstream American logic - use standard cultural profiles instead
 
     // Use African American cultural settings for English + dark skin
     if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
@@ -201,13 +190,7 @@ export class FixedCulturalLogic {
       return this.selectWeightedRandomElement(clothing, 'natural');
     }
 
-    if (this.shouldApplyMainstreamAmericanCulture(userInfo)) {
-      const clothing = [
-        'casual American clothing', 'modern kids fashion', 'comfortable everyday wear',
-        'stylish casual outfit', 'contemporary children\'s clothing', 'trendy casual wear'
-      ];
-      return this.selectWeightedRandomElement(clothing, 'natural');
-    }
+    // DELETED: Mainstream American logic - use standard cultural profiles instead
 
     return this.selectWeightedRandomElement(culturalProfile.clothing, 'natural');
   }
@@ -230,13 +213,7 @@ export class FixedCulturalLogic {
       };
     }
     
-    if (this.shouldApplyMainstreamAmericanCulture(userInfo)) {
-      return {
-        isValid: true,
-        appliedCulture: 'Mainstream American',
-        warnings
-      };
-    }
+    // DELETED: Mainstream American validation - simplified to standard cultural profiles
     
     if (userInfo.nativeLanguage && userInfo.nativeLanguage !== 'en') {
       return {

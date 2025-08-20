@@ -174,13 +174,12 @@ export class UnifiedCharacterConsistency {
       'dark': 'dark'
     };
     
-    // DELETED: Hair mapping now handled by SimpleImageService.getHairColorFromAvatar()
-    // Use universal hair mapping instead of redundant local mapping
+    // FIXED: Use universal hair mapping from SimpleImageService
     const skinTone = skinToneMap[avatar.skinTone] || 'medium';
     
     // Import SimpleImageService for universal hair mapping
-    // Note: This creates a temporary dependency - consider moving to utils if needed
-    const hairColor = 'brown'; // Fallback - should be replaced by universal mapping call
+    const { SimpleImageService } = require('./SimpleImageService');
+    const hairColor = SimpleImageService.getHairColorFromAvatar(avatar);
     
     // Eye color options based on realism
     const eyeColorOptions = skinTone === 'dark' ? ['brown', 'dark brown'] : 
