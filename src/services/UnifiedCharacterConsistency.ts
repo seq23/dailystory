@@ -27,6 +27,7 @@ interface CharacterSeed {
 
 export class UnifiedCharacterConsistency {
   private characterSeeds = new Map<string, CharacterSeed>();
+  private secondaryCharacterSeeds = new Map<string, CharacterSeed>();
   private readonly SEED_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   /**
@@ -323,13 +324,142 @@ export class UnifiedCharacterConsistency {
   }
 
   /**
+   * Generate or retrieve consistent secondary character seed
+   */
+  getSecondaryCharacterSeed(
+    userId: string,
+    sessionId: string,
+    characterName: string,
+    characterType: 'friend' | 'sibling' | 'pet' | 'classmate' | 'companion',
+    userInfo: any
+  ): { seed: number; characterDescription: string; culturalContext: string } {
+    const secondaryKey = `${userId}-${sessionId}-${characterName}-${characterType}`;
+    let seedData = this.secondaryCharacterSeeds.get(secondaryKey);
+
+    if (!seedData || this.isSeedExpired(seedData)) {
+      seedData = this.createSecondaryCharacterSeed(userId, sessionId, characterName, characterType, userInfo);
+      this.secondaryCharacterSeeds.set(secondaryKey, seedData);
+      console.log(`👥 Created secondary character seed for ${characterName} (${characterType}): ${seedData.baseSeed}`);
+    } else {
+      seedData.lastUsed = Date.now();
+      console.log(`👥 Using existing secondary character seed for ${characterName}: ${seedData.baseSeed}`);
+    }
+
+    const sessionSeed = this.generateSessionVariant(seedData, sessionId);
+    const characterDescription = this.buildSecondaryCharacterDescription(seedData, characterType);
+    const culturalContext = this.buildCulturalContext(seedData);
+
+    return {
+      seed: sessionSeed,
+      characterDescription,
+      culturalContext
+    };
+  }
+
+  /**
+   * Create secondary character seed with profile
+   */
+  private createSecondaryCharacterSeed(
+    userId: string,
+    sessionId: string,
+    characterName: string,
+    characterType: string,
+    userInfo: any
+  ): CharacterSeed {
+    const baseSeed = this.generateStableSeed(`${userId}-secondary`, characterName);
+    const culturalProfile = this.determineCulturalProfile(userInfo);
+    
+    // Generate varied physical traits for secondary characters
+    const physicalTraits = this.generateSecondaryPhysicalTraits(userInfo, baseSeed, characterType);
+    const culturalElements = this.generateCulturalElements(culturalProfile, userInfo);
+
+    return {
+      userId,
+      sessionId,
+      characterName,
+      baseSeed,
+      culturalProfile,
+      physicalTraits,
+      culturalElements,
+      createdAt: Date.now(),
+      lastUsed: Date.now()
+    };
+  }
+
+  /**
+   * Generate varied physical traits for secondary characters
+   */
+  private generateSecondaryPhysicalTraits(userInfo: any, seed: number, characterType: string): CharacterSeed['physicalTraits'] {
+    const avatar = userInfo.avatar || {};
+    const random = this.createSeededRandom(seed);
+    
+    // Vary skin tones for diversity (but keep realistic)
+    const skinToneOptions = ['fair', 'light', 'medium', 'olive', 'dark'];
+    const skinTone = skinToneOptions[Math.floor(random() * skinToneOptions.length)];
+    
+    // Varied hair colors for secondary characters
+    const hairColorOptions = ['brown', 'black', 'blonde', 'auburn', 'dark brown', 'light brown'];
+    const hairColor = hairColorOptions[Math.floor(random() * hairColorOptions.length)];
+    
+    // Eye color variety
+    const eyeColorOptions = ['brown', 'blue', 'green', 'hazel', 'dark brown'];
+    const eyeColor = eyeColorOptions[Math.floor(random() * eyeColorOptions.length)];
+    
+    const builds = ['slim', 'average', 'sturdy'];
+    const heights = ['short', 'average height', 'tall for their age'];
+    
+    return {
+      skinTone,
+      hairColor,
+      eyeColor,
+      build: builds[Math.floor(random() * builds.length)],
+      height: heights[Math.floor(random() * heights.length)]
+    };
+  }
+
+  /**
+   * Build secondary character description
+   */
+  private buildSecondaryCharacterDescription(seedData: CharacterSeed, characterType: string): string {
+    const { characterName, physicalTraits, culturalElements } = seedData;
+    
+    const typeDescriptor = characterType === 'friend' ? 'friend' : 
+                          characterType === 'sibling' ? 'sibling' : 
+                          characterType === 'classmate' ? 'classmate' : 'companion';
+    
+    const parts = [
+      `${characterName} (${typeDescriptor})`,
+      `${physicalTraits.height} child with ${physicalTraits.skinTone} skin`,
+      `${physicalTraits.hairColor} hair and ${physicalTraits.eyeColor} eyes`,
+      `${physicalTraits.build} build`,
+      `wearing ${culturalElements.clothing}`,
+    ];
+    
+    if (culturalElements.accessories.length > 0) {
+      parts.push(`with ${culturalElements.accessories.slice(0, 2).join(' and ')}`);
+    }
+    
+    return parts.join(', ');
+  }
+
+  /**
    * Clean up expired character seeds
    */
   cleanupExpiredSeeds(): number {
     let cleaned = 0;
+    
+    // Clean main character seeds
     for (const [key, seed] of this.characterSeeds.entries()) {
       if (this.isSeedExpired(seed)) {
         this.characterSeeds.delete(key);
+        cleaned++;
+      }
+    }
+    
+    // Clean secondary character seeds
+    for (const [key, seed] of this.secondaryCharacterSeeds.entries()) {
+      if (this.isSeedExpired(seed)) {
+        this.secondaryCharacterSeeds.delete(key);
         cleaned++;
       }
     }

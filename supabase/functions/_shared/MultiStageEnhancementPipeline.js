@@ -5,6 +5,7 @@ import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
 import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
+import './AnimalCharacterManager.js'; // Loads AnimalCharacterManager globally
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -26,9 +27,11 @@ export class MultiStageEnhancementPipeline {
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
+      globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
       
       // 1. Enhance story text with consistent visual details before prompt building
       let enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
       
       // If AI enhancement data is available, incorporate it into the story context
       if (enhancedStoryData && enhancedStoryData.characters) {
@@ -84,6 +87,7 @@ export class MultiStageEnhancementPipeline {
       const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
       const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
       const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+      const animalDetails = globalThis.AnimalCharacterManager.getAnimalSeedsForPrompt(sessionId);
       
       // NEW: Use enhanced cultural setting logic instead of override
       let enhancedSetting = existingSetting;
@@ -116,6 +120,7 @@ export class MultiStageEnhancementPipeline {
           existingSetting: enhancedSetting, // Use enhanced setting instead of raw existing
           visualDetails,
           storyStateDetails,
+          animalDetails,
           pageNumber,
           totalPages
         }
@@ -188,12 +193,16 @@ export class MultiStageEnhancementPipeline {
       console.log(`🔄 Tier 2 Simple Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
       
       // 1. Enhance story text with consistent visual details (same as Tier 1)
-      const enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
+      let enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
+      
       console.log('🎯 Tier 2 Visual detail enhancement applied:', {
         originalLength: storyText.length,
         enhancedLength: enhancedStoryText.length,
         changed: storyText !== enhancedStoryText,
-        trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length
+        trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
+        trackedAnimals: globalThis.AnimalCharacterManager.getSessionAnimals(sessionId).length
       });
       
       // 2. Simple template-based processing - NO AI functions
@@ -287,13 +296,18 @@ export class MultiStageEnhancementPipeline {
   }
   
   static buildSimpleNegativePrompt(userInfo) {
-    let baseNegative = "text, words, scary, dark, adult themes, photorealistic";
+    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
     
     // Add gender consistency
     if (userInfo?.avatar?.type === 'girl') {
       baseNegative += ', boy character, male character, masculine features';
     } else if (userInfo?.avatar?.type === 'boy') {
       baseNegative += ', girl character, female character, feminine features, dress, skirt';
+    }
+    
+    // Enhanced negative prompts for African American characters
+    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      baseNegative += ', inconsistent character appearance, wrong skin color, incorrect facial features, stereotypical representation, caricature features, inaccurate cultural elements, offensive portrayal';
     }
     
     return baseNegative;
