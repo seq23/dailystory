@@ -183,9 +183,30 @@ export class FixedCulturalLogic {
   static selectCulturalClothing(userInfo: UserInfo, culturalProfile: any): string {
     if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
       const clothing = [
-        'stylish casual clothing', 'trendy urban fashion', 'colorful ethnic patterns',
-        'modern streetwear', 'cultural pride clothing', 'contemporary African-inspired fashion',
-        'vibrant patterned shirt', 'modern dashiki style', 'fashionable casual wear'
+        // Casual American Basics
+        'stylish casual clothing',
+        'trendy urban fashion', 
+        'modern streetwear',
+        'fashionable casual wear',
+        
+        // Specific American Clothing Items
+        'jeans and sneakers',
+        'hoodie and joggers',
+        'graphic t-shirt and shorts',
+        'button-up shirt and khakis',
+        'polo shirt and jeans',
+        
+        // American Fashion Styles
+        'preppy American style',
+        'classic American fashion',
+        'contemporary American wear',
+        'modern American casual',
+        'athletic wear and sneakers',
+        
+        // Age-Appropriate American Options
+        'school appropriate clothing',
+        'playground-ready outfit',
+        'comfortable everyday clothes'
       ];
       return this.selectWeightedRandomElement(clothing, 'natural');
     }
