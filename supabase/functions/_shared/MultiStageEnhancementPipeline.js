@@ -26,10 +26,19 @@ export class MultiStageEnhancementPipeline {
       globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
       
-      // Detect and update setting/environment from story text
-      this.updateSettingFromText(sessionId, storyText);
+      // 1. Enhance story text with consistent visual details before prompt building
+      const enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      console.log('🎯 Visual detail enhancement applied:', {
+        originalLength: storyText.length,
+        enhancedLength: enhancedStoryText.length,
+        changed: storyText !== enhancedStoryText,
+        trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length
+      });
       
-      // 1. Determine difficulty level and get style framework
+      // Detect and update setting/environment from story text
+      this.updateSettingFromText(sessionId, enhancedStoryText);
+      
+      // 2. Determine difficulty level and get style framework
       const imageDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
       const styleFramework = getStyleFramework(imageDifficulty);
       
@@ -40,29 +49,29 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
       
-      // 2. Generate stable character seed for consistency (check visual state first)
+      // 3. Generate stable character seed for consistency (check visual state first)
       let characterSeed = globalThis.StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name || 'Alex');
       if (!characterSeed) {
         characterSeed = this.generateStableSeed(userInfo, sessionId);
         globalThis.StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name || 'Alex', characterSeed, null);
       }
       
-      // 3. Get cultural profile
+      // 4. Get cultural profile
       const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
-      // 4. Extract scene and emotional context
-      const sceneContext = this.extractSceneContent(storyText);
-      const emotionalContext = FrontendIntelligence.detectEmotionalContext(storyText);
+      // 5. Extract scene and emotional context from enhanced text
+      const sceneContext = this.extractSceneContent(enhancedStoryText);
+      const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
       
-      // 5. Get existing visual state for consistency
+      // 6. Get existing visual state for consistency
       const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
       const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
       const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
       
-      // 6. Build premium prompt with AI intelligence, style framework AND visual state
+      // 7. Build premium prompt with AI intelligence, style framework AND enhanced story text
       const enhancedPrompt = FrontendIntelligence.buildPremiumPrompt(
-        storyText,
+        enhancedStoryText, // Use enhanced text instead of original
         userInfo,
         characterSeed,
         culturalProfile,
@@ -78,10 +87,10 @@ export class MultiStageEnhancementPipeline {
         }
       );
       
-      // 6. Generate advanced negative prompt with style framework considerations
+      // 8. Generate advanced negative prompt with style framework considerations
       const negativePrompt = this.buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework);
       
-      // 7. Premium generation parameters using style framework
+      // 9. Premium generation parameters using style framework
       const generationParams = {
         model: 'runware:100@1',
         steps: styleFramework.parameters?.steps || 8, // Use framework steps or premium default
@@ -144,15 +153,24 @@ export class MultiStageEnhancementPipeline {
     try {
       console.log(`🔄 Tier 2 Simple Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
       
-      // Simple template-based processing - NO AI functions
+      // 1. Enhance story text with consistent visual details (same as Tier 1)
+      const enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, storyText, pageNumber);
+      console.log('🎯 Tier 2 Visual detail enhancement applied:', {
+        originalLength: storyText.length,
+        enhancedLength: enhancedStoryText.length,
+        changed: storyText !== enhancedStoryText,
+        trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length
+      });
+      
+      // 2. Simple template-based processing - NO AI functions
       const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
       const framework = getStyleFramework(difficulty);
       
-      // Simple character description based on avatar info only
+      // 3. Simple character description based on avatar info only
       const characterDescription = this.buildSimpleCharacterDescription(userInfo);
       
       const enhancedPrompt = this.buildEnhancedTemplatePrompt(
-        storyText,
+        enhancedStoryText, // Use enhanced text instead of original
         characterDescription,
         framework,
         userInfo
