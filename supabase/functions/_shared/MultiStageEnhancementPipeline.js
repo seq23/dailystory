@@ -26,9 +26,9 @@ export class MultiStageEnhancementPipeline {
       const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
-      // 3. Use real FixedCulturalLogic for African American processing
+      // 3. Use comprehensive arrays for African American processing
       const characterDescription = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo)
-        ? `${userInfo.name || 'Alex'} (girl with dark skin and ${FrontendIntelligence.getUniversalHairMapping(userInfo)}, ${FrontendIntelligence.generateExpandedAfricanAmericanFeatures()})`
+        ? FrontendIntelligence.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed)
         : FrontendIntelligence.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
       
       // 4. Extract scene and emotional context
@@ -60,19 +60,32 @@ export class MultiStageEnhancementPipeline {
         outputFormat: 'WEBP'
       };
       
-      console.log('✨ Tier 1 Premium AI processing completed with real FixedCulturalLogic');
+      console.log('✨ Tier 1 Premium AI processing completed with comprehensive arrays:', {
+        hasSkinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
+        hasBoysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
+        hasGirlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
+        hasSettings: FrontendIntelligence.AFRICAN_AMERICAN_SETTINGS?.length || 0,
+        hasCulturalElements: FrontendIntelligence.CULTURAL_PRIDE_ELEMENTS?.length || 0
+      });
       
       return {
         enhancedPrompt,
         negativePrompt,
         generationParams,
         metadata: {
-          tier: 'premium-ai',
+          tier: 'premium-ai-comprehensive',
           characterSeed,
           culturalProfile: userInfo.nativeLanguage,
           emotionalContext: emotionalContext.mood,
           africanAmericanProcessing: FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo),
-          processingTime: Date.now()
+          processingTime: Date.now(),
+          arrayStats: {
+            skinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
+            boysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
+            girlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
+            settings: FrontendIntelligence.AFRICAN_AMERICAN_SETTINGS?.length || 0,
+            culturalElements: FrontendIntelligence.CULTURAL_PRIDE_ELEMENTS?.length || 0
+          }
         }
       };
       
