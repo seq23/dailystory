@@ -93,15 +93,7 @@ export class FrontendIntelligence {
         'soft full lips', 'defined lip corners', 'naturally plump lips'
       ],
       facialStructure: [
-        'high cheekbones', 'strong jawline', 'rounded face shape', 'oval face shape',
-        'smooth facial contours', 'natural facial symmetry', 'elegant bone structure',
-        'defined cheekbones', 'graceful jawline', 'harmonious facial features',
-        'angular face shape', 'soft facial curves', 'prominent chin', 'delicate chin',
-        'wide face structure', 'narrow face profile'
-      ],
-      cheekbones: [
-        'high prominent cheekbones', 'subtly defined cheekbones', 'naturally sculpted cheekbones',
-        'graceful cheek contours', 'strong cheekbone structure', 'soft cheek definition'
+        'authentic facial features'
       ]
     };
     
@@ -111,9 +103,8 @@ export class FrontendIntelligence {
     const nose = selectRandom(features.nose);
     const lips = selectRandom(features.lips);
     const structure = selectRandom(features.facialStructure);
-    const cheekbones = selectRandom(features.cheekbones);
     
-    return `${eyes}, ${nose}, ${lips}, ${structure}, ${cheekbones}`;
+    return `${eyes}, ${nose}, ${lips}, ${structure}`;
   }
   
   // NEW: Enhanced Cultural Setting Logic - ENHANCE AI settings instead of overriding
