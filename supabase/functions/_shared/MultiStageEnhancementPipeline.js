@@ -147,12 +147,14 @@ export class MultiStageEnhancementPipeline {
       };
       
       // Apply token optimization before returning
+      const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
       const promptSegments = BackendTokenManager.createPromptSegments(
         sceneContext,
         `${userInfo?.name || 'Alex'} character`,
         styleFramework.prompt || 'children\'s book illustration',
         styleFramework.brandSuffix || '',
-        visualDetails || ''
+        visualDetails || '',
+        isAfricanAmericanCharacter
       );
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);
@@ -250,12 +252,16 @@ export class MultiStageEnhancementPipeline {
       const negativePrompt = this.buildSimpleNegativePrompt(userInfo, pageNumber);
       
       // Apply token optimization to simple template as well
+      // Import FrontendIntelligence for African American detection
+      const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
       const promptSegments = BackendTokenManager.createPromptSegments(
         enhancedStoryText,
         characterDescription,
         framework.prompt || 'children\'s book illustration',
         framework.brandSuffix || '',
-        ''
+        '',
+        isAfricanAmericanCharacter
       );
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);

@@ -164,7 +164,15 @@ export class BackendTokenManager {
     return compressed;
   }
   
-  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '') {
+  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false) {
+    // Conditionally protect brand suffix for African American characters
+    const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.LOW;
+    const brandSuffixTruncatable = !isAfricanAmericanCharacter;
+    
+    if (isAfricanAmericanCharacter) {
+      console.log('🔒 Protecting brand suffix with HIGH priority for African American character');
+    }
+    
     return [
       {
         content: sceneContext,
@@ -192,8 +200,8 @@ export class BackendTokenManager {
       },
       {
         content: qualitySuffixes,
-        priority: PromptPriority.LOW,
-        canTruncate: true,
+        priority: brandSuffixPriority,
+        canTruncate: brandSuffixTruncatable,
         type: 'brand-suffix'
       }
     ].filter(segment => segment.content && segment.content.length > 0);
