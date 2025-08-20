@@ -222,7 +222,8 @@ export class MultiStageEnhancementPipeline {
           animalDetails,
           pageNumber,
           totalPages
-        }
+        },
+        imageDifficulty // Pass difficulty as parameter
       );
       
       // 8. Generate advanced negative prompt with style framework considerations
@@ -246,7 +247,8 @@ export class MultiStageEnhancementPipeline {
       const fullCharacterDescription = FrontendIntelligence.buildAdvancedCharacterDescription(
         userInfo, 
         culturalProfile, 
-        characterSeed
+        characterSeed,
+        imageDifficulty
       );
       
       console.log('🔧 Token Manager - Full Character Description:', fullCharacterDescription);
@@ -344,7 +346,7 @@ export class MultiStageEnhancementPipeline {
       const framework = getStyleFramework(difficulty);
       
       // 3. Simple character description based on avatar info only
-      const characterDescription = this.buildSimpleCharacterDescription(userInfo);
+      const characterDescription = this.buildSimpleCharacterDescription(userInfo, difficulty);
       
       const enhancedPrompt = this.buildEnhancedTemplatePrompt(
         enhancedStoryText, // Use enhanced text instead of original
@@ -410,10 +412,17 @@ export class MultiStageEnhancementPipeline {
     return `${storyText} showing ${characterDescription}, ${styleElements}, ${framework.brandSuffix || 'enhanced children\'s book illustration'}`;
   }
 
-  static buildSimpleCharacterDescription(userInfo) {
+  static buildSimpleCharacterDescription(userInfo, difficulty = null) {
     const name = userInfo?.name || 'Alex';
-    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    let gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    
+    // Apply age range modifier based on difficulty level
+    if (difficulty === 'hard') {
+      gender = 'pre-teen';
+    } else if (difficulty === 'expert') {
+      gender = 'teenager';
+    }
     
     // Simple skin tone mapping
     const skinMap = {

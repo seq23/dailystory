@@ -236,13 +236,20 @@ export class FrontendIntelligence {
     return 'cultural heritage';
   }
   
-  static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed) {
+  static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
     if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
       const africanAmericanFeatures = this.generateExpandedAfricanAmericanFeatures();
       const specificHairStyle = this.getAfricanAmericanHairStyle(userInfo);
       const specificSkinTone = this.getAfricanAmericanSkinTone(userInfo);
       const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
-      const gender = this.detectGender(userInfo);
+      let gender = this.detectGender(userInfo);
+      
+      // Apply age range modifier based on difficulty level
+      if (difficulty === 'hard') {
+        gender = 'pre-teen';
+      } else if (difficulty === 'expert') {
+        gender = 'teenager';
+      }
       
       // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier
       return `${userInfo.name || 'Alex'} (African-American ${gender} with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
@@ -251,8 +258,8 @@ export class FrontendIntelligence {
     return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
   }
   
-  static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}) {
-    const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed);
+  static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}, difficulty = null) {
+    const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty);
     
     // CRITICAL LOGGING: Track character description integration
     console.log('🎭 Character Description Built:', characterDescription);
