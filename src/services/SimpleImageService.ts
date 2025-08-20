@@ -9,6 +9,8 @@ interface ImageGenerationConfig {
   style?: string;
   difficultyLevel?: DifficultyLevel;
   sessionId?: string;
+  totalPages?: number;
+  pageNumber?: number;
 }
 
 interface ImageResult {
@@ -20,6 +22,7 @@ interface ImageResult {
   seed?: number;
   error?: string;
   prompt?: string;
+  metadata?: any;
 }
 
 export class SimpleImageService {
@@ -322,35 +325,35 @@ export class SimpleImageService {
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
     try {
-      // TIER 1: Enhanced Runware with EnhancedPromptBuilder integration
-      console.log('🚀 Starting Tier 1: Enhanced Runware with sophisticated prompt pipeline');
-      const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber);
+      // TIER 1: Premium AI-Enhanced with EnhancedPromptBuilder
+      console.log('🚀 Starting Tier 1: Premium AI-Enhanced Runware');
+      const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber, totalPages);
       
       if (tier1Result.success) {
-        console.log('✅ Tier 1 succeeded with enhanced WebSocket connection');
+        console.log('✅ Tier 1 Premium AI-Enhanced succeeded');
         await this.recordUsage(tier1Result, userInfo?.name);
         return tier1Result;
       }
       
-      console.log('⚠️ Tier 1 failed, falling back to Enhanced Tier 2');
+      console.log('⚠️ Tier 1 failed, falling back to Tier 2 Template-based');
     } catch (error) {
-      console.log('⚠️ Tier 1 error, falling back to Enhanced Tier 2:', error);
+      console.log('⚠️ Tier 1 error, falling back to Tier 2 Template-based:', error);
     }
 
     try {
-      // TIER 2: Enhanced with StructuredPromptEngine (no more simple fallback)
-      console.log('🎨 Starting Enhanced Tier 2: StructuredPromptEngine generation');
+      // TIER 2: Template-based (Dynamic but no AI)
+      console.log('🎨 Starting Tier 2: Template-based Runware generation');
       const tier2Result = await this.generateWithRunwareSimple(cleanScene, config, userInfo, pageNumber, totalPages);
       
       if (tier2Result.success) {
-        console.log('✅ Enhanced Tier 2 succeeded with structured prompts');
+        console.log('✅ Tier 2 Template-based succeeded');
         await this.recordUsage(tier2Result, userInfo?.name);
         return tier2Result;
       }
       
-      console.log('⚠️ Enhanced Tier 2 failed, trying Tier 2.5');
+      console.log('⚠️ Tier 2 failed, trying Tier 2.5 Nuclear Hardcoded');
     } catch (error) {
-      console.log('⚠️ Enhanced Tier 2 error, trying Tier 2.5:', error);
+      console.log('⚠️ Tier 2 error, trying Tier 2.5 Nuclear Hardcoded:', error);
     }
 
     try {
@@ -392,28 +395,25 @@ export class SimpleImageService {
 
   // Provider methods
   static getTierUsed(result: ImageResult): string {
-    if (result.provider === 'runware-enhanced') return 'Enhanced Runware (Tier 1)';
-    if (result.provider === 'runware') return 'Enhanced Tier 2';
+    if (result.provider === 'runware-premium') return 'Premium AI-Enhanced (Tier 1)';
+    if (result.provider === 'runware-template') return 'Template-Based (Tier 2)';
+    if (result.provider === 'runware-simple-fallback') return 'Nuclear Hardcoded (Tier 2.5)';
     if (result.provider === 'openai') return 'OpenAI DALL-E (Tier 3)';
     if (result.provider === 'svg') return 'SVG Placeholder (Tier 4)';
     return 'Unknown';
   }
 
-  // TIER 1: Enhanced Runware with full AI enhancement and seed consistency
+  // TIER 1: Premium AI-Enhanced Runware (uses EnhancedPromptBuilder)
   private static async generateWithRunware(
     cleanScene: string, 
     config: ImageGenerationConfig,
     userInfo?: UserInfo,
     sessionId?: string,
-    pageNumber?: number
+    pageNumber?: number,
+    totalPages?: number
   ): Promise<ImageResult> {
     try {
-      console.log('🎨 Enhanced Runware generation with sophisticated prompt pipeline');
-
-      // Generate enhanced prompt using the new pipeline
-      const prompt = userInfo && sessionId && pageNumber 
-        ? await this.generateEnhancedPrompt(cleanScene, userInfo, pageNumber, sessionId)
-        : await this.generateLegacyPrompt(cleanScene, userInfo);
+      console.log('🎨 Tier 1: Premium AI-Enhanced Runware generation');
 
       // Get stored character seed for consistency
       let characterSeed: number | undefined;
@@ -426,24 +426,21 @@ export class SimpleImageService {
 
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          positivePrompt: prompt,
           pageText: cleanScene,
           userInfo,
           sessionId,
           pageNumber,
-          difficultyLevel: config.difficultyLevel || 'medium',
-          width: config.dimensions.width,
-          height: config.dimensions.height,
+          totalPages: totalPages || 10,
           seed: characterSeed // Pass stored seed for consistency
         }
       });
 
       if (error) {
-        throw new Error(`Enhanced Runware API error: ${error.message}`);
+        throw new Error(`Tier 1 Premium API error: ${error.message}`);
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Enhanced Runware generation failed');
+        throw new Error(data?.error || 'Tier 1 Premium generation failed');
       }
 
       // Store successful seed for future consistency
@@ -454,15 +451,16 @@ export class SimpleImageService {
       return {
         url: data.imageURL,
         success: true,
-        provider: 'runware-enhanced',
+        provider: 'runware-premium',
         model: 'runware:100@1',
         cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
-        seed: data.seed
+        seed: data.seed,
+        metadata: data.metadata
       };
 
     } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'runware-enhanced-generation');
-      console.error('🎨 Enhanced Runware generation failed:', appError);
+      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'tier1-premium-generation');
+      console.error('🎨 Tier 1 Premium generation failed:', appError);
 
       return {
         url: '',
@@ -472,7 +470,7 @@ export class SimpleImageService {
     }
   }
 
-  // TIER 2 - Enhanced with Structured Prompt Engine (no more hardcoded prompts)
+  // TIER 2: Template-based Runware (Dynamic but no AI)
   private static async generateWithRunwareSimple(
     cleanScene: string, 
     config: ImageGenerationConfig,
@@ -481,54 +479,11 @@ export class SimpleImageService {
     totalPages?: number
   ): Promise<ImageResult> {
     try {
-      console.log('🎨 Enhanced Tier 2 generation with StructuredPromptEngine');
-
-      // Import structured engines for sophisticated prompt generation
-      const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
-      // All functionality now in StructuredPromptEngine
-
-      // Extract rich scene content using StructuredPromptEngine
-      const pageContent = StructuredPromptEngine.extractPageContent(cleanScene);
-      console.log('🔍 Extracted page content:', pageContent);
-
-      // Create character descriptors for consistency
-      const characterDescriptors = [];
-      if (userInfo) {
-        characterDescriptors.push({
-          type: 'primary',
-          name: userInfo.name,
-          relationship: 'protagonist',
-          culturalRole: 'main character',
-          physicalTraits: {
-            skinTone: userInfo.avatar?.skinTone || 'medium',
-            hairColor: this.getUniversalHairMapping(userInfo),
-            age: userInfo.avatar?.type || 'child',
-            gender: userInfo.avatar?.type?.includes('girl') ? 'female' : 'male'
-          }
-        });
-      }
-
-      // Use StructuredPromptEngine for sophisticated prompt creation
-      const emotionalContext = this.detectEmotionalContext(cleanScene);
-      const promptTemplate = StructuredPromptEngine.composeStructuredPrompt(
-        cleanScene,
-        userInfo!,
-        pageNumber || 1,
-        characterDescriptors,
-        emotionalContext
-      );
-
-      // Convert template to final prompt
-      const enhancedPrompt = StructuredPromptEngine.templateToPrompt(promptTemplate);
-      
-      console.log('🎨 Generated structured prompt:', enhancedPrompt.substring(0, 200) + '...');
-
-      // Use ONLY the structured prompt engine for consistency
-      const finalPrompt = StructuredPromptEngine.templateToPrompt(promptTemplate);
+      console.log('🎨 Tier 2: Template-based Runware generation (no AI features)');
 
       const { data, error } = await supabase.functions.invoke('runware-template-generation', {
         body: {
-          pageText: cleanScene, // Use original text, not the structured prompt
+          pageText: cleanScene,
           userInfo,
           pageNumber,
           totalPages,
@@ -538,26 +493,31 @@ export class SimpleImageService {
       });
 
       if (error) {
-        throw new Error(`Enhanced Tier 2 API error: ${error.message}`);
+        throw new Error(`Tier 2 Template API error: ${error.message}`);
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Enhanced Tier 2 generation failed');
+        throw new Error(data?.error || 'Tier 2 Template generation failed');
       }
 
       return {
-        url: data.imageURL,
+        url: data.imageUrl || data.imageURL,
         success: true,
-        provider: 'runware-enhanced', // Mark as enhanced tier 2
+        provider: 'runware-template',
         model: 'runware:100@1',
         cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
         seed: data.seed,
-        prompt: finalPrompt.substring(0, 200) + '...' // Store for debugging
+        metadata: {
+          tier: 2,
+          enhancementLevel: 'template-based',
+          qualityScore: data.qualityScore,
+          processingTime: data.processingTime
+        }
       };
 
     } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'enhanced-tier2-generation');
-      console.error('🎨 Enhanced Tier 2 generation failed:', appError);
+      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'tier2-template-generation');
+      console.error('🎨 Tier 2 Template generation failed:', appError);
 
       return {
         url: '',

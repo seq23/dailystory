@@ -1,9 +1,7 @@
-// Enhanced Multi-Stage Pipeline - AI-Enhanced Prompt Building
-// NOW BUILDS SOPHISTICATED PROMPTS - no longer just data preparation
+// Phase 2: Simplified Template-Based Pipeline - NO AI Features, Dynamic Templates Only
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework } from './styleFrameworks.js';
-import { FrontendIntelligence } from './FrontendIntelligence.js';
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -13,49 +11,45 @@ function selectWeightedElement(array) {
 export class MultiStageEnhancementPipeline {
   static async processThroughPipeline(storyText, userInfo, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔄 Pipeline processing: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔄 Tier 2 Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
       
-      // Data preparation only - NO prompt building
+      // Data preparation - NO AI analysis
       const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
       const framework = getStyleFramework(difficulty);
       
-      // Prepare character descriptors for frontend StructuredPromptEngine
+      // Simple character descriptors - NO AI enhancement
       const characterDescriptors = this.prepareCharacterDescriptors(userInfo);
       
-      // Prepare emotional context data
-      const emotionalContext = this.analyzeEmotionalContent(storyText);
-      
-      // Extract scene content
+      // Extract scene content - NO emotional analysis
       const primaryScene = this.extractPrimaryScene(storyText);
       
-      // NOW BUILD ENHANCED PROMPTS (not just data)
-      const enhancedPrompt = this.buildAIEnhancedPrompt(
+      // Build template-based prompt - NO AI enhancements
+      const enhancedPrompt = this.buildTemplatePrompt(
         primaryScene, 
         characterDescriptors, 
-        emotionalContext, 
         framework,
         userInfo
       );
       
-      const negativePrompt = this.buildEnhancedNegativePrompt(emotionalContext, userInfo);
+      const negativePrompt = this.buildSimpleNegativePrompt(userInfo);
       
       return {
         success: true,
-        // ENHANCED PROMPTS (no longer raw data)
         enhancedPrompt,
         negativePrompt,
         // Technical parameters for Runware
         generationParams: {
           ...framework.parameters,
           outputFormat: "WEBP",
-          model: "runware:100@1"
+          model: "runware:100@1",
+          CFGScale: 3.0, // Medium quality settings
+          steps: 8
         },
         // Metadata
         difficulty: difficulty,
         styleFramework: framework.name,
         culturalProfile: userInfo?.nativeLanguage || 'en',
-        emotionalTone: emotionalContext.mood,
-        qualityScore: 85 // AI-enhanced quality
+        qualityScore: 75 // Template-based quality
       };
       
     } catch (error) {
@@ -101,93 +95,43 @@ export class MultiStageEnhancementPipeline {
     return descriptors;
   }
 
-  // Emotional analysis - data extraction only
-  static analyzeEmotionalContent(storyText) {
-    const emotions = {
-      happy: /\b(happy|joy|excited|cheerful|delighted|glad|wonderful|amazing)\b/gi,
-      adventure: /\b(adventure|explore|discover|journey|travel|quest|find)\b/gi,
-      cozy: /\b(home|cozy|warm|comfortable|family|together|snuggle)\b/gi,
-      peaceful: /\b(quiet|calm|peaceful|gentle|soft|rest|sleep)\b/gi
-    };
+  // Template-based prompt building - NO AI analysis
+  static buildTemplatePrompt(primaryScene, characterDescriptors, framework, userInfo) {
+    const characterElements = characterDescriptors.map(char => char.name || 'child').join(', ');
+    const culturalContext = this.buildSimpleCulturalContext(userInfo);
+    const styleElements = framework.prompt || 'children\'s book illustration';
     
-    let detectedMood = 'neutral';
-    let maxMatches = 0;
+    return `${primaryScene} showing ${characterElements}, ${culturalContext}, ${styleElements}, ${framework.brandSuffix || 'children\'s book illustration'}`;
+  }
+  
+  static buildSimpleNegativePrompt(userInfo) {
+    let baseNegative = "text, words, scary, dark, adult themes, photorealistic";
     
-    for (const [mood, pattern] of Object.entries(emotions)) {
-      const matches = (storyText.match(pattern) || []).length;
-      if (matches > maxMatches) {
-        maxMatches = matches;
-        detectedMood = mood;
-      }
+    // Add gender consistency
+    if (userInfo?.avatar?.type === 'girl') {
+      baseNegative += ', boy character, male character, masculine features';
+    } else if (userInfo?.avatar?.type === 'boy') {
+      baseNegative += ', girl character, female character, feminine features, dress, skirt';
     }
     
-    const emotionalMappings = {
-      happy: { 
-        mood: 'joyful', 
-        colorPalette: ['bright yellows', 'warm oranges', 'cheerful pinks'],
-        lightingStyle: 'bright natural lighting',
-        compositionStyle: 'dynamic celebratory'
-      },
-      adventure: { 
-        mood: 'exciting', 
-        colorPalette: ['forest greens', 'sky blues', 'earth browns'],
-        lightingStyle: 'natural outdoor lighting',
-        compositionStyle: 'action-oriented'
-      },
-      cozy: { 
-        mood: 'warm', 
-        colorPalette: ['warm browns', 'soft creams', 'gentle oranges'],
-        lightingStyle: 'soft warm lighting',
-        compositionStyle: 'intimate grouped'
-      },
-      peaceful: { 
-        mood: 'calm', 
-        colorPalette: ['soft pastels', 'gentle blues'],
-        lightingStyle: 'gentle diffused lighting',
-        compositionStyle: 'balanced peaceful'
-      },
-      neutral: { 
-        mood: 'pleasant', 
-        colorPalette: ['natural colors', 'warm tones'],
-        lightingStyle: 'natural lighting',
-        compositionStyle: 'balanced'
-      }
-    };
-    
-    return emotionalMappings[detectedMood] || emotionalMappings.neutral;
-  }
-
-  // NEW: AI-Enhanced Prompt Building Methods
-  static buildAIEnhancedPrompt(primaryScene, characterDescriptors, emotionalContext, framework, userInfo) {
-    const characterElements = characterDescriptors.map(char => char.physicalTraits).join(', ');
-    const culturalContext = this.buildCulturalContext(userInfo);
-    const styleElements = `${framework.artStyle}, ${framework.colorPalette}, ${framework.lighting}`;
-    
-    return `${primaryScene} showing ${characterElements}, ${culturalContext}, ${styleElements}, ${framework.brandSuffix}`;
+    return baseNegative;
   }
   
-  static buildEnhancedNegativePrompt(emotionalContext, userInfo) {
-    const baseNegative = "text, words, scary, dark, adult themes, photorealistic, multiple characters";
-    const culturalNegative = userInfo?.nativeLanguage !== 'en' ? ', stereotypical, caricature' : '';
-    
-    return `${baseNegative}${culturalNegative}`;
-  }
-  
-  static buildCulturalContext(userInfo) {
+  static buildSimpleCulturalContext(userInfo) {
     if (!userInfo?.nativeLanguage || userInfo.nativeLanguage === 'en') {
-      return 'diverse American children, inclusive representation';
+      return 'diverse children, inclusive setting';
     }
     
     const culturalMap = {
-      'es': 'Latino culture, vibrant family traditions',
-      'fr': 'French elegance, sophisticated style', 
-      'zh': 'Chinese heritage, traditional elements',
-      'ar': 'Arabic culture, geometric patterns',
-      'hi': 'Indian heritage, colorful traditions',
-      'pt': 'Brazilian culture, tropical warmth'
+      'es': 'Latino setting',
+      'fr': 'French style', 
+      'zh': 'Chinese elements',
+      'ar': 'Arabic context',
+      'hi': 'Indian heritage',
+      'pt': 'Brazilian warmth'
     };
     
-    return culturalMap[userInfo.nativeLanguage] || 'cultural diversity';
+    return culturalMap[userInfo.nativeLanguage] || 'multicultural setting';
   }
 
   static createFallbackResult(storyText, userInfo) {
