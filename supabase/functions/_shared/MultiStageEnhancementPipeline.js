@@ -82,24 +82,17 @@ export class MultiStageEnhancementPipeline {
     }
   }
   
-  // ============= TIER 2: TEMPLATE-BASED PROCESSING (ENHANCED) =============
+  // ============= TIER 2: SIMPLE TEMPLATE-BASED PROCESSING =============
   static async processThroughPipeline(storyText, userInfo, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔄 Tier 2 Enhanced Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔄 Tier 2 Simple Template Pipeline: ${sessionId} page ${pageNumber}/${totalPages}`);
       
-      // Import fresh frontend intelligence
-      const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
-      
-      // Enhanced data preparation using AI intelligence
+      // Simple template-based processing - NO AI functions
       const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
       const framework = getStyleFramework(difficulty);
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
-                             FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
-      // Build enhanced template prompt using AI intelligence
-      const characterDescription = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo)
-        ? `${userInfo.name || 'Alex'} (girl with dark skin and ${FrontendIntelligence.getUniversalHairMapping(userInfo)}, ${FrontendIntelligence.generateExpandedAfricanAmericanFeatures()})`
-        : FrontendIntelligence.buildAdvancedCharacterDescription(userInfo, culturalProfile, this.generateStableSeed(userInfo, sessionId));
+      // Simple character description based on avatar info only
+      const characterDescription = this.buildSimpleCharacterDescription(userInfo);
       
       const enhancedPrompt = this.buildEnhancedTemplatePrompt(
         storyText,
@@ -108,12 +101,12 @@ export class MultiStageEnhancementPipeline {
         userInfo
       );
       
-      const negativePrompt = this.buildSmartNegativePrompt(userInfo, culturalProfile);
+      const negativePrompt = this.buildSimpleNegativePrompt(userInfo);
       
       return {
         enhancedPrompt,
         negativePrompt,
-        // Enhanced template parameters
+        // Simple template parameters
         generationParams: {
           ...framework.parameters,
           outputFormat: "WEBP",
@@ -121,28 +114,43 @@ export class MultiStageEnhancementPipeline {
           CFGScale: 3.0,
           steps: 8
         },
-        // Enhanced metadata
+        // Simple metadata
         metadata: {
-          tier: 'enhanced-template',
+          tier: 'simple-template',
           difficulty: difficulty,
           styleFramework: framework.name,
-          culturalProfile: culturalProfile,
-          africanAmericanProcessing: FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo),
-          qualityScore: 85
+          qualityScore: 75
         }
       };
       
     } catch (error) {
-      console.error('❌ Tier 2 Enhanced pipeline error:', error);
+      console.error('❌ Tier 2 Simple pipeline error:', error);
       return this.createFallbackResult(storyText, userInfo, 'tier2-fallback');
     }
   }
   
-  // ============= ENHANCED TEMPLATE PROCESSING =============
+  // ============= SIMPLE TEMPLATE PROCESSING =============
   static buildEnhancedTemplatePrompt(storyText, characterDescription, framework, userInfo) {
     const styleElements = framework.prompt || 'children\'s book illustration';
     
     return `${storyText} showing ${characterDescription}, ${styleElements}, ${framework.brandSuffix || 'enhanced children\'s book illustration'}`;
+  }
+
+  static buildSimpleCharacterDescription(userInfo) {
+    const name = userInfo?.name || 'Alex';
+    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    
+    // Simple skin tone mapping
+    const skinMap = {
+      light: 'light skin',
+      medium: 'medium skin',
+      olive: 'olive skin', 
+      dark: 'dark skin',
+      pale: 'pale skin'
+    };
+    
+    return `${name} (${gender} with ${skinMap[skinTone] || 'medium skin'})`;
   }
   
   // ============= SMART NEGATIVE PROMPTS =============
@@ -164,7 +172,7 @@ export class MultiStageEnhancementPipeline {
     return baseNegative;
   }
   
-  static buildSmartNegativePrompt(userInfo, culturalProfile) {
+  static buildSimpleNegativePrompt(userInfo) {
     let baseNegative = "text, words, scary, dark, adult themes, photorealistic";
     
     // Add gender consistency
@@ -172,11 +180,6 @@ export class MultiStageEnhancementPipeline {
       baseNegative += ', boy character, male character, masculine features';
     } else if (userInfo?.avatar?.type === 'boy') {
       baseNegative += ', girl character, female character, feminine features, dress, skirt';
-    }
-    
-    // Enhanced negative prompts for African American characters
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      baseNegative += ', inconsistent character appearance, wrong skin color, incorrect facial features, stereotypical representation';
     }
     
     return baseNegative;
