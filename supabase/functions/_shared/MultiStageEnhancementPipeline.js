@@ -16,10 +16,100 @@ function selectWeightedElement(array) {
 
 export class MultiStageEnhancementPipeline {
   
+  // ============= AI ENHANCEMENT CACHING SYSTEM =============
+  static aiEnhancementCache = new Map();
+  
+  static generateCacheKey(sessionId, pageNumber, storyText) {
+    // Create hash of story text for content validation
+    let hash = 0;
+    for (let i = 0; i < storyText.length; i++) {
+      const char = storyText.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return `${sessionId}_page_${pageNumber}_${Math.abs(hash)}`;
+  }
+  
+  static getCachedAIEnhancement(sessionId, pageNumber, storyText) {
+    const cacheKey = this.generateCacheKey(sessionId, pageNumber, storyText);
+    const cached = this.aiEnhancementCache.get(cacheKey);
+    
+    if (cached) {
+      console.log(`🎯 AI Enhancement Cache HIT for ${cacheKey}`);
+      return cached;
+    }
+    
+    console.log(`❌ AI Enhancement Cache MISS for ${cacheKey}`);
+    return null;
+  }
+  
+  static setCachedAIEnhancement(sessionId, pageNumber, storyText, enhancedData) {
+    const cacheKey = this.generateCacheKey(sessionId, pageNumber, storyText);
+    this.aiEnhancementCache.set(cacheKey, {
+      enhancedData,
+      cachedAt: new Date(),
+      sessionId,
+      pageNumber
+    });
+    console.log(`💾 AI Enhancement Cache SET for ${cacheKey}`);
+  }
+  
+  static clearSessionCache(sessionId) {
+    let cleared = 0;
+    for (const [key, value] of this.aiEnhancementCache.entries()) {
+      if (value.sessionId === sessionId) {
+        this.aiEnhancementCache.delete(key);
+        cleared++;
+      }
+    }
+    console.log(`🧹 Cleared ${cleared} AI enhancement cache entries for session ${sessionId}`);
+  }
+  
   // ============= TIER 1: HIGH-QUALITY AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
   static async processTier1HighQuality(storyText, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
     try {
       console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
+      
+      // Check cache first if no AI data provided
+      if (!enhancedStoryData) {
+        const cachedEnhancement = this.getCachedAIEnhancement(sessionId, pageNumber, storyText);
+        if (cachedEnhancement) {
+          enhancedStoryData = cachedEnhancement.enhancedData;
+          console.log(`🎯 Using cached AI enhancement data`);
+        } else {
+          console.log(`🧠 No cached data, will call AI story enhancer`);
+          // Call ai-story-enhancer function to get AI analysis
+          try {
+            const enhancerResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/ai-story-enhancer', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                storyText,
+                userInfo,
+                sessionId,
+                pageNumber,
+                totalPages
+              })
+            });
+            
+            if (enhancerResponse.ok) {
+              const enhancerResult = await enhancerResponse.json();
+              enhancedStoryData = enhancerResult.enhancedStoryData;
+              
+              // Cache the successful result
+              this.setCachedAIEnhancement(sessionId, pageNumber, storyText, enhancedStoryData);
+              console.log(`✅ AI story enhancer successful and cached`);
+            } else {
+              console.warn(`⚠️ AI story enhancer failed with status ${enhancerResponse.status}, proceeding without AI data`);
+            }
+          } catch (enhancerError) {
+            console.warn(`⚠️ AI story enhancer error: ${enhancerError.message}, proceeding without AI data`);
+          }
+        }
+      }
+      
       console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);
       
       // Import fresh frontend intelligence

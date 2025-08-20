@@ -225,8 +225,12 @@ class StoryVisualStateManager {
   static clearStoryState(sessionId) {
     this.storyStates.delete(sessionId);
     // Also clear pronoun resolution data
-    if (globalThis.AdvancedPronounResolver) {
+    if (globalThis.AdvancedPronounResolver) {        
       globalThis.AdvancedPronounResolver.clearSession(sessionId);
+    }
+    // Clear AI enhancement cache for this session
+    if (globalThis.MultiStageEnhancementPipeline) {
+      globalThis.MultiStageEnhancementPipeline.clearSessionCache(sessionId);
     }
   }
 
