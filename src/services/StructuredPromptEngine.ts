@@ -6,7 +6,7 @@ import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo, DifficultyLevel, SkinTone } from "@/types";
 import { DifficultyLevelMapper } from "./DifficultyLevelMapper";
 import { FixedCulturalLogic } from "./FixedCulturalLogic";
-import { getStyleFramework } from "@/utils/styleFrameworks";
+// Style frameworks now handled server-side via backend shared utilities
 
 // ============= CONSOLIDATED INTERFACES =============
 
@@ -1035,11 +1035,11 @@ export class StructuredPromptEngine {
    * Compose style framework based on difficulty and emotion
    */
   private static composeStyleFramework(difficulty: DifficultyLevel, emotionalContext: EmotionalContext): string {
-    // Use sophisticated style frameworks from utils/styleFrameworks.ts
-    const styleFramework = getStyleFramework(difficulty);
+    // Style frameworks now handled server-side for consistency
+    // Basic composition for frontend use only
     const composition = emotionalContext.compositionStyle;
     
-    return `${styleFramework.artStyle}, ${composition}`;
+    return `${difficulty} level illustration, ${composition}`;
   }
 
   /**
@@ -1073,8 +1073,7 @@ export class StructuredPromptEngine {
     
     // Increase visual complexity in later pages for advanced readers
     if (difficulty === 'expert' && progressionFactor > 0.7) {
-      const styleFramework = getStyleFramework(difficulty);
-      return `${styleFramework.artStyle}, ${emotionalContext.compositionStyle}, increasingly sophisticated visual storytelling`;
+      return `${difficulty} level illustration, ${emotionalContext.compositionStyle}, increasingly sophisticated visual storytelling`;
     }
     
     return this.composeStyleFramework(difficulty, emotionalContext);

@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { VisualDetailTracker } from '../services/VisualDetailTracker';
+import { StoryVisualStateManager } from '../services/storyVisualState';
 
-describe('VisualDetailTracker', () => {
+describe('StoryVisualStateManager - Visual Detail Tracking', () => {
   const testSessionId = 'test-session-123';
 
   beforeEach(() => {
-    VisualDetailTracker.clearSessionDetails(testSessionId);
+    StoryVisualStateManager.clearStoryState(testSessionId);
   });
 
   it('should detect and track colored animals', () => {
     const text = 'Emma saw a blue bird sitting on the fence.';
-    const details = VisualDetailTracker.analyzeTextForDetails(testSessionId, text, 1);
+    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
     
     expect(details).toHaveLength(1);
     expect(details[0].name).toBe('bird');
@@ -21,7 +21,7 @@ describe('VisualDetailTracker', () => {
 
   it('should detect and track colored vehicles', () => {
     const text = 'The red car zoomed down the hill.';
-    const details = VisualDetailTracker.analyzeTextForDetails(testSessionId, text, 1);
+    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
     
     expect(details).toHaveLength(1);
     expect(details[0].name).toBe('car');
@@ -31,7 +31,7 @@ describe('VisualDetailTracker', () => {
 
   it('should detect size and color attributes for objects', () => {
     const text = 'She played with a big red ball in the yard.';
-    const details = VisualDetailTracker.analyzeTextForDetails(testSessionId, text, 1);
+    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
     
     expect(details).toHaveLength(1);
     expect(details[0].name).toBe('ball');
@@ -42,10 +42,10 @@ describe('VisualDetailTracker', () => {
 
   it('should inject consistent details on subsequent mentions', () => {
     // First mention - track the blue bird
-    VisualDetailTracker.analyzeTextForDetails(testSessionId, 'A blue bird was singing.', 1);
+    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A blue bird was singing.', 1);
     
     // Second mention - should enhance "the bird" with "blue"
-    const enhanced = VisualDetailTracker.injectConsistentDetails(
+    const enhanced = StoryVisualStateManager.injectConsistentDetails(
       testSessionId, 
       'The bird flew away.', 
       2
@@ -70,7 +70,7 @@ describe('VisualDetailTracker', () => {
 
   it('should track multiple different objects', () => {
     const text = 'The blue bird and the red car were in the green garden.';
-    const details = VisualDetailTracker.analyzeTextForDetails(testSessionId, text, 1);
+    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
     
     expect(details).toHaveLength(2); // bird and car
     
@@ -82,7 +82,7 @@ describe('VisualDetailTracker', () => {
   });
 
   it('should detect complex objects with ownership', () => {
-    const complexObjects = VisualDetailTracker.detectComplexObjects(
+    const complexObjects = StoryVisualStateManager.detectComplexObjects(
       "Emma's red and blue striped backpack was heavy."
     );
     
@@ -95,9 +95,9 @@ describe('VisualDetailTracker', () => {
 
   it('should get consistent detail descriptions', () => {
     // Track a small blue ball
-    VisualDetailTracker.analyzeTextForDetails(testSessionId, 'A small blue ball rolled.', 1);
+    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A small blue ball rolled.', 1);
     
-    const description = VisualDetailTracker.getConsistentDetailDescription(
+    const description = StoryVisualStateManager.getConsistentDetailDescription(
       testSessionId, 
       'ball', 
       'object'
@@ -108,7 +108,7 @@ describe('VisualDetailTracker', () => {
 
   it('should handle clothing items', () => {
     const text = 'She wore a red dress to the party.';
-    const details = VisualDetailTracker.analyzeTextForDetails(testSessionId, text, 1);
+    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
     
     expect(details).toHaveLength(1);
     expect(details[0].name).toBe('dress');
@@ -118,12 +118,12 @@ describe('VisualDetailTracker', () => {
 
   it('should update last mentioned page when detail appears again', () => {
     // First mention on page 1
-    VisualDetailTracker.analyzeTextForDetails(testSessionId, 'A blue bird sang.', 1);
+    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A blue bird sang.', 1);
     
     // Second mention on page 3
-    VisualDetailTracker.analyzeTextForDetails(testSessionId, 'The blue bird returned.', 3);
+    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'The blue bird returned.', 3);
     
-    const sessionDetails = VisualDetailTracker.getSessionDetails(testSessionId);
+    const sessionDetails = StoryVisualStateManager.getSessionDetails(testSessionId);
     const bird = sessionDetails.find(d => d.name === 'bird');
     
     expect(bird?.firstMentionedPage).toBe(1);
@@ -131,14 +131,14 @@ describe('VisualDetailTracker', () => {
   });
 
   it('should clear session details properly', () => {
-    VisualDetailTracker.analyzeTextForDetails(testSessionId, 'A red car and blue bird.', 1);
+    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A red car and blue bird.', 1);
     
-    let details = VisualDetailTracker.getSessionDetails(testSessionId);
+    let details = StoryVisualStateManager.getSessionDetails(testSessionId);
     expect(details).toHaveLength(2);
     
-    VisualDetailTracker.clearSessionDetails(testSessionId);
+    StoryVisualStateManager.clearStoryState(testSessionId);
     
-    details = VisualDetailTracker.getSessionDetails(testSessionId);
+    details = StoryVisualStateManager.getSessionDetails(testSessionId);
     expect(details).toHaveLength(0);
   });
 });

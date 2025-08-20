@@ -2,8 +2,19 @@
 // Maintains visual consistency, character seeds, and setting continuity
 
 import type { UserInfo } from '@/types';
-import { VisualDetailTracker, type VisualDetail } from './VisualDetailTracker';
+// VisualDetailTracker functionality merged into this class
 import { AdvancedPronounResolver, type CharacterRelationship } from './AdvancedPronounResolver';
+
+export interface VisualDetail {
+  id: string;
+  type: 'color' | 'clothing' | 'object' | 'animal' | 'vehicle' | 'accessory';
+  name: string;
+  description: string;
+  firstMentionedPage: number;
+  lastMentionedPage: number;
+  context: string;
+  attributes: Map<string, string>;
+}
 
 export interface CharacterState {
   name: string;
@@ -95,6 +106,39 @@ export class StoryVisualStateManager {
     ['yard', ['home', 'garden', 'park']],
     ['playground', ['school', 'park']]
   ]);
+
+  // Merged detection patterns from VisualDetailTracker
+  private static readonly DETECTION_PATTERNS = [
+    {
+      pattern: /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(bird|cat|dog|horse|rabbit|mouse|bear|elephant|lion|tiger|fox|owl|eagle|duck|frog|fish)\b/gi,
+      type: 'animal' as const,
+      attributeExtractors: new Map([
+        ['color', /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\b/i]
+      ])
+    },
+    {
+      pattern: /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(car|truck|bike|bicycle|boat|plane|train|bus)\b/gi,
+      type: 'vehicle' as const,
+      attributeExtractors: new Map([
+        ['color', /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\b/i]
+      ])
+    },
+    {
+      pattern: /\b(big|small|tiny|huge|large|little)\s+(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(ball|balloon|flower|tree|house|castle|tower|book|toy)\b/gi,
+      type: 'object' as const,
+      attributeExtractors: new Map([
+        ['size', /\b(big|small|tiny|huge|large|little)\b/i],
+        ['color', /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\b/i]
+      ])
+    },
+    {
+      pattern: /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\s+(dress|shirt|hat|shoes|coat|jacket|pants|skirt)\b/gi,
+      type: 'clothing' as const,
+      attributeExtractors: new Map([
+        ['color', /\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\b/i]
+      ])
+    }
+  ];
 
   static getOrCreateStoryState(
     sessionId: string, 
@@ -315,7 +359,6 @@ export class StoryVisualStateManager {
 
   static clearStoryState(sessionId: string): void {
     this.storyStates.delete(sessionId);
-    VisualDetailTracker.clearSessionDetails(sessionId);
     AdvancedPronounResolver.clearSession(sessionId);
     console.log(`🗑️ Cleared story state for session: ${sessionId}`);
   }
@@ -392,7 +435,146 @@ export class StoryVisualStateManager {
     return true;
   }
 
-  // Enhanced Object & Detail Memory System + Advanced Pronoun Resolution
+  // Merged from VisualDetailTracker
+  static analyzeTextForDetails(sessionId: string, text: string, pageNumber: number): VisualDetail[] {
+    const details: VisualDetail[] = [];
+    const state = this.getOrCreateStoryState(sessionId);
+
+    for (const rule of this.DETECTION_PATTERNS) {
+      const matches = text.matchAll(rule.pattern);
+      
+      for (const match of matches) {
+        const fullMatch = match[0];
+        const detailName = this.extractDetailName(fullMatch);
+        const detailId = this.generateDetailId(detailName, rule.type);
+        
+        const existingDetail = state.visualDetails.find(d => d.id === detailId);
+        
+        if (existingDetail) {
+          existingDetail.lastMentionedPage = pageNumber;
+        } else {
+          const attributes = new Map<string, string>();
+          
+          for (const [attrName, extractor] of rule.attributeExtractors) {
+            const attrMatch = fullMatch.match(extractor);
+            if (attrMatch) {
+              attributes.set(attrName, attrMatch[1]);
+            }
+          }
+          
+          const newDetail: VisualDetail = {
+            id: detailId,
+            type: rule.type,
+            name: detailName,
+            description: fullMatch,
+            firstMentionedPage: pageNumber,
+            lastMentionedPage: pageNumber,
+            context: `Page ${pageNumber}`,
+            attributes
+          };
+          
+          state.visualDetails.push(newDetail);
+          details.push(newDetail);
+        }
+      }
+    }
+
+    return details;
+  }
+
+  static injectConsistentDetails(sessionId: string, text: string, pageNumber: number): string {
+    const state = this.storyStates.get(sessionId);
+    if (!state) return text;
+
+    let enhancedText = text;
+
+    for (const detail of state.visualDetails) {
+      if (detail.lastMentionedPage < pageNumber) {
+        const vaguePattern = new RegExp(`\\bthe\\s+${detail.name}\\b`, 'gi');
+        let replacement = detail.name;
+        
+        if (detail.attributes.has('color')) {
+          replacement = `${detail.attributes.get('color')} ${replacement}`;
+        }
+        
+        enhancedText = enhancedText.replace(vaguePattern, `the ${replacement}`);
+      }
+    }
+
+    return enhancedText;
+  }
+
+  static getSessionDetails(sessionId: string): VisualDetail[] {
+    const state = this.storyStates.get(sessionId);
+    return state ? state.visualDetails : [];
+  }
+
+  static getConsistentDetailDescription(sessionId: string, detailName: string, type: VisualDetail['type']): string | null {
+    const state = this.storyStates.get(sessionId);
+    if (!state) return null;
+
+    const detailId = this.generateDetailId(detailName, type);
+    const detail = state.visualDetails.find(d => d.id === detailId);
+    
+    if (!detail) return null;
+
+    let description = detail.name;
+    
+    if (detail.attributes.has('size')) {
+      description = `${detail.attributes.get('size')} ${description}`;
+    }
+    
+    if (detail.attributes.has('color')) {
+      description = `${detail.attributes.get('color')} ${description}`;
+    }
+
+    return description;
+  }
+
+  static detectComplexObjects(text: string): { type: string; description: string; attributes: Map<string, string> }[] {
+    const complexObjects = [];
+    const compoundPattern = /(\w+)'s\s+((?:\w+\s+(?:and|or)\s+\w+\s+)*\w+)\s+(\w+)/gi;
+    const matches = text.matchAll(compoundPattern);
+    
+    for (const match of matches) {
+      const owner = match[1];
+      const descriptors = match[2];
+      const object = match[3];
+      
+      const attributes = new Map<string, string>();
+      attributes.set('owner', owner);
+      
+      // Extract colors from descriptors
+      const colorMatch = descriptors.match(/\b(red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey)\b/gi);
+      if (colorMatch) {
+        attributes.set('colors', colorMatch.join(' and '));
+      }
+      
+      // Extract patterns
+      const patternMatch = descriptors.match(/\b(striped|spotted|checkered|polka-dotted)\b/gi);
+      if (patternMatch) {
+        attributes.set('pattern', patternMatch[0]);
+      }
+      
+      complexObjects.push({
+        type: 'object',
+        description: `${owner}'s ${descriptors} ${object}`,
+        attributes
+      });
+    }
+    
+    return complexObjects;
+  }
+
+  private static extractDetailName(fullMatch: string): string {
+    const words = fullMatch.trim().split(/\s+/);
+    return words[words.length - 1].toLowerCase();
+  }
+
+  private static generateDetailId(name: string, type: VisualDetail['type']): string {
+    return `${type}_${name.toLowerCase().replace(/\s+/g, '_')}`;
+  }
+
   static analyzeAndTrackVisualDetails(sessionId: string, text: string, pageNumber: number): VisualDetail[] {
     const state = this.getOrCreateStoryState(sessionId);
     
@@ -400,14 +582,11 @@ export class StoryVisualStateManager {
     const relationships = AdvancedPronounResolver.analyzeRelationships(sessionId, text, pageNumber);
     state.characterRelationships.push(...relationships);
     
-    // Use VisualDetailTracker to detect and track details
-    const newDetails = VisualDetailTracker.analyzeTextForDetails(sessionId, text, pageNumber);
-    
-    // Add new details to state
-    state.visualDetails.push(...newDetails);
+    // Analyze text for visual details using merged functionality
+    const newDetails = this.analyzeTextForDetails(sessionId, text, pageNumber);
     
     // Also detect complex objects and add them to objects registry
-    const complexObjects = VisualDetailTracker.detectComplexObjects(text);
+    const complexObjects = this.detectComplexObjects(text);
     for (const obj of complexObjects) {
       const objectId = `${obj.type}_${obj.description.toLowerCase().replace(/\s+/g, '_')}`;
       const objectState: ObjectState = {
@@ -432,17 +611,17 @@ export class StoryVisualStateManager {
     this.analyzeAndTrackVisualDetails(sessionId, text, pageNumber);
     
     // Then inject consistent descriptions for previously seen details
-    return VisualDetailTracker.injectConsistentDetails(sessionId, text, pageNumber);
+    return this.injectConsistentDetails(sessionId, text, pageNumber);
   }
 
-  static getVisualDetailsForPrompt(sessionId: string, pageNumber: number): string {
+  static getVisualDetailsForPrompt(sessionId: string, pageNumber: number = 1): string {
     const state = this.storyStates.get(sessionId);
     if (!state) return '';
 
     const relevantDetails: string[] = [];
     
-    // Get details from VisualDetailTracker
-    const sessionDetails = VisualDetailTracker.getSessionDetails(sessionId);
+    // Get details from visual details registry
+    const sessionDetails = this.getSessionDetails(sessionId);
     
     for (const detail of sessionDetails) {
       if (detail.lastMentionedPage < pageNumber) {
