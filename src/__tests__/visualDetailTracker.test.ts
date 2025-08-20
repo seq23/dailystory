@@ -56,10 +56,10 @@ describe('StoryVisualStateManager - Visual Detail Tracking', () => {
 
   it('should maintain consistent color across multiple pages', () => {
     // Page 1: Introduce red car
-    VisualDetailTracker.analyzeTextForDetails(testSessionId, 'Emma played with her red car.', 1);
+    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'Emma played with her red car.', 1);
     
     // Page 2: Vague reference should be enhanced
-    const enhanced = VisualDetailTracker.injectConsistentDetails(
+    const enhanced = StoryVisualStateManager.injectConsistentDetails(
       testSessionId,
       'The car rolled down the hill.',
       2
