@@ -325,8 +325,8 @@ export class SimpleImageService {
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
     try {
-      // TIER 1: AI-Enhanced Premium Runware
-      console.log('🧠 Starting Tier 1: AI-Enhanced Premium Runware');
+      // TIER 1: AI-Enhanced High-Quality Runware
+      console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Runware');
       
       // Step 1: Get AI enhancement data
       let enhancedStoryData = null;
@@ -353,7 +353,7 @@ export class SimpleImageService {
       const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData);
       
       if (tier1Result.success) {
-        console.log(`✅ Tier 1 ${enhancedStoryData ? 'AI-Enhanced' : 'Standard'} Premium succeeded`);
+        console.log(`✅ Tier 1 ${enhancedStoryData ? 'AI-Enhanced' : 'Standard'} High-Quality succeeded`);
         await this.recordUsage(tier1Result, userInfo?.name);
         return tier1Result;
       }
@@ -418,7 +418,7 @@ export class SimpleImageService {
 
   // Provider methods
   static getTierUsed(result: ImageResult): string {
-    if (result.provider === 'runware-premium') return 'Premium AI-Enhanced (Tier 1)';
+    if (result.provider === 'runware-premium') return 'High-Quality AI-Enhanced (Tier 1)';
     if (result.provider === 'runware-template') return 'Template-Based (Tier 2)';
     if (result.provider === 'runware-simple-fallback') return 'Nuclear Hardcoded (Tier 2.5)';
     if (result.provider === 'openai') return 'OpenAI DALL-E (Tier 3)';
@@ -426,7 +426,7 @@ export class SimpleImageService {
     return 'Unknown';
   }
 
-  // TIER 1: AI-Enhanced Premium Runware (uses EnhancedPromptBuilder + AI analysis)
+  // TIER 1: AI-Enhanced High-Quality Runware (uses EnhancedPromptBuilder + AI analysis)
   private static async generateWithRunware(
     cleanScene: string, 
     config: ImageGenerationConfig,
@@ -437,7 +437,23 @@ export class SimpleImageService {
     enhancedStoryData?: any
   ): Promise<ImageResult> {
     try {
-      console.log('🎨 Tier 1: Premium AI-Enhanced Runware generation');
+      console.log('🎨 Tier 1: High-Quality AI-Enhanced Runware generation');
+      
+      // Floating head risk assessment for logging
+      const floatingHeadRiskFactors = {
+        shortPrompt: cleanScene.length < 50,
+        portraitKeywords: /portrait|headshot|face|head/i.test(cleanScene),
+        missingBodyTerms: !(/full body|whole body|standing|sitting|walking/i.test(cleanScene)),
+        highAspectRatio: config.dimensions.height > config.dimensions.width
+      };
+      
+      console.log('🎯 Floating Head Risk Assessment:', {
+        sessionId,
+        pageNumber,
+        riskFactors: floatingHeadRiskFactors,
+        totalRiskScore: Object.values(floatingHeadRiskFactors).filter(Boolean).length,
+        timestamp: new Date().toISOString()
+      });
 
       // Get stored character seed for consistency
       let characterSeed: number | undefined;
@@ -461,17 +477,29 @@ export class SimpleImageService {
       });
 
       if (error) {
-        throw new Error(`Tier 1 Premium API error: ${error.message}`);
+        throw new Error(`Tier 1 High-Quality API error: ${error.message}`);
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Tier 1 Premium generation failed');
+        throw new Error(data?.error || 'Tier 1 High-Quality generation failed');
       }
 
       // Store successful seed for future consistency
       if (data.seed && userInfo && sessionId && pageNumber) {
         await this.storeCharacterSeed(userInfo, sessionId, data.seed, pageNumber);
       }
+
+      // Enhanced logging for floating head detection
+      console.log('🎯 Image Generation Result (Tier 1):', {
+        tier: 'High-Quality AI-Enhanced',
+        success: true,
+        promptLength: cleanScene.length,
+        containsBodyTerms: /full body|whole body|standing|sitting|walking/i.test(cleanScene),
+        sessionId,
+        pageNumber,
+        seed: data.seed,
+        timestamp: new Date().toISOString()
+      });
 
       return {
         url: data.imageURL,

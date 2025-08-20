@@ -15,10 +15,10 @@ function selectWeightedElement(array) {
 
 export class MultiStageEnhancementPipeline {
   
-  // ============= TIER 1: PREMIUM AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
+  // ============= TIER 1: HIGH-QUALITY AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
   static async processTier1Premium(storyText, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
     try {
-      console.log(`🔥 Tier 1 Premium AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
       console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);
       
       // Import fresh frontend intelligence
@@ -145,7 +145,7 @@ export class MultiStageEnhancementPipeline {
         outputFormat: 'WEBP'
       };
       
-      console.log('✨ Tier 1 Premium AI processing completed with style framework + visual state:', {
+      console.log('✨ Tier 1 High-Quality AI processing completed with style framework + visual state:', {
         styleFramework: styleFramework.name,
         difficulty: imageDifficulty,
         characterSeed,
@@ -164,7 +164,7 @@ export class MultiStageEnhancementPipeline {
         negativePrompt,
         generationParams,
         metadata: {
-          tier: 'premium-ai-styled-visual-state',
+          tier: 'high-quality-ai-styled-visual-state',
           characterSeed,
           styleFramework: styleFramework.name,
           difficulty: imageDifficulty,
@@ -187,8 +187,8 @@ export class MultiStageEnhancementPipeline {
       };
       
     } catch (error) {
-      console.error('❌ Tier 1 Premium processing failed:', error);
-      return this.createFallbackResult(storyText, userInfo, 'tier1-premium');
+      console.error('❌ Tier 1 High-Quality processing failed:', error);
+      return this.createFallbackResult(storyText, userInfo, 'tier1-high-quality');
     }
   }
   
@@ -282,7 +282,7 @@ export class MultiStageEnhancementPipeline {
   
   // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============
   static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework = null) {
-    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
+    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
     
     // Add style framework negative prompts
     if (styleFramework && styleFramework.negativePrompt) {
@@ -305,7 +305,7 @@ export class MultiStageEnhancementPipeline {
   }
   
   static buildSimpleNegativePrompt(userInfo) {
-    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
+    let baseNegative = "NO TEXT, no letters, no words, no writing, no signs, no symbols, floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
     
     // Add gender consistency
     if (userInfo?.avatar?.type === 'girl') {
