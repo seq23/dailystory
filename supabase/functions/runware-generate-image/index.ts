@@ -54,7 +54,16 @@ serve(async (req) => {
     const positivePrompt = enhancementResult.enhancedPrompt;
     const negativePrompt = enhancementResult.negativePrompt;
 
-    console.log(`🎨 Premium AI-enhanced prompt: "${positivePrompt.substring(0, 100)}..."`);
+    console.log(`🎨 Premium AI-enhanced prompt (${positivePrompt.length} chars):`, positivePrompt);
+    console.log(`🚫 Negative prompt (${negativePrompt.length} chars):`, negativePrompt);
+    console.log(`📊 Generation metadata:`, {
+      pageNumber,
+      totalPages,
+      sessionId: sessionId || 'unknown',
+      userInfo: userInfo?.name || 'unknown',
+      seed: seed || 'auto',
+      enhancementLevel: enhancementResult.metadata || {}
+    });
 
     // Create WebSocket connection to Runware
     const ws = new WebSocket('wss://ws-api.runware.ai/v1');
@@ -118,12 +127,14 @@ serve(async (req) => {
               // Store successful generation in visual state for consistency
               if (sessionId && enhancementResult?.metadata?.characterSeed) {
                 try {
-                  // Store successful prompt and seed for character consistency
+                  // Store successful prompt with full metadata for debugging
                   StoryVisualStateManager.addSuccessfulPrompt(
                     sessionId, 
-                    enhancementResult.enhancedPrompt, 
+                    positivePrompt, // Store the full positive prompt
                     enhancementResult.generationParams, 
-                    item.seed || enhancementResult.metadata.characterSeed
+                    item.seed || enhancementResult.metadata.characterSeed,
+                    item.imageURL,
+                    pageNumber
                   );
                   
                   // Update character appearance if we have character description

@@ -12,8 +12,7 @@ class StoryVisualStateManager {
         objects: new Map(),
         relationships: [],
         runwareContext: {
-          lastSuccessfulPrompt: null,
-          lastSuccessfulParams: null,
+          promptHistory: [], // Store last 5 prompts with metadata
           consistentSeed: null,
           qualityScore: 0
         },
@@ -183,13 +182,44 @@ class StoryVisualStateManager {
     return consistencyPrompts.length > 0 ? consistencyPrompts.join(', ') : null;
   }
 
-  static addSuccessfulPrompt(sessionId, prompt, params, seed) {
+  static addSuccessfulPrompt(sessionId, prompt, params, seed, imageURL, pageNumber) {
     const state = this.getOrCreateStoryState(sessionId);
-    state.runwareContext.lastSuccessfulPrompt = prompt;
-    state.runwareContext.lastSuccessfulParams = params;
+    
+    // Add new prompt to history
+    const promptEntry = {
+      fullPrompt: prompt,
+      params: params,
+      seed: seed,
+      imageURL: imageURL,
+      pageNumber: pageNumber || state.lastPageGenerated,
+      timestamp: new Date().toISOString(),
+      promptLength: prompt ? prompt.length : 0
+    };
+    
+    // Add to beginning of array and keep only last 5
+    state.runwareContext.promptHistory.unshift(promptEntry);
+    if (state.runwareContext.promptHistory.length > 5) {
+      state.runwareContext.promptHistory = state.runwareContext.promptHistory.slice(0, 5);
+    }
+    
     state.runwareContext.consistentSeed = seed;
     state.runwareContext.qualityScore += 10;
     state.lastUpdated = new Date();
+    
+    console.log(`📝 Stored prompt history entry ${promptEntry.promptLength} chars for session ${sessionId}, total entries: ${state.runwareContext.promptHistory.length}`);
+  }
+
+  static getPromptHistory(sessionId, limit = 5) {
+    const state = this.getStoryState(sessionId);
+    if (!state || !state.runwareContext.promptHistory) {
+      return [];
+    }
+    return state.runwareContext.promptHistory.slice(0, limit);
+  }
+
+  static getLastSuccessfulPrompt(sessionId) {
+    const history = this.getPromptHistory(sessionId, 1);
+    return history.length > 0 ? history[0].fullPrompt : null;
   }
 
   static clearStoryState(sessionId) {
