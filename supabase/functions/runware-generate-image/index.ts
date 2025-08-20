@@ -2,6 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
+// Import StoryVisualStateManager at top level to avoid async import in WebSocket callback
+const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
+
 // Phase 1: Premium AI-Enhanced Tier 1 using EnhancedPromptBuilder
 serve(async (req) => {
   console.log(`🔥 Tier 1: Premium AI-Enhanced Image Generation: ${req.method} ${req.url}`);
@@ -115,8 +118,6 @@ serve(async (req) => {
               // Store successful generation in visual state for consistency
               if (sessionId && enhancementResult?.metadata?.characterSeed) {
                 try {
-                  const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
-                  
                   // Store successful prompt and seed for character consistency
                   StoryVisualStateManager.addSuccessfulPrompt(
                     sessionId, 
