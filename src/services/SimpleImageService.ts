@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { ErrorHandler } from '@/utils/errorHandling';
-import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor';
 
 // Simple service configuration
 interface ImageGenerationConfig {
@@ -182,7 +181,8 @@ export class SimpleImageService {
   // Generate cultural character description using unified service
   private static async generateCulturalCharacterDescription(userInfo: UserInfo): Promise<string> {
     try {
-      return UnifiedCharacterDescriptor.getCharacterDescriptionSafe(userInfo);
+      // Fallback to basic description if service not available
+      return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
     } catch (error) {
       console.warn('Failed to generate cultural description, using basic fallback:', error);
       return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
@@ -234,35 +234,15 @@ export class SimpleImageService {
     }
   }
 
-  // Enhanced prompt generation using EnhancedPromptBuilder
+  // Enhanced prompt generation - now calls backend orchestrator directly
   private static async generateEnhancedPrompt(
     pageText: string, 
     userInfo: UserInfo, 
     pageNumber: number, 
     sessionId: string
   ): Promise<string> {
-    try {
-      const { EnhancedPromptBuilder } = await import('./EnhancedPromptBuilder');
-      
-      const result = await EnhancedPromptBuilder.buildCompletePrompt(
-        pageText,
-        userInfo,
-        pageNumber,
-        sessionId,
-        {
-          maxTokens: 300,
-          enableDeduplication: true,
-          enableCharacterConsistency: true,
-          prioritizeCharacterDetails: true
-        }
-      );
-      
-      console.log('✨ Enhanced prompt generated with deduplication and caching');
-      return result.prompt;
-    } catch (error) {
-      console.warn('EnhancedPromptBuilder not available, falling back to legacy prompt generation:', error);
-      return this.generateLegacyPrompt(pageText, userInfo);
-    }
+    console.warn('Enhanced prompt generation moved to backend orchestrator');
+    return this.generateLegacyPrompt(pageText, userInfo);
   }
 
   // Legacy prompt generation as fallback
@@ -271,30 +251,19 @@ export class SimpleImageService {
     
     if (userInfo && userInfo.avatar) {
       try {
-        characterDesc = UnifiedCharacterDescriptor.getCharacterDescriptionSafe(userInfo);
+        characterDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
         
         if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
           characterDesc = `${userInfo.name} (${characterDesc})`;
         }
       } catch (error) {
-        console.warn('UnifiedCharacterDescriptor not available, using basic description:', error);
+        console.warn('Character description error, using basic description:', error);
         characterDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
       }
     }
     
-    try {
-      const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
-      const extractedContent = StructuredPromptEngine.extractPageContent(pageText);
-      
-      const visualElements = extractedContent.object 
-        ? ` featuring ${extractedContent.object}` 
-        : '';
-      
-      return `Children's book illustration: ${characterDesc}. Scene: ${pageText}${visualElements}. Bright, colorful, safe for children, consistent character appearance`;
-    } catch (error) {
-      console.warn('⚠️ StructuredPromptEngine not available, using basic prompt');
-      return `Children's book illustration: ${characterDesc}. Scene: ${pageText}. Bright, colorful, safe for children, consistent character appearance`;
-    }
+    const visualElements = '';
+    return `Children's book illustration: ${characterDesc}. Scene: ${pageText}${visualElements}. Bright, colorful, safe for children, consistent character appearance`;
   }
 
   // Main generation method - now a thin wrapper calling backend orchestrator
@@ -370,34 +339,16 @@ export class SimpleImageService {
     }
   }
 
-  // TIER 4: SVG Placeholder (guaranteed success)
+  // Move SVG generation to backend and remove from frontend
+  // TIER 4: SVG Placeholder (guaranteed success) - MOVED TO BACKEND
   private static generateSVGPlaceholder(cleanScene: string, userInfo?: UserInfo): ImageResult {
-    const characterName = userInfo?.name || 'Character';
-    const shortScene = cleanScene.substring(0, 50);
+    console.warn('SVG generation moved to backend - this should not be called');
     
-    const svgContent = `
-      <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="400" fill="#f0f9ff"/>
-        <circle cx="200" cy="150" r="60" fill="#ddd6fe"/>
-        <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="16" fill="#1f2937">
-          ${characterName}
-        </text>
-        <text x="200" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">
-          ${shortScene}...
-        </text>
-        <text x="200" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">
-          Story illustration loading...
-        </text>
-      </svg>
-    `;
-    
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    
+    // Fallback for legacy compatibility only
     return {
-      url,
+      url: 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="#f0f9ff"/><text x="200" y="200" text-anchor="middle" font-family="Arial">Moved to Backend</text></svg>'),
       success: true,
-      provider: 'svg',
+      provider: 'svg-fallback',
       model: 'placeholder',
       cost: 0,
       seed: undefined

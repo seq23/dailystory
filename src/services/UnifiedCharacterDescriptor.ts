@@ -273,14 +273,348 @@ export class UnifiedCharacterDescriptor {
 
   // ============= AGE RANGE MAPPING =============
   
+  // Enhanced age mapping with categories  
   private static getAgeRange(difficulty: string): string {
-    if (difficulty === 'hard') {
-      return '9-11 years old';
-    } else if (difficulty === 'expert') {
-      return '11-13 years old';
-    } else {
-      return '5-8 years old'; // beginner, easy, medium
+    const ageMapping = {
+      'K': '4-5 years old',
+      '1st': '6-7 years old', 
+      '2nd': '7-8 years old',
+      '3rd': '8-9 years old',
+      '4th': '9-10 years old',
+      '5th': '10-11 years old',
+      'easy': '5-7 years old',
+      'medium': '7-9 years old', 
+      'hard': '9-11 years old'
+    };
+    
+    return ageMapping[difficulty] || '7-9 years old';
+  }
+
+  // Get age category for character generation
+  static getAgeCategory(difficulty: string): 'child' | 'teen' | 'adult' | 'elder' {
+    const categoryMapping = {
+      'K': 'child',
+      '1st': 'child',
+      '2nd': 'child', 
+      '3rd': 'child',
+      '4th': 'child',
+      '5th': 'child',
+      'easy': 'child',
+      'medium': 'child',
+      'hard': 'child'
+    };
+    
+    return categoryMapping[difficulty] || 'child';
+  }
+
+  // ============= SECONDARY CHARACTER SYSTEM INTEGRATION =============
+  // Integrating AdvancedCharacterEngine functionality into UnifiedCharacterDescriptor
+
+  private static characterRegistry: Map<string, CharacterDescriptor> = new Map();
+  private static familyGroups: Map<string, FamilyGroup> = new Map();
+  private static sessionCharacters: Map<string, Set<string>> = new Map(); // sessionId -> character names
+  
+  // Animal character registry (integrated from AnimalCharacterManager)
+  private static animalRegistry: Map<string, AnimalCharacter[]> = new Map(); // sessionId -> animals
+
+  /**
+   * Generate primary character description with session consistency
+   */
+  static generatePrimaryCharacter(userInfo: UserInfo, difficulty: string = 'easy', sessionId?: string): CharacterDescriptor {
+    if (sessionId) {
+      const characterId = `${sessionId}_primary`;
+      
+      if (this.characterRegistry.has(characterId)) {
+        const existing = this.characterRegistry.get(characterId)!;
+        return existing;
+      }
+      
+      // Create new primary character
+      const primaryCharacter: CharacterDescriptor = {
+        name: userInfo.name?.split(' ')[0] || 'Child',
+        type: 'primary',
+        relationshipToMain: 'self',
+        culturalRole: 'child protagonist',
+        physicalTraits: this.generateCharacterDescription(userInfo, difficulty, 'rich', true),
+        clothingStyle: 'casual children\'s clothing',
+        lastUsedPage: 1,
+        familyGroupId: `${sessionId}_family`,
+        ageCategory: this.getAgeCategory(difficulty)
+      };
+      
+      this.characterRegistry.set(characterId, primaryCharacter);
+      return primaryCharacter;
     }
+    
+    // Non-session version
+    return {
+      name: userInfo.name?.split(' ')[0] || 'Child',
+      type: 'primary',
+      relationshipToMain: 'self', 
+      culturalRole: 'child protagonist',
+      physicalTraits: this.generateCharacterDescription(userInfo, difficulty, 'rich', true),
+      clothingStyle: 'casual children\'s clothing',
+      lastUsedPage: 1,
+      ageCategory: this.getAgeCategory(difficulty)
+    };
+  }
+
+  /**
+   * Generate secondary characters (family, community, animals)
+   */
+  static generateSecondaryCharacter(
+    type: 'family' | 'community' | 'animal',
+    details: SecondaryCharacterDetails,
+    userInfo: UserInfo,
+    sessionId?: string
+  ): CharacterDescriptor | AnimalCharacter {
+    if (type === 'animal') {
+      return this.generateAnimalCharacter(details, sessionId || 'default');
+    }
+    
+    const characterId = `${sessionId || 'default'}_${type}_${details.relationship || details.name}`;
+    
+    if (this.characterRegistry.has(characterId)) {
+      const existing = this.characterRegistry.get(characterId)!;
+      return existing;
+    }
+    
+    const ageCategory = this.mapRelationshipToAge(details.relationship);
+    const culturalFeatures = this.getCulturalFeatures(userInfo.nativeLanguage);
+    
+    const secondaryCharacter: CharacterDescriptor = {
+      name: details.name || this.generateCulturalName(details.relationship, userInfo.nativeLanguage),
+      type: type === 'family' ? 'family' : 'community',
+      relationshipToMain: details.relationship,
+      culturalRole: `supportive ${details.relationship}`,
+      physicalTraits: this.generateSecondaryCharacterTraits(ageCategory, culturalFeatures, userInfo),
+      clothingStyle: this.getAgeAppropriateClothing(ageCategory, culturalFeatures),
+      lastUsedPage: 1,
+      familyGroupId: type === 'family' ? `${sessionId}_family` : undefined,
+      ageCategory
+    };
+    
+    if (sessionId) {
+      this.characterRegistry.set(characterId, secondaryCharacter);
+    }
+    
+    return secondaryCharacter;
+  }
+
+  /**
+   * Get character consistency data for session
+   */
+  static getCharacterConsistencyData(sessionId: string): CharacterConsistencyData {
+    const sessionChars = Array.from(this.characterRegistry.entries())
+      .filter(([id]) => id.startsWith(sessionId))
+      .map(([_, char]) => char);
+      
+    const sessionAnimals = this.animalRegistry.get(sessionId) || [];
+    
+    return {
+      characters: sessionChars,
+      animals: sessionAnimals,
+      sessionId,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
+  // ============= ANIMAL CHARACTER INTEGRATION =============
+  
+  /**
+   * Generate animal secondary character
+   */
+  private static generateAnimalCharacter(details: SecondaryCharacterDetails, sessionId: string): AnimalCharacter {
+    const sessionAnimals = this.getOrCreateSessionAnimals(sessionId);
+    
+    // Check for existing animal of same species (enforce single animal rule)
+    const existingAnimal = sessionAnimals.find(a => a.species === details.species);
+    
+    if (existingAnimal) {
+      // Update existing animal with new details
+      if (details.name && !existingAnimal.name) existingAnimal.name = details.name;
+      if (details.color && !existingAnimal.color) existingAnimal.color = details.color;
+      if (details.personality && !existingAnimal.personality) existingAnimal.personality = details.personality;
+      return existingAnimal;
+    }
+    
+    // Create new animal
+    const newAnimal: AnimalCharacter = {
+      species: details.species!,
+      name: details.name,
+      color: details.color,
+      size: details.size,
+      personality: details.personality,
+      seed: this.generateAnimalSeed(sessionId, details),
+      firstMentionedPage: 1,
+      lastMentionedPage: 1,
+      mentionCount: 1,
+      createdAt: Date.now()
+    };
+    
+    sessionAnimals.push(newAnimal);
+    this.animalRegistry.set(sessionId, sessionAnimals);
+    
+    return newAnimal;
+  }
+
+  private static getOrCreateSessionAnimals(sessionId: string): AnimalCharacter[] {
+    if (!this.animalRegistry.has(sessionId)) {
+      this.animalRegistry.set(sessionId, []);
+    }
+    return this.animalRegistry.get(sessionId)!;
+  }
+
+  private static generateAnimalSeed(sessionId: string, details: SecondaryCharacterDetails): number {
+    let hash = 0;
+    const input = `${sessionId}-${details.species}-${details.color || 'default'}-${details.name || 'unnamed'}`;
+    
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    
+    return Math.abs(hash);
+  }
+
+  // ============= HELPER METHODS =============
+
+  private static mapRelationshipToAge(relationship: string): 'child' | 'teen' | 'adult' | 'elder' {
+    const ageMapping: Record<string, 'child' | 'teen' | 'adult' | 'elder'> = {
+      'sister': 'child',
+      'brother': 'child', 
+      'cousin': 'child',
+      'friend': 'child',
+      'classmate': 'child',
+      'mother': 'adult',
+      'father': 'adult',
+      'aunt': 'adult',
+      'uncle': 'adult',
+      'teacher': 'adult',
+      'neighbor': 'adult',
+      'grandmother': 'elder',
+      'grandfather': 'elder'
+    };
+    
+    return ageMapping[relationship] || 'adult';
+  }
+
+  private static generateSecondaryCharacterTraits(
+    ageCategory: 'child' | 'teen' | 'adult' | 'elder',
+    culturalFeatures: CulturalFeatures | null,
+    userInfo: UserInfo
+  ): string {
+    if (culturalFeatures) {
+      const physicalFeature = this.selectRandom(culturalFeatures.physicalFeatures);
+      const skinTone = this.selectRandom(culturalFeatures.skinTones);
+      
+      // Age-appropriate styling
+      if (ageCategory === 'elder') {
+        return `${skinTone}, ${physicalFeature}, wise appearance, gray hair`;
+      } else if (ageCategory === 'adult') {
+        return `${skinTone}, ${physicalFeature}, mature appearance`;
+      } else {
+        return `${skinTone}, ${physicalFeature}, youthful appearance`;
+      }
+    }
+    
+    return `${ageCategory} with friendly appearance`;
+  }
+
+  private static getAgeAppropriateClothing(
+    ageCategory: 'child' | 'teen' | 'adult' | 'elder',
+    culturalFeatures: CulturalFeatures | null
+  ): string {
+    if (culturalFeatures) {
+      return this.selectRandom(culturalFeatures.clothingStyles);
+    }
+    
+    const clothingMap = {
+      'child': 'casual children\'s clothing',
+      'teen': 'trendy youth clothing',
+      'adult': 'professional adult attire',
+      'elder': 'comfortable elder clothing'
+    };
+    
+    return clothingMap[ageCategory];
+  }
+
+  private static generateCulturalName(relationship: string, language: string): string {
+    const namePatterns: Record<string, Record<string, string[]>> = {
+      'ar': {
+        mother: ['Amina', 'Fatima', 'Aisha'],
+        father: ['Ahmad', 'Omar', 'Hassan'],
+        grandmother: ['Hajja Fatima', 'Sitt Amina'],
+        teacher: ['Ustaz Ahmad', 'Miss Aisha']
+      },
+      'es': {
+        mother: ['María', 'Carmen', 'Rosa'],
+        father: ['José', 'Carlos', 'Miguel'],
+        grandmother: ['Abuela Rosa', 'Abuelita María'],
+        teacher: ['Señorita Carmen', 'Maestro José']
+      },
+      'zh': {
+        mother: ['Li Wei', 'Wang Ming', 'Chen Mei'],
+        father: ['Li Gang', 'Wang Jun', 'Chen Hao'],
+        grandmother: ['Nai Nai', 'Po Po'],
+        teacher: ['Teacher Wang', 'Miss Li']
+      },
+      'hi': {
+        mother: ['Priya', 'Sunita', 'Kavya'],
+        father: ['Raj', 'Amit', 'Vikram'],
+        grandmother: ['Dadi', 'Nani'],
+        teacher: ['Priya Madam', 'Raj Sir']
+      },
+      'pt': {
+        mother: ['Maria', 'Ana', 'Lucia'],
+        father: ['João', 'Carlos', 'Pedro'],
+        grandmother: ['Vovó Maria', 'Vovó Ana'],
+        teacher: ['Professora Ana', 'Professor João']
+      },
+      'fr': {
+        mother: ['Marie', 'Sophie', 'Claire'],
+        father: ['Pierre', 'Jean', 'Paul'],
+        grandmother: ['Grand-mère Marie', 'Mémé Sophie'],
+        teacher: ['Madame Claire', 'Monsieur Pierre']
+      },
+      'en': {
+        mother: ['Mom', 'Mother', 'Mama'],
+        father: ['Dad', 'Father', 'Papa'],
+        grandmother: ['Grandma', 'Nana', 'Grammy'],
+        teacher: ['Mrs. Johnson', 'Mr. Smith', 'Ms. Davis']
+      }
+    };
+    
+    const names = namePatterns[language]?.[relationship] || namePatterns['en'][relationship] || [relationship];
+    return names[Math.floor(Math.random() * names.length)];
+  }
+
+  /**
+   * Clear session data 
+   */
+  static clearSession(sessionId: string): void {
+    // Remove characters
+    for (const [id] of this.characterRegistry) {
+      if (id.startsWith(sessionId)) {
+        this.characterRegistry.delete(id);
+      }
+    }
+    
+    // Remove family groups
+    for (const [id] of this.familyGroups) {
+      if (id.startsWith(sessionId)) {
+        this.familyGroups.delete(id);
+      }
+    }
+    
+    // Remove session tracking
+    this.sessionCharacters.delete(sessionId);
+    
+    // Remove animals
+    this.animalRegistry.delete(sessionId);
+    
+    console.log(`🗑️ Cleared unified character data for session: ${sessionId}`);
   }
 
   // ============= GENDER DETECTION =============
@@ -430,4 +764,60 @@ export class UnifiedCharacterDescriptor {
   ): string {
     return this.generateCharacterDescription(userInfo, difficulty, 'basic', false);
   }
+}
+
+// ============= INTERFACE DEFINITIONS =============
+
+export interface CharacterDescriptor {
+  name: string;
+  type: 'primary' | 'family' | 'friend' | 'teacher' | 'community';
+  relationshipToMain: string;
+  culturalRole: string;
+  physicalTraits: string;
+  clothingStyle: string;
+  seed?: number;
+  lastUsedPage: number;
+  familyGroupId?: string;
+  ageCategory: 'child' | 'teen' | 'adult' | 'elder';
+}
+
+export interface FamilyGroup {
+  id: string;
+  culturalBackground: string;
+  sharedTraits: {
+    skinTone: string;
+    hairTexture: string;
+    facialFeatures: string;
+    culturalElements: string[];
+  };
+  members: CharacterDescriptor[];
+}
+
+export interface AnimalCharacter {
+  species: string;
+  name?: string;
+  color?: string;
+  size?: string;
+  personality?: string;
+  seed: number;
+  firstMentionedPage: number;
+  lastMentionedPage: number;
+  mentionCount: number;
+  createdAt: number;
+}
+
+export interface SecondaryCharacterDetails {
+  relationship?: string; // Optional for animals
+  name?: string;
+  species?: string; // For animals
+  color?: string; // For animals
+  size?: string; // For animals
+  personality?: string; // For animals
+}
+
+export interface CharacterConsistencyData {
+  characters: CharacterDescriptor[];
+  animals: AnimalCharacter[];
+  sessionId: string;
+  lastUpdated: string;
 }

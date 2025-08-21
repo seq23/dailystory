@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { PlaceholderValidationService } from "@/services/PlaceholderValidationService";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
-import { AdvancedCharacterEngine } from "@/services/AdvancedCharacterEngine";
-import { StructuredPromptEngine } from "@/services/StructuredPromptEngine";
+import { UnifiedCharacterDescriptor } from "@/services/UnifiedCharacterDescriptor";
 import type { UserInfo } from "@/types";
 
 function createTestUser(overrides: Partial<UserInfo> = {}): UserInfo {
@@ -119,151 +118,127 @@ describe("DifficultyLevelMapper", () => {
   });
 });
 
-describe("AdvancedCharacterEngine Integration", () => {
-  it("detects characters using resolved placeholders", () => {
+describe("Unified Character System Integration", () => {
+  it("generates primary character with consolidated system", () => {
     const user = createTestUser();
-    const storyText = "{userName} met her friend at the park. Her mother watched them play.";
     
-    const characters = AdvancedCharacterEngine.detectCharactersInText(
-      storyText,
-      "test-session",
-      user,
-      1
-    );
+    const primaryChar = UnifiedCharacterDescriptor.generatePrimaryCharacter(user, "medium", "test-session");
     
-    // Should detect primary character (Emma) and family member (mother)
-    expect(characters.length).toBeGreaterThan(0);
-    
-    const primaryChar = characters.find(c => c.type === 'primary');
     expect(primaryChar).toBeDefined();
-    expect(primaryChar?.name).toBe("Emma"); // resolved from {userName}
-    
-    const motherChar = characters.find(c => c.relationshipToMain === 'mother');
-    expect(motherChar).toBeDefined();
+    expect(primaryChar.name).toBe("Emma");
+    expect(primaryChar.type).toBe("primary");
+    expect(primaryChar.relationshipToMain).toBe("self");
+    expect(primaryChar.ageCategory).toBe("child");
   });
 
-  it("maintains character consistency across pages", () => {
+  it("generates secondary characters with cultural authenticity", () => {
+    const user = createTestUser({ nativeLanguage: "es" }); // Spanish user
+    
+    const mother = UnifiedCharacterDescriptor.generateSecondaryCharacter(
+      "family",
+      { relationship: "mother" },
+      user,
+      "test-session"
+    );
+    
+    expect(mother).toBeDefined();
+    expect((mother as any).type).toBe("family");
+    expect((mother as any).relationshipToMain).toBe("mother");
+    expect((mother as any).ageCategory).toBe("adult");
+  });
+
+  it("generates animal characters as secondary characters", () => {
     const user = createTestUser();
     
-    // First page
-    const chars1 = AdvancedCharacterEngine.detectCharactersInText(
-      "{userName} played with her sister.",
-      "test-session",
+    const animal = UnifiedCharacterDescriptor.generateSecondaryCharacter(
+      "animal",
+      { species: "dog", name: "Buddy", color: "brown", personality: "friendly" },
       user,
-      1
+      "test-session"
     );
     
-    // Second page
-    const chars2 = AdvancedCharacterEngine.detectCharactersInText(
-      "{userName} and her sister went home.",
-      "test-session",
+    expect(animal).toBeDefined();
+    expect((animal as any).species).toBe("dog");
+    expect((animal as any).name).toBe("Buddy");
+    expect((animal as any).color).toBe("brown");
+    expect((animal as any).personality).toBe("friendly");
+  });
+
+  it("maintains character consistency data across session", () => {
+    const user = createTestUser();
+    const sessionId = "test-session-consistency";
+    
+    // Generate multiple characters
+    UnifiedCharacterDescriptor.generatePrimaryCharacter(user, "medium", sessionId);
+    UnifiedCharacterDescriptor.generateSecondaryCharacter(
+      "family",
+      { relationship: "father" },
       user,
-      2
+      sessionId
+    );
+    UnifiedCharacterDescriptor.generateSecondaryCharacter(
+      "animal",
+      { species: "cat", name: "Whiskers" },
+      user,
+      sessionId
     );
     
-    const primary1 = chars1.find(c => c.type === 'primary');
-    const primary2 = chars2.find(c => c.type === 'primary');
+    const consistencyData = UnifiedCharacterDescriptor.getCharacterConsistencyData(sessionId);
     
-    expect(primary1?.name).toBe(primary2?.name);
-    expect(primary1?.physicalTraits).toBe(primary2?.physicalTraits);
+    expect(consistencyData.sessionId).toBe(sessionId);
+    expect(consistencyData.characters.length).toBeGreaterThan(0);
+    expect(consistencyData.animals.length).toBeGreaterThan(0);
+    expect(consistencyData.lastUpdated).toBeDefined();
+  });
+
+  it("enforces single animal per species rule", () => {
+    const user = createTestUser();
+    const sessionId = "test-session-single-animal";
+    
+    // Try to create two dogs
+    const dog1 = UnifiedCharacterDescriptor.generateSecondaryCharacter(
+      "animal",
+      { species: "dog", name: "Max", color: "golden" },
+      user,
+      sessionId
+    );
+    
+    const dog2 = UnifiedCharacterDescriptor.generateSecondaryCharacter(
+      "animal",
+      { species: "dog", name: "Rex", color: "brown" },
+      user,
+      sessionId
+    );
+    
+    // Should be the same animal (updated with new details)
+    expect((dog1 as any).species).toBe("dog");
+    expect((dog2 as any).species).toBe("dog");
+    expect((dog1 as any).seed).toBe((dog2 as any).seed);
   });
 });
 
-describe("StructuredPromptEngine Integration", () => {
-  it("composes prompts with resolved placeholders", () => {
-    const user = createTestUser();
-    const storyText = "{userName} explored the {favoriteColor} garden with a {favoriteAnimal}.";
+// Note: StructuredPromptEngine and AdvancedCharacterEngine functionality has been moved to:
+// - Backend: MultiStageEnhancementPipeline.js for prompt composition
+// - Frontend: UnifiedCharacterDescriptor for character generation
+describe("Backend Migration Validation", () => {
+  it("validates frontend services have been properly removed", () => {
+    // This test serves as documentation that these services have been moved to backend
+    expect(() => {
+      // These imports should fail since files were deleted
+      require('@/services/StructuredPromptEngine');
+    }).toThrow();
     
-    const characters = AdvancedCharacterEngine.detectCharactersInText(
-      storyText,
-      "test-session",
-      user,
-      1
-    );
-    
-    const template = StructuredPromptEngine.composeStructuredPrompt(
-      storyText,
-      user,
-      1,
-      characters
-    );
-    
-    const finalPrompt = StructuredPromptEngine.templateToPrompt(template);
-    
-    expect(finalPrompt).toContain("Emma"); // resolved userName
-    expect(finalPrompt).toContain("purple"); // favoriteColor
-    expect(finalPrompt).toContain("butterfly"); // favoriteAnimal
-    expect(finalPrompt).not.toMatch(/\{[^}]+\}/); // no unresolved placeholders
+    expect(() => {
+      require('@/services/AdvancedCharacterEngine');
+    }).toThrow();
   });
 
-  it("handles difficulty level mapping in style frameworks", () => {
-    const user = createTestUser({ readingLevel: "developing" }); // frontend format
-    
-    const template = StructuredPromptEngine.composeStructuredPrompt(
-      "Simple story text",
-      user,
-      1,
-      []
-    );
-    
-    // Should map "developing" -> "medium" and use appropriate style
-    expect(template.styleFramework).toContain("Children's book art style");
-    expect(template.styleFramework).toContain("detailed characters");
-  });
-
-  it("integrates user preferences into scene composition", () => {
-    const user = createTestUser({
-      favoriteColor: "emerald",
-      specialRequest: "theme: magical forest adventure"
-    });
-    
-    const template = StructuredPromptEngine.composeStructuredPrompt(
-      "{userName} discovered a magical place.",
-      user,
-      1,
-      []
-    );
-    
-    expect(template.sceneDescription).toContain("emerald"); // favoriteColor integration
-    expect(template.culturalSetting).toContain("magical forest adventure"); // specialRequest theme
-  });
-});
-
-describe("End-to-End Placeholder Integration", () => {
-  it("processes complete story pipeline with all placeholders", () => {
-    const user = createTestUser();
-    const storyText = `{userName} loved her {favoriteColor} dress. She went to the park where she saw a beautiful {favoriteAnimal}. 
-                      Her favorite activity was {hobbies}, and today felt like a perfect day for {specialRequest}.`;
-    
-    // Step 1: Validate placeholders
-    const validation = PlaceholderValidationService.validatePlaceholders(storyText, user);
-    expect(validation.isValid).toBe(true);
-    
-    // Step 2: Detect characters with resolved text
-    const characters = AdvancedCharacterEngine.detectCharactersInText(
-      validation.resolvedText,
-      "test-session",
-      user,
-      1
-    );
-    expect(characters.length).toBeGreaterThan(0);
-    
-    // Step 3: Generate structured prompt
-    const template = StructuredPromptEngine.composeStructuredPrompt(
-      validation.resolvedText,
-      user,
-      1,
-      characters
-    );
-    
-    const finalPrompt = StructuredPromptEngine.templateToPrompt(template);
-    
-    // Verify all user data is integrated
-    expect(finalPrompt).toContain("Emma");
-    expect(finalPrompt).toContain("purple");
-    expect(finalPrompt).toContain("butterfly");
-    expect(finalPrompt).toContain("painting");
-    expect(finalPrompt).toContain("friendship");
-    expect(finalPrompt).not.toMatch(/\{[^}]+\}/);
+  it("validates UnifiedCharacterDescriptor provides consolidated API", () => {
+    // Check all required methods are available in unified service
+    expect(typeof UnifiedCharacterDescriptor.generatePrimaryCharacter).toBe("function");
+    expect(typeof UnifiedCharacterDescriptor.generateSecondaryCharacter).toBe("function");
+    expect(typeof UnifiedCharacterDescriptor.getCharacterConsistencyData).toBe("function");
+    expect(typeof UnifiedCharacterDescriptor.clearSession).toBe("function");
+    expect(typeof UnifiedCharacterDescriptor.getCharacterDescriptionSafe).toBe("function");
   });
 });
