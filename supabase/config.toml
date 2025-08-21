@@ -53,3 +53,9 @@ verify_jwt = false
 
 [functions.model-performance-monitor]
 verify_jwt = false
+
+[functions.debug-ai-enhancer]
+verify_jwt = false
+
+[functions.runware-diagnostic]
+verify_jwt = false

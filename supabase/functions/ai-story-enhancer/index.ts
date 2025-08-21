@@ -139,12 +139,13 @@ serve(async (req) => {
     async () => {
       try {
         const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-        EdgeErrorHandler.validateRequest({
-          pageText: undefined,
-          positivePrompt: undefined,
-          apiKey: openAIApiKey,
-          functionName: 'ai-story-enhancer'
-        });
+        // Validate OpenAI API key is present
+        if (!openAIApiKey) {
+          throw {
+            type: EdgeErrorType.VALIDATION,
+            message: 'OPENAI_API_KEY not configured'
+          };
+        }
 
         const { storyText, userInfo, sessionId, pageNumber, totalPages } = await req.json();
 
@@ -275,7 +276,7 @@ Maintain consistency with previous pages while extracting rich story elements.`
 
     // Add context and metadata with validation info
     const result = {
-      enhancedStoryData,
+      enhancedStoryData: enhancedStoryData || {},
       extractedElements: {
         characterCount: enhancedStoryData.characters?.length || 0,
         objectCount: enhancedStoryData.objects?.length || 0,
