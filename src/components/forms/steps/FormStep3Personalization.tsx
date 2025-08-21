@@ -288,6 +288,24 @@ export const FormStep3Personalization = ({
                 />
               </div>
 
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Interests Section */}
+        <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-card border border-border rounded-lg hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-3">
+              <Heart className="h-5 w-5 text-primary" />
+              <h3 className="font-medium text-foreground">
+                {t("formStep3.interestsTitle", "What You Love")}
+              </h3>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${interestsOpen ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="px-4 pb-4">
+            <div className="space-y-4 mt-4">
               {/* Favorite Color */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">
@@ -322,24 +340,7 @@ export const FormStep3Personalization = ({
                   </div>
                 )}
               </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
 
-        {/* Interests Section */}
-        <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-card border border-border rounded-lg hover:bg-accent/50 transition-colors">
-            <div className="flex items-center gap-3">
-              <Heart className="h-5 w-5 text-primary" />
-              <h3 className="font-medium text-foreground">
-                {t("formStep3.interestsTitle", "What You Love")}
-              </h3>
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${interestsOpen ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="px-4 pb-4">
-            <div className="space-y-4 mt-4">
               {/* Favorite Animal */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">
@@ -481,11 +482,9 @@ export const FormStep3Personalization = ({
                 <TagInput
                   value={formData.specialRequest || ''}
                   onChange={(value) => handleInputChange('specialRequest', value)}
-                  placeholder={`Theme: adventure
-Setting: magical forest
-Character: brave young explorer
-Mood: exciting and mysterious
-Plot: discovering hidden treasures`}
+                  placeholder={`Theme: underwater adventure AND friendship
+Characters: brave princess AND talking dragon  
+Setting: magical forest AND cozy cottage`}
                   className="w-full"
                   supportStructured={true}
                 />
