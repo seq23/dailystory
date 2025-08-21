@@ -1,5 +1,6 @@
 // Story Session Cache - Persistent storage for story content across navigation
 import { DifficultyLevel } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CachedStorySession {
   id: string;
@@ -264,10 +265,11 @@ export class StorySessionCache {
         console.warn('Failed to clear character state:', error);
       }
 
-      // Clear UnifiedCharacterConsistency cache to prevent cross-avatar contamination
+      // Clear character consistency cache through backend
       try {
-        const { characterConsistency } = await import('@/services/UnifiedCharacterConsistency');
-        characterConsistency.cleanupExpiredSeeds();
+        await supabase.functions.invoke('get-monitoring-data', {
+          body: { action: 'cleanup', userId }
+        });
         console.log(`🎭 Cleared character consistency cache for user: ${userId}`);
       } catch (error) {
         console.warn('Failed to clear character consistency cache:', error);

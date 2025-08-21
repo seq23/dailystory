@@ -146,48 +146,7 @@ export class SimpleImageService {
     }
   }
 
-  // Character seed caching for consistency - now properly integrated
-  private static getCharacterSeedKey(userInfo: UserInfo, sessionId?: string): string {
-    return `char_seed_${userInfo.name}_${sessionId || 'global'}`;
-  }
-
-  // Get cached character seed for consistency
-  private static async getStoredCharacterSeed(userInfo: UserInfo, sessionId?: string): Promise<number | undefined> {
-    try {
-      const { StoryVisualStateManager } = await import('./storyVisualState');
-      if (sessionId && userInfo.name) {
-        return StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name);
-      }
-    } catch (error) {
-      console.warn('Failed to get character seed:', error);
-    }
-    return undefined;
-  }
-
-  // Store successful character seed for consistency
-  private static async storeCharacterSeed(userInfo: UserInfo, sessionId: string, seed: number, pageNumber: number): Promise<void> {
-    try {
-      const { StoryVisualStateManager } = await import('./storyVisualState');
-      if (userInfo.name) {
-        const characterDesc = await this.generateCulturalCharacterDescription(userInfo);
-        StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, seed, pageNumber);
-        console.log(`✅ Stored character seed ${seed} for ${userInfo.name} in session ${sessionId}`);
-      }
-    } catch (error) {
-      console.warn('Failed to store character seed:', error);
-    }
-  }
-
-  // Generate cultural character description using unified service
-  private static async generateCulturalCharacterDescription(userInfo: UserInfo): Promise<string> {
-    try {
-      // Fallback to basic description if service not available
-      return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
-    } catch (error) {
-      console.warn('Failed to generate cultural description, using basic fallback:', error);
-      return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
-    }
-  }
+  // Character logic moved to backend - all methods removed
 
   private static async throttleAndQueue(userKey: string): Promise<void> {
     const lastRequest = this.userRequestTimes.get(userKey) || 0;
@@ -274,7 +233,8 @@ export class SimpleImageService {
     difficulty: DifficultyLevel = 'medium',
     storyId?: string,
     pageNumber?: number,
-    totalPages?: number
+    sessionId?: string,
+    isPremium?: boolean
   ): Promise<ImageResult> {
     const userKey = this.generateUserKey(userInfo?.name);
     
@@ -294,8 +254,9 @@ export class SimpleImageService {
           pageText: cleanScene,
           userInfo,
           storyId,
+          sessionId,
           pageNumber,
-          totalPages,
+          isGuestUser: !isPremium,
           difficultyLevel: difficulty
         }
       });

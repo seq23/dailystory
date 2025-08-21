@@ -31,8 +31,7 @@ serve(async (req) => {
       storyId,
       sessionId = storyId,
       pageNumber = 1,
-      totalPages = 10,
-      seed,
+      isGuestUser,
       enhancedStoryData,
       forceTier // Optional: force specific tier for testing
     } = await req.json();
@@ -41,7 +40,7 @@ serve(async (req) => {
       return createCorsErrorResponse('Missing pageText parameter', 400);
     }
 
-    console.log(`🎯 Starting image orchestration for page ${pageNumber}/${totalPages}`);
+    console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser})`);
     console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
 
     // TIER 1: AI-Enhanced High-Quality (Premium Tier)
@@ -56,7 +55,7 @@ serve(async (req) => {
           storyId,
           sessionId, 
           pageNumber, 
-          totalPages,
+          isGuestUser,
           enhancedStoryData
         );
         
@@ -100,7 +99,7 @@ serve(async (req) => {
               promptLength: positivePrompt.length,
               sessionId: sessionId || 'unknown',
               pageNumber,
-              totalPages,
+              isGuestUser,
               orchestrated: true
             }
           });
@@ -123,7 +122,7 @@ serve(async (req) => {
           storyId,
           sessionId,
           pageNumber,
-          totalPages,
+          isGuestUser,
           difficultyLevel: 'medium'
         });
 

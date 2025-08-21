@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { performanceMonitor } from '@/services/AdvancedPerformanceMonitor';
-import { characterConsistency } from '@/services/UnifiedCharacterConsistency';
-import { abTestingFramework } from '@/services/ABTestingFramework';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface MonitoringData {
   performanceMetrics: any;
@@ -18,25 +16,12 @@ export function useAdvancedMonitoring() {
     try {
       setIsLoading(true);
       
-      // Gather all monitoring data
-      const performanceMetrics = performanceMonitor.getMonitoringDashboard();
-      const characterSeeds = characterConsistency.getActiveCharacterSeeds();
-      const activeTests = abTestingFramework.getActiveTests();
+      // Get all monitoring data from backend
+      const { data } = await supabase.functions.invoke('get-monitoring-data');
       
-      // Simulate cultural metrics (would come from CulturalRepresentationMonitor in real implementation)
-      const culturalMetrics = {
-        totalGenerations: 150,
-        biasScore: 0.15,
-        culturalBalance: 0.85,
-        activeIssues: 2
-      };
-
-      setMonitoringData({
-        performanceMetrics,
-        characterSeeds,
-        activeTests,
-        culturalMetrics
-      });
+      if (data?.success) {
+        setMonitoringData(data.data);
+      }
     } catch (error) {
       console.error('Failed to load monitoring data:', error);
     } finally {

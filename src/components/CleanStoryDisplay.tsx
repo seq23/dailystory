@@ -1281,7 +1281,8 @@ const initializeStory = async () => {
         currentDifficulty,
         storyId,
         currentPage + 1,
-        displayedStory.length
+        sessionId,
+        isPremium
       );
       
       if (result.success && result.url) {
@@ -1356,13 +1357,15 @@ const initializeStory = async () => {
     }
     
     try {
+      const sessionId = `session_${Date.now()}`;
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         userInfo,
         currentDifficulty,
         storyId,
         index + 1,
-        story.length
+        sessionId,
+        isPremium
       );
       if (result.success && result.url) {
         const nextMap = { ...pageImages, [index]: result.url } as Record<number, string>;

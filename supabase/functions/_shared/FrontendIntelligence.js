@@ -248,7 +248,7 @@ export class FrontendIntelligence {
       console.log('🎭 Using UnifiedCharacterConsistency for character generation with storyId:', storyId);
       
       // Get character seed and description using the new system
-      const characterData = UnifiedCharacterConsistency.getCharacterSeed(
+      const characterData = characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo

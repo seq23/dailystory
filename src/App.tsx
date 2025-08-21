@@ -22,7 +22,6 @@ import { VoiceCommands } from "./components/VoiceCommands";
 import { VoiceHoverController } from "./components/VoiceHoverController";
 // Import new services for global availability
 import "./services/AdvancedPerformanceMonitor";
-import "./services/UnifiedCharacterConsistency";
 import "./services/ABTestingFramework";
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -2,9 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, AlertTriangle, Zap, TrendingUp } from 'lucide-react';
-import { performanceMonitor } from '@/services/AdvancedPerformanceMonitor';
-import { characterConsistency } from '@/services/UnifiedCharacterConsistency';
-import { abTestingFramework } from '@/services/ABTestingFramework';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AdvancedSystemStatus() {
   const [status, setStatus] = React.useState({
@@ -15,19 +13,21 @@ export function AdvancedSystemStatus() {
   });
 
   React.useEffect(() => {
-    // Simulate status checks
-    const checkSystems = () => {
+    // Get monitoring data from backend
+    const checkSystems = async () => {
       try {
-        const dashboardData = performanceMonitor.getMonitoringDashboard();
-        const characterData = characterConsistency.getActiveCharacterSeeds();
-        const activeTests = abTestingFramework.getActiveTests();
+        const { data } = await supabase.functions.invoke('get-monitoring-data');
         
-        setStatus({
-          performance: dashboardData.cacheStats.hitRate > 0.5 ? 'healthy' : 'warning',
-          character: characterData.total > 0 ? 'active' : 'idle',
-          testing: activeTests.length > 0 ? 'running' : 'idle',
-          cultural: 'monitoring'
-        });
+        if (data?.success) {
+          const { performanceMetrics, characterSeeds, activeTests } = data.data;
+          
+          setStatus({
+            performance: performanceMetrics.cacheStats.hitRate > 0.5 ? 'healthy' : 'warning',
+            character: characterSeeds.total > 0 ? 'active' : 'idle',
+            testing: activeTests.length > 0 ? 'running' : 'idle',
+            cultural: 'monitoring'
+          });
+        }
       } catch (error) {
         console.warn('System status check failed:', error);
       }

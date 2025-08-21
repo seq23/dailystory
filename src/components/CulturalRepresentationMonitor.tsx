@@ -10,8 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { performanceMonitor } from "@/services/AdvancedPerformanceMonitor";
-import { characterConsistency } from "@/services/UnifiedCharacterConsistency";
+import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, TrendingUp, Users, RefreshCw } from "lucide-react";
 
 export interface CulturalMetrics {
@@ -31,31 +30,13 @@ export const CulturalRepresentationMonitor: React.FC = () => {
   const loadMetrics = async () => {
     setIsLoading(true);
     try {
-      // Get performance monitoring data
-      const dashboard = performanceMonitor.getMonitoringDashboard();
+      // Get monitoring data from backend
+      const { data } = await supabase.functions.invoke('get-monitoring-data');
       
-      // Get character consistency data
-      const characterData = characterConsistency.getActiveCharacterSeeds();
-      
-      // Simulate cultural distribution data (in real implementation, this would come from analytics)
-      const mockMetrics: CulturalMetrics = {
-        totalGenerations: 1247,
-        culturalDistribution: {
-          'african-american': 23,
-          'hispanic-latino': 19,
-          'asian': 18,
-          'european-american': 17,
-          'multicultural': 15,
-          'other': 8
-        },
-        averageBiasScore: dashboard.biasAnalysis.averageScore,
-        alertCount: dashboard.biasAnalysis.commonIssues.length,
-        topIssues: dashboard.biasAnalysis.commonIssues,
-        trendData: generateMockTrendData()
-      };
-      
-      setMetrics(mockMetrics);
-      setLastUpdated(new Date());
+      if (data?.success) {
+        setMetrics(data.data.culturalMetrics);
+        setLastUpdated(new Date());
+      }
     } catch (error) {
       console.error('Failed to load cultural metrics:', error);
     } finally {

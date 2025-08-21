@@ -39,7 +39,8 @@ export class BatchImageService {
             'medium', // Default difficulty for library recovery
             undefined, // No session ID needed
             pageIndex + 1,
-            pages.length
+            undefined, // No session ID for batch
+            false // Guest users for batch
           );
           
           if (result.success && result.url) {

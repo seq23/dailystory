@@ -11,7 +11,8 @@ interface ImageGenerationOptions {
   userInfo: any;
   storyTitle: string;
   pageText: string;
-  sessionId?: string; // Added for consistency tracking
+  sessionId?: string;
+  isGuestUser?: boolean;
 }
 
 export class ImageGenerationTrigger {
@@ -117,9 +118,10 @@ export class ImageGenerationTrigger {
         options.pageText,
         options.userInfo,
         'medium' as any, // Default difficulty level
-        sessionId, // Use proper session ID
+        sessionId,
         options.currentPage + 1,
-        options.totalPages
+        sessionId,
+        !options.isGuestUser
       );
       
       if (result.success && result.url) {
