@@ -175,10 +175,10 @@ export function getStyleFramework(difficulty) {
   return framework;
 }
 
-// STRIPPED - Prompt building moved to frontend StructuredPromptEngine
-// Legacy function for backwards compatibility - DO NOT USE
+// Legacy prompt building - now handled by MultiStageEnhancementPipeline
+// DO NOT USE - kept for backwards compatibility only
 export function buildCompletePrompt(framework, sceneDescription, characterDescription = '', culturalContext = '', storyElements = null) {
-  console.warn('⚠️ buildCompletePrompt() is deprecated - use frontend StructuredPromptEngine');
+  console.warn('⚠️ buildCompletePrompt() is deprecated - use MultiStageEnhancementPipeline');
   
   // Simple fallback for emergency use only
   const simplePrompt = `${sceneDescription}, ${framework.prompt}, ${framework.brandSuffix}`;
