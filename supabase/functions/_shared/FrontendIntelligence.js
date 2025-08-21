@@ -237,39 +237,31 @@ export class FrontendIntelligence {
   }
   
   static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
-    // CONSOLIDATED: Use UnifiedCharacterDescriptor for all character descriptions
+    // CONSOLIDATED: Use UnifiedCharacterConsistency for all character descriptions
     try {
-      // FIXED: Import using dynamic import instead of require() to avoid CommonJS errors
-      // Note: Since we can't use dynamic import in edge functions easily, we'll use the integrated logic
-      // The UnifiedCharacterDescriptor logic is now integrated directly below
-      console.log('🔄 Using integrated UnifiedCharacterDescriptor logic for character generation');
-      return this.generateUnifiedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty);
+      // Import UnifiedCharacterConsistency and use story-based character generation
+      const { UnifiedCharacterConsistency } = require('./UnifiedCharacterConsistency.js');
+      
+      // Note: storyId should be passed from the caller but fallback to session-based approach
+      const storyId = globalThis.currentStoryId || `session_${Date.now()}`;
+      
+      console.log('🎭 Using UnifiedCharacterConsistency for character generation with storyId:', storyId);
+      
+      // Get character seed and description using the new system
+      const characterData = UnifiedCharacterConsistency.getCharacterSeed(
+        userInfo.name || 'user',
+        storyId,
+        userInfo
+      );
+      
+      // Return the character description from the new system
+      return characterData.characterDescription;
+      
     } catch (error) {
-      console.warn('Failed to load integrated character descriptor, using legacy logic:', error.message);
+      console.warn('Failed to load UnifiedCharacterConsistency, using legacy logic:', error.message);
       
       // Fallback to legacy logic for compatibility
-      if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
-        const africanAmericanFeatures = this.generateExpandedAfricanAmericanFeatures();
-        const specificHairStyle = this.getAfricanAmericanHairStyle(userInfo);
-        const specificSkinTone = this.getAfricanAmericanSkinTone(userInfo);
-        const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
-        let gender = this.detectGender(userInfo);
-        
-        // Apply age range based on difficulty level - preserve gender, add age in parentheses
-        let ageRange;
-        if (difficulty === 'hard') {
-          ageRange = '9-11 years old';
-        } else if (difficulty === 'expert') {
-          ageRange = '11-13 years old';
-        } else {
-          ageRange = '5-8 years old';  // Beginner, Easy, Medium
-        }
-        
-        // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier with age range
-        return `${userInfo.name || 'Alex'} (African-American ${gender}, ${ageRange}, with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
-      }
-      
-    return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
+      return this.generateUnifiedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty);
     }
   }
   

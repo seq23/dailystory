@@ -28,7 +28,8 @@ serve(async (req) => {
     const { 
       pageText, 
       userInfo, 
-      sessionId,
+      storyId,
+      sessionId = storyId,
       pageNumber = 1,
       totalPages = 10,
       seed,
@@ -52,6 +53,7 @@ serve(async (req) => {
         const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
           pageText, 
           userInfo, 
+          storyId,
           sessionId, 
           pageNumber, 
           totalPages,
@@ -118,9 +120,10 @@ serve(async (req) => {
         const tier2Result = await callTierFunction('runware-template-generation', {
           pageText,
           userInfo,
+          storyId,
+          sessionId,
           pageNumber,
           totalPages,
-          sessionId,
           difficultyLevel: 'medium'
         });
 

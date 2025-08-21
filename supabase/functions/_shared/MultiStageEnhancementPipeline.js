@@ -66,9 +66,9 @@ export class MultiStageEnhancementPipeline {
   }
   
   // ============= TIER 1: HIGH-QUALITY AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
-  static async processTier1HighQuality(storyText, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
+  static async processTier1HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
     try {
-      console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State: ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State + Character Consistency: storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
       
       // Check cache first if no AI data provided
       if (!enhancedStoryData) {
@@ -114,8 +114,12 @@ export class MultiStageEnhancementPipeline {
       
       console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);
       
-      // Import fresh frontend intelligence
+      // Import fresh frontend intelligence and character consistency
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      const { UnifiedCharacterConsistency } = await import('./UnifiedCharacterConsistency.js');
+      
+      // Set current storyId for FrontendIntelligence to use
+      globalThis.currentStoryId = storyId;
       
       // 0. Initialize and analyze visual state for consistency
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
@@ -169,12 +173,17 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
       
-      // 3. Generate stable character seed for consistency (check visual state first)
-      let characterSeed = globalThis.StoryVisualStateManager.getCharacterSeed(sessionId, userInfo.name || 'Alex');
-      if (!characterSeed) {
-        characterSeed = this.generateStableSeed(userInfo, sessionId);
-        globalThis.StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name || 'Alex', characterSeed, null);
-      }
+      // 3. Generate story-based character consistency using UnifiedCharacterConsistency
+      console.log('🎭 Generating story-based character consistency');
+      const characterConsistencyData = UnifiedCharacterConsistency.getCharacterSeed(
+        userInfo.name || 'user',
+        storyId,
+        userInfo,
+        enhancedStoryText // Pass story context for contextual analysis
+      );
+      
+      const characterSeed = characterConsistencyData.seed;
+      const characterDescription = characterConsistencyData.characterDescription;
       
       // 4. Get cultural profile
       const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
@@ -246,13 +255,8 @@ export class MultiStageEnhancementPipeline {
       // Apply token optimization before returning
       const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
       
-      // CRITICAL FIX: Extract the full character description that was built by buildPremiumPrompt()
-      const fullCharacterDescription = FrontendIntelligence.buildAdvancedCharacterDescription(
-        userInfo, 
-        culturalProfile, 
-        characterSeed,
-        imageDifficulty
-      );
+      // CRITICAL FIX: Use the character description from UnifiedCharacterConsistency
+      const fullCharacterDescription = characterDescription;
       
       console.log('🔧 Token Manager - Full Character Description:', fullCharacterDescription);
       
@@ -322,9 +326,9 @@ export class MultiStageEnhancementPipeline {
   }
   
   // ============= TIER 2: SIMPLE TEMPLATE-BASED PROCESSING =============
-  static async processThroughPipeline(storyText, userInfo, sessionId, pageNumber, totalPages) {
+  static async processThroughPipeline(storyText, userInfo, storyId, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔄 Tier 2 Template Pipeline (with enhanced character detection): ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔄 Tier 2 Template Pipeline (with enhanced character detection + story consistency): storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
       
       // 1. Analyze relationships and resolve pronouns first (same as Tier 1)
       globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);

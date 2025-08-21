@@ -272,7 +272,7 @@ export class SimpleImageService {
     pageText: string,
     userInfo: UserInfo,
     difficulty: DifficultyLevel = 'medium',
-    sessionId?: string,
+    storyId?: string,
     pageNumber?: number,
     totalPages?: number
   ): Promise<ImageResult> {
@@ -293,7 +293,7 @@ export class SimpleImageService {
         body: {
           pageText: cleanScene,
           userInfo,
-          sessionId,
+          storyId,
           pageNumber,
           totalPages,
           difficultyLevel: difficulty

@@ -1279,7 +1279,7 @@ const initializeStory = async () => {
         storyText, 
         userInfo, 
         currentDifficulty,
-        characterSessionId,
+        storyId,
         currentPage + 1,
         displayedStory.length
       );
@@ -1360,7 +1360,7 @@ const initializeStory = async () => {
         storyText,
         userInfo,
         currentDifficulty,
-        characterSessionId,
+        storyId,
         index + 1,
         story.length
       );

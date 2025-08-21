@@ -30,7 +30,7 @@ serve(async (req) => {
   try {
     console.log('🏭 Tier 2: Template-based image generation starting...');
     
-    const { pageText, sessionId, userInfo, pageNumber = 1, totalPages = 10 } = await req.json();
+    const { pageText, storyId, sessionId = storyId, userInfo, pageNumber = 1, totalPages = 10 } = await req.json();
 
     if (!pageText) {
       return createCorsErrorResponse('Missing pageText parameter', 400);
@@ -55,6 +55,7 @@ serve(async (req) => {
     const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
       pageText,
       userInfo,
+      storyId,
       sessionId,
       pageNumber,
       totalPages
