@@ -45,6 +45,9 @@ export const FormStep3Personalization = ({
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translationLoading, setTranslationLoading] = useState<Record<string, boolean>>({});
   const [spellcheckTimeouts, setSpellcheckTimeouts] = useState<{[key: string]: NodeJS.Timeout}>({});
+  
+  // Validation states for inappropriate content
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string[]}>({});
 
   // Individual tag spellcheck for TagInput fields
   const performTagInputSpellcheck = async (field: string, text: string) => {
@@ -162,6 +165,32 @@ export const FormStep3Personalization = ({
           delete updated[field];
           return updated;
         });
+      }
+
+      // Clear validation errors when user starts typing
+      if (validationErrors[field]) {
+        setValidationErrors(prev => {
+          const updated = { ...prev };
+          delete updated[field];
+          return updated;
+        });
+      }
+
+      // Real-time validation for special request field
+      if (field === 'specialRequest' && value.trim()) {
+        const validation = InputSanitizer.validateChildSafeInput(value, 'theme');
+        if (!validation.isValid) {
+          setValidationErrors(prev => ({
+            ...prev,
+            [field]: validation.issues
+          }));
+        } else {
+          setValidationErrors(prev => {
+            const updated = { ...prev };
+            delete updated[field];
+            return updated;
+          });
+        }
       }
 
       // Setup debounced spellcheck for text fields
@@ -482,9 +511,9 @@ export const FormStep3Personalization = ({
                 <TagInput
                   value={formData.specialRequest || ''}
                   onChange={(value) => handleInputChange('specialRequest', value)}
-                  placeholder={`Theme: underwater adventure AND friendship
-Characters: brave princess AND talking dragon  
-Setting: magical forest AND cozy cottage`}
+                  placeholder={`Theme: underwater adventure AND friendship → Enter
+Characters: brave princess AND talking dragon → Enter
+Setting: magical forest AND cozy cottage → Enter`}
                   className="w-full"
                   supportStructured={true}
                 />
@@ -517,6 +546,21 @@ Setting: magical forest AND cozy cottage`}
                     >
                       Accept
                     </button>
+                  </div>
+                )}
+                
+                {/* Validation errors for inappropriate content */}
+                {validationErrors.specialRequest && validationErrors.specialRequest.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                    {validationErrors.specialRequest.map((error, index) => (
+                      <div key={index} className="flex items-start gap-2 text-xs text-destructive">
+                        <span className="font-medium">⚠️</span>
+                        <span>{error}</span>
+                      </div>
+                    ))}
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Please use child-friendly themes like "adventure," "friendship," or "magic"
+                    </div>
                   </div>
                 )}
               </div>
