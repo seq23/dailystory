@@ -340,50 +340,6 @@ export const FormStep3Personalization = ({
           
           <CollapsibleContent className="px-4 pb-4">
             <div className="space-y-4 mt-4">
-              {/* Hobbies */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-foreground">
-                  {t("formStep3.hobbies", "Hobbies & Activities")}
-                </Label>
-                <TagInput
-                  value={formData.hobbies || ''}
-                  onChange={(value) => handleInputChange('hobbies', value)}
-                  placeholder={t("formStep3.hobbiesPlaceholder", "soccer, drawing, music...")}
-                  className="w-full"
-                />
-                
-                {/* Loading indicator */}
-                {spellcheckLoading.hobbies && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Checking spelling...</span>
-                  </div>
-                )}
-                
-                {/* Translation preview */}
-                {translations.hobbies && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
-                    <Globe className="h-3 w-3" />
-                    <span>{translations.hobbies}</span>
-                  </div>
-                )}
-                
-                {/* Spellcheck suggestion */}
-                {spellcheckSuggestions.hobbies && (
-                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
-                    <span className="text-xs text-warning">
-                      Did you mean: {spellcheckSuggestions.hobbies}?
-                    </span>
-                    <button
-                      onClick={() => acceptSpellcheckSuggestion('hobbies')}
-                      className="text-xs text-primary hover:text-primary/80 font-medium"
-                    >
-                      Accept
-                    </button>
-                  </div>
-                )}
-              </div>
-
               {/* Favorite Animal */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">
@@ -464,6 +420,50 @@ export const FormStep3Personalization = ({
                     </span>
                     <button
                       onClick={() => acceptSpellcheckSuggestion('favoriteFood')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Hobbies */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.hobbies", "Hobbies & Activities")}
+                </Label>
+                <TagInput
+                  value={formData.hobbies || ''}
+                  onChange={(value) => handleInputChange('hobbies', value)}
+                  placeholder={t("formStep3.hobbiesPlaceholder", "soccer, drawing, music...")}
+                  className="w-full"
+                />
+                
+                {/* Loading indicator */}
+                {spellcheckLoading.hobbies && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Checking spelling...</span>
+                  </div>
+                )}
+                
+                {/* Translation preview */}
+                {translations.hobbies && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.hobbies}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.hobbies && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.hobbies}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('hobbies')}
                       className="text-xs text-primary hover:text-primary/80 font-medium"
                     >
                       Accept
