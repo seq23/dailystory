@@ -1,5 +1,23 @@
 // Frontend Intelligence - Auto-generated from 2025-01-20T22:30:00.000Z
 // This file contains real AI functions extracted from frontend TypeScript services
+//
+// ============= ES6 IMPORT STANDARDS =============
+// STATIC IMPORTS: Use for modules that are always needed at file load
+//   import { Module } from './module.js';
+// 
+// DYNAMIC IMPORTS: Use for conditional loading, error-prone modules, or performance optimization
+//   const { Module } = await import('./module.js');
+//
+// NEVER USE: CommonJS require() statements in ES6 modules
+//   const { Module } = require('./module.js'); // ❌ NEVER
+// 
+// ERROR HANDLING: Wrap dynamic imports in try/catch for graceful fallbacks
+//   try {
+//     const { Module } = await import('./module.js');
+//   } catch (error) {
+//     console.warn('Module unavailable, using fallback:', error.message);
+//   }
+// ============= END IMPORT STANDARDS =============
 
 export class FrontendIntelligence {
   
@@ -239,8 +257,8 @@ export class FrontendIntelligence {
   static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
     // CONSOLIDATED: Use UnifiedCharacterConsistency for all character descriptions
     try {
-      // Import UnifiedCharacterConsistency and use story-based character generation
-      const { UnifiedCharacterConsistency } = require('./UnifiedCharacterConsistency.js');
+      // Dynamic ES6 import for UnifiedCharacterConsistency
+      const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
       
       // Note: storyId should be passed from the caller but fallback to session-based approach
       const storyId = globalThis.currentStoryId || `session_${Date.now()}`;

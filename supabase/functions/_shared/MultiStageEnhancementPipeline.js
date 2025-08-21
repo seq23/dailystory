@@ -1,5 +1,13 @@
 // MultiStage Enhancement Pipeline - Unified AI Brain for All Tiers
 // Now uses real AI functions from FrontendIntelligence.js
+//
+// ============= ES6 IMPORT STANDARDS =============
+// This file follows ES6 import patterns for consistency:
+// - Static imports for always-needed modules (top of file)
+// - Dynamic imports for conditional/fallback modules (inside methods)
+// - No CommonJS require() statements in ES6 context
+// - Proper error handling for dynamic imports with fallback logic
+// ============= END IMPORT STANDARDS =============
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
@@ -420,13 +428,8 @@ export class MultiStageEnhancementPipeline {
   }
 
   static buildSimpleCharacterDescription(userInfo, difficulty = null) {
-    // CONSOLIDATED: Use UnifiedCharacterDescriptor for all character descriptions
-    try {
-      // Import the unified character descriptor (simulate import in edge function)
-      const { UnifiedCharacterDescriptor } = require('../../src/services/UnifiedCharacterDescriptor');
-      return UnifiedCharacterDescriptor.buildSimpleCharacterDescription(userInfo, difficulty);
-    } catch (error) {
-      console.warn('Failed to load UnifiedCharacterDescriptor, using legacy logic:', error.message);
+    // Use local character generation logic (UnifiedCharacterDescriptor not available in edge functions)
+    console.log('Building simple character description with local logic');
       
       // Fallback to legacy logic for compatibility
       const name = userInfo?.name || 'Alex';
