@@ -46,8 +46,6 @@ import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/hooks/useReaderLayout";
 import { ImageGenerationStatusIndicator } from "@/components/ImageGenerationStatusIndicator";
-import { LayoutDebugIndicator } from "@/components/dev/LayoutDebugIndicator";
-import { ImageGenerationDebugPanel } from "@/components/dev/ImageGenerationDebugPanel";
 
 import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
@@ -400,7 +398,7 @@ useEffect(() => {
   // This enforces fair usage while encouraging premium upgrades
   const initialTimerSeconds = (() => { try { const v = Number(localStorage.getItem('readingTimerDefaultSeconds')); return v > 0 ? v : 20 * 60; } catch { return 20 * 60; } })();
   const [timeRemaining, setTimeRemaining] = useState(initialTimerSeconds); // default 20 minutes
-  const [isTimerRunning, setIsTimerRunning] = useState(true); // Start timer immediately
+  const [isTimerRunning, setIsTimerRunning] = useState(false); // Start timer only when content is ready
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
   
@@ -469,7 +467,16 @@ useEffect(() => {
       try { sessionStorage.setItem(`premium.timer.endTs.${id}`, String(now + timeRemaining * 1000)); } catch {}
     }
   })();
-}, [isPremium]);
+  }, [isPremium]);
+
+  // Start timer only when story content is ready and stable
+  useEffect(() => {
+    // Only start timer when story has content, is stable, and timer isn't already running
+    if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && timerEnabled) {
+      console.log('⏰ Starting timer - story content is ready and stable');
+      setIsTimerRunning(true);
+    }
+  }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, timerEnabled]);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -3205,52 +3212,30 @@ const handleRestartTimer = () => {
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
       
-      {/* Development Debug Panels */}
-      {isDevelopment && (
-        <>
-          <LayoutDebugIndicator
-            layout={layout}
-            lowEnd={lowEnd}
-            reason={reason}
-            onLayoutOverride={overrideLayout}
-          />
-          <ImageGenerationDebugPanel
-            layout={layout}
-            hasImages={Object.keys(pageImages).length > 0}
-            isGenerating={isGeneratingImage || isBatchGenerating}
-            lastError={lastImageError}
-            onForceGenerate={() => generateImageForCurrentPage()}
-            onClearCache={() => {
-              setPageImages({});
-              setLastImageError(null);
-            }}
-            autoGenerationEnabled={layout !== "classic"}
-          />
-          <StoryStabilityMonitor
-            isStoryContentLocked={isStoryContentLocked}
-            isStoryStable={isStoryStable}
-            storyLength={story.length}
-            lastGenerationTrigger={lastGenerationTrigger}
-            contentMutationLog={contentMutationLog}
-            onUnlockContent={() => {
-              console.log('🔓 DEBUG: Manual content unlock triggered');
-              setIsStoryContentLocked(false);
-              storyContentLockedRef.current = false;
-              setContentMutationLog(prev => [...prev, {
-                timestamp: new Date().toISOString(),
-                trigger: 'debug-manual-unlock',
-                action: 'Content unlocked via debug monitor',
-                storyLength: story.length,
-                isLocked: false
-              }]);
-            }}
-            onClearLog={() => {
-              console.log('🗑️ DEBUG: Clearing mutation log');
-              setContentMutationLog([]);
-            }}
-          />
-        </>
-      )}
+      {/* Story Stability Monitor (Console Only) */}
+      <StoryStabilityMonitor
+        isStoryContentLocked={isStoryContentLocked}
+        isStoryStable={isStoryStable}
+        storyLength={story.length}
+        lastGenerationTrigger={lastGenerationTrigger}
+        contentMutationLog={contentMutationLog}
+        onUnlockContent={() => {
+          console.log('🔓 DEBUG: Manual content unlock triggered');
+          setIsStoryContentLocked(false);
+          storyContentLockedRef.current = false;
+          setContentMutationLog(prev => [...prev, {
+            timestamp: new Date().toISOString(),
+            trigger: 'debug-manual-unlock',
+            action: 'Content unlocked via debug monitor',
+            storyLength: story.length,
+            isLocked: false
+          }]);
+        }}
+        onClearLog={() => {
+          console.log('🗑️ DEBUG: Clearing mutation log');
+          setContentMutationLog([]);
+        }}
+      />
       </div>
     </ErrorBoundary>
     </GameContextProvider>

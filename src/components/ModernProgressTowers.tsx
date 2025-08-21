@@ -252,11 +252,11 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   return (
     <>
       <div
-className={cn(
+        className={cn(
           "fixed right-4 transform z-40",
-          isExpanded ? "top-1/2 -translate-y-1/2" : "top-[70%] -translate-y-1/2",
-          !isExpanded && isTablet && "top-[74%] -translate-y-1/2",
-          !isExpanded && isMobile && "top-[78%] -translate-y-1/2",
+          isExpanded ? "top-1/2 -translate-y-1/2" : "top-[60%] -translate-y-1/2",
+          !isExpanded && isTablet && "top-[64%] -translate-y-1/2",
+          !isExpanded && isMobile && "top-[68%] -translate-y-1/2",
           "transition-all duration-500 ease-out",
           isMobile && "scale-75 right-1",
           isTablet && "scale-75 right-1",
@@ -460,7 +460,7 @@ className={cn(
           )}>
             {isExpanded && (
               <>
-                {/* Header */}
+                {/* Header with Achievement Counter */}
                 <div className="text-center mb-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Trophy className="w-5 h-5 text-primary" />
@@ -470,14 +470,44 @@ className={cn(
                     {userType === 'premium' && (
                       <Sparkles className="w-4 h-4 text-amber-500" />
                     )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {celebrationMode 
-                      ? t('progress.celebration', '🎉 Amazing progress! 🎉')
-                      : t('progress.subtitle', 'Keep climbing higher!')
-                    }
-                  </p>
-                </div>
+                    {/* Achievement Counter Badge */}
+                    {(userStats.achievements.length > 0 || recentAchievements.length > 0) && (
+                      <div className="ml-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">
+                        🏆 {userStats.achievements.length}
+                      </div>
+                    )}
+                 </div>
+
+                 {/* Recent Achievements Display */}
+                 {recentAchievements.length > 0 && (
+                   <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
+                     <div className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-1">
+                       <Star className="w-4 h-4" />
+                       Recent Achievements
+                     </div>
+                     <div className="space-y-1">
+                       {recentAchievements.slice(0, 3).map((achievement, index) => (
+                         <div 
+                           key={index}
+                           className="text-xs bg-white/80 px-2 py-1 rounded flex items-center gap-2 animate-fade-in"
+                           style={{ animationDelay: `${index * 100}ms` }}
+                         >
+                           <span className="text-amber-600">{achievement.icon}</span>
+                           <span className="font-medium text-amber-800">{achievement.title}</span>
+                           <span className="text-amber-600 ml-auto">+{achievement.points}pts</span>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+
+                 <p className="text-sm text-muted-foreground">
+                   {celebrationMode 
+                     ? t('progress.celebration', '🎉 Amazing progress! 🎉')
+                     : t('progress.subtitle', 'Keep climbing higher!')
+                   }
+                 </p>
+               </div>
 
                 {/* Progress towers grid */}
                 <div className={cn(
