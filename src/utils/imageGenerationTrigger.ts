@@ -11,6 +11,7 @@ interface ImageGenerationOptions {
   userInfo: any;
   storyTitle: string;
   pageText: string;
+  sessionId?: string; // Added for consistency tracking
 }
 
 export class ImageGenerationTrigger {
@@ -78,39 +79,62 @@ export class ImageGenerationTrigger {
   }
   
   /**
-   * Trigger automatic image generation
+   * Trigger automatic image generation with content validation
    */
   static async triggerAutoGeneration(options: ImageGenerationOptions): Promise<void> {
     if (!this.shouldAutoGenerate(options)) {
       return;
     }
     
-    console.log('🖼️ Auto-triggering image generation for page', options.currentPage);
+    console.log('🖼️ Auto-triggering image generation for page', options.currentPage, {
+      textLength: options.pageText.length,
+      hasPlaceholders: options.pageText.includes('{'),
+      sessionId: options.sessionId || `session_${Date.now()}`
+    });
     
     this.isGenerating = true;
     
     try {
+      // 🔧 FIX: Validate that pageText doesn't contain unresolved placeholders
+      if (options.pageText.includes('{') && options.pageText.includes('}')) {
+        console.warn(`⚠️ Image generation delayed - page text contains unresolved placeholders: ${options.pageText.substring(0, 100)}`);
+        
+        // Wait briefly and check again - this handles race conditions
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (options.pageText.includes('{') && options.pageText.includes('}')) {
+          console.error(`❌ Aborting image generation - persistent placeholders in text`);
+          return;
+        }
+      }
+      
       // Import and use the image service
       const { SimpleImageService } = await import('@/services/SimpleImageService');
+      
+      const sessionId = options.sessionId || `session_${Date.now()}`;
       
       const result = await SimpleImageService.generateStoryImage(
         options.pageText,
         options.userInfo,
         'medium' as any, // Default difficulty level
-        `session_${Date.now()}`, // Generate session ID
+        sessionId, // Use proper session ID
         options.currentPage + 1,
         options.totalPages
       );
       
       if (result.success && result.url) {
-        console.log('🖼️ Auto-generated image successfully:', result.url);
+        console.log('🖼️ Auto-generated image successfully:', result.url, {
+          contentHash: this.generateContentHash(options.pageText)
+        });
         
         // Store the image in the page images map
         const event = new CustomEvent('image:generated', {
           detail: {
             pageIndex: options.currentPage,
             imageUrl: result.url,
-            provider: result.provider
+            provider: result.provider,
+            sessionId,
+            contentHash: this.generateContentHash(options.pageText)
           }
         });
         window.dispatchEvent(event);
@@ -118,9 +142,32 @@ export class ImageGenerationTrigger {
       
     } catch (error) {
       console.error('🖼️ Auto-generation failed:', error);
+      
+      // Dispatch error event
+      const errorEvent = new CustomEvent('image-generation-error', {
+        detail: {
+          pageNumber: options.currentPage,
+          error: error.message,
+          sessionId: options.sessionId || 'unknown'
+        }
+      });
+      window.dispatchEvent(errorEvent);
     } finally {
       this.isGenerating = false;
     }
+  }
+
+  /**
+   * Generate content hash for validation
+   */
+  private static generateContentHash(content: string): string {
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(36);
   }
   
   /**

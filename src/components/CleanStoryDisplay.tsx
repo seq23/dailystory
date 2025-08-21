@@ -1097,27 +1097,34 @@ const initializeStory = async () => {
         return;
       }
       
-      console.log('🔍 DIAGNOSTIC: Setting story in CleanStoryDisplay', {
+      console.log('🔍 DIAGNOSTIC: Pre-processing story for placeholders BEFORE setStory', {
         pagesCount: result.pages.length,
-        firstPage: result.pages[0]?.substring(0, 100)
+        firstPage: result.pages[0]?.substring(0, 100),
+        hasPlaceholders: result.pages.some(page => page.includes('{'))
       });
 
-      // Post-process pages for placeholder resolution and character consistency
+      // 🔧 FIX: Process pages for placeholder resolution BEFORE initial setStory()
+      // This prevents story flickering by ensuring users never see placeholder text
       let processedPages = result.pages;
       try {
+        console.log('📝 Post-processing story content BEFORE initial render...');
         const { EnhancedPostProcessor } = await import('@/services/EnhancedPostProcessor');
         processedPages = await EnhancedPostProcessor.processStoryContent(
           result.pages,
           userInfo,
           characterSessionId
         );
-        console.log('✅ Post-processed story pages for placeholder resolution');
+        console.log('✅ Post-processed story pages - no flickering will occur', {
+          processedFirstPage: processedPages[0]?.substring(0, 100),
+          stillHasPlaceholders: processedPages.some(page => page.includes('{'))
+        });
       } catch (error) {
         console.warn('Failed to post-process story pages:', error);
         // Use original pages if post-processing fails
         processedPages = result.pages;
       }
 
+      // Now set the final processed story - users will never see placeholder text
       setStory(processedPages);
       setStoryTitle(result.title);
       setIsStoryComplete(true);
@@ -1126,21 +1133,39 @@ const initializeStory = async () => {
       setStorySource(srcFree as any);
 
       // Persist guest story for refresh-resume with avatar-aware cache key
+      // 🔧 FIX: Cache the PROCESSED pages (not original) to maintain consistency on refresh
       try {
         const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
         StorySessionCache.cacheStorySession(
           'guest',
           currentDifficulty as any,
-          result.pages,
-          result.pages.map(() => ({ prompt: '' })),
+          processedPages, // Use processed pages for consistency
+          processedPages.map(() => ({ prompt: '' })),
           0,
           { isPremium: false, sessionStartTime },
           undefined,
           undefined,
           avatarType
         );
-        console.log(`📚 Guest story cached with avatar type: ${avatarType}`);
+        console.log(`📚 Guest story cached with processed pages and avatar type: ${avatarType}`);
       } catch (e) { console.warn('Story cache failed', e); }
+
+      // 🔧 FIX: Dispatch stability event with PROCESSED content for image generation
+      // This ensures images are generated from the same content users see
+      setTimeout(() => {
+        const stableEvent = new CustomEvent('story-stable', {
+          detail: {
+            storyPages: processedPages, // Pass processed content to image generation
+            currentPage: 0,
+            totalPages: processedPages.length,
+            isStoryComplete: true,
+            userInfo,
+            sessionId: characterSessionId
+          }
+        });
+        window.dispatchEvent(stableEvent);
+        console.log('📸 Story stability event dispatched with processed content for image generation');
+      }, 500);
     }
     
   } catch (error) {

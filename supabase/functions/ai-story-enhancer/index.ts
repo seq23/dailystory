@@ -11,14 +11,50 @@ const AI_MODELS = [
   { name: 'gpt-4o-mini', maxTokens: 'max_tokens', supportsTemperature: true }
 ] as const;
 
-async function callOpenAIWithFallback(messages: any[], timeout = 8000) {
+// Circuit breaker to prevent cascading failures
+class CircuitBreaker {
+  private failures = 0;
+  private lastFailure = 0;
+  private readonly threshold = 3;
+  private readonly timeout = 30000; // 30 seconds
+  
+  isOpen(): boolean {
+    if (this.failures >= this.threshold) {
+      if (Date.now() - this.lastFailure < this.timeout) {
+        return true;
+      }
+      // Reset circuit breaker after timeout
+      this.failures = 0;
+    }
+    return false;
+  }
+  
+  recordSuccess(): void {
+    this.failures = 0;
+  }
+  
+  recordFailure(): void {
+    this.failures++;
+    this.lastFailure = Date.now();
+  }
+}
+
+const circuitBreaker = new CircuitBreaker();
+
+async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+  
+  // Circuit breaker check
+  if (circuitBreaker.isOpen()) {
+    console.warn('🚫 Circuit breaker is open, skipping OpenAI - using Tier 2 immediately');
+    throw new Error('Circuit breaker open - service degraded');
+  }
   
   for (let modelIndex = 0; modelIndex < AI_MODELS.length; modelIndex++) {
     const model = AI_MODELS[modelIndex];
     console.log(`🤖 Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
     
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -33,6 +69,8 @@ async function callOpenAIWithFallback(messages: any[], timeout = 8000) {
         if (model.supportsTemperature) {
           requestBody.temperature = 0.3;
         }
+        
+        console.log(`⏳ Attempting ${model.name} (attempt ${attempt}/3, timeout: ${timeout}ms)`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -49,15 +87,21 @@ async function callOpenAIWithFallback(messages: any[], timeout = 8000) {
         if (response.ok) {
           const result = await response.json();
           console.log(`✅ Model ${model.name} succeeded on attempt ${attempt}`);
+          circuitBreaker.recordSuccess();
           return result;
-        } else if (response.status === 503 || response.status === 429) {
-          console.warn(`⚠️ Model ${model.name} returned ${response.status} on attempt ${attempt}, retrying...`);
-          if (attempt < 2) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        } else if (response.status === 503 || response.status === 429 || response.status === 502) {
+          const errorText = await response.text();
+          console.warn(`⚠️ Model ${model.name} returned ${response.status} on attempt ${attempt}: ${errorText}`);
+          
+          if (attempt < 3) {
+            const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 8000); // Exponential backoff, max 8s
+            console.log(`⏳ Retrying after ${backoffDelay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
             continue;
           }
         } else {
-          console.error(`❌ Model ${model.name} failed with status ${response.status}`);
+          const errorText = await response.text();
+          console.error(`❌ Model ${model.name} failed with status ${response.status}: ${errorText}`);
           break; // Don't retry on non-transient errors
         }
       } catch (error) {
@@ -67,16 +111,20 @@ async function callOpenAIWithFallback(messages: any[], timeout = 8000) {
           console.error(`❌ Model ${model.name} error on attempt ${attempt}:`, error.message);
         }
         
-        if (attempt < 2) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        if (attempt < 3) {
+          const backoffDelay = Math.min(2000 * attempt, 10000);
+          console.log(`⏳ Retrying after ${backoffDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
         }
       }
     }
     
-    console.warn(`❌ Model ${model.name} failed after 2 attempts, trying next model...`);
+    console.warn(`❌ Model ${model.name} failed after 3 attempts, trying next model...`);
+    circuitBreaker.recordFailure();
   }
   
-  throw new Error('All AI models failed after multiple attempts');
+  console.error('🚫 All AI models exhausted - circuit breaker will activate if failures continue');
+  throw new Error('All AI models failed after multiple attempts - service may be degraded');
 }
 
 serve(async (req) => {
