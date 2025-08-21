@@ -478,11 +478,16 @@ export const FormStep3Personalization = ({
                   {t("formStep3.specialRequest", "Special Request")} 
                   <span className="text-muted-foreground font-normal">({t("formStep3.optional", "Optional")})</span>
                 </Label>
-                <Textarea
+                <TagInput
                   value={formData.specialRequest || ''}
-                  onChange={(e) => handleInputChange('specialRequest', e.target.value)}
-                  placeholder={t("formStep3.specialRequestPlaceholder", "Anything special you'd like in your stories?")}
-                  className="min-h-[80px] resize-none"
+                  onChange={(value) => handleInputChange('specialRequest', value)}
+                  placeholder={`Theme: adventure
+Setting: magical forest
+Character: brave young explorer
+Mood: exciting and mysterious
+Plot: discovering hidden treasures`}
+                  className="w-full"
+                  supportStructured={true}
                 />
                 
                 {/* Loading indicator */}
@@ -517,53 +522,53 @@ export const FormStep3Personalization = ({
                 )}
               </div>
 
-              {/* Target Vocabulary (Premium Feature) */}
-              {isPremium && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    {t("formStep3.targetVocabulary", "Target Vocabulary")}
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Premium</span>
-                  </Label>
-                  <Textarea
-                    value={formData.targetVocabulary || ''}
-                    onChange={(e) => handleInputChange('targetVocabulary', e.target.value)}
-                    placeholder={t("formStep3.targetVocabularyPlaceholder", "Words you want to learn: magnificent, adventurous...")}
-                    className="min-h-[60px] resize-none"
-                  />
-                  
-                  {/* Loading indicator */}
-                  {spellcheckLoading.targetVocabulary && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      <span>Checking spelling...</span>
-                    </div>
-                  )}
-                  
-                  {/* Translation preview */}
-                  {translations.targetVocabulary && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
-                      <Globe className="h-3 w-3" />
-                      <span>{translations.targetVocabulary}</span>
-                    </div>
-                  )}
-                  
-                  {/* Spellcheck suggestion */}
-                  {spellcheckSuggestions.targetVocabulary && (
-                    <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
-                      <span className="text-xs text-warning">
-                        Did you mean: {spellcheckSuggestions.targetVocabulary}?
-                      </span>
-                      <button
-                        onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
-                        className="text-xs text-primary hover:text-primary/80 font-medium"
-                      >
-                        Accept
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Target Vocabulary */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.targetVocabulary", "Target Vocabulary")} 
+                  <span className="text-muted-foreground font-normal">({t("formStep3.optional", "Optional")})</span>
+                </Label>
+                <TagInput
+                  value={formData.targetVocabulary || ''}
+                  onChange={(value) => handleInputChange('targetVocabulary', value)}
+                  placeholder="ocean, brave, explore"
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("formStep3.targetVocabularyHelp", "Words here will guide the AI to include them in future stories.")}
+                </p>
+                
+                {/* Loading indicator */}
+                {spellcheckLoading.targetVocabulary && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Checking spelling...</span>
+                  </div>
+                )}
+                
+                {/* Translation preview */}
+                {translations.targetVocabulary && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.targetVocabulary}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.targetVocabulary && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.targetVocabulary}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
