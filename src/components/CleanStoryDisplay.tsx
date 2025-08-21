@@ -3116,13 +3116,6 @@ const handleRestartTimer = () => {
       )}
 
 
-      {/* Debug Display - Shows device detection in top corner */}
-      <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-2 rounded">
-        Width: {typeof window !== 'undefined' ? window.innerWidth : 'unknown'}px | 
-        Mobile: {isMobile ? 'Yes' : 'No'} | 
-        Tablet: {isTablet ? 'Yes' : 'No'} |
-        MobileOrTablet: {isMobileOrTablet ? 'Yes' : 'No'}
-      </div>
 
       {/* Debug Display - Shows device detection (remove once confirmed working) */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1' && (
