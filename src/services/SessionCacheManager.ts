@@ -80,6 +80,9 @@ export class SessionCacheManager {
       // 6. Clear Navigation Caches
       this.clearNavigationCaches(userId);
 
+      // 7. Clear Server-Side Character Cache
+      this.clearServerSideCharacterCache();
+
       console.log('✅ Session cache clearing completed successfully');
 
     } catch (error) {
@@ -262,6 +265,35 @@ export class SessionCacheManager {
 
     } catch (error) {
       console.warn('Failed to clear navigation caches:', error);
+    }
+  }
+
+  /**
+   * Clear server-side character cache to ensure synchronization
+   */
+  private static clearServerSideCharacterCache(): void {
+    try {
+      // Call the server-side clear endpoint asynchronously (don't block the UI)
+      fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/clear-character-cache', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason: 'client-cache-clear' })
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log('🎭 Server-side character cache cleared successfully');
+        } else {
+          console.warn('⚠️ Server-side character cache clear failed (non-critical)');
+        }
+      })
+      .catch(error => {
+        console.warn('⚠️ Failed to clear server-side character cache (non-critical):', error.message);
+      });
+
+    } catch (error) {
+      console.warn('⚠️ Error initiating server-side cache clear (non-critical):', error);
     }
   }
 

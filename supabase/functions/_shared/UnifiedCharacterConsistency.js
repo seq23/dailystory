@@ -5,39 +5,18 @@
 
 class UnifiedCharacterConsistency {
   constructor() {
-    this.characterSeeds = new Map();
-    this.secondaryCharacterSeeds = new Map();
-    this.SEED_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
+    // STATELESS: No persistent storage - generate fresh for each request
+    console.log('🎭 Character Consistency: Using stateless, avatar-aware generation');
   }
 
   /**
-   * Generate or retrieve consistent character seed for user with context awareness
-   * Now accepts pre-processed avatarIdentity from orchestrator for optimization
+   * Generate fresh character seed for each request - STATELESS & AVATAR-AWARE
+   * Always uses current avatar settings, no persistent caching
    */
   getCharacterSeed(userId, storyId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new') {
-    const characterKey = `${userId}-${storyId}-${userInfo.name || 'default'}`;
-    let seedData = this.characterSeeds.get(characterKey);
-
-    // Handle different session types for character consistency
-    if (sessionType === 'rewrite' && seedData) {
-      // For premium rewrites: preserve avatar identity but allow fresh character appearance
-      if (userInfo.isPremium) {
-        seedData = this.preserveAvatarIdentityForRewrite(seedData, userInfo, avatarIdentity);
-        console.log(`🎭 Premium rewrite: Preserved avatar identity for ${userInfo.name} (Avatar Identity: ${avatarIdentity ? 'Optimized' : 'Local'})`);
-      } else {
-        // For free rewrites: generate completely new character
-        seedData = this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
-        console.log(`🎭 Free rewrite: Created fresh character for ${userInfo.name} (Avatar Identity: ${avatarIdentity ? 'Optimized' : 'Local'})`);
-      }
-    } else if (!seedData || this.isSeedExpired(seedData)) {
-      seedData = this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
-      console.log(`🎭 Backend: Created new character seed for ${userInfo.name}: ${seedData.baseSeed} (Avatar Identity: ${avatarIdentity ? 'Optimized' : 'Local'})`);
-    } else {
-      seedData.lastUsed = Date.now();
-      console.log(`🎭 Backend: Using existing character seed for ${userInfo.name}: ${seedData.baseSeed}`);
-    }
-
-    this.characterSeeds.set(characterKey, seedData);
+    // ALWAYS generate fresh character based on current avatar settings
+    const seedData = this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
+    console.log(`🎭 STATELESS: Fresh character generated for ${userInfo.name}: ${seedData.baseSeed} (Avatar: ${avatarIdentity ? 'Optimized' : 'Local'})`);
 
     const characterDescription = this.buildContextualCharacterDescription(seedData, storyContext);
     const culturalContext = this.buildCulturalContext(seedData);
@@ -47,45 +26,30 @@ class UnifiedCharacterConsistency {
       characterDescription,
       culturalContext,
       avatarIdentity: {
-        type: seedData.avatarType,
-        skinTone: seedData.skinTone
+        type: seedData.avatarType || avatarIdentity?.skinTone,
+        skinTone: seedData.skinTone || avatarIdentity?.skinTone
       }
     };
   }
 
   /**
-   * Preserve avatar identity for premium rewrites while allowing fresh character details
+   * REMOVED: No more persistent identity preservation - always fresh generation
+   * This ensures avatar changes are immediately reflected in character generation
    */
-  preserveAvatarIdentityForRewrite(existingSeed, userInfo, avatarIdentity = null) {
-    // Keep core avatar identity but generate fresh contextual appearance
-    const newSeed = this.createNewCharacterSeed(existingSeed.userId, existingSeed.storyId, userInfo, avatarIdentity);
-    
-    // Preserve avatar type and skin tone from existing seed
-    newSeed.avatarType = existingSeed.avatarType;
-    newSeed.skinTone = existingSeed.skinTone;
-    newSeed.physicalTraits.skinTone = existingSeed.physicalTraits.skinTone;
-    
-    // Keep cultural profile consistent with avatar
-    newSeed.culturalProfile = existingSeed.culturalProfile;
-    
-    // Update timestamp and usage
-    newSeed.createdAt = Date.now();
-    newSeed.lastUsed = Date.now();
-    newSeed.rewriteCount = (existingSeed.rewriteCount || 0) + 1;
-    
-    console.log(`🎭 Preserved avatar identity: ${newSeed.avatarType}/${newSeed.skinTone} for rewrite #${newSeed.rewriteCount}`);
-    
-    return newSeed;
-  }
 
   /**
-   * Create new character seed with complete profile
-   * Now accepts pre-processed avatarIdentity for optimization
+   * Create new character seed with complete profile - AVATAR-AWARE
+   * Always uses current avatar settings for fresh generation
    */
   createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity = null) {
-    const baseSeed = this.generateStableSeed(userId, userInfo.name || 'child');
+    // Generate seed based on current avatar settings, not just user name
+    const avatarSeedInput = avatarIdentity ? 
+      `${userId}-${userInfo.name || 'child'}-${avatarIdentity.skinTone || 'medium'}` : 
+      `${userId}-${userInfo.name || 'child'}-${userInfo.avatar?.skinTone || 'medium'}`;
     
-    // Use pre-processed avatar identity if provided, otherwise fallback to local processing
+    const baseSeed = this.generateStableSeed(avatarSeedInput, userInfo.name || 'child');
+    
+    // ALWAYS use current avatar settings - no fallback to cached data
     const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo);
     const physicalTraits = avatarIdentity ? 
       this.generatePhysicalTraitsFromIdentity(avatarIdentity, baseSeed) : 
@@ -100,6 +64,8 @@ class UnifiedCharacterConsistency {
       culturalProfile,
       physicalTraits,
       culturalElements,
+      avatarType: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
+      skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
       contextualAppearance: {
         currentClothing: culturalElements.clothing,
         currentHairStyle: 'natural style',
@@ -305,42 +271,29 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Check if character seed has expired
-   */
-  isSeedExpired(seedData) {
-    return Date.now() - seedData.createdAt > this.SEED_EXPIRY;
-  }
-
-  /**
-   * Get active character seeds for monitoring
+   * STATELESS MONITORING - No persistent seeds to track
    */
   getActiveCharacterSeeds() {
-    const active = Array.from(this.characterSeeds.values())
-      .filter(seed => !this.isSeedExpired(seed));
-    
-    const byProfile = {};
-    active.forEach(seed => {
-      byProfile[seed.culturalProfile] = (byProfile[seed.culturalProfile] || 0) + 1;
-    });
-    
     return {
-      total: active.length,
-      byProfile
+      total: 0,
+      byProfile: {},
+      note: 'Stateless mode: No persistent character seeds'
     };
   }
 
   /**
-   * Cleanup expired seeds
+   * STATELESS - No cleanup needed
    */
   cleanupExpiredSeeds() {
-    let cleaned = 0;
-    for (const [key, seed] of this.characterSeeds.entries()) {
-      if (this.isSeedExpired(seed)) {
-        this.characterSeeds.delete(key);
-        cleaned++;
-      }
-    }
-    return cleaned;
+    return 0; // No persistent seeds to clean
+  }
+
+  /**
+   * Clear any remaining server-side state (for client-side cache synchronization)
+   */
+  clearServerState() {
+    console.log('🎭 STATELESS: No server-side character state to clear');
+    return { cleared: true, message: 'Stateless mode: No persistent server cache' };
   }
 }
 
