@@ -3226,6 +3226,29 @@ const handleRestartTimer = () => {
             }}
             autoGenerationEnabled={layout !== "classic"}
           />
+          <StoryStabilityMonitor
+            isStoryContentLocked={isStoryContentLocked}
+            isStoryStable={isStoryStable}
+            storyLength={story.length}
+            lastGenerationTrigger={lastGenerationTrigger}
+            contentMutationLog={contentMutationLog}
+            onUnlockContent={() => {
+              console.log('🔓 DEBUG: Manual content unlock triggered');
+              setIsStoryContentLocked(false);
+              storyContentLockedRef.current = false;
+              setContentMutationLog(prev => [...prev, {
+                timestamp: new Date().toISOString(),
+                trigger: 'debug-manual-unlock',
+                action: 'Content unlocked via debug monitor',
+                storyLength: story.length,
+                isLocked: false
+              }]);
+            }}
+            onClearLog={() => {
+              console.log('🗑️ DEBUG: Clearing mutation log');
+              setContentMutationLog([]);
+            }}
+          />
         </>
       )}
       </div>
