@@ -39,23 +39,43 @@ export const FormStep1Essential = ({
   const [spellcheckSuggestion, setSpellcheckSuggestion] = useState<string>("");
   const [spellcheckLoading, setSpellcheckLoading] = useState(false);
 
-  // Handle input changes with sanitization and spellcheck
+  // Enhanced input handling with real-time COPPA validation
+  const [validationWarnings, setValidationWarnings] = useState<Record<string, string[]>>({});
+  
   const handleInputChange = async (field: keyof UserInfo, value: string | number) => {
     if (typeof value === 'string') {
-      const sanitizedValue = InputSanitizer.sanitizeUserInfo(value);
-      onUpdate({ [field]: sanitizedValue });
+      // Real-time validation with enhanced COPPA compliance
+      const context = field === 'name' ? 'name' : 'general';
+      const { sanitized, validation } = InputSanitizer.validateFieldRealtime(field as string, value, context);
+      
+      // Update form data
+      onUpdate({ [field]: sanitized });
+
+      // Update validation warnings
+      if (!validation.isValid) {
+        setValidationWarnings(prev => ({
+          ...prev,
+          [field]: validation.issues
+        }));
+      } else {
+        setValidationWarnings(prev => {
+          const updated = { ...prev };
+          delete updated[field];
+          return updated;
+        });
+      }
 
       // Spellcheck for name field
-      if (field === 'name' && sanitizedValue.length > 2) {
+      if (field === 'name' && sanitized.length > 2 && validation.isValid) {
         setSpellcheckLoading(true);
         try {
           const result = await spellcheckService.checkSpelling(
-            sanitizedValue,
+            sanitized,
             formData.grade || 'K',
             'user_form_input'
           );
           
-          if (result.hadErrors && result.correctedText !== sanitizedValue) {
+          if (result.hadErrors && result.correctedText !== sanitized) {
             setSpellcheckSuggestion(result.correctedText);
           } else {
             setSpellcheckSuggestion("");
@@ -131,8 +151,19 @@ export const FormStep1Essential = ({
             required
           />
           
+          {/* Real-time validation warnings */}
+          {validationWarnings.name && (
+            <div className="space-y-1">
+              {validationWarnings.name.map((warning, index) => (
+                <div key={index} className="text-xs text-amber-600 dark:text-amber-400">
+                  ⚠️ {warning}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Spellcheck suggestion */}
-          {spellcheckSuggestion && (
+          {spellcheckSuggestion && !validationWarnings.name && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{t("formStep1.spellcheck.suggestion", "Did you mean:")}</span>
               <button

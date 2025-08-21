@@ -5,7 +5,7 @@
 
 interface CharacterSeed {
   userId: string;
-  sessionId: string;
+  storyId: string; // Changed from sessionId to storyId for story-level consistency
   characterName: string;
   baseSeed: number;
   culturalProfile: string;
@@ -21,6 +21,11 @@ interface CharacterSeed {
     accessories: string[];
     culturalMarkers: string[];
   };
+  contextualAppearance: {
+    currentClothing: string;
+    currentHairStyle: string;
+    lastContext: string;
+  };
   createdAt: number;
   lastUsed: number;
 }
@@ -32,30 +37,31 @@ export class UnifiedCharacterConsistency {
 
   /**
    * Generate or retrieve consistent character seed for user
-   * Hair color and eye color are locked per session, clothing can vary
+   * Hair color and eye color are locked per story, clothing changes contextually
    */
   getCharacterSeed(
     userId: string, 
-    sessionId: string, 
-    userInfo: any
+    storyId: string, 
+    userInfo: any,
+    storyContext?: string
   ): { seed: number; characterDescription: string; culturalContext: string } {
-    // Use session-specific key for locked appearance traits
-    const characterKey = `${userId}-${sessionId}-${userInfo.name || 'default'}`;
+    // Use story-specific key for locked appearance traits
+    const characterKey = `${userId}-${storyId}-${userInfo.name || 'default'}`;
     let seedData = this.characterSeeds.get(characterKey);
 
     // Create new seed if none exists or expired
     if (!seedData || this.isSeedExpired(seedData)) {
-      seedData = this.createNewCharacterSeed(userId, sessionId, userInfo);
+      seedData = this.createNewCharacterSeed(userId, storyId, userInfo);
       this.characterSeeds.set(characterKey, seedData);
-      console.log(`🎭 Created new locked character seed for ${userInfo.name}: ${seedData.baseSeed}`);
+      console.log(`🎭 Created new story character seed for ${userInfo.name}: ${seedData.baseSeed}`);
     } else {
       // Update usage tracking but maintain locked traits
       seedData.lastUsed = Date.now();
-      console.log(`🎭 Using locked character seed for ${userInfo.name}: ${seedData.baseSeed}`);
+      console.log(`🎭 Using story character seed for ${userInfo.name}: ${seedData.baseSeed}`);
     }
 
-    // Use base seed (no session variant) to lock hair/eye appearance
-    const characterDescription = this.buildLockedCharacterDescription(seedData);
+    // Build contextual character description
+    const characterDescription = this.buildContextualCharacterDescription(seedData, storyContext);
     const culturalContext = this.buildCulturalContext(seedData);
 
     return {
@@ -68,7 +74,7 @@ export class UnifiedCharacterConsistency {
   /**
    * Create new character seed with complete profile
    */
-  private createNewCharacterSeed(userId: string, sessionId: string, userInfo: any): CharacterSeed {
+  private createNewCharacterSeed(userId: string, storyId: string, userInfo: any): CharacterSeed {
     const baseSeed = this.generateStableSeed(userId, userInfo.name || 'child');
     
     // Determine cultural profile
@@ -82,12 +88,17 @@ export class UnifiedCharacterConsistency {
 
     return {
       userId,
-      sessionId,
+      storyId,
       characterName: userInfo.name || 'child',
       baseSeed,
       culturalProfile,
       physicalTraits,
       culturalElements,
+      contextualAppearance: {
+        currentClothing: culturalElements.clothing,
+        currentHairStyle: 'natural style',
+        lastContext: ''
+      },
       createdAt: Date.now(),
       lastUsed: Date.now()
     };
@@ -272,22 +283,97 @@ export class UnifiedCharacterConsistency {
   }
 
   /**
-   * Build locked character description (hair/eyes locked, clothing can vary)
+   * Analyze story context for clothing/hair change triggers
    */
-  private buildLockedCharacterDescription(seedData: CharacterSeed): string {
-    const { characterName, physicalTraits } = seedData;
+  private analyzeStoryContext(storyContext?: string): { 
+    clothingChange?: string; 
+    hairChange?: string; 
+    contextType: 'default' | 'clothing' | 'hair' | 'both' 
+  } {
+    if (!storyContext) return { contextType: 'default' };
+
+    const text = storyContext.toLowerCase();
     
-    // Generate varied clothing per scene while locking hair/eyes
-    const random = this.createSeededRandom(Date.now()); // Use current time for clothing variety
-    const clothingOptions = ['casual everyday clothes', 'colorful outfit', 'comfortable clothing', 'seasonal attire'];
-    const dynamicClothing = clothingOptions[Math.floor(random() * clothingOptions.length)];
+    // Clothing change triggers
+    const clothingTriggers = {
+      'pajamas': 'cozy pajamas',
+      'got dressed': 'fresh daytime clothes',
+      'changed clothes': 'different outfit',
+      'put on': 'special attire',
+      'costume party': 'fun costume',
+      'swimming': 'swimwear',
+      'sports': 'athletic wear',
+      'formal event': 'formal attire',
+      'school': 'school clothes',
+      'bedtime': 'comfortable pajamas'
+    };
+
+    // Hair change triggers  
+    const hairTriggers = {
+      'haircut': 'freshly cut hair',
+      'braided': 'neatly braided hair',
+      'ponytail': 'hair in ponytail',
+      'messy hair': 'tousled, messy hair',
+      'combed': 'neatly combed hair',
+      'styled': 'specially styled hair',
+      'bedhead': 'messy morning hair'
+    };
+
+    let clothingChange: string | undefined;
+    let hairChange: string | undefined;
+
+    // Check for clothing triggers
+    for (const [trigger, clothing] of Object.entries(clothingTriggers)) {
+      if (text.includes(trigger)) {
+        clothingChange = clothing;
+        break;
+      }
+    }
+
+    // Check for hair triggers
+    for (const [trigger, hair] of Object.entries(hairTriggers)) {
+      if (text.includes(trigger)) {
+        hairChange = hair;
+        break;
+      }
+    }
+
+    const contextType = clothingChange && hairChange ? 'both' : 
+                      clothingChange ? 'clothing' : 
+                      hairChange ? 'hair' : 'default';
+
+    return { clothingChange, hairChange, contextType };
+  }
+
+  /**
+   * Build contextual character description (locked traits + contextual changes)
+   */
+  private buildContextualCharacterDescription(seedData: CharacterSeed, storyContext?: string): string {
+    const { characterName, physicalTraits, contextualAppearance } = seedData;
+    const context = this.analyzeStoryContext(storyContext);
+    
+    // Update contextual appearance if context triggers changes
+    let currentClothing = contextualAppearance.currentClothing;
+    let currentHairStyle = contextualAppearance.currentHairStyle;
+    
+    if (context.clothingChange && storyContext !== contextualAppearance.lastContext) {
+      currentClothing = context.clothingChange;
+      contextualAppearance.currentClothing = currentClothing;
+      contextualAppearance.lastContext = storyContext || '';
+    }
+    
+    if (context.hairChange && storyContext !== contextualAppearance.lastContext) {
+      currentHairStyle = context.hairChange;
+      contextualAppearance.currentHairStyle = currentHairStyle;
+      contextualAppearance.lastContext = storyContext || '';
+    }
     
     const parts = [
       `${characterName}`,
       `${physicalTraits.height} child with ${physicalTraits.skinTone} skin`,
-      `${physicalTraits.hairColor} hair and ${physicalTraits.eyeColor} eyes`,
+      `${physicalTraits.hairColor} ${currentHairStyle} and ${physicalTraits.eyeColor} eyes`,
       `${physicalTraits.build} build`,
-      `wearing ${dynamicClothing}`,
+      `wearing ${currentClothing}`,
     ];
     
     return parts.join(', ');
@@ -351,16 +437,16 @@ export class UnifiedCharacterConsistency {
    */
   getSecondaryCharacterSeed(
     userId: string,
-    sessionId: string,
+    storyId: string,
     characterName: string,
     characterType: 'friend' | 'sibling' | 'pet' | 'classmate' | 'companion',
     userInfo: any
   ): { seed: number; characterDescription: string; culturalContext: string } {
-    const secondaryKey = `${userId}-${sessionId}-${characterName}-${characterType}`;
+    const secondaryKey = `${userId}-${storyId}-${characterName}-${characterType}`;
     let seedData = this.secondaryCharacterSeeds.get(secondaryKey);
 
     if (!seedData || this.isSeedExpired(seedData)) {
-      seedData = this.createSecondaryCharacterSeed(userId, sessionId, characterName, characterType, userInfo);
+      seedData = this.createSecondaryCharacterSeed(userId, storyId, characterName, characterType, userInfo);
       this.secondaryCharacterSeeds.set(secondaryKey, seedData);
       console.log(`👥 Created secondary character seed for ${characterName} (${characterType}): ${seedData.baseSeed}`);
     } else {
@@ -368,7 +454,7 @@ export class UnifiedCharacterConsistency {
       console.log(`👥 Using existing secondary character seed for ${characterName}: ${seedData.baseSeed}`);
     }
 
-    const sessionSeed = this.generateSessionVariant(seedData, sessionId);
+    const sessionSeed = this.generateSessionVariant(seedData, storyId);
     const characterDescription = this.buildSecondaryCharacterDescription(seedData, characterType);
     const culturalContext = this.buildCulturalContext(seedData);
 
@@ -384,7 +470,7 @@ export class UnifiedCharacterConsistency {
    */
   private createSecondaryCharacterSeed(
     userId: string,
-    sessionId: string,
+    storyId: string,
     characterName: string,
     characterType: string,
     userInfo: any
@@ -398,12 +484,17 @@ export class UnifiedCharacterConsistency {
 
     return {
       userId,
-      sessionId,
+      storyId,
       characterName,
       baseSeed,
       culturalProfile,
       physicalTraits,
       culturalElements,
+      contextualAppearance: {
+        currentClothing: culturalElements.clothing,
+        currentHairStyle: 'natural style',
+        lastContext: ''
+      },
       createdAt: Date.now(),
       lastUsed: Date.now()
     };
