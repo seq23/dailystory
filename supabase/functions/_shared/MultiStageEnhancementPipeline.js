@@ -415,28 +415,38 @@ export class MultiStageEnhancementPipeline {
   }
 
   static buildSimpleCharacterDescription(userInfo, difficulty = null) {
-    const name = userInfo?.name || 'Alex';
-    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
-    const skinTone = userInfo?.avatar?.skinTone || 'medium';
-    
-    // Apply age range modifier based on difficulty level
-    let ageRange = '5-8 years old'; // Default for beginner/easy/medium
-    if (difficulty === 'hard') {
-      ageRange = '9-11 years old';
-    } else if (difficulty === 'expert') {
-      ageRange = '11-13 years old';
+    // CONSOLIDATED: Use UnifiedCharacterDescriptor for all character descriptions
+    try {
+      // Import the unified character descriptor (simulate import in edge function)
+      const { UnifiedCharacterDescriptor } = require('../../src/services/UnifiedCharacterDescriptor');
+      return UnifiedCharacterDescriptor.buildSimpleCharacterDescription(userInfo, difficulty);
+    } catch (error) {
+      console.warn('Failed to load UnifiedCharacterDescriptor, using legacy logic:', error.message);
+      
+      // Fallback to legacy logic for compatibility
+      const name = userInfo?.name || 'Alex';
+      const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+      const skinTone = userInfo?.avatar?.skinTone || 'medium';
+      
+      // Apply age range modifier based on difficulty level
+      let ageRange = '5-8 years old'; // Default for beginner/easy/medium
+      if (difficulty === 'hard') {
+        ageRange = '9-11 years old';
+      } else if (difficulty === 'expert') {
+        ageRange = '11-13 years old';
+      }
+      
+      // Simple skin tone mapping
+      const skinMap = {
+        light: 'light skin',
+        medium: 'medium skin',
+        olive: 'olive skin', 
+        dark: 'dark skin',
+        pale: 'pale skin'
+      };
+      
+      return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
     }
-    
-    // Simple skin tone mapping
-    const skinMap = {
-      light: 'light skin',
-      medium: 'medium skin',
-      olive: 'olive skin', 
-      dark: 'dark skin',
-      pale: 'pale skin'
-    };
-    
-    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
   }
   
   // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============

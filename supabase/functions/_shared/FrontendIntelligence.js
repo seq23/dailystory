@@ -237,28 +237,38 @@ export class FrontendIntelligence {
   }
   
   static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
-    if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
-      const africanAmericanFeatures = this.generateExpandedAfricanAmericanFeatures();
-      const specificHairStyle = this.getAfricanAmericanHairStyle(userInfo);
-      const specificSkinTone = this.getAfricanAmericanSkinTone(userInfo);
-      const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
-      let gender = this.detectGender(userInfo);
+    // CONSOLIDATED: Use UnifiedCharacterDescriptor for all character descriptions
+    try {
+      // Import the unified character descriptor (simulate import in edge function)
+      const { UnifiedCharacterDescriptor } = require('../../src/services/UnifiedCharacterDescriptor');
+      return UnifiedCharacterDescriptor.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty);
+    } catch (error) {
+      console.warn('Failed to load UnifiedCharacterDescriptor, using legacy logic:', error.message);
       
-      // Apply age range based on difficulty level - preserve gender, add age in parentheses
-      let ageRange;
-      if (difficulty === 'hard') {
-        ageRange = '9-11 years old';
-      } else if (difficulty === 'expert') {
-        ageRange = '11-13 years old';
-      } else {
-        ageRange = '5-8 years old';  // Beginner, Easy, Medium
+      // Fallback to legacy logic for compatibility
+      if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
+        const africanAmericanFeatures = this.generateExpandedAfricanAmericanFeatures();
+        const specificHairStyle = this.getAfricanAmericanHairStyle(userInfo);
+        const specificSkinTone = this.getAfricanAmericanSkinTone(userInfo);
+        const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
+        let gender = this.detectGender(userInfo);
+        
+        // Apply age range based on difficulty level - preserve gender, add age in parentheses
+        let ageRange;
+        if (difficulty === 'hard') {
+          ageRange = '9-11 years old';
+        } else if (difficulty === 'expert') {
+          ageRange = '11-13 years old';
+        } else {
+          ageRange = '5-8 years old';  // Beginner, Easy, Medium
+        }
+        
+        // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier with age range
+        return `${userInfo.name || 'Alex'} (African-American ${gender}, ${ageRange}, with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
       }
       
-      // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier with age range
-      return `${userInfo.name || 'Alex'} (African-American ${gender}, ${ageRange}, with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
+      return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
     }
-    
-    return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
   }
   
   static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}, difficulty = null) {
