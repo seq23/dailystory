@@ -4,10 +4,10 @@ import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse 
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 import { validateAndEnhanceContent } from "../_shared/SimpleContentValidator.js";
 
-// AI Model Fallback Chain Configuration
+// AI Model Fallback Chain Configuration - UPDATED TO FLAGSHIP MODELS
 const AI_MODELS = [
-  { name: 'gpt-4.1-mini-2025-04-14', maxTokens: 'max_tokens', supportsTemperature: true },
-  { name: 'gpt-5-mini-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false },
+  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false },
+  { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
   { name: 'gpt-4o-mini', maxTokens: 'max_tokens', supportsTemperature: true }
 ] as const;
 
