@@ -11,8 +11,8 @@ class FrontendToBackendSync {
     this.extractedIntelligence = {
       fixedCulturalLogic: {},
       simpleImageService: {},
-      structuredPromptEngine: {},
-      enhancedPromptBuilder: {},
+      // structuredPromptEngine: {}, // DELETED - moved to backend
+      // enhancedPromptBuilder: {}, // DELETED - moved to backend
       unifiedCharacterConsistency: {}
     };
   }
@@ -24,8 +24,8 @@ class FrontendToBackendSync {
       // Extract from real AI services
       await this.extractFixedCulturalLogic();
       await this.extractSimpleImageService();
-      await this.extractStructuredPromptEngine();
-      await this.extractEnhancedPromptBuilder();
+      // await this.extractStructuredPromptEngine(); // DELETED
+      // await this.extractEnhancedPromptBuilder(); // DELETED
       await this.extractUnifiedCharacterConsistency();
       
       // Generate JavaScript version for backend injection
@@ -68,31 +68,8 @@ class FrontendToBackendSync {
     };
   }
 
-  async extractStructuredPromptEngine() {
-    console.log('📂 Extracting StructuredPromptEngine...');
-    const filePath = path.join(this.projectRoot, 'src/services/StructuredPromptEngine.ts');
-    const content = fs.readFileSync(filePath, 'utf8');
-
-    this.extractedIntelligence.structuredPromptEngine = {
-      CULTURAL_VISUAL_PROFILES: this.extractConstant(content, 'CULTURAL_VISUAL_PROFILES'),
-      generateCulturalCharacterDescription: this.extractStaticFunction(content, 'generateCulturalCharacterDescription'),
-      extractPageContent: this.extractStaticFunction(content, 'extractPageContent'),
-      composeStructuredPrompt: this.extractStaticFunction(content, 'composeStructuredPrompt')
-    };
-  }
-
-  async extractEnhancedPromptBuilder() {
-    console.log('📂 Extracting EnhancedPromptBuilder...');
-    const filePath = path.join(this.projectRoot, 'src/services/EnhancedPromptBuilder.ts');
-    const content = fs.readFileSync(filePath, 'utf8');
-
-    this.extractedIntelligence.enhancedPromptBuilder = {
-      buildCompletePrompt: this.extractStaticFunction(content, 'buildCompletePrompt'),
-      applySmartDeduplication: this.extractStaticFunction(content, 'applySmartDeduplication'),
-      applyTokenManagement: this.extractStaticFunction(content, 'applyTokenManagement'),
-      detectCharactersInText: this.extractStaticFunction(content, 'detectCharactersInText')
-    };
-  }
+  // async extractStructuredPromptEngine() - DELETED SERVICE
+  // async extractEnhancedPromptBuilder() - DELETED SERVICE
 
   async extractUnifiedCharacterConsistency() {
     console.log('📂 Extracting UnifiedCharacterConsistency...');

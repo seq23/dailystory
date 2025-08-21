@@ -6,7 +6,7 @@ import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js'
 import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
 import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
-import './AnimalCharacterManager.js'; // Loads AnimalCharacterManager globally
+// AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 
 function selectWeightedElement(array) {
@@ -121,7 +121,7 @@ export class MultiStageEnhancementPipeline {
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
       // CRITICAL: Analyze animals FIRST before any text processing to ensure immediate inclusion
-      globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
+      // Animal processing now handled by UnifiedCharacterDescriptor
       
       globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
@@ -132,7 +132,7 @@ export class MultiStageEnhancementPipeline {
       // 2. Enhance story text with consistent visual details AND pronoun resolution
       let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
       enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
-      enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
+      // Animal injection now handled by UnifiedCharacterDescriptor
       
       // If AI enhancement data is available, incorporate it into the story context
       if (enhancedStoryData && enhancedStoryData.characters) {
@@ -188,7 +188,8 @@ export class MultiStageEnhancementPipeline {
       const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
       const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
       const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
-      const animalDetails = globalThis.AnimalCharacterManager.getAnimalSeedsForPrompt(sessionId);
+      // Animal details now handled by UnifiedCharacterDescriptor
+      const animalDetails = '';
       
       // NEW: Use enhanced cultural setting logic instead of override
       let enhancedSetting = existingSetting;
@@ -328,19 +329,18 @@ export class MultiStageEnhancementPipeline {
       // 1. Analyze relationships and resolve pronouns first (same as Tier 1)
       globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
       
-      // 2. Enhanced animal character detection for missing characters like Mr. Hops
-      globalThis.AnimalCharacterManager.analyzeAndRegisterAnimals(sessionId, storyText, pageNumber);
+      // 2. Enhanced character detection - animal handling now in UnifiedCharacterDescriptor
       let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
       enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
-      enhancedStoryText = globalThis.AnimalCharacterManager.injectConsistentAnimals(sessionId, enhancedStoryText, pageNumber);
+      // Animal injection now handled by UnifiedCharacterDescriptor
       
       console.log('🎯 Tier 2 Enhanced character detection applied:', {
         originalLength: storyText.length,
         enhancedLength: enhancedStoryText.length,
         changed: storyText !== enhancedStoryText,
         trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-        trackedAnimals: globalThis.AnimalCharacterManager.getSessionAnimals(sessionId).length,
-        animalCharacters: globalThis.AnimalCharacterManager.getSessionAnimals(sessionId).map(a => a.name)
+        trackedAnimals: 0, // Animal tracking now in UnifiedCharacterDescriptor
+        animalCharacters: [] // Animal characters now in UnifiedCharacterDescriptor
       });
       
       // 2. Simple template-based processing - NO AI functions
