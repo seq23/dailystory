@@ -92,19 +92,20 @@ export class InputSanitizer {
       contact: /\b(phone|email|address|meet|location|where.*live|contact.*me|call.*me|text.*me|find.*me)\b/i,
       personal: /\b(last.*name|full.*name|real.*name|password|secret|ssn|social.*security|birth.*date|birthday)\b/i,
       inappropriate: /\b(scary|violent|fight|hurt|blood|weapon|kill|murder|death|torture|abuse|rape)\b/i,
-      adult: /\b(dating|romance|kiss|love|boyfriend|girlfriend|sex|sexual|intimate|erotic|naked|nude)\b/i,
+      adult: /\b(dating|romance|kiss|love|boyfriend|girlfriend|sex|sexual|intimate|erotic|naked|nude|coitus|intercourse|copulate|copulation|fornicate|fornication|mating|breed|breeding|attractive\s+females?|attractive\s+males?|hot\s+girls?|hot\s+boys?|sexy)\b/i,
       // New comprehensive personal info patterns
       personalInfo: /\b(\d{3}[-.]?\d{3}[-.]?\d{4}|\(\d{3}\)\s*\d{3}[-.]?\d{4}|\d{3}-?\d{2}-?\d{4})\b/,
-      addresses: /\b\d+\s+[A-Za-z\s]*(street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|ct|court|place|pl|circle|cir|trail|pkwy|parkway)\b/i,
-      birthdays: /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])([\/\-]\d{2,4})?\b/
+      addresses: /\b\d+\s+[A-Za-z\s]*(street|st\.?|avenue|ave\.?|road|rd\.?|drive|dr\.?|lane|ln\.?|boulevard|blvd\.?|way|ct\.?|court|place|pl\.?|circle|cir\.?|trail|pkwy\.?|parkway|hunt|fox\s+hunt)\b/i,
+      birthdays: /\b(0?[1-9]|1[0-2])[\/\-\.](0?[1-9]|[12][0-9]|3[01])[\/\-\.](\d{2,4})\b/,
+      myHouse: /\b(my\s+house|my\s+home|my\s+address|where\s+i\s+live)\b/i
     };
 
     // Check patterns based on context - EXPANDED
     const contextChecks = {
-      name: ['contact', 'personal', 'personalInfo', 'addresses', 'birthdays'],
-      interest: ['inappropriate', 'adult', 'personalInfo', 'addresses', 'birthdays'],
-      theme: ['inappropriate', 'adult', 'contact', 'personalInfo', 'addresses', 'birthdays'],
-      general: ['contact', 'personal', 'inappropriate', 'adult', 'personalInfo', 'addresses', 'birthdays']
+      name: ['contact', 'personal', 'personalInfo', 'addresses', 'birthdays', 'myHouse'],
+      interest: ['inappropriate', 'adult', 'personalInfo', 'addresses', 'birthdays', 'myHouse'],
+      theme: ['inappropriate', 'adult', 'contact', 'personal', 'personalInfo', 'addresses', 'birthdays', 'myHouse'],
+      general: ['contact', 'personal', 'inappropriate', 'adult', 'personalInfo', 'addresses', 'birthdays', 'myHouse']
     };
 
     const checksToRun = contextChecks[context] || contextChecks.general;
