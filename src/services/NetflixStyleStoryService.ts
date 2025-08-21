@@ -30,6 +30,12 @@ export class NetflixStyleStoryService {
       timestamp: new Date().toISOString()
     });
     
+    // 🔒 Add diagnostic logging for story generation source tracking
+    const callStack = new Error().stack;
+    console.log('📍 Story generation call stack (first 3 lines):', 
+      callStack?.split('\n').slice(0, 4).join('\n')
+    );
+    
     // Run full diagnostics first for free users
     console.log('🔍 Running diagnostics for free user...');
     await DiagnosticTool.runFullDiagnostic();

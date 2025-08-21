@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
-// Import StoryVisualStateManager
-const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
+// Import StoryVisualStateManager (fixed import path)
+const StoryVisualStateManagerModule = await import('../_shared/storyVisualState.js');
+const { StoryVisualStateManager } = StoryVisualStateManagerModule;
 
 serve(async (req) => {
   console.log(`🔍 Debug: Prompt History Request: ${req.method} ${req.url}`);
