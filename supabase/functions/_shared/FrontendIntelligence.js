@@ -239,11 +239,13 @@ export class FrontendIntelligence {
   static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
     // CONSOLIDATED: Use UnifiedCharacterDescriptor for all character descriptions
     try {
-      // Import the unified character descriptor (simulate import in edge function)
-      const { UnifiedCharacterDescriptor } = require('../../src/services/UnifiedCharacterDescriptor');
-      return UnifiedCharacterDescriptor.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty);
+      // FIXED: Import using dynamic import instead of require() to avoid CommonJS errors
+      // Note: Since we can't use dynamic import in edge functions easily, we'll use the integrated logic
+      // The UnifiedCharacterDescriptor logic is now integrated directly below
+      console.log('🔄 Using integrated UnifiedCharacterDescriptor logic for character generation');
+      return this.generateUnifiedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty);
     } catch (error) {
-      console.warn('Failed to load UnifiedCharacterDescriptor, using legacy logic:', error.message);
+      console.warn('Failed to load integrated character descriptor, using legacy logic:', error.message);
       
       // Fallback to legacy logic for compatibility
       if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
@@ -267,8 +269,113 @@ export class FrontendIntelligence {
         return `${userInfo.name || 'Alex'} (African-American ${gender}, ${ageRange}, with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
       }
       
-      return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
+    return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
     }
+  }
+  
+  // INTEGRATED UNIFIED CHARACTER DESCRIPTOR LOGIC
+  static generateUnifiedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
+    // Age range mapping
+    const getAgeRange = (difficulty) => {
+      switch(difficulty) {
+        case 'hard': return '9-11 years old';
+        case 'expert': return '11-13 years old';
+        default: return '5-8 years old'; // beginner, easy, medium
+      }
+    };
+    
+    const ageRange = getAgeRange(difficulty);
+    const gender = this.detectGender(userInfo);
+    
+    // Check for African American features (English + dark skin)
+    if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
+      const africanAmericanFeatures = this.generateExpandedAfricanAmericanFeatures();
+      const specificHairStyle = this.getAfricanAmericanHairStyle(userInfo);
+      const specificSkinTone = this.getAfricanAmericanSkinTone(userInfo);
+      const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
+      
+      return `${userInfo.name || 'Alex'} (African-American ${gender}, ${ageRange}, with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
+    }
+    
+    // Check for other cultural features (non-English languages)
+    if (userInfo.nativeLanguage !== 'en') {
+      const culturalFeatures = this.getCulturalFeaturesForLanguage(userInfo.nativeLanguage);
+      if (culturalFeatures) {
+        const skinTone = this.selectRandomElement(culturalFeatures.skinTones);
+        const hairStyle = this.selectRandomElement(culturalFeatures.hairStyles);
+        const facialFeature = this.selectRandomElement(culturalFeatures.facialFeatures);
+        const culturalElement = this.selectRandomElement(culturalFeatures.culturalElements);
+        
+        return `${userInfo.name || 'Alex'} (${this.getLanguageIdentity(userInfo.nativeLanguage)} ${gender}, ${ageRange}, with ${skinTone}, ${facialFeature}, ${hairStyle}, ${culturalElement})`;
+      }
+    }
+    
+    // Default: Basic English character (non-dark skin)
+    const basicSkinTones = ['fair skin', 'light skin', 'medium skin', 'olive skin'];
+    const basicHairStyles = ['blonde hair', 'brown hair', 'red hair', 'light brown hair'];
+    const basicFeatures = ['bright eyes', 'friendly smile', 'cheerful expression'];
+    
+    const skinTone = this.selectRandomElement(basicSkinTones);
+    const hairStyle = this.selectRandomElement(basicHairStyles);
+    const feature = this.selectRandomElement(basicFeatures);
+    
+    return `${userInfo.name || 'Alex'} (${gender}, ${ageRange}, with ${skinTone}, ${feature}, ${hairStyle})`;
+  }
+  
+  static getCulturalFeaturesForLanguage(language) {
+    const culturalMappings = {
+      'es': {
+        skinTones: ['fair olive skin', 'light tan skin', 'warm caramel skin', 'sun-kissed bronze skin'],
+        hairStyles: ['thick wavy dark hair', 'long straight black hair', 'curly brown hair', 'braided hair with colorful ribbons'],
+        facialFeatures: ['warm brown eyes', 'expressive eyebrows', 'radiant smile', 'strong facial features'],
+        culturalElements: ['vibrant colors', 'traditional patterns', 'festive decorations', 'cultural art']
+      },
+      'zh': {
+        skinTones: ['porcelain skin', 'fair peachy skin', 'light honey skin', 'warm honey skin'],
+        hairStyles: ['straight black hair', 'elegant hair bun', 'hair with traditional ornaments', 'sleek bob cut'],
+        facialFeatures: ['almond-shaped eyes', 'delicate features', 'gentle smile', 'serene expression'],
+        culturalElements: ['traditional Chinese patterns', 'dragon motifs', 'cherry blossoms', 'calligraphy art']
+      },
+      'hi': {
+        skinTones: ['fair wheat skin', 'light golden skin', 'warm wheat skin', 'golden brown skin'],
+        hairStyles: ['long braided hair', 'hair decorated with flowers', 'traditional hair jewelry', 'elegant bun with ornaments'],
+        facialFeatures: ['expressive dark eyes', 'elegant eyebrows', 'warm smile', 'gentle features'],
+        culturalElements: ['traditional Indian patterns', 'henna designs', 'colorful rangoli', 'spiritual symbols']
+      },
+      'ar': {
+        skinTones: ['fair olive skin', 'light honey skin', 'golden bronze skin', 'warm olive skin'],
+        hairStyles: ['flowing dark wavy hair', 'elegant braided hair', 'thick curly dark hair', 'straight black hair with silk scarf'],
+        facialFeatures: ['expressive dark eyes', 'elegant eyebrows', 'warm smile', 'gentle facial features'],
+        culturalElements: ['traditional Arabic patterns', 'geometric decorations', 'ornate designs', 'cultural jewelry']
+      },
+      'pt': {
+        skinTones: ['fair olive skin', 'light caramel skin', 'golden olive skin', 'warm caramel skin'],
+        hairStyles: ['beach wave hair', 'natural curly hair', 'long flowing hair', 'textured natural hair'],
+        facialFeatures: ['warm brown eyes', 'radiant smile', 'expressive features', 'joyful expression'],
+        culturalElements: ['tropical patterns', 'beach culture', 'vibrant colors', 'carnival elements']
+      },
+      'fr': {
+        skinTones: ['fair rose skin', 'warm peach skin', 'light tan skin', 'golden olive skin'],
+        hairStyles: ['elegant French braids', 'chic bob cut', 'sophisticated updo', 'natural wavy hair'],
+        facialFeatures: ['bright eyes', 'refined features', 'elegant smile', 'sophisticated expression'],
+        culturalElements: ['French elegance', 'artistic elements', 'cultural sophistication', 'traditional patterns']
+      }
+    };
+    
+    return culturalMappings[language] || null;
+  }
+  
+  static getLanguageIdentity(language) {
+    const identityMappings = {
+      'es': 'Hispanic/Latino',
+      'zh': 'East Asian',
+      'hi': 'South Asian',
+      'ar': 'Middle Eastern',
+      'pt': 'Portuguese/Brazilian',
+      'fr': 'French'
+    };
+    
+    return identityMappings[language] || 'International';
   }
   
   static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, visualStateData = {}, difficulty = null) {

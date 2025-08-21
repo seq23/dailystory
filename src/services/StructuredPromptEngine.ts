@@ -533,17 +533,28 @@ export class StructuredPromptEngine {
   }
 
   private static getCulturallyAppropriateHairStyle(userInfo: UserInfo): string {
-    // Import SimpleImageService for universal hair mapping
-    const { SimpleImageService } = require('./SimpleImageService');
+    // FIXED: Inline hair mapping logic to avoid CommonJS require() issues
     
-    // FIXED: Use universal hair mapping for everyone
+    // Special case: African American hair styles for English + dark skin
     if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      // Special case: African American textured hair variety
-      return FixedCulturalLogic.generateExpandedAfricanAmericanFeatures().split(',')[0]; // Get hair part only
+      const gender = userInfo.avatar?.type === 'girl' ? 'girl' : 'boy';
+      const africanAmericanHairStyles = gender === 'girl' 
+        ? this.CULTURAL_VISUAL_PROFILES['en'].girlsHairStyles || []
+        : this.CULTURAL_VISUAL_PROFILES['en'].boysHairStyles || [];
+      
+      return this.selectRandomElement(africanAmericanHairStyles) || 'natural hair';
     }
     
-    // For everyone else: Use universal hair color mapping
-    const hairColor = SimpleImageService.getHairColorFromAvatar(userInfo.avatar);
+    // Universal hair color mapping based on skin tone - inlined logic
+    const skinToneToHairColor: Record<string, string> = {
+      'pale': 'blonde hair',
+      'light': 'blonde hair', 
+      'medium': 'brown hair',
+      'olive': 'dark brown hair',
+      'dark': 'black hair'
+    };
+    
+    const hairColor = skinToneToHairColor[userInfo.avatar?.skinTone || 'medium'] || 'brown hair';
     const hairTextures = ['straight', 'wavy', 'curly'];
     const hairLengths = ['short', 'medium-length', 'long'];
     
