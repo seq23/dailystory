@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'dailystory',
   webDir: 'dist',
   server: {
-    url: 'https://592147a7-1050-4b6c-af2b-895053e775df.lovableproject.com?forceHideBadge=true',
+    url: 'https://time-2-read.com?forceHideBadge=true',
     cleartext: true
   },
   plugins: {
