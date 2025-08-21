@@ -58,12 +58,42 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const [celebrationMode, setCelebrationMode] = useState(false);
   const [sparkleMode, setSparkleMode] = useState(false);
   const [shakeMode, setShakeMode] = useState(false);
-  const [recentAchievements, setRecentAchievements] = useState<any[]>([]);
+  const [recentAchievements, setRecentAchievements] = useState<any[]>(() => {
+    try {
+      const stored = sessionStorage.getItem('recentAchievements');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const [enabled, setEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('progressTowersEnabled') !== '0'; } catch { return true; }
   });
   
   const autoCollapseRef = useRef<NodeJS.Timeout>();
+
+  // Load and clear achievements from sessionStorage on mount/unmount
+  useEffect(() => {
+    console.log('📋 [ProgressTowers] Component mounted, loaded achievements:', recentAchievements.length);
+    
+    // Clear achievements when gamification stats are reset
+    const handleStatsReset = () => {
+      console.log('📋 [ProgressTowers] Stats reset detected, clearing achievements');
+      setRecentAchievements([]);
+      try {
+        sessionStorage.removeItem('recentAchievements');
+      } catch (error) {
+        console.warn('Failed to clear recent achievements:', error);
+      }
+    };
+    
+    window.addEventListener('gamificationStatsReset', handleStatsReset);
+    
+    return () => {
+      console.log('📋 [ProgressTowers] Component unmounting');
+      window.removeEventListener('gamificationStatsReset', handleStatsReset);
+    };
+  }, []);
 
   // Sync visibility with global toggle events
   useEffect(() => {
@@ -187,8 +217,19 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     if (hasNewAchievements) {
       const achievement = getNextAchievement();
       if (achievement) {
+        console.log('📋 [ProgressTowers] New achievement received:', achievement);
+        
         // Add to recent achievements for display in progress towers
-        setRecentAchievements(prev => [achievement, ...prev.slice(0, 4)]); // Keep only 5 most recent
+        const updatedAchievements = [achievement, ...recentAchievements.slice(0, 4)]; // Keep only 5 most recent
+        setRecentAchievements(updatedAchievements);
+        
+        // Persist to sessionStorage
+        try {
+          sessionStorage.setItem('recentAchievements', JSON.stringify(updatedAchievements));
+          console.log('📋 [ProgressTowers] Persisted achievements to sessionStorage:', updatedAchievements.length);
+        } catch (error) {
+          console.warn('Failed to persist recent achievements:', error);
+        }
         
         // Trigger visual effects for all achievements
         setSparkleMode(true);
@@ -206,7 +247,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
         }, 2000);
       }
     }
-  }, [hasNewAchievements, getNextAchievement]);
+  }, [hasNewAchievements, getNextAchievement, recentAchievements]);
 
   const scheduleAutoCollapse = () => {
     if (autoCollapseRef.current) {

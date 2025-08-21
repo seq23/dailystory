@@ -217,7 +217,36 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
     };
     setUserStats(initialStats);
     setNewAchievements([]);
-  }, []);
+    
+    // Clear localStorage and sessionStorage data
+    if (enablePersistence) {
+      const storageKey = userId ? `gamification_${userId}` : 'gamification_guest';
+      const keys = [
+        storageKey,
+        'gamificationStats',
+        'vocabularyCollection'
+      ];
+      
+      keys.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+        } catch (error) {
+          console.warn('Failed to clear localStorage key:', key, error);
+        }
+      });
+      
+      // Clear sessionStorage keys
+      try {
+        sessionStorage.removeItem('recentAchievements');
+        sessionStorage.removeItem('session_achievements');
+      } catch (error) {
+        console.warn('Failed to clear sessionStorage:', error);
+      }
+    }
+    
+    // Dispatch event to notify other components
+    window.dispatchEvent(new CustomEvent('gamificationStatsReset'));
+  }, [userId, enablePersistence]);
 
   return {
     userStats,

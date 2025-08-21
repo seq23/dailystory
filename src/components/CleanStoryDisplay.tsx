@@ -878,20 +878,27 @@ useEffect(() => {
 
   // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
   useEffect(() => {
-    console.log('🖼️ Image generation check:', {
-      layout,
-      storyLength: story.length,
-      currentPage,
-      hasCurrentImage: !!pageImages[currentPage],
-      isStoryStable,
-      allImages: Object.keys(pageImages)
-    });
+    const isDebug = new URLSearchParams(window.location.search).has('debug');
+    if (isDebug) {
+      console.log('🖼️ Image generation check:', {
+        layout,
+        storyLength: story.length,
+        currentPage,
+        hasCurrentImage: !!pageImages[currentPage],
+        isStoryStable,
+        allImages: Object.keys(pageImages)
+      });
+    }
     
     if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage] && isStoryStable) {
-      console.log('🖼️ Triggering image generation for page', currentPage, '- story is stable');
+      if (isDebug) {
+        console.log('🖼️ Triggering image generation for page', currentPage, '- story is stable');
+      }
       generateImageForCurrentPage();
     } else if (!isStoryStable && story.length > 0) {
-      console.log('🖼️ Waiting for story to stabilize before generating images');
+      if (isDebug) {
+        console.log('🖼️ Waiting for story to stabilize before generating images');
+      }
     }
   }, [currentPage, story, pageImages, layout, isStoryStable]);
 
