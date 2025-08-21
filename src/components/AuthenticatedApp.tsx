@@ -223,7 +223,20 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     await supabase.auth.signOut();
   };
 
-  const handleSessionEnded = (stats: SessionStats) => {
+  const handleSessionEnded = async (stats: SessionStats) => {
+    // Clear ALL session caches comprehensively before navigation
+    try {
+      const { SessionCacheManager } = await import('@/services/SessionCacheManager');
+      SessionCacheManager.clearAllSessionCaches({
+        userId: user.id,
+        avatarType: userInfo?.avatar?.type,
+        skinTone: userInfo?.avatar?.skinTone,
+        reason: 'session-end'
+      });
+    } catch (error) {
+      console.warn('Failed to clear session caches:', error);
+    }
+    
     // Navigate to SessionEnded page with stats
     window.location.href = `/session-ended?stats=${encodeURIComponent(JSON.stringify({...stats, isPremium}))}`;
   };

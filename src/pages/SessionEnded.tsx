@@ -35,6 +35,36 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
 const location = useLocation();
   const navigate = useNavigate();
 
+  // Clear any remaining caches on component mount as fallback
+  React.useEffect(() => {
+    const clearRemainingCaches = async () => {
+      try {
+        const { SessionCacheManager } = await import('@/services/SessionCacheManager');
+        const urlParams = new URLSearchParams(location.search);
+        const statsParam = urlParams.get('stats');
+        let avatarInfo = null;
+        
+        if (statsParam) {
+          try {
+            const parsedStats = JSON.parse(decodeURIComponent(statsParam));
+            avatarInfo = parsedStats.avatar;
+          } catch {}
+        }
+        
+        SessionCacheManager.clearAllSessionCaches({
+          userId: userIsPremium ? 'authenticated' : 'guest',
+          avatarType: avatarInfo?.type,
+          skinTone: avatarInfo?.skinTone,
+          reason: 'session-end'
+        });
+      } catch (error) {
+        console.warn('Fallback cache clearing failed:', error);
+      }
+    };
+    
+    clearRemainingCaches();
+  }, []);
+
   // Ensure language is properly loaded from localStorage on component mount
   React.useEffect(() => {
     const savedLanguage = localStorage.getItem('i18nextLng');
@@ -148,12 +178,28 @@ const location = useLocation();
   }
 
 
-  // Handle navigation based on user type
-const handleHome = () => {
+  // Handle navigation based on user type with additional cache clearing
+const handleHome = async () => {
+    // Ensure caches are fully cleared before going home
+    try {
+      const { SessionCacheManager } = await import('@/services/SessionCacheManager');
+      SessionCacheManager.clearAllSessionCaches({
+        userId: userIsPremium ? 'authenticated' : 'guest',
+        reason: 'navigation-home'
+      });
+    } catch {}
     navigate('/');
   };
 
-  const handleNewStory = () => {
+  const handleNewStory = async () => {
+    // Clear caches before starting new story session
+    try {
+      const { SessionCacheManager } = await import('@/services/SessionCacheManager');
+      SessionCacheManager.clearAllSessionCaches({
+        userId: userIsPremium ? 'authenticated' : 'guest', 
+        reason: 'new-session'
+      });
+    } catch {}
     // Navigate to home with query for new story without full reload
     navigate('/?action=new-story');
   };

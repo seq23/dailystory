@@ -83,15 +83,27 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Generate cache key for image with story continuity context
+   * Generate cache key for image with story continuity context and avatar awareness
    */
-  private static generateCacheKey(prompt: string, sessionId: string, pageNumber?: number, storyId?: string, contextualMarkers?: string): string {
+  private static generateCacheKey(
+    prompt: string, 
+    sessionId: string, 
+    pageNumber?: number, 
+    storyId?: string, 
+    contextualMarkers?: string,
+    avatarType?: string,
+    skinTone?: string
+  ): string {
     // Create a hash of prompt for consistent length
     const promptHash = this.createPromptHash(prompt);
     const baseKey = `${promptHash}-${sessionId}`;
     const storyKey = storyId ? `${baseKey}-${storyId}` : baseKey;
     const contextKey = contextualMarkers ? `${storyKey}-ctx:${contextualMarkers}` : storyKey;
-    return pageNumber !== undefined ? `${contextKey}-p${pageNumber}` : contextKey;
+    
+    // Add avatar awareness to prevent cross-avatar contamination
+    const avatarKey = (avatarType && skinTone) ? `${contextKey}-av:${avatarType}-${skinTone}` : contextKey;
+    
+    return pageNumber !== undefined ? `${avatarKey}-p${pageNumber}` : avatarKey;
   }
 
   /**
@@ -108,7 +120,7 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Cache an image with story continuity context
+   * Cache an image with story continuity context and avatar awareness
    */
   static cacheImage(
     prompt: string, 
@@ -117,11 +129,13 @@ export class EnhancedImageCache {
     pageNumber?: number,
     storyHash?: string,
     storyId?: string,
-    contextualMarkers?: string
+    contextualMarkers?: string,
+    avatarType?: string,
+    skinTone?: string
   ): void {
     try {
       const map = this.getCacheMap();
-      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId, contextualMarkers);
+      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId, contextualMarkers, avatarType, skinTone);
       
       // Check session image limit
       const sessionImages = Array.from(map.values()).filter(img => img.sessionId === sessionId);
@@ -154,13 +168,35 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Get cached image with story continuity validation
+   * Get cached image with story continuity validation and avatar checking
    */
-  static getCachedImage(prompt: string, sessionId: string, pageNumber?: number, storyId?: string, contextualMarkers?: string): string | null {
+  static getCachedImage(
+    prompt: string, 
+    sessionId: string, 
+    pageNumber?: number, 
+    storyId?: string, 
+    contextualMarkers?: string,
+    avatarType?: string,
+    skinTone?: string
+  ): string | null {
     try {
       const map = this.getCacheMap();
-      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId, contextualMarkers);
+      const key = this.generateCacheKey(prompt, sessionId, pageNumber, storyId, contextualMarkers, avatarType, skinTone);
       const cached = map.get(key);
+
+      // Avatar validation: reject cached images if avatar doesn't match
+      if (cached && avatarType && skinTone) {
+        const keyContainsAvatar = key.includes(`av:${avatarType}-${skinTone}`);
+        if (!keyContainsAvatar) {
+          console.log('📸 Image cache rejected due to avatar mismatch:', { 
+            key, 
+            expectedAvatar: `${avatarType}-${skinTone}`,
+            sessionId, 
+            pageNumber 
+          });
+          return null;
+        }
+      }
       
       if (cached) {
         // Additional validation: check if contextual markers have changed significantly
@@ -335,7 +371,7 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Cache image with story hash
+   * Cache image with story hash and avatar awareness
    */
   static cacheImageWithStoryHash(
     prompt: string,
@@ -343,9 +379,11 @@ export class EnhancedImageCache {
     storyHash: string,
     pageNumber: number,
     sessionId: string = 'story-cache',
-    storyId?: string
+    storyId?: string,
+    avatarType?: string,
+    skinTone?: string
   ): void {
-    this.cacheImage(prompt, imageUrl, sessionId, pageNumber, storyHash, storyId);
+    this.cacheImage(prompt, imageUrl, sessionId, pageNumber, storyHash, storyId, undefined, avatarType, skinTone);
   }
 
   /**
@@ -384,9 +422,12 @@ export class EnhancedImageCache {
     if (objectMatches) markers.push(...objectMatches.slice(0, 2)); 
     if (settingMatches) markers.push(...settingMatches.slice(0, 1));
     
-    // Add user avatar type for character consistency
+    // Add user avatar type AND skin tone for character consistency
     if (userInfo?.avatar?.type) {
       markers.push(userInfo.avatar.type);
+      if (userInfo.avatar.skinTone) {
+        markers.push(userInfo.avatar.skinTone);
+      }
     }
     
     return markers.join(',').toLowerCase();
