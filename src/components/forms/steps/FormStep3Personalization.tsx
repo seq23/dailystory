@@ -264,7 +264,308 @@ export const FormStep3Personalization = ({
       <div className="space-y-6">
         {/* Appearance Section */}
         <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
-...
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-card border border-border rounded-lg hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-primary" />
+              <h3 className="font-medium text-foreground">
+                {t("formStep3.appearanceTitle", "How You Look")}
+              </h3>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${appearanceOpen ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="px-4 pb-4">
+            <div className="space-y-4 mt-4">
+              {/* Avatar Selection */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.avatar", "Choose Your Avatar")}
+                </Label>
+                <AvatarPicker
+                  value={formData.avatar || { type: 'boy', skinTone: 'light' }}
+                  onChange={(avatar) => handleInputChange('avatar', avatar)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Favorite Color */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.favoriteColor", "Favorite Color")}
+                </Label>
+                <ColorPicker
+                  value={formData.favoriteColor || ''}
+                  onChange={(color) => handleInputChange('favoriteColor', color)}
+                  className="w-full"
+                />
+                
+                {/* Translation preview */}
+                {translations.favoriteColor && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.favoriteColor}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.favoriteColor && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.favoriteColor}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('favoriteColor')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Interests Section */}
+        <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-card border border-border rounded-lg hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-3">
+              <Heart className="h-5 w-5 text-primary" />
+              <h3 className="font-medium text-foreground">
+                {t("formStep3.interestsTitle", "What You Love")}
+              </h3>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${interestsOpen ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="px-4 pb-4">
+            <div className="space-y-4 mt-4">
+              {/* Hobbies */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.hobbies", "Hobbies & Activities")}
+                </Label>
+                <TagInput
+                  value={formData.hobbies || ''}
+                  onChange={(value) => handleInputChange('hobbies', value)}
+                  placeholder={t("formStep3.hobbiesPlaceholder", "soccer, drawing, music...")}
+                  className="w-full"
+                />
+                
+                {/* Loading indicator */}
+                {spellcheckLoading.hobbies && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Checking spelling...</span>
+                  </div>
+                )}
+                
+                {/* Translation preview */}
+                {translations.hobbies && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.hobbies}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.hobbies && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.hobbies}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('hobbies')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Favorite Animal */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.favoriteAnimal", "Favorite Animal")}
+                </Label>
+                <TagInput
+                  value={formData.favoriteAnimal || ''}
+                  onChange={(value) => handleInputChange('favoriteAnimal', value)}
+                  placeholder={t("formStep3.favoriteAnimalPlaceholder", "dog, elephant, dolphin...")}
+                  className="w-full"
+                />
+                
+                {/* Loading indicator */}
+                {spellcheckLoading.favoriteAnimal && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Checking spelling...</span>
+                  </div>
+                )}
+                
+                {/* Translation preview */}
+                {translations.favoriteAnimal && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.favoriteAnimal}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.favoriteAnimal && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.favoriteAnimal}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('favoriteAnimal')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Favorite Food */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.favoriteFood", "Favorite Food")}
+                </Label>
+                <TagInput
+                  value={formData.favoriteFood || ''}
+                  onChange={(value) => handleInputChange('favoriteFood', value)}
+                  placeholder={t("formStep3.favoriteFoodPlaceholder", "pizza, ice cream, fruit...")}
+                  className="w-full"
+                />
+                
+                {/* Loading indicator */}
+                {spellcheckLoading.favoriteFood && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Checking spelling...</span>
+                  </div>
+                )}
+                
+                {/* Translation preview */}
+                {translations.favoriteFood && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.favoriteFood}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.favoriteFood && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.favoriteFood}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('favoriteFood')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Special Request */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  {t("formStep3.specialRequest", "Special Request")} 
+                  <span className="text-muted-foreground font-normal">({t("formStep3.optional", "Optional")})</span>
+                </Label>
+                <Textarea
+                  value={formData.specialRequest || ''}
+                  onChange={(e) => handleInputChange('specialRequest', e.target.value)}
+                  placeholder={t("formStep3.specialRequestPlaceholder", "Anything special you'd like in your stories?")}
+                  className="min-h-[80px] resize-none"
+                />
+                
+                {/* Loading indicator */}
+                {spellcheckLoading.specialRequest && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Checking spelling...</span>
+                  </div>
+                )}
+                
+                {/* Translation preview */}
+                {translations.specialRequest && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                    <Globe className="h-3 w-3" />
+                    <span>{translations.specialRequest}</span>
+                  </div>
+                )}
+                
+                {/* Spellcheck suggestion */}
+                {spellcheckSuggestions.specialRequest && (
+                  <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                    <span className="text-xs text-warning">
+                      Did you mean: {spellcheckSuggestions.specialRequest}?
+                    </span>
+                    <button
+                      onClick={() => acceptSpellcheckSuggestion('specialRequest')}
+                      className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Target Vocabulary (Premium Feature) */}
+              {isPremium && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    {t("formStep3.targetVocabulary", "Target Vocabulary")}
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Premium</span>
+                  </Label>
+                  <Textarea
+                    value={formData.targetVocabulary || ''}
+                    onChange={(e) => handleInputChange('targetVocabulary', e.target.value)}
+                    placeholder={t("formStep3.targetVocabularyPlaceholder", "Words you want to learn: magnificent, adventurous...")}
+                    className="min-h-[60px] resize-none"
+                  />
+                  
+                  {/* Loading indicator */}
+                  {spellcheckLoading.targetVocabulary && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <span>Checking spelling...</span>
+                    </div>
+                  )}
+                  
+                  {/* Translation preview */}
+                  {translations.targetVocabulary && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/20 p-2 rounded">
+                      <Globe className="h-3 w-3" />
+                      <span>{translations.targetVocabulary}</span>
+                    </div>
+                  )}
+                  
+                  {/* Spellcheck suggestion */}
+                  {spellcheckSuggestions.targetVocabulary && (
+                    <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">
+                      <span className="text-xs text-warning">
+                        Did you mean: {spellcheckSuggestions.targetVocabulary}?
+                      </span>
+                      <button
+                        onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
+                        className="text-xs text-primary hover:text-primary/80 font-medium"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </CollapsibleContent>
         </Collapsible>
       </div>
 
