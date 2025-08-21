@@ -320,6 +320,19 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 // Voice integration for desktop
 const { status: voiceStatus, isSpeaking, handleVoiceToggle, isConnected, isConnecting } = useVoiceIntegration();
 
+// Memoized callbacks for ImageWithFallback to prevent infinite re-renders  
+const handleImageLoadingChange = useCallback((isLoading: boolean) => {
+  setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
+}, [currentPage]);
+
+const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
+  setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
+  if (isUsingFallback) {
+    console.warn('Story image failed to load, using enhanced fallback:', pageImages[currentPage]);
+    fallbackToClassic('image-error');
+  }
+}, [currentPage, pageImages, fallbackToClassic]);
+
 // Audio engine instance for direct control
 const audioEngineRef = useRef(SimplifiedAudioEngine.getInstance());
 
@@ -2629,16 +2642,8 @@ const handleRestartTimer = () => {
           alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
           className="relative z-10 h-full w-full object-contain"
           fallbackText={`📖 Page ${currentPage + 1}`}
-          onLoadingChange={useCallback((isLoading: boolean) => {
-            setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
-          }, [currentPage])}
-          onFallbackUsed={useCallback((isUsingFallback: boolean) => {
-            setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
-            if (isUsingFallback) {
-              console.warn('Story image failed to load, using enhanced fallback:', currentImage);
-              fallbackToClassic('image-error');
-            }
-          }, [currentPage, currentImage, fallbackToClassic])}
+          onLoadingChange={handleImageLoadingChange}
+          onFallbackUsed={handleImageFallbackUsed}
                         />
                       </>
                     ) : (
