@@ -629,7 +629,7 @@ const [highlightSave, setHighlightSave] = useState(false);
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
   }, [highlightSave]);
-  const currentStoryText = displayedStory[currentPage] || "";
+  const currentStoryText = stableDisplayedStory[currentPage] || "";
   const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
@@ -1395,7 +1395,7 @@ const initializeStory = async () => {
     }
     
     // Enhanced cache validation with story continuity markers
-    const storyText = displayedStory[currentPage];
+    const storyText = stableDisplayedStory[currentPage];
     const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
     
     // Validate userInfo structure before extracting markers
@@ -1591,8 +1591,8 @@ const initializeStory = async () => {
     clearHighlighting();
 
     // Count words for the page we're leaving (once per page)
-    if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
-      const pageWordCount = countWords(displayedStory[currentPage]);
+    if (stableDisplayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
+      const pageWordCount = countWords(stableDisplayedStory[currentPage]);
       setSessionWordsRead(prev => prev + pageWordCount);
       setPagesCompleted(prev => {
         const next = new Set(prev);
@@ -2729,19 +2729,11 @@ const handleRestartTimer = () => {
                         {currentImage ? (
                           <ImageWithFallback
                             src={currentImage} 
-                            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+                            alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
                             className="w-full h-full object-cover"
                             fallbackText={`📖 Page ${currentPage + 1}`}
-                            onLoadingChange={(isLoading) => {
-                              setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
-                            }}
-                            onFallbackUsed={(isUsingFallback) => {
-                              setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
-                              if (isUsingFallback) {
-                                console.warn('Story image failed to load, using enhanced fallback:', currentImage);
-                                fallbackToClassic('image-error');
-                              }
-                            }}
+                            onLoadingChange={handleImageLoadingChange}
+                            onFallbackUsed={handleImageFallbackUsed}
                           />
                         ) : isGeneratingImage ? (
                           <div className="w-full h-full flex items-center justify-center">
