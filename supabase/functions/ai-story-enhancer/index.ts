@@ -180,45 +180,49 @@ Maintain consistency with previous pages while extracting rich story elements.`
       }
     ];
 
-    // Call OpenAI with model fallback chain
-    const aiResult = await callOpenAIWithFallback(messages);
-    
-    if (!aiResult.choices?.[0]?.message?.content) {
-      throw new Error('No content received from OpenAI fallback chain');
-    }
-
-    let enhancedStoryData;
     let validationResult;
+    let enhancedStoryData;
     
     try {
+      // Call OpenAI with model fallback chain
+      const aiResult = await callOpenAIWithFallback(messages);
+      
+      if (!aiResult.choices?.[0]?.message?.content) {
+        throw new Error('No content received from OpenAI fallback chain');
+      }
+
       enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
       
-      // SIMPLE VALIDATION & ENHANCEMENT LAYER - Check content accuracy and fix basics
+      // ULTRA-LEAN VALIDATION WITH QUALITY GATE
       validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
       
-      // If major mismatches detected, trigger re-analysis
+      // QUALITY GATE: If score too low (0-30) → Fall back to Tier 2 immediately
+      if (validationResult.useTier2) {
+        console.log(`🚀 Quality gate triggered - using Tier 2 pipeline (score: ${validationResult.qualityScore}/100)`);
+        return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore);
+      }
+      
+      // If major mismatches detected, trigger re-analysis once
       if (validationResult.requiresReanalysis) {
-        console.log('🔄 Re-analyzing due to content mismatches...');
+        console.log(`🔄 Re-analyzing due to content mismatches (score: ${validationResult.qualityScore}/100)...`);
         const retryResult = await callOpenAIWithFallback(messages);
         if (retryResult.choices?.[0]?.message?.content) {
           enhancedStoryData = JSON.parse(retryResult.choices[0].message.content);
           validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+          
+          // If still bad after retry → Tier 2
+          if (validationResult.useTier2 || validationResult.requiresReanalysis) {
+            console.log(`🚀 Re-analysis failed - using Tier 2 pipeline`);
+            return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore || 0);
+          }
         }
       }
       
       enhancedStoryData = validationResult.enhancedData;
       
     } catch (parseError) {
-      console.error('Failed to parse AI response:', aiResult.choices[0].message.content);
-      // Fallback with basic validation scoring
-      enhancedStoryData = {
-        characters: [{ name: "character", description: "child", emotions: "neutral" }],
-        setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
-        objects: [],
-        mood: "neutral",
-        narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
-      };
-      validationResult = { enhancedData: enhancedStoryData };
+      console.error('Failed to parse AI response - using Tier 2 pipeline:', parseError.message);
+      return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, `Parse error: ${parseError.message}`);
     }
 
     // Add context and metadata with validation info
@@ -246,39 +250,115 @@ Maintain consistency with previous pages while extracting rich story elements.`
         contentValid: !validationResult?.requiresReanalysis,
         mismatches: validationResult?.mismatches || [],
         processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
-        modelUsed: aiResult.model || 'fallback-chain'
+        qualityScore: validationResult?.qualityScore || 100,
+        modelUsed: 'openai-enhanced'
       }
     };
 
-        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, validation: ${validationResult?.requiresReanalysis ? 'required re-analysis' : 'passed'}`);
+        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, quality: ${validationResult?.qualityScore || 100}/100`);
 
         return createCorsResponse(result);
 
       } catch (error) {
-        // Return basic fallback structure on error with tracking
-        const fallbackResult = {
-          enhancedStoryData: {
-            characters: [{ name: "character", description: "child", emotions: "neutral" }],
-            setting: { location: "indoor scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
-            objects: [],
-            mood: "neutral",
-            narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
-          },
-          extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
-          contextualInfo: { pageNumber: 1, totalPages: 'unlimited', sessionId: '', processingTimestamp: new Date().toISOString(), isNeverEnding: true },
-          narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
-          error: error.message,
-          fallbackUsed: true,
-          performanceData: {
-            gptModel: 'fallback-chain-failed',
-            tokenUsage: 'unknown',
-            responseTime: 'failed'
-          }
-        };
-
-        console.log('🔄 Using fallback content due to AI analysis failure');
-        return createCorsResponse(fallbackResult);
+        // OpenAI FAILURE → Skip to Tier 2 immediately (no more generic fallback)
+        console.log(`❌ OpenAI failed - falling back to Tier 2 pipeline: ${error.message}`);
+        return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, error.message);
       }
     }
   );
 });
+
+/**
+ * Tier 2 Pipeline Fallback - Uses MultiStageEnhancementPipeline when OpenAI fails or quality is too low
+ */
+async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, qualityScore = 0, errorMessage = null) {
+  try {
+    console.log(`🚀 Tier 2 Pipeline: Processing fallback for session ${sessionId}, page ${pageNumber}`);
+    
+    // Import and use the Tier 2 pipeline
+    const { MultiStageEnhancementPipeline } = await import('../_shared/MultiStageEnhancementPipeline.js');
+    const tier2Result = await MultiStageEnhancementPipeline.processThroughPipeline(
+      storyText, 
+      userInfo, 
+      sessionId, 
+      pageNumber, 
+      totalPages
+    );
+    
+    // Format Tier 2 result to match expected AI enhancer structure
+    const formattedResult = {
+      enhancedStoryData: {
+        characters: [{ 
+          name: tier2Result.characterDescription?.name || "character", 
+          description: tier2Result.characterDescription?.appearance || "child", 
+          emotions: "neutral" 
+        }],
+        setting: { 
+          location: tier2Result.settingContext?.location || "scene", 
+          timeOfDay: tier2Result.settingContext?.timeOfDay || "daytime", 
+          weather: tier2Result.settingContext?.weather || "clear", 
+          season: "unspecified" 
+        },
+        objects: tier2Result.objectContext || [],
+        mood: "neutral",
+        narrativeElements: { 
+          action: "general activity", 
+          focus: "character", 
+          perspective: "eye level" 
+        }
+      },
+      extractedElements: { 
+        characterCount: 1, 
+        objectCount: tier2Result.objectContext?.length || 0, 
+        complexity: 'simple' 
+      },
+      contextualInfo: { 
+        pageNumber, 
+        totalPages: totalPages || 'unlimited', 
+        sessionId, 
+        originalTextLength: storyText.length,
+        processingTimestamp: new Date().toISOString(), 
+        isNeverEnding: !totalPages 
+      },
+      narrativeEnhancements: { 
+        sceneType: 'general', 
+        emotionalTone: 'neutral', 
+        visualFocus: 'balanced' 
+      },
+      validation: {
+        contentValid: true,
+        mismatches: [],
+        processingMethod: 'tier-2-fallback',
+        qualityScore: qualityScore,
+        modelUsed: 'tier-2-pipeline'
+      },
+      tier2Used: true,
+      originalError: errorMessage
+    };
+    
+    console.log(`✅ Tier 2 Pipeline complete: Using template-based enhancement`);
+    return createCorsResponse(formattedResult);
+    
+  } catch (tier2Error) {
+    console.error(`❌ Tier 2 Pipeline failed: ${tier2Error.message}`);
+    
+    // Final fallback - absolute minimum structure
+    const emergencyFallback = {
+      enhancedStoryData: {
+        characters: [{ name: "character", description: "child", emotions: "neutral" }],
+        setting: { location: "scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
+        objects: [],
+        mood: "neutral",
+        narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
+      },
+      extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
+      contextualInfo: { pageNumber, totalPages: 'unlimited', sessionId, processingTimestamp: new Date().toISOString(), isNeverEnding: true },
+      narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
+      validation: { contentValid: false, processingMethod: 'emergency-fallback', qualityScore: 0, modelUsed: 'none' },
+      emergencyFallback: true,
+      errors: [errorMessage, tier2Error.message].filter(Boolean)
+    };
+    
+    return createCorsResponse(emergencyFallback);
+  }
+}

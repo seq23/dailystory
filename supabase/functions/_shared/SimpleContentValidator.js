@@ -2,26 +2,35 @@
 // Replaces 3 complex validation systems (1000+ lines) with simple content accuracy check
 
 /**
- * Simple content validator - focuses on story-AI accuracy and basic fixes
+ * Simple content validator with quality gate - focuses on story-AI accuracy and basic fixes
  * @param {Object} enhancedStoryData - AI extracted data
  * @param {string} storyText - Original story text
- * @returns {Object} - Enhanced data or re-analysis trigger
+ * @returns {Object} - Enhanced data, quality score, or tier 2 trigger
  */
 export function validateAndEnhanceContent(enhancedStoryData, storyText) {
-  // Part 1: Content Accuracy Check - detect major mismatches
+  // Part 1: Content Accuracy Check with Quality Scoring
   const mismatches = detectContentMismatches(enhancedStoryData, storyText);
+  const qualityScore = calculateQualityScore(enhancedStoryData, storyText, mismatches);
   
-  // If major mismatches found, trigger re-analysis
-  if (mismatches.length > 0) {
+  console.log(`🔍 Quality Assessment: ${qualityScore}/100 (${mismatches.length} mismatches)`);
+  
+  // QUALITY GATE: Reject terrible content (0-30) → Tier 2
+  if (qualityScore <= 30) {
+    console.log(`❌ Quality too low (${qualityScore}/100) - falling back to Tier 2`);
+    return { useTier2: true, qualityScore, mismatches };
+  }
+  
+  // If moderate mismatches found (31-70), trigger re-analysis
+  if (mismatches.length > 0 && qualityScore <= 70) {
     console.log(`⚠️ Content mismatches detected: ${mismatches.join(', ')} - triggering re-analysis`);
-    return { requiresReanalysis: true, mismatches };
+    return { requiresReanalysis: true, mismatches, qualityScore };
   }
   
   // Part 2: Basic Fixes Only - fix obvious AI errors
   const enhanced = applyBasicFixes(enhancedStoryData, storyText);
   
-  console.log(`✅ Content validated and enhanced`);
-  return { enhancedData: enhanced };
+  console.log(`✅ Content validated and enhanced (score: ${qualityScore}/100)`);
+  return { enhancedData: enhanced, qualityScore };
 }
 
 /**
@@ -70,6 +79,33 @@ function detectContentMismatches(data, text) {
   }
   
   return mismatches;
+}
+
+/**
+ * Calculate content quality score (0-100)
+ */
+function calculateQualityScore(data, text, mismatches) {
+  let score = 100;
+  
+  // Major penalties for critical mismatches
+  mismatches.forEach(mismatch => {
+    if (mismatch.includes('setting-mismatch')) {
+      score -= 40; // Park vs indoor = critical error
+    } else if (mismatch.includes('action-mismatch')) {
+      score -= 30; // Wrong action = major error
+    } else {
+      score -= 20; // Other mismatches
+    }
+  });
+  
+  // Check basic content quality
+  if (!data.characters || data.characters.length === 0) score -= 15;
+  if (!data.setting || !data.setting.location) score -= 10;
+  if (data.characters?.some(c => c.name === "character")) score -= 10;
+  if (data.setting?.location === "scene" || data.setting?.location === "indoor scene") score -= 10;
+  
+  // Ensure minimum score
+  return Math.max(0, score);
 }
 
 /**
