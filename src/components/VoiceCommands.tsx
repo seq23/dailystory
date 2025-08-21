@@ -24,20 +24,26 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
   const clientTools = useMemo(() => providedClientTools || ({
     // Voice Command: "read", "start reading", "play" -> play tool
     play: async () => {
-      console.log('🎤 VOICE COMMAND: play tool called');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🎤 VOICE COMMAND: play tool called');
+      }
       const text = (window as any).__lastNarrationText || (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
       
-      console.log('🎤 Content check:', {
-        hasLastNarrationText: !!(window as any).__lastNarrationText,
-        hasPageContentString: !!(window as any).__pageContentString,
-        hasContentHash: !!(window as any).__pageContentHash,
-        textLength: text.length,
-        textPreview: text.substring(0, 50) + '...'
-      });
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🎤 Content check:', {
+          hasLastNarrationText: !!(window as any).__lastNarrationText,
+          hasPageContentString: !!(window as any).__pageContentString,
+          hasContentHash: !!(window as any).__pageContentHash,
+          textLength: text.length,
+          textPreview: text.substring(0, 50) + '...'
+        });
+      }
       
       if (!text) {
-        console.log('🎤 ERROR: No text content available for reading');
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          console.log('🎤 ERROR: No text content available for reading');
+        }
         return 'no_text';
       }
       
@@ -83,12 +89,16 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     
     // Voice Command: "next", "next page", "go forward" -> next tool
     next: async () => {
-      console.log('🎤 VOICE COMMAND: next tool called - navigating to next page');
-      console.log('🔧 Tool execution started: next');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🎤 VOICE COMMAND: next tool called - navigating to next page');
+        console.log('🔧 Tool execution started: next');
+      }
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } }));
-        console.log('🎤 SUCCESS: Next page event dispatched successfully');
-        console.log('🔧 Tool execution completed: next');
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          console.log('🎤 SUCCESS: Next page event dispatched successfully');
+          console.log('🔧 Tool execution completed: next');
+        }
         return 'Going to the next page now!';
       } catch (error) {
         console.error('🎤 ERROR: Next navigation failed:', error);
@@ -132,10 +142,14 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     
     // Voice Command: "read faster", "faster", "speed up" -> speedUp tool
     speedUp: async () => {
-      console.log('🎤 VOICE COMMAND: speedUp tool called');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🎤 VOICE COMMAND: speedUp tool called');
+      }
       try {
         window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'faster' } }));
-        console.log('🎤 SUCCESS: Speed up event dispatched');
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          console.log('🎤 SUCCESS: Speed up event dispatched');
+        }
         return 'ok';
       } catch (error) {
         console.error('🎤 ERROR: Speed up failed:', error);
@@ -158,10 +172,14 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     
     // Voice Command: "normal speed", "reset speed" -> normalSpeed tool
     normalSpeed: async () => {
-      console.log('🎤 VOICE COMMAND: normalSpeed tool called');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🎤 VOICE COMMAND: normalSpeed tool called');
+      }
       try {
         window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'normal' } }));
-        console.log('🎤 SUCCESS: Normal speed event dispatched');
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          console.log('🎤 SUCCESS: Normal speed event dispatched');
+        }
         return 'ok';
       } catch (error) {
         console.error('🎤 ERROR: Normal speed failed:', error);

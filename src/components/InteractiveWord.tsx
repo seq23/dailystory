@@ -1605,9 +1605,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Enhanced mobile word click handler
   const handleMobileWordClick = () => {
-    console.log('📱 Mobile word clicked for word:', props.word, 'current showMobileTTS:', showMobileTTS);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('📱 Mobile word clicked for word:', props.word, 'current showMobileTTS:', showMobileTTS);
+    }
     setShowMobileTTS(!showMobileTTS);
-    console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
+    }
   };
 
   // Phonetic breakdown handler - now available to all users
@@ -1645,18 +1649,20 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const cleanWord = props.word.replace(/[^\w\s]/g, '').toLowerCase().trim();
   const isUserName = props.userInfo?.name && cleanWord === props.userInfo.name.toLowerCase();
 
-  console.log('📱 Mobile Wrapper Active:', {
-    word: props.word,
-    cleanWord,
-    isUserName,
-    userName: props.userInfo?.name,
-    userNativeLanguage: props.userInfo?.nativeLanguage,
-    isMobileDevice,
-    isNativeApp,
-    environment: window.location.href.includes('preview') ? 'preview' : 'console',
-    userAgent: navigator.userAgent,
-    passThrough: 'Enhanced Mobile TTS'
-  });
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+    console.log('📱 Mobile Wrapper Active:', {
+      word: props.word,
+      cleanWord,
+      isUserName,
+      userName: props.userInfo?.name,
+      userNativeLanguage: props.userInfo?.nativeLanguage,
+      isMobileDevice,
+      isNativeApp,
+      environment: window.location.href.includes('preview') ? 'preview' : 'console',
+      userAgent: navigator.userAgent,
+      passThrough: 'Enhanced Mobile TTS'
+    });
+  }
 
   // If not mobile, use regular component
   if (!isMobileDevice) {

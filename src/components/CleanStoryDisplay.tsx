@@ -100,14 +100,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // Debug device detection
   useEffect(() => {
-    console.log('📱 CleanStoryDisplay Device Detection:', {
-      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown',
-      isMobile,
-      isTablet,
-      isMobileOrTablet,
-      hasTouchCapability,
-      shouldShowDock: isMobileOrTablet
-    });
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('📱 CleanStoryDisplay Device Detection:', {
+        windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown',
+        isMobile,
+        isTablet,
+        isMobileOrTablet,
+        hasTouchCapability,
+        shouldShowDock: isMobileOrTablet
+      });
+    }
   }, [isMobile, isTablet, isMobileOrTablet, hasTouchCapability]);
   
   const runtimeTouch = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
@@ -823,7 +825,9 @@ useEffect(() => {
     
     // 🔒 CRITICAL: First check - if content is locked, NEVER regenerate
     if (storyContentLockedRef.current && story.length > 0) {
-      console.log('🔒 EMERGENCY FIX: Story content LOCKED - blocking any regeneration attempt');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🔒 EMERGENCY FIX: Story content LOCKED - blocking any regeneration attempt');
+      }
       setIsLoading(false);
       setIsStoryStable(true);
       return;
@@ -831,7 +835,9 @@ useEffect(() => {
     
     // 🔒 CRITICAL: Second check - if same context and story exists, skip regeneration
     if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current && story.length > 0) {
-      console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
+      }
       setIsLoading(false);
       setIsStoryStable(true);
       return;
@@ -839,7 +845,9 @@ useEffect(() => {
     
     // 🔒 CRITICAL: Third check - prevent multiple simultaneous generations
     if (isGeneratingRef.current) {
-      console.log('🔒 EMERGENCY FIX: Skipping story generation - already in progress');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🔒 EMERGENCY FIX: Skipping story generation - already in progress');
+      }
       return;
     }
 
@@ -1010,7 +1018,9 @@ const initializeStory = async () => {
   
   // 🔒 CRITICAL: Check if story content is locked against regeneration
   if (storyContentLockedRef.current && story.length > 0) {
-    console.log('🔒 EMERGENCY FIX: Story content is LOCKED - rejecting regeneration attempt');
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('🔒 EMERGENCY FIX: Story content is LOCKED - rejecting regeneration attempt');
+    }
     setLastGenerationTrigger('blocked-content-locked');
     setContentMutationLog(prev => [...prev, {
       timestamp: new Date().toISOString(),
@@ -1025,14 +1035,18 @@ const initializeStory = async () => {
   
   // 🔒 Enhanced generation protection - prevent double execution
   if (isGeneratingRef.current) {
-    console.log('🔒 initializeStory blocked - already generating');
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('🔒 initializeStory blocked - already generating');
+    }
     setLastGenerationTrigger('blocked-already-generating');
     return;
   }
   
   // 🔒 CRITICAL: Check for existing stable story content before proceeding
   if (storyGeneratedRef.current && story.length > 0 && isStoryStable) {
-    console.log('🔒 EMERGENCY FIX: Stable story already exists - blocking regeneration');
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('🔒 EMERGENCY FIX: Stable story already exists - blocking regeneration');
+    }
     setLastGenerationTrigger('blocked-stable-story-exists');
     setContentMutationLog(prev => [...prev, {
       timestamp: new Date().toISOString(),

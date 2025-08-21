@@ -39,7 +39,9 @@ export class MobileOptimizationManager {
       batteryOptimized: isLowEnd || this.isBatteryOptimizationEnabled()
     };
 
-    console.log('📱 Device capabilities detected:', this.deviceCapabilities);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('📱 Device capabilities detected:', this.deviceCapabilities);
+    }
     return this.deviceCapabilities;
   }
 

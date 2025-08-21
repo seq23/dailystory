@@ -72,7 +72,9 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
 
   // Mobile/tablet: show enhanced loader until initialized
   if (!isInitialized) {
-    console.log('📱 MobileWrapper: showing AdaptiveEnhancedLoading', { isMobileOrTablet, initialized: isInitialized });
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('📱 MobileWrapper: showing AdaptiveEnhancedLoading', { isMobileOrTablet, initialized: isInitialized });
+    }
     return (
       <AdaptiveEnhancedLoading isPremium={false} />
     );

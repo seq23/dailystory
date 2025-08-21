@@ -134,7 +134,7 @@ export class MobileSessionManager {
     // Handle page unload
     window.addEventListener('beforeunload', () => {
       // Only save if we have critical data to preserve
-      if (this.memoryStorage.size > 0) {
+      if (this.memoryStorage.size > 0 && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
         console.log('📱 MobileSessionManager: Page unloading, session state preserved in memory');
       }
     });

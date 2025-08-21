@@ -60,7 +60,9 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
     setError(null);
     
     try {
-      console.log('🎵 SynchronizedAudioControls: Starting playback');
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log('🎵 SynchronizedAudioControls: Starting playback');
+      }
       
       await audioEngine.playTextWithSynchronization({
         text,
@@ -90,7 +92,9 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
     const newRetryCount = retryCount + 1;
     setRetryCount(newRetryCount);
     
-    console.log(`🔄 SynchronizedAudioControls: Retry attempt ${newRetryCount}`);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log(`🔄 SynchronizedAudioControls: Retry attempt ${newRetryCount}`);
+    }
     
     // Exponential backoff delay
     const delay = Math.min(5000, Math.pow(2, newRetryCount - 1) * 1000);
@@ -108,7 +112,9 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
   };
 
   const onStop = () => {
-    console.log('🛑 SynchronizedAudioControls: Stopping playback');
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('🛑 SynchronizedAudioControls: Stopping playback');
+    }
     
     audioEngine.stop();
     

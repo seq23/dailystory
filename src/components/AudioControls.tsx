@@ -107,7 +107,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     }, delay);
   };
   const onStop = () => {
-    console.log('🛑 AudioControls: Stop button pressed');
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('🛑 AudioControls: Stop button pressed');
+    }
     
     const engine = SimpleAudioEngine.getInstance();
     engine.stop();
@@ -117,7 +119,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       const audioSyncService = (window as any).__audioSyncService;
       if (audioSyncService) {
         audioSyncService.stopAudio();
-        console.log('🛑 Also stopped AudioSyncService');
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          console.log('🛑 Also stopped AudioSyncService');
+        }
       }
     } catch {}
     

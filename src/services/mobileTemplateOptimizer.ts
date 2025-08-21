@@ -52,7 +52,9 @@ export class MobileTemplateOptimizer {
       this.config.maxConcurrentValidations = 1;
     }
 
-    console.log(`📱 Mobile optimizer initialized: mobile=${this.isMobile}, lowEnd=${this.isLowEndDevice}`);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log(`📱 Mobile optimizer initialized: mobile=${this.isMobile}, lowEnd=${this.isLowEndDevice}`);
+    }
   }
 
   /**
@@ -142,7 +144,9 @@ export class MobileTemplateOptimizer {
     const loadTime = performance.now() - startTime;
     const compressedSize = JSON.stringify(optimizedPages).length;
 
-    console.log(`📱 Template optimized: ${originalSize}→${compressedSize} bytes, ${optimizationsApplied.length} optimizations`);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log(`📱 Template optimized: ${originalSize}→${compressedSize} bytes, ${optimizationsApplied.length} optimizations`);
+    }
 
     return {
       pages: optimizedPages,
@@ -242,7 +246,9 @@ export class MobileTemplateOptimizer {
    */
   static updateConfig(newConfig: Partial<MobileOptimizationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    console.log('📱 Mobile optimization config updated:', this.config);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+      console.log('📱 Mobile optimization config updated:', this.config);
+    }
   }
 }
 

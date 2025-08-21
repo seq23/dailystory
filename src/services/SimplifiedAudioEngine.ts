@@ -181,7 +181,9 @@ export class SimplifiedAudioEngine {
       
       // Enhanced mobile audio unlocking
       if (this.isMobile()) {
-        console.log('📱 Mobile device detected, ensuring audio unlock');
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          console.log('📱 Mobile device detected, ensuring audio unlock');
+        }
         await this.unlockMobileAudioForPlayback();
         
         // Add mobile-specific audio settings
