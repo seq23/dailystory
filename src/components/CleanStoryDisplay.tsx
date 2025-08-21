@@ -1281,7 +1281,7 @@ const initializeStory = async () => {
         currentDifficulty,
         storyId,
         currentPage + 1,
-        sessionId,
+        characterSessionId,
         isPremium
       );
       
