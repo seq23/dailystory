@@ -47,7 +47,13 @@ export const FormStep3Personalization = ({
   const [spellcheckTimeouts, setSpellcheckTimeouts] = useState<{[key: string]: NodeJS.Timeout}>({});
   
   // Validation states for inappropriate content
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: string[]}>({});
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string[]}>({
+    specialRequest: [],
+    hobbies: [],
+    favoriteAnimal: [],
+    favoriteFood: [],
+    targetVocabulary: []
+  });
 
   // Individual tag spellcheck for TagInput fields
   const performTagInputSpellcheck = async (field: string, text: string) => {
@@ -176,9 +182,19 @@ export const FormStep3Personalization = ({
         });
       }
 
-      // Real-time validation for special request field
-      if (field === 'specialRequest' && value.trim()) {
-        const validation = InputSanitizer.validateChildSafeInput(value, 'theme');
+      // Real-time validation for all fields that need content validation
+      const validatedFields = ['specialRequest', 'hobbies', 'favoriteAnimal', 'favoriteFood', 'targetVocabulary'];
+      if (validatedFields.includes(field) && value.trim()) {
+        const contextMap: Record<string, 'name' | 'interest' | 'theme' | 'general'> = {
+          'specialRequest': 'theme',
+          'hobbies': 'interest',
+          'favoriteAnimal': 'interest',
+          'favoriteFood': 'interest',
+          'targetVocabulary': 'general'
+        };
+        
+        const context = contextMap[field] || 'general';
+        const validation = InputSanitizer.validateChildSafeInput(value, context);
         if (!validation.isValid) {
           setValidationErrors(prev => ({
             ...prev,
@@ -380,6 +396,8 @@ export const FormStep3Personalization = ({
                   onChange={(value) => handleInputChange('favoriteAnimal', value)}
                   placeholder={t("formStep3.favoriteAnimalPlaceholder", "dog, elephant, dolphin...")}
                   className="w-full"
+                  validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'interest')}
+                  validationError={validationErrors.favoriteAnimal}
                 />
                 
                 {/* Loading indicator */}
@@ -412,6 +430,21 @@ export const FormStep3Personalization = ({
                     </button>
                   </div>
                 )}
+                
+                {/* Validation errors */}
+                {validationErrors.favoriteAnimal && validationErrors.favoriteAnimal.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                    {validationErrors.favoriteAnimal.map((error, index) => (
+                      <div key={index} className="flex items-start gap-2 text-xs text-destructive">
+                        <span className="font-medium">⚠️</span>
+                        <span>{error}</span>
+                      </div>
+                    ))}
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Try child-friendly animals like "dog," "elephant," or "butterfly"
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Favorite Food */}
@@ -424,6 +457,8 @@ export const FormStep3Personalization = ({
                   onChange={(value) => handleInputChange('favoriteFood', value)}
                   placeholder={t("formStep3.favoriteFoodPlaceholder", "pizza, ice cream, fruit...")}
                   className="w-full"
+                  validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'interest')}
+                  validationError={validationErrors.favoriteFood}
                 />
                 
                 {/* Loading indicator */}
@@ -456,6 +491,21 @@ export const FormStep3Personalization = ({
                     </button>
                   </div>
                 )}
+                
+                {/* Validation errors */}
+                {validationErrors.favoriteFood && validationErrors.favoriteFood.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                    {validationErrors.favoriteFood.map((error, index) => (
+                      <div key={index} className="flex items-start gap-2 text-xs text-destructive">
+                        <span className="font-medium">⚠️</span>
+                        <span>{error}</span>
+                      </div>
+                    ))}
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Try child-friendly foods like "pizza," "fruit," or "cookies"
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Hobbies */}
@@ -468,6 +518,8 @@ export const FormStep3Personalization = ({
                   onChange={(value) => handleInputChange('hobbies', value)}
                   placeholder={t("formStep3.hobbiesPlaceholder", "soccer, drawing, music...")}
                   className="w-full"
+                  validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'interest')}
+                  validationError={validationErrors.hobbies}
                 />
                 
                 {/* Loading indicator */}
@@ -498,6 +550,21 @@ export const FormStep3Personalization = ({
                     >
                       Accept
                     </button>
+                  </div>
+                )}
+                
+                {/* Validation errors */}
+                {validationErrors.hobbies && validationErrors.hobbies.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                    {validationErrors.hobbies.map((error, index) => (
+                      <div key={index} className="flex items-start gap-2 text-xs text-destructive">
+                        <span className="font-medium">⚠️</span>
+                        <span>{error}</span>
+                      </div>
+                    ))}
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Try child-friendly activities like "reading," "sports," or "art"
+                    </div>
                   </div>
                 )}
               </div>
@@ -578,6 +645,8 @@ Setting: magical forest AND cozy cottage → Enter`}
                   onChange={(value) => handleInputChange('targetVocabulary', value)}
                   placeholder="ocean, brave, explore"
                   className="w-full"
+                  validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'general')}
+                  validationError={validationErrors.targetVocabulary}
                 />
                 <p className="text-xs text-muted-foreground">
                   {t("formStep3.targetVocabularyHelp", "Words here will guide the AI to include them in future stories.")}
@@ -611,6 +680,21 @@ Setting: magical forest AND cozy cottage → Enter`}
                     >
                       Accept
                     </button>
+                  </div>
+                )}
+                
+                {/* Validation errors */}
+                {validationErrors.targetVocabulary && validationErrors.targetVocabulary.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                    {validationErrors.targetVocabulary.map((error, index) => (
+                      <div key={index} className="flex items-start gap-2 text-xs text-destructive">
+                        <span className="font-medium">⚠️</span>
+                        <span>{error}</span>
+                      </div>
+                    ))}
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Use educational words like "ocean," "explore," or "friendship"
+                    </div>
                   </div>
                 )}
               </div>
