@@ -1,4 +1,9 @@
 // Centralized feature lists used across Pricing, MyAccount, and StylePreview
+//
+// TIER POLICY COMPLIANCE NOTE: 
+// Image generation quality is NOT listed as a differentiator because
+// ALL users (free and premium) receive Tier 1 images with identical quality.
+// Premium benefits focus on other features as documented below.
 
 export const freeFeatures: string[] = [
   "Customize your story (Limited)",

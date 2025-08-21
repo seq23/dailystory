@@ -2,6 +2,37 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
+/**
+ * ============================================================================
+ * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
+ * ============================================================================
+ * 
+ * ALL USERS (GUEST AND PREMIUM) RECEIVE TIER 1 IMAGES
+ * 
+ * This is a fundamental business decision to ensure:
+ * - 100% image generation success rate through comprehensive fallback system
+ * - Consistent high-quality user experience regardless of subscription status  
+ * - Premium value proposition focused on other features (unlimited time, saves, etc.)
+ * - Simplified architecture without subscription-based image quality tiers
+ * 
+ * TIER PROGRESSION FOR ALL USERS:
+ * - Tier 1: AI-Enhanced Premium (runware:100@1 with full enhancement pipeline)
+ * - Tier 2: Template-Based Fallback (structured templates)
+ * - Tier 2.5: Nuclear Hardcoded Fallback (guaranteed generation)
+ * - Tier 3: OpenAI DALL-E Fallback (external provider)
+ * - Tier 4: SVG Placeholder (100% guaranteed success)
+ * 
+ * IMPORTANT: The `isGuestUser` parameter is for analytics/tracking only
+ * DO NOT use it for tier selection or image quality degradation
+ * 
+ * REGRESSION PREVENTION:
+ * - Never implement subscription-based tier restrictions
+ * - All users must start with Tier 1 premium image generation
+ * - Fallbacks exist for reliability, not subscription enforcement
+ * 
+ * ============================================================================
+ */
+
 // Phase 2: Enhanced Backend Orchestrator for All Image Generation Tiers
 // Now handles: AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
 serve(async (req) => {
@@ -47,7 +78,11 @@ serve(async (req) => {
     const avatarIdentity = mapAvatarIdentity(userInfo);
     console.log(`👤 Avatar Identity Mapped: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
 
-    // TIER 1: AI-Enhanced High-Quality (Premium Tier)
+    // ============================================================================ 
+    // TIER 1: AI-Enhanced High-Quality - PROVIDED TO ALL USERS
+    // ============================================================================
+    // CRITICAL: This tier is available to BOTH guest and premium users
+    // The isGuestUser flag is for analytics/tracking ONLY, not tier restrictions
     if (!forceTier || forceTier === 1) {
       try {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
@@ -74,6 +109,9 @@ serve(async (req) => {
         
         if (tier1Result.success) {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
+          
+          // TIER POLICY COMPLIANCE LOG - Critical for regression prevention
+          console.log(`🔒 TIER POLICY COMPLIANCE: User type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" received TIER 1 image - Policy maintained`);
           
           // Store visual state for consistency
           if (sessionId && enhancementResult?.metadata?.characterSeed) {
@@ -229,6 +267,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
+    
+    // TIER POLICY COMPLIANCE LOG - Log any orchestration failures
+    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
     
     return createCorsErrorResponse(
       `Image generation orchestration failed: ${error.message}`,

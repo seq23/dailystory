@@ -225,8 +225,25 @@ export class SimpleImageService {
     return `Children's book illustration: ${characterDesc}. Scene: ${pageText}${visualElements}. Bright, colorful, safe for children, consistent character appearance`;
   }
 
-  // Main generation method - now a thin wrapper calling backend orchestrator
-  // Preserves existing interface for frontend callers
+  /**
+   * ============================================================================
+   * MAIN IMAGE GENERATION METHOD - ALL USERS GET TIER 1 IMAGES
+   * ============================================================================
+   * 
+   * CRITICAL BUSINESS RULE: This method provides Tier 1 (highest quality) images
+   * to ALL users regardless of subscription status.
+   * 
+   * The `isPremium` parameter is used for:
+   * - Analytics and usage tracking only
+   * - Passed as `isGuestUser: !isPremium` to backend for logging
+   * - DOES NOT affect image quality or tier selection
+   * 
+   * Backend orchestrator ensures 100% success rate through fallback tiers:
+   * Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
+   * 
+   * All users start with Tier 1 premium image generation.
+   * ============================================================================
+   */
   static async generateStoryImage(
     pageText: string,
     userInfo: UserInfo,
@@ -234,7 +251,7 @@ export class SimpleImageService {
     storyId?: string,
     pageNumber?: number,
     sessionId?: string,
-    isPremium?: boolean
+    isPremium?: boolean // For analytics only - does not affect image quality
   ): Promise<ImageResult> {
     const userKey = this.generateUserKey(userInfo?.name);
     
@@ -256,7 +273,7 @@ export class SimpleImageService {
           storyId,
           sessionId,
           pageNumber,
-          isGuestUser: !isPremium,
+          isGuestUser: !isPremium, // For analytics/tracking only - all users get Tier 1
           difficultyLevel: difficulty
         }
       });

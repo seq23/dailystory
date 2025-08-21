@@ -1,4 +1,8 @@
 // Phase 3: Shared batch processing service for library error recovery
+// 
+// TIER POLICY COMPLIANCE: All batch-generated images use Tier 1 quality
+// The isPremium parameter (passed as false) is for analytics only
+// ALL users receive the same high-quality image generation regardless of subscription
 import { SimpleImageService } from '@/services/SimpleImageService';
 import type { UserInfo } from '@/types';
 
@@ -33,15 +37,15 @@ export class BatchImageService {
     for (const batch of batches) {
       const promises = batch.map(async (pageIndex) => {
         try {
-          const result = await SimpleImageService.generateStoryImage(
-            pages[pageIndex],
-            userInfo,
-            'medium', // Default difficulty for library recovery
-            undefined, // No session ID needed
-            pageIndex + 1,
-            undefined, // No session ID for batch
-            false // Guest users for batch
-          );
+      const result = await SimpleImageService.generateStoryImage(
+        pages[pageIndex],
+        userInfo,
+        'medium', // Default difficulty for library recovery
+        undefined, // No session ID needed
+        pageIndex + 1,
+        undefined, // No session ID for batch
+        false // For analytics only - all users get Tier 1 quality regardless
+      );
           
           if (result.success && result.url) {
             results[pageIndex] = result.url;
