@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -119,8 +119,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
 
+  // Stable display buffer - only updates when story is confirmed stable
+  const [stableStory, setStableStory] = useState<string[]>([]);
+  
   // For free users, limit displayed pages to 6 maximum
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
+  const stableDisplayedStory = !isPremium ? stableStory.slice(0, 6) : stableStory;
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [justAdvanced, setJustAdvanced] = useState(false);
@@ -271,6 +275,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isStoryComplete, setIsStoryComplete] = useState(false);
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
+  
+  // Update stable story only when content stabilizes
+  useEffect(() => {
+    if (isStoryStable && story.length > 0) {
+      setStableStory(story);
+      console.log('📚 Stable display buffer updated - no more flicker');
+    }
+  }, [isStoryStable, story]);
+
+  // Initialize stable story on first load
+  useEffect(() => {
+    if (story.length > 0 && stableStory.length === 0) {
+      setStableStory(story);
+    }
+  }, [story, stableStory.length]);
   
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
@@ -471,12 +490,12 @@ useEffect(() => {
 
   // Start timer only when story content is ready and stable
   useEffect(() => {
-    // Only start timer when story has content, is stable, and timer isn't already running
-    if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && timerEnabled) {
-      console.log('⏰ Starting timer - story content is ready and stable');
+    // Start timer when stable display content is available
+    if (stableDisplayedStory.length > 0 && !isTimerRunning && !isTimerCanceled && timerEnabled) {
+      console.log('⏰ Starting timer - stable display content is ready');
       setIsTimerRunning(true);
     }
-  }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, timerEnabled]);
+  }, [stableDisplayedStory.length, isTimerRunning, isTimerCanceled, timerEnabled]);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -911,13 +930,13 @@ useEffect(() => {
 
 // Magic wand DRAMATIC animation effect for free users on page 6 - CONTINUOUS until clicked
 useEffect(() => {
-  if (!isPremium && currentPage === 5 && displayedStory.length > 5) { // Show on page 6 (index 5)
+  if (!isPremium && currentPage === 5 && stableDisplayedStory.length > 5) { // Show on page 6 (index 5)
     setIsMagicWandAnimating(true);
     // NO TIMEOUT - Keep animating until user clicks!
   } else {
     setIsMagicWandAnimating(false);
   }
-}, [currentPage, displayedStory.length, isPremium]);
+}, [currentPage, stableDisplayedStory.length, isPremium]);
 
 // Subtle pulse for wand every 3 pages
 useEffect(() => {
@@ -1307,23 +1326,7 @@ const initializeStory = async () => {
     if (remaining > 0) {
       setTimeout(() => {
         setIsLoading(false);
-        // Set story as stable 500ms after loading is complete
-        setTimeout(() => {
-          setIsStoryStable(true);
-          console.log('📚 Story is now stable - ready for image generation');
-          // Dispatch event for image generation to begin
-          window.dispatchEvent(new CustomEvent('story:stable', { 
-            detail: { 
-              storyText: story.join(' '), 
-              timestamp: Date.now() 
-            } 
-          }));
-        }, 500);
-      }, remaining);
-    } else {
-      setIsLoading(false);
-      // Set story as stable 500ms after loading is complete
-      setTimeout(() => {
+        // Set story as stable immediately after loading is complete
         setIsStoryStable(true);
         console.log('📚 Story is now stable - ready for image generation');
         // Dispatch event for image generation to begin
@@ -1333,7 +1336,19 @@ const initializeStory = async () => {
             timestamp: Date.now() 
           } 
         }));
-      }, 500);
+      }, remaining);
+    } else {
+      setIsLoading(false);
+      // Set story as stable immediately after loading is complete
+      setIsStoryStable(true);
+      console.log('📚 Story is now stable - ready for image generation');
+      // Dispatch event for image generation to begin
+      window.dispatchEvent(new CustomEvent('story:stable', { 
+        detail: { 
+          storyText: story.join(' '), 
+          timestamp: Date.now() 
+        } 
+      }));
     }
   }
 };
@@ -1585,7 +1600,7 @@ const initializeStory = async () => {
         setCurrentPage(prev => prev + 1);
       }
       setTimeout(() => setJustAdvanced(false), 600);
-    } else if (currentPage < displayedStory.length - 1) {
+    } else if (currentPage < stableDisplayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
     } else {
@@ -1820,7 +1835,7 @@ const handleDockCoach = () => {
       timeSpent,
       wordsRead: totalWordsRead,
       pagesRead: pagesCompleted.size,
-      storyCompleted: currentPage === displayedStory.length - 1,
+      storyCompleted: currentPage === stableDisplayedStory.length - 1,
       readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
     });
     
@@ -2362,7 +2377,7 @@ const handleRestartTimer = () => {
   const mobileTextConfig = getMobileTextConfig(currentDifficulty);
   const mobileContainerConfig = getMobileStoryContainer(currentDifficulty);
 
-  const progress = story.length > 0 ? ((currentPage + 1) / story.length) * 100 : 0;
+  const progress = stableDisplayedStory.length > 0 ? ((currentPage + 1) / stableDisplayedStory.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStoryText || "") <= 8;
   const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
@@ -2452,7 +2467,7 @@ const handleRestartTimer = () => {
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
           onHome={isTimerPaused ? undefined : onHome}
-          onNewStory={isTimerPaused ? undefined : (isPremium && story.length > 0 ? handleRewriteWithDialog : handleNewStoryClick)}
+          onNewStory={isTimerPaused ? undefined : (isPremium && stableDisplayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick)}
           onIncreaseDifficulty={isTimerPaused ? undefined : () => handleDifficultyChange('up')}
           onDecreaseDifficulty={isTimerPaused ? undefined : () => handleDifficultyChange('down')}
           showLevelControls={!isTimerPaused}
@@ -2598,7 +2613,7 @@ const handleRestartTimer = () => {
                         {/* Background fill to avoid cropping/margins */}
                         <img
                           src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
                           className="absolute inset-0 h-full w-full object-cover blur-md scale-110 brightness-[1.05]"
                           loading="lazy"
                           decoding="async"
@@ -2611,19 +2626,19 @@ const handleRestartTimer = () => {
                         {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
                         <ImageWithFallback
                           src={currentImage}
-                          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-                          className="relative z-10 h-full w-full object-contain"
-                          fallbackText={`📖 Page ${currentPage + 1}`}
-                          onLoadingChange={(isLoading) => {
-                            setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
-                          }}
-                          onFallbackUsed={(isUsingFallback) => {
-                            setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
-                            if (isUsingFallback) {
-                              console.warn('Story image failed to load, using enhanced fallback:', currentImage);
-                              fallbackToClassic('image-error');
-                            }
-                          }}
+          alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
+          className="relative z-10 h-full w-full object-contain"
+          fallbackText={`📖 Page ${currentPage + 1}`}
+          onLoadingChange={useCallback((isLoading: boolean) => {
+            setImageLoadingStates(prev => ({ ...prev, [currentPage]: isLoading }));
+          }, [currentPage])}
+          onFallbackUsed={useCallback((isUsingFallback: boolean) => {
+            setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
+            if (isUsingFallback) {
+              console.warn('Story image failed to load, using enhanced fallback:', currentImage);
+              fallbackToClassic('image-error');
+            }
+          }, [currentPage, currentImage, fallbackToClassic])}
                         />
                       </>
                     ) : (
@@ -2648,7 +2663,7 @@ const handleRestartTimer = () => {
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
-                    {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
+                    {isPremium && isLoadingNextPage && currentPage === stableDisplayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                           <div className="flex items-center gap-2">
@@ -2663,7 +2678,7 @@ const handleRestartTimer = () => {
                         className={cn("story-content storybook-frame w-full", justAdvanced && "animate-enter")}
                         data-difficulty={currentDifficulty}
                       >
-                        {story.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
+                        {stableDisplayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
                           processTextWithConsistentFlow({
                             text: currentStoryText,
                             className: "interactive-word",
@@ -2754,7 +2769,7 @@ const handleRestartTimer = () => {
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full min-h-0">
                     <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative">
-                      {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
+                      {isPremium && isLoadingNextPage && currentPage === stableDisplayedStory.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                             <div className="flex items-center gap-2">
@@ -2769,7 +2784,7 @@ const handleRestartTimer = () => {
                           className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter")}
                           data-difficulty={currentDifficulty}
                         >
-                          {story.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
+                          {stableDisplayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
                             processTextWithConsistentFlow({
                               text: currentStoryText,
                               className: "interactive-word",
@@ -2881,7 +2896,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
-                {!isPremium && currentPage === 5 && displayedStory.length > 5 && timeRemaining > 0 && (
+                {!isPremium && currentPage === 5 && stableDisplayedStory.length > 5 && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
