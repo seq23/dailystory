@@ -6,10 +6,14 @@ export type ChildProfile = Tables<'child_profiles'>;
 
 interface NewChildInput {
   display_name: string;
-  date_of_birth?: string | null;
+  birth_month?: number | null;
+  birth_year?: number | null;
   grade_level?: string | null;
-  story_language_preference?: string | null;
   avatar?: Record<string, any> | null;
+  favorite_color?: string | null;
+  favorite_animal?: string | null;
+  favorite_food?: string | null;
+  hobbies?: string | null;
 }
 
 export function useChildProfiles() {
@@ -117,10 +121,14 @@ export function useChildProfiles() {
       const payload: TablesInsert<'child_profiles'> = {
         parent_user_id: user.id,
         display_name: input.display_name,
-        date_of_birth: input.date_of_birth ?? null,
+        birth_month: input.birth_month ?? null,
+        birth_year: input.birth_year ?? null,
         grade_level: input.grade_level ?? null,
-        story_language_preference: input.story_language_preference ?? 'en',
         avatar: (input.avatar as any) ?? null,
+        favorite_color: input.favorite_color ?? null,
+        favorite_animal: input.favorite_animal ?? null,
+        favorite_food: input.favorite_food ?? null,
+        hobbies: input.hobbies ?? null,
       } as any;
       const { data, error } = await supabase
         .from('child_profiles')
@@ -141,10 +149,14 @@ export function useChildProfiles() {
     try {
       const patch: TablesUpdate<'child_profiles'> = {
         display_name: input.display_name,
-        date_of_birth: input.date_of_birth ?? undefined,
+        birth_month: input.birth_month ?? undefined,
+        birth_year: input.birth_year ?? undefined,
         grade_level: input.grade_level,
-        story_language_preference: input.story_language_preference,
         avatar: input.avatar as any,
+        favorite_color: input.favorite_color ?? undefined,
+        favorite_animal: input.favorite_animal ?? undefined,
+        favorite_food: input.favorite_food ?? undefined,
+        hobbies: input.hobbies ?? undefined,
       } as any;
       const { data, error } = await supabase
         .from('child_profiles')

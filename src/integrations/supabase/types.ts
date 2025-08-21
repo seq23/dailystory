@@ -17,35 +17,47 @@ export type Database = {
       child_profiles: {
         Row: {
           avatar: Json | null
+          birth_month: number | null
+          birth_year: number | null
           created_at: string
-          date_of_birth: string | null
           display_name: string
+          favorite_animal: string | null
+          favorite_color: string | null
+          favorite_food: string | null
           grade_level: string | null
+          hobbies: string | null
           id: string
           parent_user_id: string
-          story_language_preference: string | null
           updated_at: string
         }
         Insert: {
           avatar?: Json | null
+          birth_month?: number | null
+          birth_year?: number | null
           created_at?: string
-          date_of_birth?: string | null
           display_name: string
+          favorite_animal?: string | null
+          favorite_color?: string | null
+          favorite_food?: string | null
           grade_level?: string | null
+          hobbies?: string | null
           id?: string
           parent_user_id: string
-          story_language_preference?: string | null
           updated_at?: string
         }
         Update: {
           avatar?: Json | null
+          birth_month?: number | null
+          birth_year?: number | null
           created_at?: string
-          date_of_birth?: string | null
           display_name?: string
+          favorite_animal?: string | null
+          favorite_color?: string | null
+          favorite_food?: string | null
           grade_level?: string | null
+          hobbies?: string | null
           id?: string
           parent_user_id?: string
-          story_language_preference?: string | null
           updated_at?: string
         }
         Relationships: []

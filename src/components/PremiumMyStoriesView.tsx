@@ -121,7 +121,7 @@ useEffect(() => {
       ...userInfo,
       name: activeChild.display_name || userInfo.name,
       grade: normalizeGrade((activeChild.grade_level as any)) || userInfo.grade,
-      storyLanguagePreference: (activeChild.story_language_preference as any) || userInfo.storyLanguagePreference,
+      storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
       avatar: (activeChild.avatar as any) || userInfo.avatar,
       specialRequest,
     } : { ...userInfo, specialRequest });

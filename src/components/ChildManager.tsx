@@ -11,21 +11,68 @@ import { useTranslation } from "react-i18next";
 import type { AvatarType, SkinTone } from "@/types";
 
 const gradeOptions = ["Pre-K", "K", "1", "2", "3", "4", "5", "6", "7", "8"];
-const langOptions = ["en", "es", "fr", "zh"];
+const monthOptions = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" }
+];
 
 export function ChildManager() {
   const { children, addChild, updateChild, deleteChild } = useChildProfiles();
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const [form, setForm] = useState({ name: "", grade: "", lang: "en", avatar: { type: "boy" as AvatarType, skinTone: "medium" as SkinTone } });
+  const [form, setForm] = useState({ 
+    name: "", 
+    grade: "", 
+    birthMonth: null as number | null, 
+    birthYear: null as number | null,
+    avatar: { type: "boy" as AvatarType, skinTone: "medium" as SkinTone },
+    favoriteColor: "",
+    favoriteAnimal: "",
+    favoriteFood: "",
+    hobbies: ""
+  });
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState<{ name: string; grade: string; lang: string; avatar: { type: AvatarType; skinTone: SkinTone } }>({ 
-    name: "", grade: "", lang: "en", avatar: { type: "boy", skinTone: "medium" } 
+  const [editDraft, setEditDraft] = useState<{ 
+    name: string; 
+    grade: string; 
+    birthMonth: number | null;
+    birthYear: number | null;
+    avatar: { type: AvatarType; skinTone: SkinTone };
+    favoriteColor: string;
+    favoriteAnimal: string;
+    favoriteFood: string;
+    hobbies: string;
+  }>({ 
+    name: "", 
+    grade: "", 
+    birthMonth: null,
+    birthYear: null,
+    avatar: { type: "boy", skinTone: "medium" },
+    favoriteColor: "",
+    favoriteAnimal: "",
+    favoriteFood: "",
+    hobbies: ""
   });
 
   const isValid = useMemo(() => form.name.trim().length > 0, [form.name]);
+
+  const calculateAge = (birthYear: number | null): string => {
+    if (!birthYear) return "—";
+    const currentYear = new Date().getFullYear();
+    return `${currentYear - birthYear} years old`;
+  };
 
   const handleAdd = async () => {
     if (!isValid) return;
@@ -34,10 +81,25 @@ export function ChildManager() {
       await addChild({ 
         display_name: form.name.trim(), 
         grade_level: form.grade || null, 
-        story_language_preference: form.lang,
-        avatar: form.avatar
+        birth_month: form.birthMonth,
+        birth_year: form.birthYear,
+        avatar: form.avatar,
+        favorite_color: form.favoriteColor || null,
+        favorite_animal: form.favoriteAnimal || null,
+        favorite_food: form.favoriteFood || null,
+        hobbies: form.hobbies || null,
       });
-      setForm({ name: "", grade: "", lang: "en", avatar: { type: "boy", skinTone: "medium" } });
+      setForm({ 
+        name: "", 
+        grade: "", 
+        birthMonth: null,
+        birthYear: null,
+        avatar: { type: "boy", skinTone: "medium" },
+        favoriteColor: "",
+        favoriteAnimal: "",
+        favoriteFood: "",
+        hobbies: ""
+      });
       toast({ title: t('parent.manager.toasts.added') });
     } catch (e: any) {
       toast({ title: e?.message || t('parent.manager.toasts.failedAdd'), variant: "destructive" });
@@ -54,8 +116,13 @@ export function ChildManager() {
     setEditDraft({ 
       name: c.display_name, 
       grade: c.grade_level || "", 
-      lang: c.story_language_preference || "en",
-      avatar: currentAvatar as { type: AvatarType; skinTone: SkinTone }
+      birthMonth: (c as any).birth_month || null,
+      birthYear: (c as any).birth_year || null,
+      avatar: currentAvatar as { type: AvatarType; skinTone: SkinTone },
+      favoriteColor: (c as any).favorite_color || "",
+      favoriteAnimal: (c as any).favorite_animal || "",
+      favoriteFood: (c as any).favorite_food || "",
+      hobbies: (c as any).hobbies || "",
     });
   };
 
@@ -66,8 +133,13 @@ export function ChildManager() {
       await updateChild(editingId, { 
         display_name: editDraft.name.trim(), 
         grade_level: editDraft.grade || null, 
-        story_language_preference: editDraft.lang,
-        avatar: editDraft.avatar
+        birth_month: editDraft.birthMonth,
+        birth_year: editDraft.birthYear,
+        avatar: editDraft.avatar,
+        favorite_color: editDraft.favoriteColor || null,
+        favorite_animal: editDraft.favoriteAnimal || null,
+        favorite_food: editDraft.favoriteFood || null,
+        hobbies: editDraft.hobbies || null,
       });
       setEditingId(null);
       toast({ title: t('parent.manager.toasts.saved') });
@@ -98,7 +170,7 @@ export function ChildManager() {
           <CardDescription>{t('parent.manager.addDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-3">
+          <div className="grid md:grid-cols-4 gap-3">
             <div>
               <Label>{t('parent.manager.labels.name')}</Label>
               <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g., Sam" />
@@ -117,17 +189,50 @@ export function ChildManager() {
               </Select>
             </div>
             <div>
-              <Label>{t('parent.manager.labels.language')}</Label>
-              <Select value={form.lang} onValueChange={(v) => setForm((f) => ({ ...f, lang: v }))}>
+              <Label>Birth Month</Label>
+              <Select value={form.birthMonth?.toString() || ""} onValueChange={(v) => setForm((f) => ({ ...f, birthMonth: v ? parseInt(v) : null }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t('parent.manager.labels.language')} />
+                  <SelectValue placeholder="Select month" />
                 </SelectTrigger>
                 <SelectContent>
-                  {langOptions.map((l) => (
-                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                  {monthOptions.map((m) => (
+                    <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Birth Year</Label>
+              <Input 
+                type="number" 
+                value={form.birthYear || ""} 
+                onChange={(e) => setForm((f) => ({ ...f, birthYear: e.target.value ? parseInt(e.target.value) : null }))} 
+                placeholder="e.g., 2015"
+                min="2000"
+                max={new Date().getFullYear()}
+              />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <Label>Favorite Color (Optional)</Label>
+              <Input value={form.favoriteColor} onChange={(e) => setForm((f) => ({ ...f, favoriteColor: e.target.value }))} placeholder="e.g., Blue" />
+            </div>
+            <div>
+              <Label>Favorite Animal (Optional)</Label>
+              <Input value={form.favoriteAnimal} onChange={(e) => setForm((f) => ({ ...f, favoriteAnimal: e.target.value }))} placeholder="e.g., Lion" />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <Label>Favorite Food (Optional)</Label>
+              <Input value={form.favoriteFood} onChange={(e) => setForm((f) => ({ ...f, favoriteFood: e.target.value }))} placeholder="e.g., Pizza" />
+            </div>
+            <div>
+              <Label>Hobbies (Optional)</Label>
+              <Input value={form.hobbies} onChange={(e) => setForm((f) => ({ ...f, hobbies: e.target.value }))} placeholder="e.g., Drawing, Soccer" />
             </div>
           </div>
           
@@ -155,43 +260,76 @@ export function ChildManager() {
               <Card key={c.id}>
                 <CardContent className="p-4">
                   {editingId === c.id ? (
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-3 gap-3">
-                        <div>
-                          <Label>Name</Label>
-                          <Input
-                            value={editDraft.name}
-                            onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
-                            placeholder="Name"
-                          />
-                        </div>
-                        <div>
-                          <Label>Grade</Label>
-                          <Select value={editDraft.grade} onValueChange={(v) => setEditDraft((d) => ({ ...d, grade: v }))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('parent.manager.labels.grade')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {gradeOptions.map((g) => (
-                                <SelectItem key={g} value={g}>{g}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Language</Label>
-                          <Select value={editDraft.lang} onValueChange={(v) => setEditDraft((d) => ({ ...d, lang: v }))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('parent.manager.labels.language')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {langOptions.map((l) => (
-                                <SelectItem key={l} value={l}>{l}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
+                     <div className="space-y-4">
+                       <div className="grid md:grid-cols-4 gap-3">
+                         <div>
+                           <Label>Name</Label>
+                           <Input
+                             value={editDraft.name}
+                             onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
+                             placeholder="Name"
+                           />
+                         </div>
+                         <div>
+                           <Label>Grade</Label>
+                           <Select value={editDraft.grade} onValueChange={(v) => setEditDraft((d) => ({ ...d, grade: v }))}>
+                             <SelectTrigger>
+                               <SelectValue placeholder={t('parent.manager.labels.grade')} />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {gradeOptions.map((g) => (
+                                 <SelectItem key={g} value={g}>{g}</SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div>
+                           <Label>Birth Month</Label>
+                           <Select value={editDraft.birthMonth?.toString() || ""} onValueChange={(v) => setEditDraft((d) => ({ ...d, birthMonth: v ? parseInt(v) : null }))}>
+                             <SelectTrigger>
+                               <SelectValue placeholder="Select month" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {monthOptions.map((m) => (
+                                 <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div>
+                           <Label>Birth Year</Label>
+                           <Input 
+                             type="number" 
+                             value={editDraft.birthYear || ""} 
+                             onChange={(e) => setEditDraft((d) => ({ ...d, birthYear: e.target.value ? parseInt(e.target.value) : null }))} 
+                             placeholder="e.g., 2015"
+                             min="2000"
+                             max={new Date().getFullYear()}
+                           />
+                         </div>
+                       </div>
+                       
+                       <div className="grid md:grid-cols-2 gap-3">
+                         <div>
+                           <Label>Favorite Color</Label>
+                           <Input value={editDraft.favoriteColor} onChange={(e) => setEditDraft((d) => ({ ...d, favoriteColor: e.target.value }))} placeholder="e.g., Blue" />
+                         </div>
+                         <div>
+                           <Label>Favorite Animal</Label>
+                           <Input value={editDraft.favoriteAnimal} onChange={(e) => setEditDraft((d) => ({ ...d, favoriteAnimal: e.target.value }))} placeholder="e.g., Lion" />
+                         </div>
+                       </div>
+                       
+                       <div className="grid md:grid-cols-2 gap-3">
+                         <div>
+                           <Label>Favorite Food</Label>
+                           <Input value={editDraft.favoriteFood} onChange={(e) => setEditDraft((d) => ({ ...d, favoriteFood: e.target.value }))} placeholder="e.g., Pizza" />
+                         </div>
+                         <div>
+                           <Label>Hobbies</Label>
+                           <Input value={editDraft.hobbies} onChange={(e) => setEditDraft((d) => ({ ...d, hobbies: e.target.value }))} placeholder="e.g., Drawing, Soccer" />
+                         </div>
+                       </div>
                       
                       <AvatarPicker
                         value={editDraft.avatar}
@@ -203,28 +341,35 @@ export function ChildManager() {
                         <Button disabled={saving} onClick={handleSaveEdit}>{t('parent.manager.actions.save')}</Button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="grid md:grid-cols-4 items-center gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border">
-                          {c.avatar && typeof c.avatar === 'object' && 'type' in c.avatar && 'skinTone' in c.avatar && (
-                            <img
-                              src={`/avatar-${c.avatar.type}-${c.avatar.skinTone}.jpg`}
-                              alt={`${c.display_name}'s avatar`}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                        </div>
-                        <div className="font-medium">{c.display_name}</div>
-                      </div>
-                      <div className="text-sm text-muted-foreground">{c.grade_level || "—"}</div>
-                      <div className="text-sm text-muted-foreground">{c.story_language_preference || "en"}</div>
-                      <div className="flex gap-2 justify-end">
-                        <Button variant="outline" onClick={() => startEdit(c.id)}>{t('parent.manager.actions.edit')}</Button>
-                        <Button variant="destructive" onClick={() => handleDelete(c.id)}>{t('parent.manager.actions.delete')}</Button>
-                      </div>
-                    </div>
-                  )}
+                   ) : (
+                     <div className="grid md:grid-cols-4 items-center gap-3">
+                       <div className="flex items-center gap-3">
+                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border">
+                           {c.avatar && typeof c.avatar === 'object' && 'type' in c.avatar && 'skinTone' in c.avatar && (
+                             <img
+                               src={`/avatar-${c.avatar.type}-${c.avatar.skinTone}.jpg`}
+                               alt={`${c.display_name}'s avatar`}
+                               className="w-full h-full object-cover"
+                             />
+                           )}
+                         </div>
+                         <div>
+                           <div className="font-medium">{c.display_name}</div>
+                           <div className="text-xs text-muted-foreground">{calculateAge((c as any).birth_year)}</div>
+                         </div>
+                       </div>
+                       <div className="text-sm text-muted-foreground">{c.grade_level || "—"}</div>
+                       <div className="text-sm text-muted-foreground">
+                         {(c as any).favorite_color || (c as any).favorite_animal ? 
+                           `${(c as any).favorite_color || ''}${(c as any).favorite_color && (c as any).favorite_animal ? ', ' : ''}${(c as any).favorite_animal || ''}` : 
+                           "—"}
+                       </div>
+                       <div className="flex gap-2 justify-end">
+                         <Button variant="outline" onClick={() => startEdit(c.id)}>{t('parent.manager.actions.edit')}</Button>
+                         <Button variant="destructive" onClick={() => handleDelete(c.id)}>{t('parent.manager.actions.delete')}</Button>
+                       </div>
+                     </div>
+                   )}
                 </CardContent>
               </Card>
             ))

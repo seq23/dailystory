@@ -24,6 +24,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
+import { useChildProfiles } from "@/hooks/useChildProfiles";
 interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;
@@ -45,6 +46,7 @@ export const PremiumHeader = ({
 }: PremiumHeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
+  const { activeChild } = useChildProfiles();
 
   const { open, openMobile, isMobile } = useSidebar();
   const isSidebarOpen = isMobile ? openMobile : open;
@@ -68,17 +70,31 @@ export const PremiumHeader = ({
   }, []);
 
   const getAvatarUrl = () => {
-    if (userInfo.avatar?.type && userInfo.avatar?.skinTone) {
-      // Use public folder path for proper access
-      const url = `/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
-      console.log('🎭 Avatar URL generated:', url, 'for user:', userInfo.name, 'avatar:', userInfo.avatar);
+    // Use active child's avatar if one is selected
+    const avatarData = activeChild?.avatar || userInfo.avatar;
+    // Type guard for avatar data
+    if (typeof avatarData === 'object' && avatarData && 'type' in avatarData && 'skinTone' in avatarData) {
+      const url = `/avatar-${avatarData.type}-${avatarData.skinTone}.jpg`;
+      console.log('🎭 Avatar URL generated:', url, 'for:', activeChild ? `child ${activeChild.display_name}` : `user ${userInfo.name}`, 'avatar:', avatarData);
       return url;
     }
-    console.log('🎭 No avatar data found for user:', userInfo.name, 'avatar:', userInfo.avatar);
+    console.log('🎭 No avatar data found for:', activeChild ? `child ${activeChild.display_name}` : `user ${userInfo.name}`, 'avatar:', avatarData);
     return undefined;
   };
 
-  const hasSelectedAvatar = userInfo.avatar?.type && userInfo.avatar?.skinTone;
+  const getDisplayName = () => {
+    return activeChild ? activeChild.display_name : userInfo.name;
+  };
+
+  const getInitial = () => {
+    const name = getDisplayName();
+    return name.charAt(0).toUpperCase();
+  };
+
+  const hasSelectedAvatar = () => {
+    const avatarData = activeChild?.avatar || userInfo.avatar;
+    return typeof avatarData === 'object' && avatarData && 'type' in avatarData && 'skinTone' in avatarData;
+  };
 
   return (
     <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
@@ -147,7 +163,7 @@ export const PremiumHeader = ({
                     <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
                       <AvatarImage 
                         src={getAvatarUrl()} 
-                        alt={userInfo.name}
+                        alt={getDisplayName()}
                         onError={(e) => {
                           console.log('🎭 Avatar image failed to load:', getAvatarUrl());
                           console.log('🎭 Image error event:', e);
@@ -157,7 +173,7 @@ export const PremiumHeader = ({
                         }}
                       />
                       <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-                        {hasSelectedAvatar ? "" : userInfo.name.charAt(0).toUpperCase()}
+                        {hasSelectedAvatar() ? "" : getInitial()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-left hidden sm:block">
