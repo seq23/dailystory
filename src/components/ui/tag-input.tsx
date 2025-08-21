@@ -10,9 +10,11 @@ interface TagInputProps {
   onBlur?: (value: string) => void;
   disabled?: boolean;
   supportStructured?: boolean; // New prop for structured format support
+  validateInput?: (text: string) => { isValid: boolean; issues?: string[] };
+  validationError?: string[];
 }
 
-export const TagInput = ({ value, onChange, placeholder, className, onBlur, disabled = false, supportStructured = false }: TagInputProps) => {
+export const TagInput = ({ value, onChange, placeholder, className, onBlur, disabled = false, supportStructured = false, validateInput, validationError }: TagInputProps) => {
   const [currentInput, setCurrentInput] = useState("");
   
   // Parse existing items - support both structured and simple formats
@@ -26,6 +28,16 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
   const addItem = (item: string) => {
     if (disabled) return;
     const trimmedItem = item.trim();
+    
+    // Validate input if validation function is provided
+    if (validateInput && trimmedItem) {
+      const validation = validateInput(trimmedItem);
+      if (!validation.isValid) {
+        // Don't add invalid items
+        return;
+      }
+    }
+    
     if (trimmedItem && !items.includes(trimmedItem)) {
       const newItems = [...items, trimmedItem];
       const newValue = newItems.join(', ');
@@ -46,10 +58,20 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (disabled) return;
     if (e.key === 'Enter') {
+      const trimmed = currentInput.trim();
+      
+      // Check validation before allowing Enter to create tags
+      if (validateInput && trimmed) {
+        const validation = validateInput(trimmed);
+        if (!validation.isValid) {
+          e.preventDefault();
+          return; // Block Enter if validation fails
+        }
+      }
+      
       // For structured format, allow Enter without creating tags unless it's a complete line
       if (supportStructured) {
         // Create tag if structured format is detected or if it's a simple input
-        const trimmed = currentInput.trim();
         if (trimmed && (!trimmed.includes(':') || /^[A-Za-z\s]+:\s*.+$/.test(trimmed))) {
           e.preventDefault();
           addItem(currentInput);
@@ -72,6 +94,7 @@ export const TagInput = ({ value, onChange, placeholder, className, onBlur, disa
       "min-h-[60px] sm:min-h-[80px] p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 border-primary/20 focus-within:border-primary/50 bg-background touch-target",
       supportStructured && "min-h-[80px] sm:min-h-[100px]", // Slightly taller for structured input
       disabled && "opacity-60 pointer-events-none",
+      validationError && validationError.length > 0 && "border-destructive/50 focus-within:border-destructive",
       className
     )}>
       {/* Display existing items as tags */}

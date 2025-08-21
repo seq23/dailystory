@@ -516,6 +516,8 @@ Characters: brave princess AND talking dragon → Enter
 Setting: magical forest AND cozy cottage → Enter`}
                   className="w-full"
                   supportStructured={true}
+                  validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'theme')}
+                  validationError={validationErrors.specialRequest}
                 />
                 
                 {/* Loading indicator */}
