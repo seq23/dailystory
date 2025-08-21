@@ -370,7 +370,39 @@ export class SimpleImageService {
     }
   }
 
-  // Provider methods for backward compatibility
+  // TIER 4: SVG Placeholder (guaranteed success)
+  private static generateSVGPlaceholder(cleanScene: string, userInfo?: UserInfo): ImageResult {
+    const characterName = userInfo?.name || 'Character';
+    const shortScene = cleanScene.substring(0, 50);
+    
+    const svgContent = `
+      <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="400" fill="#f0f9ff"/>
+        <circle cx="200" cy="150" r="60" fill="#ddd6fe"/>
+        <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="16" fill="#1f2937">
+          ${characterName}
+        </text>
+        <text x="200" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">
+          ${shortScene}...
+        </text>
+        <text x="200" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">
+          Story illustration loading...
+        </text>
+      </svg>
+    `;
+    
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    
+    return {
+      url,
+      success: true,
+      provider: 'svg',
+      model: 'placeholder',
+      cost: 0,
+      seed: undefined
+    };
+  }
   static getTierUsed(result: ImageResult): string {
     if (result.metadata?.tier) {
       const tierMap = {
@@ -401,6 +433,4 @@ export class SimpleImageService {
   static getAvailableProviders(): string[] {
     return ['runware', 'openai'];
   }
-
-}
 }
