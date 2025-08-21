@@ -344,5 +344,6 @@ class UnifiedCharacterConsistency {
   }
 }
 
-// Export singleton instance
+// Export both class and singleton instance
+export { UnifiedCharacterConsistency };
 export const characterConsistency = new UnifiedCharacterConsistency();

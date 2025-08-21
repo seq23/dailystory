@@ -116,7 +116,7 @@ export class MultiStageEnhancementPipeline {
       
       // Import fresh frontend intelligence and character consistency
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
-      const { UnifiedCharacterConsistency } = await import('./UnifiedCharacterConsistency.js');
+      const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
       
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
@@ -175,7 +175,7 @@ export class MultiStageEnhancementPipeline {
       
       // 3. Generate story-based character consistency using UnifiedCharacterConsistency with pre-processed avatar identity
       console.log('🎭 Generating story-based character consistency with pre-processed avatar identity');
-      const characterConsistencyData = UnifiedCharacterConsistency.getCharacterSeed(
+      const characterConsistencyData = characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo,
