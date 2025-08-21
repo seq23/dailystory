@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { ErrorHandler } from '@/utils/errorHandling';
+import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor';
 
 // Simple service configuration
 interface ImageGenerationConfig {
@@ -178,11 +179,10 @@ export class SimpleImageService {
     }
   }
 
-  // Generate cultural character description using frontend service
+  // Generate cultural character description using unified service
   private static async generateCulturalCharacterDescription(userInfo: UserInfo): Promise<string> {
     try {
-      const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
-      return StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
+      return UnifiedCharacterDescriptor.getCharacterDescriptionSafe(userInfo);
     } catch (error) {
       console.warn('Failed to generate cultural description, using basic fallback:', error);
       return `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
@@ -271,14 +271,13 @@ export class SimpleImageService {
     
     if (userInfo && userInfo.avatar) {
       try {
-        const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
-        characterDesc = StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
+        characterDesc = UnifiedCharacterDescriptor.getCharacterDescriptionSafe(userInfo);
         
         if (userInfo.name && pageText.toLowerCase().includes(userInfo.name.toLowerCase())) {
           characterDesc = `${userInfo.name} (${characterDesc})`;
         }
       } catch (error) {
-        console.warn('StructuredPromptEngine not available, using basic description:', error);
+        console.warn('UnifiedCharacterDescriptor not available, using basic description:', error);
         characterDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
       }
     }
@@ -298,8 +297,8 @@ export class SimpleImageService {
     }
   }
 
-  // Main generation method with AI-enhanced tiered approach
-  // AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
+  // Main generation method - now a thin wrapper calling backend orchestrator
+  // Preserves existing interface for frontend callers
   static async generateStoryImage(
     pageText: string,
     userInfo: UserInfo,
@@ -316,447 +315,92 @@ export class SimpleImageService {
       console.warn('Throttling error:', error);
     }
 
-    const config: ImageGenerationConfig = {
-      ...this.DEFAULT_CONFIG,
-      difficultyLevel: difficulty,
-      sessionId
-    };
-
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
     try {
-      // TIER 1: AI-Enhanced High-Quality Runware
-      console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Runware');
+      console.log('🎯 Calling backend orchestrator for image generation');
       
-      // Step 1: Get AI enhancement data with retry logic
-      let enhancedStoryData = null;
-      const maxRetries = 2;
-      let lastError = null;
-      
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-story-enhancer', {
-            body: {
-              storyText: cleanScene,
-              userInfo,
-              sessionId,
-              pageNumber,
-              totalPages
-            }
-          });
-          
-          if (aiData && !aiError) {
-            enhancedStoryData = aiData.enhancedStoryData;
-            console.log('🧠 AI enhancement successful:', aiData.extractedElements);
-            break; // Success, exit retry loop
-          } else if (aiError) {
-            lastError = aiError;
-            console.warn(`⚠️ AI enhancement attempt ${attempt + 1} failed:`, aiError);
-          }
-        } catch (aiError) {
-          lastError = aiError;
-          console.warn(`⚠️ AI enhancement attempt ${attempt + 1} error:`, aiError);
-          
-          // If it's a 503 error and we have retries left, wait and retry
-          if (aiError.message?.includes('503') && attempt < maxRetries) {
-            const backoffTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s
-            console.log(`🔄 503 error detected, retrying in ${backoffTime}ms...`);
-            await new Promise(resolve => setTimeout(resolve, backoffTime));
-            continue;
-          }
-          break; // Non-503 error or out of retries
-        }
-      }
-      
-      // If AI enhancement failed completely, jump directly to Tier 2
-      if (!enhancedStoryData) {
-        console.log('⚠️ AI enhancement failed after retries, jumping to Tier 2 Template-based for better character detection');
-        throw new Error('AI enhancement failed - using Tier 2 fallback');
-      }
-      
-      // Step 2: Generate with Runware using AI-enhanced data
-      const tier1Result = await this.generateWithRunware(cleanScene, config, userInfo, sessionId, pageNumber, totalPages, enhancedStoryData);
-      
-      if (tier1Result.success) {
-        console.log('✅ Tier 1 AI-Enhanced High-Quality succeeded');
-        await this.recordUsage(tier1Result, userInfo?.name);
-        return tier1Result;
-      }
-      
-      console.log('⚠️ Tier 1 generation failed, falling back to Tier 2 Template-based');
-    } catch (error) {
-      console.log('⚠️ Tier 1 error, falling back to Tier 2 Template-based:', error.message);
-    }
-
-    try {
-      // TIER 2: Template-based (Dynamic but no AI)
-      console.log('🎨 Starting Tier 2: Template-based Runware generation');
-      const tier2Result = await this.generateWithRunwareSimple(cleanScene, config, userInfo, pageNumber, totalPages);
-      
-      if (tier2Result.success) {
-        console.log('✅ Tier 2 Template-based succeeded');
-        await this.recordUsage(tier2Result, userInfo?.name);
-        return tier2Result;
-      }
-      
-      console.log('⚠️ Tier 2 failed, trying Tier 2.5 Nuclear Hardcoded');
-    } catch (error) {
-      console.log('⚠️ Tier 2 error, trying Tier 2.5 Nuclear Hardcoded:', error);
-    }
-
-    try {
-      // TIER 2.5: Simple Runware fallback with hardcoded extraction
-      console.log('🔧 Starting Tier 2.5: Simple Runware fallback');
-      const tier25Result = await this.generateWithRunwareSimpleFallback(cleanScene, config, userInfo, pageNumber);
-      
-      if (tier25Result.success) {
-        console.log('✅ Tier 2.5 succeeded with hardcoded extraction');
-        await this.recordUsage(tier25Result, userInfo?.name);
-        return tier25Result;
-      }
-      
-      console.log('⚠️ Tier 2.5 failed, falling back to Tier 3');
-    } catch (error) {
-      console.log('⚠️ Tier 2.5 error, falling back to Tier 3:', error);
-    }
-
-    try {
-      // TIER 3: OpenAI DALL-E fallback
-      console.log('🎯 Starting Tier 3: OpenAI DALL-E generation');
-      const tier3Result = await this.generateWithOpenAI(cleanScene, userInfo, difficulty, sessionId, pageNumber, totalPages);
-      
-      if (tier3Result.success) {
-        console.log('✅ Tier 3 succeeded');
-        await this.recordUsage(tier3Result, userInfo?.name);
-        return tier3Result;
-      }
-      
-      console.log('⚠️ Tier 3 failed, falling back to SVG placeholder');
-    } catch (error) {
-      console.log('⚠️ Tier 3 error, falling back to SVG placeholder:', error);
-    }
-
-    // TIER 4: SVG Placeholder (guaranteed success)
-    console.log('📝 Generating SVG placeholder as final fallback');
-    return this.generateSVGPlaceholder(cleanScene, userInfo);
-  }
-
-  // Provider methods
-  static getTierUsed(result: ImageResult): string {
-    if (result.provider === 'runware-premium') return 'High-Quality AI-Enhanced (Tier 1)';
-    if (result.provider === 'runware-template') return 'Template-Based (Tier 2)';
-    if (result.provider === 'runware-simple-fallback') return 'Nuclear Hardcoded (Tier 2.5)';
-    if (result.provider === 'openai') return 'OpenAI DALL-E (Tier 3)';
-    if (result.provider === 'svg') return 'SVG Placeholder (Tier 4)';
-    return 'Unknown';
-  }
-
-  // TIER 1: AI-Enhanced High-Quality Runware (uses EnhancedPromptBuilder + AI analysis)
-  private static async generateWithRunware(
-    cleanScene: string, 
-    config: ImageGenerationConfig,
-    userInfo?: UserInfo,
-    sessionId?: string,
-    pageNumber?: number,
-    totalPages?: number,
-    enhancedStoryData?: any
-  ): Promise<ImageResult> {
-    try {
-      console.log('🎨 Tier 1: High-Quality AI-Enhanced Runware generation');
-      
-      // Floating head risk assessment for logging
-      const floatingHeadRiskFactors = {
-        shortPrompt: cleanScene.length < 50,
-        portraitKeywords: /portrait|headshot|face|head/i.test(cleanScene),
-        missingBodyTerms: !(/full body|whole body|standing|sitting|walking/i.test(cleanScene)),
-        highAspectRatio: config.dimensions.height > config.dimensions.width
-      };
-      
-      console.log('🎯 Floating Head Risk Assessment:', {
-        sessionId,
-        pageNumber,
-        riskFactors: floatingHeadRiskFactors,
-        totalRiskScore: Object.values(floatingHeadRiskFactors).filter(Boolean).length,
-        timestamp: new Date().toISOString()
-      });
-
-      // Get stored character seed for consistency
-      let characterSeed: number | undefined;
-      if (userInfo && sessionId) {
-        characterSeed = await this.getStoredCharacterSeed(userInfo, sessionId);
-        if (characterSeed) {
-          console.log(`🎯 Using stored character seed ${characterSeed} for consistency`);
-        }
-      }
-
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
           pageText: cleanScene,
           userInfo,
           sessionId,
           pageNumber,
-          totalPages: totalPages || 10,
-          seed: characterSeed, // Pass stored seed for consistency
-          enhancedStoryData // Pass AI-enhanced data if available
+          totalPages,
+          difficultyLevel: difficulty
         }
       });
 
       if (error) {
-        throw new Error(`Tier 1 High-Quality API error: ${error.message}`);
+        throw new Error(`Backend orchestrator error: ${error.message}`);
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Tier 1 High-Quality generation failed');
+        throw new Error(data?.error || 'Backend image generation failed');
       }
 
-      // Store successful seed for future consistency
-      if (data.seed && userInfo && sessionId && pageNumber) {
-        await this.storeCharacterSeed(userInfo, sessionId, data.seed, pageNumber);
-      }
+      console.log(`✅ Backend orchestrator succeeded (Tier ${data.tier}): ${data.enhancementLevel}`);
 
-      // Enhanced logging for floating head detection
-      console.log('🎯 Image Generation Result (Tier 1):', {
-        tier: 'High-Quality AI-Enhanced',
-        success: true,
-        promptLength: cleanScene.length,
-        containsBodyTerms: /full body|whole body|standing|sitting|walking/i.test(cleanScene),
-        sessionId,
-        pageNumber,
-        seed: data.seed,
-        timestamp: new Date().toISOString()
-      });
-
-      return {
+      const result: ImageResult = {
         url: data.imageURL,
         success: true,
-        provider: 'runware-premium',
-        model: 'runware:100@1',
-        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
-        seed: data.seed,
-        metadata: data.metadata
-      };
-
-    } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'tier1-premium-generation');
-      console.error('🎨 Tier 1 Premium generation failed:', appError);
-
-      return {
-        url: '',
-        success: false,
-        error: ErrorHandler.getUserMessage(appError)
-      };
-    }
-  }
-
-  // TIER 2: Template-based Runware (Dynamic but no AI)
-  private static async generateWithRunwareSimple(
-    cleanScene: string, 
-    config: ImageGenerationConfig,
-    userInfo?: UserInfo,
-    pageNumber?: number,
-    totalPages?: number
-  ): Promise<ImageResult> {
-    try {
-      console.log('🎨 Tier 2: Template-based Runware generation (no AI features)');
-
-      const { data, error } = await supabase.functions.invoke('runware-template-generation', {
-        body: {
-          pageText: cleanScene,
-          userInfo,
-          pageNumber,
-          totalPages,
-          sessionId: config.sessionId,
-          difficultyLevel: config.difficultyLevel || 'medium'
-        }
-      });
-
-      if (error) {
-        throw new Error(`Tier 2 Template API error: ${error.message}`);
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.error || 'Tier 2 Template generation failed');
-      }
-
-      return {
-        url: data.imageUrl || data.imageURL,
-        success: true,
-        provider: 'runware-template',
-        model: 'runware:100@1',
+        provider: data.provider || 'backend-orchestrator',
+        model: data.metadata?.model || 'orchestrated',
         cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
         seed: data.seed,
         metadata: {
-          tier: 2,
-          enhancementLevel: 'template-based',
+          tier: data.tier,
+          enhancementLevel: data.enhancementLevel,
           qualityScore: data.qualityScore,
-          processingTime: data.processingTime
+          orchestrated: true,
+          ...data.metadata
         }
       };
 
-    } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'tier2-template-generation');
-      console.error('🎨 Tier 2 Template generation failed:', appError);
-
-      return {
-        url: '',
-        success: false,
-        error: ErrorHandler.getUserMessage(appError)
-      };
-    }
-  }
-
-  // TIER 3: OpenAI DALL-E
-  private static async generateWithOpenAI(
-    cleanScene: string, 
-    userInfo?: UserInfo,
-    difficulty?: string,
-    sessionId?: string,
-    pageNumber?: number,
-    totalPages?: number
-  ): Promise<ImageResult> {
-    try {
-      console.log('🎯 OpenAI DALL-E generation');
-
-      const enhancedPrompt = await this.generateLegacyPrompt(cleanScene, userInfo);
+      // Record usage for tracking
+      await this.recordUsage(result, userInfo?.name);
       
-      // Add comprehensive negative prompt for OpenAI
-      const negativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos";
-
-      console.log('🎯 [DEBUG] Calling OpenAI with:', {
-        positivePrompt: enhancedPrompt?.substring(0, 50),
-        negativePrompt: negativePrompt.substring(0, 50) + '...',
-        size: '1024x1024',
-        model: 'gpt-image-1',
-        quality: 'standard'
-      });
-
-      const { data, error } = await supabase.functions.invoke('openai-image', {
-        body: {
-          positivePrompt: enhancedPrompt,
-          negativePrompt: negativePrompt,
-          size: '1024x1024',
-          model: 'gpt-image-1',
-          quality: 'standard'
-        }
-      });
-
-      if (error) {
-        throw new Error(`OpenAI API error: ${error.message}`);
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.error || 'OpenAI generation failed');
-      }
-
-      return {
-        url: data.imageURL,
-        success: true,
-        provider: 'openai',
-        model: 'gpt-image-1',
-        cost: 0.02, // OpenAI cost
-        seed: undefined
-      };
+      return result;
 
     } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'openai-generation');
-      console.error('🎯 OpenAI generation failed:', appError);
-
-      return {
-        url: '',
-        success: false,
-        error: ErrorHandler.getUserMessage(appError)
-      };
+      console.error('❌ Backend orchestration failed, falling back to local SVG placeholder:', error);
+      
+      // Final fallback - generate SVG placeholder locally
+      return this.generateSVGPlaceholder(cleanScene, userInfo);
     }
   }
 
-  // TIER 4: SVG Placeholder (guaranteed success)
-  private static generateSVGPlaceholder(cleanScene: string, userInfo?: UserInfo): ImageResult {
-    const characterName = userInfo?.name || 'Character';
-    const shortScene = cleanScene.substring(0, 50);
-    
-    const svgContent = `
-      <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="400" fill="#f0f9ff"/>
-        <circle cx="200" cy="150" r="60" fill="#ddd6fe"/>
-        <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="16" fill="#1f2937">
-          ${characterName}
-        </text>
-        <text x="200" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">
-          ${shortScene}...
-        </text>
-        <text x="200" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">
-          Story illustration loading...
-        </text>
-      </svg>
-    `;
-    
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    
-    return {
-      url,
-      success: true,
-      provider: 'svg',
-      model: 'placeholder',
-      cost: 0,
-      seed: undefined
-    };
-  }
-
-  // TIER 2.5: Simple Runware fallback with hardcoded extraction
-  private static async generateWithRunwareSimpleFallback(
-    cleanScene: string,
-    config: ImageGenerationConfig,
-    userInfo?: UserInfo,
-    pageNumber?: number
-  ): Promise<ImageResult> {
-    try {
-      console.log('🎨 Tier 2.5: Simple fallback generation');
-
-      const { data, error } = await supabase.functions.invoke('runware-simple-fallback', {
-        body: {
-          pageText: cleanScene,
-          userInfo,
-          difficultyLevel: config.difficultyLevel || 'medium'
-        }
-      });
-
-      if (error) {
-        throw new Error(`Tier 2.5 API error: ${error.message}`);
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.error || 'Tier 2.5 generation failed');
-      }
-
-      return {
-        url: data.imageURL,
-        success: true,
-        provider: 'runware-simple-fallback',
-        model: 'runware:100@1',
-        cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
-        seed: data.seed
+  // Provider methods for backward compatibility
+  static getTierUsed(result: ImageResult): string {
+    if (result.metadata?.tier) {
+      const tierMap = {
+        1: 'AI-Enhanced Premium (Tier 1)',
+        2: 'Template-Based (Tier 2)', 
+        2.5: 'Nuclear Hardcoded (Tier 2.5)',
+        3: 'OpenAI DALL-E (Tier 3)',
+        4: 'SVG Placeholder (Tier 4)'
       };
-
-    } catch (error) {
-      const appError = ErrorHandler.handleError(error instanceof Error ? error : new Error(String(error)), 'tier25-generation');
-      console.error('🎨 Tier 2.5 generation failed:', appError);
-
-      return {
-        url: '',
-        success: false,
-        error: ErrorHandler.getUserMessage(appError)
-      };
+      return tierMap[result.metadata.tier] || 'Unknown';
     }
+    
+    // Legacy fallback based on provider
+    if (result.provider === 'runware-premium') return 'High-Quality AI-Enhanced (Tier 1)';
+    if (result.provider === 'runware-template') return 'Template-Based (Tier 2)';
+    if (result.provider === 'runware-simple-fallback') return 'Nuclear Hardcoded (Tier 2.5)';
+    if (result.provider === 'openai') return 'OpenAI DALL-E (Tier 3)';
+    if (result.provider === 'svg') return 'SVG Placeholder (Tier 4)';
+    return 'Backend Orchestrated';
   }
 
-  // Provider switching
+  // Simplified provider switching (now affects backend orchestrator)
   static async switchProvider(provider: 'runware' | 'openai'): Promise<void> {
     this.DEFAULT_CONFIG.provider = provider;
-    console.log(`🔄 Switched default provider to: ${provider}`);
+    console.log(`🔄 Default provider preference set to: ${provider} (affects backend orchestrator)`);
   }
 
   static getAvailableProviders(): string[] {
     return ['runware', 'openai'];
   }
+
+}
 }

@@ -387,6 +387,29 @@ export class UnifiedCharacterDescriptor {
   // ============= LEGACY COMPATIBILITY METHODS =============
   
   /**
+   * SAFE character description that NEVER fails - for reliable fallback
+   */
+  static getCharacterDescriptionSafe(userInfo: UserInfo, difficulty?: string): string {
+    try {
+      return this.generateCharacterDescription(userInfo, difficulty, 'rich', true);
+    } catch (error) {
+      console.warn('UnifiedCharacterDescriptor failed, using emergency fallback:', error);
+      // Emergency fallback - never fails
+      const avatarType = userInfo?.avatar?.type || 'child';
+      const skinTone = userInfo?.avatar?.skinTone || 'medium';
+      const genderTerm = this.detectGender(userInfo);
+      return `friendly ${genderTerm} ${avatarType} with ${skinTone} skin, warm smile, children's book style`;
+    }
+  }
+
+  /**
+   * Get cultural features for language (used by AdvancedCharacterEngine)
+   */
+  static getCulturalFeaturesForLanguage(language: string): CulturalFeatures | null {
+    return this.getCulturalFeatures(language);
+  }
+
+  /**
    * Legacy compatibility for buildAdvancedCharacterDescription (Tier 1)
    */
   static buildAdvancedCharacterDescription(

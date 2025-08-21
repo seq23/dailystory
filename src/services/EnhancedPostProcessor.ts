@@ -1,5 +1,6 @@
 import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
 import type { UserInfo } from '@/types';
+import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor';
 
 /**
  * Enhanced Post-Processing Service for Story and Image Generation
@@ -62,20 +63,12 @@ export class EnhancedPostProcessor {
       
       // Generate character description for consistency
       if (userInfo.name) {
-        try {
-          const { StructuredPromptEngine } = await import('./StructuredPromptEngine');
-          const characterDesc = StructuredPromptEngine.generateCulturalCharacterDescription(userInfo);
-          
-          // Store character without seed initially - will be added when first image is generated
-          StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, undefined, 1);
-          
-          console.log(`✅ Initialized character context for ${userInfo.name} in session ${sessionId}`);
-        } catch (error) {
-          console.warn('StructuredPromptEngine not available, using basic character description:', error);
-          // Fallback character description
-          const basicDesc = `${userInfo.avatar?.type || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
-          StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, basicDesc, undefined, 1);
-        }
+        const characterDesc = UnifiedCharacterDescriptor.getCharacterDescriptionSafe(userInfo);
+        
+        // Store character without seed initially - will be added when first image is generated
+        StoryVisualStateManager.updateCharacterWithSeed(sessionId, userInfo.name, characterDesc, undefined, 1);
+        
+        console.log(`✅ Initialized character context for ${userInfo.name} in session ${sessionId}`);
       }
       
     } catch (error) {

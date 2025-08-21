@@ -4,7 +4,7 @@
 
 import { SupportedLanguage } from "@/types/multilingual";
 import { UserInfo } from "@/types";
-import { StructuredPromptEngine } from "./StructuredPromptEngine";
+import { UnifiedCharacterDescriptor } from "./UnifiedCharacterDescriptor";
 
 export interface CharacterDescriptor {
   name: string;
@@ -144,7 +144,7 @@ export class AdvancedCharacterEngine {
       return existing;
     }
     
-    const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+    const culturalProfile = UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage(userInfo.nativeLanguage as SupportedLanguage) || UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage('en');
     const familyGroupId = `${sessionId}_family`;
     
     // Create family group for shared traits
@@ -158,7 +158,7 @@ export class AdvancedCharacterEngine {
       type: 'primary',
       relationshipToMain: 'self',
       culturalRole: 'child protagonist',
-      physicalTraits: StructuredPromptEngine.generateCulturalCharacterDescription(userInfo),
+      physicalTraits: UnifiedCharacterDescriptor.getCharacterDescriptionSafe(userInfo),
       clothingStyle: this.getCommunityClothing('child', 'child', culturalProfile),
       lastUsedPage: pageNumber,
       familyGroupId,
@@ -195,12 +195,12 @@ export class AdvancedCharacterEngine {
     
     if (!familyGroup) {
       // Create family group if it doesn't exist
-      const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+      const culturalProfile = UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage(userInfo.nativeLanguage as SupportedLanguage) || UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage('en');
       this.createFamilyGroup(familyGroupId, userInfo.nativeLanguage as SupportedLanguage, culturalProfile);
     }
     
     const familyTraits = this.familyGroups.get(familyGroupId)!.sharedTraits;
-    const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+    const culturalProfile = UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage(userInfo.nativeLanguage as SupportedLanguage) || UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage('en');
     
     // Generate age-appropriate description with family resemblance
     const physicalTraits = this.generateFamilyMemberTraits(
@@ -247,7 +247,7 @@ export class AdvancedCharacterEngine {
       return existing;
     }
     
-    const culturalProfile = StructuredPromptEngine.getCulturalVisualProfile(userInfo.nativeLanguage as SupportedLanguage);
+    const culturalProfile = UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage(userInfo.nativeLanguage as SupportedLanguage) || UnifiedCharacterDescriptor.getCulturalFeaturesForLanguage('en');
     
     const communityCharacter: CharacterDescriptor = {
       name: this.generateCulturalName(relationship, userInfo.nativeLanguage as SupportedLanguage),
