@@ -17,12 +17,14 @@ const BLACKLISTED_THEMES = [
   // Gambling
   'gambling', 'casino', 'betting', 'poker', 'slots',
   
-  // Sexual content
+  // Sexual content - EXPANDED
   'naked', 'nude', 'sex', 'sexual', 'sexy', 'seductive', 'erotic', 'porn', 'pornography', 'prostitute', 'strip', 'stripper',
   'breast', 'genitals', 'penis', 'vagina', 'orgasm', 'masturbate', 'horny', 'lust', 'arousal', 'seduce', 'flirt', 'intimate', 'passion',
+  'coitus', 'intercourse', 'fornication', 'copulate', 'copulation', 'mating', 'breeding', 'climax', 'ejaculation', 'penetration',
+  'fetish', 'kinky', 'bondage', 'dominance', 'submission', 'swinger', 'orgy', 'threesome', 'adultery', 'affair',
   
   // General inappropriate content
-  'inappropriate', 'adult', 'mature', 'ass',
+  'inappropriate', 'adult', 'mature', 'ass', 'damn', 'hell', 'crap', 'piss', 'shit', 'fuck', 'bitch',
   
   // Dangerous activities
   'danger', 'dangerous', 'risky', 'unsafe', 'poison', 'toxic', 'fire', 'explosion'
@@ -34,13 +36,22 @@ const PERSONAL_INFO_PATTERNS = [
   /\b(brother|sister|sibling|bro|sis)\b/i,
   /\b(grandma|grandpa|grandmother|grandfather|nana|papa)\b/i,
   
-  // Address patterns
-  /\b\d+\s+(street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd)\b/i,
+  // FIXED Address patterns - catches multi-word streets like "Fox Hunt Dr"
+  /\b\d+\s+[A-Za-z\s]*(street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|ct|court|place|pl|circle|cir|trail|pkwy|parkway)\b/i,
   /\b(apt|apartment|unit)\s*\d+/i,
   
-  // Phone patterns
-  /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/,
-  /\b\(\d{3}\)\s*\d{3}[-.]?\d{4}\b/,
+  // Phone patterns - comprehensive
+  /\b(\d{3}[-.]?\d{3}[-.]?\d{4}|\(\d{3}\)\s*\d{3}[-.]?\d{4})\b/,
+  /\b\d{3}\s*\d{3}\s*\d{4}\b/,
+  
+  // SSN patterns - COPPA violation
+  /\b\d{3}-?\d{2}-?\d{4}\b/,
+  
+  // Birthday patterns - ALL birthday formats are COPPA violations
+  /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])[\/\-]\d{2,4}\b/, // Full dates
+  /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])\b/, // Partial dates MM/DD
+  /\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+\d{4}\b/i, // Month Year
+  /\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+(0?[1-9]|[12][0-9]|3[01])\b/i, // Month Day
   
   // Email patterns
   /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/,

@@ -514,6 +514,56 @@ function getEnhancedFallbackPages(difficulty: string, userInfo: any): string[] {
   return pages;
 }
 
+// ============================================================================
+// COPPA COMPLIANCE VALIDATION - Lightweight Server-Side Security
+// ============================================================================
+
+const COPPA_BLACKLIST = [
+  // Critical sexual/explicit content
+  'naked', 'nude', 'sex', 'sexual', 'sexy', 'erotic', 'porn', 'intimate', 'coitus', 'intercourse', 'fornication',
+  'breast', 'genitals', 'penis', 'vagina', 'orgasm', 'masturbate', 'horny', 'lust', 'seduce', 'flirt',
+  // Violence/inappropriate
+  'violence', 'violent', 'fight', 'weapon', 'gun', 'blood', 'death', 'kill', 'murder', 'rape', 'torture',
+  // Adult themes  
+  'romance', 'dating', 'boyfriend', 'girlfriend', 'alcohol', 'beer', 'wine', 'drunk', 'drugs', 'cocaine'
+];
+
+const PERSONAL_INFO_PATTERNS = [
+  // Phone numbers
+  /\b(\d{3}[-.]?\d{3}[-.]?\d{4}|\(\d{3}\)\s*\d{3}[-.]?\d{4})\b/,
+  // SSN
+  /\b\d{3}-?\d{2}-?\d{4}\b/,
+  // Addresses - FIXED pattern to catch "Fox Hunt Dr" type addresses
+  /\b\d+\s+[A-Za-z\s]*(street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|ct|court|place|pl|circle|cir|trail|pkwy)\b/i,
+  // All birthday patterns
+  /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])([\/\-]\d{2,4})?\b/,
+  /\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s+(\d{4}|(0?[1-9]|[12][0-9]|3[01]))\b/i,
+  // Emails
+  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/
+];
+
+function validateCOPPACompliance(text: string, context: string): { valid: boolean; reason?: string } {
+  const lowercaseText = text.toLowerCase();
+  
+  // Check blacklisted content
+  for (const term of COPPA_BLACKLIST) {
+    if (lowercaseText.includes(term)) {
+      console.log(`🚫 COPPA Violation: Blacklisted term "${term}" in ${context}`);
+      return { valid: false, reason: `inappropriate_content_${term}` };
+    }
+  }
+  
+  // Check personal information patterns
+  for (const pattern of PERSONAL_INFO_PATTERNS) {
+    if (pattern.test(text)) {
+      console.log(`🚫 COPPA Violation: Personal info pattern detected in ${context}`, pattern);
+      return { valid: false, reason: 'personal_information_detected' };
+    }
+  }
+  
+  return { valid: true };
+}
+
 serve(async (req) => {
   console.log('🔍 DIAGNOSTIC: Edge function invoked', {
     method: req.method,
@@ -537,6 +587,58 @@ serve(async (req) => {
     });
     
     const { readingLevel, interests, config, sessionType } = requestBody;
+    
+    // ============================================================================
+    // SERVER-SIDE COPPA VALIDATION - Before OpenAI Processing
+    // ============================================================================
+    
+    console.log('🔍 Running COPPA compliance checks...');
+    
+    // Validate user interests
+    if (interests && Array.isArray(interests)) {
+      for (const interest of interests) {
+        if (typeof interest === 'string') {
+          const validation = validateCOPPACompliance(interest, 'user_interests');
+          if (!validation.valid) {
+            console.log('🚫 User interests COPPA violation:', validation.reason);
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'User interests contain inappropriate content for children',
+              blocked_reason: validation.reason
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        }
+      }
+    }
+    
+    // Validate user configuration fields
+    if (config?.userInfo) {
+      const fieldsToCheck = ['displayName', 'interests', 'hobbies', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'specialRequest'];
+      for (const field of fieldsToCheck) {
+        const value = config.userInfo[field];
+        if (value) {
+          const valueStr = Array.isArray(value) ? value.join(' ') : String(value);
+          const validation = validateCOPPACompliance(valueStr, `user_config_${field}`);
+          if (!validation.valid) {
+            console.log(`🚫 User config field ${field} COPPA violation:`, validation.reason);
+            return new Response(JSON.stringify({
+              success: false,
+              error: `User profile field "${field}" contains inappropriate content for children`,
+              blocked_field: field,
+              blocked_reason: validation.reason
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        }
+      }
+    }
+    
+    console.log('✅ COPPA validation passed - proceeding with story generation');
     
     // Import difficulty mapper for consistent difficulty handling
     const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
