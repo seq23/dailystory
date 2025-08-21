@@ -66,7 +66,7 @@ export class MultiStageEnhancementPipeline {
   }
   
   // ============= TIER 1: HIGH-QUALITY AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
-  static async processTier1HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData = null) {
+  static async processTier1HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData = null, avatarIdentity = null) {
     try {
       console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State + Character Consistency: storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
       
@@ -173,13 +173,14 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
       
-      // 3. Generate story-based character consistency using UnifiedCharacterConsistency
-      console.log('🎭 Generating story-based character consistency');
+      // 3. Generate story-based character consistency using UnifiedCharacterConsistency with pre-processed avatar identity
+      console.log('🎭 Generating story-based character consistency with pre-processed avatar identity');
       const characterConsistencyData = UnifiedCharacterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo,
-        enhancedStoryText // Pass story context for contextual analysis
+        enhancedStoryText, // Pass story context for contextual analysis
+        avatarIdentity // Pass pre-processed avatar identity from orchestrator
       );
       
       const characterSeed = characterConsistencyData.seed;

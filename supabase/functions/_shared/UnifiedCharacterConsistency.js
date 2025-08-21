@@ -12,8 +12,9 @@ class UnifiedCharacterConsistency {
 
   /**
    * Generate or retrieve consistent character seed for user with context awareness
+   * Now accepts pre-processed avatarIdentity from orchestrator for optimization
    */
-  getCharacterSeed(userId, storyId, userInfo, storyContext, sessionType = 'new') {
+  getCharacterSeed(userId, storyId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new') {
     const characterKey = `${userId}-${storyId}-${userInfo.name || 'default'}`;
     let seedData = this.characterSeeds.get(characterKey);
 
@@ -21,16 +22,16 @@ class UnifiedCharacterConsistency {
     if (sessionType === 'rewrite' && seedData) {
       // For premium rewrites: preserve avatar identity but allow fresh character appearance
       if (userInfo.isPremium) {
-        seedData = this.preserveAvatarIdentityForRewrite(seedData, userInfo);
-        console.log(`🎭 Premium rewrite: Preserved avatar identity for ${userInfo.name}`);
+        seedData = this.preserveAvatarIdentityForRewrite(seedData, userInfo, avatarIdentity);
+        console.log(`🎭 Premium rewrite: Preserved avatar identity for ${userInfo.name} (Avatar Identity: ${avatarIdentity ? 'Optimized' : 'Local'})`);
       } else {
         // For free rewrites: generate completely new character
-        seedData = this.createNewCharacterSeed(userId, storyId, userInfo);
-        console.log(`🎭 Free rewrite: Created fresh character for ${userInfo.name}`);
+        seedData = this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
+        console.log(`🎭 Free rewrite: Created fresh character for ${userInfo.name} (Avatar Identity: ${avatarIdentity ? 'Optimized' : 'Local'})`);
       }
     } else if (!seedData || this.isSeedExpired(seedData)) {
-      seedData = this.createNewCharacterSeed(userId, storyId, userInfo);
-      console.log(`🎭 Backend: Created new character seed for ${userInfo.name}: ${seedData.baseSeed}`);
+      seedData = this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
+      console.log(`🎭 Backend: Created new character seed for ${userInfo.name}: ${seedData.baseSeed} (Avatar Identity: ${avatarIdentity ? 'Optimized' : 'Local'})`);
     } else {
       seedData.lastUsed = Date.now();
       console.log(`🎭 Backend: Using existing character seed for ${userInfo.name}: ${seedData.baseSeed}`);
@@ -55,9 +56,9 @@ class UnifiedCharacterConsistency {
   /**
    * Preserve avatar identity for premium rewrites while allowing fresh character details
    */
-  preserveAvatarIdentityForRewrite(existingSeed, userInfo) {
+  preserveAvatarIdentityForRewrite(existingSeed, userInfo, avatarIdentity = null) {
     // Keep core avatar identity but generate fresh contextual appearance
-    const newSeed = this.createNewCharacterSeed(existingSeed.userId, existingSeed.storyId, userInfo);
+    const newSeed = this.createNewCharacterSeed(existingSeed.userId, existingSeed.storyId, userInfo, avatarIdentity);
     
     // Preserve avatar type and skin tone from existing seed
     newSeed.avatarType = existingSeed.avatarType;
@@ -79,11 +80,16 @@ class UnifiedCharacterConsistency {
 
   /**
    * Create new character seed with complete profile
+   * Now accepts pre-processed avatarIdentity for optimization
    */
-  createNewCharacterSeed(userId, storyId, userInfo) {
+  createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity = null) {
     const baseSeed = this.generateStableSeed(userId, userInfo.name || 'child');
-    const culturalProfile = this.determineCulturalProfile(userInfo);
-    const physicalTraits = this.generatePhysicalTraits(userInfo, baseSeed);
+    
+    // Use pre-processed avatar identity if provided, otherwise fallback to local processing
+    const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo);
+    const physicalTraits = avatarIdentity ? 
+      this.generatePhysicalTraitsFromIdentity(avatarIdentity, baseSeed) : 
+      this.generatePhysicalTraits(userInfo, baseSeed);
     const culturalElements = this.generateCulturalElements(culturalProfile, userInfo);
 
     return {
@@ -150,7 +156,30 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Generate consistent physical traits
+   * Generate consistent physical traits from pre-processed avatar identity (OPTIMIZED)
+   */
+  generatePhysicalTraitsFromIdentity(avatarIdentity, seed) {
+    const random = this.createSeededRandom(seed);
+    
+    const eyeColorOptions = avatarIdentity.skinTone === 'dark' ? ['brown', 'dark brown'] : 
+                           avatarIdentity.skinTone === 'fair' ? ['blue', 'green', 'brown', 'hazel'] :
+                           ['brown', 'hazel', 'green'];
+    const eyeColor = eyeColorOptions[Math.floor(random() * eyeColorOptions.length)];
+    
+    const builds = ['slim', 'average', 'sturdy'];
+    const heights = ['short', 'average height', 'tall for their age'];
+    
+    return {
+      skinTone: avatarIdentity.skinTone,
+      hairColor: avatarIdentity.hairColor,
+      eyeColor,
+      build: builds[Math.floor(random() * builds.length)],
+      height: heights[Math.floor(random() * heights.length)]
+    };
+  }
+
+  /**
+   * Generate consistent physical traits (FALLBACK for backward compatibility)
    */
   generatePhysicalTraits(userInfo, seed) {
     const avatar = userInfo.avatar || {};

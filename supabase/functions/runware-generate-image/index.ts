@@ -43,12 +43,16 @@ serve(async (req) => {
     console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser})`);
     console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
 
+    // PHASE 1: Avatar Identity Mapper - Process user avatar data once at orchestrator level
+    const avatarIdentity = mapAvatarIdentity(userInfo);
+    console.log(`👤 Avatar Identity Mapped: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
+
     // TIER 1: AI-Enhanced High-Quality (Premium Tier)
     if (!forceTier || forceTier === 1) {
       try {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
         
-        // Use MultiStageEnhancementPipeline for premium AI processing
+        // Use MultiStageEnhancementPipeline with pre-processed avatar identity
         const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
           pageText, 
           userInfo, 
@@ -56,7 +60,8 @@ serve(async (req) => {
           sessionId, 
           pageNumber, 
           isGuestUser,
-          enhancedStoryData
+          enhancedStoryData,
+          avatarIdentity
         );
         
         const positivePrompt = enhancementResult.enhancedPrompt;
@@ -65,7 +70,7 @@ serve(async (req) => {
         console.log(`🎨 Premium AI-enhanced prompt (${positivePrompt.length} chars):`, positivePrompt.substring(0, 100) + '...');
 
         // Generate with Runware Tier 1 (Premium)
-        const tier1Result = await generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, seed);
+        const tier1Result = await generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, enhancementResult?.metadata?.characterSeed);
         
         if (tier1Result.success) {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
@@ -123,7 +128,8 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           isGuestUser,
-          difficultyLevel: 'medium'
+          difficultyLevel: 'medium',
+          avatarIdentity // Pass optimized avatar identity to all tiers
         });
 
         if (tier2Result.success) {
@@ -153,7 +159,8 @@ serve(async (req) => {
         const tier25Result = await callTierFunction('runware-simple-fallback', {
           pageText,
           userInfo,
-          difficultyLevel: 'medium'
+          difficultyLevel: 'medium',
+          avatarIdentity // Pass optimized avatar identity to all tiers
         });
 
         if (tier25Result.success) {
@@ -185,7 +192,8 @@ serve(async (req) => {
           negativePrompt: "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime",
           size: '1024x1024',
           model: 'gpt-image-1',
-          quality: 'standard'
+          quality: 'standard',
+          avatarIdentity // Pass optimized avatar identity to all tiers
         });
 
         if (tier3Result.success) {
@@ -337,6 +345,61 @@ async function callTierFunction(functionName: string, params: any) {
   }
 
   return await response.json();
+}
+
+// PHASE 1: Avatar Identity Mapper - Central avatar processing at orchestrator level
+function mapAvatarIdentity(userInfo: any) {
+  const avatar = userInfo?.avatar || {};
+  const { type = 'prefer-not-to-answer', skinTone = 'medium' } = avatar;
+  const { nativeLanguage = 'en' } = userInfo;
+
+  // Map avatar type and skin tone to standardized identity
+  const avatarType = type === 'prefer-not-to-answer' ? 'child' : type;
+  
+  // Standardized skin tone mapping
+  const skinToneMap = {
+    'pale': 'fair',
+    'light': 'light', 
+    'medium': 'medium',
+    'olive': 'olive',
+    'dark': 'dark'
+  };
+  const standardizedSkinTone = skinToneMap[skinTone] || 'medium';
+
+  // Cultural profile determination (moved from UnifiedCharacterConsistency)
+  let culturalProfile;
+  if (nativeLanguage === 'en') {
+    if (standardizedSkinTone === 'dark') culturalProfile = 'african-american';
+    else if (standardizedSkinTone === 'light' || standardizedSkinTone === 'fair') culturalProfile = 'european-american';
+    else culturalProfile = 'multicultural-american';
+  } else if (nativeLanguage === 'es') {
+    if (standardizedSkinTone === 'dark') culturalProfile = 'afro-hispanic';
+    else if (standardizedSkinTone === 'olive' || standardizedSkinTone === 'medium') culturalProfile = 'hispanic-latino';
+    else culturalProfile = 'hispanic-multicultural';
+  } else if (nativeLanguage === 'fr') culturalProfile = standardizedSkinTone === 'dark' ? 'african-french' : 'french-multicultural';
+  else if (nativeLanguage === 'zh') culturalProfile = 'chinese-asian';
+  else if (nativeLanguage === 'hi') culturalProfile = 'indian-south-asian';
+  else if (nativeLanguage === 'ar') culturalProfile = 'middle-eastern';
+  else culturalProfile = 'global-multicultural';
+
+  // Universal hair mapping
+  const hairColorMap = {
+    'fair': 'red',
+    'light': 'blonde',
+    'medium': 'brown', 
+    'olive': 'black',
+    'dark': 'natural textured hair'
+  };
+  const hairColor = hairColorMap[standardizedSkinTone] || 'brown';
+
+  return {
+    type: avatarType,
+    skinTone: standardizedSkinTone,
+    hairColor,
+    culturalProfile,
+    nativeLanguage,
+    name: userInfo?.name || 'child'
+  };
 }
 
 // Helper: Generate SVG Placeholder
