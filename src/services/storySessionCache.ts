@@ -263,6 +263,15 @@ export class StorySessionCache {
       } catch (error) {
         console.warn('Failed to clear character state:', error);
       }
+
+      // Clear UnifiedCharacterConsistency cache to prevent cross-avatar contamination
+      try {
+        const { characterConsistency } = await import('@/services/UnifiedCharacterConsistency');
+        characterConsistency.cleanupExpiredSeeds();
+        console.log(`🎭 Cleared character consistency cache for user: ${userId}`);
+      } catch (error) {
+        console.warn('Failed to clear character consistency cache:', error);
+      }
     }
     
     // Comprehensive cache clearing for cross-session contamination prevention

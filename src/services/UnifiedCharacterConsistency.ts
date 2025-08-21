@@ -32,33 +32,34 @@ export class UnifiedCharacterConsistency {
 
   /**
    * Generate or retrieve consistent character seed for user
+   * Hair color and eye color are locked per session, clothing can vary
    */
   getCharacterSeed(
     userId: string, 
     sessionId: string, 
     userInfo: any
   ): { seed: number; characterDescription: string; culturalContext: string } {
-    const characterKey = `${userId}-${userInfo.name || 'default'}`;
+    // Use session-specific key for locked appearance traits
+    const characterKey = `${userId}-${sessionId}-${userInfo.name || 'default'}`;
     let seedData = this.characterSeeds.get(characterKey);
 
     // Create new seed if none exists or expired
     if (!seedData || this.isSeedExpired(seedData)) {
       seedData = this.createNewCharacterSeed(userId, sessionId, userInfo);
       this.characterSeeds.set(characterKey, seedData);
-      console.log(`🎭 Created new character seed for ${userInfo.name}: ${seedData.baseSeed}`);
+      console.log(`🎭 Created new locked character seed for ${userInfo.name}: ${seedData.baseSeed}`);
     } else {
-      // Update usage tracking
+      // Update usage tracking but maintain locked traits
       seedData.lastUsed = Date.now();
-      console.log(`🎭 Using existing character seed for ${userInfo.name}: ${seedData.baseSeed}`);
+      console.log(`🎭 Using locked character seed for ${userInfo.name}: ${seedData.baseSeed}`);
     }
 
-    // Generate session-specific variant while maintaining core consistency
-    const sessionSeed = this.generateSessionVariant(seedData, sessionId);
-    const characterDescription = this.buildCharacterDescription(seedData);
+    // Use base seed (no session variant) to lock hair/eye appearance
+    const characterDescription = this.buildLockedCharacterDescription(seedData);
     const culturalContext = this.buildCulturalContext(seedData);
 
     return {
-      seed: sessionSeed,
+      seed: seedData.baseSeed, // Use base seed for appearance consistency
       characterDescription,
       culturalContext
     };
@@ -266,6 +267,28 @@ export class UnifiedCharacterConsistency {
     if (culturalElements.accessories.length > 0) {
       parts.push(`with ${culturalElements.accessories.slice(0, 2).join(' and ')}`);
     }
+    
+    return parts.join(', ');
+  }
+
+  /**
+   * Build locked character description (hair/eyes locked, clothing can vary)
+   */
+  private buildLockedCharacterDescription(seedData: CharacterSeed): string {
+    const { characterName, physicalTraits } = seedData;
+    
+    // Generate varied clothing per scene while locking hair/eyes
+    const random = this.createSeededRandom(Date.now()); // Use current time for clothing variety
+    const clothingOptions = ['casual everyday clothes', 'colorful outfit', 'comfortable clothing', 'seasonal attire'];
+    const dynamicClothing = clothingOptions[Math.floor(random() * clothingOptions.length)];
+    
+    const parts = [
+      `${characterName}`,
+      `${physicalTraits.height} child with ${physicalTraits.skinTone} skin`,
+      `${physicalTraits.hairColor} hair and ${physicalTraits.eyeColor} eyes`,
+      `${physicalTraits.build} build`,
+      `wearing ${dynamicClothing}`,
+    ];
     
     return parts.join(', ');
   }

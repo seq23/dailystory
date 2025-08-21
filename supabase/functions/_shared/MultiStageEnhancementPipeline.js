@@ -414,14 +414,15 @@ export class MultiStageEnhancementPipeline {
 
   static buildSimpleCharacterDescription(userInfo, difficulty = null) {
     const name = userInfo?.name || 'Alex';
-    let gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     
     // Apply age range modifier based on difficulty level
+    let ageRange = '5-8 years old'; // Default for beginner/easy/medium
     if (difficulty === 'hard') {
-      gender = 'pre-teen';
+      ageRange = '9-11 years old';
     } else if (difficulty === 'expert') {
-      gender = 'teenager';
+      ageRange = '11-13 years old';
     }
     
     // Simple skin tone mapping
@@ -433,7 +434,7 @@ export class MultiStageEnhancementPipeline {
       pale: 'pale skin'
     };
     
-    return `${name} (${gender} with ${skinMap[skinTone] || 'medium skin'})`;
+    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
   }
   
   // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============
@@ -540,8 +541,43 @@ export class MultiStageEnhancementPipeline {
         `${char.name || 'character'} (${char.description || 'child'}, feeling ${char.emotions || 'neutral'})`
       ).join(', ') || '';
       
-      const setting = enhancedStoryData.setting ? 
-        `${enhancedStoryData.setting.location || 'indoor scene'} during ${enhancedStoryData.setting.timeOfDay || 'daytime'} with ${enhancedStoryData.setting.weather || 'clear'} weather` : '';
+      // Enhanced setting detection with validation
+      let setting = '';
+      if (enhancedStoryData.setting) {
+        const location = enhancedStoryData.setting.location || 'indoor scene';
+        const timeOfDay = enhancedStoryData.setting.timeOfDay || 'daytime';
+        const weather = enhancedStoryData.setting.weather || 'clear';
+        
+        // Validate setting against story text for accuracy
+        const storyLower = storyText.toLowerCase();
+        let validatedLocation = location;
+        
+        // Fix common park vs forest confusion
+        if (location.includes('park') && (storyLower.includes('forest') || storyLower.includes('woods') || storyLower.includes('trees'))) {
+          validatedLocation = storyLower.includes('park') ? 'park with trees' : 'forest';
+        } else if (location.includes('forest') && storyLower.includes('park')) {
+          validatedLocation = 'park';
+        }
+        
+        // Additional location validation
+        const locationKeywords = {
+          'school': ['classroom', 'teacher', 'desk', 'lesson'],
+          'home': ['house', 'room', 'kitchen', 'bedroom'],
+          'library': ['books', 'shelves', 'quiet', 'reading'],
+          'playground': ['swing', 'slide', 'play equipment'],
+          'beach': ['sand', 'ocean', 'waves', 'seashell'],
+          'garden': ['flowers', 'plants', 'growing', 'watering']
+        };
+        
+        for (const [locationType, keywords] of Object.entries(locationKeywords)) {
+          if (keywords.some(keyword => storyLower.includes(keyword))) {
+            validatedLocation = locationType;
+            break;
+          }
+        }
+        
+        setting = `${validatedLocation} during ${timeOfDay} with ${weather} weather`;
+      }
       
       const objects = enhancedStoryData.objects?.length > 0 ? 
         `, featuring ${enhancedStoryData.objects.slice(0, 3).join(', ')}` : '';
@@ -555,30 +591,55 @@ export class MultiStageEnhancementPipeline {
       
       const richContext = `${characters} in ${setting}${objects}${mood}${lighting}${action}`;
       
-      console.log('✅ Built rich AI-enhanced context:', {
+      console.log('✅ Built rich AI-enhanced context with validation:', {
         hasCharacters: !!characters,
         hasSetting: !!setting,
         hasObjects: !!objects,
-        contextLength: richContext.length
+        contextLength: richContext.length,
+        originalLocation: enhancedStoryData.setting?.location,
+        validatedLocation: setting.includes('during') ? setting.split(' during')[0] : setting
       });
       
       return richContext;
     } else {
-      // Fallback to intelligent text analysis (not substring)
-      console.log('⚠️ No AI data available, using intelligent text analysis');
+      // Enhanced fallback to intelligent text analysis
+      console.log('⚠️ No AI data available, using enhanced intelligent text analysis');
       
       // Extract key sentences and actions
       const sentences = storyText.split('.').filter(s => s.trim().length > 10);
       const keyContent = sentences.slice(0, 3).join('. ').trim();
       
+      // Enhanced location detection for fallback
+      const storyLower = storyText.toLowerCase();
+      let detectedLocation = 'indoor scene';
+      
+      const locationMatches = {
+        'park': ['park', 'playground', 'swings', 'slides'],
+        'forest': ['forest', 'woods', 'trees', 'hiking trail'],
+        'school': ['school', 'classroom', 'teacher', 'lesson'],
+        'home': ['home', 'house', 'kitchen', 'bedroom'],
+        'library': ['library', 'books', 'shelves', 'librarian'],
+        'beach': ['beach', 'sand', 'ocean', 'waves'],
+        'garden': ['garden', 'flowers', 'plants', 'growing']
+      };
+      
+      for (const [location, keywords] of Object.entries(locationMatches)) {
+        if (keywords.some(keyword => storyLower.includes(keyword))) {
+          detectedLocation = location;
+          break;
+        }
+      }
+      
       // Detect action words
       const actionWords = ['walks', 'runs', 'plays', 'reads', 'looks', 'finds', 'goes', 'sees', 'opens', 'sits'];
-      const hasAction = actionWords.some(action => storyText.toLowerCase().includes(action));
+      const hasAction = actionWords.some(action => storyLower.includes(action));
       
-      const intelligentContext = keyContent + (hasAction ? ' [action scene]' : ' [static scene]');
+      const intelligentContext = `character in ${detectedLocation} scene, ${keyContent}` + 
+                                (hasAction ? ' [action scene]' : ' [static scene]');
       
-      console.log('✅ Built intelligent fallback context:', {
+      console.log('✅ Built enhanced intelligent fallback context:', {
         sentences: sentences.length,
+        detectedLocation,
         hasAction,
         contextLength: intelligentContext.length
       });
