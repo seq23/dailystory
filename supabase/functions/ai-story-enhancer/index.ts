@@ -137,6 +137,61 @@ serve(async (req) => {
     'ai-story-enhancer',
     'fallback-chain',
     async () => {
+      // =================== PHASE 2: DEPENDENCY & DEPLOYMENT VERIFICATION ===================
+      console.log('🔧 AI Story Enhancer: Starting Phase 2 Dependency Verification');
+      
+      // Test all shared module imports proactively
+      const importResults = {};
+      try {
+        await import('../_shared/cors.ts');
+        importResults.cors = '✅ SUCCESS';
+        console.log('✅ cors.ts import - OK');
+      } catch (error) {
+        importResults.cors = `❌ FAILED: ${error.message}`;
+        console.error('❌ cors.ts import - FAILED:', error.message);
+      }
+      
+      try {
+        await import('../_shared/errorHandling.ts');
+        importResults.errorHandling = '✅ SUCCESS';
+        console.log('✅ errorHandling.ts import - OK');
+      } catch (error) {
+        importResults.errorHandling = `❌ FAILED: ${error.message}`;
+        console.error('❌ errorHandling.ts import - FAILED:', error.message);
+      }
+      
+      try {
+        await import('../_shared/SimpleContentValidator.js');
+        importResults.SimpleContentValidator = '✅ SUCCESS';
+        console.log('✅ SimpleContentValidator.js import - OK');
+      } catch (error) {
+        importResults.SimpleContentValidator = `❌ FAILED: ${error.message}`;
+        console.error('❌ SimpleContentValidator.js import - FAILED:', error.message);
+      }
+      
+      try {
+        await import('../_shared/MultiStageEnhancementPipeline.js');
+        importResults.MultiStageEnhancementPipeline = '✅ SUCCESS';
+        console.log('✅ MultiStageEnhancementPipeline.js import - OK');
+      } catch (error) {
+        importResults.MultiStageEnhancementPipeline = `❌ FAILED: ${error.message}`;
+        console.error('❌ MultiStageEnhancementPipeline.js import - FAILED:', error.message);
+      }
+      
+      try {
+        await import('../_shared/storyVisualState.js');
+        importResults.storyVisualState = '✅ SUCCESS';
+        console.log('✅ storyVisualState.js import - OK');
+      } catch (error) {
+        importResults.storyVisualState = `❌ FAILED: ${error.message}`;
+        console.error('❌ storyVisualState.js import - FAILED:', error.message);
+      }
+      
+      console.log('📊 Dependency Verification Results:', importResults);
+      
+      // =================== PHASE 3: REQUEST FORMAT ANALYSIS ===================
+      console.log('🔍 AI Story Enhancer: Starting Phase 3 Request Analysis');
+      
       try {
         const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
         // Validate OpenAI API key is present
@@ -147,7 +202,37 @@ serve(async (req) => {
           };
         }
 
-        const { storyText, userInfo, sessionId, pageNumber, totalPages } = await req.json();
+        // Parse and log the complete request structure
+        let requestBody;
+        try {
+          requestBody = await req.json();
+          console.log('📥 Incoming Request Structure:', {
+            method: req.method,
+            headers: Object.fromEntries(req.headers.entries()),
+            bodyKeys: Object.keys(requestBody),
+            bodyTypes: Object.fromEntries(Object.entries(requestBody).map(([k, v]) => [k, typeof v])),
+            storyTextLength: requestBody.storyText?.length || 0,
+            hasUserInfo: !!requestBody.userInfo,
+            hasSessionId: !!requestBody.sessionId,
+            pageInfo: `${requestBody.pageNumber}/${requestBody.totalPages || 'unlimited'}`
+          });
+        } catch (parseError) {
+          console.error('❌ Request parsing failed:', parseError.message);
+          throw {
+            type: EdgeErrorType.VALIDATION,
+            message: `Request parsing failed: ${parseError.message}`
+          };
+        }
+
+        // Extract parameters with comprehensive validation and logging
+        const { storyText, userInfo, sessionId, pageNumber, totalPages } = requestBody;
+        console.log('📋 Parameter Validation:', {
+          storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
+          userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',
+          sessionId: sessionId ? `✅ Present (${sessionId})` : '❌ Missing',
+          pageNumber: pageNumber ? `✅ Present (${pageNumber})` : '❌ Missing',
+          totalPages: totalPages ? `✅ Present (${totalPages})` : '⚠️ Undefined (infinite story)'
+        });
 
         if (!storyText) {
           throw {
@@ -310,8 +395,31 @@ Maintain consistency with previous pages while extracting rich story elements.`
 
       } catch (error) {
         // OpenAI FAILURE → Skip to Tier 2 immediately (no more generic fallback)
-        console.log(`❌ OpenAI failed - falling back to Tier 2 pipeline: ${error.message}`);
-        return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, error.message);
+        console.error('❌ Critical error in AI Story Enhancer:', {
+          errorMessage: error.message,
+          errorStack: error.stack,
+          requestData: requestBody ? Object.keys(requestBody) : 'no-request-body',
+          dependencyStatus: importResults
+        });
+        
+        // Safely extract parameters for fallback, with defaults if parsing failed
+        const fallbackParams = {
+          storyText: requestBody?.storyText || 'Unable to extract story text',
+          userInfo: requestBody?.userInfo || {},
+          sessionId: requestBody?.sessionId || 'unknown-session',
+          pageNumber: requestBody?.pageNumber || 1,
+          totalPages: requestBody?.totalPages || null
+        };
+        
+        return await useTier2Pipeline(
+          fallbackParams.storyText, 
+          fallbackParams.userInfo, 
+          fallbackParams.sessionId, 
+          fallbackParams.pageNumber, 
+          fallbackParams.totalPages, 
+          0, 
+          error.message
+        );
       }
     }
   );
