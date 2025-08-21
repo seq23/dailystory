@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
-import { scoreAndValidateAIExtraction } from "../_shared/AIValidationService.js";
+import { validateAndEnhanceContent } from "../_shared/SimpleContentValidator.js";
 
 // AI Model Fallback Chain Configuration
 const AI_MODELS = [
@@ -193,8 +193,19 @@ Maintain consistency with previous pages while extracting rich story elements.`
     try {
       enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
       
-      // SMART VALIDATION & ENHANCEMENT LAYER - Score and enhance AI output
-      validationResult = await scoreAndValidateAIExtraction(enhancedStoryData, storyText, sessionId, pageNumber);
+      // SIMPLE VALIDATION & ENHANCEMENT LAYER - Check content accuracy and fix basics
+      validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+      
+      // If major mismatches detected, trigger re-analysis
+      if (validationResult.requiresReanalysis) {
+        console.log('🔄 Re-analyzing due to content mismatches...');
+        const retryResult = await callOpenAIWithFallback(messages);
+        if (retryResult.choices?.[0]?.message?.content) {
+          enhancedStoryData = JSON.parse(retryResult.choices[0].message.content);
+          validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+        }
+      }
+      
       enhancedStoryData = validationResult.enhancedData;
       
     } catch (parseError) {
@@ -207,7 +218,7 @@ Maintain consistency with previous pages while extracting rich story elements.`
         mood: "neutral",
         narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
       };
-      validationResult = { qualityScore: { totalScore: 0 }, enhancedData: enhancedStoryData };
+      validationResult = { enhancedData: enhancedStoryData };
     }
 
     // Add context and metadata with validation info
@@ -232,17 +243,14 @@ Maintain consistency with previous pages while extracting rich story elements.`
         visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
       },
       validation: {
-        qualityScore: validationResult?.qualityScore?.totalScore || 0,
-        characterConsistency: validationResult?.qualityScore?.characterConsistency || 0,
-        settingLogic: validationResult?.qualityScore?.settingLogic || 0,
-        objectRelevance: validationResult?.qualityScore?.objectRelevance || 0,
-        storyCoherence: validationResult?.qualityScore?.storyCoherence || 0,
-        aiProcessingMethod: validationResult?.qualityScore?.totalScore >= 60 ? 'accepted' : 'enhanced',
+        contentValid: !validationResult?.requiresReanalysis,
+        mismatches: validationResult?.mismatches || [],
+        processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
         modelUsed: aiResult.model || 'fallback-chain'
       }
     };
 
-        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, quality score: ${validationResult?.qualityScore?.totalScore || 0}/100`);
+        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, validation: ${validationResult?.requiresReanalysis ? 'required re-analysis' : 'passed'}`);
 
         return createCorsResponse(result);
 
