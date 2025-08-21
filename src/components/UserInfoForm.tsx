@@ -14,7 +14,9 @@ import { MobileTooltip } from "@/components/MobileTooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight, ChevronDown, User, BookOpen, Heart, Palette, Sparkles, AlertCircle, Info, CheckCircle, Loader2, Globe } from "lucide-react";
 
-import { ContentSecurity, SecurityLogger } from "@/utils/security";
+import { SecurityLogger } from "@/utils/security";
+import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
+import { ValidationFeedback } from "@/components/ValidationFeedback";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,6 +46,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { isMobileOrTablet } = useIsMobile();
+  const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
     age: 7, // Default age for compatibility
@@ -130,14 +133,6 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     }
   };
 
-  // Enhanced content filtering with grade-aware security and multilingual support
-  const contentFilter = (text: string): { hasInappropriateContent: boolean; reason?: string } => {
-    const validation = ContentSecurity.isContentAppropriate(text, formData.grade, formData.nativeLanguage);
-    return {
-      hasInappropriateContent: !validation.appropriate,
-      reason: validation.reason
-    };
-  };
 
   // Enhanced input handler with intelligent processing and real-time translation
   const handleInputChange = async (field: keyof UserInfo, value: string | number) => {
@@ -197,20 +192,6 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
       // Sanitize input with enhanced protection
       const sanitizedValue = InputSanitizer.sanitizeUserInfo(value);
       
-      // Only check for inappropriate content on additions, not deletions
-      if (!isDeletion) {
-        const validation = contentFilter(sanitizedValue);
-        if (validation.hasInappropriateContent) {
-          SecurityLogger.log('inappropriate_content_attempt', {
-            field,
-            reason: validation.reason,
-            originalValue: value
-          });
-          
-          // Content warning handled silently
-          return;
-        }
-      }
       
       // Update form data immediately
       setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
@@ -319,24 +300,16 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     setShowValidationErrors(false);
     setValidationErrors([]);
 
-    // Rate limiting check
-    const userIdentifier = formData.name + Date.now(); // Simple identifier
-    if (!ContentSecurity.checkRateLimit(userIdentifier)) {
-      // Rate limit handled silently
-      return;
-    }
-
-    // Final validation of all form data with multilingual support
-    const allText = `${formData.name} ${formData.favoriteAnimal} ${formData.favoriteFood} ${formData.hobbies} ${formData.specialRequest}`;
-    const finalValidation = ContentSecurity.isContentAppropriate(allText, formData.grade, formData.nativeLanguage);
+    // Validate form content with new COPPA-compliant validation
+    const isValid = validateFormOnSubmit(formData);
     
-    if (!finalValidation.appropriate) {
-      SecurityLogger.log('form_submission_blocked', {
-        reason: finalValidation.reason,
-        formData: { ...formData, name: '[REDACTED]' }
+    if (!isValid) {
+      // Validation errors will be shown by ValidationFeedback component
+      toast({
+        title: "Content Review Needed",
+        description: "Please review the highlighted issues before continuing.",
+        duration: 4000,
       });
-      
-      // Content validation handled silently
       return;
     }
 
@@ -876,6 +849,13 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
         </div>
 
         {/* Submit Button */}
+        <ValidationFeedback
+          hasErrors={!validationState.isValid}
+          errors={validationState.errors}
+          hasCoppaViolation={validationState.hasCoppaViolation}
+          onSubmissionAttempt={validationState.hasTriedSubmit}
+        />
+        
         <div className="mt-8 text-center">
           <MobileOptimizedButton
             onClick={handleSubmit}

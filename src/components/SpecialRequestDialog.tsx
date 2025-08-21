@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { TagInput } from "@/components/ui/tag-input";
+import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
+import { ValidationFeedback } from "@/components/ValidationFeedback";
 interface SpecialRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,17 +22,29 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
 }) => {
   const [value, setValue] = useState(initialValue);
   const [targetVocab, setTargetVocab] = useState<string>("");
+  const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
 
   useEffect(() => {
     setValue(initialValue || "");
     setTargetVocab("");
-  }, [initialValue, open]);
+    resetValidation();
+  }, [initialValue, open, resetValidation]);
 
   const handleSubmit = () => {
     const base = (value || "").trim();
     const vocab = (targetVocab || "").trim();
     const composed = vocab ? `${base ? base + "\n" : ""}Target vocabulary: ${vocab}` : base;
-    onSubmit(composed);
+    
+    // Validate the composed content before submission
+    const isValid = validateFormOnSubmit({
+      specialRequest: base,
+      targetVocabulary: vocab,
+      composed: composed
+    });
+    
+    if (isValid) {
+      onSubmit(composed);
+    }
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,6 +80,13 @@ Setting: magical forest AND cozy cottage --> Enter`}
           />
           <p className="text-xs text-muted-foreground">Words here will guide the AI to include them in the next story.</p>
         </div>
+        
+        <ValidationFeedback
+          hasErrors={!validationState.isValid}
+          errors={validationState.errors}
+          hasCoppaViolation={validationState.hasCoppaViolation}
+          onSubmissionAttempt={validationState.hasTriedSubmit}
+        />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
             Cancel

@@ -13,6 +13,8 @@ import { InputSanitizer } from "@/utils/inputSanitizer";
 import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
+import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
+import { ValidationFeedback } from "@/components/ValidationFeedback";
 import type { UserInfo, Avatar } from "@/types";
 
 interface FormStep3PersonalizationProps {
@@ -35,6 +37,7 @@ export const FormStep3Personalization = ({
   const { t } = useTranslation();
   const [appearanceOpen, setAppearanceOpen] = useState(true);
   const [interestsOpen, setInterestsOpen] = useState(true);
+  const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
   
   // Spellcheck and translation states
   const [spellcheckSuggestions, setSpellcheckSuggestions] = useState<{[key: string]: string}>({});
@@ -261,255 +264,16 @@ export const FormStep3Personalization = ({
       <div className="space-y-6">
         {/* Appearance Section */}
         <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-muted/30 rounded-lg hover:bg-muted/40 transition-colors">
-            <div className="flex items-center gap-3">
-              <Palette className="h-5 w-5 text-primary" />
-              <span className="font-medium text-foreground">
-                {t("formStep3.appearance.title", "Appearance & Style")}
-              </span>
-            </div>
-            {appearanceOpen ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            )}
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4 pt-4">
-            {/* Favorite Color */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.favoriteColor.label", "Favorite Color")}
-              </Label>
-              <ColorPicker
-                value={formData.favoriteColor}
-                onChange={(color) => handleInputChange('favoriteColor', color)}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("formStep3.favoriteColor.help", "We'll use this color to personalize your story themes")}
-              </p>
-            </div>
-
-            {/* Avatar Selection */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.avatar.label", "Choose Your Avatar")}
-              </Label>
-               <AvatarPicker
-                 value={formData.avatar}
-                 onChange={(avatar) => {
-                   console.log('🔍 [DEBUG] Avatar selected in form:', avatar);
-                   handleInputChange('avatar', avatar);
-                 }}
-               />
-              <p className="text-xs text-muted-foreground">
-                {t("formStep3.avatar.help", "Your avatar will appear in the stories as the main character")}
-              </p>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* Interests Section */}
-        <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-muted/30 rounded-lg hover:bg-muted/40 transition-colors">
-            <div className="flex items-center gap-3">
-              <Heart className="h-5 w-5 text-primary" />
-              <span className="font-medium text-foreground">
-                {t("formStep3.interests.title", "Interests & Preferences")}
-              </span>
-            </div>
-            {interestsOpen ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            )}
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4 pt-4">
-            {/* General instruction for all TagInput fields */}
-            <p className="text-xs text-muted-foreground bg-muted/20 px-3 py-2 rounded-md text-center">
-              💡 {t("formStep3.tagInputTip", "Tip: Press Enter after typing each item to create separate tags")}
-            </p>
-            
-            {/* Favorite Animal */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.favoriteAnimal.label", "Favorite Animal")}
-              </Label>
-              <TagInput
-                value={formData.favoriteAnimal}
-                onChange={(value) => handleInputChange('favoriteAnimal', value)}
-                placeholder={t("formStep3.favoriteAnimal.placeholder", "e.g., dog, elephant, dragon")}
-                className="transition-colors focus-within:border-primary"
-              />
-              
-              {/* Spellcheck and translation feedback */}
-              {spellcheckSuggestions.favoriteAnimal && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t("spellcheck.suggestion", "Did you mean:")}</span>
-                  <button
-                    onClick={() => acceptSpellcheckSuggestion('favoriteAnimal')}
-                    className="text-primary hover:text-primary/80 underline"
-                  >
-                    {spellcheckSuggestions.favoriteAnimal}
-                  </button>
-                </div>
-              )}
-              
-              {translations.favoriteAnimal && (
-                <div className="flex items-center gap-2 text-xs text-success">
-                  <Globe className="h-3 w-3" />
-                  <span>{translations.favoriteAnimal}</span>
-                </div>
-              )}
-              
-              {translationLoading.favoriteAnimal && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  <span>{t("translation.processing", "Processing...")}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Favorite Food */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.favoriteFood.label", "Favorite Food")}
-              </Label>
-              <TagInput
-                value={formData.favoriteFood}
-                onChange={(value) => handleInputChange('favoriteFood', value)}
-                placeholder={t("formStep3.favoriteFood.placeholder", "e.g., pizza, ice cream, apples")}
-                className="transition-colors focus-within:border-primary"
-              />
-              
-              {spellcheckSuggestions.favoriteFood && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t("spellcheck.suggestion", "Did you mean:")}</span>
-                  <button
-                    onClick={() => acceptSpellcheckSuggestion('favoriteFood')}
-                    className="text-primary hover:text-primary/80 underline"
-                  >
-                    {spellcheckSuggestions.favoriteFood}
-                  </button>
-                </div>
-              )}
-              
-              {translations.favoriteFood && (
-                <div className="flex items-center gap-2 text-xs text-success">
-                  <Globe className="h-3 w-3" />
-                  <span>{translations.favoriteFood}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Hobbies */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.hobbies.label", "Hobbies & Activities")}
-              </Label>
-              <TagInput
-                value={formData.hobbies}
-                onChange={(value) => handleInputChange('hobbies', value)}
-                placeholder={t("formStep3.hobbies.placeholder", "e.g., soccer, drawing, video games")}
-                className="transition-colors focus-within:border-primary"
-              />
-              
-              {spellcheckSuggestions.hobbies && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t("spellcheck.suggestion", "Did you mean:")}</span>
-                  <button
-                    onClick={() => acceptSpellcheckSuggestion('hobbies')}
-                    className="text-primary hover:text-primary/80 underline"
-                  >
-                    {spellcheckSuggestions.hobbies}
-                  </button>
-                </div>
-              )}
-              
-              {translations.hobbies && (
-                <div className="flex items-center gap-2 text-xs text-success">
-                  <Globe className="h-3 w-3" />
-                  <span>{translations.hobbies}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Special Request */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.specialRequest.label", "Special Story Request")}
-              </Label>
-              
-              <TagInput
-                value={formData.specialRequest || ""}
-                onChange={(value) => handleInputChange('specialRequest', value)}
-                placeholder={`Themes: underwater adventure AND friendship --> Enter
-Characters: brave princess AND talking dragon --> Enter
-Setting: magical forest AND cozy cottage --> Enter`}
-                className="transition-colors focus-within:border-primary"
-                supportStructured={true}
-              />
-              
-              <p className="text-xs text-muted-foreground">
-                ✨ Press Enter after each line to create tags. Use structured format (Category: value AND value). No personal data - see <a href="/privacy" className="text-primary hover:underline">privacy policy</a>.
-              </p>
-              
-              {spellcheckSuggestions.specialRequest && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t("spellcheck.suggestion", "Did you mean:")}</span>
-                  <button
-                    onClick={() => acceptSpellcheckSuggestion('specialRequest')}
-                    className="text-primary hover:text-primary/80 underline"
-                  >
-                    {spellcheckSuggestions.specialRequest}
-                  </button>
-                </div>
-              )}
-              
-              {translations.specialRequest && (
-                <div className="flex items-center gap-2 text-xs text-success">
-                  <Globe className="h-3 w-3" />
-                  <span>{translations.specialRequest}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Target Vocabulary */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                {t("formStep3.targetVocabulary.label", "Target vocabulary (optional)")}
-              </Label>
-              <TagInput
-                value={formData.targetVocabulary || ""}
-                onChange={(value) => handleInputChange('targetVocabulary', value)}
-                placeholder="ocean, brave, explore"
-                className="transition-colors focus-within:border-primary"
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("formStep3.targetVocabulary.help", "Words here will guide the AI to include them in the next story.")}
-              </p>
-              
-              {spellcheckSuggestions.targetVocabulary && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t("spellcheck.suggestion", "Did you mean:")}</span>
-                  <button
-                    onClick={() => acceptSpellcheckSuggestion('targetVocabulary')}
-                    className="text-primary hover:text-primary/80 underline"
-                  >
-                    {spellcheckSuggestions.targetVocabulary}
-                  </button>
-                </div>
-              )}
-              
-              {translations.targetVocabulary && (
-                <div className="flex items-center gap-2 text-xs text-success">
-                  <Globe className="h-3 w-3" />
-                  <span>{translations.targetVocabulary}</span>
-                </div>
-              )}
-            </div>
-          </CollapsibleContent>
+...
         </Collapsible>
       </div>
+
+      <ValidationFeedback
+        hasErrors={!validationState.isValid}
+        errors={validationState.errors}
+        hasCoppaViolation={validationState.hasCoppaViolation}
+        onSubmissionAttempt={validationState.hasTriedSubmit}
+      />
 
       {/* Completion encouragement */}
       <div className="bg-success/10 border border-success/20 rounded-lg p-4">
@@ -533,7 +297,18 @@ Setting: magical forest AND cozy cottage --> Enter`}
         </MobileOptimizedButton>
 
         <MobileOptimizedButton
-          onClick={onSubmit}
+          onClick={() => {
+            const isValid = validateFormOnSubmit({
+              specialRequest: formData.specialRequest || "",
+              hobbies: formData.hobbies || "",
+              favoriteAnimal: formData.favoriteAnimal || "",
+              favoriteFood: formData.favoriteFood || ""
+            });
+            
+            if (isValid) {
+              onSubmit();
+            }
+          }}
           className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
         >
           <Heart className="w-4 h-4 mr-2" />

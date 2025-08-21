@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ContentSecurity, SecurityLogger } from "@/utils/security";
+import { SecurityLogger } from "@/utils/security";
+import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import type { UserInfo, DifficultyLevel } from "@/types";
 
 export const useMultiStepForm = () => {
   const { t, i18n } = useTranslation();
+  const { validateFormOnSubmit } = useValidationOnSubmit();
   
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [formData, setFormData] = useState<UserInfo>({
@@ -103,26 +105,19 @@ export const useMultiStepForm = () => {
     setShowValidationErrors(false);
     setValidationErrors([]);
 
-    // Rate limiting check
-    const userIdentifier = formData.name + Date.now();
-    if (!ContentSecurity.checkRateLimit(userIdentifier)) {
-      return null;
-    }
-
     // Combine special request and target vocabulary
     const base = (formData.specialRequest || "").trim();
     const vocab = (formData.targetVocabulary || "").trim();
     const combinedSpecialRequest = vocab ? `${base ? base + "\n" : ""}Target vocabulary: ${vocab}` : base;
 
-    // Final content validation
-    const allText = `${formData.name} ${formData.favoriteAnimal} ${formData.favoriteFood} ${formData.hobbies} ${combinedSpecialRequest}`;
-    const finalValidation = ContentSecurity.isContentAppropriate(allText, formData.grade, formData.nativeLanguage);
+    // Validate form content with new COPPA-compliant validation
+    const isValid = validateFormOnSubmit({
+      ...formData,
+      specialRequest: combinedSpecialRequest
+    });
     
-    if (!finalValidation.appropriate) {
-      SecurityLogger.log('form_submission_blocked', {
-        reason: finalValidation.reason,
-        formData: { ...formData, name: '[REDACTED]' }
-      });
+    if (!isValid) {
+      // Validation errors handled by ValidationFeedback component
       return null;
     }
 
