@@ -1,283 +1,297 @@
-// StoryVisualStateManager - Backend JavaScript version
-// Maintains visual consistency across story pages with pronoun resolution
+/**
+ * Story Visual State Manager - Backend Component
+ * Maintains visual consistency across story pages by tracking characters, objects, settings, and prompts
+ */
 
 class StoryVisualStateManager {
-  static storyStates = new Map();
-
-  static getOrCreateStoryState(sessionId, isNeverEnding = false, totalPages = null) {
-    if (!this.storyStates.has(sessionId)) {
-      this.storyStates.set(sessionId, {
-        sessionId,
-        isNeverEnding,
-        totalPages: isNeverEnding ? null : totalPages,
-        characters: new Map(),
-        objects: new Map(),
-        relationships: [],
-        runwareContext: {
-          promptHistory: [], // Store last 10 prompts for never-ending stories
-          consistentSeed: null,
-          qualityScore: 0,
-          maxHistorySize: isNeverEnding ? 10 : 5
-        },
-        setting: {
-          location: null,
-          timeOfDay: null,
-          weather: null,
-          environment: null
-        },
-        locationHistory: [],
-        lastPageGenerated: 0,
-        createdAt: new Date(),
-        lastUpdated: new Date()
-      });
-    }
-    return this.storyStates.get(sessionId);
+  constructor() {
+    // Each sessionId gets its own isolated state
+    this.storyStates = new Map();
   }
 
+  // Initialize or retrieve story state for a session
+  static getOrCreateStoryState(sessionId, isNeverEnding = false, totalPages = null) {
+    if (!globalThis.storyVisualStateManager) {
+      globalThis.storyVisualStateManager = new StoryVisualStateManager();
+    }
+    
+    if (!globalThis.storyVisualStateManager.storyStates.has(sessionId)) {
+      const state = {
+        sessionId,
+        isNeverEnding,
+        totalPages,
+        characters: new Map(), // character name -> { seed, appearance, firstMention, lastMention }
+        objects: new Map(),    // object key -> { descriptions, attributes, firstMention, lastMention }
+        settings: [],          // array of { location, timeOfDay, weather, pageNumber }
+        currentSetting: null,
+        locationHistory: [],
+        promptHistory: [],     // successful prompts for consistency
+        pageNumber: 1,
+        lastSuccessfulPrompt: null,
+        // Core avatar identity tracking
+        avatarType: null,
+        skinTone: null,
+        coreCharacterTraits: new Map()
+      };
+      globalThis.storyVisualStateManager.storyStates.set(sessionId, state);
+    }
+    
+    return globalThis.storyVisualStateManager.storyStates.get(sessionId);
+  }
+
+  // Update character with seed and appearance info
   static updateCharacterWithSeed(sessionId, characterName, seed, appearance) {
     const state = this.getOrCreateStoryState(sessionId);
     
-    if (!state.characters.has(characterName)) {
-      state.characters.set(characterName, {
-        name: characterName,
-        seed,
-        appearance,
-        firstMentionedPage: 1,
-        lastMentionedPage: 1,
-        consistentAttributes: new Map()
-      });
-    } else {
-      const character = state.characters.get(characterName);
-      character.seed = seed;
-      character.appearance = appearance;
-      character.lastMentionedPage = state.lastPageGenerated + 1;
+    const existing = state.characters.get(characterName);
+    const updatedCharacter = {
+      ...existing,
+      characterName,
+      seed,
+      appearance,
+      lastMention: state.pageNumber,
+      firstMention: existing?.firstMention || state.pageNumber
+    };
+    
+    state.characters.set(characterName, updatedCharacter);
+    
+    // Track core avatar traits
+    if (characterName === 'child' || characterName === state.mainCharacterName) {
+      state.coreCharacterTraits.set('avatarType', appearance.avatarType || state.avatarType);
+      state.coreCharacterTraits.set('skinTone', appearance.skinTone || state.skinTone);
     }
     
-    state.lastUpdated = new Date();
+    console.log(`🎭 Updated character ${characterName} with seed ${seed} for session ${sessionId}`);
   }
 
+  // Get character seed for consistency
   static getCharacterSeed(sessionId, characterName) {
     const state = this.getOrCreateStoryState(sessionId);
     const character = state.characters.get(characterName);
     return character ? character.seed : null;
   }
 
+  // Update story setting (location, time, weather)
   static updateSetting(sessionId, newSetting) {
     const state = this.getOrCreateStoryState(sessionId);
     
-    // Store previous location in history
-    if (state.setting.location && state.setting.location !== newSetting.location) {
-      state.locationHistory.push({
-        location: state.setting.location,
-        timeOfDay: state.setting.timeOfDay,
-        weather: state.setting.weather,
-        pageNumber: state.lastPageGenerated
-      });
+    // Add to location history if location changed
+    if (state.currentSetting && 
+        state.currentSetting.location !== newSetting.location) {
+      state.locationHistory.push(state.currentSetting.location);
     }
     
-    // Update current setting
-    Object.assign(state.setting, newSetting);
-    state.lastUpdated = new Date();
+    state.currentSetting = {
+      ...newSetting,
+      pageNumber: state.pageNumber
+    };
+    
+    state.settings.push(state.currentSetting);
   }
 
+  // Get current setting info for prompts
   static getSettingForPrompt(sessionId) {
     const state = this.getOrCreateStoryState(sessionId);
-    const setting = state.setting;
+    if (!state.currentSetting) return '';
     
-    if (!setting.location && !setting.timeOfDay && !setting.weather) {
-      return null;
-    }
+    const { location, timeOfDay, weather } = state.currentSetting;
+    const parts = [];
     
-    let settingPrompt = '';
-    if (setting.location) settingPrompt += setting.location;
-    if (setting.timeOfDay) settingPrompt += `, ${setting.timeOfDay}`;
-    if (setting.weather) settingPrompt += `, ${setting.weather}`;
-    if (setting.environment) settingPrompt += `, ${setting.environment}`;
+    if (location) parts.push(`Location: ${location}`);
+    if (timeOfDay) parts.push(`Time: ${timeOfDay}`);
+    if (weather) parts.push(`Weather: ${weather}`);
     
-    return settingPrompt;
+    return parts.join(', ');
   }
 
+  // Parse text and track visual details
   static analyzeAndTrackVisualDetails(sessionId, text, pageNumber) {
     const state = this.getOrCreateStoryState(sessionId);
+    state.pageNumber = pageNumber;
     
-    // Track simple objects and their attributes
+    // Extract objects/items mentioned with basic attribute parsing
     const objectPatterns = [
-      { pattern: /(red|blue|green|yellow|purple|orange|pink|black|white|brown|gray) (car|ball|book|toy|bike|house|tree|flower)/gi, type: 'object' },
-      { pattern: /(big|small|tiny|huge|large|little) (red|blue|green|yellow|purple|orange|pink|black|white|brown|gray) (car|ball|book|toy|bike|house|tree|flower)/gi, type: 'object' },
-      { pattern: /(sunny|rainy|cloudy|snowy|foggy|stormy) (day|morning|afternoon|evening|night)/gi, type: 'weather' },
-      { pattern: /(park|school|home|library|store|playground|garden|kitchen|bedroom)/gi, type: 'location' }
+      /(?:a|an|the)\s+([a-zA-Z\s]+?)(?:\s+(?:is|was|were|are)|\.|,)/gi,
+      /(?:wearing|holding|carrying|has)\s+([a-zA-Z\s]+?)(?:\s|\.|,)/gi,
+      /(?:red|blue|green|yellow|black|white|brown|pink|purple|orange)\s+([a-zA-Z]+)/gi
     ];
     
-    objectPatterns.forEach(({ pattern, type }) => {
+    objectPatterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
-        const objectDescription = match[0];
-        const objectKey = this.extractObjectKey(objectDescription);
-        
-        if (!state.objects.has(objectKey)) {
+        const description = match[1].trim().toLowerCase();
+        if (description.length > 2 && description.length < 30) {
+          const objectKey = this.extractObjectKey(description);
+          const attributes = this.extractAttributes(description);
+          
+          const existing = state.objects.get(objectKey);
           state.objects.set(objectKey, {
-            name: objectKey,
-            description: objectDescription,
-            type,
-            firstMentionedPage: pageNumber,
-            lastMentionedPage: pageNumber,
-            attributes: this.extractAttributes(objectDescription)
+            ...existing,
+            descriptions: existing?.descriptions ? 
+              [...existing.descriptions, description].slice(-3) : [description],
+            attributes: { ...existing?.attributes, ...attributes },
+            firstMention: existing?.firstMention || pageNumber,
+            lastMention: pageNumber
           });
-        } else {
-          const obj = state.objects.get(objectKey);
-          obj.lastMentionedPage = pageNumber;
         }
       }
     });
     
-    state.lastPageGenerated = pageNumber;
-    state.lastUpdated = new Date();
+    console.log(`🔍 Analyzed visual details for page ${pageNumber} of session ${sessionId}`);
   }
 
+  // Extract base object from description
   static extractObjectKey(description) {
-    // Extract the main object noun (car, ball, etc.)
-    const words = description.toLowerCase().split(' ');
-    const nouns = ['car', 'ball', 'book', 'toy', 'bike', 'house', 'tree', 'flower', 'bird', 'cat', 'dog'];
-    return words.find(word => nouns.includes(word)) || words[words.length - 1];
+    // Remove color adjectives and articles
+    return description
+      .replace(/^(a|an|the)\s+/, '')
+      .replace(/\s+(red|blue|green|yellow|black|white|brown|pink|purple|orange)\s*/, ' ')
+      .trim();
   }
 
+  // Extract visual attributes from description
   static extractAttributes(description) {
-    const attributes = new Map();
-    const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'black', 'white', 'brown', 'gray'];
-    const sizes = ['big', 'small', 'tiny', 'huge', 'large', 'little'];
+    const attributes = {};
     
-    const words = description.toLowerCase().split(' ');
+    const colorMatch = description.match(/(red|blue|green|yellow|black|white|brown|pink|purple|orange)/i);
+    if (colorMatch) attributes.color = colorMatch[1].toLowerCase();
     
-    colors.forEach(color => {
-      if (words.includes(color)) {
-        attributes.set('color', color);
-      }
-    });
-    
-    sizes.forEach(size => {
-      if (words.includes(size)) {
-        attributes.set('size', size);
-      }
-    });
+    const sizeMatch = description.match(/(big|small|large|tiny|huge|little)/i);
+    if (sizeMatch) attributes.size = sizeMatch[1].toLowerCase();
     
     return attributes;
   }
 
+  // Get visual consistency details for prompts
   static getVisualDetailsForPrompt(sessionId) {
     const state = this.getOrCreateStoryState(sessionId);
     
-    let consistencyPrompts = [];
+    const details = [];
     
-    // Add character consistency
-    state.characters.forEach((character, name) => {
-      if (character.appearance) {
-        consistencyPrompts.push(`${name} with consistent appearance: ${character.appearance}`);
-      }
-    });
+    // Character appearance consistency
+    if (state.characters.size > 0) {
+      const characterDetails = Array.from(state.characters.values())
+        .filter(char => state.pageNumber - char.lastMention <= 2)
+        .map(char => `${char.characterName}: ${char.appearance || 'established appearance'}`)
+        .join(', ');
+      
+      if (characterDetails) details.push(`Characters: ${characterDetails}`);
+    }
     
-    // Add object consistency
-    state.objects.forEach((object, key) => {
-      if (object.description) {
-        consistencyPrompts.push(`consistent ${object.description}`);
-      }
-    });
+    // Recent object descriptions  
+    const recentObjects = Array.from(state.objects.entries())
+      .filter(([_, obj]) => state.pageNumber - obj.lastMention <= 1)
+      .slice(-5)
+      .map(([key, obj]) => {
+        const attrs = Object.values(obj.attributes).join(' ');
+        return attrs ? `${attrs} ${key}` : key;
+      })
+      .join(', ');
     
-    return consistencyPrompts.length > 0 ? consistencyPrompts.join(', ') : null;
+    if (recentObjects) details.push(`Objects: ${recentObjects}`);
+    
+    return details.join(' | ');
   }
 
+  // Store successful prompt for consistency
   static addSuccessfulPrompt(sessionId, prompt, params, seed, imageURL, pageNumber) {
     const state = this.getOrCreateStoryState(sessionId);
     
-    // Add new prompt to history
     const promptEntry = {
-      fullPrompt: prompt,
-      params: params,
-      seed: seed,
-      imageURL: imageURL,
-      pageNumber: pageNumber || state.lastPageGenerated,
-      timestamp: new Date().toISOString(),
-      promptLength: prompt ? prompt.length : 0
+      prompt,
+      params,
+      seed,
+      imageURL,
+      pageNumber,
+      timestamp: Date.now()
     };
     
-    // Add to beginning of array and keep appropriate history size
-    const maxSize = state.runwareContext.maxHistorySize || (state.isNeverEnding ? 10 : 5);
-    state.runwareContext.promptHistory.unshift(promptEntry);
-    if (state.runwareContext.promptHistory.length > maxSize) {
-      state.runwareContext.promptHistory = state.runwareContext.promptHistory.slice(0, maxSize);
+    state.promptHistory.push(promptEntry);
+    state.lastSuccessfulPrompt = promptEntry;
+    
+    // Keep only last 10 prompts for memory efficiency
+    if (state.promptHistory.length > 10) {
+      state.promptHistory = state.promptHistory.slice(-10);
     }
     
-    state.runwareContext.consistentSeed = seed;
-    state.runwareContext.qualityScore += 10;
-    state.lastUpdated = new Date();
-    
-    console.log(`📝 Stored prompt history entry ${promptEntry.promptLength} chars for session ${sessionId}, total entries: ${state.runwareContext.promptHistory.length}`);
+    console.log(`✅ Stored successful prompt for page ${pageNumber} of session ${sessionId}`);
   }
 
+  // Get prompt history for consistency
   static getPromptHistory(sessionId, limit = null) {
-    const state = this.getStoryState(sessionId);
-    if (!state || !state.runwareContext.promptHistory) {
-      return [];
-    }
-    const defaultLimit = state.isNeverEnding ? 7 : 5; // Sliding window for never-ending stories
-    const actualLimit = limit || defaultLimit;
-    return state.runwareContext.promptHistory.slice(0, actualLimit);
+    const state = this.getOrCreateStoryState(sessionId);
+    const history = state.promptHistory || [];
+    
+    return limit ? history.slice(-limit) : history;
   }
-  
-  // New context retrieval methods for never-ending stories
+
+  // Get recent story context from prompts
   static getRecentStoryContext(sessionId, pages = 3) {
     const history = this.getPromptHistory(sessionId, pages);
     return history.map(entry => ({
-      pageNumber: entry.pageNumber,
-      context: entry.fullPrompt ? entry.fullPrompt.substring(0, 200) + '...' : 'No context',
-      timestamp: entry.timestamp
+      page: entry.pageNumber,
+      prompt: entry.prompt.slice(0, 100),
+      seed: entry.seed
     }));
   }
-  
+
+  // Get character evolution data
   static getCharacterEvolution(sessionId, characterName) {
-    const state = this.getStoryState(sessionId);
-    if (!state) return null;
-    
+    const state = this.getOrCreateStoryState(sessionId);
     const character = state.characters.get(characterName);
-    return character ? {
-      name: character.name,
-      appearance: character.appearance,
-      firstMentioned: character.firstMentionedPage,
-      lastMentioned: character.lastMentionedPage,
-      consistency: character.seed ? 'locked' : 'variable'
-    } : null;
-  }
-  
-  static getSettingHistory(sessionId) {
-    const state = this.getStoryState(sessionId);
-    return state ? {
-      currentSetting: state.setting,
-      locationHistory: state.locationHistory,
-      isNeverEnding: state.isNeverEnding
-    } : null;
-  }
-  
-  static getObjectTrajectory(sessionId, objectName) {
-    const state = this.getStoryState(sessionId);
-    if (!state) return null;
     
+    if (!character) return null;
+    
+    return {
+      name: characterName,
+      seed: character.seed,
+      appearance: character.appearance,
+      firstMention: character.firstMention,
+      lastMention: character.lastMention,
+      pageSpan: character.lastMention - character.firstMention
+    };
+  }
+
+  // Get setting history
+  static getSettingHistory(sessionId) {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    return {
+      currentSetting: state.currentSetting,
+      locationHistory: state.locationHistory,
+      settingsTimeline: state.settings
+    };
+  }
+
+  // Get object usage trajectory
+  static getObjectTrajectory(sessionId, objectName) {
+    const state = this.getOrCreateStoryState(sessionId);
     const object = state.objects.get(objectName);
-    return object ? {
-      name: object.name,
-      description: object.description,
-      type: object.type,
-      firstSeen: object.firstMentionedPage,
-      lastSeen: object.lastMentionedPage,
-      attributes: Array.from(object.attributes.entries())
-    } : null;
+    
+    if (!object) return null;
+    
+    return {
+      objectName,
+      descriptions: object.descriptions,
+      attributes: object.attributes,
+      firstMention: object.firstMention,
+      lastMention: object.lastMention,
+      consistencyScore: object.descriptions.length > 1 ? 
+        (object.descriptions.length - new Set(object.descriptions).size) / object.descriptions.length : 1
+    };
   }
 
+  // Get last successful prompt details
   static getLastSuccessfulPrompt(sessionId) {
-    const history = this.getPromptHistory(sessionId, 1);
-    return history.length > 0 ? history[0].fullPrompt : null;
+    const state = this.getOrCreateStoryState(sessionId);
+    return state.lastSuccessfulPrompt;
   }
 
+  // Clear story state for a session
   static clearStoryState(sessionId) {
-    this.storyStates.delete(sessionId);
+    if (!globalThis.storyVisualStateManager) return;
+    
+    globalThis.storyVisualStateManager.storyStates.delete(sessionId);
     // Also clear pronoun resolution data
     if (globalThis.AdvancedPronounResolver) {        
       globalThis.AdvancedPronounResolver.clearSession(sessionId);
@@ -286,6 +300,116 @@ class StoryVisualStateManager {
     if (globalThis.MultiStageEnhancementPipeline) {
       globalThis.MultiStageEnhancementPipeline.clearSessionCache(sessionId);
     }
+  }
+
+  // Context-aware clearing for different story transitions
+  static clearBasedOnContext(sessionId, isPremium, context = 'session-end') {
+    if (!globalThis.storyVisualStateManager) return;
+    
+    console.log(`🎭 Clearing story state based on context: ${context}, isPremium: ${isPremium}`);
+    
+    switch (context) {
+      case 'rewrite':
+        if (isPremium) {
+          // Premium rewrite: Clear story content but preserve avatar identity
+          this.clearStoryContentOnly(sessionId);
+          console.log('🎭 Premium rewrite: Cleared story content, preserved avatar identity');
+        } else {
+          // Free rewrite: Clear everything
+          this.clearStoryState(sessionId);
+          console.log('🎭 Free rewrite: Cleared all state');
+        }
+        break;
+      
+      case 'next-story':
+        // Both free and premium: Clear story but may preserve character seeds for consistency
+        this.clearStoryState(sessionId);
+        console.log('🎭 Next story: Cleared all state for fresh start');
+        break;
+      
+      case 'continue-story':
+        // Premium Part II: Keep all character state for consistency
+        console.log('🎭 Continue story: Keeping all character state for Part II');
+        break;
+      
+      default:
+        // Session end or manual: Clear everything
+        this.clearStoryState(sessionId);
+        console.log('🎭 Default clearing: Cleared all state');
+    }
+  }
+
+  // Clear only story content while preserving avatar identity for premium rewrites
+  static clearStoryContentOnly(sessionId) {
+    if (!globalThis.storyVisualStateManager) return;
+    
+    const state = globalThis.storyVisualStateManager.storyStates.get(sessionId);
+    if (!state) return;
+
+    // Preserve core avatar identity data
+    const preservedAvatarData = {
+      avatarType: state.avatarType,
+      skinTone: state.skinTone,
+      coreCharacterTraits: state.coreCharacterTraits
+    };
+
+    // Clear story-specific data but keep avatar identity
+    const newState = {
+      ...this.getOrCreateStoryState(sessionId),
+      ...preservedAvatarData,
+      characters: new Map(), // Clear character appearances but preserve avatar seeds
+      objects: new Map(),
+      settings: [],
+      promptHistory: [],
+      lastSuccessfulPrompt: null,
+      pageNumber: 1
+    };
+
+    globalThis.storyVisualStateManager.storyStates.set(sessionId, newState);
+    
+    // Clear story-specific caches but preserve avatar data
+    if (globalThis.AdvancedPronounResolver) {
+      globalThis.AdvancedPronounResolver.clearStoryContentOnly && 
+      globalThis.AdvancedPronounResolver.clearStoryContentOnly(sessionId);
+    }
+    if (globalThis.MultiStageEnhancementPipeline) {
+      globalThis.MultiStageEnhancementPipeline.clearStoryContentOnly && 
+      globalThis.MultiStageEnhancementPipeline.clearStoryContentOnly(sessionId);
+    }
+
+    console.log(`🎭 Cleared story content only, preserved avatar: ${preservedAvatarData.avatarType}/${preservedAvatarData.skinTone}`);
+  }
+
+  // Create continuation session for premium users (Part II)
+  static createContinuationSession(originalSessionId, newSessionId) {
+    if (!globalThis.storyVisualStateManager) return false;
+    
+    const originalState = globalThis.storyVisualStateManager.storyStates.get(originalSessionId);
+    if (!originalState) return false;
+
+    // Create new session with preserved character consistency
+    const continuationState = {
+      sessionId: newSessionId,
+      isNeverEnding: true,
+      totalPages: null,
+      characters: new Map(originalState.characters), // Preserve all character data
+      objects: new Map(), // Fresh objects for new story
+      settings: [],
+      currentSetting: null,
+      locationHistory: [],
+      promptHistory: [], // Fresh prompt history
+      pageNumber: 1,
+      lastSuccessfulPrompt: null,
+      // Preserve avatar identity
+      avatarType: originalState.avatarType,
+      skinTone: originalState.skinTone,
+      coreCharacterTraits: new Map(originalState.coreCharacterTraits)
+    };
+
+    globalThis.storyVisualStateManager.storyStates.set(newSessionId, continuationState);
+    
+    console.log(`🔗 Created continuation session ${newSessionId} from ${originalSessionId} with preserved character state`);
+    return true;
   }
 
   // New method: Resolve pronouns in text using AdvancedPronounResolver
@@ -306,14 +430,14 @@ class StoryVisualStateManager {
   }
 
   static getStoryState(sessionId) {
-    return this.storyStates.get(sessionId);
+    if (!globalThis.storyVisualStateManager) return null;
+    return globalThis.storyVisualStateManager.storyStates.get(sessionId);
   }
 }
 
-// Export for use in other files
+// Export for use in other backend modules
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { StoryVisualStateManager };
+} else {
+  globalThis.StoryVisualStateManager = StoryVisualStateManager;
 }
-
-// Also make it available as a global for direct import
-globalThis.StoryVisualStateManager = StoryVisualStateManager;

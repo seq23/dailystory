@@ -11,20 +11,32 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Generate or retrieve consistent character seed for user
+   * Generate or retrieve consistent character seed for user with context awareness
    */
-  getCharacterSeed(userId, storyId, userInfo, storyContext) {
+  getCharacterSeed(userId, storyId, userInfo, storyContext, sessionType = 'new') {
     const characterKey = `${userId}-${storyId}-${userInfo.name || 'default'}`;
     let seedData = this.characterSeeds.get(characterKey);
 
-    if (!seedData || this.isSeedExpired(seedData)) {
+    // Handle different session types for character consistency
+    if (sessionType === 'rewrite' && seedData) {
+      // For premium rewrites: preserve avatar identity but allow fresh character appearance
+      if (userInfo.isPremium) {
+        seedData = this.preserveAvatarIdentityForRewrite(seedData, userInfo);
+        console.log(`🎭 Premium rewrite: Preserved avatar identity for ${userInfo.name}`);
+      } else {
+        // For free rewrites: generate completely new character
+        seedData = this.createNewCharacterSeed(userId, storyId, userInfo);
+        console.log(`🎭 Free rewrite: Created fresh character for ${userInfo.name}`);
+      }
+    } else if (!seedData || this.isSeedExpired(seedData)) {
       seedData = this.createNewCharacterSeed(userId, storyId, userInfo);
-      this.characterSeeds.set(characterKey, seedData);
       console.log(`🎭 Backend: Created new character seed for ${userInfo.name}: ${seedData.baseSeed}`);
     } else {
       seedData.lastUsed = Date.now();
       console.log(`🎭 Backend: Using existing character seed for ${userInfo.name}: ${seedData.baseSeed}`);
     }
+
+    this.characterSeeds.set(characterKey, seedData);
 
     const characterDescription = this.buildContextualCharacterDescription(seedData, storyContext);
     const culturalContext = this.buildCulturalContext(seedData);
@@ -32,8 +44,37 @@ class UnifiedCharacterConsistency {
     return {
       seed: seedData.baseSeed,
       characterDescription,
-      culturalContext
+      culturalContext,
+      avatarIdentity: {
+        type: seedData.avatarType,
+        skinTone: seedData.skinTone
+      }
     };
+  }
+
+  /**
+   * Preserve avatar identity for premium rewrites while allowing fresh character details
+   */
+  preserveAvatarIdentityForRewrite(existingSeed, userInfo) {
+    // Keep core avatar identity but generate fresh contextual appearance
+    const newSeed = this.createNewCharacterSeed(existingSeed.userId, existingSeed.storyId, userInfo);
+    
+    // Preserve avatar type and skin tone from existing seed
+    newSeed.avatarType = existingSeed.avatarType;
+    newSeed.skinTone = existingSeed.skinTone;
+    newSeed.physicalTraits.skinTone = existingSeed.physicalTraits.skinTone;
+    
+    // Keep cultural profile consistent with avatar
+    newSeed.culturalProfile = existingSeed.culturalProfile;
+    
+    // Update timestamp and usage
+    newSeed.createdAt = Date.now();
+    newSeed.lastUsed = Date.now();
+    newSeed.rewriteCount = (existingSeed.rewriteCount || 0) + 1;
+    
+    console.log(`🎭 Preserved avatar identity: ${newSeed.avatarType}/${newSeed.skinTone} for rewrite #${newSeed.rewriteCount}`);
+    
+    return newSeed;
   }
 
   /**

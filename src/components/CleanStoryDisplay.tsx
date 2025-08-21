@@ -1845,27 +1845,45 @@ const handleRestartTimer = () => {
       // Generate new character session ID for new characters
       const newCharacterSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
       
-      // Clear character state based on user type and context
+      // Context-aware character state clearing based on user type and action
       if (isRewrite) {
-        // Both free and premium: Always clear for rewrites
-        StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'rewrite');
-        // Force refresh all caches for rewrites
-        try {
-          const userId = isPremium ? 
-            ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 
-            'guest';
-          await StoryRefreshService.forceRefreshWithUserData(userId, characterSessionId, 'rewrite');
+        if (isPremium) {
+          // Premium rewrite: Clear story content but preserve avatar identity
+          console.log('🎭 Premium rewrite: Preserving avatar type + skin tone');
           
-          // Clear image cache for rewrites to ensure new images
+          // Use comprehensive cache manager for premium rewrite
+          const { SessionCacheManager } = await import('@/services/SessionCacheManager');
+          const userId = (await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium';
+          
+          SessionCacheManager.clearAllSessionCaches({
+            userId,
+            sessionId: characterSessionId,
+            avatarType: userInfo.avatar?.type,
+            skinTone: userInfo.avatar?.skinTone,
+            reason: 'premium-rewrite',
+            preserveAvatarIdentity: true,
+            clearVisualState: false // Keep avatar-related visual state
+          });
+
+          // Clear only story images, preserve character consistency seeds
+          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearStoryImagesKeepCharacterSeeds(
+            characterSessionId, 
+            userInfo.avatar?.type
+          );
+          setPageImages({});
+
+        } else {
+          // Free rewrite: Clear everything for fresh characters
+          console.log('🎭 Free rewrite: Clearing all character state');
+          StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'rewrite');
+          
+          // Clear all images for free users
           (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionId);
           setPageImages({});
-          console.log('🔄 Cleared image cache for rewrite - new images will be generated');
-        } catch (error) {
-          console.warn('Failed to force refresh for rewrite:', error);
         }
       } else {
-        // Free users: Clear character state for fresh characters
-        // Premium users: Keep character state (unless it's a rewrite)
+        // New story (not rewrite): Clear character state appropriately
+        console.log('🎭 New story: Clearing character state for fresh generation');
         StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'next-story');
       }
       

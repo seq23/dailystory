@@ -278,6 +278,30 @@ export class EnhancedImageCache {
   }
 
   /**
+   * Clear story images but preserve character seeds for avatar consistency
+   */
+  static clearStoryImagesKeepCharacterSeeds(sessionId: string, avatarType?: string): void {
+    const map = this.getCacheMap();
+    const before = map.size;
+    
+    // Only clear story-specific images, preserve character-related caches
+    for (const [key, value] of map.entries()) {
+      if (value.sessionId === sessionId) {
+        // Check if this is a character consistency marker that should be preserved
+        const isCharacterSeed = key.includes('character') || key.includes('avatar') || key.includes(avatarType || '');
+        if (!isCharacterSeed) {
+          map.delete(key);
+        }
+      }
+    }
+    
+    this.saveCacheMap(map);
+    const cleared = before - map.size;
+    
+    console.log(`🖼️ Cleared ${cleared} story images, preserved character seeds for session: ${sessionId}`);
+  }
+
+  /**
    * Clear expired cache entries
    */
   static clearExpiredEntries(): void {

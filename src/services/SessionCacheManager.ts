@@ -12,7 +12,8 @@ interface ClearOptions {
   avatarType?: string;
   skinTone?: string;
   clearVisualState?: boolean;
-  reason?: 'session-end' | 'avatar-change' | 'new-session' | 'manual' | 'navigation-home';
+  reason?: 'session-end' | 'avatar-change' | 'new-session' | 'manual' | 'navigation-home' | 'premium-rewrite';
+  preserveAvatarIdentity?: boolean;
 }
 
 export class SessionCacheManager {
@@ -20,7 +21,7 @@ export class SessionCacheManager {
   private static readonly CHARACTER_STATE_KEY = 'character_visual_state';
 
   /**
-   * Clear all session-related caches comprehensively
+   * Clear all session-related caches with context-aware behavior
    */
   static clearAllSessionCaches(options: ClearOptions = {}): void {
     const {
@@ -29,17 +30,25 @@ export class SessionCacheManager {
       avatarType,
       skinTone,
       clearVisualState = true,
-      reason = 'session-end'
+      reason = 'session-end',
+      preserveAvatarIdentity = false
     } = options;
 
-    console.log('🧹 Clearing all session caches:', {
+    console.log('🧹 Clearing session caches:', {
       userId,
       sessionId,
       avatarType,
       skinTone,
       reason,
-      clearVisualState
+      clearVisualState,
+      preserveAvatarIdentity
     });
+
+    // Handle premium rewrite scenario with selective clearing
+    if (reason === 'premium-rewrite' && preserveAvatarIdentity) {
+      this.clearForPremiumRewrite(options);
+      return;
+    }
 
     try {
       // 1. Clear Enhanced Image Cache
@@ -50,28 +59,91 @@ export class SessionCacheManager {
         EnhancedImageCache.clearAll();
       }
 
-      // 2. Clear Story Session Cache (avatar-aware for guests)
-      const avatarKey = avatarType || skinTone;
-      StorySessionCache.clearCachedSession(userId, true, avatarKey);
-
-      // 3. Clear Visual State Management
-      if (clearVisualState) {
-        this.clearVisualStateCache(userId, avatarType, skinTone);
+      // 2. Clear Story Session Cache
+      if (userId) {
+        const context = reason === 'premium-rewrite' ? 'rewrite' : 
+                      reason === 'new-session' ? 'next-story' : 'session-end';
+        StorySessionCache.clearCachedSession(userId, clearVisualState, avatarType, context);
       }
 
-      // 4. Clear Character State
-      this.clearCharacterState(userId, avatarType, skinTone);
+      // 3. Clear Visual State (character/object tracking)
+      if (clearVisualState) {
+        this.clearVisualStateCache(sessionId, userId);
+      }
 
-      // 5. Clear session storage caches
+      // 4. Clear Character State (appearance consistency)
+      this.clearCharacterState(userId, sessionId, avatarType);
+
+      // 5. Clear Session Storage Caches
       this.clearSessionStorageCaches();
 
-      // 6. Clear navigation-related caches
+      // 6. Clear Navigation Caches
       this.clearNavigationCaches(userId);
 
-      console.log('✅ All session caches cleared successfully');
+      console.log('✅ Session cache clearing completed successfully');
 
     } catch (error) {
-      console.error('❌ Failed to clear session caches:', error);
+      console.error('❌ Error during session cache clearing:', error);
+    }
+  }
+
+  /**
+   * Premium rewrite: Clear story content but preserve avatar identity
+   */
+  private static clearForPremiumRewrite(options: ClearOptions): void {
+    const { userId = 'guest', sessionId, avatarType } = options;
+
+    console.log('🎭 Premium rewrite: Selective clearing to preserve avatar identity');
+
+    try {
+      // 1. Clear story images but keep character seeds
+      if (sessionId) {
+        EnhancedImageCache.clearStoryImagesKeepCharacterSeeds(sessionId, avatarType);
+      }
+
+      // 2. Clear story content but keep avatar metadata
+      if (userId) {
+        StorySessionCache.clearStoryContentKeepAvatar(userId, avatarType);
+      }
+
+      // 3. Preserve character appearance seeds while clearing story details
+      this.clearStoryContentPreserveCharacter(userId, sessionId, avatarType);
+
+      console.log('✅ Premium rewrite clearing completed - avatar identity preserved');
+
+    } catch (error) {
+      console.error('❌ Error during premium rewrite clearing:', error);
+    }
+  }
+
+  /**
+   * Clear story content while preserving character appearance for premium users
+   */
+  private static clearStoryContentPreserveCharacter(userId?: string, sessionId?: string, avatarType?: string): void {
+    try {
+      // Clear story-specific data while preserving avatar consistency markers
+      const storageKeys = Object.keys(sessionStorage);
+      const storyKeys = storageKeys.filter(key => 
+        key.includes('story_content') || 
+        key.includes('story_pages') ||
+        key.includes('story_narrative')
+      );
+
+      storyKeys.forEach(key => {
+        sessionStorage.removeItem(key);
+      });
+
+      // Keep avatar-related character seeds in localStorage
+      const localStorageKeys = Object.keys(localStorage);
+      const characterKeys = localStorageKeys.filter(key => 
+        key.includes('character_seed') && 
+        key.includes(avatarType || 'avatar')
+      );
+
+      console.log(`🎭 Preserved ${characterKeys.length} character consistency markers for avatar: ${avatarType}`);
+
+    } catch (error) {
+      console.warn('Failed to clear story content selectively:', error);
     }
   }
 
@@ -81,118 +153,93 @@ export class SessionCacheManager {
   static clearAvatarSpecificCaches(userId: string, oldAvatar?: any, newAvatar?: any): void {
     console.log('🎭 Clearing avatar-specific caches:', {
       userId,
-      oldAvatar: oldAvatar ? `${oldAvatar.type}-${oldAvatar.skinTone}` : 'none',
-      newAvatar: newAvatar ? `${newAvatar.type}-${newAvatar.skinTone}` : 'none'
+      oldAvatar: oldAvatar?.type,
+      newAvatar: newAvatar?.type
     });
 
     try {
-      // Clear old avatar caches
+      // Clear old avatar-specific caches
       if (oldAvatar) {
-        this.clearAllSessionCaches({
-          userId,
-          avatarType: oldAvatar.type,
-          skinTone: oldAvatar.skinTone,
-          reason: 'avatar-change'
-        });
+        const oldAvatarType = oldAvatar.type === 'prefer-not-to-answer' ? 'neutral' : oldAvatar.type;
+        StorySessionCache.clearCachedSession(userId, true, oldAvatarType, 'avatar-change');
       }
 
-      // Clear any generic caches that might affect new avatar
-      EnhancedImageCache.clearExpiredEntries();
-      
+      // Clear character consistency caches for avatar transition
+      this.clearCharacterState(userId, undefined, oldAvatar?.type);
+
+      console.log('✅ Avatar-specific cache clearing completed');
+
     } catch (error) {
-      console.error('Failed to clear avatar-specific caches:', error);
+      console.error('❌ Error during avatar cache clearing:', error);
     }
   }
 
   /**
-   * Clear visual state management caches
+   * Clear caches related to visual state management
    */
-  private static clearVisualStateCache(userId: string, avatarType?: string, skinTone?: string): void {
+  private static clearVisualStateCache(sessionId?: string, userId?: string): void {
     try {
-      // Clear StoryVisualStateManager cache
-      const visualStateKeys = [
-        this.VISUAL_STATE_KEY,
-        `${this.VISUAL_STATE_KEY}_${userId}`,
-        `story_visual_state_${userId}`,
-        'story_visual_state'
-      ];
-
-      // Add avatar-specific keys
-      if (avatarType && skinTone) {
-        visualStateKeys.push(
-          `${this.VISUAL_STATE_KEY}_${userId}_${avatarType}_${skinTone}`,
-          `story_visual_state_${userId}_${avatarType}_${skinTone}`
-        );
-      }
+      // Clear visual state from sessionStorage
+      const visualStateKeys = Object.keys(sessionStorage).filter(key => 
+        key.includes(this.VISUAL_STATE_KEY) || 
+        key.includes('visual_state') ||
+        (sessionId && key.includes(sessionId))
+      );
 
       visualStateKeys.forEach(key => {
-        try {
-          localStorage.removeItem(key);
-          sessionStorage.removeItem(key);
-        } catch {}
+        sessionStorage.removeItem(key);
       });
 
-      console.log('🎨 Visual state caches cleared:', visualStateKeys.length);
+      console.log(`🎨 Cleared ${visualStateKeys.length} visual state cache entries`);
+
     } catch (error) {
       console.warn('Failed to clear visual state cache:', error);
     }
   }
 
   /**
-   * Clear character appearance state
+   * Clear character appearance and consistency state
    */
-  private static clearCharacterState(userId: string, avatarType?: string, skinTone?: string): void {
+  private static clearCharacterState(userId?: string, sessionId?: string, avatarType?: string): void {
     try {
-      const characterKeys = [
-        this.CHARACTER_STATE_KEY,
-        `${this.CHARACTER_STATE_KEY}_${userId}`,
-        'character_appearance_cache',
-        'character_consistency_state'
-      ];
-
-      // Add avatar-specific character keys
-      if (avatarType && skinTone) {
-        characterKeys.push(
-          `${this.CHARACTER_STATE_KEY}_${avatarType}_${skinTone}`,
-          `character_appearance_${userId}_${avatarType}_${skinTone}`
-        );
-      }
+      // Clear character state from localStorage
+      const characterKeys = Object.keys(localStorage).filter(key => 
+        key.includes(this.CHARACTER_STATE_KEY) ||
+        key.includes('character_') ||
+        (sessionId && key.includes(sessionId)) ||
+        (userId && key.includes(userId))
+      );
 
       characterKeys.forEach(key => {
-        try {
-          localStorage.removeItem(key);
-          sessionStorage.removeItem(key);
-        } catch {}
+        localStorage.removeItem(key);
       });
 
-      console.log('👤 Character state caches cleared:', characterKeys.length);
+      console.log(`🎭 Cleared ${characterKeys.length} character state entries`);
+
     } catch (error) {
       console.warn('Failed to clear character state:', error);
     }
   }
 
   /**
-   * Clear session storage caches
+   * Clear specific session storage caches
    */
   private static clearSessionStorageCaches(): void {
     try {
-      const sessionKeys = [
-        'session_achievements',
-        'session_start_stats',
-        'last_user_info',
-        'last_story_text',
-        'current_story_progress',
-        'audio_session_state',
-        'reading_session_active'
+      const keysToRemove = [
+        'story_generation_cache',
+        'image_generation_queue', 
+        'audio_cache',
+        'vocabulary_cache',
+        'reading_progress'
       ];
 
-      sessionKeys.forEach(key => {
-        try {
-          sessionStorage.removeItem(key);
-        } catch {}
+      keysToRemove.forEach(key => {
+        sessionStorage.removeItem(key);
       });
 
-      console.log('🗄️ Session storage caches cleared');
+      console.log('🗃️ Cleared session storage caches');
+
     } catch (error) {
       console.warn('Failed to clear session storage caches:', error);
     }
@@ -203,61 +250,61 @@ export class SessionCacheManager {
    */
   private static clearNavigationCaches(userId: string): void {
     try {
-      const navKeys = [
-        'navigation_cache_validator',
-        `user_navigation_${userId}`,
-        'story_navigation_state',
-        'page_transition_cache'
-      ];
+      // Clear navigation state from localStorage
+      const navKeys = ['navigation_state', 'route_cache', 'reading_position'];
+      navKeys.forEach(key => localStorage.removeItem(key));
 
-      navKeys.forEach(key => {
-        try {
-          localStorage.removeItem(key);
-          sessionStorage.removeItem(key);
-        } catch {}
-      });
+      // Clear session navigation from sessionStorage  
+      const sessionNavKeys = ['current_session', 'session_navigation'];
+      sessionNavKeys.forEach(key => sessionStorage.removeItem(key));
 
-      console.log('🧭 Navigation caches cleared');
+      console.log('🧭 Cleared navigation caches');
+
     } catch (error) {
       console.warn('Failed to clear navigation caches:', error);
     }
   }
 
   /**
-   * Get cache status for debugging
+   * Get cache status and metrics
    */
-  static getCacheStatus(): {
-    imageCacheSize: number;
-    sessionCacheExists: boolean;
-    visualStateKeys: number;
-    characterStateKeys: number;
+  static getCacheStatus(): { 
+    imageCacheSize: number; 
+    sessionCacheExists: boolean; 
+    visualStateKeys: number; 
+    characterStateKeys: number; 
   } {
     try {
-      const metrics = EnhancedImageCache.getCacheMetrics();
-      
+      // Count image cache entries
+      const imageCache = localStorage.getItem(EnhancedImageCache['CACHE_KEY']);
+      const imageCacheSize = imageCache ? Object.keys(JSON.parse(imageCache)).length : 0;
+
+      // Check session cache existence
+      const sessionKeys = Object.keys(sessionStorage).filter(key => 
+        key.includes('time2read_story_session_')
+      );
+      const sessionCacheExists = sessionKeys.length > 0;
+
       // Count visual state keys
-      let visualStateKeys = 0;
-      let characterStateKeys = 0;
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.includes('visual_state')) visualStateKeys++;
-        if (key?.includes('character_')) characterStateKeys++;
-      }
+      const visualStateKeys = Object.keys(sessionStorage).filter(key => 
+        key.includes(this.VISUAL_STATE_KEY) || key.includes('visual_state')
+      ).length;
+
+      // Count character state keys  
+      const characterStateKeys = Object.keys(localStorage).filter(key => 
+        key.includes(this.CHARACTER_STATE_KEY) || key.includes('character_')
+      ).length;
 
       return {
-        imageCacheSize: metrics.totalImages,
-        sessionCacheExists: StorySessionCache.hasCachedSession('guest'),
+        imageCacheSize,
+        sessionCacheExists,
         visualStateKeys,
         characterStateKeys
       };
-    } catch {
-      return {
-        imageCacheSize: 0,
-        sessionCacheExists: false,
-        visualStateKeys: 0,
-        characterStateKeys: 0
-      };
+
+    } catch (error) {
+      console.warn('Failed to get cache status:', error);
+      return { imageCacheSize: 0, sessionCacheExists: false, visualStateKeys: 0, characterStateKeys: 0 };
     }
   }
 }

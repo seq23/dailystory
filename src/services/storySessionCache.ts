@@ -223,9 +223,48 @@ export class StorySessionCache {
   }
 
   /**
-   * Clear cached session for user
+   * Clear story content only while preserving avatar identity (for premium rewrites)
    */
-  static async clearCachedSession(userId: string, clearCharacterState: boolean = true, avatarType?: string): Promise<void> {
+  static async clearStoryContentKeepAvatar(userId: string, avatarType?: string): Promise<void> {
+    const session = this.getCachedStorySession(userId, avatarType);
+    if (!session) return;
+
+    // Preserve avatar identity data
+    const preservedAvatarData = {
+      avatarType: session.metadata.isPremium ? avatarType : undefined,
+      characterSessionId: session.characterSessionId, // Keep character session for avatar consistency
+    };
+
+    // Clear story content but keep avatar metadata
+    const clearedSession: CachedStorySession = {
+      ...session,
+      pages: [],
+      images: [],
+      currentPage: 0,
+      timestamp: Date.now(),
+      isComplete: false,
+      sessionType: 'rewrite',
+      metadata: {
+        ...session.metadata,
+        wordCount: 0,
+        timeSpent: 0,
+        sessionStartTime: Date.now(),
+      }
+    };
+
+    try {
+      const cacheKey = this.getCacheKey(userId, avatarType);
+      sessionStorage.setItem(cacheKey, JSON.stringify(clearedSession));
+      console.log(`🎭 Cleared story content, preserved avatar identity for user ${userId}`);
+    } catch (error) {
+      console.warn('Failed to clear story content only:', error);
+    }
+  }
+
+  /**
+   * Clear cached session for user with context-aware behavior
+   */
+  static async clearCachedSession(userId: string, clearCharacterState: boolean = true, avatarType?: string, context: 'session-end' | 'rewrite' | 'next-story' | 'avatar-change' = 'session-end'): Promise<void> {
     // For guest users, clear all 3 possible avatar cache variants to ensure clean separation
     if (userId === 'guest') {
       const avatarTypes = ['boy', 'girl', 'neutral'];
