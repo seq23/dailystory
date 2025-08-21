@@ -14,8 +14,8 @@ export function validateAndEnhanceContent(enhancedStoryData, storyText) {
   
   console.log(`🔍 Quality Assessment: ${qualityScore}/100 (${mismatches.length} mismatches)`);
   
-  // QUALITY GATE: Reject terrible content (0-30) → Tier 2
-  if (qualityScore <= 30) {
+  // QUALITY GATE: Reject unfixable content (≤40) → Tier 2
+  if (qualityScore <= 40) {
     console.log(`❌ Quality too low (${qualityScore}/100) - falling back to Tier 2`);
     return { useTier2: true, qualityScore, mismatches };
   }
@@ -78,10 +78,10 @@ function detectContentMismatches(data, text) {
       const aiLocation = data.setting?.location?.toLowerCase() || '';
       
       if (condition === 'bright' && (!aiWeather.includes('sun') && !aiLocation.includes('bright') && !aiLocation.includes('outdoor'))) {
-        mismatches.push(`lighting-mismatch: Story mentions ${keywords.join('/')} but AI missed bright/sunny context`);
+        mismatches.push(`scene-mismatch: Story mentions ${keywords.join('/')} but AI missed bright/sunny context`);
       }
       if (condition === 'dark' && (!aiWeather.includes('dark') && !aiLocation.includes('dark'))) {
-        mismatches.push(`lighting-mismatch: Story mentions darkness but AI missed dark context`);
+        mismatches.push(`scene-mismatch: Story mentions darkness but AI missed dark context`);
       }
     }
   }
@@ -124,6 +124,22 @@ function detectContentMismatches(data, text) {
     }
   }
   
+  // Missing objects detection (minor fixable issue)
+  const textWords = text.toLowerCase().split(/\s+/);
+  const commonObjects = ['book', 'ball', 'toy', 'car', 'dog', 'cat', 'tree', 'flower'];
+  const missingObjects = commonObjects.filter(obj => 
+    textWords.includes(obj) && 
+    (!data.objects || !data.objects.some(o => o.toLowerCase().includes(obj)))
+  );
+  if (missingObjects.length > 0) {
+    mismatches.push(`missing-objects: Story mentions ${missingObjects.join(', ')} but AI missed them`);
+  }
+
+  // Generic names detection (minor fixable issue)  
+  if (data.characters?.some(c => c.name === "character")) {
+    mismatches.push(`generic-names: AI used generic "character" name instead of extracting actual name`);
+  }
+
   return mismatches;
 }
 
@@ -133,26 +149,31 @@ function detectContentMismatches(data, text) {
 function calculateQualityScore(data, text, mismatches) {
   let score = 100;
   
-  // Major penalties for critical mismatches
+  // UNFIXABLE CRITICAL ERRORS → Trigger Tier 2 Fallback (Score ≤ 40)
   mismatches.forEach(mismatch => {
-    if (mismatch.includes('setting-mismatch')) {
-      score -= 40; // Park vs indoor = critical error
-    } else if (mismatch.includes('lighting-mismatch')) {
-      score -= 40; // Missing sun/brightness = critical visual error
-    } else if (mismatch.includes('emotion-mismatch')) {
-      score -= 30; // Missing happiness/emotions = major error
+    if (mismatch.includes('scene-mismatch')) {
+      score -= 60; // Missing scene context = critical visual error (unfixable)
     } else if (mismatch.includes('action-mismatch')) {
-      score -= 30; // Wrong action = major error
+      score -= 60; // Wrong character action = critical error (unfixable)  
+    } else if (mismatch.includes('setting-mismatch')) {
+      score -= 30; // Indoor/outdoor mismatch = major error (partially fixable)
+    // FIXABLE MINOR ERRORS → Apply validation fixes (Continue processing)
+    } else if (mismatch.includes('emotion-mismatch')) {
+      score -= 5; // Missing emotions = minor error (fixable)
+    } else if (mismatch.includes('missing-objects')) {
+      score -= 5; // Missing objects = minor error (easily fixable)
+    } else if (mismatch.includes('generic-names')) {
+      score -= 2; // Generic names = minor error (easily fixable)
     } else {
-      score -= 20; // Other mismatches
+      score -= 10; // Other mismatches
     }
   });
   
-  // Check basic content quality
+  // Check basic content completeness (minor penalties for fixable issues)
   if (!data.characters || data.characters.length === 0) score -= 15;
   if (!data.setting || !data.setting.location) score -= 10;
-  if (data.characters?.some(c => c.name === "character")) score -= 10;
-  if (data.setting?.location === "scene" || data.setting?.location === "indoor scene") score -= 10;
+  if (data.characters?.some(c => c.name === "character")) score -= 2; // Now handled by generic-names detection
+  if (data.setting?.location === "scene" || data.setting?.location === "indoor scene") score -= 5; // Reduced - fixable
   
   // Ensure minimum score
   return Math.max(0, score);
