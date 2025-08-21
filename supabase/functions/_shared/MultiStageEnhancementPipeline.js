@@ -1,3 +1,4 @@
+
 // MultiStage Enhancement Pipeline - Unified AI Brain for All Tiers
 // Now uses real AI functions from FrontendIntelligence.js
 //
@@ -74,7 +75,7 @@ export class MultiStageEnhancementPipeline {
   }
   
   // ============= TIER 1: HIGH-QUALITY AI-ENHANCED PROCESSING WITH STYLE FRAMEWORKS =============
-  static async processTier1HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData = null, avatarIdentity = null) {
+  static async processTier1HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData, avatarIdentity) {
     try {
       console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State + Character Consistency: storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
       
@@ -427,38 +428,37 @@ export class MultiStageEnhancementPipeline {
     return `${storyText} showing ${characterDescription}, ${styleElements}, ${framework.brandSuffix || 'enhanced children\'s book illustration'}`;
   }
 
-  static buildSimpleCharacterDescription(userInfo, difficulty = null) {
+  static buildSimpleCharacterDescription(userInfo, difficulty) {
     // Use local character generation logic (UnifiedCharacterDescriptor not available in edge functions)
     console.log('Building simple character description with local logic');
       
-      // Fallback to legacy logic for compatibility
-      const name = userInfo?.name || 'Alex';
-      const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
-      const skinTone = userInfo?.avatar?.skinTone || 'medium';
-      
-      // Apply age range modifier based on difficulty level
-      let ageRange = '5-8 years old'; // Default for beginner/easy/medium
-      if (difficulty === 'hard') {
-        ageRange = '9-11 years old';
-      } else if (difficulty === 'expert') {
-        ageRange = '11-13 years old';
-      }
-      
-      // Simple skin tone mapping
-      const skinMap = {
-        light: 'light skin',
-        medium: 'medium skin',
-        olive: 'olive skin', 
-        dark: 'dark skin',
-        pale: 'pale skin'
-      };
-      
-      return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
+    // Fallback to legacy logic for compatibility
+    const name = userInfo?.name || 'Alex';
+    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    
+    // Apply age range modifier based on difficulty level
+    let ageRange = '5-8 years old'; // Default for beginner/easy/medium
+    if (difficulty === 'hard') {
+      ageRange = '9-11 years old';
+    } else if (difficulty === 'expert') {
+      ageRange = '11-13 years old';
     }
+    
+    // Simple skin tone mapping
+    const skinMap = {
+      light: 'light skin',
+      medium: 'medium skin',
+      olive: 'olive skin', 
+      dark: 'dark skin',
+      pale: 'pale skin'
+    };
+    
+    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
   }
   
   // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============
-  static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework = null, pageNumber = 1) {
+  static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber) {
     // Build negative prompt with new priority structure
     const pageSpecific = this.buildPageSpecificNegatives(pageNumber, userInfo);
     const selectiveText = this.buildSelectiveTextPrevention();
@@ -491,7 +491,7 @@ export class MultiStageEnhancementPipeline {
     return baseNegative;
   }
   
-  static buildSimpleNegativePrompt(userInfo, pageNumber = 1) {
+  static buildSimpleNegativePrompt(userInfo, pageNumber) {
     // Build negative prompt with new priority structure
     const pageSpecific = this.buildPageSpecificNegatives(pageNumber, userInfo);
     const selectiveText = this.buildSelectiveTextPrevention();
@@ -552,7 +552,7 @@ export class MultiStageEnhancementPipeline {
   }
 
   // NEW: AI-Enhanced Scene Context Method
-  static extractAIEnhancedSceneContext(storyText, enhancedStoryData = null) {
+  static extractAIEnhancedSceneContext(storyText, enhancedStoryData) {
     console.log('🧠 Using AI-enhanced scene context extraction');
     
     if (enhancedStoryData) {
