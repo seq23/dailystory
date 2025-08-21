@@ -102,10 +102,12 @@ export class MultiStageEnhancementPipeline {
               this.setCachedAIEnhancement(sessionId, pageNumber, storyText, enhancedStoryData);
               console.log(`✅ AI story enhancer successful and cached`);
             } else {
-              console.warn(`⚠️ AI story enhancer failed with status ${enhancerResponse.status}, proceeding without AI data`);
+              console.warn(`⚠️ AI story enhancer failed with status ${enhancerResponse.status}, switching to Tier 2`);
+              throw new Error(`AI enhancer failed, trigger Tier 2 processing`);
             }
           } catch (enhancerError) {
-            console.warn(`⚠️ AI story enhancer error: ${enhancerError.message}, proceeding without AI data`);
+            console.warn(`⚠️ AI story enhancer error: ${enhancerError.message}, switching to Tier 2`);
+            throw enhancerError;
           }
         }
       }

@@ -244,15 +244,18 @@ export class FrontendIntelligence {
       const culturalPrideElement = this.selectCulturalPrideElement(userInfo);
       let gender = this.detectGender(userInfo);
       
-      // Apply age range modifier based on difficulty level
+      // Apply age range based on difficulty level - preserve gender, add age in parentheses
+      let ageRange;
       if (difficulty === 'hard') {
-        gender = 'pre-teen';
+        ageRange = '9-11 years old';
       } else if (difficulty === 'expert') {
-        gender = 'teenager';
+        ageRange = '11-13 years old';
+      } else {
+        ageRange = '5-8 years old';  // Beginner, Easy, Medium
       }
       
-      // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier
-      return `${userInfo.name || 'Alex'} (African-American ${gender} with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
+      // CRITICAL FIX: Add "African-American" as explicit protected cultural identifier with age range
+      return `${userInfo.name || 'Alex'} (African-American ${gender}, ${ageRange}, with ${specificSkinTone}, ${africanAmericanFeatures}, ${specificHairStyle}, ${culturalPrideElement})`;
     }
     
     return `${userInfo.name || 'child'} with ${userInfo.avatar?.skinTone || 'medium'} skin`;
