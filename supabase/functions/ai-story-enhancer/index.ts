@@ -137,11 +137,16 @@ serve(async (req) => {
     'ai-story-enhancer',
     'fallback-chain',
     async () => {
+      // =================== PHASE 1: VARIABLE DECLARATION & SCOPE SETUP ===================
+      let requestBody;
+      let storyText, userInfo, sessionId, pageNumber, totalPages;
+      let pageText = '';
+      const importResults = {};
+      
       // =================== PHASE 2: DEPENDENCY & DEPLOYMENT VERIFICATION ===================
       console.log('🔧 AI Story Enhancer: Starting Phase 2 Dependency Verification');
       
       // Test all shared module imports proactively
-      const importResults = {};
       try {
         await import('../_shared/cors.ts');
         importResults.cors = '✅ SUCCESS';
@@ -203,18 +208,17 @@ serve(async (req) => {
         }
 
         // Parse and log the complete request structure
-        let requestBody;
         try {
           requestBody = await req.json();
           console.log('📥 Incoming Request Structure:', {
             method: req.method,
             headers: Object.fromEntries(req.headers.entries()),
-            bodyKeys: Object.keys(requestBody),
-            bodyTypes: Object.fromEntries(Object.entries(requestBody).map(([k, v]) => [k, typeof v])),
-            storyTextLength: requestBody.storyText?.length || 0,
-            hasUserInfo: !!requestBody.userInfo,
-            hasSessionId: !!requestBody.sessionId,
-            pageInfo: `${requestBody.pageNumber}/${requestBody.totalPages || 'unlimited'}`
+            bodyKeys: Object.keys(requestBody || {}),
+            bodyTypes: Object.fromEntries(Object.entries(requestBody || {}).map(([k, v]) => [k, typeof v])),
+            storyTextLength: requestBody?.storyText?.length || 0,
+            hasUserInfo: !!requestBody?.userInfo,
+            hasSessionId: !!requestBody?.sessionId,
+            pageInfo: `${requestBody?.pageNumber}/${requestBody?.totalPages || 'unlimited'}`
           });
         } catch (parseError) {
           console.error('❌ Request parsing failed:', parseError.message);
@@ -225,7 +229,14 @@ serve(async (req) => {
         }
 
         // Extract parameters with comprehensive validation and logging
-        const { storyText, userInfo, sessionId, pageNumber, totalPages } = requestBody;
+        if (!requestBody) {
+          throw {
+            type: EdgeErrorType.VALIDATION,
+            message: 'Request body is null or undefined'
+          };
+        }
+        
+        ({ storyText, userInfo, sessionId, pageNumber, totalPages } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
           userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',
@@ -241,40 +252,49 @@ serve(async (req) => {
           };
         }
 
-    const pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
-    console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
+        // Set up pageText for consistent usage throughout the function
+        pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
+        console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
 
-    // Get previous pages context for consistency
-    const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
-    const previousPages = StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
-    
-    let previousContext = '';
-    if (previousPages.length > 0) {
-      previousContext = `\n\nPREVIOUS STORY CONTEXT:\n`;
-      previousPages.reverse().forEach((page, index) => {
-        previousContext += `Page ${page.pageNumber}: Previous story elements established\n`;
-      });
-      
-      const knownCharacters = StoryVisualStateManager?.getStoryState?.(sessionId)?.characters || new Map();
-      const knownSetting = StoryVisualStateManager?.getSettingForPrompt?.(sessionId);
-      const knownObjects = StoryVisualStateManager?.getVisualDetailsForPrompt?.(sessionId);
-      
-      if (knownCharacters.size > 0) {
-        const charNames = Array.from(knownCharacters.keys()).join(', ');
-        previousContext += `ESTABLISHED CHARACTERS: ${charNames}\n`;
-      }
-      if (knownSetting) {
-        previousContext += `ESTABLISHED SETTING: ${knownSetting}\n`;
-      }
-      if (knownObjects) {
-        previousContext += `ESTABLISHED OBJECTS: ${knownObjects}\n`;
-      }
-    }
+        // Get previous pages context for consistency - move import outside try block
+        let StoryVisualStateManager;
+        try {
+          const storyStateModule = await import('../_shared/storyVisualState.js');
+          StoryVisualStateManager = storyStateModule.StoryVisualStateManager;
+        } catch (importError) {
+          console.warn('⚠️ Could not import StoryVisualStateManager:', importError.message);
+          StoryVisualStateManager = null;
+        }
+        
+        const previousPages = StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
+        
+        let previousContext = '';
+        if (previousPages.length > 0) {
+          previousContext = `\n\nPREVIOUS STORY CONTEXT:\n`;
+          previousPages.reverse().forEach((page, index) => {
+            previousContext += `Page ${page.pageNumber}: Previous story elements established\n`;
+          });
+          
+          const knownCharacters = StoryVisualStateManager?.getStoryState?.(sessionId)?.characters || new Map();
+          const knownSetting = StoryVisualStateManager?.getSettingForPrompt?.(sessionId);
+          const knownObjects = StoryVisualStateManager?.getVisualDetailsForPrompt?.(sessionId);
+          
+          if (knownCharacters.size > 0) {
+            const charNames = Array.from(knownCharacters.keys()).join(', ');
+            previousContext += `ESTABLISHED CHARACTERS: ${charNames}\n`;
+          }
+          if (knownSetting) {
+            previousContext += `ESTABLISHED SETTING: ${knownSetting}\n`;
+          }
+          if (knownObjects) {
+            previousContext += `ESTABLISHED OBJECTS: ${knownObjects}\n`;
+          }
+        }
 
-    const messages = [
-      {
-        role: 'system',
-        content: `You are analyzing ${pageText} in an ${totalPages ? 'ongoing story' : 'never-ending story adventure'}.${previousContext}
+        const messages = [
+          {
+            role: 'system',
+            content: `You are analyzing ${pageText} in an ${totalPages ? 'ongoing story' : 'never-ending story adventure'}.${previousContext}
 
 Extract story elements while maintaining consistency with established elements. You may reasonably infer details that maintain story continuity.
 
@@ -296,10 +316,10 @@ Return ONLY valid JSON:
 }
 
 Maintain story consistency while extracting meaningful details.`
-      },
-      {
-        role: 'user',
-        content: `Text content for ${pageText}:
+          },
+          {
+            role: 'user',
+            content: `Text content for ${pageText}:
 
 "${storyText}"
 
@@ -311,83 +331,83 @@ Analyze this text considering the established story context. Focus on:
 - Mood progression throughout the story
 
 Maintain consistency with previous pages while extracting rich story elements.`
-      }
-    ];
+          }
+        ];
 
-    let validationResult;
-    let enhancedStoryData;
-    
-    try {
-      // Call OpenAI with model fallback chain
-      const aiResult = await callOpenAIWithFallback(messages);
-      
-      if (!aiResult.choices?.[0]?.message?.content) {
-        throw new Error('No content received from OpenAI fallback chain');
-      }
+        let validationResult;
+        let enhancedStoryData;
+        
+        try {
+          // Call OpenAI with model fallback chain
+          const aiResult = await callOpenAIWithFallback(messages);
+          
+          if (!aiResult.choices?.[0]?.message?.content) {
+            throw new Error('No content received from OpenAI fallback chain');
+          }
 
-      enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
-      
-      // ULTRA-LEAN VALIDATION WITH QUALITY GATE
-      validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
-      
-      // QUALITY GATE: If score too low (0-30) → Fall back to Tier 2 immediately
-      if (validationResult.useTier2) {
-        console.log(`🚀 Quality gate triggered - using Tier 2 pipeline (score: ${validationResult.qualityScore}/100)`);
-        return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore);
-      }
-      
-      // If major mismatches detected, trigger re-analysis once
-      if (validationResult.requiresReanalysis) {
-        console.log(`🔄 Re-analyzing due to content mismatches (score: ${validationResult.qualityScore}/100)...`);
-        const retryResult = await callOpenAIWithFallback(messages);
-        if (retryResult.choices?.[0]?.message?.content) {
-          enhancedStoryData = JSON.parse(retryResult.choices[0].message.content);
+          enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
+          
+          // ULTRA-LEAN VALIDATION WITH QUALITY GATE
           validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
           
-          // If still bad after retry → Tier 2
-          if (validationResult.useTier2 || validationResult.requiresReanalysis) {
-            console.log(`🚀 Re-analysis failed - using Tier 2 pipeline`);
-            return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore || 0);
+          // QUALITY GATE: If score too low (0-30) → Fall back to Tier 2 immediately
+          if (validationResult.useTier2) {
+            console.log(`🚀 Quality gate triggered - using Tier 2 pipeline (score: ${validationResult.qualityScore}/100)`);
+            return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore, null, 0);
           }
+          
+          // If major mismatches detected, trigger re-analysis once
+          if (validationResult.requiresReanalysis) {
+            console.log(`🔄 Re-analyzing due to content mismatches (score: ${validationResult.qualityScore}/100)...`);
+            const retryResult = await callOpenAIWithFallback(messages);
+            if (retryResult.choices?.[0]?.message?.content) {
+              enhancedStoryData = JSON.parse(retryResult.choices[0].message.content);
+              validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+              
+              // If still bad after retry → Tier 2
+              if (validationResult.useTier2 || validationResult.requiresReanalysis) {
+                console.log(`🚀 Re-analysis failed - using Tier 2 pipeline`);
+                return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore || 0, 'Re-analysis failed', 0);
+              }
+            }
+          }
+          
+          enhancedStoryData = validationResult.enhancedData;
+          
+        } catch (parseError) {
+          console.error('Failed to parse AI response - using Tier 2 pipeline:', parseError.message);
+          return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, `Parse error: ${parseError.message}`, 0);
         }
-      }
-      
-      enhancedStoryData = validationResult.enhancedData;
-      
-    } catch (parseError) {
-      console.error('Failed to parse AI response - using Tier 2 pipeline:', parseError.message);
-      return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, `Parse error: ${parseError.message}`);
-    }
 
-    // Add context and metadata with validation info
-    const result = {
-      enhancedStoryData: enhancedStoryData || {},
-      extractedElements: {
-        characterCount: enhancedStoryData.characters?.length || 0,
-        objectCount: enhancedStoryData.objects?.length || 0,
-        complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
-      },
-      contextualInfo: {
-        pageNumber,
-        totalPages: totalPages || 'unlimited',
-        sessionId,
-        originalTextLength: storyText.length,
-        processingTimestamp: new Date().toISOString(),
-        isNeverEnding: !totalPages
-      },
-      narrativeEnhancements: {
-        sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
-        emotionalTone: enhancedStoryData.mood || 'neutral',
-        visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
-      },
-      validation: {
-        contentValid: !validationResult?.requiresReanalysis,
-        mismatches: validationResult?.mismatches || [],
-        processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
-        qualityScore: validationResult?.qualityScore || 100,
-        modelUsed: 'openai-enhanced'
-      }
-    };
+        // Add context and metadata with validation info
+        const result = {
+          enhancedStoryData: enhancedStoryData || {},
+          extractedElements: {
+            characterCount: enhancedStoryData.characters?.length || 0,
+            objectCount: enhancedStoryData.objects?.length || 0,
+            complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
+          },
+          contextualInfo: {
+            pageNumber,
+            totalPages: totalPages || 'unlimited',
+            sessionId,
+            originalTextLength: storyText.length,
+            processingTimestamp: new Date().toISOString(),
+            isNeverEnding: !totalPages
+          },
+          narrativeEnhancements: {
+            sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
+            emotionalTone: enhancedStoryData.mood || 'neutral',
+            visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
+          },
+          validation: {
+            contentValid: !validationResult?.requiresReanalysis,
+            mismatches: validationResult?.mismatches || [],
+            processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
+            qualityScore: validationResult?.qualityScore || 100,
+            modelUsed: 'openai-enhanced'
+          }
+        };
 
         console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, quality: ${validationResult?.qualityScore || 100}/100`);
 
@@ -418,7 +438,8 @@ Maintain consistency with previous pages while extracting rich story elements.`
           fallbackParams.pageNumber, 
           fallbackParams.totalPages, 
           0, 
-          error.message
+          error.message,
+          0
         );
       }
     }
@@ -428,12 +449,46 @@ Maintain consistency with previous pages while extracting rich story elements.`
 /**
  * Tier 2 Pipeline Fallback - Uses MultiStageEnhancementPipeline when OpenAI fails or quality is too low
  */
-async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, qualityScore = 0, errorMessage = null) {
-  try {
-    console.log(`🚀 Tier 2 Pipeline: Processing fallback for session ${sessionId}, page ${pageNumber}`);
+async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, qualityScore = 0, errorMessage = null, depth = 0) {
+  // Prevent infinite recursion
+  if (depth > 2) {
+    console.warn(`🚫 Max recursion depth reached (${depth}) - using emergency fallback`);
+    const emergencyFallback = {
+      enhancedStoryData: {
+        characters: [{ name: "character", description: "child", emotions: "neutral" }],
+        setting: { location: "scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
+        objects: [],
+        mood: "neutral",
+        narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
+      },
+      extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
+      contextualInfo: { pageNumber, totalPages: 'unlimited', sessionId, processingTimestamp: new Date().toISOString(), isNeverEnding: true },
+      narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
+      validation: { contentValid: false, processingMethod: 'max-depth-emergency', qualityScore: 0, modelUsed: 'none' },
+      emergencyFallback: true,
+      errors: [`Max recursion depth ${depth}`, errorMessage].filter(Boolean)
+    };
     
-    // Import and use the Tier 2 pipeline
-    const { MultiStageEnhancementPipeline } = await import('../_shared/MultiStageEnhancementPipeline.js');
+    return createCorsResponse(emergencyFallback);
+  }
+
+  try {
+    console.log(`🚀 Tier 2 Pipeline: Processing fallback for session ${sessionId}, page ${pageNumber} (depth: ${depth})`);
+    
+    // Import and use the Tier 2 pipeline with proper error handling
+    let MultiStageEnhancementPipeline;
+    try {
+      const pipelineModule = await import('../_shared/MultiStageEnhancementPipeline.js');
+      MultiStageEnhancementPipeline = pipelineModule.MultiStageEnhancementPipeline;
+    } catch (importError) {
+      console.error('❌ Failed to import MultiStageEnhancementPipeline:', importError.message);
+      throw new Error(`Pipeline import failed: ${importError.message}`);
+    }
+    
+    if (!MultiStageEnhancementPipeline?.processThroughPipeline) {
+      throw new Error('MultiStageEnhancementPipeline.processThroughPipeline is not available');
+    }
+    
     const tier2Result = await MultiStageEnhancementPipeline.processThroughPipeline(
       storyText, 
       userInfo, 
@@ -473,7 +528,7 @@ async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, tota
         pageNumber, 
         totalPages: totalPages || 'unlimited', 
         sessionId, 
-        originalTextLength: storyText.length,
+        originalTextLength: storyText?.length || 0,
         processingTimestamp: new Date().toISOString(), 
         isNeverEnding: !totalPages 
       },
@@ -490,14 +545,15 @@ async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, tota
         modelUsed: 'tier-2-pipeline'
       },
       tier2Used: true,
-      originalError: errorMessage
+      originalError: errorMessage,
+      depth
     };
     
-    console.log(`✅ Tier 2 Pipeline complete: Using template-based enhancement`);
+    console.log(`✅ Tier 2 Pipeline complete: Using template-based enhancement (depth: ${depth})`);
     return createCorsResponse(formattedResult);
     
   } catch (tier2Error) {
-    console.error(`❌ Tier 2 Pipeline failed: ${tier2Error.message}`);
+    console.error(`❌ Tier 2 Pipeline failed (depth: ${depth}): ${tier2Error.message}`);
     
     // Final fallback - absolute minimum structure
     const emergencyFallback = {
@@ -509,11 +565,19 @@ async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, tota
         narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
       },
       extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
-      contextualInfo: { pageNumber, totalPages: 'unlimited', sessionId, processingTimestamp: new Date().toISOString(), isNeverEnding: true },
+      contextualInfo: { 
+        pageNumber: pageNumber || 1, 
+        totalPages: totalPages || 'unlimited', 
+        sessionId: sessionId || 'unknown-session', 
+        originalTextLength: storyText?.length || 0,
+        processingTimestamp: new Date().toISOString(), 
+        isNeverEnding: !totalPages 
+      },
       narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
       validation: { contentValid: false, processingMethod: 'emergency-fallback', qualityScore: 0, modelUsed: 'none' },
       emergencyFallback: true,
-      errors: [errorMessage, tier2Error.message].filter(Boolean)
+      errors: [errorMessage, tier2Error.message].filter(Boolean),
+      depth
     };
     
     return createCorsResponse(emergencyFallback);
