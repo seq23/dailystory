@@ -16,7 +16,10 @@ export class ContentSecurity {
       'cigarette', 'alcohol', 'beer', 'vodka', 'whiskey',
       'suicide', 'depression', 'cutting', 'self-harm', 'anorexia', 'bulimia',
       'shoot', 'shooting', 'shot', 'kill', 'killing', 'killed', 'killer', 'gun', 'guns', 'gunshot',
-      'stab', 'stabbing', 'stabbed', 'stabs'
+      'stab', 'stabbing', 'stabbed', 'stabs',
+      // Additional anatomical and sexual terms
+      'asscrack', 'butt', 'butthole', 'booty', 'bootyhole', 'tits', 'titties', 'cum', 'nutsack', 
+      'dickcheese', 'clit', 'clitoris', 'hymen', 'menstruation', 'gangbang', 'gangbanging'
     ],
 
     // Spanish
@@ -103,7 +106,32 @@ export class ContentSecurity {
     { pattern: /[5s\$]/gi, replacement: 's' },
     { pattern: /[7t]/gi, replacement: 't' },
     { pattern: /[8b]/gi, replacement: 'b' },
-    { pattern: /[9g]/gi, replacement: 'g' }
+    { pattern: /[9g]/gi, replacement: 'g' },
+    // Enhanced leetspeak patterns
+    { pattern: /[*]/gi, replacement: '' },
+    { pattern: /[+]/gi, replacement: 't' },
+    { pattern: /[6]/gi, replacement: 'g' },
+    { pattern: /[2]/gi, replacement: 'z' }
+  ];
+
+  // Semantic pattern detection for inappropriate phrase combinations
+  private static semanticPatterns = [
+    // Sexual activity + objectification patterns
+    { pattern: /\b(banging|fucking|screwing|doing|getting|having)\s+(girls?|chicks?|women|ladies|boys?|guys?|men)\b/gi, 
+      reason: 'Inappropriate sexual content detected' },
+    { pattern: /\b(hot|sexy|fine|thick)\s+(chicks?|girls?|women|ladies|boys?|guys?|men)\b/gi, 
+      reason: 'Objectifying language detected' },
+    { pattern: /\b(gang\s*bang|group\s*sex|orgy|threesome|foursome)\b/gi, 
+      reason: 'Explicit sexual content detected' },
+    { pattern: /\b(hookup|hook\s*up|one\s*night\s*stand|booty\s*call|friends\s*with\s*benefits)\b/gi, 
+      reason: 'Inappropriate sexual content detected' },
+    { pattern: /\b(strip|stripping|naked|nude)\s+(girls?|boys?|women|men|people)\b/gi, 
+      reason: 'Inappropriate sexual content detected' },
+    // Anatomical references in inappropriate contexts
+    { pattern: /\b(big|huge|small|tiny)\s+(tits|boobs|ass|butt|dick|cock|penis)\b/gi, 
+      reason: 'Inappropriate anatomical references' },
+    { pattern: /\b(touch|grab|squeeze|feel|lick|suck)\s+(tits|boobs|ass|butt|dick|cock|penis|vagina|pussy)\b/gi, 
+      reason: 'Inappropriate sexual content detected' }
   ];
 
   // Rate limiting storage
@@ -139,6 +167,24 @@ export class ContentSecurity {
     const languagesToCheck = ['en']; // Always check English
     if (userLanguage && userLanguage !== 'en' && this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords]) {
       languagesToCheck.push(userLanguage);
+    }
+
+    // Check semantic patterns for inappropriate phrase combinations (Latin script only)
+    if (isLatinScript) {
+      for (const semanticPattern of this.semanticPatterns) {
+        try {
+          if (semanticPattern.pattern.test(text)) {
+            return { appropriate: false, reason: semanticPattern.reason };
+          }
+          // Also check normalized text for obfuscated versions
+          if (semanticPattern.pattern.test(normalizedText)) {
+            return { appropriate: false, reason: semanticPattern.reason };
+          }
+        } catch (regexError) {
+          console.warn(`Regex error checking semantic pattern:`, regexError);
+          // Continue with other checks
+        }
+      }
     }
 
     // Check inappropriate words in all relevant languages
