@@ -4,21 +4,21 @@
 export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   'beginner': {
     // Level 0 - Pre-reader
-    name: 'High-Quality 3D Children\'s Art',
-    artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics, single main character focus',
-    colorPalette: 'Bright, cheerful colors with natural color harmony',
-    lighting: 'Natural daylight with soft shadows and highlights, clear lighting',
-    texture: 'Smooth, polished surfaces with subtle material definition',
+    name: '3D Pixar Animation Style',
+    artStyle: '3D Pixar animation style with smooth rounded features and warm golden tones, single main character focus',
+    colorPalette: 'Warm golden tones with soft, natural color harmony',
+    lighting: 'Soft volumetric lighting with warm golden highlights',
+    texture: 'Smooth, rounded surfaces with professional 3D rendering quality',
     composition: 'Clear, focused single character composition, minimal clean background',
-    quality: 'Ultra premium children\'s book illustration with depth and dimension',
+    quality: 'Professional animation studio quality with depth and dimension',
     
     // Prompt components
-    prompt: '2D digital illustration, clean cel-shading, crisp line art, bright natural lighting, full-body centered character, child-friendly proportions, warm cheerful palette',
+    prompt: '3D Pixar animation style, soft volumetric lighting, warm golden tones, smooth rounded features, high-quality 3D rendering, child-friendly, professional animation studio quality',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
-    rendering: '3d_smooth',
-    brandSuffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
+    rendering: 'pixar_3d',
+    brandSuffix: '3D Pixar style, soft lighting, warm tones, smooth features, high-quality rendering',
     negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
@@ -33,21 +33,21 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   
   'easy': {
     // Level 1 - Beginner (identical to Level 0)
-    name: 'High-Quality 3D Children\'s Art',
-    artStyle: 'High-quality 3D-rendered digital illustration with cartoon aesthetics (NO TEXT)',
-    colorPalette: 'Bright, cheerful colors with natural color harmony',
-    lighting: 'Natural daylight with soft shadows and highlights',
-    texture: 'Smooth, polished surfaces with subtle material definition',
+    name: '3D Pixar Animation Style',
+    artStyle: '3D Pixar animation style with smooth rounded features and warm golden tones (NO TEXT)',
+    colorPalette: 'Warm golden tones with soft, natural color harmony',
+    lighting: 'Soft volumetric lighting with warm golden highlights',
+    texture: 'Smooth, rounded surfaces with professional 3D rendering quality',
     composition: 'Clear, focused composition with appealing depth',
-    quality: 'Premium children\'s book illustration with depth and dimension',
+    quality: 'Professional animation studio quality with depth and dimension',
     
     // Prompt components
-    prompt: '2D digital illustration, clean cel-shading, crisp line art, bright natural lighting, full-body centered character, child-friendly proportions, warm cheerful palette',
+    prompt: '3D Pixar animation style, soft volumetric lighting, warm golden tones, smooth rounded features, high-quality 3D rendering, child-friendly, professional animation studio quality',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
-    rendering: '3d_smooth',
-    brandSuffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
+    rendering: 'pixar_3d',
+    brandSuffix: '3D Pixar style, soft lighting, warm tones, smooth features, high-quality rendering',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
@@ -155,6 +155,7 @@ export const COLOR_PALETTE_DEFINITIONS = {
 
 // Rendering technique definitions
 export const RENDERING_TECHNIQUE_DEFINITIONS = {
+  'pixar_3d': '3D Pixar animation style, smooth rounded features, professional animation studio quality',
   '3d_smooth': '3D rendered, smooth polished surfaces, cartoon aesthetics',
   'painterly': 'digital painterly style, soft brush strokes, artistic texture',
   'advanced_digital_painting': 'advanced digital painting techniques, sophisticated rendering',
