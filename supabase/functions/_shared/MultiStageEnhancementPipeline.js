@@ -89,7 +89,8 @@ export class MultiStageEnhancementPipeline {
           console.log(`🧠 No cached data, will call AI story enhancer`);
           // Call ai-story-enhancer function to get AI analysis
           try {
-            const enhancerResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/ai-story-enhancer', {
+            const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co';
+            const enhancerResponse = await fetch(`${supabaseUrl}/functions/v1/ai-story-enhancer`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -97,6 +98,7 @@ export class MultiStageEnhancementPipeline {
               body: JSON.stringify({
                 storyText,
                 userInfo,
+                avatarIdentity,
                 sessionId,
                 pageNumber,
                 totalPages

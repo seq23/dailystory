@@ -217,6 +217,35 @@ export class BackendTokenManager {
     return compressed;
   }
   
+  static extractEmotionContent(sceneContext, characterDescription) {
+    // Enhanced emotion detection and processing
+    const emotionKeywords = {
+      happy: ['smiling', 'happy', 'joyful', 'cheerful', 'delighted', 'elated', 'gleeful', 'content', 'beaming'],
+      sad: ['crying', 'sad', 'upset', 'disappointed', 'melancholy', 'sorrowful', 'dejected', 'downcast'],
+      excited: ['excited', 'thrilled', 'enthusiastic', 'eager', 'animated', 'energetic', 'vibrant'],
+      scared: ['scared', 'afraid', 'frightened', 'nervous', 'worried', 'anxious', 'fearful', 'timid'],
+      angry: ['angry', 'mad', 'furious', 'irritated', 'annoyed', 'frustrated', 'livid'],
+      surprised: ['surprised', 'shocked', 'amazed', 'astonished', 'startled', 'bewildered'],
+      curious: ['curious', 'wondering', 'questioning', 'inquisitive', 'intrigued'],
+      determined: ['determined', 'focused', 'resolved', 'committed', 'steadfast', 'persistent']
+    };
+    
+    const textToAnalyze = `${sceneContext} ${characterDescription}`.toLowerCase();
+    const detectedEmotions = [];
+    
+    Object.entries(emotionKeywords).forEach(([emotion, keywords]) => {
+      if (keywords.some(keyword => textToAnalyze.includes(keyword))) {
+        detectedEmotions.push(emotion);
+      }
+    });
+    
+    if (detectedEmotions.length > 0) {
+      return `expressing ${detectedEmotions.join(' and ')} emotions`;
+    }
+    
+    return 'with natural emotional expression';
+  }
+  
   static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false, culturalElements = '') {
     // Enhanced Cultural Intelligence for African American Characters
     const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.MEDIUM; // Changed from LOW to MEDIUM for general users
@@ -250,7 +279,7 @@ export class BackendTokenManager {
       },
       // NEW: EMOTIONS GET HIGH PRIORITY
       {
-        content: '', // Emotions will be added by the calling code
+        content: this.extractEmotionContent(sceneContext, characterDescription),
         priority: PromptPriority.HIGH,
         canTruncate: false, // Never truncate emotions
         type: 'emotions'
