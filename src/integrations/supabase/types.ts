@@ -27,6 +27,7 @@ export type Database = {
           grade_level: string | null
           hobbies: string | null
           id: string
+          parent_email: string | null
           parent_user_id: string
           updated_at: string
         }
@@ -42,6 +43,7 @@ export type Database = {
           grade_level?: string | null
           hobbies?: string | null
           id?: string
+          parent_email?: string | null
           parent_user_id: string
           updated_at?: string
         }
@@ -57,6 +59,7 @@ export type Database = {
           grade_level?: string | null
           hobbies?: string | null
           id?: string
+          parent_email?: string | null
           parent_user_id?: string
           updated_at?: string
         }
@@ -176,6 +179,54 @@ export type Database = {
           story_id?: string | null
           story_title?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      personal_info_incidents: {
+        Row: {
+          child_profile_id: string | null
+          context_field: string
+          created_at: string
+          detected_content: string
+          email_notification_sent: boolean
+          email_notification_status: string | null
+          id: string
+          ip_address: unknown | null
+          parent_notified_at: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+          violation_type: string
+        }
+        Insert: {
+          child_profile_id?: string | null
+          context_field: string
+          created_at?: string
+          detected_content: string
+          email_notification_sent?: boolean
+          email_notification_status?: string | null
+          id?: string
+          ip_address?: unknown | null
+          parent_notified_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+          violation_type: string
+        }
+        Update: {
+          child_profile_id?: string | null
+          context_field?: string
+          created_at?: string
+          detected_content?: string
+          email_notification_sent?: boolean
+          email_notification_status?: string | null
+          id?: string
+          ip_address?: unknown | null
+          parent_notified_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+          violation_type?: string
         }
         Relationships: []
       }

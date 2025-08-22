@@ -68,3 +68,9 @@ verify_jwt = false
 
 [functions.send-coppa-notification]
 verify_jwt = false
+
+[functions.send-parental-notification]
+verify_jwt = false
+
+[functions.log-personal-info-incident]
+verify_jwt = false

@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import { validateTheme } from '@/utils/themeValidation';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { useCOPPANotification } from './useCOPPANotification';
+import { useIncidentLogger } from './useIncidentLogger';
+import { useChildProfiles } from './useChildProfiles';
 
 interface ValidationState {
   isValid: boolean;
@@ -13,6 +15,8 @@ interface ValidationState {
 
 export const useValidationOnSubmit = () => {
   const { sendCOPPANotification } = useCOPPANotification();
+  const { logIncident } = useIncidentLogger();
+  const { activeChild } = useChildProfiles();
   const [validationState, setValidationState] = useState<ValidationState>({
     isValid: true,
     errors: [],
@@ -55,12 +59,13 @@ export const useValidationOnSubmit = () => {
     };
   }, []);
 
-  const validateFormOnSubmit = useCallback((formData: Record<string, any>) => {
+  const validateFormOnSubmit = useCallback(async (formData: Record<string, any>) => {
     let allErrors: string[] = [];
     let hasCoppaViolation = false;
+    const coppaViolationsByField: Record<string, string[]> = {};
 
     // Validate each field in the form
-    Object.entries(formData).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(formData)) {
       if (value) {
         const context = key === 'displayName' ? 'name' : 
                       key === 'interests' || key === 'hobbies' ? 'interest' :
@@ -71,10 +76,30 @@ export const useValidationOnSubmit = () => {
           allErrors.push(...validation.errors);
           if (validation.hasCoppaViolation) {
             hasCoppaViolation = true;
+            
+            // Store violations by field for detailed reporting
+            if (!coppaViolationsByField[key]) {
+              coppaViolationsByField[key] = [];
+            }
+            coppaViolationsByField[key].push(...validation.errors.filter(error =>
+              error.includes('personal') || 
+              error.includes('contact') || 
+              error.includes('number') ||
+              error.includes('email') ||
+              error.includes('address')
+            ));
+            
+            // Log incident for real-time tracking
+            await logIncident({
+              childProfileId: activeChild?.id,
+              violationType: validation.errors.join(', '),
+              detectedContent: String(value),
+              contextField: key
+            });
           }
         }
       }
-    });
+    }
 
     setValidationState({
       isValid: allErrors.length === 0,
@@ -84,26 +109,35 @@ export const useValidationOnSubmit = () => {
       hasCoppaViolation
     });
 
-    // Send COPPA notification email if violations detected
+    // Send COPPA notification using real child/parent data
     if (hasCoppaViolation && allErrors.length > 0) {
-      // For demo purposes, using placeholder data
-      // In production, this would come from user profile/parent info
-      sendCOPPANotification({
-        parentEmail: "parent@example.com", // TODO: Get from user profile
-        childName: "Child", // TODO: Get from user profile  
-        violations: allErrors.filter(error => 
-          error.includes('personal') || 
-          error.includes('contact') || 
-          error.includes('number') ||
-          error.includes('email') ||
-          error.includes('address')
-        ),
-        detectedContent: Object.values(formData).join(' ')
-      }).catch(err => console.error('Failed to send COPPA notification:', err));
+      const childName = activeChild?.display_name || 'Child';
+      const parentEmail = activeChild?.parent_email;
+      
+      if (parentEmail && parentEmail !== '') {
+        const coppaViolations = Object.values(coppaViolationsByField).flat();
+        const detectedContent = Object.entries(formData)
+          .filter(([key, value]) => 
+            coppaViolationsByField[key] && coppaViolationsByField[key].length > 0
+          )
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ');
+
+        const notificationResult = await sendCOPPANotification({
+          parentEmail,
+          childName,
+          violations: coppaViolations,
+          detectedContent
+        });
+
+        console.log('COPPA notification sent:', notificationResult);
+      } else {
+        console.warn('No parent email available for child profile, skipping COPPA notification');
+      }
     }
 
     return allErrors.length === 0;
-  }, [validateField]);
+  }, [validateField, sendCOPPANotification, logIncident, activeChild]);
 
   const resetValidation = useCallback(() => {
     setValidationState({
