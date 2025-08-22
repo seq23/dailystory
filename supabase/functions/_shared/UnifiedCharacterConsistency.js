@@ -26,7 +26,7 @@ class UnifiedCharacterConsistency {
       characterDescription,
       culturalContext,
       avatarIdentity: {
-        type: seedData.avatarType || avatarIdentity?.skinTone,
+        type: seedData.avatarType || avatarIdentity?.type,
         skinTone: seedData.skinTone || avatarIdentity?.skinTone
       }
     };
@@ -64,7 +64,7 @@ class UnifiedCharacterConsistency {
       culturalProfile,
       physicalTraits,
       culturalElements,
-      avatarType: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
+      avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'prefer-not-to-answer',
       skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
       contextualAppearance: {
         currentClothing: culturalElements.clothing,
@@ -101,8 +101,9 @@ class UnifiedCharacterConsistency {
     const { nativeLanguage, avatar } = userInfo;
     const skinTone = avatar.skinTone || 'medium';
     
-    // Basic gender inference (simplified for character generation)
-    const gender = Math.random() > 0.5 ? 'female' : 'male';
+    // FIXED: Use avatar type instead of random assignment
+    const gender = avatar.type === 'girl' ? 'female' : avatar.type === 'boy' ? 'male' : 'child';
+    console.log(`🎭 DEBUG: Avatar type: ${avatar.type}, Gender assigned: ${gender}`);
     
     // NEW MASTER PLAN: Direct visual description mapping (no cultural profiles)
     if (nativeLanguage === 'en') {
