@@ -139,7 +139,7 @@ serve(async (req) => {
     async () => {
       // =================== PHASE 1: VARIABLE DECLARATION & SCOPE SETUP ===================
       let requestBody;
-      let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity;
+      let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData;
       let pageText = '';
       const importResults = {};
       

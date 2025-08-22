@@ -333,15 +333,7 @@ export class MultiStageEnhancementPipeline {
       // Build final prompt with simple length checking
       const finalEnhancedPrompt = promptParts.filter(part => part && part.trim().length > 0).join(', ');
       
-      // Simple length check - if too long, prioritize by removing LOW priority items first
-      if (finalEnhancedPrompt.length > 2900) {
-        console.log(`⚠️ Prompt too long (${finalEnhancedPrompt.length} chars), applying simple truncation`);
-        // Remove style framework if needed
-        const truncatedParts = promptParts.slice(0, -1); // Remove last (style framework)
-        const truncatedPrompt = truncatedParts.filter(part => part && part.trim().length > 0).join(', ');
-        console.log(`✂️ Truncated to ${truncatedPrompt.length} characters`);
-        var finalEnhancedPrompt = truncatedPrompt;
-      }
+      // Length checking removed - let Runware handle truncation
       
       // PHASE 4: Track final optimized prompt
       CulturalTextTracker.trackPipelineStage(sessionId, pageNumber, finalEnhancedPrompt, 'final-optimized');
