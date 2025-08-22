@@ -12,8 +12,8 @@
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
-// PHASE 2.15: BackendTokenManager removed from edge functions - only essential functions remain
-// import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
+// PHASE 2.15: BackendTokenManager restored for essential functions only
+import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
 import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 // AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
