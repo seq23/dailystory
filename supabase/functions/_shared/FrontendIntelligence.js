@@ -671,7 +671,8 @@ export class FrontendIntelligence {
     console.log('Building advanced character description with African American cultural detection');
     
     const name = userInfo?.name || 'Alex';
-    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    const gender = (avatarIdentity?.type || userInfo?.avatar?.type) === 'girl' ? 'girl' : 'boy';
+    console.log(`🎭 DEBUG: Using avatar type: ${avatarIdentity?.type || userInfo?.avatar?.type}, Gender: ${gender}`);
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     
     // Apply age range modifier based on difficulty level
