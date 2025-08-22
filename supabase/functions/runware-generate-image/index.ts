@@ -73,6 +73,15 @@ serve(async (req) => {
 
     console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser})`);
     console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
+    console.log('🔍 TIER SYSTEM DEBUG - Starting orchestrated tier progression', {
+      pageText: pageText.substring(0, 100) + '...',
+      userInfo: !!userInfo,
+      sessionId,
+      pageNumber,
+      totalPages: req.json.totalPages || 'unknown',
+      forceTier: forceTier || 'auto',
+      timestamp: new Date().toISOString()
+    });
 
     // PHASE 1: Avatar Identity Mapper - Process user avatar data once at orchestrator level
     const avatarIdentity = mapAvatarIdentity(userInfo);
@@ -86,6 +95,7 @@ serve(async (req) => {
     if (!forceTier || forceTier === 1) {
       try {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
+        console.log('🔍 TIER 1 DEBUG - Calling MultiStageEnhancementPipeline.processTier1HighQuality');
         
         // Use MultiStageEnhancementPipeline with pre-processed avatar identity
         const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
@@ -98,6 +108,13 @@ serve(async (req) => {
           enhancedStoryData,
           avatarIdentity
         );
+        
+        console.log('🔍 TIER 1 DEBUG - Enhancement result:', {
+          hasPrompt: !!enhancementResult?.enhancedPrompt,
+          promptLength: enhancementResult?.enhancedPrompt?.length || 0,
+          hasNegative: !!enhancementResult?.negativePrompt,
+          metadata: enhancementResult?.metadata ? 'present' : 'missing'
+        });
         
         const positivePrompt = enhancementResult.enhancedPrompt;
         const negativePrompt = enhancementResult.negativePrompt;
@@ -149,8 +166,13 @@ serve(async (req) => {
         }
         
         console.log('⚠️ Tier 1 failed, falling back to Tier 2');
+        console.log('🔍 TIER 1 FAILURE DEBUG - Generation failed but no error thrown');
       } catch (error) {
         console.log('⚠️ Tier 1 error, falling back to Tier 2:', error.message);
+        console.log('🔍 TIER 1 ERROR DEBUG - Full error:', {
+          message: error.message,
+          stack: error.stack?.substring(0, 200) || 'no stack'
+        });
       }
     }
 
@@ -158,6 +180,7 @@ serve(async (req) => {
     if (!forceTier || forceTier === 2) {
       try {
         console.log('🎨 Starting Tier 2: Template-based Generation');
+        console.log('🔍 TIER 2 DEBUG - Calling runware-template-generation function');
         
         const tier2Result = await callTierFunction('runware-template-generation', {
           pageText,
@@ -168,6 +191,12 @@ serve(async (req) => {
           isGuestUser,
           difficultyLevel: 'medium',
           avatarIdentity // Pass optimized avatar identity to all tiers
+        });
+        
+        console.log('🔍 TIER 2 DEBUG - Function response:', {
+          success: tier2Result?.success || false,
+          hasImageURL: !!tier2Result?.imageURL,
+          error: tier2Result?.error || 'none'
         });
 
         if (tier2Result.success) {
@@ -184,8 +213,13 @@ serve(async (req) => {
         }
         
         console.log('⚠️ Tier 2 failed, falling back to Tier 2.5');
+        console.log('🔍 TIER 2 FAILURE DEBUG - Template generation failed');
       } catch (error) {
         console.log('⚠️ Tier 2 error, falling back to Tier 2.5:', error.message);
+        console.log('🔍 TIER 2 ERROR DEBUG - Full error:', {
+          message: error.message,
+          stack: error.stack?.substring(0, 200) || 'no stack'
+        });
       }
     }
 
@@ -193,12 +227,20 @@ serve(async (req) => {
     if (!forceTier || forceTier === 2.5) {
       try {
         console.log('🔧 Starting Tier 2.5: Nuclear Hardcoded Fallback');
+        console.log('🔍 TIER 2.5 DEBUG - Calling runware-simple-fallback function (FIXED VERSION)');
         
         const tier25Result = await callTierFunction('runware-simple-fallback', {
           pageText,
           userInfo,
           difficultyLevel: 'medium',
           avatarIdentity // Pass optimized avatar identity to all tiers
+        });
+        
+        console.log('🔍 TIER 2.5 DEBUG - Function response:', {
+          success: tier25Result?.success || false,
+          hasImageURL: !!tier25Result?.imageURL,
+          error: tier25Result?.error || 'none',
+          tier: '2.5 (ANIMAL BIAS FIXED)'
         });
 
         if (tier25Result.success) {

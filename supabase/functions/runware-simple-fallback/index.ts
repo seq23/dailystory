@@ -141,8 +141,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any):
     if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy') || lowerSentence.includes('excited') || lowerSentence.includes('smiled')) score += 20;
     if (userInfo?.name && lowerSentence.includes(userInfo.name.toLowerCase())) score += 15;
     
-    // Animals and objects boost
-    if (lowerSentence.includes('luna') || lowerSentence.includes('rabbit') || lowerSentence.includes('bunny') || lowerSentence.includes('cat') || lowerSentence.includes('dog')) score += 22;
+    // Character and action focus (removed animal bias)
     if (lowerSentence.includes('flower') || lowerSentence.includes('tree') || lowerSentence.includes('garden') || lowerSentence.includes('park')) score += 18;
     
     // Dialogue and interaction
@@ -220,25 +219,18 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any):
   // Apply cultural enhancement bypass logic
   const culturallyEnhancedSetting = applyCulturalSettingEnhancement(baseSetting, userInfo);
   
-  // Enhanced object and animal detection
+  // Enhanced object detection (removed forced animal injection)
   const objects = [];
-  const animals = [];
   const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide'];
-  const allAnimals = ['luna', 'rabbit', 'bunny', 'cat', 'dog', 'bird', 'butterfly', 'dolphin', 'whale', 'fish'];
   
   allObjects.forEach(obj => {
     if (text.includes(obj) && objects.length < 2) objects.push(obj);
-  });
-  
-  allAnimals.forEach(animal => {
-    if (text.includes(animal) && animals.length < 2) animals.push(animal);
   });
   
   // Build enhanced scene description with cultural bypass and emotion detection
   let scene = `${character}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${culturallyEnhancedSetting}`;
-  if (animals.length > 0) scene += ` with ${animals.join(' and ')}`;
   if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;
   
   // Add emotion detection without AI
