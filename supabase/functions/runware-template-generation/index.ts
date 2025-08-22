@@ -52,7 +52,7 @@ serve(async (req) => {
       finalMappedLevel: mappedDifficulty
     });
 
-    const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
+    const enhancementResult = await MultiStageEnhancementPipeline.processTier2HighQuality(
       pageText,
       userInfo,
       storyId,
