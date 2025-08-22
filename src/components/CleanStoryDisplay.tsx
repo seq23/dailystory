@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, startTransition } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -121,12 +121,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
 
-  // Stable display buffer - only updates when story is confirmed stable
-  const [stableStory, setStableStory] = useState<string[]>([]);
-  
   // For free users, limit displayed pages to 6 maximum
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
-  const stableDisplayedStory = !isPremium ? stableStory.slice(0, 6) : stableStory;
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [justAdvanced, setJustAdvanced] = useState(false);
@@ -134,25 +130,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [lastImageError, setLastImageError] = useState<string | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
-
-  // 🔒 EMERGENCY FIX: Enhanced Story Content Protection
-  const isGeneratingRef = useRef(false);
-  const storyGeneratedRef = useRef(false);
-  const generationIdRef = useRef('');
-  const lastUserInfoRef = useRef<string>('');
-  
-  // 🔒 CRITICAL: Story Content Lock State - prevents unauthorized regeneration
-  const [isStoryContentLocked, setIsStoryContentLocked] = useState(false);
-  
-  // 🔒 Enhanced generation source tracking for debugging
-  const [lastGenerationTrigger, setLastGenerationTrigger] = useState<string>('');
-  const [contentMutationLog, setContentMutationLog] = useState<Array<{
-    timestamp: string;
-    trigger: string;
-    action: string;
-    storyLength: number;
-    isLocked: boolean;
-  }>>([]);
 
   useEffect(() => {
     console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
@@ -171,11 +148,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     
     return () => {
       document.body.classList.remove('reading-session');
-      // Cleanup generation protection refs on unmount
-      isGeneratingRef.current = false;
-      storyGeneratedRef.current = false;
-      lastUserInfoRef.current = '';
-      generationIdRef.current = '';
     };
   }, []);
   
@@ -201,12 +173,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         }
         
         // Mark story as generated to prevent double generation
-        storyGeneratedRef.current = true;
-        lastUserInfoRef.current = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
-        
         setIsLoading(false);
-        // For saved stories, use atomic stability setting
-        setStoryStableAtomically(storyPages);
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -276,73 +243,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isStoryComplete, setIsStoryComplete] = useState(false);
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
-  
-  // ========== BULLETPROOF STORY STABILITY SYNCHRONIZATION ==========
-  
-  // BULLETPROOF: Atomic stability function - ensures stableStory is populated BEFORE isStoryStable becomes true
-  const setStoryStableAtomically = useCallback((storyToStabilize: string[] = story) => {
-    // Step 1: Validate that we have valid story content
-    if (!storyToStabilize || storyToStabilize.length === 0) {
-      console.warn('⚠️ Cannot set story stable - no valid story content provided');
-      return;
-    }
-    
-    // Step 2: Validate that story pages contain actual text content
-    const validPages = storyToStabilize.filter(page => page && typeof page === 'string' && page.trim().length > 0);
-    if (validPages.length === 0) {
-      console.warn('⚠️ Cannot set story stable - no valid text content found');
-      return;
-    }
-    
-    // Step 3: Use React.startTransition for truly atomic updates
-    startTransition(() => {
-      // Set stableStory FIRST with validated content
-      setStableStory(validPages);
-      
-      // Only AFTER stableStory is set, mark as stable
-      setIsStoryStable(true);
-    });
-    
-    console.log('✅ ATOMIC: Story stability set successfully', {
-      totalPages: validPages.length,
-      stableStoryPopulated: true,
-      isStoryStable: true
-    });
-    
-    // Step 4: Dispatch stability event for debugging
-    window.dispatchEvent(new CustomEvent('story:stable', { 
-      detail: { 
-        totalPages: validPages.length, 
-        timestamp: Date.now(),
-        validatedContent: true
-      } 
-    }));
-  }, [story]);
-
-  // BULLETPROOF: Text validation function - prevents ALL .slice() errors
-  const getValidStoryText = useCallback((pageIndex: number): string | null => {
-    // Check if stableStory exists and has content at the requested page
-    if (!stableStory || stableStory.length === 0) {
-      console.log('📸 getValidStoryText: stableStory not yet populated');
-      return null;
-    }
-    
-    if (pageIndex < 0 || pageIndex >= stableStory.length) {
-      console.log('📸 getValidStoryText: invalid page index', { pageIndex, totalPages: stableStory.length });
-      return null;
-    }
-    
-    const text = stableStory[pageIndex];
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      console.log('📸 getValidStoryText: invalid text content at page', pageIndex);
-      return null;
-    }
-    
-    return text;
-  }, [stableStory]);
-
-  // REMOVED: Competing useEffects that caused race conditions
-  // All stability logic now handled by setStoryStableAtomically function
   
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
@@ -685,11 +585,13 @@ const [highlightSave, setHighlightSave] = useState(false);
     if (!highlightSave) return;
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
-  }, [highlightSave]);
-  const currentStoryText = stableDisplayedStory[currentPage] || "";
-  const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
-  const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
-  const contentHash = hashText(effectiveAudioText);
+  // Set story stable when story content is ready
+  useEffect(() => {  
+    if (story.length > 0 && !isStoryStable) {
+      setIsStoryStable(true);
+      console.log('✅ Story marked as stable', { pages: story.length });
+    }
+  }, [story, isStoryStable]);
 
   useEffect(() => {
     try { 
@@ -857,86 +759,81 @@ useEffect(() => {
     }
   });
 
-  // Initialize story based on tier - with ENHANCED generation protection
+  // Simple story generation effect - complete rollback
   useEffect(() => {
-    // Include all context values in the key, even those not in dependency array
-    const userInfoKey = JSON.stringify({ 
-      name: userInfo.name, 
-      age: userInfo.age, 
-      isPremium, 
-      readingAsName,
-      isFromSavedStory: currentStory?.isFromSavedStory 
+    console.log('🔄 Story generation effect triggered', {
+      userName: userInfo.name,
+      userAge: userInfo.age,
+      hasCurrentStory: !!currentStory,
+      storyLength: story.length,
+      isLoading
     });
-    
-    // 🔒 EMERGENCY FIX: Enhanced protection against unauthorized regeneration
-    console.log('🔍 useEffect story generation check:', {
-      userInfoKey,
-      lastUserInfoKey: lastUserInfoRef.current,
-      storyContentLocked: isStoryContentLocked,
-      storyGenerated: storyGeneratedRef.current,
-      hasStory: story.length > 0,
-      isStoryStable,
-      isGenerating: isGeneratingRef.current
-    });
-    
-    // 🔒 CRITICAL: First check - if content is locked, NEVER regenerate
-    if (isStoryContentLocked && story.length > 0) {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🔒 EMERGENCY FIX: Story content LOCKED - blocking any regeneration attempt');
-      }
-      setIsLoading(false);
-      // Only set stable if story has valid content
-      if (story.length > 0) {
-        setStoryStableAtomically(story);
-      }
-      return;
-    }
-    
-    // 🔒 CRITICAL: Second check - if same context and story exists, skip regeneration
-    if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current && story.length > 0) {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
-      }
-      setIsLoading(false);
-      // Only set stable if story has valid content
-      if (story.length > 0) {
-        setStoryStableAtomically(story);
-      }
-      return;
-    }
-    
-    // 🔒 CRITICAL: Third check - prevent multiple simultaneous generations
-    if (isGeneratingRef.current) {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🔒 EMERGENCY FIX: Skipping story generation - already in progress');
-      }
+
+    // Early returns to prevent unnecessary generations
+    if (isLoading || story.length > 0) {
+      console.log('⏸️ Skipping generation - already loading or story exists');
       return;
     }
 
-    // 🔒 Log the trigger for debugging
-    console.log('🎯 Story generation triggered by useEffect change:', {
-      newUserInfoKey: userInfoKey,
-      lastUserInfoKey: lastUserInfoRef.current,
-      storyGenerated: storyGeneratedRef.current,
-      isGenerating: isGeneratingRef.current,
-      hasStory: story.length > 0,
-      trigger: 'useEffect-user-context-change'
-    });
-    
-    setContentMutationLog(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      trigger: 'useEffect-user-context-change',
-      action: 'generation-triggered',
-      storyLength: story.length,
-      isLocked: isStoryContentLocked
-    }]);
-    
-    // Only update if this is actually a new user context
-    if (lastUserInfoRef.current !== userInfoKey) {
-      lastUserInfoRef.current = userInfoKey;
-      initializeStory();
-    }
-  }, [userInfo.name, userInfo.age, isPremium]);
+    const generateStory = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        let storyToLoad: string[] | null = null;
+
+        // Try to load existing story first (premium users)
+        if (isPremium && currentStory) {
+          console.log('📖 Loading existing premium story:', currentStory.title);
+          storyToLoad = currentStory.content || null;
+        }
+
+        // Generate new story if needed
+        if (!storyToLoad) {
+          console.log('✨ Generating new story...');
+          const response = await fetch('/api/generate-story', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userInfo: {
+                ...userInfo,
+                name: readingAsName || userInfo.name
+              },
+              sessionId: `story-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              isPremium
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Story generation failed: ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (!data.success || !data.story?.length) {
+            throw new Error('Generated story is empty or invalid');
+          }
+
+          storyToLoad = data.story;
+        }
+
+        if (storyToLoad && storyToLoad.length > 0) {
+          setStory(storyToLoad);
+          console.log('✅ Story loaded successfully', {
+            pages: storyToLoad.length,
+            firstPagePreview: storyToLoad[0]?.substring(0, 100) + '...'
+          });
+        }
+
+      } catch (error) {
+        console.error('❌ Story generation failed:', error);
+        setError(error instanceof Error ? error.message : 'Story generation failed');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    generateStory();
+  }, [userInfo.name, userInfo.age]);
 
   // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
   useEffect(() => {
@@ -1460,9 +1357,9 @@ const initializeStory = async () => {
       return;
     }
     
-    // BULLETPROOF: Validate story text before any processing
-    const storyText = getValidStoryText(currentPage);
-    if (!storyText) {
+    // Get story text for current page
+    const storyText = story[currentPage];
+    if (!storyText || typeof storyText !== 'string' || storyText.trim().length === 0) {
       console.log('📸 Skipping image generation - no valid story text for page', currentPage);
       return;
     }
@@ -1555,9 +1452,9 @@ const initializeStory = async () => {
   const generateImageForIndex = async (index: number) => {
     if (pageImages[index]) return;
     
-    // BULLETPROOF: Validate story text before any processing
-    const storyText = getValidStoryText(index);
-    if (!storyText) {
+    // Get story text for page index
+    const storyText = story[index];
+    if (!storyText || typeof storyText !== 'string' || storyText.trim().length === 0) {
       console.log('📸 Skipping image generation for index - no valid story text for page', index);
       return;
     }
@@ -3300,31 +3197,7 @@ const handleRestartTimer = () => {
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
       
-      {/* Story Stability Monitor (Debug Only - ?debug=1) */}
-      {new URLSearchParams(window.location.search).get('debug') === '1' && (
-        <StoryStabilityMonitor
-          isStoryContentLocked={isStoryContentLocked}
-          isStoryStable={isStoryStable}
-          storyLength={story.length}
-          lastGenerationTrigger={lastGenerationTrigger}
-          contentMutationLog={contentMutationLog}
-          onUnlockContent={() => {
-            console.log('🔓 DEBUG: Manual content unlock triggered');
-            setIsStoryContentLocked(false);
-          setContentMutationLog(prev => [...prev, {
-            timestamp: new Date().toISOString(),
-            trigger: 'debug-manual-unlock',
-            action: 'Content unlocked via debug monitor',
-            storyLength: story.length,
-            isLocked: false
-          }]);
-        }}
-        onClearLog={() => {
-          console.log('🗑️ DEBUG: Clearing mutation log');
-          setContentMutationLog([]);
-        }}
-      />
-      )}
+      
       </div>
     </ErrorBoundary>
     </GameContextProvider>
