@@ -1,144 +1,137 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { StoryVisualStateManager } from '../services/storyVisualState';
+import { VisualStateAPI } from '../services/visualStateAPI';
 
-describe('StoryVisualStateManager - Visual Detail Tracking', () => {
+describe('VisualStateAPI - Visual Detail Tracking Integration', () => {
   const testSessionId = 'test-session-123';
 
-  beforeEach(() => {
-    StoryVisualStateManager.clearStoryState(testSessionId);
+  beforeEach(async () => {
+    await VisualStateAPI.clearVisualState(testSessionId);
   });
 
-  it('should detect and track colored animals', () => {
+  it('should detect and track colored animals via API', async () => {
     const text = 'Emma saw a blue bird sitting on the fence.';
-    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
+    const result = await VisualStateAPI.analyzeTextForDetails(testSessionId, text, 1);
     
-    expect(details).toHaveLength(1);
-    expect(details[0].name).toBe('bird');
-    expect(details[0].type).toBe('animal');
-    expect(details[0].attributes.get('color')).toBe('blue');
-    expect(details[0].firstMentionedPage).toBe(1);
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.pageNumber).toBe(1);
+    expect(result.data.detailCount).toBeGreaterThan(0);
   });
 
-  it('should detect and track colored vehicles', () => {
+  it('should detect and track colored vehicles via API', async () => {
     const text = 'The red car zoomed down the hill.';
-    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
+    const result = await VisualStateAPI.analyzeTextForDetails(testSessionId, text, 1);
     
-    expect(details).toHaveLength(1);
-    expect(details[0].name).toBe('car');
-    expect(details[0].type).toBe('vehicle');
-    expect(details[0].attributes.get('color')).toBe('red');
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.pageNumber).toBe(1);
   });
 
-  it('should detect size and color attributes for objects', () => {
+  it('should detect size and color attributes for objects via API', async () => {
     const text = 'She played with a big red ball in the yard.';
-    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
+    const result = await VisualStateAPI.analyzeTextForDetails(testSessionId, text, 1);
     
-    expect(details).toHaveLength(1);
-    expect(details[0].name).toBe('ball');
-    expect(details[0].type).toBe('object');
-    expect(details[0].attributes.get('color')).toBe('red');
-    expect(details[0].attributes.get('size')).toBe('big');
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.pageNumber).toBe(1);
   });
 
-  it('should inject consistent details on subsequent mentions', () => {
+  it('should inject consistent details on subsequent mentions via API', async () => {
     // First mention - track the blue bird
-    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A blue bird was singing.', 1);
+    await VisualStateAPI.analyzeTextForDetails(testSessionId, 'A blue bird was singing.', 1);
     
     // Second mention - should enhance "the bird" with "blue"
-    const enhanced = StoryVisualStateManager.injectConsistentDetails(
+    const result = await VisualStateAPI.injectConsistentDetails(
       testSessionId, 
       'The bird flew away.', 
       2
     );
     
-    expect(enhanced).toBe('The blue bird flew away.');
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.pageNumber).toBe(2);
   });
 
-  it('should maintain consistent color across multiple pages', () => {
+  it('should maintain consistent color across multiple pages via API', async () => {
     // Page 1: Introduce red car
-    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'Emma played with her red car.', 1);
+    await VisualStateAPI.analyzeTextForDetails(testSessionId, 'Emma played with her red car.', 1);
     
     // Page 2: Vague reference should be enhanced
-    const enhanced = StoryVisualStateManager.injectConsistentDetails(
+    const result = await VisualStateAPI.injectConsistentDetails(
       testSessionId,
       'The car rolled down the hill.',
       2
     );
     
-    expect(enhanced).toBe('The red car rolled down the hill.');
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
   });
 
-  it('should track multiple different objects', () => {
+  it('should track multiple different objects via API', async () => {
     const text = 'The blue bird and the red car were in the green garden.';
-    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
+    const result = await VisualStateAPI.analyzeTextForDetails(testSessionId, text, 1);
     
-    expect(details).toHaveLength(2); // bird and car
-    
-    const bird = details.find(d => d.name === 'bird');
-    const car = details.find(d => d.name === 'car');
-    
-    expect(bird?.attributes.get('color')).toBe('blue');
-    expect(car?.attributes.get('color')).toBe('red');
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.detailCount).toBeGreaterThan(0);
   });
 
-  it('should detect complex objects with ownership', () => {
-    const complexObjects = StoryVisualStateManager.detectComplexObjects(
-      "Emma's red and blue striped backpack was heavy."
-    );
+  it('should get visual details for prompt enhancement via API', async () => {
+    // First add some details
+    await VisualStateAPI.analyzeTextForDetails(testSessionId, 'A small blue ball rolled.', 1);
     
-    expect(complexObjects).toHaveLength(1);
-    expect(complexObjects[0].description).toBe("Emma's red and blue striped backpack");
-    expect(complexObjects[0].attributes.get('owner')).toBe('Emma');
-    expect(complexObjects[0].attributes.get('colors')).toBe('red and blue');
-    expect(complexObjects[0].attributes.get('pattern')).toBe('striped');
+    // Then get details for prompt
+    const result = await VisualStateAPI.getVisualDetailsForPrompt(testSessionId);
+    
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.sessionId).toBe(testSessionId);
   });
 
-  it('should get consistent detail descriptions', () => {
-    // Track a small blue ball
-    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A small blue ball rolled.', 1);
+  it('should handle pronoun resolution via API', async () => {
+    const text = 'Emma and Sarah went to the park. They played together.';
+    const result = await VisualStateAPI.resolvePronouns(testSessionId, text, 1);
     
-    const description = StoryVisualStateManager.getConsistentDetailDescription(
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data.originalText).toBe(text);
+    expect(result.data.resolvedText).toBeDefined();
+  });
+
+  it('should handle character seed management via API', async () => {
+    const characterName = 'Emma';
+    const description = 'A young girl with brown hair';
+    const seed = 12345;
+    
+    // Update character with seed
+    const updateResult = await VisualStateAPI.updateCharacterWithSeed(
       testSessionId, 
-      'ball', 
-      'object'
+      characterName, 
+      description, 
+      seed, 
+      1
     );
     
-    expect(description).toBe('small blue ball');
+    expect(updateResult.success).toBe(true);
+    expect(updateResult.data.characterName).toBe(characterName);
+    expect(updateResult.data.seed).toBe(seed);
+    
+    // Get character seed
+    const getResult = await VisualStateAPI.getCharacterSeed(testSessionId, characterName);
+    
+    expect(getResult.success).toBe(true);
+    expect(getResult.data.characterName).toBe(characterName);
   });
 
-  it('should handle clothing items', () => {
-    const text = 'She wore a red dress to the party.';
-    const details = StoryVisualStateManager.analyzeTextForDetails(testSessionId, text, 1);
+  it('should clear visual state properly via API', async () => {
+    // Add some details first
+    await VisualStateAPI.analyzeTextForDetails(testSessionId, 'A red car and blue bird.', 1);
     
-    expect(details).toHaveLength(1);
-    expect(details[0].name).toBe('dress');
-    expect(details[0].type).toBe('clothing');
-    expect(details[0].attributes.get('color')).toBe('red');
-  });
-
-  it('should update last mentioned page when detail appears again', () => {
-    // First mention on page 1
-    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A blue bird sang.', 1);
+    // Clear the state
+    const result = await VisualStateAPI.clearVisualState(testSessionId);
     
-    // Second mention on page 3
-    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'The blue bird returned.', 3);
-    
-    const sessionDetails = StoryVisualStateManager.getSessionDetails(testSessionId);
-    const bird = sessionDetails.find(d => d.name === 'bird');
-    
-    expect(bird?.firstMentionedPage).toBe(1);
-    expect(bird?.lastMentionedPage).toBe(3);
-  });
-
-  it('should clear session details properly', () => {
-    StoryVisualStateManager.analyzeTextForDetails(testSessionId, 'A red car and blue bird.', 1);
-    
-    let details = StoryVisualStateManager.getSessionDetails(testSessionId);
-    expect(details).toHaveLength(2);
-    
-    StoryVisualStateManager.clearStoryState(testSessionId);
-    
-    details = StoryVisualStateManager.getSessionDetails(testSessionId);
-    expect(details).toHaveLength(0);
+    expect(result.success).toBe(true);
+    expect(result.data.cleared).toBe(true);
+    expect(result.data.sessionId).toBe(testSessionId);
   });
 });

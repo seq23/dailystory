@@ -35,10 +35,19 @@ export class StoryRefreshService {
       // Clear all cached story content
       StorySessionCache.clearCachedSession(effectiveUserId);
       
-      // Clear character visual state if provided
+      // Clear character visual state if provided (frontend session only)
       if (characterSessionId) {
         StoryVisualStateManager.clearStoryState(characterSessionId);
-        console.log(`🎭 Cleared character state for session: ${characterSessionId}`);
+        console.log(`🎭 Cleared frontend session state: ${characterSessionId}`);
+        
+        // Also clear backend visual state via API
+        try {
+          const { VisualStateAPI } = await import('@/services/visualStateAPI');
+          await VisualStateAPI.clearVisualState(characterSessionId);
+          console.log(`🎭 Cleared backend visual state: ${characterSessionId}`);
+        } catch (error) {
+          console.warn('Failed to clear backend visual state:', error);
+        }
       }
       
       // Clear any additional caches that might interfere
@@ -90,7 +99,7 @@ export class StoryRefreshService {
   /**
    * Clear just the pronoun-related caches to fix pronoun issues
    */
-  static clearPronounCaches(userId?: string, characterSessionId?: string): void {
+  static async clearPronounCaches(userId?: string, characterSessionId?: string): Promise<void> {
     console.log('🎯 Clearing pronoun-related caches');
     
     try {
@@ -99,9 +108,17 @@ export class StoryRefreshService {
       // Clear story session cache
       StorySessionCache.clearCachedSession(effectiveUserId);
       
-      // Clear character state if provided
+      // Clear character state if provided (frontend session only)
       if (characterSessionId) {
         StoryVisualStateManager.clearStoryState(characterSessionId);
+        
+        // Also clear backend visual state via API
+        try {
+          const { VisualStateAPI } = await import('@/services/visualStateAPI');
+          await VisualStateAPI.clearVisualState(characterSessionId);
+        } catch (error) {
+          console.warn('Failed to clear backend visual state:', error);
+        }
       }
       
       // Clear template caches that might have stale pronoun data
