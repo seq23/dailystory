@@ -345,7 +345,241 @@ serve(async (req) => {
   }
 });
 
-// TIER 1: Premium Runware Generation
+// ============= WEBSOCKET ERROR CLASSIFICATION =============
+class WebSocketError extends Error {
+  constructor(message: string, public type: 'CONNECTION' | 'TIMEOUT' | 'RATE_LIMIT' | 'AUTH' | 'GENERATION' | 'NETWORK', public isRetryable: boolean = false) {
+    super(message);
+    this.name = 'WebSocketError';
+  }
+}
+
+// ============= ENHANCED WEBSOCKET MANAGER =============
+class RunwareWebSocketManager {
+  private static readonly MAX_RETRIES = 3;
+  private static readonly BASE_DELAY = 1000; // 1 second
+  private static readonly MAX_DELAY = 8000; // 8 seconds
+  private static readonly CONNECTION_TIMEOUT = 30000; // 30 seconds
+  
+  static async connectWithRetry(
+    apiKey: string, 
+    positivePrompt: string, 
+    negativePrompt: string, 
+    seed?: number, 
+    sessionId?: string, 
+    pageNumber?: number,
+    attempt: number = 1
+  ): Promise<any> {
+    try {
+      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber);
+    } catch (error) {
+      const wsError = error as WebSocketError;
+      
+      // Check if error is retryable and we haven't exceeded max attempts
+      if (wsError.isRetryable && attempt < this.MAX_RETRIES) {
+        const delay = Math.min(this.BASE_DELAY * Math.pow(2, attempt - 1), this.MAX_DELAY);
+        console.warn(`🔄 WebSocket attempt ${attempt} failed, retrying in ${delay}ms: ${wsError.message}`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1);
+      }
+      
+      console.error(`❌ WebSocket failed after ${attempt} attempts: ${wsError.message}`);
+      throw wsError;
+    }
+  }
+  
+  private static attemptConnection(
+    apiKey: string, 
+    positivePrompt: string, 
+    negativePrompt: string, 
+    seed?: number, 
+    sessionId?: string, 
+    pageNumber?: number
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let ws: WebSocket;
+      let connectionTimeout: number;
+      let isResolved = false;
+      
+      const cleanup = () => {
+        if (connectionTimeout) clearTimeout(connectionTimeout);
+        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      };
+      
+      const safeReject = (error: WebSocketError) => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          reject(error);
+        }
+      };
+      
+      const safeResolve = (result: any) => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          resolve(result);
+        }
+      };
+      
+      try {
+        ws = new WebSocket('wss://ws-api.runware.ai/v1');
+        
+        // Enhanced timeout with better error handling
+        connectionTimeout = setTimeout(() => {
+          safeReject(new WebSocketError(
+            `WebSocket timeout after ${this.CONNECTION_TIMEOUT}ms for session ${sessionId || 'unknown'}`,
+            'TIMEOUT',
+            true // Timeout errors are retryable
+          ));
+        }, this.CONNECTION_TIMEOUT);
+
+        ws.onopen = () => {
+          console.log(`📡 WebSocket connected to Runware (attempt ${sessionId || 'unknown'})`);
+          
+          // Send authentication with error handling
+          try {
+            ws.send(JSON.stringify([{
+              taskType: "authentication",
+              apiKey: apiKey
+            }]));
+          } catch (sendError) {
+            safeReject(new WebSocketError(
+              `Failed to send authentication: ${sendError.message}`,
+              'AUTH',
+              true
+            ));
+          }
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const response = JSON.parse(event.data);
+            
+            // Enhanced error detection with rate limiting
+            if (response.error || response.errors) {
+              const errorMsg = response.errorMessage || response.errors?.[0]?.message || 'Generation failed';
+              const errorCode = response.errorCode || response.errors?.[0]?.code;
+              
+              console.error('❌ Runware API error:', { errorMsg, errorCode, sessionId });
+              
+              // Classify error types for better handling
+              let errorType: 'RATE_LIMIT' | 'AUTH' | 'GENERATION' = 'GENERATION';
+              let isRetryable = false;
+              
+              if (errorCode === 'RATE_LIMIT_EXCEEDED' || errorMsg.toLowerCase().includes('rate limit')) {
+                errorType = 'RATE_LIMIT';
+                isRetryable = true;
+                console.warn(`🚦 Rate limit detected for session ${sessionId}, will retry with backoff`);
+              } else if (errorCode === 'INVALID_API_KEY' || errorMsg.toLowerCase().includes('authentication')) {
+                errorType = 'AUTH';
+                isRetryable = false;
+              } else if (errorMsg.toLowerCase().includes('busy') || errorMsg.toLowerCase().includes('overload')) {
+                isRetryable = true;
+              }
+              
+              safeReject(new WebSocketError(errorMsg, errorType, isRetryable));
+              return;
+            }
+
+            if (response.data) {
+              for (const item of response.data) {
+                if (item.taskType === "authentication") {
+                  console.log(`✅ Runware authenticated for session ${sessionId || 'unknown'}`);
+                  
+                  // PHASE 1 FIX: Emergency Truncation with proper parameters
+                  console.log(`📏 Original prompt length: ${positivePrompt.length} characters`);
+                  if (positivePrompt.length > 2990) {
+                    console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId || 'unknown'} page ${pageNumber || 0}...`);
+                    positivePrompt = positivePrompt.substring(0, 2990);
+                    console.log(`✂️ Truncated to ${positivePrompt.length} characters for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
+                  }
+
+                  // Send premium image generation request
+                  const imageRequest = [{
+                    taskType: "imageInference",
+                    taskUUID: crypto.randomUUID(),
+                    positivePrompt: positivePrompt,
+                    negativePrompt: negativePrompt,
+                    width: 1024,
+                    height: 1024,
+                    model: "runware:100@1",
+                    numberResults: 1,
+                    outputFormat: "WEBP",
+                    CFGScale: 4.0,
+                    scheduler: "FlowMatchEulerDiscreteScheduler",
+                    steps: 12,
+                    ...(seed && { seed })
+                  }];
+                  
+                  console.log(`🚀 Sending premium image generation request for session ${sessionId || 'unknown'}`);
+                  
+                  try {
+                    ws.send(JSON.stringify(imageRequest));
+                  } catch (sendError) {
+                    safeReject(new WebSocketError(
+                      `Failed to send image request: ${sendError.message}`,
+                      'NETWORK',
+                      true
+                    ));
+                  }
+                  
+                } else if (item.taskType === "imageInference") {
+                  console.log(`🎯 Premium image generated successfully for session ${sessionId || 'unknown'}:`, item.imageURL);
+                  
+                  safeResolve({
+                    success: true,
+                    imageURL: item.imageURL,
+                    seed: item.seed,
+                    taskUUID: item.taskUUID
+                  });
+                }
+              }
+            }
+          } catch (parseError) {
+            safeReject(new WebSocketError(
+              `Failed to parse WebSocket response: ${parseError.message}`,
+              'NETWORK',
+              true
+            ));
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error(`❌ WebSocket connection error for session ${sessionId || 'unknown'}:`, error);
+          safeReject(new WebSocketError(
+            `WebSocket connection failed: ${error.toString()}`,
+            'CONNECTION',
+            true // Connection errors are retryable
+          ));
+        };
+
+        ws.onclose = (event) => {
+          console.log(`📡 WebSocket closed for session ${sessionId || 'unknown'} (code: ${event.code})`);
+          
+          // Only reject if we haven't already resolved/rejected
+          if (!isResolved) {
+            const isAbnormalClose = event.code !== 1000 && event.code !== 1001;
+            safeReject(new WebSocketError(
+              `WebSocket closed unexpectedly (code: ${event.code})`,
+              'CONNECTION',
+              isAbnormalClose // Abnormal closes are retryable
+            ));
+          }
+        };
+        
+      } catch (error) {
+        safeReject(new WebSocketError(
+          `Failed to create WebSocket: ${error.message}`,
+          'CONNECTION',
+          true
+        ));
+      }
+    });
+  }
+}
+
+// TIER 1: Premium Runware Generation with Enhanced Robustness
 async function generateWithRunwarePremium(
   apiKey: string, 
   positivePrompt: string, 
@@ -354,95 +588,28 @@ async function generateWithRunwarePremium(
   sessionId?: string, 
   pageNumber?: number
 ) {
-  const ws = new WebSocket('wss://ws-api.runware.ai/v1');
+  console.log(`🚀 Starting enhanced WebSocket generation for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
   
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      ws.close();
-      reject(new Error('WebSocket timeout'));
-    }, 30000);
-
-    ws.onopen = () => {
-      console.log('📡 WebSocket connected to Runware');
-      
-      // Send authentication
-      ws.send(JSON.stringify([{
-        taskType: "authentication",
-        apiKey: apiKey
-      }]));
-    };
-
-    ws.onmessage = (event) => {
-      const response = JSON.parse(event.data);
-      
-      if (response.error || response.errors) {
-        console.error('❌ Runware error:', response);
-        clearTimeout(timeout);
-        ws.close();
-        reject(new Error(response.errorMessage || response.errors?.[0]?.message || 'Generation failed'));
-        return;
-      }
-
-      if (response.data) {
-        for (const item of response.data) {
-          if (item.taskType === "authentication") {
-            console.log('✅ Runware authenticated');
-            
-            // PHASE 1 FIX: Emergency Truncation with proper parameters
-            console.log(`📏 Original prompt length: ${positivePrompt.length} characters`);
-            if (positivePrompt.length > 2990) {
-              console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId || 'unknown'} page ${pageNumber || 0}...`);
-              positivePrompt = positivePrompt.substring(0, 2990);
-              console.log(`✂️ Truncated to ${positivePrompt.length} characters for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
-            }
-
-            // Send premium image generation request
-            const imageRequest = [{
-              taskType: "imageInference",
-              taskUUID: crypto.randomUUID(),
-              positivePrompt: positivePrompt,
-              negativePrompt: negativePrompt,
-              width: 1024,
-              height: 1024,
-              model: "runware:100@1",
-              numberResults: 1,
-              outputFormat: "WEBP",
-              CFGScale: 4.0,
-              scheduler: "FlowMatchEulerDiscreteScheduler",
-              steps: 12,
-              ...(seed && { seed })
-            }];
-            
-            console.log('🚀 Sending premium image generation request');
-            ws.send(JSON.stringify(imageRequest));
-            
-          } else if (item.taskType === "imageInference") {
-            console.log('🎯 Premium image generated successfully:', item.imageURL);
-            
-            clearTimeout(timeout);
-            ws.close();
-            resolve({
-              success: true,
-              imageURL: item.imageURL,
-              seed: item.seed,
-              taskUUID: item.taskUUID
-            });
-          }
-        }
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
-      clearTimeout(timeout);
-      reject(new Error('WebSocket connection failed'));
-    };
-
-    ws.onclose = () => {
-      console.log('📡 WebSocket closed');
-      clearTimeout(timeout);
-    };
-  });
+  try {
+    return await RunwareWebSocketManager.connectWithRetry(
+      apiKey, 
+      positivePrompt, 
+      negativePrompt, 
+      seed, 
+      sessionId, 
+      pageNumber
+    );
+  } catch (error) {
+    const wsError = error as WebSocketError;
+    console.error(`💥 Enhanced WebSocket generation failed for session ${sessionId || 'unknown'}:`, {
+      type: wsError.type,
+      retryable: wsError.isRetryable,
+      message: wsError.message
+    });
+    
+    // Re-throw with additional context for tier fallback logic
+    throw new Error(`WebSocket generation failed (${wsError.type}): ${wsError.message}`);
+  }
 }
 
 // Helper: Call other tier functions

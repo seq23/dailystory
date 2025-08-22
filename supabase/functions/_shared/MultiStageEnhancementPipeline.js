@@ -874,6 +874,70 @@ export class MultiStageEnhancementPipeline {
     return elements.length > 0 ? elements.join(', ') : '';
   }
 
+  // ============= PHASE 2: MEMORY & PERFORMANCE OPTIMIZATION =============
+  static performMemoryCleanup(sessionId, pageNumber) {
+    try {
+      // 1. Clear expired regex cache (if any large cached patterns exist)
+      this.clearRegexCache();
+      
+      // 2. Cleanup visual state manager memory for completed sessions
+      if (globalThis.StoryVisualStateManager) {
+        // Only clean up if we're past page 1 to avoid clearing active sessions
+        if (pageNumber > 1) {
+          console.log(`🧹 Performing memory cleanup for session ${sessionId}, page ${pageNumber}`);
+          
+          // Clear old secondary character cache (keep only current page)
+          globalThis.StoryVisualStateManager.clearOldPageData?.(sessionId, pageNumber - 2);
+        }
+      }
+      
+      // 3. Clear temporary prompt building artifacts
+      this.clearTempPromptData();
+      
+      console.log(`✅ Memory cleanup completed for session ${sessionId}`);
+    } catch (error) {
+      console.warn(`⚠️ Memory cleanup failed for session ${sessionId}:`, error.message);
+      // Don't throw - memory cleanup failure shouldn't break image generation
+    }
+  }
+  
+  static clearRegexCache() {
+    // Clear any cached regex patterns in SecondaryElementDetector
+    if (globalThis.regexCache) {
+      const cacheSize = Object.keys(globalThis.regexCache).length;
+      if (cacheSize > 50) { // Clear if cache gets too large
+        globalThis.regexCache = {};
+        console.log(`🧹 Cleared regex cache (${cacheSize} entries)`);
+      }
+    }
+  }
+  
+  static clearTempPromptData() {
+    // Clear any temporary prompt building data structures
+    if (globalThis.tempPromptCache) {
+      globalThis.tempPromptCache = {};
+    }
+  }
+  
+  // ============= TIMEOUT PROTECTION FOR LONG OPERATIONS =============
+  static async withTimeout(operation, timeoutMs = 10000, operationName = 'operation') {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+      
+      operation()
+        .then(result => {
+          clearTimeout(timeout);
+          resolve(result);
+        })
+        .catch(error => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+    });
+  }
+
   // ============= FALLBACK SYSTEM =============
   static createFallbackResult(storyText, userInfo, tier) {
     const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
