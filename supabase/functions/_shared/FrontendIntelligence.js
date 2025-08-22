@@ -197,8 +197,37 @@ export class FrontendIntelligence {
   }
   
   // ============= CULTURAL ENHANCEMENT LOGIC =============
+  
+  // Keyword mapping for cultural settings
+  static CULTURAL_SETTING_KEYWORDS = {
+    // Church/Religious settings
+    'church': ['gospel church', 'community church', 'sunday service'],
+    'chapel': ['family chapel', 'community chapel'],
+    'temple': ['local temple', 'community temple'],
+    
+    // Community spaces
+    'community center': ['local community center', 'neighborhood community center'],
+    'community': ['community gathering space', 'neighborhood community'],
+    
+    // Cultural/Educational spaces  
+    'museum': ['cultural heritage museum', 'african american heritage museum'],
+    'library': ['community library', 'neighborhood library'],
+    'cultural center': ['african american cultural center', 'community cultural center'],
+    
+    // Food/Social spaces
+    'restaurant': ['soul food restaurant', 'family restaurant'], 
+    'diner': ['local diner', 'neighborhood diner'],
+    'barbershop': ['family barbershop', 'community barbershop'],
+    'salon': ['beauty salon', 'neighborhood salon'],
+    
+    // Celebration spaces
+    'festival': ['cultural festival', 'community festival'],
+    'celebration': ['family celebration', 'community celebration'],
+    'reunion': ['family reunion park', 'family gathering']
+  };
+  
   // This method enhances the visual prompt with cultural elements
-  static enhanceVisualPromptWithCulture(visualPrompt, userInfo, culturalProfile) {
+  static enhanceVisualPromptWithCulture(visualPrompt, userInfo, culturalProfile, storyText = '') {
     let enhancedPrompt = visualPrompt;
     
     if (userInfo.nativeLanguage && culturalProfile) {
@@ -214,9 +243,11 @@ export class FrontendIntelligence {
       const clothingKeyword = this.getRandomElement(culturalProfile.clothingKeywords);
       enhancedPrompt += `, ${clothingKeyword}`;
       
-      // Enhance setting
-      const settingKeyword = this.getRandomElement(culturalProfile.settingKeywords);
-      enhancedPrompt += `, ${settingKeyword}`;
+      // Only enhance setting if story contains relevant keywords
+      const culturalSetting = this.detectCulturalSettingFromStory(storyText, userInfo);
+      if (culturalSetting) {
+        enhancedPrompt += `, ${culturalSetting}`;
+      }
       
       // Add cultural elements
       const culturalElement = this.getRandomElement(culturalProfile.culturalElements);
@@ -228,16 +259,51 @@ export class FrontendIntelligence {
   
   // ============= AI-ENHANCED SETTING ENHANCEMENT =============
   // This method enhances the AI-determined setting with cultural context
-  static enhanceAISettingWithCulture(aiEnhancedData, userInfo, culturalProfile) {
+  static enhanceAISettingWithCulture(aiEnhancedData, userInfo, culturalProfile, storyText = '') {
     let enhancedSetting = aiEnhancedData.setting?.location || 'generic location';
     
     if (userInfo.nativeLanguage && culturalProfile) {
-      // Enhance setting with cultural context
-      const settingKeyword = this.getRandomElement(culturalProfile.settingKeywords);
-      enhancedSetting += `, ${settingKeyword}`;
+      // Only enhance setting if story contains relevant keywords
+      const culturalSetting = this.detectCulturalSettingFromStory(storyText, userInfo);
+      if (culturalSetting) {
+        enhancedSetting += `, ${culturalSetting}`;
+      }
     }
     
     return enhancedSetting;
+  }
+  
+  // ============= CULTURAL SETTING DETECTION =============
+  // This method detects if story contains keywords that warrant cultural setting enhancement
+  static detectCulturalSettingFromStory(storyText, userInfo) {
+    if (!storyText || typeof storyText !== 'string') {
+      return null;
+    }
+    
+    const lowerStoryText = storyText.toLowerCase();
+    
+    // Check each keyword category for matches
+    for (const [keyword, culturalSettings] of Object.entries(this.CULTURAL_SETTING_KEYWORDS)) {
+      if (lowerStoryText.includes(keyword)) {
+        // Apply African American cultural settings if appropriate
+        if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo?.avatarIdentity)) {
+          // Use African American specific settings when available
+          const africanAmericanSettings = this.EXPANDED_AFRICAN_AMERICAN_SETTINGS.filter(setting =>
+            setting.toLowerCase().includes(keyword) || 
+            culturalSettings.some(cultSetting => cultSetting.toLowerCase().includes(keyword))
+          );
+          
+          if (africanAmericanSettings.length > 0) {
+            return this.getRandomElement(africanAmericanSettings);
+          }
+        }
+        
+        // Return general cultural setting
+        return this.getRandomElement(culturalSettings);
+      }
+    }
+    
+    return null; // No keyword match found, no cultural setting enhancement
   }
   
   // ============= PREMIUM PROMPT BUILDING =============
@@ -275,8 +341,8 @@ export class FrontendIntelligence {
       .replace('{styleDescription}', styleDescription)
       .replace('{artInspiration}', artInspiration);
     
-    // 9. Enhance with cultural elements
-    enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile);
+    // 9. Enhance with cultural elements (pass storyText for keyword matching)
+    enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);
     
     return enhancedPrompt;
   }
