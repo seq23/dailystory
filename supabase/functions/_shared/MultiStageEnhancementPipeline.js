@@ -80,48 +80,10 @@ export class MultiStageEnhancementPipeline {
     try {
       console.log(`🔥 Tier 1 High-Quality AI Pipeline with Style Frameworks + Visual State + Character Consistency: storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
       
-      // Check cache first if no AI data provided
+      // Enhanced data should be provided directly from ai-story-enhancer
       if (!enhancedStoryData) {
-        const cachedEnhancement = this.getCachedAIEnhancement(sessionId, pageNumber, storyText);
-        if (cachedEnhancement) {
-          enhancedStoryData = cachedEnhancement.enhancedData;
-          console.log(`🎯 Using cached AI enhancement data`);
-        } else {
-          console.log(`🧠 No cached data, will call AI story enhancer`);
-          // Call ai-story-enhancer function to get AI analysis
-          try {
-            const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co';
-            const enhancerResponse = await fetch(`${supabaseUrl}/functions/v1/ai-story-enhancer`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                storyText,
-                userInfo,
-                avatarIdentity,
-                sessionId,
-                pageNumber,
-                totalPages
-              })
-            });
-            
-            if (enhancerResponse.ok) {
-              const enhancerResult = await enhancerResponse.json();
-              enhancedStoryData = enhancerResult.enhancedStoryData;
-              
-              // Cache the successful result
-              this.setCachedAIEnhancement(sessionId, pageNumber, storyText, enhancedStoryData);
-              console.log(`✅ AI story enhancer successful and cached`);
-            } else {
-              console.warn(`⚠️ AI story enhancer failed with status ${enhancerResponse.status}, switching to Tier 2`);
-              throw new Error(`AI enhancer failed, trigger Tier 2 processing`);
-            }
-          } catch (enhancerError) {
-            console.warn(`⚠️ AI story enhancer error: ${enhancerError.message}, switching to Tier 2`);
-            throw enhancerError;
-          }
-        }
+        console.log(`🧠 No enhanced data provided - using standard processing`);
+        // Cache check removed - AI enhancement now handled by ai-story-enhancer function directly
       }
       
       console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);

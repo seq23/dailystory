@@ -51,9 +51,8 @@ serve(async (req) => {
   }
 
   try {
-    // Import orchestrator services
+    // Import orchestrator services (removed MultiStageEnhancementPipeline since we now call ai-story-enhancer directly)
     const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
-    const { MultiStageEnhancementPipeline } = await import("../_shared/MultiStageEnhancementPipeline.js");
     
     // Parse request
     const { 
@@ -95,19 +94,35 @@ serve(async (req) => {
     if (!forceTier || forceTier === 1) {
       try {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
-        console.log('🔍 TIER 1 DEBUG - Calling MultiStageEnhancementPipeline.processTier1HighQuality');
+        console.log('🔍 TIER 1 DEBUG - Calling ai-story-enhancer directly (clean architecture)');
         
-        // Use MultiStageEnhancementPipeline with pre-processed avatar identity
-        const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
-          pageText, 
-          userInfo, 
+        // Call ai-story-enhancer directly with pre-processed avatar identity
+        const aiEnhancerResult = await callTierFunction('ai-story-enhancer', {
+          storyText: pageText,
+          userInfo,
           storyId,
-          sessionId, 
-          pageNumber, 
-          isGuestUser,
-          enhancedStoryData,
-          avatarIdentity
-        );
+          sessionId,
+          pageNumber,
+          totalPages: isGuestUser, // Reusing existing parameter mapping
+          avatarIdentity, // Pass pre-processed avatar identity directly
+          enhancedStoryData
+        });
+
+        console.log('🔍 TIER 1 DEBUG - AI enhancer result:', {
+          success: aiEnhancerResult?.success !== false,
+          hasEnhancedPrompt: !!aiEnhancerResult?.enhancedPrompt,
+          hasNegativePrompt: !!aiEnhancerResult?.negativePrompt
+        });
+
+        if (!aiEnhancerResult?.enhancedPrompt) {
+          throw new Error('AI enhancer did not return enhanced prompt');
+        }
+
+        const enhancementResult = {
+          enhancedPrompt: aiEnhancerResult.enhancedPrompt,
+          negativePrompt: aiEnhancerResult.negativePrompt,
+          metadata: aiEnhancerResult.metadata || {}
+        };
         
         console.log('🔍 TIER 1 DEBUG - Enhancement result:', {
           hasPrompt: !!enhancementResult?.enhancedPrompt,

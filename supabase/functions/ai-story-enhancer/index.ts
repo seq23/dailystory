@@ -236,14 +236,16 @@ serve(async (req) => {
           };
         }
         
-        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity } = requestBody);
+        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
           userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',
           sessionId: sessionId ? `✅ Present (${sessionId})` : '❌ Missing',
           pageNumber: pageNumber ? `✅ Present (${pageNumber})` : '❌ Missing',
           totalPages: totalPages ? `✅ Present (${totalPages})` : '⚠️ Undefined (infinite story)',
-          avatarIdentity: avatarIdentity ? `✅ Present (${Object.keys(avatarIdentity).length} properties)` : '⚠️ Missing avatar identity'
+          avatarIdentity: avatarIdentity ? `✅ Present (${Object.keys(avatarIdentity).length} properties)` : '⚠️ Missing avatar identity',
+          storyId: storyId ? `✅ Present (${storyId})` : '⚠️ Missing story ID',
+          enhancedStoryData: enhancedStoryData ? '✅ Present (pre-enhanced)' : '⚠️ Will process with OpenAI'
         });
 
         if (!storyText) {
@@ -385,34 +387,63 @@ Focus on emotional storytelling and character feelings.`
           return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, `Parse error: ${parseError.message}`, 0);
         }
 
-        // Add context and metadata with validation info
+        // Call MultiStage to build the final enhanced prompt
+        console.log('🎨 AI Enhancement successful - calling MultiStage for prompt building');
+        let MultiStageEnhancementPipeline;
+        try {
+          const pipelineModule = await import('../_shared/MultiStageEnhancementPipeline.js');
+          MultiStageEnhancementPipeline = pipelineModule.MultiStageEnhancementPipeline;
+        } catch (importError) {
+          console.error('❌ Failed to import MultiStageEnhancementPipeline:', importError.message);
+          throw new Error(`MultiStage import failed: ${importError.message}`);
+        }
+
+        const promptResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
+          storyText,
+          userInfo,
+          storyId,
+          sessionId,
+          pageNumber,
+          totalPages,
+          enhancedStoryData, // Pass the AI-enhanced data
+          avatarIdentity // Pass the avatar identity from orchestrator
+        );
+
+        // Return structured response for orchestrator
         const result = {
-          enhancedStoryData: enhancedStoryData || {},
-          extractedElements: {
-            characterCount: enhancedStoryData.characters?.length || 0,
-            objectCount: enhancedStoryData.objects?.length || 0,
-            complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
+          success: true,
+          enhancedPrompt: promptResult.enhancedPrompt,
+          negativePrompt: promptResult.negativePrompt,
+          metadata: {
+            ...promptResult.metadata,
+            aiEnhancement: true,
+            validation: {
+              contentValid: !validationResult?.requiresReanalysis,
+              mismatches: validationResult?.mismatches || [],
+              processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
+              qualityScore: validationResult?.qualityScore || 100,
+              modelUsed: 'openai-enhanced'
+            },
+            extractedElements: {
+              characterCount: enhancedStoryData.characters?.length || 0,
+              objectCount: enhancedStoryData.objects?.length || 0,
+              complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
+            },
+            contextualInfo: {
+              pageNumber,
+              totalPages: totalPages || 'unlimited',
+              sessionId,
+              originalTextLength: storyText.length,
+              processingTimestamp: new Date().toISOString(),
+              isNeverEnding: !totalPages
+            },
+            narrativeEnhancements: {
+              sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
+              emotionalTone: enhancedStoryData.mood || 'neutral',
+              visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
+            }
           },
-          contextualInfo: {
-            pageNumber,
-            totalPages: totalPages || 'unlimited',
-            sessionId,
-            originalTextLength: storyText.length,
-            processingTimestamp: new Date().toISOString(),
-            isNeverEnding: !totalPages
-          },
-          narrativeEnhancements: {
-            sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
-            emotionalTone: enhancedStoryData.mood || 'neutral',
-            visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
-          },
-          validation: {
-            contentValid: !validationResult?.requiresReanalysis,
-            mismatches: validationResult?.mismatches || [],
-            processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
-            qualityScore: validationResult?.qualityScore || 100,
-            modelUsed: 'openai-enhanced'
-          }
+          enhancedStoryData: enhancedStoryData || {}
         };
 
         console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, quality: ${validationResult?.qualityScore || 100}/100`);
