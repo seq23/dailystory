@@ -140,27 +140,37 @@ useEffect(() => {
         <div 
           className={cn(
             "relative backdrop-blur-sm rounded-full shadow-lg border-2 cursor-pointer hover:scale-110 transition-all duration-200 group flex items-center justify-center",
+            // Paused state - yellow pulsing outline
+            !isReading && [
+              "border-yellow-400/80",
+              "shadow-yellow-500/40",
+              "shadow-xl",
+              "animate-pulse ring-2 ring-yellow-400/50"
+            ],
             // Enhanced styling for free users when time is running low
-            !isPremium && timeRemaining <= 300 && [
+            isReading && !isPremium && timeRemaining <= 300 && [
               "bg-gradient-to-br from-red-500/20 to-orange-500/20",
               "border-red-400/60",
               "shadow-red-500/30",
               "shadow-2xl",
               lowTimePulse && "animate-pulse ring-2 ring-red-400/40"
             ],
-            !isPremium && timeRemaining > 300 && timeRemaining <= 600 && [
+            isReading && !isPremium && timeRemaining > 300 && timeRemaining <= 600 && [
               "bg-gradient-to-br from-orange-500/20 to-yellow-500/20", 
               "border-orange-400/60",
               "shadow-orange-500/30"
             ],
-            !isPremium && timeRemaining > 600 && [
+            isReading && !isPremium && timeRemaining > 600 && [
               "bg-gradient-to-br from-purple-500/10 to-blue-500/10",
               "border-purple-300/50",
               "shadow-purple-500/20"
             ],
-            isPremium && [
+            isReading && isPremium && [
               "bg-background/95",
               "border-primary/20"
+            ],
+            !isReading && [
+              "bg-gradient-to-br from-yellow-500/10 to-orange-500/10"
             ],
             isMobile ? "w-16 h-16" : isTablet ? "w-20 h-20" : "w-28 h-28"
           )}
@@ -222,7 +232,15 @@ useEffect(() => {
       <div className="relative">
         {/* Main Timer Circle */}
         <div className={cn(
-          "relative bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 border-border flex items-center justify-center",
+          "relative bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 flex items-center justify-center",
+          // Paused state - yellow pulsing outline
+          !isReading && [
+            "border-yellow-400/80",
+            "shadow-yellow-500/40", 
+            "shadow-xl",
+            "animate-pulse ring-2 ring-yellow-400/50"
+          ],
+          isReading && "border-border",
           isMobile ? "w-24 h-24" : isTablet ? "w-28 h-28" : "w-40 h-40"
         )}>
           <div id="timer-display" className="text-center">

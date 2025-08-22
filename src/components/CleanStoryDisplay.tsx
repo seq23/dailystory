@@ -436,8 +436,9 @@ useEffect(() => {
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
   
-  // Free user timer pause blocking - disable all interaction when timer is paused for non-premium users
+  // Timer pause logic - only block forward navigation when paused for non-premium users
   const isTimerPaused = !isPremium && !isTimerRunning && !isTimerCanceled;
+  const isForwardNavigationBlocked = isTimerPaused;
   
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
@@ -2500,11 +2501,11 @@ const handleRestartTimer = () => {
           storyTitle={storyTitle}
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
-          onHome={isTimerPaused ? undefined : onHome}
-          onNewStory={isTimerPaused ? undefined : (isPremium && stableDisplayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick)}
-          onIncreaseDifficulty={isTimerPaused ? undefined : () => handleDifficultyChange('up')}
-          onDecreaseDifficulty={isTimerPaused ? undefined : () => handleDifficultyChange('down')}
-          showLevelControls={!isTimerPaused}
+          onHome={onHome}
+          onNewStory={isPremium && stableDisplayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
+          onIncreaseDifficulty={() => handleDifficultyChange('up')}
+          onDecreaseDifficulty={() => handleDifficultyChange('down')}
+          showLevelControls={true}
           isChangingDifficulty={isChangingDifficulty}
           changeDirection={changeDirection}
           canIncrease={!lockDifficulty && (currentDifficulty !== 'expert' || expertGradeLevel !== "10th")}
@@ -2533,7 +2534,7 @@ const handleRestartTimer = () => {
                     variant="outline"
                     size="sm"
                     onClick={handlePrevious}
-                    disabled={currentPage === 0 || controlsBlocked || isTimerPaused}
+                    disabled={currentPage === 0 || controlsBlocked}
                     aria-label={t('nav.prev','Back')}
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -2546,7 +2547,7 @@ const handleRestartTimer = () => {
                     variant="default"
                     size="sm"
                     onClick={handleNext}
-                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5) || isTimerPaused}
+                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5) || isForwardNavigationBlocked}
                     aria-label={t('nav.next','Next')}
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -2560,22 +2561,18 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                  {!isTimerPaused ? (
                     <SynchronizedAudioControls
                       text={currentStoryText || ""}
                       contentHash={contentHash}
                       onWordHighlight={onWordHighlight}
                       onPlayingChange={handleAudioStateChange}
                     />
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Audio controls disabled while timer is paused</div>
-                  )}
                   {isPremium && (
                     <Button 
                       variant={isConnected ? "default" : "outline"} 
                       size="lg" 
                       onClick={handleVoiceToggle}
-                      disabled={isConnecting || isTimerPaused}
+                      disabled={isConnecting}
                       className={cn(
                         "transition-all",
                         isConnected && "ring-2 ring-primary/40",
@@ -2603,7 +2600,7 @@ const handleRestartTimer = () => {
                     </DialogContent>
                   </Dialog>
                   {isPremium && (
-                    <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving || isTimerPaused} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
+                    <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
                       {isSaving ? (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       ) : (
@@ -2631,7 +2628,7 @@ const handleRestartTimer = () => {
                   <div className="relative flex-[0.62] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                       <div className="absolute top-3 right-3 z-20">
-                         <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={isTimerPaused} aria-label="Fix missing illustrations">
+                          <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
                           <Sparkles className="w-4 h-4 mr-1" />
                           Fix Images
                         </Button>
@@ -2671,7 +2668,7 @@ const handleRestartTimer = () => {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Button
                           onClick={generateImageForCurrentPage}
-                          disabled={isGeneratingImage || isTimerPaused}
+                           disabled={isGeneratingImage}
                           size="lg"
                           aria-label="Generate illustration"
                         >
@@ -2736,7 +2733,7 @@ const handleRestartTimer = () => {
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                           <div className="absolute top-3 right-3 z-20">
-                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={isTimerPaused} aria-label="Fix missing illustrations">
+                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
                               <Sparkles className="w-4 h-4 mr-1" />
                               Fix Images
                             </Button>
@@ -2767,7 +2764,7 @@ const handleRestartTimer = () => {
                           <div className="w-full h-full flex items-center justify-center">
                             <Button
                               onClick={generateImageForCurrentPage}
-                              disabled={isGeneratingImage || isTimerPaused}
+                              disabled={isGeneratingImage}
                               size="lg"
                               aria-label="Generate illustration"
                             >
@@ -3103,20 +3100,7 @@ const handleRestartTimer = () => {
         </div>
       )}
 
-      {/* Timer Pause Subtle Overlay for Free Users */}
-      {isTimerPaused && (
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-background/30" />
-          <div className="absolute inset-4 border-2 border-primary/30 rounded-lg animate-pulse" />
-          <div className="absolute top-6 right-6 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              <span className="text-muted-foreground font-medium">Timer Paused</span>
-            </div>
-            <p className="text-xs text-muted-foreground/70 mt-1">Resume to continue</p>
-          </div>
-        </div>
-      )}
+      {/* Timer shows yellow pulse when paused - no overlay needed since controls remain active */}
 
       {/* Unified Timer for All Users (guest always on) */}
       {(!isPremium || timerEnabled) && (
@@ -3154,8 +3138,8 @@ const handleRestartTimer = () => {
         <>
           <MobileActionDock
             isPremium={isPremium}
-            onPlayAudio={isTimerPaused ? undefined : handleDockPlayAudio}
-            onVoiceCommand={isTimerPaused ? undefined : (isPremium ? handleDockVoiceCommand : undefined)}
+            onPlayAudio={handleDockPlayAudio}
+            onVoiceCommand={isPremium ? handleDockVoiceCommand : undefined}
             onCoach={handleDockCoach}
             onSave={isPremium ? handleSaveStoryNow : undefined}
             onEnd={isPremium ? () => setShowEndSessionConfirm(true) : undefined}
