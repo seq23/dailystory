@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { validateTheme } from '@/utils/themeValidation';
 import { InputSanitizer } from '@/utils/inputSanitizer';
+import { useCOPPANotification } from './useCOPPANotification';
 
 interface ValidationState {
   isValid: boolean;
@@ -11,6 +12,7 @@ interface ValidationState {
 }
 
 export const useValidationOnSubmit = () => {
+  const { sendCOPPANotification } = useCOPPANotification();
   const [validationState, setValidationState] = useState<ValidationState>({
     isValid: true,
     errors: [],
@@ -81,6 +83,24 @@ export const useValidationOnSubmit = () => {
       hasTriedSubmit: true,
       hasCoppaViolation
     });
+
+    // Send COPPA notification email if violations detected
+    if (hasCoppaViolation && allErrors.length > 0) {
+      // For demo purposes, using placeholder data
+      // In production, this would come from user profile/parent info
+      sendCOPPANotification({
+        parentEmail: "parent@example.com", // TODO: Get from user profile
+        childName: "Child", // TODO: Get from user profile  
+        violations: allErrors.filter(error => 
+          error.includes('personal') || 
+          error.includes('contact') || 
+          error.includes('number') ||
+          error.includes('email') ||
+          error.includes('address')
+        ),
+        detectedContent: Object.values(formData).join(' ')
+      }).catch(err => console.error('Failed to send COPPA notification:', err));
+    }
 
     return allErrors.length === 0;
   }, [validateField]);

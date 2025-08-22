@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.get-monitoring-data]
 verify_jwt = false
+
+[functions.send-coppa-notification]
+verify_jwt = false
