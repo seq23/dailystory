@@ -175,6 +175,24 @@ export class FrontendIntelligence {
     'cultural symbols', 'community strength', 'rich heritage', 'family bonds',
     'ancestral pride', 'cultural resilience', 'historical consciousness', 'community activism'
   ];
+
+  // ============= CULTURAL PRIDE KEYWORDS MAP =============
+  // Keywords that warrant cultural pride elements in the story context
+  static CULTURAL_PRIDE_KEYWORDS = {
+    'heritage': ['cultural symbols', 'ancestral pride', 'rich heritage'],
+    'tradition': ['soul food traditions', 'family recipes', 'generational wisdom'],
+    'community': ['community strength', 'collective strength', 'community uplift'],
+    'celebration': ['cultural celebration', 'heritage festival', 'Mardi Gras celebrations'],
+    'family': ['family bonds', 'extended family gatherings', 'Sunday dinner traditions'],
+    'church': ['church community', 'gospel music'],
+    'history': ['historical consciousness', 'cultural resilience'],
+    'pride': ['cultural pride', 'community pride', 'hometown pride'],
+    'culture': ['cultural symbols', 'cultural heritage', 'Louisiana culture'],
+    'music': ['musical heritage', 'jazz music traditions', 'gospel music'],
+    'cooking': ['soul food', 'family recipes', 'creole cooking traditions'],
+    'storytelling': ['family storytelling', 'creole storytelling'],
+    'values': ['community values', 'cultural values', 'family values']
+  };
   
   // ============= EMOTIONAL CONTEXT DETECTION =============
   // This method detects the emotional context of the story text
@@ -282,9 +300,15 @@ export class FrontendIntelligence {
         enhancedPrompt += `, ${culturalSetting}`;
       }
       
-      // Add cultural elements
-      const culturalElement = this.getRandomElement(culturalProfile.culturalElements);
-      enhancedPrompt += `, ${culturalElement}`;
+      // Only add cultural pride elements if story context warrants it
+      const culturalPrideElement = this.detectCulturalPrideFromStory(storyText, userInfo.avatarIdentity, userInfo);
+      if (culturalPrideElement) {
+        enhancedPrompt += `, ${culturalPrideElement}`;
+      } else {
+        // Add general cultural elements as fallback
+        const culturalElement = this.getRandomElement(culturalProfile.culturalElements);
+        enhancedPrompt += `, ${culturalElement}`;
+      }
     }
     
     return enhancedPrompt;
@@ -306,6 +330,39 @@ export class FrontendIntelligence {
     return enhancedSetting;
   }
   
+  // ============= CULTURAL PRIDE DETECTION =============
+  // This method detects if story contains keywords that warrant cultural pride elements
+  static detectCulturalPrideFromStory(storyText, avatarIdentity, userInfo) {
+    if (!storyText || typeof storyText !== 'string') {
+      return null;
+    }
+    
+    const lowerStoryText = storyText.toLowerCase();
+    
+    // Check each keyword category for matches
+    for (const [keyword, prideElements] of Object.entries(this.CULTURAL_PRIDE_KEYWORDS)) {
+      if (lowerStoryText.includes(keyword.toLowerCase())) {
+        // Apply African American cultural pride elements if appropriate
+        if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo)) {
+          // Use African American specific pride elements when available
+          const africanAmericanPrideElements = this.CULTURAL_PRIDE_ELEMENTS.filter(element =>
+            element.toLowerCase().includes(keyword) || 
+            prideElements.some(prideElement => prideElement.toLowerCase().includes(keyword))
+          );
+          
+          if (africanAmericanPrideElements.length > 0) {
+            return this.getRandomElement(africanAmericanPrideElements);
+          }
+        }
+        
+        // Return general cultural pride element
+        return this.getRandomElement(prideElements);
+      }
+    }
+    
+    return null; // No keyword match found, no cultural pride element enhancement
+  }
+
   // ============= CULTURAL SETTING DETECTION =============
   // This method detects if story contains keywords that warrant cultural setting enhancement
   static detectCulturalSettingFromStory(storyText, userInfo) {
