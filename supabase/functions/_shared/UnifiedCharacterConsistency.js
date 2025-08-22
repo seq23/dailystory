@@ -104,10 +104,9 @@ class UnifiedCharacterConsistency {
     // Basic gender inference (simplified for character generation)
     const gender = Math.random() > 0.5 ? 'female' : 'male';
     
+    // NEW MASTER PLAN: Direct visual description mapping (no cultural profiles)
     if (nativeLanguage === 'en') {
-      if (skinTone === 'dark') return { profile: 'african-american', gender };
-      if (skinTone === 'light' || skinTone === 'pale') return { profile: 'european-american', gender };
-      return { profile: 'multicultural-american', gender };
+      return { profile: 'english-speaker', gender }; // Simplified - all English speakers get same treatment
     }
     
     if (nativeLanguage === 'es') {
@@ -122,7 +121,6 @@ class UnifiedCharacterConsistency {
     if (nativeLanguage === 'ar') return { profile: 'middle-eastern', gender };
     
     return { profile: 'global-multicultural', gender };
-  }
   }
 
   /**
@@ -203,10 +201,10 @@ class UnifiedCharacterConsistency {
    */
   generateCulturalElements(culturalProfile, userInfo) {
     const culturalStyleMap = {
-      'african-american': {
-        clothing: ['modern streetwear', 'casual contemporary', 'athletic wear', 'school uniform'],
-        accessories: ['backpack', 'sneakers', 'baseball cap', 'colorful headband'],
-        markers: ['natural hairstyle', 'urban setting elements', 'diverse community']
+      'english-speaker': {
+        clothing: ['modern casual wear', 'school attire', 'play clothes'],
+        accessories: ['backpack', 'sneakers', 'baseball cap'],
+        markers: ['community setting', 'inclusive environment']
       },
       'hispanic-latino': {
         clothing: ['colorful casual wear', 'family gathering attire', 'school clothes'],
@@ -243,9 +241,9 @@ class UnifiedCharacterConsistency {
     // Mock gender determination for explicit text generation
     const mockUserInfo = { avatar: { skinTone: physicalTraits.skinTone } };
     
-    // NEW MASTER PLAN: Use direct visual descriptions from avatar identity
-    if (avatarIdentity && avatarIdentity.directVisualDescription) {
-      description = `${characterName} is a ${physicalTraits.age || 'young'} ${avatarIdentity.directVisualDescription}`;
+    // NEW MASTER PLAN: Use direct visual descriptions if available
+    if (seedData.avatarIdentity && seedData.avatarIdentity.directVisualDescription) {
+      description = `${characterName} is a ${physicalTraits.age || 'young'} ${seedData.avatarIdentity.directVisualDescription}`;
       console.log(`🎭 NEW MASTER PLAN: Generated direct visual character description: "${description}"`);
     } else {
       description = `${characterName} is a ${physicalTraits.age || 'young'} child`;
@@ -271,10 +269,8 @@ class UnifiedCharacterConsistency {
       culturalElements: culturalElements ? Object.keys(culturalElements) : []
     });
     
-    // PHASE 4: Validate African-American text generation
-    if (culturalProfile === 'african-american' && !description.includes('African-American')) {
-      console.warn(`⚠️ PHASE 2: African-American character description missing explicit text!`);
-    }
+    // NEW MASTER PLAN: No validation needed for direct visual descriptions
+    console.log('🎭 NEW MASTER PLAN: Character description generated using direct visual approach');
     
     return description;
   }

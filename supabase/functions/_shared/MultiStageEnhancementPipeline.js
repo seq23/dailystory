@@ -271,17 +271,14 @@ export class MultiStageEnhancementPipeline {
         existingSetting: existingSetting ? 'YES' : 'NO',
         visualDetails: visualDetails ? 'YES' : 'NO',
         trackedObjects: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-        tokenOptimization: {
-          originalLength: optimization.originalLength,
-          finalLength: optimization.finalLength,
-          applied: optimization.applied,
-          truncated: optimization.truncated
-        },
-        hasSkinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
-        hasBoysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
-        hasGirlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
-        hasSettings: FrontendIntelligence.AFRICAN_AMERICAN_SETTINGS?.length || 0,
-        hasCulturalElements: FrontendIntelligence.CULTURAL_PRIDE_ELEMENTS?.length || 0
+          tokenOptimization: {
+            originalLength: optimization.originalLength,
+            finalLength: optimization.finalLength,
+            applied: optimization.applied,
+            truncated: optimization.truncated
+          },
+          // NEW MASTER PLAN: Removed old array references
+          processingMethod: 'direct-visual-descriptions'
       });
       
       return {
@@ -294,20 +291,16 @@ export class MultiStageEnhancementPipeline {
           styleFramework: styleFramework.name,
           difficulty: imageDifficulty,
           culturalProfile: userInfo.nativeLanguage,
-          emotionalContext: emotionalContext.mood,
-          africanAmericanProcessing: FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo),
-          visualStateEnabled: true,
+            emotionalContext: emotionalContext.mood,
+            // NEW MASTER PLAN: Updated processing method
+            directVisualProcessing: true,
+            visualStateEnabled: true,
           hasExistingSetting: !!existingSetting,
           hasVisualDetails: !!visualDetails,
           trackedObjectsCount: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-          processingTime: Date.now(),
-          arrayStats: {
-            skinTones: FrontendIntelligence.AFRICAN_AMERICAN_SKIN_TONES?.length || 0,
-            boysHair: FrontendIntelligence.BOYS_HAIR_STYLES?.length || 0,
-            girlsHair: FrontendIntelligence.GIRLS_HAIR_STYLES?.length || 0,
-            settings: FrontendIntelligence.AFRICAN_AMERICAN_SETTINGS?.length || 0,
-            culturalElements: FrontendIntelligence.CULTURAL_PRIDE_ELEMENTS?.length || 0
-          }
+            processingTime: Date.now(),
+            // NEW MASTER PLAN: Removed old array stats
+            processingMethod: 'direct-visual-descriptions'
         }
       };
       

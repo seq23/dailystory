@@ -76,46 +76,14 @@ export class FrontendIntelligence {
   The art style is {styleDescription}, reminiscent of {artInspiration}.
   `;
   
-  // ============= AFRICAN AMERICAN CULTURAL VARIATIONS =============
-  // These arrays provide specific keywords to enhance visual representation
-  static AFRICAN_AMERICAN_SKIN_TONES = [
-    'deep brown skin',
-    'rich ebony skin',
-    'warm caramel skin',
-    'golden bronze skin',
-    'mahogany skin tone'
-  ];
-  
-  static BOYS_HAIR_STYLES = [
-    'short natural afro',
-    'braided cornrows',
-    'fade with a design',
-    'locs (short length)',
-    'high top fade'
-  ];
-  
-  static GIRLS_HAIR_STYLES = [
-    'braided pigtails',
-    'natural afro with beads',
-    'cornrows with colorful extensions',
-    'space buns with natural hair',
-    'long box braids'
-  ];
-  
-  static AFRICAN_AMERICAN_SETTINGS = [
-    'vibrant urban neighborhood',
-    'family-owned soul food restaurant',
-    'community park with a jazz band',
-    'historic black church',
-    'lively family gathering in a backyard'
-  ];
+  // NEW MASTER PLAN: Direct visual description arrays (removed cultural variations)
+  // All English speakers get consistent processing using direct descriptions
   
   static CULTURAL_PRIDE_ELEMENTS = [
-    'kente cloth patterns',
-    'black power fist',
-    'portraits of civil rights leaders',
-    'double dutch jump rope game',
-    'gospel choir performance'
+    'cultural symbols',
+    'community strength', 
+    'rich heritage',
+    'family bonds'
   ];
   
   // ============= EMOTIONAL CONTEXT DETECTION =============
@@ -274,10 +242,10 @@ export class FrontendIntelligence {
     return array[Math.floor(Math.random() * array.length)];
   }
   
-  // ============= AFRICAN AMERICAN CULTURAL VARIATIONS CHECK =============
-  // This method checks if African American cultural variations should be applied
-  static shouldApplyAfricanAmericanCulturalVariations(userInfo) {
-    return userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark';
+  // NEW MASTER PLAN: Simplified approach - no cultural variations needed
+  // All English speakers get consistent treatment using direct visual descriptions
+  static shouldApplyConsistentProcessing(userInfo) {
+    return userInfo.nativeLanguage === 'en'; // All English speakers get same processing
   }
 
   static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
@@ -307,12 +275,10 @@ export class FrontendIntelligence {
       pale: 'pale skin'
     };
     
-    // Add cultural hair and clothing elements for African American characters
+    // Add cultural hair and clothing elements using simplified approach
     let culturalElements = '';
-    if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo)) {
-      const hairStyles = gender === 'girl' ? this.GIRLS_HAIR_STYLES : this.BOYS_HAIR_STYLES;
-      const selectedHair = hairStyles[Math.floor(Math.random() * hairStyles.length)];
-      culturalElements = `, with ${selectedHair}`;
+    if (this.shouldApplyConsistentProcessing(userInfo)) {
+      culturalElements = ', with natural styling';
     }
     
     return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'}${culturalElements})`;

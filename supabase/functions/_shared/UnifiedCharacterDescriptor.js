@@ -1,12 +1,13 @@
 /**
- * UnifiedCharacterDescriptor - Provides consistent character descriptions for image generation
+ * NEW MASTER PLAN: UnifiedCharacterDescriptor - Simplified Direct Visual Approach
+ * Uses direct avatar descriptions from orchestrator instead of complex cultural arrays
  */
 
 export class UnifiedCharacterDescriptor {
   static sessionCharacters = new Map();
   
   /**
-   * Generate character description based on user info
+   * NEW MASTER PLAN: Generate character description using direct visual approach
    */
   static generateCharacterDescription(userInfo, difficulty = 'medium', outputMode = 'rich', culturalEnhancement = true) {
     if (!userInfo) {
@@ -27,81 +28,30 @@ export class UnifiedCharacterDescriptor {
     if (avatar) {
       const skinTone = avatar.skinTone || 'medium';
       
-      const skinMap = {
-        'pale': 'fair skin',
-        'light': 'light skin', 
-        'medium': 'medium skin',
-        'olive': 'olive skin',
-        'dark': 'dark skin'
+      // NEW MASTER PLAN: Direct visual mapping (matches orchestrator output)
+      const visualMap = {
+        'pale': 'fair skin white child with red hair',
+        'light': 'white child with blonde hair', 
+        'medium': 'medium skin white child with brown hair',
+        'olive': 'olive skin white child with black hair',
+        'dark': 'black child'
       };
       
-      // Enhanced African American Hair Style Arrays
-      const AFRICAN_AMERICAN_BOYS_HAIRSTYLES = [
-        'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 'textured low fade', 'detailed crew cut', 'textured caesar cut', 
-        'detailed curly top fade', 'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 'detailed curly high top', 
-        'textured curly mohawk', 'detailed curly faux hawk', 'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
-        'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 'textured hair tattoo', 'detailed geometric patterns', 
-        'textured mini afro', 'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 'textured finger coils', 'detailed two strand twists', 
-        'textured flat twists', 'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 'detailed twisted locs', 
-        'textured side part locs', 'detailed middle part locs', 'textured ponytail with locs', 'detailed nape area tapered'
-      ];
-
-      const AFRICAN_AMERICAN_GIRLS_HAIRSTYLES = [
-        'textured medium natural hair', 'textured long natural hair', 'textured shoulder-length hair', 
-        'detailed twist out', 'detailed bantu knots', 'detailed rod set', 'detailed braid out', 'textured high puff', 'textured low puff', 'textured side puff', 
-        'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
-        'detailed messy bun', 'detailed sleek bun',
-        'detailed cornrows', 'detailed box braids', 'detailed micro braids', 'detailed jumbo braids', 
-        'detailed goddess braids', 'detailed dutch braids', 'detailed french braids', 'detailed fishtail braids', 
-        'detailed halo braid', 'detailed crown braid', 'detailed side braids', 'detailed three strand twists',
-        'detailed senegalese twists', 'detailed marley twists', 'detailed havana twists', 'detailed passion twists', 
-        'detailed spring twists', 'detailed kinky twists', 'detailed chunky twists', 'detailed protective twists', 
-        'textured sisterlocs', 'textured microlocs', 'textured traditional locs', 'textured interlocked locs', 
-        'detailed braided locs', 'detailed loc updo', 'textured half up half down locs', 'textured afro puffs', 
-        'textured large afro', 'textured picked out afro', 'textured shaped afro', 'textured curly afro', 
-        'textured coily afro', 'textured kinky afro', 'textured side swept bangs', 
-        'textured face framing layers', 'textured layered cut', 'detailed blunt cut', 'detailed asymmetrical cut'
-      ];
-
-      // Hair selection logic with cultural enhancement
-      let hairDescription = 'brown hair';
-      if (culturalEnhancement && userInfo.nativeLanguage === 'en' && skinTone === 'dark') {
-        // African American hair styles
-        if (genderType === 'boy') {
-          const randomIndex = Math.floor(Math.random() * AFRICAN_AMERICAN_BOYS_HAIRSTYLES.length);
-          hairDescription = AFRICAN_AMERICAN_BOYS_HAIRSTYLES[randomIndex];
-        } else if (genderType === 'girl') {
-          const randomIndex = Math.floor(Math.random() * AFRICAN_AMERICAN_GIRLS_HAIRSTYLES.length);
-          hairDescription = AFRICAN_AMERICAN_GIRLS_HAIRSTYLES[randomIndex];
-        } else {
-          // Default for unspecified gender
-          const allStyles = [...AFRICAN_AMERICAN_BOYS_HAIRSTYLES, ...AFRICAN_AMERICAN_GIRLS_HAIRSTYLES];
-          const randomIndex = Math.floor(Math.random() * allStyles.length);
-          hairDescription = allStyles[randomIndex];
-        }
+      // Use direct visual description
+      const directVisual = visualMap[skinTone] || 'child';
+      
+      // Adjust for gender
+      if (genderType === 'boy') {
+        description = directVisual.replace('child', 'boy');
+      } else if (genderType === 'girl') {
+        description = directVisual.replace('child', 'girl');
       } else {
-        // Standard hair mapping for other users
-        const hairMap = {
-          'pale': 'blonde hair',
-          'light': 'brown hair',
-          'medium': 'brown hair', 
-          'olive': 'dark brown hair',
-          'dark': 'black hair'
-        };
-        hairDescription = hairMap[skinTone] || 'brown hair';
+        description = directVisual;
       }
       
-      description += ` with ${skinMap[skinTone] || 'medium skin'} and ${hairDescription}`;
-      
-      // Add cultural clothing if enabled
-      if (culturalEnhancement && userInfo.nativeLanguage) {
-        if (userInfo.nativeLanguage === 'en' && skinTone === 'dark') {
-          description += ' in modern American fashion';
-        } else if (userInfo.nativeLanguage === 'fr') {
-          description += ' in French-style clothing';
-        } else if (userInfo.nativeLanguage === 'es') {
-          description += ' in contemporary Hispanic fashion';
-        }
+      // NEW MASTER PLAN: No complex cultural enhancement - keep it simple
+      if (culturalEnhancement && userInfo.nativeLanguage === 'en') {
+        description += ' in modern clothing';
       }
     }
     
@@ -203,21 +153,21 @@ export class UnifiedCharacterDescriptor {
   }
   
   /**
-   * Get cultural features for language
+   * NEW MASTER PLAN: Simplified cultural features
    */
   static getCulturalFeaturesForLanguage(language) {
     const features = {
       'en': {
-        clothing: ['casual wear', 'modern fashion'],
-        setting: ['suburban home', 'community park']
+        clothing: ['modern clothing', 'casual wear'],
+        setting: ['community setting', 'inclusive environment']
       },
       'es': {
-        clothing: ['colorful clothing', 'Hispanic fashion'],
-        setting: ['family home', 'community plaza']
+        clothing: ['colorful clothing', 'casual wear'],
+        setting: ['family setting', 'community environment']
       },
       'fr': {
-        clothing: ['French fashion', 'elegant style'],
-        setting: ['French home', 'European garden']
+        clothing: ['stylish clothing', 'casual wear'],
+        setting: ['family setting', 'community environment']
       }
     };
     
