@@ -810,7 +810,7 @@ export class MultiStageEnhancementPipeline {
       // PHASE 3 FIX: Enhance fallback logic to include secondary elements in intelligent context
       let secondaryElementsContext = '';
       try {
-        const sessionId = arguments[2]; // sessionId should be passed as 3rd parameter
+        const sessionId = arguments[5]; // sessionId is the 6th parameter (index 5)
         if (sessionId) {
           const secondaryCharacterData = globalThis.StoryVisualStateManager?.getSecondaryCharacters?.(sessionId);
           const characterAnimals = globalThis.StoryVisualStateManager?.getCharacterAnimals?.(sessionId);
