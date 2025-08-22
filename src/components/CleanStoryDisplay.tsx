@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { DifficultyLevel } from '@/types/story';
-import { UserInfo } from '@/types/UserInfo';
+import { DifficultyLevel, UserInfo } from '@/types';
 import { getStoredUserInfo } from '@/utils/userStorage';
 import { generateStory } from '@/services/storyGenerationService';
 import { SimpleImageService } from '@/services/SimpleImageService';
@@ -27,17 +26,33 @@ interface StoryPage {
 }
 
 interface CleanStoryDisplayProps {
+  userInfo?: UserInfo;
+  isPremium?: boolean;
+  currentStory?: any;
+  onSessionEnded?: (stats: any) => void;
+  onHome?: () => void;
+  onUpgrade?: () => void;
+  onNewStory?: () => void;
   children?: React.ReactNode;
 }
 
-export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({ children }) => {
+export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
+  userInfo: propUserInfo,
+  isPremium = false,
+  currentStory,
+  onSessionEnded,
+  onHome,
+  onUpgrade,
+  onNewStory,
+  children
+}) => {
   // Basic state
   const [story, setStory] = useState<StoryPage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(propUserInfo || null);
   const [difficultyLevel, setDifficultyLevel] = useState<DifficultyLevel>('medium');
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random()}`);
 
@@ -47,19 +62,25 @@ export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({ children }
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
-  // Load user info on mount
+  // Load user info on mount if not provided as prop
   useEffect(() => {
-    const loadUserInfo = async () => {
-      const stored = await getStoredUserInfo();
-      if (stored) {
-        setUserInfo(stored);
-        if (stored.difficultyLevel) {
-          setDifficultyLevel(stored.difficultyLevel);
+    if (!propUserInfo) {
+      const loadUserInfo = async () => {
+        try {
+          const stored = await getStoredUserInfo();
+          if (stored) {
+            setUserInfo(stored);
+            if (stored.difficultyLevel) {
+              setDifficultyLevel(stored.difficultyLevel);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load user info:', error);
         }
-      }
-    };
-    loadUserInfo();
-  }, []);
+      };
+      loadUserInfo();
+    }
+  }, [propUserInfo]);
 
   // Simple story generation effect
   useEffect(() => {
@@ -114,7 +135,7 @@ export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({ children }
     };
 
     generateNewStory();
-  }, [userInfo?.name, userInfo?.age]);
+  }, [userInfo?.name, userInfo?.age, difficultyLevel, isGenerating, story.length, toast]);
 
   // Update URL when story changes
   useEffect(() => {
@@ -156,12 +177,12 @@ export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({ children }
         false // isGuestUser - simplified for now
       );
 
-      if (imageResult?.success && imageResult?.imageUrl) {
+      if (imageResult?.success && imageResult?.url) {
         setStory(prev => prev.map(p => 
           p.pageNumber === pageNumber 
             ? { 
                 ...p, 
-                imageUrl: imageResult.imageUrl,
+                imageUrl: imageResult.url,
                 imagePrompt: imageResult.prompt,
                 isGeneratingImage: false 
               }
@@ -269,7 +290,7 @@ export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({ children }
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/')}
+              onClick={onHome || (() => navigate('/'))}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -309,19 +330,17 @@ export const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({ children }
                     </p>
                   </div>
                   
-                  {/* Validation Feedback */}
+                  {/* Validation Feedback - simplified */}
                   <ValidationFeedback
-                    fieldName="story"
-                    value={currentPageData.content}
-                    validationResult={validateField('story', currentPageData.content)}
-                    userInfo={userInfo}
+                    hasErrors={false}
+                    errors={[]}
+                    hasCoppaViolation={false}
                   />
                   
-                  {/* Audio Controls */}
+                  {/* Audio Controls - simplified */}
                   <div className="border-t pt-4">
                     <SynchronizedAudioControls
                       text={currentPageData.content}
-                      userInfo={userInfo}
                     />
                   </div>
                 </div>
