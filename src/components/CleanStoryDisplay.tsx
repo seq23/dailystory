@@ -3226,17 +3226,18 @@ const handleRestartTimer = () => {
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
       
-      {/* Story Stability Monitor (Console Only) */}
-      <StoryStabilityMonitor
-        isStoryContentLocked={isStoryContentLocked}
-        isStoryStable={isStoryStable}
-        storyLength={story.length}
-        lastGenerationTrigger={lastGenerationTrigger}
-        contentMutationLog={contentMutationLog}
-        onUnlockContent={() => {
-          console.log('🔓 DEBUG: Manual content unlock triggered');
-          setIsStoryContentLocked(false);
-          storyContentLockedRef.current = false;
+      {/* Story Stability Monitor (Debug Only - ?debug=1) */}
+      {new URLSearchParams(window.location.search).get('debug') === '1' && (
+        <StoryStabilityMonitor
+          isStoryContentLocked={isStoryContentLocked}
+          isStoryStable={isStoryStable}
+          storyLength={story.length}
+          lastGenerationTrigger={lastGenerationTrigger}
+          contentMutationLog={contentMutationLog}
+          onUnlockContent={() => {
+            console.log('🔓 DEBUG: Manual content unlock triggered');
+            setIsStoryContentLocked(false);
+            storyContentLockedRef.current = false;
           setContentMutationLog(prev => [...prev, {
             timestamp: new Date().toISOString(),
             trigger: 'debug-manual-unlock',
@@ -3250,6 +3251,7 @@ const handleRestartTimer = () => {
           setContentMutationLog([]);
         }}
       />
+      )}
       </div>
     </ErrorBoundary>
     </GameContextProvider>
