@@ -106,7 +106,7 @@ class UnifiedCharacterConsistency {
     
     // NEW MASTER PLAN: Direct visual description mapping (no cultural profiles)
     if (nativeLanguage === 'en') {
-      return { profile: 'english-speaker', gender }; // Simplified - all English speakers get same treatment
+      return { profile: 'standard-american', gender }; // PHASE 2: All English speakers get standard-american treatment  
     }
     
     if (nativeLanguage === 'es') {
@@ -120,7 +120,7 @@ class UnifiedCharacterConsistency {
     if (nativeLanguage === 'hi') return { profile: 'indian-south-asian', gender };
     if (nativeLanguage === 'ar') return { profile: 'middle-eastern', gender };
     
-    return { profile: 'global-multicultural', gender };
+    return { profile: 'standard-american', gender }; // PHASE 2: Default to standard-american instead of global-multicultural
   }
 
   /**
@@ -199,10 +199,55 @@ class UnifiedCharacterConsistency {
    */
   generateCulturalElements(culturalProfile, userInfo) {
     const culturalStyleMap = {
-      'english-speaker': {
-        clothing: ['modern casual wear', 'school attire', 'play clothes'],
-        accessories: ['backpack', 'sneakers', 'baseball cap'],
-        markers: ['community setting', 'inclusive environment']
+      // PHASE 2: Enhanced standard-american profile (35+ options)
+      'standard-american': {
+        clothing: [
+          // Casual wear
+          'casual t-shirt and jeans', 'hoodie and sneakers', 'polo shirt and khakis', 
+          'graphic tee and shorts', 'button-up shirt and pants', 'sweater and jeans',
+          'tank top and cargo shorts', 'flannel shirt and jeans', 'jersey and joggers',
+          'denim jacket and jeans', 'cardigan and slacks', 'henley shirt and chinos',
+          
+          // School/formal
+          'school uniform', 'dress shirt and dress pants', 'blazer and trousers',
+          'sweater vest and pants', 'collared shirt and khakis', 'nice blouse and skirt',
+          'dress with tights', 'button-up with suspenders', 'preppy school outfit',
+          
+          // Seasonal/activity
+          'athletic wear and running shoes', 'layered casual look', 'seasonal appropriate clothing',
+          'comfortable playtime outfit', 'trendy youth fashion', 'classic American casual style',
+          'modern comfortable clothing', 'age-appropriate fashion', 'playground-appropriate clothing',
+          'weekend casual wear', 'comfortable everyday outfit', 'backpack and school clothes',
+          
+          // Accessories integrated
+          'baseball cap and casual wear', 'sneakers and athletic socks', 'winter coat and boots',
+          'rain jacket and boots', 'summer dress and sandals', 'sports uniform and cleats'
+        ],
+        accessories: [
+          // Bags and backpacks
+          'backpack', 'school bag', 'messenger bag', 'tote bag', 'gym bag', 'lunch box',
+          
+          // Footwear
+          'sneakers', 'athletic shoes', 'boots', 'sandals', 'dress shoes', 'rain boots',
+          
+          // Headwear
+          'baseball cap', 'winter hat', 'sun hat', 'headband', 'hair tie', 'cap',
+          
+          // Jewelry and personal
+          'watch', 'friendship bracelet', 'simple necklace', 'hair clips', 'glasses',
+          'sports equipment', 'water bottle', 'phone case', 'keychain'
+        ],
+        markers: [
+          // Community elements
+          'suburban neighborhood', 'local community center', 'neighborhood park',
+          'main street setting', 'town square', 'local library',
+          
+          // American cultural elements
+          'American traditions', 'community volunteering', 'school spirit',
+          'hometown pride', 'civic participation', 'patriotic values',
+          'local sports teams', 'community service', 'Fourth of July celebrations',
+          'local festivals', 'neighborhood community', 'school pride'
+        ]
       },
       'hispanic-latino': {
         clothing: ['colorful casual wear', 'family gathering attire', 'school clothes'],
@@ -216,7 +261,8 @@ class UnifiedCharacterConsistency {
       }
     };
     
-    const profile = culturalStyleMap[culturalProfile] || culturalStyleMap['multicultural'];
+    // PHASE 2: Default to standard-american (replace global-multicultural default)
+    const profile = culturalStyleMap[culturalProfile] || culturalStyleMap['standard-american'];
     const random = this.createSeededRandom(this.generateStableSeed(userInfo.name || '', culturalProfile));
     
     return {

@@ -714,7 +714,7 @@ function mapAvatarIdentity(userInfo: any) {
   else if (nativeLanguage === 'zh') culturalProfile = 'chinese-asian';
   else if (nativeLanguage === 'hi') culturalProfile = 'indian-south-asian';
   else if (nativeLanguage === 'ar') culturalProfile = 'middle-eastern';
-  else culturalProfile = 'global-multicultural';
+  else culturalProfile = 'standard-american'; // PHASE 2: Default to standard-american instead of global-multicultural
 
   // Hair color mapping (legacy compatibility)
   const hairColorMap = {

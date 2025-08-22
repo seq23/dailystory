@@ -21,6 +21,28 @@
 
 export class FrontendIntelligence {
   
+  // ============= PHASE 1: SAFETY FOUNDATION =============
+  // Feature flags for gradual rollout
+  static FEATURE_FLAGS = {
+    dynamicPrompts: true,        // Enable dynamic prompt building
+    enhancedCulturalProfiles: true,  // Enable standard-american profile
+    improvedErrorHandling: true,     // Enable 503 error handling
+    pixarStylingPrecision: true,     // Ensure exact Pixar styling
+    africanAmericanEnhancements: true // Enable enhanced AA character support
+  };
+  
+  // Error logging for monitoring
+  static logPromptError(method, error, context = {}) {
+    const errorData = {
+      timestamp: new Date().toISOString(),
+      method,
+      error: error.message || error,
+      context,
+      featureFlags: this.FEATURE_FLAGS
+    };
+    console.error('🚨 FI-PROMPT-ERROR:', JSON.stringify(errorData));
+  }
+  
   // ============= CULTURAL VISUAL PROFILES =============
   // These profiles are designed to enhance visual generation for different cultures
   static CULTURAL_VISUAL_PROFILES = {
@@ -397,44 +419,147 @@ export class FrontendIntelligence {
   }
   
   // ============= PREMIUM PROMPT BUILDING =============
-  // This method builds a high-quality prompt using the premium prompt template
+  // PHASE 1: Enhanced with feature flags and backup methods
   static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty) {
-    // 1. Character Description with avatar identity support
-    const avatarIdentity = details?.avatarIdentity || null;
-    const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, imageDifficulty, avatarIdentity);
+    console.log('🎨 FI-PROMPT: Building premium prompt with safety features');
     
-    // 2. Setting Description
-    const settingDescription = details.existingSetting || 'vibrant setting';
+    // Feature flag check for enhanced processing
+    const useEnhancedProcessing = this.FEATURE_FLAGS?.dynamicPrompts !== false;
     
-    // 3. Scene Description
-    const sceneDescription = sceneContext || this.detectSceneContext(storyText);
+    if (!useEnhancedProcessing) {
+      console.log('🎨 FI-PROMPT: Feature disabled, using basic prompt');
+      return this.buildBasicPromptFallback(storyText, userInfo, details);
+    }
     
-    // 4. Visual Details
-    const visualDetails = details.visualDetails || 'rich details';
+    try {
+      return this.buildEnhancedPromptWithSafety(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty);
+    } catch (error) {
+      console.error('🚨 FI-PROMPT: Error in buildPremiumPrompt, using fallback:', error);
+      this.logPromptError('buildPremiumPrompt', error, { storyText, userInfo, imageDifficulty });
+      return this.buildBasicPromptFallback(storyText, userInfo, details);
+    }
+  }
+  
+  // PHASE 3: Dynamic prompt building method (replaces template)
+  static buildEnhancedPromptWithSafety(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty) {
+    console.log('🎨 FI-PROMPT: Building dynamic enhanced prompt (Phase 3)');
     
-    // 5. Emotional Context
-    const emotionalContextMood = emotionalContext.mood || 'neutral mood';
+    try {
+      // 1. Character Description with avatar identity support
+      const avatarIdentity = details?.avatarIdentity || null;
+      const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, imageDifficulty, avatarIdentity);
+      
+      // 2. Setting Enhancement with cultural integration
+      let settingDescription = details.existingSetting || sceneContext || this.detectSceneContext(storyText) || 'vibrant classroom setting';
+      
+      // PHASE 3: Enhanced setting with cultural elements
+      const culturalSetting = this.detectCulturalSettingFromStory(storyText, userInfo);
+      if (culturalSetting) {
+        settingDescription = `${settingDescription}, ${culturalSetting}`;
+      }
+      
+      // 3. Scene Description with emotion integration
+      const baseScene = storyText;
+      const emotionalMood = emotionalContext?.mood || this.detectEmotionalContext(storyText)?.mood || 'neutral';
+      const sceneDescription = `${baseScene}. The atmosphere is ${emotionalMood} and engaging`;
+      
+      // 4. PHASE 3: Enhanced Visual Details with dynamic elements
+      let visualDetails = details.visualDetails || '';
+      if (!visualDetails) {
+        // Dynamic visual details based on story content and difficulty
+        const visualElements = [
+          'rich details and vibrant colors',
+          'expressive character emotions',
+          'detailed background elements',
+          'soft lighting and warm atmosphere'
+        ];
+        
+        if (imageDifficulty >= 2) {
+          visualElements.push('intricate environmental details', 'nuanced character expressions');
+        }
+        
+        visualDetails = visualElements.join(', ');
+      }
+      
+      // 5. PHASE 3: Precise style handling
+      let styleDescription = styleFramework?.prompt || 'children\'s book illustration';
+      if (this.FEATURE_FLAGS?.pixarStylingPrecision && imageDifficulty <= 1) {
+        styleDescription = "3D rendered, Pixar-like animation style";
+      }
+      
+      // 6. Art Inspiration enhancement
+      const artInspiration = styleFramework?.brandSuffix || 'high-quality children\'s book illustration';
+      
+      // PHASE 3: Build dynamic prompt (no template dependency)
+      const promptComponents = [
+        `A captivating children's book illustration featuring ${characterDescription}`,
+        `in ${settingDescription}`,
+        `${sceneDescription}`,
+        `The scene includes ${visualDetails}`,
+        `Art style: ${styleDescription}`,
+        `Quality: ${artInspiration}`
+      ];
+      
+      let enhancedPrompt = promptComponents.join('. ') + '.';
+      
+      // 7. Cultural enhancement with story context
+      enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);
+      
+      // PHASE 4: Enhanced African American character treatment
+      if (this.FEATURE_FLAGS?.africanAmericanEnhancements && 
+          this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo)) {
+        const culturalPrideElement = this.detectCulturalPrideFromStory(storyText, avatarIdentity, userInfo);
+        if (culturalPrideElement) {
+          enhancedPrompt += `. ${culturalPrideElement}`;
+        }
+      }
+      
+      console.log(`🎨 FI-PROMPT: Dynamic prompt built (${enhancedPrompt.length} chars)`);
+      return enhancedPrompt;
+      
+    } catch (error) {
+      console.error('🚨 FI-PROMPT: Error in enhanced prompt building:', error);
+      this.logPromptError('buildEnhancedPromptWithSafety', error, { storyText, imageDifficulty });
+      
+      // Fallback to template-based approach
+      return this.buildTemplateBasedPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty);
+    }
+  }
+  
+  // PHASE 3: Template-based fallback method
+  static buildTemplateBasedPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty) {
+    console.log('🎨 FI-PROMPT: Using template-based fallback');
     
-    // 6. Style Description
-    const styleDescription = styleFramework.prompt || 'children\'s book illustration';
-    
-    // 7. Art Inspiration
-    const artInspiration = styleFramework.brandSuffix || 'Disney animation';
-    
-    // 8. Build the prompt using the template
-    let enhancedPrompt = FrontendIntelligence.PREMIUM_PROMPT_TEMPLATE
-      .replace('{characterDescription}', characterDescription)
-      .replace('{settingDescription}', settingDescription)
-      .replace('{sceneDescription}', sceneDescription)
-      .replace('{visualDetails}', visualDetails)
-      .replace('{emotionalContext}', emotionalContextMood)
-      .replace('{styleDescription}', styleDescription)
-      .replace('{artInspiration}', artInspiration);
-    
-    // 9. Enhance with cultural elements (pass storyText for keyword matching)
-    enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);
-    
-    return enhancedPrompt;
+    try {
+      const avatarIdentity = details?.avatarIdentity || null;
+      const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, imageDifficulty, avatarIdentity);
+      const settingDescription = details.existingSetting || 'vibrant setting';
+      const sceneDescription = sceneContext || this.detectSceneContext(storyText);
+      const visualDetails = details.visualDetails || 'rich details';
+      const emotionalContextMood = emotionalContext?.mood || 'neutral mood';
+      
+      let styleDescription = styleFramework?.prompt || 'children\'s book illustration';
+      if (this.FEATURE_FLAGS?.pixarStylingPrecision && imageDifficulty <= 1) {
+        styleDescription = "3D rendered, Pixar-like animation style";
+      }
+      
+      const artInspiration = styleFramework?.brandSuffix || 'Disney animation';
+      
+      let enhancedPrompt = this.PREMIUM_PROMPT_TEMPLATE
+        .replace('{characterDescription}', characterDescription)
+        .replace('{settingDescription}', settingDescription)
+        .replace('{sceneDescription}', sceneDescription)
+        .replace('{visualDetails}', visualDetails)
+        .replace('{emotionalContext}', emotionalContextMood)
+        .replace('{styleDescription}', styleDescription)
+        .replace('{artInspiration}', artInspiration);
+      
+      enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);
+      
+      return enhancedPrompt;
+    } catch (error) {
+      console.error('🚨 FI-PROMPT: Template fallback failed:', error);
+      return `${storyText} - 3D rendered, Pixar-like animation style, children's book illustration`;
   }
   
   // ============= CHARACTER DESCRIPTION BUILDING =============
@@ -457,22 +582,30 @@ export class FrontendIntelligence {
   
   // ============= AFRICAN AMERICAN DETECTION METHODS =============
   
+  // PHASE 4: Enhanced African American character treatment verification
   static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo = null) {
-    // Enhanced detection with multiple keywords and fallback sources
+    // PHASE 4: Enhanced detection with multiple keywords and fallback sources
     const keywords = [
       'black', 'african american', 'african-american', 'black american', 
       'black girl', 'black boy', 'african', 'afro'
     ];
     
+    console.log('🎯 FI-PROMPT: Checking African American cultural variations', {
+      avatarIdentity: avatarIdentity ? 'present' : 'missing',
+      userInfo: userInfo ? 'present' : 'missing'
+    });
+    
     // Primary: Check avatarIdentity.visualDescription (from AI enhancement)
     const visualDesc = avatarIdentity?.visualDescription?.toLowerCase() || '';
     if (keywords.some(keyword => visualDesc.includes(keyword))) {
+      console.log('✅ FI-PROMPT: African American detected via visualDescription');
       return true;
     }
     
     // Secondary: Check avatarIdentity.culturalProfile
     const culturalProfile = avatarIdentity?.culturalProfile?.toLowerCase() || '';
     if (culturalProfile.includes('african-american') || culturalProfile.includes('african american')) {
+      console.log('✅ FI-PROMPT: African American detected via culturalProfile');
       return true;
     }
     
@@ -484,10 +617,12 @@ export class FrontendIntelligence {
       
       // Check for dark skin tone combined with specific descriptors
       if (skinTone === 'dark' && (type === 'girl' || type === 'boy')) {
+        console.log('✅ FI-PROMPT: African American detected via dark skin tone + gender');
         return true;
       }
     }
     
+    console.log('⭕ FI-PROMPT: African American cultural variations not detected');
     return false;
   }
   
