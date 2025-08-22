@@ -225,8 +225,13 @@ export class MultiStageEnhancementPipeline {
         imageDifficulty // Pass difficulty as parameter
       );
       
-      // 8. Generate advanced negative prompt with style framework considerations
-      const negativePrompt = this.buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber);
+      // 8. Generate unified negative prompt with style framework considerations
+      const negativePrompt = this.buildUnifiedNegativePrompt(
+        userInfo,
+        culturalProfile,
+        styleFramework,
+        pageNumber
+      );
       
       // 9. Premium generation parameters using style framework
       const generationParams = {
@@ -313,87 +318,187 @@ export class MultiStageEnhancementPipeline {
     }
   }
   
-  // ============= TIER 2: SIMPLE TEMPLATE-BASED PROCESSING =============
-  static async processThroughPipeline(storyText, userInfo, storyId, sessionId, pageNumber, totalPages) {
+  // ============= TIER 2: HIGH-QUALITY PREMIUM PROCESSING (TIER 1 MINUS AI ENHANCEMENT) =============
+  static async processTier2HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages) {
     try {
-      console.log(`🔄 Tier 2 Template Pipeline (with enhanced character detection + story consistency): storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
+      console.log(`🔥 Tier 2: Premium processing (no AI enhancement) for page ${pageNumber}/${totalPages}`);
+
+      // Load all required modules for premium processing
+      const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
       
-      // 1. Analyze relationships and resolve pronouns first (same as Tier 1)
+      // Set current storyId for FrontendIntelligence to use
+      globalThis.currentStoryId = storyId;
+      
+      // Initialize and analyze visual state for consistency
+      const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
+      
+      globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+      globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
+      
+      // Analyze relationships and resolve pronouns first
       globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
       
-      // 2. Enhanced character detection - animal handling now in UnifiedCharacterDescriptor
+      // Enhance story text with consistent visual details AND pronoun resolution
       let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
       enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
-      // Animal injection now handled by UnifiedCharacterDescriptor
       
-      console.log('🎯 Tier 2 Enhanced character detection applied:', {
+      console.log('🎯 Tier 2 premium enhancement applied:', {
         originalLength: storyText.length,
         enhancedLength: enhancedStoryText.length,
         changed: storyText !== enhancedStoryText,
-        trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-        trackedAnimals: 0, // Animal tracking now in UnifiedCharacterDescriptor
-        animalCharacters: [] // Animal characters now in UnifiedCharacterDescriptor
+        trackedDetails: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length
       });
       
-      // 2. Simple template-based processing - NO AI functions
-      const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-      const framework = getStyleFramework(difficulty);
+      // Detect and update setting/environment from story text
+      this.updateSettingFromText(sessionId, enhancedStoryText);
       
-      // 3. Simple character description based on avatar info only
-      const characterDescription = this.buildSimpleCharacterDescription(userInfo, difficulty);
+      // Determine difficulty level and get style framework
+      const imageDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+      const styleFramework = getStyleFramework(imageDifficulty);
       
-      const enhancedPrompt = this.buildEnhancedTemplatePrompt(
-        enhancedStoryText, // Use enhanced text instead of original
-        characterDescription,
-        framework,
-        userInfo
+      console.log('🎨 Selected premium style framework:', imageDifficulty, styleFramework.name);
+      
+      // Generate story-based character consistency 
+      console.log('🎭 Generating premium character consistency');
+      const characterConsistencyData = characterConsistency.getCharacterSeed(
+        userInfo.name || 'user',
+        storyId,
+        userInfo,
+        enhancedStoryText,
+        userInfo?.avatar // Use avatar identity for consistency
       );
       
-      const negativePrompt = this.buildSimpleNegativePrompt(userInfo, pageNumber);
+      const characterSeed = characterConsistencyData.seed;
+      const characterDescription = characterConsistencyData.characterDescription;
       
-      // NEW MASTER PLAN: Apply token optimization with updated parameters
-      const promptSegments = BackendTokenManager.createPromptSegments(
+      // Get cultural profile
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
+                             FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
+      
+      // Extract scene and emotional context from enhanced text (no AI enhancement)
+      const sceneContext = this.extractAIEnhancedSceneContext(enhancedStoryText, {}, pageNumber, totalPages, userInfo);
+      const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
+      
+      // Get existing visual state for consistency
+      const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
+      const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+      const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+      
+      // Enhanced setting logic without AI data
+      let enhancedSetting = existingSetting;
+      if (!enhancedSetting) {
+        enhancedSetting = FrontendIntelligence.enhanceAISettingWithCulture(
+          { location: "indoor scene" }, 
+          userInfo, 
+          culturalProfile,
+          enhancedStoryText
+        );
+      }
+      
+      // Build premium prompt using FrontendIntelligence
+      const enhancedPrompt = FrontendIntelligence.buildPremiumPrompt(
         enhancedStoryText,
-        characterDescription,
-        framework.prompt || 'children\'s book illustration',
-        framework.brandSuffix || '',
-        '', // visualDetails
+        userInfo,
+        characterSeed,
+        culturalProfile,
+        sceneContext,
+        emotionalContext,
+        styleFramework,
+        {
+          existingSetting: enhancedSetting,
+          visualDetails,
+          storyStateDetails,
+          animalDetails: '',
+          pageNumber,
+          totalPages,
+          avatarIdentity: userInfo?.avatar
+        },
+        imageDifficulty
+      );
+      
+      // Generate unified negative prompt
+      const negativePrompt = this.buildUnifiedNegativePrompt(
+        userInfo,
+        culturalProfile,
+        styleFramework,
+        pageNumber
+      );
+      
+      // Premium generation parameters using style framework
+      const generationParams = {
+        model: 'runware:100@1',
+        steps: styleFramework.parameters?.steps || 8,
+        cfgScale: styleFramework.parameters?.cfgScale || 2.0,
+        scheduler: 'FlowMatchEulerDiscreteScheduler',
+        width: 1024,
+        height: 1024,
+        outputFormat: 'WEBP'
+      };
+      
+      // Track cultural text before token optimization
+      CulturalTextTracker.trackTextEntry(sessionId, pageNumber, enhancedPrompt, 'enhanced-prompt');
+      
+      // Apply token optimization with updated parameters
+      const fullCharacterDescription = characterDescription;
+      
+      CulturalTextTracker.trackTextEntry(sessionId, pageNumber, fullCharacterDescription, 'character-description');
+      
+      const promptSegments = BackendTokenManager.createPromptSegments(
+        sceneContext,
+        fullCharacterDescription,
+        styleFramework.prompt || 'children\'s book illustration',
+        styleFramework.brandSuffix || '',
+        visualDetails || '',
         '', // culturalElements
-        null // aiSchemaData - not available in Tier 2
+        {} // No AI enhancement data for Tier 2
       );
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);
       const finalEnhancedPrompt = optimization.optimizedPrompt;
       
-      console.log('✨ Tier 2 Simple processing with token optimization:', {
-        originalLength: optimization.originalLength,
-        finalLength: optimization.finalLength,
-        applied: optimization.applied
+      CulturalTextTracker.trackPipelineStage(sessionId, pageNumber, finalEnhancedPrompt, 'final-optimized');
+      
+      console.log('✨ Tier 2 premium processing completed:', {
+        styleFramework: styleFramework.name,
+        difficulty: imageDifficulty,
+        characterSeed,
+        existingSetting: existingSetting ? 'YES' : 'NO',
+        visualDetails: visualDetails ? 'YES' : 'NO',
+        trackedObjects: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
+        tokenOptimization: {
+          originalLength: optimization.originalLength,
+          finalLength: optimization.finalLength,
+          applied: optimization.applied,
+          truncated: optimization.truncated
+        },
+        processingMethod: 'premium-quality-no-ai'
       });
       
       return {
         enhancedPrompt: finalEnhancedPrompt,
         negativePrompt,
-        // Simple template parameters
-        generationParams: {
-          ...framework.parameters,
-          outputFormat: "WEBP",
-          model: "runware:100@1",
-          CFGScale: 3.0,
-          steps: 8
-        },
-        // Simple metadata
+        generationParams,
         metadata: {
-          tier: 'simple-template',
-          difficulty: difficulty,
-          styleFramework: framework.name,
-          qualityScore: 75
+          tier: 'tier2-premium-quality',
+          characterSeed,
+          styleFramework: styleFramework.name,
+          difficulty: imageDifficulty,
+          culturalProfile: userInfo.nativeLanguage,
+          emotionalContext: emotionalContext.mood,
+          premiumProcessing: true,
+          visualStateEnabled: true,
+          hasExistingSetting: !!existingSetting,
+          hasVisualDetails: !!visualDetails,
+          trackedObjectsCount: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
+          processingTime: Date.now(),
+          processingMethod: 'premium-quality-no-ai'
         }
       };
       
     } catch (error) {
-      console.error('❌ Tier 2 Simple pipeline error:', error);
-      return this.createFallbackResult(storyText, userInfo, 'tier2-fallback');
+      console.error('❌ Tier 2 premium processing failed:', error);
+      return this.createFallbackResult(storyText, userInfo, pageNumber);
     }
   }
   
@@ -433,66 +538,48 @@ export class MultiStageEnhancementPipeline {
     return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
   }
   
-  // ============= SMART NEGATIVE PROMPTS WITH STYLE FRAMEWORK SUPPORT =============
-  static buildAdvancedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber) {
-    // Build negative prompt with new priority structure
-    const pageSpecific = this.buildPageSpecificNegatives(pageNumber, userInfo);
-    const selectiveText = this.buildSelectiveTextPrevention();
-    const bodyCompleteness = "floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body";
-    const qualityControl = "ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error";
-    const contentSafety = "adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons";
-    const stylePrevention = "photorealistic, anime, copyrighted characters, brand logos";
+  // ============= UNIFIED NEGATIVE PROMPT SYSTEM (SINGLE SOURCE OF TRUTH) =============
+  static buildUnifiedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber) {
+    const negatives = [];
     
-    let baseNegative = [pageSpecific, selectiveText, bodyCompleteness, qualityControl, contentSafety, stylePrevention]
-      .filter(Boolean)
-      .join(', ');
-    
-    // Add style framework negative prompts
-    if (styleFramework && styleFramework.negativePrompt) {
-      baseNegative += `, ${styleFramework.negativePrompt}`;
+    // 1. Page-specific negatives (consolidation #1)
+    if (pageNumber === 1 && userInfo?.name) {
+      negatives.push(`${userInfo.name} text, name in large letters`);
     }
     
-    // Add gender consistency
+    // 2. Text prevention (consolidation #2 - exact specification)
+    negatives.push('NO text, letters, words, writing, typography, captions, labels');
+    
+    // 3. Body completeness (consolidation #3)
+    negatives.push('floating head, portrait only, incomplete body, missing torso');
+    
+    // 4. Quality control (unchanged #4)
+    negatives.push('ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, pixelated, noise, artifacts');
+    
+    // 5. Content safety (unchanged #5)
+    negatives.push('adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, blood, gore, frightening');
+    
+    // 6. Style prevention (unchanged #6)
+    negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
+    
+    // 7. Gender consistency enforcement (unchanged #7)
     if (userInfo?.avatar?.type === 'girl') {
-      baseNegative += ', boy character, male character, masculine features';
+      negatives.push('boy character, male character, masculine features');
     } else if (userInfo?.avatar?.type === 'boy') {
-      baseNegative += ', girl character, female character, feminine features, dress, skirt';
+      negatives.push('girl character, female character, feminine features, dress, skirt');
     }
     
-    // Enhanced negative prompts for African American characters
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      baseNegative += ', inconsistent character appearance, wrong skin color, incorrect facial features, stereotypical representation, caricature features, inaccurate cultural elements, offensive portrayal';
+    // 8. Style framework compatibility (unchanged #8)
+    if (styleFramework?.negativesToAvoid) {
+      negatives.push(styleFramework.negativesToAvoid.join(', '));
     }
     
-    return baseNegative;
-  }
-  
-  static buildSimpleNegativePrompt(userInfo, pageNumber) {
-    // Build negative prompt with new priority structure
-    const pageSpecific = this.buildPageSpecificNegatives(pageNumber, userInfo);
-    const selectiveText = this.buildSelectiveTextPrevention();
-    const bodyCompleteness = "floating head, disembodied head, head with no body, portrait only, bust shot, headshot only, cropped body, incomplete body, missing torso, cut off body, partial body, torso cutoff, body cropped out, head floating, disconnected head, severed head, no full body";
-    const qualityControl = "ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error";
-    const contentSafety = "adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons";
-    const stylePrevention = "photorealistic, anime, copyrighted characters, brand logos";
-    
-    let baseNegative = [pageSpecific, selectiveText, bodyCompleteness, qualityControl, contentSafety, stylePrevention]
-      .filter(Boolean)
-      .join(', ');
-    
-    // Add gender consistency
-    if (userInfo?.avatar?.type === 'girl') {
-      baseNegative += ', boy character, male character, masculine features';
-    } else if (userInfo?.avatar?.type === 'boy') {
-      baseNegative += ', girl character, female character, feminine features, dress, skirt';
+    // 9. Cultural sensitivity - NEW trigger condition and prompt
+    if (userInfo?.avatar?.skinTone === 'dark' && (userInfo?.avatar?.type === 'boy' || userInfo?.avatar?.type === 'girl')) {
+      negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
     }
     
-    // Enhanced negative prompts for African American characters
-    if (userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      baseNegative += ', inconsistent character appearance, wrong skin color, incorrect facial features, stereotypical representation, caricature features, inaccurate cultural elements, offensive portrayal';
-    }
-    
-    return baseNegative;
+    return negatives.join(', ');
   }
 
   // ============= PAGE-SPECIFIC AND SELECTIVE TEXT PREVENTION =============
@@ -725,7 +812,7 @@ export class MultiStageEnhancementPipeline {
     
     return {
       enhancedPrompt: `${storyText}, ${framework.prompt}, children's book illustration`,
-      negativePrompt: this.buildSimpleNegativePrompt(userInfo, 1),
+      negativePrompt: this.buildUnifiedNegativePrompt(userInfo, {}, {}, 1),
       generationParams: framework.parameters,
       metadata: {
         tier: tier,

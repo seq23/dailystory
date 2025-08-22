@@ -103,13 +103,21 @@ serve(async (req) => {
       positivePrompt,
       userInfo,
       sessionId || 'openai-session',
+      sessionId || 'openai-session',
       pageNumber || 1,
       10, // totalPages
       aiEnhancedStoryData // Add AI story data
     );
 
     let finalPrompt = enhancementResult.enhancedPrompt;
-    const comprehensiveNegativePrompt = enhancementResult.negativePrompt;
+    
+    // Use unified negative prompt system for comprehensive consistency
+    const comprehensiveNegativePrompt = MultiStageEnhancementPipeline.buildUnifiedNegativePrompt(
+      userInfo,
+      enhancementResult.culturalProfile || {},
+      enhancementResult.framework || {},
+      pageNumber || 1
+    );
     
     console.log(`🎨 Tier 3 AI-enhanced prompt: ${finalPrompt.substring(0, 100)}...`);
     console.log(`🚫 Premium negative prompt: ${comprehensiveNegativePrompt.substring(0, 50)}...`);

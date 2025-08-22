@@ -291,21 +291,47 @@ function getHardcodedStyle(difficulty: string) {
   return styles[difficulty] || styles['medium'];
 }
 
-// Standardized negative prompt for all tiers (token-efficient)
+// Unified negative prompt system for Tier 2.5 (hardcoded but comprehensive)
 function getEnhancedNegativePrompt(userInfo?: any): string {
-  // Use the standardized Tier 1 negative prompt for all tiers
-  let baseNegative = 'NO TEXT, no letters, no words, no writing, no signs, no symbols, ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, text, error, adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, photorealistic, anime, copyrighted characters, brand logos';
+  const negatives = [];
   
-  // Avatar-based character consistency enforcement (replace story-text analysis)
-  if (userInfo?.avatar?.type === 'girl') {
-    baseNegative += ', boy character, male character, masculine features, he, him, his, male clothing, boy hairstyle';
-  } else if (userInfo?.avatar?.type === 'boy') {
-    baseNegative += ', girl character, female character, feminine features, she, her, hers, female clothing, girl hairstyle, dress, skirt';
+  // 1. Page-specific negatives (first page only in practice)
+  if (userInfo?.name) {
+    negatives.push(`${userInfo.name} text, name in large letters`);
   }
   
-  console.log(`📝 Using standardized negative prompt (~95 words) for token efficiency`);
+  // 2. Text prevention (exact specification)
+  negatives.push('NO text, letters, words, writing, typography, captions, labels');
   
-  return baseNegative;
+  // 3. Body completeness
+  negatives.push('floating head, portrait only, incomplete body, missing torso');
+  
+  // 4. Quality control
+  negatives.push('ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, pixelated, noise, artifacts');
+  
+  // 5. Content safety
+  negatives.push('adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, blood, gore, frightening');
+  
+  // 6. Style prevention
+  negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
+  
+  // 7. Gender consistency enforcement
+  if (userInfo?.avatar?.type === 'girl') {
+    negatives.push('boy character, male character, masculine features');
+  } else if (userInfo?.avatar?.type === 'boy') {
+    negatives.push('girl character, female character, feminine features, dress, skirt');
+  }
+  
+  // 8. Style framework compatibility (hardcoded defaults)
+  negatives.push('copyrighted characters, brand logos, watermarks');
+  
+  // 9. Cultural sensitivity - NEW trigger condition
+  if (userInfo?.avatar?.skinTone === 'dark' && (userInfo?.avatar?.type === 'boy' || userInfo?.avatar?.type === 'girl')) {
+    negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
+  }
+  
+  console.log(`📝 Using unified Tier 2.5 negative prompt with all 9 categories`);
+  return negatives.join(', ');
 }
 
 // Cultural bypass implementation for Tier 2.5
