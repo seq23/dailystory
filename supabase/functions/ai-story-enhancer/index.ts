@@ -297,48 +297,38 @@ serve(async (req) => {
         const messages = [
           {
             role: 'system',
-            content: `Extract story elements with enhanced emotion analysis from ${pageText}.${previousContext}
+            content: `You are an expert children's story analyzer. Extract ONLY these 3 fields from the story text:
 
-ENHANCED EMOTION FOCUS: Pay special attention to emotional states, transitions, and character feelings.
-
-EMOTIONAL VOCABULARY: Use rich emotional descriptors like:
-- Primary emotions: joyful, excited, curious, proud, confident, surprised, worried, frustrated, sad, angry, scared, confused
-- Complex emotions: determined, hopeful, anxious, content, overwhelmed, peaceful, nervous, grateful, disappointed, amazed
-- Emotional transitions: growing confident, becoming curious, feeling reassured, getting excited, calming down
-
-RULES:
-- Use established character names if available
-- Focus on emotional depth and character feelings
-- Include scene transitions and emotional changes
-- Maintain story continuity and character emotional arcs
-- Capture the overall emotional atmosphere
-
-Return ONLY valid JSON:
+RESPONSE FORMAT (JSON only, no other text):
 {
-  "characters": [{"name": "name", "description": "brief_description", "emotions": "rich_emotional_state_with_transitions"}],
-  "mainCharacter": {"emotions": "primary_character_detailed_emotions", "emotionalArc": "how_emotions_change"},
-  "secondaryCharacters": [{"name": "name", "emotions": "supporting_character_emotions"}],
-  "setting": {"location": "location", "timeOfDay": "time", "weather": "weather", "atmosphere": "emotional_atmosphere"},
-  "objects": ["essential_objects_with_emotional_context"],
-  "mood": "overall_emotional_tone",
-  "overallMood": "scene_emotional_atmosphere",
-  "narrativeElements": {"action": "action_with_emotional_impact", "focus": "emotional_focus", "sceneTransition": "emotional_transition"}
+  "characters": "Direct visual description from avatar or story characters",
+  "visualComponents": {
+    "sceneType": "indoor/outdoor/mixed",
+    "lighting": "bright/dim/natural/dramatic", 
+    "keyObjects": "important objects in the scene",
+    "setting": "specific location context",
+    "mood": "single mood descriptor"
+  },
+  "primaryScene": "single comprehensive sentence combining ALL visual elements including secondary characters when present"
 }
 
-Prioritize emotional depth and character development.`
+CRITICAL RULES:
+1. Use avatarIdentity.visualDescription for main character if provided
+2. Include secondary characters DIRECTLY in primaryScene (never separate field)
+3. Keep visualComponents concise and visual-focused
+4. primaryScene must be one complete sentence with all characters and scene elements
+5. Focus on what Runware image generation needs, not complex emotions
+
+Example: If story has main character + grandmother, primaryScene should be:
+"fair skin white boy with red hair with his grandmother in cozy indoor scene with warm lighting"`
           },
           {
             role: 'user',
-            content: `Text: "${storyText}"
+            content: `Story text: "${storyText}"
 
-Extract elements with ENHANCED EMOTION ANALYSIS:
-- Characters with detailed emotional states and transitions
-- Emotional atmosphere of the scene
-- How characters feel and emotional changes
-- Objects and settings that support the emotional story
-- Overall mood and emotional progression
+Avatar identity: ${avatarIdentity?.visualDescription || 'child'}
 
-Focus on emotional storytelling and character feelings.`
+Extract the 3-field schema focusing on visual clarity for image generation.`
           }
         ];
 
@@ -424,29 +414,31 @@ Focus on emotional storytelling and character feelings.`
               qualityScore: validationResult?.qualityScore || 100,
               modelUsed: 'openai-enhanced'
             },
-            extractedElements: {
-              characterCount: enhancedStoryData.characters?.length || 0,
-              objectCount: enhancedStoryData.objects?.length || 0,
-              complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
-            },
-            contextualInfo: {
-              pageNumber,
-              totalPages: totalPages || 'unlimited',
-              sessionId,
-              originalTextLength: storyText.length,
-              processingTimestamp: new Date().toISOString(),
-              isNeverEnding: !totalPages
-            },
-            narrativeEnhancements: {
-              sceneType: enhancedStoryData.narrativeElements?.action || 'general activity',
-              emotionalTone: enhancedStoryData.mood || 'neutral',
-              visualFocus: enhancedStoryData.narrativeElements?.focus || 'character'
-            }
+             extractedElements: {
+               hasCharacters: !!enhancedStoryData.characters,
+               hasVisualComponents: !!enhancedStoryData.visualComponents,
+               hasPrimaryScene: !!enhancedStoryData.primaryScene,
+               complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
+             },
+             contextualInfo: {
+               pageNumber,
+               totalPages: totalPages || 'unlimited',
+               sessionId,
+               originalTextLength: storyText.length,
+               processingTimestamp: new Date().toISOString(),
+               isNeverEnding: !totalPages
+             },
+             narrativeEnhancements: {
+               sceneType: enhancedStoryData.visualComponents?.sceneType || 'mixed',
+               lighting: enhancedStoryData.visualComponents?.lighting || 'natural',
+               mood: enhancedStoryData.visualComponents?.mood || 'neutral',
+               schemaVersion: '3-field-streamlined'
+             }
           },
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`✅ AI Analysis complete: ${enhancedStoryData.characters?.length || 0} characters, ${enhancedStoryData.objects?.length || 0} objects, quality: ${validationResult?.qualityScore || 100}/100`);
+        console.log(`✅ AI Analysis complete - NEW SCHEMA: Characters(${!!enhancedStoryData.characters}), VisualComponents(${!!enhancedStoryData.visualComponents}), PrimaryScene(${!!enhancedStoryData.primaryScene}), quality: ${validationResult?.qualityScore || 100}/100`);
 
         return createCorsResponse(result);
 

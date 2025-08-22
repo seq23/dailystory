@@ -2,17 +2,17 @@
 // Replaces 3 complex validation systems (1000+ lines) with simple content accuracy check
 
 /**
- * Simple content validator with quality gate - focuses on story-AI accuracy and basic fixes
- * @param {Object} enhancedStoryData - AI extracted data
+ * NEW MASTER PLAN: Simple validator for streamlined 3-field schema
+ * @param {Object} enhancedStoryData - AI extracted data (primaryScene, visualComponents, characters)
  * @param {string} storyText - Original story text
  * @returns {Object} - Enhanced data, quality score, or tier 2 trigger
  */
 export function validateAndEnhanceContent(enhancedStoryData, storyText) {
-  // Part 1: Content Accuracy Check with Quality Scoring
+  // Part 1: New Schema Validation for 3-Field Structure
   const mismatches = detectContentMismatches(enhancedStoryData, storyText);
   const qualityScore = calculateQualityScore(enhancedStoryData, storyText, mismatches);
   
-  console.log(`🔍 Quality Assessment: ${qualityScore}/100 (${mismatches.length} mismatches)`);
+  console.log(`🔍 NEW SCHEMA Quality Assessment: ${qualityScore}/100 (${mismatches.length} mismatches)`);
   
   // QUALITY GATE: Reject unfixable content (≤40) → Tier 2
   if (qualityScore <= 40) {
@@ -26,19 +26,33 @@ export function validateAndEnhanceContent(enhancedStoryData, storyText) {
     return { requiresReanalysis: true, mismatches, qualityScore };
   }
   
-  // Part 2: Basic Fixes Only - fix obvious AI errors
+  // Part 2: Basic Fixes for New Schema Structure
   const enhanced = applyBasicFixes(enhancedStoryData, storyText);
   
-  console.log(`✅ Content validated and enhanced (score: ${qualityScore}/100)`);
+  console.log(`✅ NEW SCHEMA Content validated and enhanced (score: ${qualityScore}/100)`);
   return { enhancedData: enhanced, qualityScore };
 }
 
 /**
- * Detect content mismatches between AI output and story text
+ * NEW MASTER PLAN: Detect mismatches in streamlined 3-field schema
  */
 function detectContentMismatches(data, text) {
   const mismatches = [];
   const textLower = text.toLowerCase();
+  
+  // NEW: Validate primaryScene presence and quality
+  if (!data.primaryScene || data.primaryScene.length < 10) {
+    mismatches.push('missing-primary-scene: Primary scene description too short or missing');
+  }
+  
+  // NEW: Validate visualComponents structure
+  if (!data.visualComponents) {
+    mismatches.push('missing-visual-components: Visual components object missing');
+  } else {
+    const vc = data.visualComponents;
+    if (!vc.sceneType) mismatches.push('missing-scene-type: Scene type not specified');
+    if (!vc.lighting) mismatches.push('missing-lighting: Lighting not specified');
+  }
   
   // Action mismatch detection
   if (data.narrativeElements?.action) {
@@ -144,87 +158,93 @@ function detectContentMismatches(data, text) {
 }
 
 /**
- * Calculate content quality score (0-100) - ENHANCED PENALTIES
+ * NEW MASTER PLAN: Calculate quality score for 3-field schema
  */
 function calculateQualityScore(data, text, mismatches) {
   let score = 100;
   
-  // UNFIXABLE CRITICAL ERRORS → Trigger Tier 2 Fallback (Score ≤ 40)
+  // NEW SCHEMA CRITICAL ERRORS → Trigger Tier 2 Fallback (Score ≤ 40)
   mismatches.forEach(mismatch => {
-    if (mismatch.includes('scene-mismatch')) {
-      score -= 60; // Missing scene context = critical visual error (unfixable)
+    if (mismatch.includes('missing-primary-scene')) {
+      score -= 70; // Missing primary scene = critical error for new schema
+    } else if (mismatch.includes('missing-visual-components')) {
+      score -= 50; // Missing visual components = major error
+    } else if (mismatch.includes('missing-scene-type')) {
+      score -= 15; // Missing scene type = moderate error (fixable)
+    } else if (mismatch.includes('missing-lighting')) {
+      score -= 15; // Missing lighting = moderate error (fixable)
+    } else if (mismatch.includes('scene-mismatch')) {
+      score -= 60; // Scene context mismatch = critical visual error
     } else if (mismatch.includes('action-mismatch')) {
-      score -= 60; // Wrong character action = critical error (unfixable)  
+      score -= 60; // Wrong action = critical error
     } else if (mismatch.includes('setting-mismatch')) {
-      score -= 30; // Indoor/outdoor mismatch = major error (partially fixable)
-    // FIXABLE MINOR ERRORS → Apply validation fixes (Continue processing)
+      score -= 30; // Indoor/outdoor mismatch = major error
     } else if (mismatch.includes('emotion-mismatch')) {
       score -= 5; // Missing emotions = minor error (fixable)
     } else if (mismatch.includes('missing-objects')) {
-      score -= 5; // Missing objects = minor error (easily fixable)
+      score -= 5; // Missing objects = minor error (fixable)
     } else if (mismatch.includes('generic-names')) {
-      score -= 2; // Generic names = minor error (easily fixable)
+      score -= 2; // Generic names = minor error (fixable)
     } else {
       score -= 10; // Other mismatches
     }
   });
   
-  // Check basic content completeness (minor penalties for fixable issues)
-  if (!data.characters || data.characters.length === 0) score -= 15;
-  if (!data.setting || !data.setting.location) score -= 10;
-  if (data.characters?.some(c => c.name === "character")) score -= 2; // Now handled by generic-names detection
-  if (data.setting?.location === "scene" || data.setting?.location === "indoor scene") score -= 5; // Reduced - fixable
+  // NEW SCHEMA: Check completeness of 3-field structure
+  if (!data.primaryScene) score -= 70;
+  if (!data.visualComponents) score -= 50;
+  if (!data.characters) score -= 15;
   
   // Ensure minimum score
   return Math.max(0, score);
 }
 
 /**
- * Apply basic fixes to AI output
+ * NEW MASTER PLAN: Apply fixes for streamlined 3-field schema
  */
 function applyBasicFixes(data, text) {
   const enhanced = { ...data };
   
-  // Fix generic "character" names
-  if (enhanced.characters) {
-    enhanced.characters = enhanced.characters.map(char => {
-      if (char.name === "character") {
-        const nameMatch = text.match(/\b[A-Z][a-z]{2,}\b/);
-        if (nameMatch && !['The', 'And', 'But', 'Then', 'They', 'Once'].includes(nameMatch[0])) {
-          return { ...char, name: nameMatch[0] };
-        }
-      }
-      return char;
-    });
+  // NEW: Ensure primaryScene exists with basic fallback
+  if (!enhanced.primaryScene || enhanced.primaryScene.length < 10) {
+    const textLower = text.toLowerCase();
+    let sceneDescription = 'child in scene';
+    
+    // Basic scene detection for fallback
+    if (textLower.includes('outside') || textLower.includes('park')) {
+      sceneDescription = 'child outside in bright scene';
+    } else if (textLower.includes('home') || textLower.includes('house')) {
+      sceneDescription = 'child at home in indoor scene';
+    }
+    
+    enhanced.primaryScene = sceneDescription;
   }
   
-  // Add missing setting location if completely empty
-  if (!enhanced.setting?.location || enhanced.setting.location === "scene") {
-    const locationKeywords = {
-      'home': ['home', 'house', 'kitchen', 'bedroom'],
-      'school': ['school', 'classroom', 'teacher'],
-      'park': ['park', 'playground', 'outside', 'trees']
+  // NEW: Ensure visualComponents structure exists
+  if (!enhanced.visualComponents) {
+    enhanced.visualComponents = {
+      sceneType: 'mixed',
+      lighting: 'natural',
+      keyObjects: '',
+      setting: '',
+      mood: 'neutral'
     };
-    
-    const textLower = text.toLowerCase();
-    for (const [location, keywords] of Object.entries(locationKeywords)) {
-      if (keywords.some(word => textLower.includes(word))) {
-        enhanced.setting = { ...enhanced.setting, location };
-        break;
+  } else {
+    const vc = enhanced.visualComponents;
+    if (!vc.sceneType) vc.sceneType = text.toLowerCase().includes('outside') ? 'outdoor' : 'indoor';
+    if (!vc.lighting) vc.lighting = 'bright';
+    if (!vc.mood) vc.mood = 'cheerful';
+  }
+  
+  // Legacy character fixes (if characters field exists as string)
+  if (typeof enhanced.characters === 'string') {
+    // Fix generic character references
+    if (enhanced.characters.includes('character')) {
+      const nameMatch = text.match(/\b[A-Z][a-z]{2,}\b/);
+      if (nameMatch && !['The', 'And', 'But', 'Then', 'They', 'Once'].includes(nameMatch[0])) {
+        enhanced.characters = enhanced.characters.replace(/character/g, nameMatch[0]);
       }
     }
-  }
-  
-  // Ensure objects mentioned in text are included
-  if (enhanced.objects) {
-    const textWords = text.toLowerCase().split(/\s+/);
-    const commonObjects = ['book', 'ball', 'toy', 'car', 'dog', 'cat', 'tree', 'flower'];
-    
-    commonObjects.forEach(obj => {
-      if (textWords.includes(obj) && !enhanced.objects.some(o => o.toLowerCase().includes(obj))) {
-        enhanced.objects.push(obj);
-      }
-    });
   }
   
   return enhanced;

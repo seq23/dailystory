@@ -470,7 +470,7 @@ async function callTierFunction(functionName: string, params: any) {
   return await response.json();
 }
 
-// PHASE 1: Avatar Identity Mapper - Central avatar processing at orchestrator level
+// NEW MASTER PLAN: Avatar Identity Mapper with Direct Visual Descriptions
 function mapAvatarIdentity(userInfo: any) {
   const avatar = userInfo?.avatar || {};
   const { type = 'prefer-not-to-answer', skinTone = 'medium' } = avatar;
@@ -478,6 +478,7 @@ function mapAvatarIdentity(userInfo: any) {
 
   // Map avatar type and skin tone to standardized identity
   const avatarType = type === 'prefer-not-to-answer' ? 'child' : type;
+  const genderText = avatarType === 'boy' ? 'boy' : 'girl';
   
   // Standardized skin tone mapping
   const skinToneMap = {
@@ -489,7 +490,20 @@ function mapAvatarIdentity(userInfo: any) {
   };
   const standardizedSkinTone = skinToneMap[skinTone] || 'medium';
 
-  // Cultural profile determination (moved from UnifiedCharacterConsistency)
+  // NEW MASTER PLAN: Direct Visual Descriptions for English Speakers Only
+  let visualDescription = '';
+  if (nativeLanguage === 'en') {
+    const visualDescriptionMap = {
+      'fair': `fair skin white ${genderText} with red hair`,
+      'light': `white ${genderText} with blonde hair`,
+      'medium': `medium skin white ${genderText} with brown hair`,
+      'olive': `olive skin white ${genderText} with black hair`,
+      'dark': `black ${genderText}`
+    };
+    visualDescription = visualDescriptionMap[standardizedSkinTone] || `${genderText}`;
+  }
+
+  // Cultural profile determination (legacy compatibility)
   let culturalProfile;
   if (nativeLanguage === 'en') {
     if (standardizedSkinTone === 'dark') culturalProfile = 'african-american';
@@ -505,7 +519,7 @@ function mapAvatarIdentity(userInfo: any) {
   else if (nativeLanguage === 'ar') culturalProfile = 'middle-eastern';
   else culturalProfile = 'global-multicultural';
 
-  // Universal hair mapping
+  // Hair color mapping (legacy compatibility)
   const hairColorMap = {
     'fair': 'red',
     'light': 'blonde',
@@ -521,7 +535,8 @@ function mapAvatarIdentity(userInfo: any) {
     hairColor,
     culturalProfile,
     nativeLanguage,
-    name: userInfo?.name || 'child'
+    name: userInfo?.name || 'child',
+    visualDescription // NEW: Direct visual description for Runware optimization
   };
 }
 

@@ -4,12 +4,12 @@
 export const MAX_LENGTH = 2900; // Runware 3000 limit minus 100-char buffer
 export const WARN_LENGTH = 2800;
 
-// Phase 1: Priority System Alignment with AI Story Enhancer Schema
+// NEW MASTER PLAN: Priority System for Streamlined 3-Field Schema
 export const PromptPriority = {
-  LOW: 1,       // Style framework, brand suffixes (can be removed)
-  MEDIUM: 2,    // Character descriptions, visual details (can be compressed)  
-  HIGH: 3,      // Objects, secondaryCharacters, sceneTransition (protected)
-  CRITICAL: 4   // Setting, emotions, actions from AI schema (never truncate)
+  LOW: 1,       // Style framework, cultural elements (can be removed)
+  MEDIUM: 2,    // Characters, cultural setting, visual components (can be compressed)  
+  HIGH: 3,      // Brand suffix for ALL characters, visual components sub-fields (protected)
+  CRITICAL: 4   // Primary scene (never truncate)
 };
 
 export class BackendTokenManager {
@@ -119,10 +119,16 @@ export class BackendTokenManager {
   static smartCompress(text) {
     if (!text || text.length < 100) return text;
     
-      // ENHANCED PROTECTION: Strengthen cultural term protection with explicit "African-American" AND EMOTIONS
+      // ENHANCED PROTECTION: NEW AVATAR DESCRIPTIONS + EMOTIONS (African American terms removed)
       const protectedTerms = [
         'children\'s book illustration', 'soft lighting', 'warm colors', 'character consistency',
-        'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'African-American', 'cultural elements',
+        'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'cultural elements',
+        // NEW: Protected avatar descriptions with skin tones
+        'fair skin white boy with red hair', 'fair skin white girl with red hair',
+        'white boy with blonde hair', 'white girl with blonde hair',
+        'medium skin white boy with brown hair', 'medium skin white girl with brown hair',
+        'olive skin white boy with black hair', 'olive skin white girl with black hair',
+        'black boy', 'black girl',
         'visual state', 'style framework', 'scene context',
         'natural lighting for dark skin', 'culturally accurate', 'professional children\'s book digital illustration',
         // African American hair style terms to protect
@@ -229,117 +235,83 @@ export class BackendTokenManager {
   }
   
   static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false, culturalElements = '', aiSchemaData = null) {
-    // Phase 1 & 5: Enhanced Priority System + African American Character Protection
-    const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.LOW;
-    const brandSuffixTruncatable = !isAfricanAmericanCharacter;
+    // NEW MASTER PLAN: Brand suffix HIGH priority for ALL English speakers (not just African American)
+    const brandSuffixPriority = PromptPriority.HIGH; // All English speakers get HIGH priority
+    const brandSuffixTruncatable = false; // Never truncate brand suffix
     
-    // Phase 3: AI Schema Integration - Create schema-aware segments
+    // NEW MASTER PLAN: Streamlined 3-Field Schema Integration
     let segments = [];
 
-    // Phase 1: CRITICAL PRIORITY - AI Story Enhancer Schema Elements
-    if (aiSchemaData?.setting) {
+    // CRITICAL PRIORITY - Primary Scene (never truncate)
+    if (aiSchemaData?.primaryScene) {
       segments.push({
-        content: `${aiSchemaData.setting.primaryLocation || ''} ${aiSchemaData.setting.secondaryLocation || ''} ${aiSchemaData.setting.timeOfDay || ''} ${aiSchemaData.setting.weather || ''} ${aiSchemaData.setting.lighting || ''}`.trim(),
+        content: aiSchemaData.primaryScene,
         priority: PromptPriority.CRITICAL,
         canTruncate: false,
-        type: 'ai-setting'
+        type: 'primary-scene'
       });
     }
 
-    if (aiSchemaData?.emotions) {
+    // MEDIUM PRIORITY - Characters and Visual Components
+    if (aiSchemaData?.characters) {
       segments.push({
-        content: aiSchemaData.emotions,
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
-        type: 'ai-emotions'
-      });
-    } else {
-      // Fallback emotion extraction
-      segments.push({
-        content: this.extractEmotionContent(sceneContext, characterDescription),
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
-        type: 'emotions-extracted'
-      });
-    }
-
-    if (aiSchemaData?.actions?.length > 0) {
-      segments.push({
-        content: aiSchemaData.actions.join(', '),
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
-        type: 'ai-actions'
-      });
-    }
-
-    // CRITICAL PRIORITY - Additional Schema Elements (Never Truncated)
-    if (aiSchemaData?.objects?.length > 0) {
-      segments.push({
-        content: aiSchemaData.objects.join(', '),
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
-        type: 'ai-objects'
-      });
-    }
-
-    if (aiSchemaData?.secondaryCharacters?.length > 0) {
-      const secondaryChars = aiSchemaData.secondaryCharacters.map(char => `${char.name} (${char.role})`).join(', ');
-      segments.push({
-        content: secondaryChars,
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
-        type: 'ai-secondary-characters'
-      });
-    }
-
-    if (aiSchemaData?.sceneTransition) {
-      segments.push({
-        content: aiSchemaData.sceneTransition,
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
-        type: 'ai-scene-transition'
-      });
-    }
-
-    // MEDIUM PRIORITY - Character and Visual Details
-    segments.push(
-      {
-        content: sceneContext || '',
+        content: aiSchemaData.characters,
         priority: PromptPriority.MEDIUM,
         canTruncate: true,
-        type: 'scene-context'
-      },
-      {
-        content: characterDescription || '',
-        priority: isAfricanAmericanCharacter ? PromptPriority.CRITICAL : PromptPriority.MEDIUM,
-        canTruncate: !isAfricanAmericanCharacter,
-        type: 'character-description'
-      },
-      {
-        content: visualDetails || '',
+        type: 'characters'
+      });
+    }
+
+    // HIGH PRIORITY - Visual Components Sub-fields
+    if (aiSchemaData?.visualComponents) {
+      const vc = aiSchemaData.visualComponents;
+      if (vc.sceneType) segments.push({ content: vc.sceneType, priority: PromptPriority.HIGH, canTruncate: false, type: 'scene-type' });
+      if (vc.lighting) segments.push({ content: vc.lighting, priority: PromptPriority.HIGH, canTruncate: false, type: 'lighting' });
+      if (vc.keyObjects) segments.push({ content: vc.keyObjects, priority: PromptPriority.HIGH, canTruncate: false, type: 'key-objects' });
+      if (vc.setting) segments.push({ content: vc.setting, priority: PromptPriority.MEDIUM, canTruncate: true, type: 'cultural-setting' });
+      if (vc.mood) segments.push({ content: vc.mood, priority: PromptPriority.HIGH, canTruncate: false, type: 'mood' });
+    }
+
+    // Fallback to legacy parameters if new schema not available
+    if (!aiSchemaData?.primaryScene && sceneContext) {
+      segments.push({
+        content: sceneContext,
         priority: PromptPriority.MEDIUM,
         canTruncate: true,
-        type: 'visual-details'
-      }
-    );
+        type: 'scene-context-legacy'
+      });
+    }
 
-    // LOW PRIORITY - Style and Brand Elements (except African American protection)
-    segments.push(
-      {
-        content: styleFramework || '',
-        priority: isAfricanAmericanCharacter ? PromptPriority.MEDIUM : PromptPriority.LOW,
-        canTruncate: !isAfricanAmericanCharacter,
-        type: 'framework-concise-prompt'
-      },
-      {
-        content: qualitySuffixes || '',
+    if (!aiSchemaData?.characters && characterDescription) {
+      segments.push({
+        content: characterDescription,
+        priority: PromptPriority.MEDIUM,
+        canTruncate: true,
+        type: 'character-description-legacy'
+      });
+    }
+
+    // LOW PRIORITY - Style Framework and Cultural Elements
+    if (styleFramework) {
+      segments.push({
+        content: styleFramework,
+        priority: PromptPriority.LOW,
+        canTruncate: true,
+        type: 'style-framework'
+      });
+    }
+
+    // HIGH PRIORITY - Brand Suffix for ALL characters (NEW MASTER PLAN)
+    if (qualitySuffixes) {
+      segments.push({
+        content: qualitySuffixes,
         priority: brandSuffixPriority,
         canTruncate: brandSuffixTruncatable,
         type: 'brand-suffix'
-      }
-    );
+      });
+    }
 
-    // Add cultural elements if provided (LOW PRIORITY for all characters)
+    // LOW PRIORITY - Cultural Elements (NEW MASTER PLAN)
     if (culturalElements && culturalElements.length > 0) {
       segments.push({
         content: culturalElements,
