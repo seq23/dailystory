@@ -79,41 +79,42 @@ export class FrontendIntelligence {
   // ============= AFRICAN AMERICAN CULTURAL ARRAYS =============
   // Elaborate arrays for African American character generation
   
-  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES_BOYS = [
-    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
-    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
-    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
-    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
-    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
-    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
-    'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
-    'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
-    'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
-    'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
-    'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
-    'textured ponytail with locs', 'detailed nape area tapered'
-  ];
-
-  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES_GIRLS = [
-    'textured medium natural hair', 'textured long natural hair', 'textured shoulder-length hair', 
-    'textured chin-length hair', 'detailed twist out', 'detailed bantu knots', 'detailed rod set', 
-    'detailed braid out', 'textured high puff', 'textured low puff', 'textured side puff', 
-    'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
-    'detailed messy bun', 'detailed sleek bun', 'detailed cornrows', 'detailed box braids', 
-    'detailed micro braids', 'detailed jumbo braids', 'detailed goddess braids', 
-    'detailed dutch braids', 'detailed french braids', 'detailed fishtail braids', 
-    'detailed halo braid', 'detailed crown braid', 'detailed side braids', 
-    'detailed three strand twists', 'detailed senegalese twists', 'detailed marley twists', 
-    'detailed havana twists', 'detailed passion twists', 'detailed spring twists', 
-    'detailed kinky twists', 'detailed chunky twists', 'detailed protective twists', 
-    'textured sisterlocs', 'textured microlocs', 'textured traditional locs', 
-    'textured interlocked locs', 'detailed braided locs', 'detailed loc updo', 
-    'textured half up half down locs', 'textured afro puffs', 'textured large afro', 
-    'textured picked out afro', 'textured shaped afro', 'textured curly afro', 
-    'textured coily afro', 'textured kinky afro', 'textured side swept bangs', 
-    'textured face framing layers', 'textured layered cut', 'detailed blunt cut', 
-    'detailed asymmetrical cut'
-  ];
+  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES = {
+    boys: [
+      'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+      'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+      'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+      'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+      'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+      'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
+      'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
+      'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
+      'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
+      'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
+      'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
+      'textured ponytail with locs', 'detailed nape area tapered'
+    ],
+    girls: [
+      'textured medium natural hair', 'textured long natural hair', 'textured shoulder-length hair', 
+      'textured chin-length hair', 'detailed twist out', 'detailed bantu knots', 'detailed rod set', 
+      'detailed braid out', 'textured high puff', 'textured low puff', 'textured side puff', 
+      'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
+      'detailed messy bun', 'detailed sleek bun', 'detailed cornrows', 'detailed box braids', 
+      'detailed micro braids', 'detailed jumbo braids', 'detailed goddess braids', 
+      'detailed dutch braids', 'detailed french braids', 'detailed fishtail braids', 
+      'detailed halo braid', 'detailed crown braid', 'detailed side braids', 
+      'detailed three strand twists', 'detailed senegalese twists', 'detailed marley twists', 
+      'detailed havana twists', 'detailed passion twists', 'detailed spring twists', 
+      'detailed kinky twists', 'detailed chunky twists', 'detailed protective twists', 
+      'textured sisterlocs', 'textured microlocs', 'textured traditional locs', 
+      'textured interlocked locs', 'detailed braided locs', 'detailed loc updo', 
+      'textured half up half down locs', 'textured afro puffs', 'textured large afro', 
+      'textured picked out afro', 'textured shaped afro', 'textured curly afro', 
+      'textured coily afro', 'textured kinky afro', 'textured side swept bangs', 
+      'textured face framing layers', 'textured layered cut', 'detailed blunt cut', 
+      'detailed asymmetrical cut'
+    ]
+  };
   
   static EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
     'authentic african american features'
@@ -409,9 +410,10 @@ export class FrontendIntelligence {
     return this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES;
   }
   
-  static getUniversalHairMapping(avatarIdentity) {
+  static getUniversalHairMapping(avatarIdentity, gender = 'boy') {
     if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity)) {
-      return this.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES;
+      const genderKey = gender === 'girl' ? 'girls' : 'boys';
+      return this.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey] || [];
     }
     // Fallback for non-African American characters
     const profile = this.CULTURAL_VISUAL_PROFILES.en || {};
@@ -462,7 +464,7 @@ export class FrontendIntelligence {
       }
       
       // Use elaborate hairstyles
-      const hairstyles = this.getUniversalHairMapping(avatarIdentity);
+      const hairstyles = this.getUniversalHairMapping(avatarIdentity, gender);
       if (hairstyles.length > 0) {
         hairStyling = `, ${this.getRandomElement(hairstyles)}`;
       }
