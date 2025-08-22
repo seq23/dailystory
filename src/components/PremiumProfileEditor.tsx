@@ -37,14 +37,17 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const handleSave = async () => {
     setSaving(true);
     try {
+      console.log('💾 PremiumProfileEditor: Saving profile data...', formData);
       await onSave(formData);
       toast({
         title: "Profile Updated! ✨",
-        description: "Your reading profile has been saved successfully.",
-        duration: 3000,
+        description: `Your name "${formData.name}" and preferences have been saved successfully.`,
+        duration: 4000,
       });
       setHasChanges(false);
+      console.log('✅ PremiumProfileEditor: Profile save completed successfully');
     } catch (error) {
+      console.error('❌ PremiumProfileEditor: Save failed:', error);
       toast({
         title: "Save Failed",
         description: "Please try again in a moment.",

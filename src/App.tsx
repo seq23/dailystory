@@ -14,6 +14,7 @@ import Pricing from "./pages/Pricing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import PromptTesting from "./pages/PromptTesting";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
@@ -50,6 +51,7 @@ const App = () => {
               <Route path="/tts-debug" element={<TTSDebug />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/prompt-testing" element={<PromptTesting />} />

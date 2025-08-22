@@ -243,6 +243,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const handleProfileUpdate = async (updatedUserInfo: UserInfo) => {
     try {
+      console.log('🔄 Profile update started for user:', user.id);
+      console.log('📝 Updated user info:', JSON.stringify(updatedUserInfo, null, 2));
+      
       const birthYear = new Date().getFullYear() - updatedUserInfo.age;
       const dateOfBirth = `${birthYear}-01-01`;
 
@@ -263,6 +266,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         interests: updatedUserInfo.interests || []
       };
 
+      console.log('💾 Payload to save:', JSON.stringify(payload, null, 2));
+
       const { data: existing, error: fetchErr } = await supabase
         .from('profiles')
         .select('id')
@@ -270,29 +275,66 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         .limit(1)
         .maybeSingle();
 
+      if (fetchErr) {
+        console.error('❌ Error checking existing profile:', fetchErr);
+        throw fetchErr;
+      }
+
+      console.log('📋 Existing profile check:', existing ? 'Found existing profile' : 'No existing profile');
+
       let error;
       if (existing?.id) {
+        console.log('🔄 Updating existing profile...');
         const { error: updateErr } = await supabase
           .from('profiles')
           .update(payload)
           .eq('user_id', user.id);
         error = updateErr;
+        
+        if (!updateErr) {
+          console.log('✅ Profile updated successfully');
+        }
       } else {
+        console.log('➕ Creating new profile...');
         const { error: insertErr } = await supabase
           .from('profiles')
           .insert([{ user_id: user.id, ...payload }]);
         error = insertErr;
+        
+        if (!insertErr) {
+          console.log('✅ Profile created successfully');
+        }
       }
 
       if (error) {
-        console.error('Error updating profile:', error);
+        console.error('❌ Database operation error:', error);
         throw error;
+      }
+
+      // Verify the update was successful
+      console.log('🔍 Verifying profile update...');
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('profiles')
+        .select('display_name, updated_at')
+        .eq('user_id', user.id)
+        .single();
+
+      if (verifyError) {
+        console.error('⚠️ Error verifying update:', verifyError);
+      } else {
+        console.log('✅ Verification successful:', {
+          saved_name: verifyData.display_name,
+          expected_name: updatedUserInfo.name,
+          updated_at: verifyData.updated_at
+        });
       }
 
       setUserInfo(updatedUserInfo);
       setIsEditingProfile(false);
+      
+      console.log('🎉 Profile update completed successfully');
     } catch (error) {
-      console.error('Profile update error:', error);
+      console.error('💥 Profile update error:', error);
       throw error;
     }
   };

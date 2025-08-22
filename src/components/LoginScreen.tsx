@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, ArrowLeft, X, Volume2, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
+import { PasswordReset } from "@/components/PasswordReset";
 
 interface LoginScreenProps {
   userInfo?: UserInfo | null;
@@ -40,6 +41,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
     password: ""
   });
   const [loading, setLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [discountValidation, setDiscountValidation] = useState<{
     isValid: boolean;
     message: string;
@@ -222,6 +224,10 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       setLoading(false);
     }
   };
+
+  if (showPasswordReset) {
+    return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
@@ -564,6 +570,17 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? t("loginScreen.form.buttons.signingIn") : t("loginScreen.form.buttons.signIn")}
                 </Button>
+                
+                {/* Forgot Password Link */}
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
               </form>
             </TabsContent>
           </Tabs>
