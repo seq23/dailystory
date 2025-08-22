@@ -71,7 +71,7 @@ async function enhancePromptWithPipeline(
     });
 
     // Process through the comprehensive pipeline
-    const enhancementResult = await MultiStageEnhancementPipeline.processThroughPipeline(
+    const enhancementResult = await MultiStageEnhancementPipeline.processTier2HighQuality(
       prompt,
       userInfo,
       crypto.randomUUID(), // sessionId
