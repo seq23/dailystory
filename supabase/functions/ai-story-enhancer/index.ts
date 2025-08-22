@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 import { validateAndEnhanceContent } from "../_shared/SimpleContentValidator.js";
 
@@ -358,10 +358,10 @@ Focus on emotional storytelling and character feelings.`
           // ULTRA-LEAN VALIDATION WITH QUALITY GATE
           validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
           
-          // QUALITY GATE: If score too low (0-30) → Fall back to Tier 2 immediately
+          // QUALITY GATE: If score too low (0-30) → Return error to Orchestrator for Tier 2
           if (validationResult.useTier2) {
-            console.log(`🚀 Quality gate triggered - using Tier 2 pipeline (score: ${validationResult.qualityScore}/100)`);
-            return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore, null, 0);
+            console.log(`🚀 Quality gate triggered - returning error to Orchestrator (score: ${validationResult.qualityScore}/100)`);
+            return createCorsErrorResponse(`Quality gate failure - score: ${validationResult.qualityScore}/100`, 422);
           }
           
           // If major mismatches detected, trigger re-analysis once
@@ -372,10 +372,10 @@ Focus on emotional storytelling and character feelings.`
               enhancedStoryData = JSON.parse(retryResult.choices[0].message.content);
               validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
               
-              // If still bad after retry → Tier 2
+              // If still bad after retry → Return error to Orchestrator
               if (validationResult.useTier2 || validationResult.requiresReanalysis) {
-                console.log(`🚀 Re-analysis failed - using Tier 2 pipeline`);
-                return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, validationResult.qualityScore || 0, 'Re-analysis failed', 0);
+                console.log(`🚀 Re-analysis failed - returning error to Orchestrator`);
+                return createCorsErrorResponse('Re-analysis failed - quality insufficient', 422);
               }
             }
           }
@@ -383,8 +383,8 @@ Focus on emotional storytelling and character feelings.`
           enhancedStoryData = validationResult.enhancedData;
           
         } catch (parseError) {
-          console.error('Failed to parse AI response - using Tier 2 pipeline:', parseError.message);
-          return await useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, 0, `Parse error: ${parseError.message}`, 0);
+          console.error('Failed to parse AI response - returning error to Orchestrator:', parseError.message);
+          return createCorsErrorResponse(`Parse error: ${parseError.message}`, 422);
         }
 
         // Call MultiStage to build the final enhanced prompt
