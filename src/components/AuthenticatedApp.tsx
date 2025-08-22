@@ -10,7 +10,7 @@ import { PremiumSidebar } from "@/components/PremiumSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { PremiumStoryLibrary } from "@/components/PremiumStoryLibrary";
-import { CleanStoryDisplay } from "@/components/CleanStoryDisplay";
+import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 
 import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";

@@ -1,4 +1,4 @@
-import { CleanStoryDisplay } from "@/components/CleanStoryDisplay";
+import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import { useEffect } from "react";
 import type { UserInfo, SessionStats } from "@/types";
 
