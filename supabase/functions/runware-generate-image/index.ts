@@ -356,6 +356,14 @@ async function generateWithRunwarePremium(apiKey: string, positivePrompt: string
           if (item.taskType === "authentication") {
             console.log('✅ Runware authenticated');
             
+            // Phase 2: Emergency Truncation Implementation (Critical Safety Net)
+            console.log(`📏 Original prompt length: ${positivePrompt.length} characters`);
+            if (positivePrompt.length > 2990) {
+              console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId} page ${pageNumber}...`);
+              positivePrompt = positivePrompt.substring(0, 2990);
+              console.log(`✂️ Truncated to ${positivePrompt.length} characters`);
+            }
+
             // Send premium image generation request
             const imageRequest = [{
               taskType: "imageInference",

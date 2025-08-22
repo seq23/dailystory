@@ -4,129 +4,97 @@
 export const MAX_LENGTH = 2900; // Runware 3000 limit minus 100-char buffer
 export const WARN_LENGTH = 2800;
 
+// Phase 1: Priority System Alignment with AI Story Enhancer Schema
 export const PromptPriority = {
-  HIGH: 1,
-  MEDIUM: 2, 
-  LOW: 3
+  LOW: 1,       // Style framework, brand suffixes (can be removed)
+  MEDIUM: 2,    // Character descriptions, visual details (can be compressed)  
+  HIGH: 3,      // Objects, secondaryCharacters, sceneTransition (protected)
+  CRITICAL: 4   // Setting, emotions, actions from AI schema (never truncate)
 };
 
 export class BackendTokenManager {
   
   static optimizePrompt(promptSegments) {
-    console.log('🔧 BackendTokenManager: Starting surgical prompt optimization');
+    console.log(`🚀 Starting optimization for ${promptSegments.length} segments`);
     
-    // Calculate total length
-    const totalLength = promptSegments.reduce((sum, segment) => sum + segment.content.length, 0);
+    const originalLength = this.calculateLength(promptSegments);
+    console.log(`📏 Original total length: ${originalLength} characters`);
     
-    if (totalLength <= MAX_LENGTH) {
-      console.log(`✅ Prompt within limits: ${totalLength}/${MAX_LENGTH} characters - bypassing optimization`);
+    if (originalLength <= MAX_LENGTH) {
+      console.log(`✅ Prompt within limits, no optimization needed`);
       return {
-        optimizedPrompt: promptSegments.map(s => s.content).join(' '),
-        originalLength: totalLength,
-        finalLength: totalLength,
-        applied: ['bypass-optimization'],
+        optimizedPrompt: promptSegments.map(segment => segment.content).join(' '),
+        originalLength,
+        finalLength: originalLength,
+        applied: [],
         truncated: false
       };
     }
+
+    console.log(`⚠️ Prompt exceeds ${MAX_LENGTH} limit, applying optimization...`);
     
-    console.log(`⚠️ Prompt over limit: ${totalLength}/${MAX_LENGTH} characters - applying surgical optimization`);
-    
-    // Sort segments by priority (HIGH = 1, MEDIUM = 2, LOW = 3)
-    const sortedSegments = [...promptSegments].sort((a, b) => a.priority - b.priority);
-    
-    let optimizedSegments = sortedSegments.map(segment => ({ ...segment }));
-    let appliedOptimizations = [];
-    
-    // PHASE 1: Remove redundant spaces and punctuation
-    if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
-      optimizedSegments = optimizedSegments.map(segment => ({
-        ...segment,
-        content: segment.content.replace(/\s+/g, ' ').replace(/,\s*,/g, ',').trim()
-      }));
-      if (this.calculateLength(optimizedSegments) < totalLength) {
-        appliedOptimizations.push('removed-redundant-spaces');
-        console.log('🧹 Removed redundant spaces and punctuation');
+    let segments = [...promptSegments];
+    let applied = [];
+
+    // Phase 1: Smart compression for MEDIUM and LOW priority segments
+    console.log(`🔧 Phase 1: Smart compression...`);
+    segments = segments.map(segment => {
+      if ((segment.priority === PromptPriority.MEDIUM || segment.priority === PromptPriority.LOW) && segment.canTruncate) {
+        const originalContent = segment.content;
+        const compressedContent = this.smartCompress(segment.content);
+        if (compressedContent !== originalContent) {
+          console.log(`📝 Compressed ${segment.type}: ${originalContent.length} → ${compressedContent.length} chars`);
+          applied.push(`compressed_${segment.type}`);
+        }
+        return { ...segment, content: compressedContent };
+      }
+      return segment;
+    });
+
+    let currentLength = this.calculateLength(segments);
+    console.log(`📊 After compression: ${currentLength} characters`);
+
+    // Phase 2: Remove LOW priority segments if still over limit
+    if (currentLength > MAX_LENGTH) {
+      console.log(`🔧 Phase 2: Removing LOW priority segments...`);
+      const lowPrioritySegments = segments.filter(s => s.priority === PromptPriority.LOW && s.canTruncate);
+      for (const segment of lowPrioritySegments) {
+        segments = segments.filter(s => s !== segment);
+        applied.push(`removed_${segment.type}`);
+        console.log(`🗑️ Removed ${segment.type} (${segment.content.length} chars)`);
+        currentLength = this.calculateLength(segments);
+        if (currentLength <= MAX_LENGTH) break;
       }
     }
-    
-    // PHASE 2: Target verbose adjectives in non-critical segments only
-    if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
-      optimizedSegments = optimizedSegments.map(segment => {
-        if (segment.priority !== PromptPriority.HIGH && segment.canTruncate) {
-          const compressed = this.smartCompress(segment.content);
-          if (compressed !== segment.content) {
-            appliedOptimizations.push('compressed-verbose-adjectives');
-          }
-          return { ...segment, content: compressed };
+
+    // Phase 3: Truncate MEDIUM priority segments if still over limit
+    if (currentLength > MAX_LENGTH) {
+      console.log(`🔧 Phase 3: Truncating MEDIUM priority segments...`);
+      segments = segments.map(segment => {
+        if (segment.priority === PromptPriority.MEDIUM && segment.canTruncate && currentLength > MAX_LENGTH) {
+          const targetReduction = Math.min(segment.content.length * 0.3, currentLength - MAX_LENGTH);
+          const newLength = Math.max(segment.content.length - targetReduction, segment.content.length * 0.5);
+          const truncatedContent = segment.content.substring(0, newLength);
+          console.log(`✂️ Truncated ${segment.type}: ${segment.content.length} → ${newLength} chars`);
+          applied.push(`truncated_${segment.type}`);
+          return { ...segment, content: truncatedContent };
         }
         return segment;
       });
-      console.log('🎯 Targeted verbose adjectives in non-critical segments');
     }
+
+    const finalLength = this.calculateLength(segments);
+    const finalPrompt = segments.map(segment => segment.content).filter(content => content.length > 0).join(' ');
     
-    // PHASE 3: Character-by-character trimming from longest segments while preserving meaning
-    if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
-      const overageAmount = this.calculateLength(optimizedSegments) - MAX_LENGTH;
-      
-      // Find the longest truncatable segments and trim them character by character
-      const truncatableSegments = optimizedSegments
-        .filter(s => s.canTruncate)
-        .sort((a, b) => b.content.length - a.content.length);
-      
-      let remainingToTrim = overageAmount;
-      
-      for (const segment of truncatableSegments) {
-        if (remainingToTrim <= 0) break;
-        
-        const segmentIndex = optimizedSegments.findIndex(s => s === segment);
-        const originalLength = segment.content.length;
-        
-        // Determine minimum safe length based on content type
-        let minLength = 30;
-        if (segment.type === 'character-description') {
-          minLength = 100; // Never truncate African American character descriptions below 100 chars
-        } else if (segment.type === 'brand-suffix') {
-          minLength = 20; // Brand suffixes need minimal truncation
-        }
-        
-        const trimAmount = Math.min(remainingToTrim, Math.max(0, originalLength - minLength));
-        
-        if (trimAmount > 0) {
-          const newLength = originalLength - trimAmount;
-          optimizedSegments[segmentIndex].content = segment.content.substring(0, newLength).trim();
-          remainingToTrim -= trimAmount;
-          
-          if (!appliedOptimizations.includes('surgical-character-trimming')) {
-            appliedOptimizations.push('surgical-character-trimming');
-          }
-          
-          console.log(`✂️ Surgically trimmed ${segment.type}: ${originalLength} → ${newLength} chars`);
-        }
-      }
-    }
-    
-    // PHASE 4: Remove LOW priority segments only as last resort
-    if (this.calculateLength(optimizedSegments) > MAX_LENGTH) {
-      const beforeRemoval = optimizedSegments.length;
-      optimizedSegments = optimizedSegments.filter(s => s.priority !== PromptPriority.LOW);
-      if (optimizedSegments.length < beforeRemoval) {
-        appliedOptimizations.push('removed-low-priority-last-resort');
-        console.log('🗑️ Removed LOW priority segments as last resort');
-      }
-    }
-    
-    const finalLength = this.calculateLength(optimizedSegments);
-    const finalPrompt = optimizedSegments.map(s => s.content).join(' ');
-    
-    console.log(`✅ Surgical optimization complete: ${totalLength} → ${finalLength} characters`);
-    console.log(`🔧 Applied: ${appliedOptimizations.join(', ')}`);
-    
+    console.log(`📈 Optimization complete: ${originalLength} → ${finalLength} characters`);
+    console.log(`🔧 Applied optimizations: ${applied.join(', ')}`);
+
     return {
       optimizedPrompt: finalPrompt,
-      originalLength: totalLength,
-      finalLength: finalLength,
-      applied: appliedOptimizations,
-      truncated: finalLength < totalLength
+      originalLength,
+      finalLength,
+      applied,
+      truncated: applied.some(opt => opt.includes('truncated'))
     };
   }
   
@@ -246,75 +214,137 @@ export class BackendTokenManager {
     return 'with natural emotional expression';
   }
   
-  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false, culturalElements = '') {
-    // Enhanced Cultural Intelligence for African American Characters
-    const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.MEDIUM; // Changed from LOW to MEDIUM for general users
+  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false, culturalElements = '', aiSchemaData = null) {
+    // Phase 1 & 5: Enhanced Priority System + African American Character Protection
+    const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.LOW;
     const brandSuffixTruncatable = !isAfricanAmericanCharacter;
     
-    // CRITICAL: Always protect character description with HIGH priority
-    const characterPriority = PromptPriority.HIGH;
-    const characterTruncatable = !isAfricanAmericanCharacter; // Never truncate African American character descriptions
-    
-    // NEW: Cultural elements handling - LOW priority for African American users, MEDIUM for others
-    const culturalElementsPriority = isAfricanAmericanCharacter ? PromptPriority.LOW : PromptPriority.MEDIUM;
-    const culturalElementsTruncatable = true; // Can always be compressed/removed
-    
-    if (isAfricanAmericanCharacter) {
-      console.log('🔒 Enhanced Cultural Intelligence: Brand Suffix HIGH, Character Description HIGH, Settings HIGH, Cultural Elements LOW priority');
-      console.log('👤 Character Description to Protect:', characterDescription);
+    // Phase 3: AI Schema Integration - Create schema-aware segments
+    let segments = [];
+
+    // Phase 1: CRITICAL PRIORITY - AI Story Enhancer Schema Elements
+    if (aiSchemaData?.setting) {
+      segments.push({
+        content: `${aiSchemaData.setting.primaryLocation || ''} ${aiSchemaData.setting.secondaryLocation || ''} ${aiSchemaData.setting.timeOfDay || ''} ${aiSchemaData.setting.weather || ''} ${aiSchemaData.setting.lighting || ''}`.trim(),
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
+        type: 'ai-setting'
+      });
     }
-    
-    const segments = [
-      {
-        content: sceneContext,
-        priority: PromptPriority.HIGH, // Settings remain HIGH for African American users
+
+    if (aiSchemaData?.emotions) {
+      segments.push({
+        content: aiSchemaData.emotions,
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
+        type: 'ai-emotions'
+      });
+    } else {
+      // Fallback emotion extraction
+      segments.push({
+        content: this.extractEmotionContent(sceneContext, characterDescription),
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
+        type: 'emotions-extracted'
+      });
+    }
+
+    if (aiSchemaData?.actions?.length > 0) {
+      segments.push({
+        content: aiSchemaData.actions.join(', '),
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
+        type: 'ai-actions'
+      });
+    }
+
+    // HIGH PRIORITY - Secondary Schema Elements
+    if (aiSchemaData?.objects?.length > 0) {
+      segments.push({
+        content: aiSchemaData.objects.join(', '),
+        priority: PromptPriority.HIGH,
         canTruncate: true,
-        type: 'ai-scene-context'
+        type: 'ai-objects'
+      });
+    }
+
+    if (aiSchemaData?.secondaryCharacters?.length > 0) {
+      const secondaryChars = aiSchemaData.secondaryCharacters.map(char => `${char.name} (${char.role})`).join(', ');
+      segments.push({
+        content: secondaryChars,
+        priority: PromptPriority.HIGH,
+        canTruncate: true,
+        type: 'ai-secondary-characters'
+      });
+    }
+
+    if (aiSchemaData?.sceneTransition) {
+      segments.push({
+        content: aiSchemaData.sceneTransition,
+        priority: PromptPriority.HIGH,
+        canTruncate: true,
+        type: 'ai-scene-transition'
+      });
+    }
+
+    // MEDIUM PRIORITY - Character and Visual Details
+    segments.push(
+      {
+        content: sceneContext || '',
+        priority: PromptPriority.MEDIUM,
+        canTruncate: true,
+        type: 'scene-context'
       },
       {
-        content: characterDescription, 
-        priority: characterPriority,
-        canTruncate: characterTruncatable,
+        content: characterDescription || '',
+        priority: isAfricanAmericanCharacter ? PromptPriority.CRITICAL : PromptPriority.MEDIUM,
+        canTruncate: !isAfricanAmericanCharacter,
         type: 'character-description'
       },
-      // NEW: EMOTIONS GET HIGH PRIORITY
       {
-        content: this.extractEmotionContent(sceneContext, characterDescription),
-        priority: PromptPriority.HIGH,
-        canTruncate: false, // Never truncate emotions
-        type: 'emotions'
-      },
-      {
-        content: styleFramework,
-        priority: PromptPriority.LOW, // Changed from MEDIUM to LOW - allow aggressive compression
-        canTruncate: true,
-        type: 'framework-concise-prompt'
-      },
-      {
-        content: visualDetails,
+        content: visualDetails || '',
         priority: PromptPriority.MEDIUM,
         canTruncate: true,
         type: 'visual-details'
+      }
+    );
+
+    // LOW PRIORITY - Style and Brand Elements (except African American protection)
+    segments.push(
+      {
+        content: styleFramework || '',
+        priority: isAfricanAmericanCharacter ? PromptPriority.MEDIUM : PromptPriority.LOW,
+        canTruncate: !isAfricanAmericanCharacter,
+        type: 'framework-concise-prompt'
       },
       {
-        content: qualitySuffixes,
+        content: qualitySuffixes || '',
         priority: brandSuffixPriority,
         canTruncate: brandSuffixTruncatable,
         type: 'brand-suffix'
       }
-    ];
-    
-    // Add cultural elements if provided
+    );
+
+    // Add cultural elements if provided  
     if (culturalElements && culturalElements.length > 0) {
       segments.push({
         content: culturalElements,
-        priority: culturalElementsPriority,
-        canTruncate: culturalElementsTruncatable,
+        priority: isAfricanAmericanCharacter ? PromptPriority.CRITICAL : PromptPriority.LOW,
+        canTruncate: !isAfricanAmericanCharacter,
         type: 'cultural-elements'
       });
     }
+
+    // Filter out empty segments and return
+    segments = segments.filter(segment => segment.content && segment.content.trim().length > 0);
     
-    return segments.filter(segment => segment.content && segment.content.length > 0);
+    // Phase 4: Enhanced Logging and Monitoring
+    console.log(`🔧 Created ${segments.length} prompt segments with priorities:`, segments.map(s => `${s.type}(${s.priority})`));
+    if (isAfricanAmericanCharacter) {
+      console.log('🔒 African American Character Protection: Enhanced priorities applied');
+    }
+    
+    return segments;
   }
   
   static validateLength(prompt) {
