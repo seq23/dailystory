@@ -434,6 +434,7 @@ useEffect(() => {
   const [timeRemaining, setTimeRemaining] = useState(initialTimerSeconds); // default 20 minutes
   const [isTimerRunning, setIsTimerRunning] = useState(false); // Start timer only when content is ready
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
+  const [userPausedTimer, setUserPausedTimer] = useState(false); // Track when user manually pauses timer
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
   
   // Timer pause logic - only block forward navigation when paused for non-premium users
@@ -504,14 +505,16 @@ useEffect(() => {
   })();
   }, [isPremium]);
 
-  // Start timer only when story content is ready and stable
+  // Start timer only when story content is ready and stable (but respect user pause)
   useEffect(() => {
-    // Start timer when stable display content is available
-    if (stableDisplayedStory.length > 0 && !isTimerRunning && !isTimerCanceled && timerEnabled) {
-      console.log('⏰ Starting timer - stable display content is ready');
+    // Start timer when stable display content is available, but not if user manually paused
+    if (stableDisplayedStory.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && timerEnabled) {
+      console.log('⏰ Auto-starting timer - stable display content is ready and not user-paused');
       setIsTimerRunning(true);
+    } else if (stableDisplayedStory.length > 0 && userPausedTimer) {
+      console.log('⏸️ Timer auto-start blocked - user has manually paused');
     }
-  }, [stableDisplayedStory.length, isTimerRunning, isTimerCanceled, timerEnabled]);
+  }, [stableDisplayedStory.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -1766,9 +1769,13 @@ useEffect(() => {
     updateActivity({ wordsRead: 1 });
   };
 
-  // Timer controls
+  // Timer controls with user pause tracking
   const handleToggleTimer = () => {
-    setIsTimerRunning(!isTimerRunning);
+    console.log('🎯 Timer toggle clicked:', { isTimerRunning, userPausedTimer, isTimerCanceled });
+    const newRunningState = !isTimerRunning;
+    setIsTimerRunning(newRunningState);
+    setUserPausedTimer(!newRunningState); // Track when user manually pauses
+    console.log('🎯 Timer state after toggle:', { newRunningState, userPausedTimer: !newRunningState });
   };
 
   const handleReduceTime = () => {
@@ -1885,6 +1892,7 @@ const handleDockCoach = () => {
   const handleCancelTimer = () => {
     setIsTimerCanceled(true);
     setIsTimerRunning(false);
+    setUserPausedTimer(false); // Reset user pause state when canceled
   };
 
   const handleKeepReadingUntimed = () => {
@@ -1955,6 +1963,7 @@ const handleRestartTimer = () => {
   setIsTimerVisible(true);
   setTimeRemaining(20 * 60);
   setIsTimerRunning(true);
+  setUserPausedTimer(false); // Reset user pause state when restarted
 };
 
   // Fetch persistent teacher words (per active child) for the current user
