@@ -32,7 +32,11 @@ serve(async (req) => {
     const negativePrompt = getEnhancedNegativePrompt(userInfo);
     const finalPrompt = `${extractedScene}. ${style.prompt}. ${style.quality}. ${style.suffix}`;
     
-    console.log('🎨 Tier 2.5 prompt:', finalPrompt.substring(0, 150) + '...');
+    // 🔍 TIER 2.5 DEBUG LOGGING - Full prompts for debugging
+    console.log(`🔍 TIER 2.5 DEBUG - Page: ${pageText ? 'with text' : 'no text'}`);
+    console.log(`📝 Extracted Scene: ${extractedScene}`);
+    console.log(`🎨 Final Prompt (FULL): ${finalPrompt}`);
+    console.log(`🚫 Negative Prompt: ${negativePrompt}`);
 
     const ws = new WebSocket("wss://ws-api.runware.ai/v1");
     
@@ -87,7 +91,10 @@ serve(async (req) => {
               clearTimeout(timeout);
               ws.close();
               
-              console.log('✅ Tier 2.5 generation successful');
+              console.log('✅ TIER 2.5 SUCCESS');
+              console.log(`🖼️ Image URL: ${item.imageURL}`);
+              console.log(`🎯 Final Prompt Used: ${finalPrompt}`);
+              console.log(`💰 Cost: ${item.cost}, Seed: ${item.seed}`);
               
               resolve(createCorsResponse({
                 success: true,

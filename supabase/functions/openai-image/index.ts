@@ -87,7 +87,8 @@ serve(async (req) => {
       if (aiEnhancementResult.ok) {
         const aiData = await aiEnhancementResult.json();
         aiEnhancedStoryData = aiData.enhancedStoryData || {};
-        console.log(`🤖 AI story enhancement successful:`, Object.keys(aiEnhancedStoryData));
+        console.log(`🔍 TIER 3 DEBUG - Session: ${sessionId}, Page: ${pageNumber}`);  
+        console.log(`🤖 AI Enhancement Output (FULL):`, JSON.stringify(aiEnhancedStoryData, null, 2));
       } else {
         console.warn('⚠️ AI story enhancer failed, proceeding without AI enhancement');
       }
@@ -119,8 +120,8 @@ serve(async (req) => {
       pageNumber || 1
     );
     
-    console.log(`🎨 Tier 3 AI-enhanced prompt: ${finalPrompt.substring(0, 100)}...`);
-    console.log(`🚫 Premium negative prompt: ${comprehensiveNegativePrompt.substring(0, 50)}...`);
+    console.log(`🎨 AI-Enhanced Prompt (FULL): ${finalPrompt}`);
+    console.log(`🚫 Comprehensive Negative Prompt (FULL): ${comprehensiveNegativePrompt}`);
     console.log(`✅ Tier 3 using premium pipeline with style framework protection`);
 
     // Determine size for gpt-image-1 (different sizes than DALL-E 3)
@@ -166,8 +167,11 @@ serve(async (req) => {
     // Generate a consistent seed for OpenAI (for tracking purposes)
     const generatedSeed = seed || Math.floor(Math.random() * 2147483647);
     
-    console.log(`✅ OpenAI Image Generated Successfully - URL: ${imageUrl.substring(0, 50)}...`);
-    console.log(`🎯 Assigned seed ${generatedSeed} for consistency tracking`);
+    console.log(`✅ TIER 3 SUCCESS - Session: ${sessionId}, Page: ${pageNumber}`);
+    console.log(`🖼️ Image URL: ${imageUrl}`);
+    console.log(`🎯 Final Prompt Used: ${finalPrompt}`);
+    console.log(`💰 Cost: ${gptImageQuality === 'high' ? 0.12 : 0.08}, Quality: ${gptImageQuality}`);
+    console.log(`🎲 Assigned seed ${generatedSeed} for consistency tracking`);
 
     return createCorsResponse({
       success: true,

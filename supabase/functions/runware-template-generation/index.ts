@@ -66,6 +66,12 @@ serve(async (req) => {
     const negativePrompt = enhancementResult.negativePrompt;
     const optimizedParameters = enhancementResult.generationParams;
 
+    // 🔍 TIER 2 DEBUG LOGGING - Full prompts for debugging
+    console.log(`🔍 TIER 2 DEBUG - Session: ${sessionId}, Page: ${pageNumber}/${totalPages}`);
+    console.log(`📝 Enhanced Prompt (FULL): ${finalPrompt}`);
+    console.log(`🚫 Negative Prompt: ${negativePrompt}`);
+    console.log(`⚙️ Generation Parameters:`, optimizedParameters);
+
     // Phase 10: Attempt Runware generation with sophisticated prompt
     const result = await generateWithRunware(
       finalPrompt,
@@ -129,7 +135,7 @@ async function generateWithRunware(
       throw new Error('Runware API key not configured');
     }
 
-    console.log(`🚀 Generating with Runware using template-built prompt: "${prompt.substring(0, 80)}..."`);
+    console.log(`🚀 Generating with Runware using template-built prompt (FULL): "${prompt}"`);
     
     // WebSocket connection to Runware
     const ws = new WebSocket('wss://ws-api.runware.ai/v1');
@@ -191,7 +197,10 @@ async function generateWithRunware(
               
               if (item.imageURL) {
                 const processingTime = Date.now() - startTime;
-                console.log(`✅ Runware template generation completed in ${processingTime}ms`);
+                console.log(`✅ TIER 2 SUCCESS - Session: ${sessionId}, Page: ${pageNumber}`);
+                console.log(`🖼️ Image URL: ${item.imageURL}`);
+                console.log(`🎯 Final Prompt Used: ${prompt}`);
+                console.log(`⏱️ Processing Time: ${processingTime}ms`);
                 resolve({ 
                   success: true, 
                   url: item.imageURL,
