@@ -319,7 +319,7 @@ export class FrontendIntelligence {
     for (const [keyword, culturalSettings] of Object.entries(this.CULTURAL_SETTING_KEYWORDS)) {
       if (lowerStoryText.includes(keyword)) {
         // Apply African American cultural settings if appropriate
-        if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo?.avatarIdentity)) {
+        if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo?.avatarIdentity, userInfo)) {
           // Use African American specific settings when available
           const africanAmericanSettings = this.EXPANDED_AFRICAN_AMERICAN_SETTINGS.filter(setting =>
             setting.toLowerCase().includes(keyword) || 
@@ -400,18 +400,46 @@ export class FrontendIntelligence {
   
   // ============= AFRICAN AMERICAN DETECTION METHODS =============
   
-  static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity) {
-    // Detect based on visual description from AI enhancement layer
+  static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo = null) {
+    // Enhanced detection with multiple keywords and fallback sources
+    const keywords = [
+      'black', 'african american', 'african-american', 'black american', 
+      'black girl', 'black boy', 'african', 'afro'
+    ];
+    
+    // Primary: Check avatarIdentity.visualDescription (from AI enhancement)
     const visualDesc = avatarIdentity?.visualDescription?.toLowerCase() || '';
-    return visualDesc.includes('black');
+    if (keywords.some(keyword => visualDesc.includes(keyword))) {
+      return true;
+    }
+    
+    // Secondary: Check avatarIdentity.culturalProfile
+    const culturalProfile = avatarIdentity?.culturalProfile?.toLowerCase() || '';
+    if (culturalProfile.includes('african-american') || culturalProfile.includes('african american')) {
+      return true;
+    }
+    
+    // Fallback: Check userInfo.avatar if avatarIdentity doesn't have clear indicators
+    if (userInfo?.avatar) {
+      const avatar = userInfo.avatar;
+      const skinTone = avatar.skinTone?.toLowerCase() || '';
+      const type = avatar.type?.toLowerCase() || '';
+      
+      // Check for dark skin tone combined with specific descriptors
+      if (skinTone === 'dark' && (type === 'girl' || type === 'boy')) {
+        return true;
+      }
+    }
+    
+    return false;
   }
   
   static generateExpandedAfricanAmericanFeatures() {
     return this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES;
   }
   
-  static getUniversalHairMapping(avatarIdentity, gender = 'boy') {
-    if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity)) {
+  static getUniversalHairMapping(avatarIdentity, gender = 'boy', userInfo = null) {
+    if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo)) {
       const genderKey = gender === 'girl' ? 'girls' : 'boys';
       return this.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey] || [];
     }
@@ -454,7 +482,7 @@ export class FrontendIntelligence {
     let facialFeatures = '';
     let hairStyling = '';
     
-    if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity)) {
+    if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo)) {
       console.log('🎯 Applying African American cultural enhancements');
       
       // Use elaborate facial features
@@ -464,7 +492,7 @@ export class FrontendIntelligence {
       }
       
       // Use elaborate hairstyles
-      const hairstyles = this.getUniversalHairMapping(avatarIdentity, gender);
+      const hairstyles = this.getUniversalHairMapping(avatarIdentity, gender, userInfo);
       if (hairstyles.length > 0) {
         hairStyling = `, ${this.getRandomElement(hairstyles)}`;
       }
