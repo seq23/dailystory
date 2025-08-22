@@ -363,9 +363,11 @@ export class MultiStageEnhancementPipeline {
   }
   
   // ============= TIER 2: HIGH-QUALITY PREMIUM PROCESSING (TIER 1 MINUS AI ENHANCEMENT) =============
-  static async processTier2HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages) {
+  static async processTier2HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, avatarIdentity) {
     try {
-      console.log(`🔥 Tier 2: Premium processing (no AI enhancement) for page ${pageNumber}/${totalPages}`);
+    console.log(`🔥 Tier 2: Premium processing (no AI enhancement) for page ${pageNumber}/${totalPages}`);
+    console.log('🔍 TIER 2 DEBUG - avatarIdentity received:', avatarIdentity);
+    console.log('🔍 TIER 2 DEBUG - avatarIdentity.visualDescription:', avatarIdentity?.visualDescription);
 
       // Load all required modules for premium processing
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
@@ -410,7 +412,7 @@ export class MultiStageEnhancementPipeline {
         storyId,
         userInfo,
         enhancedStoryText,
-        userInfo?.avatar // Use avatar identity for consistency
+        avatarIdentity // Pass processed avatar identity from orchestrator
       );
       
       const characterSeed = characterConsistencyData.seed;
@@ -456,7 +458,7 @@ export class MultiStageEnhancementPipeline {
           animalDetails: '',
           pageNumber,
           totalPages,
-          avatarIdentity: userInfo?.avatar
+          avatarIdentity // Pass processed avatar identity from orchestrator
         },
         imageDifficulty
       );
