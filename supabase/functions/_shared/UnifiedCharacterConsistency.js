@@ -182,18 +182,16 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Universal hair mapping
+   * Universal hair mapping - now uses FrontendIntelligence for consistency
    */
   getUniversalHairMapping(avatar) {
-    const universalHairMap = {
-      'pale': 'red',
-      'light': 'blonde', 
-      'medium': 'brown',
-      'olive': 'black',
-      'dark': 'natural textured hair'
-    };
+    // Import FrontendIntelligence for consistent hair mapping
+    const { FrontendIntelligence } = require('./FrontendIntelligence.js');
     
-    return universalHairMap[avatar?.skinTone] || 'brown';
+    // Determine gender from avatar type for proper hair selection
+    const gender = avatar?.type === 'girl' ? 'girl' : 'boy';
+    
+    return FrontendIntelligence.getUniversalHairMapping(avatar, gender);
   }
 
   /**

@@ -51,10 +51,9 @@ export class SimpleImageService {
       'dark': 'textured black hair variety' // Special handling below
     };
     
-    // For dark skin tone, route to FixedCulturalLogic for African American hair variety
+    // For dark skin tone, use natural textured hair
     if (avatar.skinTone === 'dark') {
-      // Return indicator that requires special cultural logic processing
-      return 'requires_cultural_processing';
+      return 'natural textured hair';
     }
     
     return universalHairMap[avatar.skinTone] || 'brown';
@@ -64,10 +63,9 @@ export class SimpleImageService {
   private static getUniversalHairMapping(userInfo: UserInfo): string {
     if (!userInfo?.avatar?.skinTone) return 'brown';
     
-    // Check if we need cultural processing for dark skin + English
+    // Enhanced cultural processing handled by backend
     if (userInfo.avatar.skinTone === 'dark' && userInfo.nativeLanguage === 'en') {
-      // Import FixedCulturalLogic for African American hair variety
-      return 'natural textured hair'; // Simplified representation
+      return 'natural textured hair';
     }
     
     // Use standard universal mapping

@@ -51,11 +51,11 @@ const visualMap = {
 
 ### Trigger Logic (INTENTIONAL - DO NOT CHANGE)
 
-Located in: `src/services/FixedCulturalLogic.ts` (lines 48-51)
+Located in: `supabase/functions/_shared/FrontendIntelligence.js`
 
-```typescript
-shouldApplyAfricanAmericanCulturalVariations(userInfo: UserInfo): boolean {
-  return userInfo.nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark';
+```javascript
+static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity) {
+  return avatarIdentity?.nativeLanguage === 'en' && avatarIdentity?.skinTone === 'dark';
 }
 ```
 
@@ -143,9 +143,9 @@ Verify cultural arrays only apply when intended:
 ## File Locations
 
 - **Main hair color logic**: `supabase/functions/_shared/UnifiedCharacterDescriptor.js`
-- **Cultural enhancement trigger**: `src/services/FixedCulturalLogic.ts`  
-- **Cultural arrays**: `supabase/functions/_shared/FrontendIntelligence.js`
+- **Cultural enhancement trigger and arrays**: `supabase/functions/_shared/FrontendIntelligence.js`
 - **Character consistency**: `supabase/functions/_shared/UnifiedCharacterConsistency.js`
+- **Frontend service layer**: `src/services/SimpleImageService.ts`
 
 ## Summary
 

@@ -83,7 +83,7 @@ export const SystemDocumentation: React.FC = () => {
       causes: ["Insufficient cultural profile data", "Weighted randomization not working", "Cache serving stale prompts"],
       solutions: [
         "Verify FrontendIntelligence.js is up to date",
-        "Check FixedCulturalLogic feature distribution",
+        "Check cultural profile distribution in backend",
         "Clear prompt cache and regenerate",
         "Review cultural balance in recent generations"
       ]
@@ -127,23 +127,26 @@ export const SystemDocumentation: React.FC = () => {
     {
       title: "Adding New Cultural Profiles",
       steps: [
-        "Update FixedCulturalLogic with new profile",
-        "Add facial features and cultural markers",
+        "Update FrontendIntelligence.js with new cultural profile",
+        "Add facial features and cultural markers to cultural arrays",
         "Create setting variations and clothing options",
-        "Update FrontendIntelligence.js generation",
+        "Update cultural enhancement trigger logic",
         "Test bias detection and cultural balance",
         "Update documentation and monitoring"
       ],
-      codeExample: `// Add new cultural profile
-const newProfile = {
-  name: 'new-culture',
+      codeExample: `// Add new cultural profile to FrontendIntelligence.js
+static NEW_CULTURAL_PROFILE = {
   facialFeatures: ['feature1', 'feature2', 'feature3'],
   skinTones: ['tone1', 'tone2'],
   culturalMarkers: ['marker1', 'marker2'],
   settings: ['setting1', 'setting2']
 };
 
-FixedCulturalLogic.addCulturalProfile(newProfile);`
+// Update enhancement logic
+static shouldApplyNewCulturalVariations(userInfo) {
+  return userInfo.nativeLanguage === 'target-lang' && 
+         userInfo.avatar?.skinTone === 'target-tone';
+}`
     },
     {
       title: "Extending Style Frameworks",
@@ -194,12 +197,12 @@ performanceMonitor.trackGeneration(
 
   const apiReference = [
     {
-      service: "FixedCulturalLogic",
+      service: "FrontendIntelligence", 
       methods: [
-        "shouldApplyAfricanAmericanCulturalVariations(userInfo): boolean",
-        "generateExpandedAfricanAmericanFeatures(): string",
-        "selectCulturalSetting(userInfo, culturalProfile): string",
-        "selectCulturalClothing(userInfo, culturalProfile): string"
+        "shouldApplyAfricanAmericanCulturalVariations(avatarIdentity): boolean",
+        "buildAdvancedCharacterDescription(userInfo, culturalProfile, storyText): string",
+        "getUniversalHairMapping(avatarIdentity, gender): string",
+        "enhanceVisualPromptWithCulture(visualPrompt, userInfo, culturalProfile, storyText): string"
       ]
     },
     {
