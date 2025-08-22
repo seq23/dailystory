@@ -53,6 +53,7 @@ serve(async (req) => {
   try {
     // Import orchestrator services (removed MultiStageEnhancementPipeline since we now call ai-story-enhancer directly)
     const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
+    const { SecurityValidator } = await import('../_shared/SecurityValidator.js');
     
     // Parse request
     const { 
@@ -66,8 +67,37 @@ serve(async (req) => {
       forceTier // Optional: force specific tier for testing
     } = await req.json();
 
+    // ============================================================================
+    // PHASE 4: CRITICAL SECURITY VALIDATION
+    // ============================================================================
+    
+    // Validate required parameters
     if (!pageText) {
       return createCorsErrorResponse('Missing pageText parameter', 400);
+    }
+    
+    if (!sessionId) {
+      return createCorsErrorResponse('Missing sessionId parameter', 400);
+    }
+
+    // Security validation
+    const securityCheck = await SecurityValidator.validateImageRequest(req, {
+      pageText,
+      sessionId,
+      pageNumber,
+      userInfo
+    });
+    
+    if (!securityCheck.valid) {
+      console.error('🚨 Security validation failed:', securityCheck.reason);
+      return createCorsErrorResponse(`Security validation failed: ${securityCheck.reason}`, securityCheck.status || 403);
+    }
+
+    // Rate limiting check
+    const rateLimitCheck = await SecurityValidator.checkRateLimit(sessionId, 'image_generation');
+    if (!rateLimitCheck.allowed) {
+      console.error('🚨 Rate limit exceeded for session:', sessionId);
+      return createCorsErrorResponse('Rate limit exceeded. Please try again later.', 429);
     }
 
     console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser})`);

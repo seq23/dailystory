@@ -66,10 +66,20 @@ export class SecondaryElementDetector {
       { pattern: /(?:my|your|his|her|their|the)\s+(coach)/gi, type: 'community_coach' }
     ];
     
-    // Named character patterns (specific names)
+    // Named character patterns (specific names) - PHASE 3 ENHANCEMENT
     const namedPatterns = [
       { pattern: /\b([A-Z][a-z]+)\s+(?:said|says|asked|smiled|laughed|nodded|walked|ran|came|went)/gi, type: 'named_character' },
       { pattern: /(?:said|says)\s+([A-Z][a-z]+)/gi, type: 'named_character' }
+    ];
+    
+    // PHASE 3: Enhanced cultural name patterns
+    const culturalNamePatterns = [
+      // Common international names
+      { pattern: /\b(Ahmed|Fatima|Mohammed|Aisha|Omar|Amara|Kofi|Akua|Priya|Raj|Chen|Li|Juan|Maria|Rosa|Diego)/gi, type: 'cultural_named_character' },
+      // Names in cultural contexts
+      { pattern: /(?:señor|señora|mr|mrs|miss)\s+([A-Z][a-z]+)/gi, type: 'cultural_named_character' },
+      // Double-barrel and hyphenated names
+      { pattern: /\b([A-Z][a-z]+-[A-Z][a-z]+)\s+(?:said|says|asked|smiled)/gi, type: 'cultural_named_character' }
     ];
     
     // Process family patterns
@@ -106,21 +116,22 @@ export class SecondaryElementDetector {
       });
     });
     
-    // Process named character patterns
-    namedPatterns.forEach(({ pattern, type }) => {
+    // Process named character patterns with enhanced validation
+    [...namedPatterns, ...culturalNamePatterns].forEach(({ pattern, type }) => {
       const matches = [...text.matchAll(pattern)];
       matches.forEach(match => {
         const name = match[1].toLowerCase();
-        // Filter out common words that might be capitalized
-        const commonWords = ['the', 'and', 'but', 'or', 'so', 'then', 'when', 'where', 'how', 'what', 'who'];
-        if (!commonWords.includes(name) && name.length > 2) {
+        
+        // PHASE 3: Enhanced false positive filtering
+        if (this.validateCharacterName(name, text, match.index)) {
           if (!secondaryCharacters.find(c => c.name === name)) {
             secondaryCharacters.push({
               name: name,
               type: type,
               category: 'secondary_character',
               needsConsistency: true,
-              relationshipType: 'named'
+              relationshipType: type.includes('cultural') ? 'cultural_named' : 'named',
+              confidence: this.calculateNameConfidence(name, text)
             });
           }
         }
@@ -262,5 +273,83 @@ export class SecondaryElementDetector {
     );
     
     return hasCharacterIndicators ? 'character' : 'background';
+  }
+  
+  /**
+   * PHASE 3: Validate character name to reduce false positives
+   */
+  static validateCharacterName(name, fullText, matchIndex) {
+    // Enhanced common words filter including story-specific terms
+    const commonWords = [
+      'the', 'and', 'but', 'or', 'so', 'then', 'when', 'where', 'how', 'what', 'who',
+      'they', 'them', 'their', 'there', 'that', 'this', 'these', 'those',
+      'first', 'last', 'next', 'after', 'before', 'during', 'while',
+      'chapter', 'story', 'book', 'page', 'once', 'upon', 'time',
+      'suddenly', 'finally', 'quickly', 'slowly', 'carefully',
+      'inside', 'outside', 'around', 'through', 'across', 'over'
+    ];
+    
+    if (commonWords.includes(name.toLowerCase())) {
+      return false;
+    }
+    
+    // Minimum length check
+    if (name.length < 2) {
+      return false;
+    }
+    
+    // Check if name appears in multiple contexts (higher confidence)
+    const nameRegex = new RegExp(`\\b${name}\\b`, 'gi');
+    const occurrences = (fullText.match(nameRegex) || []).length;
+    
+    // Single occurrence names need stronger validation
+    if (occurrences === 1) {
+      // Context validation - check surrounding words
+      const contextStart = Math.max(0, matchIndex - 50);
+      const contextEnd = Math.min(fullText.length, matchIndex + 50);
+      const context = fullText.substring(contextStart, contextEnd).toLowerCase();
+      
+      // Strong character indicators
+      const strongIndicators = [
+        'said', 'asked', 'replied', 'whispered', 'shouted', 'called',
+        'smiled', 'laughed', 'nodded', 'shook', 'walked', 'ran', 'came', 'went',
+        'friend', 'classmate', 'neighbor', 'cousin'
+      ];
+      
+      return strongIndicators.some(indicator => context.includes(indicator));
+    }
+    
+    return occurrences >= 2; // Multiple mentions are likely real characters
+  }
+  
+  /**
+   * PHASE 3: Calculate confidence score for character names
+   */
+  static calculateNameConfidence(name, fullText) {
+    let confidence = 0.5; // Base confidence
+    
+    const nameRegex = new RegExp(`\\b${name}\\b`, 'gi');
+    const occurrences = (fullText.match(nameRegex) || []).length;
+    
+    // More occurrences = higher confidence
+    confidence += Math.min(occurrences * 0.1, 0.3);
+    
+    // Cultural name patterns boost confidence
+    const culturalNames = [
+      'ahmed', 'fatima', 'mohammed', 'aisha', 'omar', 'amara', 'kofi', 
+      'akua', 'priya', 'raj', 'chen', 'li', 'juan', 'maria', 'rosa', 'diego'
+    ];
+    
+    if (culturalNames.includes(name.toLowerCase())) {
+      confidence += 0.2;
+    }
+    
+    // Action context boosts confidence
+    const actionContext = new RegExp(`${name}\\s+(?:said|asked|smiled|walked|ran|came|went)`, 'gi');
+    if (actionContext.test(fullText)) {
+      confidence += 0.2;
+    }
+    
+    return Math.min(confidence, 1.0);
   }
 }

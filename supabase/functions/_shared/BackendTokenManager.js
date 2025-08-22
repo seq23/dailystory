@@ -313,10 +313,11 @@ export class BackendTokenManager {
       });
     }
 
-    // MEDIUM PRIORITY - Secondary Characters (CRITICAL FIX)
+    // PHASE 4: Enhanced Secondary Characters Processing
     if (secondaryCharacters && secondaryCharacters.trim().length > 0) {
+      const processedSecondaryCharacters = this.optimizeSecondaryCharacters(secondaryCharacters);
       segments.push({
-        content: secondaryCharacters,
+        content: processedSecondaryCharacters,
         priority: PromptPriority.MEDIUM,
         canTruncate: true,
         type: 'SECONDARY_CHARACTERS'
@@ -359,5 +360,120 @@ export class BackendTokenManager {
       message: `Prompt within optimal range: ${length}/${MAX_LENGTH}`,
       recommendation: 'No optimization needed'
     };
+  }
+  
+  /**
+   * PHASE 4: Optimize secondary characters with intelligent prioritization
+   */
+  static optimizeSecondaryCharacters(secondaryCharacters) {
+    if (!secondaryCharacters || secondaryCharacters.length < 100) {
+      return secondaryCharacters;
+    }
+    
+    console.log(`🎭 Optimizing secondary characters: ${secondaryCharacters.length} chars`);
+    
+    // Parse character mentions and prioritize by importance
+    const characterPriorities = {
+      'family_': 3,      // Family members (highest priority)
+      'cultural_': 3,    // Cultural characters
+      'community_': 2,   // Community figures
+      'named_': 2,       // Named characters
+      'character_animal': 1 // Character animals (lower priority)
+    };
+    
+    // Extract and prioritize character mentions
+    const characterMentions = [];
+    const lines = secondaryCharacters.split(/[,;]/).map(line => line.trim()).filter(line => line.length > 0);
+    
+    lines.forEach(line => {
+      let priority = 1; // Default priority
+      
+      // Determine priority based on character type
+      Object.entries(characterPriorities).forEach(([type, typePriority]) => {
+        if (line.toLowerCase().includes(type)) {
+          priority = Math.max(priority, typePriority);
+        }
+      });
+      
+      // Cultural name protection
+      const culturalNames = ['ahmed', 'fatima', 'mohammed', 'aisha', 'omar', 'amara', 'kofi', 'akua', 'priya', 'raj', 'chen', 'li', 'juan', 'maria', 'rosa', 'diego'];
+      if (culturalNames.some(name => line.toLowerCase().includes(name))) {
+        priority = 3;
+      }
+      
+      characterMentions.push({ content: line, priority });
+    });
+    
+    // Sort by priority (highest first)
+    characterMentions.sort((a, b) => b.priority - a.priority);
+    
+    // Smart truncation - keep high priority characters, intelligently reduce low priority ones
+    let optimized = '';
+    let currentLength = 0;
+    const maxLength = Math.min(500, secondaryCharacters.length * 0.8); // Max 500 chars or 80% of original
+    
+    for (const mention of characterMentions) {
+      const proposedLength = currentLength + mention.content.length + 2; // +2 for separator
+      
+      if (proposedLength <= maxLength) {
+        if (optimized.length > 0) optimized += ', ';
+        optimized += mention.content;
+        currentLength = proposedLength;
+      } else if (mention.priority >= 3) {
+        // Force include high priority characters, but compress them
+        const compressed = this.compressCharacterMention(mention.content);
+        if (optimized.length > 0) optimized += ', ';
+        optimized += compressed;
+        currentLength += compressed.length + 2;
+      } else {
+        break; // Skip lower priority characters if space is limited
+      }
+    }
+    
+    if (optimized.length < secondaryCharacters.length) {
+      console.log(`📉 Secondary characters optimized: ${secondaryCharacters.length} → ${optimized.length} chars`);
+    }
+    
+    return optimized || secondaryCharacters.substring(0, maxLength);
+  }
+  
+  /**
+   * PHASE 4: Compress individual character mentions while preserving meaning
+   */
+  static compressCharacterMention(mention) {
+    let compressed = mention;
+    
+    // Remove redundant descriptors but preserve cultural elements
+    const redundantPhrases = [
+      'also present', 'also in scene', 'appears in', 'is also',
+      'can be seen', 'is visible', 'is shown'
+    ];
+    
+    redundantPhrases.forEach(phrase => {
+      const regex = new RegExp(phrase, 'gi');
+      compressed = compressed.replace(regex, '');
+    });
+    
+    // Compress common relationship terms
+    const compressionMap = {
+      'grandmother': 'grandma',
+      'grandfather': 'grandpa',
+      'little sister': 'sister',
+      'little brother': 'brother',
+      'school teacher': 'teacher',
+      'class teacher': 'teacher',
+      'family friend': 'friend',
+      'close friend': 'friend'
+    };
+    
+    Object.entries(compressionMap).forEach(([original, compressed_term]) => {
+      const regex = new RegExp(original, 'gi');
+      compressed = compressed.replace(regex, compressed_term);
+    });
+    
+    // Clean up extra whitespace
+    compressed = compressed.replace(/\s+/g, ' ').trim();
+    
+    return compressed;
   }
 }
