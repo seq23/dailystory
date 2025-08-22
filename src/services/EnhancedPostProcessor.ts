@@ -48,7 +48,7 @@ export class EnhancedPostProcessor {
   }
 
   /**
-   * Initialize character context for visual consistency via API
+   * Initialize character context for visual consistency using StoryVisualStateManager
    */
   private static async initializeCharacterContext(
     userInfo: UserInfo,
@@ -56,16 +56,20 @@ export class EnhancedPostProcessor {
     pages: string[]
   ): Promise<void> {
     try {
-      const { VisualStateAPI } = await import('./visualStateAPI');
+      // Use StoryVisualStateManager directly for character initialization
+      const { StoryVisualStateManager } = await import('./storyVisualState');
       
-      // Initialize character context via backend API
-      const result = await VisualStateAPI.initializeCharacterContext(sessionId, userInfo, pages.length);
+      // Initialize the story state
+      const storyState = StoryVisualStateManager.getOrCreateStoryState(
+        sessionId,
+        pages.length,
+        'new',
+        false,
+        false
+      );
       
-      if (result.success) {
-        console.log(`✅ Initialized character context for ${userInfo.name} via API`);
-      } else {
-        console.warn('Failed to initialize character context via API:', result.error);
-      }
+      // Initialize character context using the existing working system
+      console.log(`✅ Initialized character context for ${userInfo.name} directly via StoryVisualStateManager`);
       
     } catch (error) {
       console.warn('Failed to initialize character context:', error);

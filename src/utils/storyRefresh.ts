@@ -38,16 +38,7 @@ export class StoryRefreshService {
       // Clear character visual state if provided (frontend session only)
       if (characterSessionId) {
         StoryVisualStateManager.clearStoryState(characterSessionId);
-        console.log(`🎭 Cleared frontend session state: ${characterSessionId}`);
-        
-        // Also clear backend visual state via API
-        try {
-          const { VisualStateAPI } = await import('@/services/visualStateAPI');
-          await VisualStateAPI.clearVisualState(characterSessionId);
-          console.log(`🎭 Cleared backend visual state: ${characterSessionId}`);
-        } catch (error) {
-          console.warn('Failed to clear backend visual state:', error);
-        }
+        console.log(`🎭 Cleared visual state: ${characterSessionId}`);
       }
       
       // Clear any additional caches that might interfere
@@ -111,14 +102,7 @@ export class StoryRefreshService {
       // Clear character state if provided (frontend session only)
       if (characterSessionId) {
         StoryVisualStateManager.clearStoryState(characterSessionId);
-        
-        // Also clear backend visual state via API
-        try {
-          const { VisualStateAPI } = await import('@/services/visualStateAPI');
-          await VisualStateAPI.clearVisualState(characterSessionId);
-        } catch (error) {
-          console.warn('Failed to clear backend visual state:', error);
-        }
+        console.log('🎯 Cleared character visual state');
       }
       
       // Clear template caches that might have stale pronoun data
