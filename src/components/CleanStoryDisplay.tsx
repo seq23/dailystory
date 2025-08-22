@@ -71,7 +71,7 @@ import { StoryVisualStateManager } from "@/services/storyVisualState";
 import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
-import { StoryStabilityMonitor } from "@/components/debug/StoryStabilityMonitor";
+
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -121,12 +121,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
 
-  // Stable display buffer - only updates when story is confirmed stable
-  const [stableStory, setStableStory] = useState<string[]>([]);
-  
   // For free users, limit displayed pages to 6 maximum
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
-  const stableDisplayedStory = !isPremium ? stableStory.slice(0, 6) : stableStory;
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [justAdvanced, setJustAdvanced] = useState(false);
@@ -135,25 +131,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [lastImageError, setLastImageError] = useState<string | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
 
-  // 🔒 EMERGENCY FIX: Enhanced Story Content Protection
-  const isGeneratingRef = useRef(false);
-  const storyGeneratedRef = useRef(false);
-  const generationIdRef = useRef('');
-  const lastUserInfoRef = useRef<string>('');
-  
-  // 🔒 CRITICAL: Story Content Lock State - prevents unauthorized regeneration
-  const [isStoryContentLocked, setIsStoryContentLocked] = useState(false);
-  const storyContentLockedRef = useRef(false);
-  
-  // 🔒 Enhanced generation source tracking for debugging
-  const [lastGenerationTrigger, setLastGenerationTrigger] = useState<string>('');
-  const [contentMutationLog, setContentMutationLog] = useState<Array<{
-    timestamp: string;
-    trigger: string;
-    action: string;
-    storyLength: number;
-    isLocked: boolean;
-  }>>([]);
 
   useEffect(() => {
     console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
@@ -172,11 +149,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     
     return () => {
       document.body.classList.remove('reading-session');
-      // Cleanup generation protection refs on unmount
-      isGeneratingRef.current = false;
-      storyGeneratedRef.current = false;
-      lastUserInfoRef.current = '';
-      generationIdRef.current = '';
     };
   }, []);
   
@@ -201,13 +173,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           setPageImages(currentStory.cachedImages);
         }
         
-        // Mark story as generated to prevent double generation
-        storyGeneratedRef.current = true;
-        lastUserInfoRef.current = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
-        
         setIsLoading(false);
-        // For saved stories, use atomic stability setting
-        setStoryStableAtomically(storyPages);
+        setIsStoryStable(true);
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -278,82 +245,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
-  // ========== BULLETPROOF STORY STABILITY SYNCHRONIZATION ==========
-  
-  // BULLETPROOF: Atomic stability function - ensures stableStory is populated BEFORE isStoryStable becomes true
-  const setStoryStableAtomically = useCallback((storyToStabilize: string[] = story) => {
-    // Step 1: Validate that we have valid story content
-    if (!storyToStabilize || storyToStabilize.length === 0) {
-      console.warn('⚠️ Cannot set story stable - no valid story content provided');
-      return;
-    }
-    
-    // Step 2: Validate that story pages contain actual text content
-    const validPages = storyToStabilize.filter(page => page && typeof page === 'string' && page.trim().length > 0);
-    if (validPages.length === 0) {
-      console.warn('⚠️ Cannot set story stable - no valid text content found');
-      return;
-    }
-    
-    // Step 3: Set stableStory FIRST with validated content
-    setStableStory(validPages);
-    
-    // Step 4: Only AFTER stableStory is set, mark as stable
-    setIsStoryStable(true);
-    
-    console.log('✅ ATOMIC: Story stability set successfully', {
-      totalPages: validPages.length,
-      stableStoryPopulated: true,
-      isStoryStable: true
-    });
-    
-    // Step 5: Dispatch stability event for debugging
-    window.dispatchEvent(new CustomEvent('story:stable', { 
-      detail: { 
-        totalPages: validPages.length, 
-        timestamp: Date.now(),
-        validatedContent: true
-      } 
-    }));
-  }, [story]);
-
-  // BULLETPROOF: Text validation function - prevents ALL .slice() errors
-  const getValidStoryText = useCallback((pageIndex: number): string | null => {
-    // Check if stableStory exists and has content at the requested page
-    if (!stableStory || stableStory.length === 0) {
-      console.log('📸 getValidStoryText: stableStory not yet populated');
-      return null;
-    }
-    
-    if (pageIndex < 0 || pageIndex >= stableStory.length) {
-      console.log('📸 getValidStoryText: invalid page index', { pageIndex, totalPages: stableStory.length });
-      return null;
-    }
-    
-    const text = stableStory[pageIndex];
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      console.log('📸 getValidStoryText: invalid text content at page', pageIndex);
-      return null;
-    }
-    
-    return text;
-  }, [stableStory]);
-
-  // PHASE 1: Update stable story ONLY when story is confirmed stable - prevents flickering
-  useEffect(() => {
-    if (isStoryStable && story.length > 0 && !stableStory.length) {
-      console.log('📚 PHASE 1: Updating stable display buffer - no more flicker will occur');
-      setStableStory(story);
-    }
-  }, [isStoryStable, story, stableStory.length]);
-
-  // PHASE 1: Initialize stable story ONLY on first stable load - no updates after that
-  useEffect(() => {
-    if (story.length > 0 && stableStory.length === 0 && isStoryStable) {
-      console.log('📚 PHASE 1: Initializing stable story buffer - first stable load');
-      setStableStory(story);
-    }
-  }, [story, stableStory.length, isStoryStable]);
   
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
@@ -697,7 +588,7 @@ const [highlightSave, setHighlightSave] = useState(false);
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
   }, [highlightSave]);
-  const currentStoryText = stableDisplayedStory[currentPage] || "";
+  const currentStoryText = displayedStory[currentPage] || "";
   const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
@@ -878,68 +769,13 @@ useEffect(() => {
       isFromSavedStory: currentStory?.isFromSavedStory 
     });
     
-    // 🔒 EMERGENCY FIX: Enhanced protection against unauthorized regeneration
-    console.log('🔍 useEffect story generation check:', {
-      userInfoKey,
-      lastUserInfoKey: lastUserInfoRef.current,
-      storyContentLocked: storyContentLockedRef.current,
-      storyGenerated: storyGeneratedRef.current,
-      hasStory: story.length > 0,
-      isStoryStable,
-      isGenerating: isGeneratingRef.current
-    });
-    
-    // 🔒 CRITICAL: First check - if content is locked, NEVER regenerate
-    if (storyContentLockedRef.current && story.length > 0) {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🔒 EMERGENCY FIX: Story content LOCKED - blocking any regeneration attempt');
-      }
+    // Simple check to prevent double generation for same user context
+    if (isStoryStable && story.length > 0) {
       setIsLoading(false);
-      setStoryStableAtomically();
       return;
     }
     
-    // 🔒 CRITICAL: Second check - if same context and story exists, skip regeneration
-    if (lastUserInfoRef.current === userInfoKey && storyGeneratedRef.current && story.length > 0) {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
-      }
-      setIsLoading(false);
-      setStoryStableAtomically();
-      return;
-    }
-    
-    // 🔒 CRITICAL: Third check - prevent multiple simultaneous generations
-    if (isGeneratingRef.current) {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🔒 EMERGENCY FIX: Skipping story generation - already in progress');
-      }
-      return;
-    }
-
-    // 🔒 Log the trigger for debugging
-    console.log('🎯 Story generation triggered by useEffect change:', {
-      newUserInfoKey: userInfoKey,
-      lastUserInfoKey: lastUserInfoRef.current,
-      storyGenerated: storyGeneratedRef.current,
-      isGenerating: isGeneratingRef.current,
-      hasStory: story.length > 0,
-      trigger: 'useEffect-user-context-change'
-    });
-    
-    setContentMutationLog(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      trigger: 'useEffect-user-context-change',
-      action: 'generation-triggered',
-      storyLength: story.length,
-      isLocked: storyContentLockedRef.current
-    }]);
-    
-    // Only update if this is actually a new user context
-    if (lastUserInfoRef.current !== userInfoKey) {
-      lastUserInfoRef.current = userInfoKey;
-      initializeStory();
-    }
+    initializeStory();
   }, [userInfo.name, userInfo.age, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
   // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
@@ -1024,13 +860,13 @@ useEffect(() => {
 
 // Magic wand DRAMATIC animation effect for free users on page 6 - CONTINUOUS until clicked
 useEffect(() => {
-  if (!isPremium && currentPage === 5 && stableDisplayedStory.length > 5) { // Show on page 6 (index 5)
+  if (!isPremium && currentPage === 5 && displayedStory.length > 5) { // Show on page 6 (index 5)
     setIsMagicWandAnimating(true);
     // NO TIMEOUT - Keep animating until user clicks!
   } else {
     setIsMagicWandAnimating(false);
   }
-}, [currentPage, stableDisplayedStory.length, isPremium]);
+}, [currentPage, displayedStory.length, isPremium]);
 
 // Subtle pulse for wand every 3 pages
 useEffect(() => {
@@ -1079,69 +915,15 @@ useEffect(() => {
 
 
 const initializeStory = async () => {
-  // 🔒 EMERGENCY FIX: Enhanced Story Content Protection
-  console.log('🚀 initializeStory called', {
-    trigger: 'direct-call',
-    timestamp: new Date().toISOString(),
-    storyContentLocked: storyContentLockedRef.current,
-    storyGenerated: storyGeneratedRef.current,
-    hasExistingStory: story.length > 0,
-    isGenerating: isGeneratingRef.current
-  });
-  
-  // 🔒 CRITICAL: Check if story content is locked against regeneration
-  if (storyContentLockedRef.current && story.length > 0) {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('🔒 EMERGENCY FIX: Story content is LOCKED - rejecting regeneration attempt');
-    }
-    setLastGenerationTrigger('blocked-content-locked');
-    setContentMutationLog(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      trigger: 'blocked-content-locked',
-      action: 'regeneration-blocked',
-      storyLength: story.length,
-      isLocked: true
-    }]);
+  // Simple check to prevent double generation
+  if (isStoryStable && story.length > 0) {
     setIsLoading(false);
     return;
   }
-  
-  // 🔒 Enhanced generation protection - prevent double execution
-  if (isGeneratingRef.current) {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('🔒 initializeStory blocked - already generating');
-    }
-    setLastGenerationTrigger('blocked-already-generating');
-    return;
-  }
-  
-  // 🔒 CRITICAL: Check for existing stable story content before proceeding
-  if (storyGeneratedRef.current && story.length > 0 && isStoryStable) {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('🔒 EMERGENCY FIX: Stable story already exists - blocking regeneration');
-    }
-    setLastGenerationTrigger('blocked-stable-story-exists');
-    setContentMutationLog(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      trigger: 'blocked-stable-story-exists',
-      action: 'regeneration-blocked',
-      storyLength: story.length,
-      isLocked: storyContentLockedRef.current
-    }]);
-    setIsLoading(false);
-    return;
-  }
-  
-  const generationId = `gen_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  generationIdRef.current = generationId;
-  isGeneratingRef.current = true;
-  setLastGenerationTrigger(`new-generation-${generationId}`);
   
   console.log('🚀 initializeStory start', { 
     isPremium, 
-    userName: userInfo?.name, 
-    generationId,
-    storyAlreadyGenerated: storyGeneratedRef.current 
+    userName: userInfo?.name
   });
   
   setIsLoading(true);
@@ -1192,7 +974,7 @@ const initializeStory = async () => {
             setLiveContext(ctx);
             const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
             setStorySource(srcPremium);
-            setStoryStableAtomically(cached.pages); // Mark cached story as stable atomically
+            setIsStoryStable(true);
             return; // Early return
           }
         } else {
@@ -1257,19 +1039,8 @@ const initializeStory = async () => {
             setIsStoryComplete(true);
             setStorySource('unknown');
             
-            // 🔒 EMERGENCY FIX: Lock content immediately after cache restore
-            storyGeneratedRef.current = true;
-            setIsStoryContentLocked(true);
-            storyContentLockedRef.current = true;
-            setContentMutationLog(prev => [...prev, {
-              timestamp: new Date().toISOString(),
-              trigger: 'cache-restore-guest',
-              action: 'content-locked-after-restore',
-              storyLength: cached.pages?.length || 0,
-              isLocked: true
-            }]);
             
-            setStoryStableAtomically(cached.pages); // Mark cached story as stable atomically
+            setIsStoryStable(true);
             return; // Early return - NO FALLBACK TO REGENERATION
           }
         } else {
@@ -1402,37 +1173,21 @@ const initializeStory = async () => {
       elapsed, 
       remaining, 
       LOADER_MIN_MS, 
-      generationId: generationIdRef.current,
+      
       storyPagesGenerated: story.length 
     });
     
-    // Mark story as successfully generated and LOCK content
-    storyGeneratedRef.current = true;
-    isGeneratingRef.current = false;
-    
-    // 🔒 EMERGENCY FIX: Lock story content after successful generation
-    setIsStoryContentLocked(true);
-    storyContentLockedRef.current = true;
-    setContentMutationLog(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      trigger: 'story-generation-completed',
-      action: 'content-locked',
-      storyLength: story.length,
-      isLocked: true
-    }]);
-    console.log('🔒 Story content is now LOCKED against unauthorized regeneration');
+    console.log('✅ Story generation completed successfully');
     
     if (remaining > 0) {
       setTimeout(() => {
         setIsLoading(false);
-        // PHASE 6: Mark story as stable atomically - no more content changes
-        setStoryStableAtomically();
+        setIsStoryStable(true);
         console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
       }, remaining);
     } else {
       setIsLoading(false);
-      // PHASE 6: Mark story as stable atomically - no more content changes
-      setStoryStableAtomically();
+      setIsStoryStable(true);
       console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
     }
   }
@@ -1466,10 +1221,9 @@ const initializeStory = async () => {
       return;
     }
     
-    // BULLETPROOF: Validate story text before any processing
-    const storyText = getValidStoryText(currentPage);
+    const storyText = displayedStory[currentPage];
     if (!storyText) {
-      console.log('📸 Skipping image generation - no valid story text for page', currentPage);
+      console.log('📸 Skipping image generation - no story text for page', currentPage);
       return;
     }
     
@@ -1561,10 +1315,9 @@ const initializeStory = async () => {
   const generateImageForIndex = async (index: number) => {
     if (pageImages[index]) return;
     
-    // BULLETPROOF: Validate story text before any processing
-    const storyText = getValidStoryText(index);
+    const storyText = displayedStory[index];
     if (!storyText) {
-      console.log('📸 Skipping image generation for index - no valid story text for page', index);
+      console.log('📸 Skipping image generation for index - no story text for page', index);
       return;
     }
     
@@ -1683,8 +1436,8 @@ const initializeStory = async () => {
     clearHighlighting();
 
     // Count words for the page we're leaving (once per page)
-    if (stableDisplayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
-      const pageWordCount = countWords(stableDisplayedStory[currentPage]);
+    if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
+      const pageWordCount = countWords(displayedStory[currentPage]);
       setSessionWordsRead(prev => prev + pageWordCount);
       setPagesCompleted(prev => {
         const next = new Set(prev);
@@ -1705,7 +1458,7 @@ const initializeStory = async () => {
         setCurrentPage(prev => prev + 1);
       }
       setTimeout(() => setJustAdvanced(false), 600);
-    } else if (currentPage < stableDisplayedStory.length - 1) {
+    } else if (currentPage < displayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
     } else {
@@ -1944,7 +1697,7 @@ const handleDockCoach = () => {
       timeSpent,
       wordsRead: totalWordsRead,
       pagesRead: pagesCompleted.size,
-      storyCompleted: currentPage === stableDisplayedStory.length - 1,
+      storyCompleted: currentPage === displayedStory.length - 1,
       readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
     });
     
@@ -2071,33 +1824,15 @@ const handleRestartTimer = () => {
     console.log('🔄 User explicitly requested new story - unlocking content', {
       isRewrite,
       specialRequest: !!specialRequestOverride,
-      storyContentLocked: storyContentLockedRef.current
     });
     
-    // 🔒 EMERGENCY FIX: Unlock content for explicit new story generation
-    setIsStoryContentLocked(false);
-    storyContentLockedRef.current = false;
-    storyGeneratedRef.current = false;
     setIsStoryStable(false);
-    setContentMutationLog(prev => [...prev, {
-      timestamp: new Date().toISOString(),
-      trigger: isRewrite ? 'user-rewrite-request' : 'user-new-story-request',
-      action: 'content-unlocked-for-regeneration',
-      storyLength: story.length,
-      isLocked: false
-    }]);
     
     if (isRewrite) {
       setIsGeneratingRewrite(true);
     } else {
       setIsGeneratingNewStory(true);
     }
-    
-    // Reset generation protection flags for new story
-    lastUserInfoRef.current = '';
-    storyGeneratedRef.current = false;
-    isGeneratingRef.current = false;
-    lastUserInfoRef.current = '';
     
     try {
       console.log('🪄 Generating new story...');
@@ -2488,7 +2223,7 @@ const handleRestartTimer = () => {
   const mobileTextConfig = getMobileTextConfig(currentDifficulty);
   const mobileContainerConfig = getMobileStoryContainer(currentDifficulty);
 
-  const progress = stableDisplayedStory.length > 0 ? ((currentPage + 1) / stableDisplayedStory.length) * 100 : 0;
+  const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStoryText || "") <= 8;
   const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
@@ -2587,7 +2322,7 @@ const handleRestartTimer = () => {
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
           onHome={onHome}
-          onNewStory={isPremium && stableDisplayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
+          onNewStory={isPremium && displayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
           onDecreaseDifficulty={() => handleDifficultyChange('down')}
           showLevelControls={true}
@@ -2729,7 +2464,7 @@ const handleRestartTimer = () => {
                         {/* Background fill to avoid cropping/margins */}
                         <img
                           src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                           className="absolute inset-0 h-full w-full object-cover blur-md scale-110 brightness-[1.05]"
                           loading="lazy"
                           decoding="async"
@@ -2742,7 +2477,7 @@ const handleRestartTimer = () => {
                         {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
                         <ImageWithFallback
                           src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
           className="relative z-10 h-full w-full object-contain"
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
@@ -2771,7 +2506,7 @@ const handleRestartTimer = () => {
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
-                    {isPremium && isLoadingNextPage && currentPage === stableDisplayedStory.length - 1 && !isStoryComplete && (
+                    {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                           <div className="flex items-center gap-2">
@@ -2786,7 +2521,7 @@ const handleRestartTimer = () => {
                         className={cn("story-content storybook-frame w-full", justAdvanced && "animate-enter")}
                         data-difficulty={currentDifficulty}
                       >
-                        {stableDisplayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
+                        {displayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
                           processTextWithConsistentFlow({
                             text: currentStoryText,
                             className: "interactive-word",
@@ -2832,7 +2567,7 @@ const handleRestartTimer = () => {
                         {currentImage ? (
                           <ImageWithFallback
                             src={currentImage} 
-                            alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
+                            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                             className="w-full h-full object-cover"
                             fallbackText={`📖 Page ${currentPage + 1}`}
                             onLoadingChange={handleImageLoadingChange}
@@ -2869,7 +2604,7 @@ const handleRestartTimer = () => {
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col h-full min-h-0">
                     <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative">
-                      {isPremium && isLoadingNextPage && currentPage === stableDisplayedStory.length - 1 && !isStoryComplete && (
+                      {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                             <div className="flex items-center gap-2">
@@ -2884,7 +2619,7 @@ const handleRestartTimer = () => {
                           className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter")}
                           data-difficulty={currentDifficulty}
                         >
-                          {stableDisplayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
+                          {displayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
                             processTextWithConsistentFlow({
                               text: currentStoryText,
                               className: "interactive-word",
@@ -2996,7 +2731,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
-                {!isPremium && currentPage === 5 && stableDisplayedStory.length > 5 && timeRemaining > 0 && (
+                {!isPremium && currentPage === 5 && displayedStory.length > 5 && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
@@ -3307,32 +3042,6 @@ const handleRestartTimer = () => {
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
       
-      {/* Story Stability Monitor (Debug Only - ?debug=1) */}
-      {new URLSearchParams(window.location.search).get('debug') === '1' && (
-        <StoryStabilityMonitor
-          isStoryContentLocked={isStoryContentLocked}
-          isStoryStable={isStoryStable}
-          storyLength={story.length}
-          lastGenerationTrigger={lastGenerationTrigger}
-          contentMutationLog={contentMutationLog}
-          onUnlockContent={() => {
-            console.log('🔓 DEBUG: Manual content unlock triggered');
-            setIsStoryContentLocked(false);
-            storyContentLockedRef.current = false;
-          setContentMutationLog(prev => [...prev, {
-            timestamp: new Date().toISOString(),
-            trigger: 'debug-manual-unlock',
-            action: 'Content unlocked via debug monitor',
-            storyLength: story.length,
-            isLocked: false
-          }]);
-        }}
-        onClearLog={() => {
-          console.log('🗑️ DEBUG: Clearing mutation log');
-          setContentMutationLog([]);
-        }}
-      />
-      )}
       </div>
     </ErrorBoundary>
     </GameContextProvider>
