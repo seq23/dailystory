@@ -19,7 +19,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     detailLevel: 'high',
     rendering: 'pixar_3d',
     brandSuffix: '3D Pixar style, soft lighting, warm tones, smooth features, high-quality rendering',
-    negativePrompt: 'multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
+    negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
@@ -48,6 +48,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     detailLevel: 'high',
     rendering: 'pixar_3d',
     brandSuffix: '3D Pixar style, soft lighting, warm tones, smooth features, high-quality rendering',
+    
+    negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {

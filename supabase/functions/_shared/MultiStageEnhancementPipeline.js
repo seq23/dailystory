@@ -12,7 +12,8 @@
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
-import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
+// PHASE 2.15: BackendTokenManager removed from edge functions - only essential functions remain
+// import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
 import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 // AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
@@ -287,31 +288,60 @@ export class MultiStageEnhancementPipeline {
         outputFormat: 'WEBP'
       };
       
-      // PHASE 4 & 5: Track cultural text before token optimization
+      // PHASE 4 & 5: Track cultural text
       CulturalTextTracker.trackTextEntry(sessionId, pageNumber, enhancedPrompt, 'enhanced-prompt');
       
-      // NEW MASTER PLAN: Apply token optimization with updated parameters
+      // PHASE 2.16: Reorder prompt construction logic (Primary Scene → Brand Suffix → Character → Visual → Cultural → Style)
+      const promptParts = [];
+      
+      // CRITICAL: Primary Scene (never truncate)
+      if (enhancedStoryData?.primaryScene) {
+        promptParts.push(enhancedStoryData.primaryScene);
+      } else if (sceneContext) {
+        promptParts.push(sceneContext);
+      }
+      
+      // HIGH: Brand Suffix for ALL characters
+      if (styleFramework.brandSuffix) {
+        promptParts.push(styleFramework.brandSuffix);
+      }
+      
+      // MEDIUM: Character description
       const fullCharacterDescription = characterDescription;
+      if (fullCharacterDescription) {
+        promptParts.push(fullCharacterDescription);
+      }
       
-      console.log('🔧 NEW MASTER PLAN: Token Manager - Full Character Description:', fullCharacterDescription);
+      // MEDIUM: Visual Components
+      if (enhancedStoryData?.visualComponents) {
+        const vc = enhancedStoryData.visualComponents;
+        if (vc.setting) promptParts.push(vc.setting);
+        if (vc.lighting) promptParts.push(vc.lighting);
+        if (vc.mood) promptParts.push(vc.mood);
+        if (vc.keyObjects) promptParts.push(vc.keyObjects);
+      }
       
-      // PHASE 4: Track character description for cultural text
-      CulturalTextTracker.trackTextEntry(sessionId, pageNumber, fullCharacterDescription, 'character-description');
+      // MEDIUM: Visual details and secondary characters
+      if (visualDetails) promptParts.push(visualDetails);
+      if (secondaryCharacterPrompt) promptParts.push(secondaryCharacterPrompt);
       
-      // NEW MASTER PLAN: Pass aiSchemaData to createPromptSegments for 3-field schema support
-      const promptSegments = BackendTokenManager.createPromptSegments(
-        sceneContext,
-        fullCharacterDescription,
-        styleFramework.prompt || 'children\'s book illustration',
-        styleFramework.brandSuffix || '',
-        visualDetails || '',
-        '', // culturalElements - set as empty for now
-        enhancedStoryData, // Pass AI schema data for new 3-field processing
-        secondaryCharacterPrompt // CRITICAL FIX: Add secondary characters to prompt
-      );
+      // LOW: Style framework
+      if (styleFramework.prompt) {
+        promptParts.push(styleFramework.prompt);
+      }
       
-      const optimization = BackendTokenManager.optimizePrompt(promptSegments);
-      const finalEnhancedPrompt = optimization.optimizedPrompt;
+      // Build final prompt with simple length checking
+      const finalEnhancedPrompt = promptParts.filter(part => part && part.trim().length > 0).join(', ');
+      
+      // Simple length check - if too long, prioritize by removing LOW priority items first
+      if (finalEnhancedPrompt.length > 2900) {
+        console.log(`⚠️ Prompt too long (${finalEnhancedPrompt.length} chars), applying simple truncation`);
+        // Remove style framework if needed
+        const truncatedParts = promptParts.slice(0, -1); // Remove last (style framework)
+        const truncatedPrompt = truncatedParts.filter(part => part && part.trim().length > 0).join(', ');
+        console.log(`✂️ Truncated to ${truncatedPrompt.length} characters`);
+        var finalEnhancedPrompt = truncatedPrompt;
+      }
       
       // PHASE 4: Track final optimized prompt
       CulturalTextTracker.trackPipelineStage(sessionId, pageNumber, finalEnhancedPrompt, 'final-optimized');
@@ -343,16 +373,16 @@ export class MultiStageEnhancementPipeline {
           styleFramework: styleFramework.name,
           difficulty: imageDifficulty,
           culturalProfile: userInfo.nativeLanguage,
-            emotionalContext: emotionalContext.mood,
-            // NEW MASTER PLAN: Updated processing method
-            directVisualProcessing: true,
-            visualStateEnabled: true,
+          emotionalContext: emotionalContext.mood,
+          // PHASE 2: Updated processing method
+          directPromptBuilding: true,
+          tokenManagerRemoved: true,
+          visualStateEnabled: true,
           hasExistingSetting: !!existingSetting,
           hasVisualDetails: !!visualDetails,
           trackedObjectsCount: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-            processingTime: Date.now(),
-            // NEW MASTER PLAN: Removed old array stats
-            processingMethod: 'direct-visual-descriptions'
+          processingTime: Date.now(),
+          processingMethod: 'direct-prompt-construction'
         }
       };
       
@@ -632,6 +662,19 @@ export class MultiStageEnhancementPipeline {
   static buildUnifiedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber) {
     const negatives = [];
     
+    // PHASE 3.1: FIRST - New Pixar negative for Levels 0-1 (Beginner/Easy)
+    const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+    if (difficulty === 'beginner' || difficulty === 'easy') {
+      negatives.push('toy, figurine, doll, plastic, simple background, flat lighting');
+    }
+    
+    // PHASE 3.1: SECOND - African American cultural sensitivity (priority protection)
+    if (userInfo?.avatar?.skinTone === 'dark' && (userInfo?.avatar?.type === 'boy' || userInfo?.avatar?.type === 'girl')) {
+      negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
+    }
+    
+    // THEN: All existing negatives in current order
+    
     // 1. Page-specific negatives (consolidation #1)
     if (pageNumber === 1 && userInfo?.name) {
       negatives.push(`${userInfo.name} text, name in large letters`);
@@ -662,11 +705,6 @@ export class MultiStageEnhancementPipeline {
     // 8. Style framework compatibility (unchanged #8)
     if (styleFramework?.negativesToAvoid) {
       negatives.push(styleFramework.negativesToAvoid.join(', '));
-    }
-    
-    // 9. Cultural sensitivity - NEW trigger condition and prompt
-    if (userInfo?.avatar?.skinTone === 'dark' && (userInfo?.avatar?.type === 'boy' || userInfo?.avatar?.type === 'girl')) {
-      negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
     }
     
     return negatives.join(', ');

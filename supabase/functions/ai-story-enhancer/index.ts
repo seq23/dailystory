@@ -377,28 +377,65 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           return createCorsErrorResponse(`Parse error: ${parseError.message}`, 422);
         }
 
-        // Call MultiStage to build the final enhanced prompt
-        console.log('🎨 AI Enhancement successful - calling MultiStage for prompt building');
-        let MultiStageEnhancementPipeline;
+        // PHASE 1 & 2: Build enhanced prompt directly without BackendTokenManager
+        console.log('🎨 AI Enhancement successful - building direct enhanced prompt');
+        
+        // Import FrontendIntelligence for direct prompt building
+        let FrontendIntelligence;
         try {
-          const pipelineModule = await import('../_shared/MultiStageEnhancementPipeline.js');
-          MultiStageEnhancementPipeline = pipelineModule.MultiStageEnhancementPipeline;
+          const fiModule = await import('../_shared/FrontendIntelligence.js');
+          FrontendIntelligence = fiModule.FrontendIntelligence;
         } catch (importError) {
-          console.error('❌ Failed to import MultiStageEnhancementPipeline:', importError.message);
-          throw new Error(`MultiStage import failed: ${importError.message}`);
+          console.error('❌ Failed to import FrontendIntelligence:', importError.message);
+          throw new Error(`FrontendIntelligence import failed: ${importError.message}`);
         }
 
-
-        const promptResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
-          storyText,
-          userInfo,
-          storyId,
-          sessionId,
-          pageNumber,
-          totalPages,
-          enhancedStoryData, // Pass the AI-enhanced data
-          avatarIdentity // Pass the avatar identity from orchestrator
-        );
+        // PHASE 1.2 & 1.3: Integrate character descriptions and scene context directly
+        const characterDescription = avatarIdentity?.visualDescription || 'child';
+        const sceneContext = enhancedStoryData?.primaryScene || storyText;
+        
+        // Build enhanced prompt with proper order: Primary Scene → Brand Suffix → Character → Visual → Cultural → Style
+        const promptParts = [];
+        
+        // CRITICAL: Primary Scene (never truncate)
+        if (enhancedStoryData?.primaryScene) {
+          promptParts.push(enhancedStoryData.primaryScene);
+        }
+        
+        // HIGH: Brand Suffix for ALL characters
+        promptParts.push('3D Pixar style, soft lighting, warm tones, smooth features, high-quality rendering');
+        
+        // MEDIUM: Character description
+        if (characterDescription) {
+          promptParts.push(characterDescription);
+        }
+        
+        // MEDIUM: Visual components
+        if (enhancedStoryData?.visualComponents) {
+          const vc = enhancedStoryData.visualComponents;
+          if (vc.setting) promptParts.push(vc.setting);
+          if (vc.lighting) promptParts.push(vc.lighting);
+          if (vc.mood) promptParts.push(vc.mood);
+          if (vc.keyObjects) promptParts.push(vc.keyObjects);
+        }
+        
+        // LOW: Style framework
+        promptParts.push('children\'s book illustration, professional animation studio quality');
+        
+        const enhancedPrompt = promptParts.filter(part => part && part.trim().length > 0).join(', ');
+        
+        // Build negative prompt
+        const negativePrompt = buildDirectNegativePrompt(userInfo, pageNumber);
+        
+        const promptResult = {
+          enhancedPrompt,
+          negativePrompt,
+          metadata: {
+            tier: 'ai-enhanced-direct',
+            method: 'direct-prompt-building',
+            tokenManagerRemoved: true
+          }
+        };
 
         // Return structured response for orchestrator
         const result = {
