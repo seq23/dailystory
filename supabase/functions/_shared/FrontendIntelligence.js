@@ -100,6 +100,22 @@ export class FrontendIntelligence {
   ];
   
   static EXPANDED_AFRICAN_AMERICAN_SETTINGS = [
+    // Standard American settings
+    'suburban neighborhood', 'local park', 'school playground', 'family backyard', 
+    'community center', 'local library', 'main street', 'shopping district',
+    'neighborhood street', 'public playground', 'town square', 'local diner',
+    
+    // Creole/Southern settings
+    'New Orleans French Quarter', 'Louisiana bayou', 'creole cottage', 'southern porch', 
+    'jazz club', 'bourbon street', 'plantation style home', 'southern garden',
+    'creole marketplace', 'Louisiana street fair', 'jazz festival venue', 'bayou cabin',
+    
+    // Black cultural settings
+    'family barbershop', 'beauty salon', 'church gathering hall', 'family reunion park', 
+    'soul food restaurant', 'community barbecue', 'neighborhood block party', 'gospel church',
+    'family cookout', 'community garden', 'local barber shop', 'sunday dinner table',
+    
+    // Heritage/Cultural settings  
     'community cultural center', 'african american heritage museum',
     'cultural celebration space', 'community pride event', 'heritage festival',
     'cultural education center', 'african diaspora exhibit', 'community gathering',
@@ -107,10 +123,24 @@ export class FrontendIntelligence {
   ];
   
   static CULTURAL_PRIDE_ELEMENTS = [
-    'cultural symbols',
-    'community strength', 
-    'rich heritage',
-    'family bonds'
+    // Standard American elements
+    'American traditions', 'neighborhood community', 'school pride', 'local sports teams', 
+    'Fourth of July celebrations', 'hometown pride', 'community volunteering', 'local festivals',
+    'patriotic values', 'civic participation', 'community service', 'school spirit',
+    
+    // Creole elements
+    'creole heritage', 'Louisiana culture', 'jazz music traditions', 'creole cuisine', 
+    'Mardi Gras celebrations', 'French Quarter history', 'bayou traditions', 'creole storytelling',
+    'Louisiana folklore', 'jazz heritage', 'creole cooking traditions', 'southern hospitality',
+    
+    // Black cultural elements
+    'soul food traditions', 'church community', 'extended family gatherings', 'musical heritage', 
+    'Sunday dinner traditions', 'community support networks', 'gospel music', 'family storytelling',
+    'generational wisdom', 'community uplift', 'collective strength', 'family recipes',
+    
+    // Heritage/Cultural elements
+    'cultural symbols', 'community strength', 'rich heritage', 'family bonds',
+    'ancestral pride', 'cultural resilience', 'historical consciousness', 'community activism'
   ];
   
   // ============= EMOTIONAL CONTEXT DETECTION =============
