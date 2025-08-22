@@ -31,7 +31,11 @@ class StoryVisualStateManager {
         // Core avatar identity tracking
         avatarType: null,
         skinTone: null,
-        coreCharacterTraits: new Map()
+        coreCharacterTraits: new Map(),
+        // NEW: Secondary element tracking
+        secondaryCharacters: new Map(), // family, friends with seeds
+        characterAnimals: new Map(),    // pets with dialogue/names
+        relationships: new Map()        // family connections
       };
       globalThis.storyVisualStateManager.storyStates.set(sessionId, state);
     }
@@ -432,6 +436,130 @@ class StoryVisualStateManager {
   static getStoryState(sessionId) {
     if (!globalThis.storyVisualStateManager) return null;
     return globalThis.storyVisualStateManager.storyStates.get(sessionId);
+  }
+
+  // NEW: Secondary character management methods
+  static updateSecondaryCharacter(sessionId, characterName, characterType, relationshipType, pageNumber) {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    const key = `${characterName}_${characterType}`;
+    const existing = state.secondaryCharacters.get(key);
+    
+    const updatedCharacter = {
+      ...existing,
+      name: characterName,
+      type: characterType,
+      relationshipType,
+      seed: existing?.seed || this.generateSeededRandom(key),
+      firstMention: existing?.firstMention || pageNumber,
+      lastMention: pageNumber,
+      description: existing?.description || ''
+    };
+    
+    state.secondaryCharacters.set(key, updatedCharacter);
+    
+    // Track family relationships
+    if (relationshipType === 'family') {
+      const relationshipKey = `main_to_${characterName}`;
+      state.relationships.set(relationshipKey, {
+        from: 'main_character',
+        to: characterName,
+        relationship: characterType,
+        pageEstablished: pageNumber
+      });
+    }
+    
+    console.log(`🎭 Updated secondary character: ${characterName} (${characterType}) with seed ${updatedCharacter.seed}`);
+    return updatedCharacter;
+  }
+
+  static updateCharacterAnimal(sessionId, animalName, species, hasDialogue, pageNumber) {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    const key = `${animalName}_${species}`.replace(/\s+/g, '_');
+    const existing = state.characterAnimals.get(key);
+    
+    const updatedAnimal = {
+      ...existing,
+      name: animalName,
+      species,
+      hasDialogue,
+      seed: existing?.seed || this.generateSeededRandom(key),
+      firstMention: existing?.firstMention || pageNumber,
+      lastMention: pageNumber,
+      description: existing?.description || ''
+    };
+    
+    state.characterAnimals.set(key, updatedAnimal);
+    
+    console.log(`🐾 Updated character animal: ${animalName} the ${species} with seed ${updatedAnimal.seed}`);
+    return updatedAnimal;
+  }
+
+  static getSecondaryCharacters(sessionId, pageNumber) {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    // Return characters mentioned within last 3 pages for relevance
+    const recentCharacters = Array.from(state.secondaryCharacters.values())
+      .filter(char => !pageNumber || Math.abs(pageNumber - char.lastMention) <= 3)
+      .map(char => ({
+        name: char.name,
+        type: char.type,
+        relationshipType: char.relationshipType,
+        seed: char.seed,
+        description: char.description,
+        pageSpan: char.lastMention - char.firstMention + 1
+      }));
+    
+    return recentCharacters;
+  }
+
+  static getCharacterAnimals(sessionId, pageNumber) {
+    const state = this.getOrCreateStoryState(sessionId);
+    
+    // Return animals mentioned within last 3 pages for relevance
+    const recentAnimals = Array.from(state.characterAnimals.values())
+      .filter(animal => !pageNumber || Math.abs(pageNumber - animal.lastMention) <= 3)
+      .map(animal => ({
+        name: animal.name,
+        species: animal.species,
+        hasDialogue: animal.hasDialogue,
+        seed: animal.seed,
+        description: animal.description,
+        pageSpan: animal.lastMention - animal.firstMention + 1
+      }));
+    
+    return recentAnimals;
+  }
+
+  static generateSecondaryCharacterSeed(sessionId, characterName, characterType, description) {
+    const state = this.getOrCreateStoryState(sessionId);
+    const key = `${characterName}_${characterType}`;
+    
+    // Generate consistent seed based on character key
+    const seed = this.generateSeededRandom(key);
+    
+    // Update the stored character with description
+    const existing = state.secondaryCharacters.get(key);
+    if (existing) {
+      existing.description = description;
+      existing.seed = seed;
+      state.secondaryCharacters.set(key, existing);
+    }
+    
+    return seed;
+  }
+
+  static generateSeededRandom(key) {
+    // Simple hash function to generate consistent seed from string
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+      const char = key.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    // Return positive seed between 1 and 999999
+    return Math.abs(hash % 999999) + 1;
   }
 }
 

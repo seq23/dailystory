@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { StoryVisualStateManager } from "../_shared/storyVisualState.js"
 import { AdvancedPronounResolver } from "../_shared/AdvancedPronounResolver.js"
+import { UnifiedCharacterDescriptor } from "../_shared/UnifiedCharacterDescriptor.js"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +66,18 @@ serve(async (req) => {
 
       case 'get-setting-prompt':
         result = await getSettingForPrompt(sessionId);
+        break;
+
+      case 'update-secondary-elements':
+        result = await updateSecondaryElements(sessionId, params.elements, params.pageNumber);
+        break;
+
+      case 'get-secondary-characters':
+        result = await getSecondaryCharacters(sessionId, params.pageNumber);
+        break;
+
+      case 'generate-secondary-character-seed':
+        result = await generateSecondaryCharacterSeed(sessionId, params.characterName, params.characterType, params.userInfo);
         break;
 
       default:
@@ -288,4 +301,84 @@ function generateCharacterDescription(userInfo: any): string {
   }
   
   return description;
+}
+
+/**
+ * Update secondary elements (characters and animals) for visual consistency
+ */
+async function updateSecondaryElements(sessionId: string, elements: any[], pageNumber: number) {
+  console.log(`🎭 Updating ${elements.length} secondary elements for session: ${sessionId}, page: ${pageNumber}`);
+  
+  const results = [];
+  
+  for (const element of elements) {
+    if (element.category === 'secondary_character') {
+      // Store secondary character with seed generation
+      const result = StoryVisualStateManager.updateSecondaryCharacter(
+        sessionId, 
+        element.name, 
+        element.type, 
+        element.relationshipType,
+        pageNumber
+      );
+      results.push(result);
+    } else if (element.category === 'character_animal') {
+      // Store character animal with seed generation
+      const result = StoryVisualStateManager.updateCharacterAnimal(
+        sessionId,
+        element.name,
+        element.species,
+        element.hasDialogue,
+        pageNumber
+      );
+      results.push(result);
+    }
+  }
+  
+  return { 
+    elementsProcessed: elements.length,
+    results,
+    pageNumber 
+  };
+}
+
+/**
+ * Get secondary characters for prompt building
+ */
+async function getSecondaryCharacters(sessionId: string, pageNumber?: number) {
+  console.log(`🎭 Getting secondary characters for session: ${sessionId}, page: ${pageNumber}`);
+  
+  const secondaryCharacters = StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
+  const characterAnimals = StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
+  
+  return {
+    secondaryCharacters,
+    characterAnimals,
+    pageNumber,
+    totalElements: secondaryCharacters.length + characterAnimals.length
+  };
+}
+
+/**
+ * Generate secondary character seed for visual consistency
+ */
+async function generateSecondaryCharacterSeed(sessionId: string, characterName: string, characterType: string, userInfo: any) {
+  console.log(`🎭 Generating secondary character seed for: ${characterName} (${characterType})`);
+  
+  // Use UnifiedCharacterDescriptor to generate consistent secondary character
+  const secondaryCharacter = UnifiedCharacterDescriptor.generateSecondaryCharacterFromDetection(
+    { name: characterName, type: characterType },
+    userInfo,
+    sessionId
+  );
+  
+  // Store in visual state manager
+  const seed = StoryVisualStateManager.generateSecondaryCharacterSeed(sessionId, characterName, characterType, secondaryCharacter);
+  
+  return {
+    characterName,
+    characterType,
+    seed,
+    description: secondaryCharacter
+  };
 }
