@@ -388,42 +388,6 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           throw new Error(`MultiStage import failed: ${importError.message}`);
         }
 
-        // Get secondary elements from visual state
-        const secondaryElements = await (await import('../_shared/SecondaryElementDetector.js')).SecondaryElementDetector.parseElements(
-          sessionId, 
-          enhancedStoryData.primaryScene, 
-          storyText, 
-          pageNumber
-        );
-
-        // Update visual state with detected elements
-        if (secondaryElements && secondaryElements.length > 0) {
-          console.log(`🎭 Found ${secondaryElements.length} secondary elements, updating visual state...`);
-          
-          // Import and call visual state API to store secondary elements
-          const visualStateAPI = await import('../visual-state-api/index.ts');
-          // Note: In production, this would be a proper API call
-          // For now, directly update the state manager
-          for (const element of secondaryElements) {
-            if (element.category === 'secondary_character') {
-              StoryVisualStateManager.updateSecondaryCharacter(
-                sessionId, 
-                element.name, 
-                element.type, 
-                element.relationshipType,
-                pageNumber
-              );
-            } else if (element.category === 'character_animal') {
-              StoryVisualStateManager.updateCharacterAnimal(
-                sessionId,
-                element.name,
-                element.species,
-                element.hasDialogue,
-                pageNumber
-              );
-            }
-          }
-        }
 
         const promptResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
           storyText,

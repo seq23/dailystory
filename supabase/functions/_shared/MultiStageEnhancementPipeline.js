@@ -98,6 +98,44 @@ export class MultiStageEnhancementPipeline {
       // 0. Initialize and analyze visual state for consistency
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
+      // 0.5. SECONDARY ELEMENT DETECTION - Detect and track secondary characters and animals
+      try {
+        const SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
+        const secondaryElements = await SecondaryElementDetector.parseElements(
+          sessionId, 
+          enhancedStoryData?.primaryScene || '', 
+          storyText, 
+          pageNumber
+        );
+
+        // Update visual state with detected elements
+        if (secondaryElements && secondaryElements.length > 0) {
+          console.log(`🎭 Found ${secondaryElements.length} secondary elements, updating visual state...`);
+          
+          for (const element of secondaryElements) {
+            if (element.category === 'secondary_character') {
+              globalThis.StoryVisualStateManager.updateSecondaryCharacter(
+                sessionId, 
+                element.name, 
+                element.type, 
+                element.relationshipType,
+                pageNumber
+              );
+            } else if (element.category === 'character_animal') {
+              globalThis.StoryVisualStateManager.updateCharacterAnimal(
+                sessionId,
+                element.name,
+                element.species,
+                element.hasDialogue,
+                pageNumber
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Secondary element detection failed:', error.message);
+      }
+      
       // CRITICAL: Analyze animals FIRST before any text processing to ensure immediate inclusion
       // Animal processing now handled by UnifiedCharacterDescriptor
       
