@@ -566,8 +566,15 @@ export class MultiStageEnhancementPipeline {
         {} // No AI enhancement data for Tier 2
       );
       
-      const optimization = BackendTokenManager.optimizePrompt(promptSegments);
-      const finalEnhancedPrompt = optimization.optimizedPrompt;
+      // Simple segment joining - preserve priority order and exact content
+      const finalEnhancedPrompt = promptSegments
+        .sort((a, b) => a.priority - b.priority) // Sort by priority (lower = higher priority)
+        .map(segment => segment.content)
+        .filter(content => content && content.trim().length > 0)
+        .join(', ');
+      
+      // Debug logging to verify exact prompt being sent
+      console.log(`🎯 EXACT PROMPT TO RUNWARE (${finalEnhancedPrompt.length} chars):`, finalEnhancedPrompt);
       
       CulturalTextTracker.trackPipelineStage(sessionId, pageNumber, finalEnhancedPrompt, 'final-optimized');
       
@@ -578,12 +585,7 @@ export class MultiStageEnhancementPipeline {
         existingSetting: existingSetting ? 'YES' : 'NO',
         visualDetails: visualDetails ? 'YES' : 'NO',
         trackedObjects: globalThis.VisualDetailTracker.getSessionDetails(sessionId).length,
-        tokenOptimization: {
-          originalLength: optimization.originalLength,
-          finalLength: optimization.finalLength,
-          applied: optimization.applied,
-          truncated: optimization.truncated
-        },
+        finalPromptLength: finalEnhancedPrompt.length,
         processingMethod: 'premium-quality-no-ai'
       });
       
