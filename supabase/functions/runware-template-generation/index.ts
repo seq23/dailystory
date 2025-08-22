@@ -158,12 +158,12 @@ async function generateWithRunware(
               authCompleted = true;
               console.log('🔐 Runware authenticated, sending generation request');
               
-              // Phase 2: Emergency Truncation Implementation (Critical Safety Net)
+              // PHASE 1 FIX: Emergency Truncation with proper parameters  
               console.log(`📏 Original prompt length: ${prompt.length} characters`);
               if (prompt.length > 2990) {
                 console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${prompt.length} > 2990, truncating for session ${sessionId} page ${pageNumber}...`);
                 prompt = prompt.substring(0, 2990);
-                console.log(`✂️ Truncated to ${prompt.length} characters`);
+                console.log(`✂️ Truncated to ${prompt.length} characters for session ${sessionId}, page ${pageNumber}`);
               }
 
               // Send image generation request

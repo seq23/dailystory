@@ -121,8 +121,15 @@ serve(async (req) => {
 
         console.log(`🎨 Premium AI-enhanced prompt (${positivePrompt.length} chars):`, positivePrompt.substring(0, 100) + '...');
 
-        // Generate with Runware Tier 1 (Premium)
-        const tier1Result = await generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, enhancementResult?.metadata?.characterSeed);
+        // Generate with Runware Tier 1 (Premium) - PHASE 1 FIX: Pass sessionId and pageNumber
+        const tier1Result = await generateWithRunwarePremium(
+          apiKey, 
+          positivePrompt, 
+          negativePrompt, 
+          enhancementResult?.metadata?.characterSeed,
+          sessionId,
+          pageNumber
+        );
         
         if (tier1Result.success) {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
@@ -321,7 +328,14 @@ serve(async (req) => {
 });
 
 // TIER 1: Premium Runware Generation
-async function generateWithRunwarePremium(apiKey: string, positivePrompt: string, negativePrompt: string, seed?: number) {
+async function generateWithRunwarePremium(
+  apiKey: string, 
+  positivePrompt: string, 
+  negativePrompt: string, 
+  seed?: number, 
+  sessionId?: string, 
+  pageNumber?: number
+) {
   const ws = new WebSocket('wss://ws-api.runware.ai/v1');
   
   return new Promise((resolve, reject) => {
@@ -356,12 +370,12 @@ async function generateWithRunwarePremium(apiKey: string, positivePrompt: string
           if (item.taskType === "authentication") {
             console.log('✅ Runware authenticated');
             
-            // Phase 2: Emergency Truncation Implementation (Critical Safety Net)
+            // PHASE 1 FIX: Emergency Truncation with proper parameters
             console.log(`📏 Original prompt length: ${positivePrompt.length} characters`);
             if (positivePrompt.length > 2990) {
-              console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId} page ${pageNumber}...`);
+              console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId || 'unknown'} page ${pageNumber || 0}...`);
               positivePrompt = positivePrompt.substring(0, 2990);
-              console.log(`✂️ Truncated to ${positivePrompt.length} characters`);
+              console.log(`✂️ Truncated to ${positivePrompt.length} characters for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
             }
 
             // Send premium image generation request

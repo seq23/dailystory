@@ -17,6 +17,7 @@ import './storyVisualState.js'; // Loads StoryVisualStateManager globally
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 // AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
+import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -264,13 +265,19 @@ export class MultiStageEnhancementPipeline {
         outputFormat: 'WEBP'
       };
       
+      // PHASE 4 & 5: Track cultural text before token optimization
+      CulturalTextTracker.trackTextEntry(sessionId, pageNumber, enhancedPrompt, 'enhanced-prompt');
+      
       // Apply token optimization before returning
       const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
       
       // CRITICAL FIX: Use the character description from UnifiedCharacterConsistency
       const fullCharacterDescription = characterDescription;
       
-      console.log('🔧 Token Manager - Full Character Description:', fullCharacterDescription);
+      console.log('🔧 PHASE 2: Token Manager - Full Character Description:', fullCharacterDescription);
+      
+      // PHASE 4: Track character description for cultural text
+      CulturalTextTracker.trackTextEntry(sessionId, pageNumber, fullCharacterDescription, 'character-description');
       
       const promptSegments = BackendTokenManager.createPromptSegments(
         sceneContext,
@@ -283,6 +290,9 @@ export class MultiStageEnhancementPipeline {
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);
       const finalEnhancedPrompt = optimization.optimizedPrompt;
+      
+      // PHASE 4: Track final optimized prompt
+      CulturalTextTracker.trackPipelineStage(sessionId, pageNumber, finalEnhancedPrompt, 'final-optimized');
       
       console.log('✨ Tier 1 High-Quality AI processing completed with style framework + visual state + token optimization:', {
         styleFramework: styleFramework.name,

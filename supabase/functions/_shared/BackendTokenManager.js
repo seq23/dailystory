@@ -14,6 +14,20 @@ export const PromptPriority = {
 
 export class BackendTokenManager {
   
+  /**
+   * PHASE 1 FIX: Emergency truncation with proper parameters
+   * @param {string} prompt - The prompt to truncate
+   * @param {string} sessionId - Session identifier
+   * @param {number} pageNumber - Page number
+   * @returns {string} - Truncated prompt
+   */
+  static emergencyTruncate(prompt, sessionId = 'unknown', pageNumber = 0) {
+    console.log(`🚨 EMERGENCY TRUNCATION - Session: ${sessionId}, Page: ${pageNumber}, Original Length: ${prompt.length}`);
+    const truncated = prompt.substring(0, MAX_LENGTH - 100);
+    console.log(`✂️ Truncated to ${truncated.length} characters`);
+    return truncated;
+  }
+  
   static optimizePrompt(promptSegments) {
     console.log(`🚀 Starting optimization for ${promptSegments.length} segments`);
     

@@ -50,7 +50,7 @@ class UnifiedCharacterConsistency {
     const baseSeed = this.generateStableSeed(avatarSeedInput, userInfo.name || 'child');
     
     // ALWAYS use current avatar settings - no fallback to cached data
-    const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo);
+    const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo).profile;
     const physicalTraits = avatarIdentity ? 
       this.generatePhysicalTraitsFromIdentity(avatarIdentity, baseSeed) : 
       this.generatePhysicalTraits(userInfo, baseSeed);
@@ -93,32 +93,36 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Determine cultural profile from user info
+   * Determine cultural profile from user info - PHASE 2: Enhanced for explicit text generation
    */
   determineCulturalProfile(userInfo) {
-    if (!userInfo.avatar) return 'multicultural';
+    if (!userInfo.avatar) return { profile: 'multicultural', gender: 'child' };
     
     const { nativeLanguage, avatar } = userInfo;
     const skinTone = avatar.skinTone || 'medium';
     
+    // Basic gender inference (simplified for character generation)
+    const gender = Math.random() > 0.5 ? 'female' : 'male';
+    
     if (nativeLanguage === 'en') {
-      if (skinTone === 'dark') return 'african-american';
-      if (skinTone === 'light' || skinTone === 'pale') return 'european-american';
-      return 'multicultural-american';
+      if (skinTone === 'dark') return { profile: 'african-american', gender };
+      if (skinTone === 'light' || skinTone === 'pale') return { profile: 'european-american', gender };
+      return { profile: 'multicultural-american', gender };
     }
     
     if (nativeLanguage === 'es') {
-      if (skinTone === 'dark') return 'afro-hispanic';
-      if (skinTone === 'olive' || skinTone === 'medium') return 'hispanic-latino';
-      return 'hispanic-multicultural';
+      if (skinTone === 'dark') return { profile: 'afro-hispanic', gender };
+      if (skinTone === 'olive' || skinTone === 'medium') return { profile: 'hispanic-latino', gender };
+      return { profile: 'hispanic-multicultural', gender };
     }
     
-    if (nativeLanguage === 'fr') return skinTone === 'dark' ? 'african-french' : 'french-multicultural';
-    if (nativeLanguage === 'zh') return 'chinese-asian';
-    if (nativeLanguage === 'hi') return 'indian-south-asian';
-    if (nativeLanguage === 'ar') return 'middle-eastern';
+    if (nativeLanguage === 'fr') return { profile: skinTone === 'dark' ? 'african-french' : 'french-multicultural', gender };
+    if (nativeLanguage === 'zh') return { profile: 'chinese-asian', gender };
+    if (nativeLanguage === 'hi') return { profile: 'indian-south-asian', gender };
+    if (nativeLanguage === 'ar') return { profile: 'middle-eastern', gender };
     
-    return 'global-multicultural';
+    return { profile: 'global-multicultural', gender };
+  }
   }
 
   /**
@@ -227,20 +231,54 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Build contextual character description
+   * PHASE 2: Builds contextual character description with explicit African-American text
+   * This ensures "African-American" text is generated in character descriptions
    */
-  buildContextualCharacterDescription(seedData, storyContext) {
-    const { characterName, physicalTraits, contextualAppearance } = seedData;
+  buildContextualCharacterDescription(seedData, storyContext = '') {
+    const { baseSeed, culturalProfile, physicalTraits, culturalElements, characterName } = seedData;
     
-    const parts = [
-      `${characterName}`,
-      `${physicalTraits.height} child with ${physicalTraits.skinTone} skin`,
-      `${physicalTraits.hairColor} hair and ${physicalTraits.eyeColor} eyes`,
-      `${physicalTraits.build} build`,
-      `wearing ${contextualAppearance.currentClothing}`,
-    ];
+    // PHASE 2: Build character description with explicit cultural identification
+    let description = '';
     
-    return parts.join(', ');
+    // Mock gender determination for explicit text generation
+    const mockUserInfo = { avatar: { skinTone: physicalTraits.skinTone } };
+    
+    // PHASE 2: Add explicit African-American identification when applicable
+    if (culturalProfile === 'african-american') {
+      const gender = this.determineCulturalProfile(mockUserInfo).gender || 'child';
+      const genderText = gender === 'male' ? 'boy' : gender === 'female' ? 'girl' : 'child';
+      description = `${characterName} is a ${physicalTraits.age || 'young'} African-American ${genderText}`;
+      console.log(`🎭 PHASE 2: Generated explicit African-American character description: "${description}"`);
+    } else {
+      description = `${characterName} is a ${physicalTraits.age || 'young'} child`;
+    }
+    
+    // Add physical characteristics
+    if (physicalTraits.eyeColor) description += ` with ${physicalTraits.eyeColor} eyes`;
+    if (physicalTraits.build) description += ` and a ${physicalTraits.build} build`;
+    if (physicalTraits.height) description += `, ${physicalTraits.height} height`;
+    
+    // Add cultural elements if available
+    if (culturalElements) {
+      if (culturalElements.clothing) description += `. Wearing ${culturalElements.clothing}`;
+      if (culturalElements.accessories) description += ` with ${culturalElements.accessories}`;
+    }
+
+    // PHASE 5: Enhanced logging for African-American text tracking
+    console.log(`🎭 PHASE 2: Generated character description for ${characterName}:`, {
+      description,
+      culturalProfile,
+      containsAfricanAmericanText: description.includes('African-American'),
+      physicalTraits,
+      culturalElements: culturalElements ? Object.keys(culturalElements) : []
+    });
+    
+    // PHASE 4: Validate African-American text generation
+    if (culturalProfile === 'african-american' && !description.includes('African-American')) {
+      console.warn(`⚠️ PHASE 2: African-American character description missing explicit text!`);
+    }
+    
+    return description;
   }
 
   /**
