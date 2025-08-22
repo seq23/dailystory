@@ -267,14 +267,17 @@ useEffect(() => {
           {/* Play/Pause */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                onClick={onToggleReading}
-                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
-                aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer")}
-                id="timer-play-button"
-              >
+               <Button
+                 variant="outline"
+                 size={isMobile ? "sm" : "default"}
+                 onClick={() => {
+                   console.log('🔥 TIMER BUTTON CLICKED! Current state:', { isReading, timeRemaining });
+                   onToggleReading();
+                 }}
+                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+                 aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer")}
+                 id="timer-play-button"
+               >
                 {isReading ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </Button>
             </TooltipTrigger>
