@@ -137,16 +137,20 @@ export class BackendTokenManager {
   static smartCompress(text) {
     if (!text || text.length < 100) return text;
     
-    // ENHANCED PROTECTION: Strengthen cultural term protection with explicit "African-American"
-    const protectedTerms = [
-      'children\'s book illustration', 'soft lighting', 'warm colors', 'character consistency',
-      'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'African-American', 'cultural elements',
-      'visual state', 'style framework', 'scene context',
-      'natural lighting for dark skin', 'culturally accurate', 'professional children\'s book digital illustration',
-      // African American hair style terms to protect
-      'detailed', 'textured', 'curly top fade', 'authentic facial features',
-      // Compound eye colors to protect from compression
-      'hazel-green', 'hazel-brown', 'almond-shaped', 'deep-set', 'wide-set',
+      // ENHANCED PROTECTION: Strengthen cultural term protection with explicit "African-American" AND EMOTIONS
+      const protectedTerms = [
+        'children\'s book illustration', 'soft lighting', 'warm colors', 'character consistency',
+        'runware:100@1', 'FlowMatchEulerDiscreteScheduler', 'African American', 'African-American', 'cultural elements',
+        'visual state', 'style framework', 'scene context',
+        'natural lighting for dark skin', 'culturally accurate', 'professional children\'s book digital illustration',
+        // African American hair style terms to protect
+        'detailed', 'textured', 'curly top fade', 'authentic facial features',
+        // EMOTIONS - HIGH PRIORITY PROTECTION
+        'emotions', 'emotional', 'feeling', 'joyful', 'excited', 'curious', 'proud', 'confident', 'surprised', 'worried', 'frustrated', 'sad', 'angry', 'scared', 'confused',
+        'determined', 'hopeful', 'anxious', 'content', 'overwhelmed', 'peaceful', 'nervous', 'grateful', 'disappointed', 'amazed',
+        'emotional state', 'emotional transition', 'emotional arc', 'emotional depth', 'emotional atmosphere',
+        // Compound eye colors to protect from compression
+        'hazel-green', 'hazel-brown', 'almond-shaped', 'deep-set', 'wide-set',
       // African American skin tone terms to protect (full list)
       'fair brown skin', 'light caramel skin', 'warm beige skin', 'peachy brown skin',
       'light bronze skin', 'warm honey skin', 'golden caramel skin', 'honey bronze skin',
@@ -243,6 +247,13 @@ export class BackendTokenManager {
         priority: characterPriority,
         canTruncate: characterTruncatable,
         type: 'character-description'
+      },
+      // NEW: EMOTIONS GET HIGH PRIORITY
+      {
+        content: '', // Emotions will be added by the calling code
+        priority: PromptPriority.HIGH,
+        canTruncate: false, // Never truncate emotions
+        type: 'emotions'
       },
       {
         content: styleFramework,

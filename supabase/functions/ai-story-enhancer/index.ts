@@ -139,7 +139,7 @@ serve(async (req) => {
     async () => {
       // =================== PHASE 1: VARIABLE DECLARATION & SCOPE SETUP ===================
       let requestBody;
-      let storyText, userInfo, sessionId, pageNumber, totalPages;
+      let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity;
       let pageText = '';
       const importResults = {};
       
@@ -236,13 +236,14 @@ serve(async (req) => {
           };
         }
         
-        ({ storyText, userInfo, sessionId, pageNumber, totalPages } = requestBody);
+        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
           userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',
           sessionId: sessionId ? `✅ Present (${sessionId})` : '❌ Missing',
           pageNumber: pageNumber ? `✅ Present (${pageNumber})` : '❌ Missing',
-          totalPages: totalPages ? `✅ Present (${totalPages})` : '⚠️ Undefined (infinite story)'
+          totalPages: totalPages ? `✅ Present (${totalPages})` : '⚠️ Undefined (infinite story)',
+          avatarIdentity: avatarIdentity ? `✅ Present (${Object.keys(avatarIdentity).length} properties)` : '⚠️ Missing avatar identity'
         });
 
         if (!storyText) {
@@ -294,38 +295,48 @@ serve(async (req) => {
         const messages = [
           {
             role: 'system',
-            content: `Extract concise story elements from ${pageText}.${previousContext}
+            content: `Extract story elements with enhanced emotion analysis from ${pageText}.${previousContext}
 
-BE CONCISE. Focus only on essential elements. Avoid verbose descriptions.
+ENHANCED EMOTION FOCUS: Pay special attention to emotional states, transitions, and character feelings.
+
+EMOTIONAL VOCABULARY: Use rich emotional descriptors like:
+- Primary emotions: joyful, excited, curious, proud, confident, surprised, worried, frustrated, sad, angry, scared, confused
+- Complex emotions: determined, hopeful, anxious, content, overwhelmed, peaceful, nervous, grateful, disappointed, amazed
+- Emotional transitions: growing confident, becoming curious, feeling reassured, getting excited, calming down
 
 RULES:
 - Use established character names if available
-- Keep descriptions brief and focused
-- Include only essential objects and settings
-- Maintain story continuity
+- Focus on emotional depth and character feelings
+- Include scene transitions and emotional changes
+- Maintain story continuity and character emotional arcs
+- Capture the overall emotional atmosphere
 
 Return ONLY valid JSON:
 {
-  "characters": [{"name": "name", "description": "brief_description", "emotions": "emotion"}],
-  "setting": {"location": "location", "timeOfDay": "time", "weather": "weather"},
-  "objects": ["essential_objects"],
-  "mood": "mood",
-  "narrativeElements": {"action": "action", "focus": "focus"}
+  "characters": [{"name": "name", "description": "brief_description", "emotions": "rich_emotional_state_with_transitions"}],
+  "mainCharacter": {"emotions": "primary_character_detailed_emotions", "emotionalArc": "how_emotions_change"},
+  "secondaryCharacters": [{"name": "name", "emotions": "supporting_character_emotions"}],
+  "setting": {"location": "location", "timeOfDay": "time", "weather": "weather", "atmosphere": "emotional_atmosphere"},
+  "objects": ["essential_objects_with_emotional_context"],
+  "mood": "overall_emotional_tone",
+  "overallMood": "scene_emotional_atmosphere",
+  "narrativeElements": {"action": "action_with_emotional_impact", "focus": "emotional_focus", "sceneTransition": "emotional_transition"}
 }
 
-Keep all descriptions concise and essential.`
+Prioritize emotional depth and character development.`
           },
           {
             role: 'user',
             content: `Text: "${storyText}"
 
-Extract essential elements only:
-- Characters (brief descriptions)
-- Key actions and emotions
-- Essential objects and setting
-- Overall mood
+Extract elements with ENHANCED EMOTION ANALYSIS:
+- Characters with detailed emotional states and transitions
+- Emotional atmosphere of the scene
+- How characters feel and emotional changes
+- Objects and settings that support the emotional story
+- Overall mood and emotional progression
 
-Be concise. Focus on core narrative elements.`
+Focus on emotional storytelling and character feelings.`
           }
         ];
 
