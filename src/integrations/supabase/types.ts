@@ -27,7 +27,6 @@ export type Database = {
           grade_level: string | null
           hobbies: string | null
           id: string
-          parent_email: string | null
           parent_user_id: string
           updated_at: string
         }
@@ -43,7 +42,6 @@ export type Database = {
           grade_level?: string | null
           hobbies?: string | null
           id?: string
-          parent_email?: string | null
           parent_user_id: string
           updated_at?: string
         }
@@ -59,7 +57,6 @@ export type Database = {
           grade_level?: string | null
           hobbies?: string | null
           id?: string
-          parent_email?: string | null
           parent_user_id?: string
           updated_at?: string
         }
@@ -335,6 +332,33 @@ export type Database = {
           story_title?: string | null
           total_questions?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          created_at: string
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          created_at?: string
+          id?: string
+          identifier: string
+          window_start?: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          created_at?: string
+          id?: string
+          identifier?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -756,6 +780,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      log_security_event: {
+        Args: { details?: Json; event_type: string; user_id_param?: string }
+        Returns: undefined
+      }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
