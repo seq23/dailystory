@@ -79,13 +79,40 @@ export class FrontendIntelligence {
   // ============= AFRICAN AMERICAN CULTURAL ARRAYS =============
   // Elaborate arrays for African American character generation
   
-  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES = [
-    'textured crop', 'detailed braids', 'natural afro texture', 'cornrow patterns',
-    'twist-out styling', 'bantu knot styling', 'protective braided styles',
-    'natural curl definition', 'fade with textured top', 'loc styling',
-    'twist braids', 'box braids', 'goddess braids', 'fulani braids',
-    'natural coil pattern', 'defined curl texture', 'high-top fade',
-    'tapered natural cut', 'wash and go styling', 'pineapple updo'
+  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES_BOYS = [
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
+    'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
+    'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
+    'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
+    'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
+    'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
+    'textured ponytail with locs', 'detailed nape area tapered'
+  ];
+
+  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES_GIRLS = [
+    'textured medium natural hair', 'textured long natural hair', 'textured shoulder-length hair', 
+    'textured chin-length hair', 'detailed twist out', 'detailed bantu knots', 'detailed rod set', 
+    'detailed braid out', 'textured high puff', 'textured low puff', 'textured side puff', 
+    'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
+    'detailed messy bun', 'detailed sleek bun', 'detailed cornrows', 'detailed box braids', 
+    'detailed micro braids', 'detailed jumbo braids', 'detailed goddess braids', 
+    'detailed dutch braids', 'detailed french braids', 'detailed fishtail braids', 
+    'detailed halo braid', 'detailed crown braid', 'detailed side braids', 
+    'detailed three strand twists', 'detailed senegalese twists', 'detailed marley twists', 
+    'detailed havana twists', 'detailed passion twists', 'detailed spring twists', 
+    'detailed kinky twists', 'detailed chunky twists', 'detailed protective twists', 
+    'textured sisterlocs', 'textured microlocs', 'textured traditional locs', 
+    'textured interlocked locs', 'detailed braided locs', 'detailed loc updo', 
+    'textured half up half down locs', 'textured afro puffs', 'textured large afro', 
+    'textured picked out afro', 'textured shaped afro', 'textured curly afro', 
+    'textured coily afro', 'textured kinky afro', 'textured side swept bangs', 
+    'textured face framing layers', 'textured layered cut', 'detailed blunt cut', 
+    'detailed asymmetrical cut'
   ];
   
   static EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
@@ -93,10 +120,15 @@ export class FrontendIntelligence {
   ];
   
   static EXPANDED_AFRICAN_AMERICAN_CLOTHING = [
-    'cultural pride clothing', 'vibrant kente patterns', 'dashiki designs',
-    'afrocentric prints', 'traditional african textiles', 'cultural celebration wear',
-    'heritage-inspired fashion', 'african pattern accessories', 'cultural jewelry',
-    'traditional headwraps', 'cultural pride shirts', 'heritage celebration attire'
+    'casual t-shirt and jeans', 'hoodie and sneakers', 'polo shirt and khakis', 
+    'graphic tee and shorts', 'button-up shirt and pants', 'sweater and jeans', 
+    'tank top and cargo shorts', 'flannel shirt and jeans', 'jersey and joggers', 
+    'denim jacket and jeans', 'cardigan and slacks', 'henley shirt and chinos', 
+    'baseball cap and casual wear', 'sneakers and athletic socks', 'backpack and school clothes', 
+    'comfortable everyday outfit', 'playground-appropriate clothing', 'weekend casual wear', 
+    'school uniform alternatives', 'athletic wear and running shoes', 'layered casual look', 
+    'seasonal appropriate clothing', 'comfortable playtime outfit', 'trendy youth fashion', 
+    'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
   ];
   
   static EXPANDED_AFRICAN_AMERICAN_SETTINGS = [
