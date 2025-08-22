@@ -1,7 +1,7 @@
 # Image Generation Regression Tests
 
 ## Purpose
-Prevent regression to subscription-based image quality tiers. All users must receive Tier 1 images.
+Prevent regression to subscription-based image quality tiers and ensure Phase 1-4 enhancements remain functional. All users must receive Tier 1 images with full security, performance, and cultural intelligence features.
 
 ## Test Cases
 
@@ -84,6 +84,62 @@ const result = await SimpleImageService.generateStoryImage(
 
 expect(result.metadata.tier).toBeGreaterThanOrEqual(2); // Should fallback, not fail
 expect(result.success).toBe(true); // Should always succeed
+```
+
+### Test 6: Security Validation (Phase 4)
+```javascript
+// Verify SecurityValidator is active for all users
+const securityTest = await supabase.functions.invoke('runware-generate-image', {
+  body: {
+    pageText: "Test content",
+    userInfo: testUser,
+    sessionId: "test-session"
+  }
+});
+
+expect(securityTest.data.securityValidated).toBe(true);
+expect(securityTest.data.rateLimitStatus).toBeDefined();
+```
+
+### Test 7: Cultural Intelligence (Phase 3)
+```javascript
+// Verify CulturalNameDetector enhances character representation
+const culturalTest = await SimpleImageService.generateStoryImage(
+  "Maya and Ahmed played together",
+  { name: "Maya", avatar: { type: "girl", skinTone: "medium" } },
+  "medium",
+  "test-session",
+  1,
+  "test-session",
+  false
+);
+
+expect(culturalTest.metadata.culturalProcessing).toBe(true);
+expect(culturalTest.metadata.charactersDetected).toContain("Maya");
+```
+
+### Test 8: Memory Optimization (Phase 2)
+```javascript
+// Verify BackendTokenManager optimizes prompts
+const memoryTest = await supabase.functions.invoke('ai-story-enhancer', {
+  body: {
+    storyText: "A very long story with many details...",
+    characters: testCharacters
+  }
+});
+
+expect(memoryTest.data.tokenOptimization).toBeDefined();
+expect(memoryTest.data.compressionRatio).toBeGreaterThan(0.15);
+```
+
+### Test 9: WebSocket Robustness (Phase 1)
+```javascript
+// Verify RunwareWebSocketManager handles failures gracefully
+const webSocketTest = await testWebSocketResilience();
+
+expect(webSocketTest.circuitBreakerActive).toBeDefined();
+expect(webSocketTest.connectionRecovery).toBe(true);
+expect(webSocketTest.fallbackTriggered).toBeDefined();
 ```
 
 ## Automated Monitoring
