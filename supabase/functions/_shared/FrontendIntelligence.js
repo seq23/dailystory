@@ -76,8 +76,35 @@ export class FrontendIntelligence {
   The art style is {styleDescription}, reminiscent of {artInspiration}.
   `;
   
-  // NEW MASTER PLAN: Direct visual description arrays (removed cultural variations)
-  // All English speakers get consistent processing using direct descriptions
+  // ============= AFRICAN AMERICAN CULTURAL ARRAYS =============
+  // Elaborate arrays for African American character generation
+  
+  static EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES = [
+    'textured crop', 'detailed braids', 'natural afro texture', 'cornrow patterns',
+    'twist-out styling', 'bantu knot styling', 'protective braided styles',
+    'natural curl definition', 'fade with textured top', 'loc styling',
+    'twist braids', 'box braids', 'goddess braids', 'fulani braids',
+    'natural coil pattern', 'defined curl texture', 'high-top fade',
+    'tapered natural cut', 'wash and go styling', 'pineapple updo'
+  ];
+  
+  static EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
+    'authentic african american features'
+  ];
+  
+  static EXPANDED_AFRICAN_AMERICAN_CLOTHING = [
+    'cultural pride clothing', 'vibrant kente patterns', 'dashiki designs',
+    'afrocentric prints', 'traditional african textiles', 'cultural celebration wear',
+    'heritage-inspired fashion', 'african pattern accessories', 'cultural jewelry',
+    'traditional headwraps', 'cultural pride shirts', 'heritage celebration attire'
+  ];
+  
+  static EXPANDED_AFRICAN_AMERICAN_SETTINGS = [
+    'community cultural center', 'african american heritage museum',
+    'cultural celebration space', 'community pride event', 'heritage festival',
+    'cultural education center', 'african diaspora exhibit', 'community gathering',
+    'cultural arts center', 'heritage celebration venue'
+  ];
   
   static CULTURAL_PRIDE_ELEMENTS = [
     'cultural symbols',
@@ -186,9 +213,9 @@ export class FrontendIntelligence {
   // ============= PREMIUM PROMPT BUILDING =============
   // This method builds a high-quality prompt using the premium prompt template
   static buildPremiumPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty) {
-    // 1. Character Description
-    // const characterDescription = this.buildCharacterDescription(userInfo, characterSeed);
-    const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, imageDifficulty);
+    // 1. Character Description with avatar identity support
+    const avatarIdentity = details?.avatarIdentity || null;
+    const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, imageDifficulty, avatarIdentity);
     
     // 2. Setting Description
     const settingDescription = details.existingSetting || 'vibrant setting';
@@ -242,18 +269,35 @@ export class FrontendIntelligence {
     return array[Math.floor(Math.random() * array.length)];
   }
   
-  // NEW MASTER PLAN: Simplified approach - no cultural variations needed
-  // All English speakers get consistent treatment using direct visual descriptions
+  // ============= AFRICAN AMERICAN DETECTION METHODS =============
+  
+  static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity) {
+    // Detect based on visual description from AI enhancement layer
+    const visualDesc = avatarIdentity?.visualDescription?.toLowerCase() || '';
+    return visualDesc.includes('black');
+  }
+  
+  static generateExpandedAfricanAmericanFeatures() {
+    return this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+  }
+  
+  static getUniversalHairMapping(avatarIdentity) {
+    if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity)) {
+      return this.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES;
+    }
+    // Fallback for non-African American characters
+    const profile = this.CULTURAL_VISUAL_PROFILES.en || {};
+    return profile.hairStyleKeywords || ['natural hair styling'];
+  }
+  
   static shouldApplyConsistentProcessing(userInfo) {
     return userInfo.nativeLanguage === 'en'; // All English speakers get same processing
   }
 
-  static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null) {
-    // FALLBACK: Use local logic since UnifiedCharacterConsistency requires async import
-    // For now, use simplified character generation to avoid async complexity in static method
-    console.log('Building character description with local logic (UnifiedCharacterConsistency requires async)');
-      
-    // Fallback to enhanced local logic for edge function compatibility
+  static buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, difficulty = null, avatarIdentity = null) {
+    // Enhanced logic with African American cultural support
+    console.log('Building advanced character description with African American cultural detection');
+    
     const name = userInfo?.name || 'Alex';
     const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
@@ -275,13 +319,39 @@ export class FrontendIntelligence {
       pale: 'pale skin'
     };
     
-    // Add cultural hair and clothing elements using simplified approach
+    // Check for African American cultural variations
     let culturalElements = '';
-    if (this.shouldApplyConsistentProcessing(userInfo)) {
-      culturalElements = ', with natural styling';
+    let facialFeatures = '';
+    let hairStyling = '';
+    
+    if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity)) {
+      console.log('🎯 Applying African American cultural enhancements');
+      
+      // Use elaborate facial features
+      const features = this.generateExpandedAfricanAmericanFeatures();
+      if (features.length > 0) {
+        facialFeatures = `, ${this.getRandomElement(features)}`;
+      }
+      
+      // Use elaborate hairstyles
+      const hairstyles = this.getUniversalHairMapping(avatarIdentity);
+      if (hairstyles.length > 0) {
+        hairStyling = `, ${this.getRandomElement(hairstyles)}`;
+      }
+      
+      // Use elaborate clothing
+      const clothing = this.getRandomElement(this.EXPANDED_AFRICAN_AMERICAN_CLOTHING);
+      if (clothing) {
+        culturalElements = `, wearing ${clothing}`;
+      }
+    } else {
+      // Default cultural elements for non-African American characters
+      if (this.shouldApplyConsistentProcessing(userInfo)) {
+        culturalElements = ', with natural styling';
+      }
     }
     
-    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'}${culturalElements})`;
+    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'}${facialFeatures}${hairStyling}${culturalElements})`;
   }
 
 }

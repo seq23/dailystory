@@ -217,7 +217,8 @@ export class MultiStageEnhancementPipeline {
           storyStateDetails,
           animalDetails,
           pageNumber,
-          totalPages
+          totalPages,
+          avatarIdentity // Pass avatarIdentity for African American detection
         },
         imageDifficulty // Pass difficulty as parameter
       );
