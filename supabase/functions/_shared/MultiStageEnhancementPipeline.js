@@ -379,6 +379,44 @@ export class MultiStageEnhancementPipeline {
       // Initialize and analyze visual state for consistency
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
+      // PHASE 1 FIX: Add missing secondary element detection to Tier 2 (same as Tier 1)
+      try {
+        const SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
+        const secondaryElements = await SecondaryElementDetector.parseElements(
+          sessionId, 
+          '', // No AI-enhanced primary scene data in Tier 2
+          storyText, 
+          pageNumber
+        );
+
+        // Update visual state with detected elements
+        if (secondaryElements && secondaryElements.length > 0) {
+          console.log(`🎭 Tier 2: Found ${secondaryElements.length} secondary elements, updating visual state...`);
+          
+          for (const element of secondaryElements) {
+            if (element.category === 'secondary_character') {
+              globalThis.StoryVisualStateManager.updateSecondaryCharacter(
+                sessionId, 
+                element.name, 
+                element.type, 
+                element.relationshipType,
+                pageNumber
+              );
+            } else if (element.category === 'character_animal') {
+              globalThis.StoryVisualStateManager.updateCharacterAnimal(
+                sessionId,
+                element.name,
+                element.species,
+                element.hasDialogue,
+                pageNumber
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Tier 2: Secondary element detection failed:', error.message);
+      }
+      
       globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
       globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
       
@@ -423,13 +461,18 @@ export class MultiStageEnhancementPipeline {
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // Extract scene and emotional context from enhanced text (no AI enhancement)
-      const sceneContext = this.extractAIEnhancedSceneContext(enhancedStoryText, {}, pageNumber, totalPages, userInfo);
+      const sceneContext = this.extractAIEnhancedSceneContext(enhancedStoryText, {}, pageNumber, totalPages, userInfo, sessionId);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
       
       // Get existing visual state for consistency
       const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
       const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
       const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+      
+      // PHASE 2 FIX: Get secondary characters for prompt building (same as Tier 1)
+      const secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
+      const characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
+      const secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
       
       // Enhanced setting logic without AI data
       let enhancedSetting = existingSetting;
@@ -455,7 +498,8 @@ export class MultiStageEnhancementPipeline {
           existingSetting: enhancedSetting,
           visualDetails,
           storyStateDetails,
-          animalDetails: '',
+          animalDetails: characterAnimals && characterAnimals.length > 0 ? 
+            characterAnimals.map(animal => `${animal.name} the ${animal.species}`).join(', ') : '',
           pageNumber,
           totalPages,
           avatarIdentity // Pass processed avatar identity from orchestrator
@@ -496,7 +540,7 @@ export class MultiStageEnhancementPipeline {
         styleFramework.prompt || 'children\'s book illustration',
         styleFramework.brandSuffix || '',
         visualDetails || '',
-        '', // culturalElements
+        secondaryCharacterPrompt, // PHASE 2 FIX: Pass secondary character prompt instead of empty string
         {} // No AI enhancement data for Tier 2
       );
       
@@ -660,8 +704,8 @@ export class MultiStageEnhancementPipeline {
     return storyText.substring(0, 200); // Take first 200 chars as primary scene
   }
 
-  // NEW: AI-Enhanced Scene Context Method
-  static extractAIEnhancedSceneContext(storyText, enhancedStoryData) {
+  // NEW: AI-Enhanced Scene Context Method (with session ID support for fallback enhancement)
+  static extractAIEnhancedSceneContext(storyText, enhancedStoryData, pageNumber, totalPages, userInfo, sessionId) {
     console.log('🧠 Using AI-enhanced scene context extraction');
     
     if (enhancedStoryData) {
@@ -763,13 +807,42 @@ export class MultiStageEnhancementPipeline {
       const actionWords = ['walks', 'runs', 'plays', 'reads', 'looks', 'finds', 'goes', 'sees', 'opens', 'sits'];
       const hasAction = actionWords.some(action => storyLower.includes(action));
       
-      const intelligentContext = `character in ${detectedLocation} scene, ${keyContent}` + 
+      // PHASE 3 FIX: Enhance fallback logic to include secondary elements in intelligent context
+      let secondaryElementsContext = '';
+      try {
+        const sessionId = arguments[2]; // sessionId should be passed as 3rd parameter
+        if (sessionId) {
+          const secondaryCharacterData = globalThis.StoryVisualStateManager?.getSecondaryCharacters?.(sessionId);
+          const characterAnimals = globalThis.StoryVisualStateManager?.getCharacterAnimals?.(sessionId);
+          
+          const secondaryElements = [];
+          if (secondaryCharacterData?.length > 0) {
+            secondaryElements.push(...secondaryCharacterData.map(char => 
+              `${char.name} the ${char.type}${char.relationshipType ? ` (${char.relationshipType})` : ''}`
+            ));
+          }
+          if (characterAnimals?.length > 0) {
+            secondaryElements.push(...characterAnimals.map(animal => 
+              `${animal.name} the ${animal.species}${animal.hasDialogue ? ' (speaking)' : ''}`
+            ));
+          }
+          
+          if (secondaryElements.length > 0) {
+            secondaryElementsContext = `, with ${secondaryElements.join(', ')}`;
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Failed to add secondary elements to fallback context:', error.message);
+      }
+
+      const intelligentContext = `character in ${detectedLocation} scene, ${keyContent}${secondaryElementsContext}` + 
                                 (hasAction ? ' [action scene]' : ' [static scene]');
       
-      console.log('✅ Built enhanced intelligent fallback context:', {
+      console.log('✅ Built enhanced intelligent fallback context with secondary elements:', {
         sentences: sentences.length,
         detectedLocation,
         hasAction,
+        hasSecondaryElements: !!secondaryElementsContext,
         contextLength: intelligentContext.length
       });
       
