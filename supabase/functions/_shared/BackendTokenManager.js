@@ -1,8 +1,8 @@
 // Pure Deno Backend Token Manager - No Frontend Imports
 // Optimizes prompts for AI generation with intelligent prioritization and compression
 
-export const MAX_LENGTH = 2800;
-export const WARN_LENGTH = 2500;
+export const MAX_LENGTH = 2900; // Runware 3000 limit minus 100-char buffer
+export const WARN_LENGTH = 2800;
 
 export const PromptPriority = {
   HIGH: 1,
@@ -19,12 +19,12 @@ export class BackendTokenManager {
     const totalLength = promptSegments.reduce((sum, segment) => sum + segment.content.length, 0);
     
     if (totalLength <= MAX_LENGTH) {
-      console.log(`✅ Prompt within limits: ${totalLength}/${MAX_LENGTH} characters`);
+      console.log(`✅ Prompt within limits: ${totalLength}/${MAX_LENGTH} characters - bypassing optimization`);
       return {
         optimizedPrompt: promptSegments.map(s => s.content).join(' '),
         originalLength: totalLength,
         finalLength: totalLength,
-        applied: [],
+        applied: ['bypass-optimization'],
         truncated: false
       };
     }
@@ -213,24 +213,28 @@ export class BackendTokenManager {
     return compressed;
   }
   
-  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false) {
-    // Conditionally protect brand suffix for African American characters
-    const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.LOW;
+  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false, culturalElements = '') {
+    // Enhanced Cultural Intelligence for African American Characters
+    const brandSuffixPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.MEDIUM; // Changed from LOW to MEDIUM for general users
     const brandSuffixTruncatable = !isAfricanAmericanCharacter;
     
-    // CRITICAL: Also protect character description for African American characters
-    const characterPriority = isAfricanAmericanCharacter ? PromptPriority.HIGH : PromptPriority.HIGH;
+    // CRITICAL: Always protect character description with HIGH priority
+    const characterPriority = PromptPriority.HIGH;
     const characterTruncatable = !isAfricanAmericanCharacter; // Never truncate African American character descriptions
     
+    // NEW: Cultural elements handling - LOW priority for African American users, MEDIUM for others
+    const culturalElementsPriority = isAfricanAmericanCharacter ? PromptPriority.LOW : PromptPriority.MEDIUM;
+    const culturalElementsTruncatable = true; // Can always be compressed/removed
+    
     if (isAfricanAmericanCharacter) {
-      console.log('🔒 Protecting brand suffix and character description with HIGH priority for African American character');
+      console.log('🔒 Enhanced Cultural Intelligence: Brand Suffix HIGH, Character Description HIGH, Settings HIGH, Cultural Elements LOW priority');
       console.log('👤 Character Description to Protect:', characterDescription);
     }
     
-    return [
+    const segments = [
       {
         content: sceneContext,
-        priority: PromptPriority.HIGH,
+        priority: PromptPriority.HIGH, // Settings remain HIGH for African American users
         canTruncate: true,
         type: 'ai-scene-context'
       },
@@ -242,7 +246,7 @@ export class BackendTokenManager {
       },
       {
         content: styleFramework,
-        priority: PromptPriority.MEDIUM,
+        priority: PromptPriority.LOW, // Changed from MEDIUM to LOW - allow aggressive compression
         canTruncate: true,
         type: 'framework-concise-prompt'
       },
@@ -258,7 +262,19 @@ export class BackendTokenManager {
         canTruncate: brandSuffixTruncatable,
         type: 'brand-suffix'
       }
-    ].filter(segment => segment.content && segment.content.length > 0);
+    ];
+    
+    // Add cultural elements if provided
+    if (culturalElements && culturalElements.length > 0) {
+      segments.push({
+        content: culturalElements,
+        priority: culturalElementsPriority,
+        canTruncate: culturalElementsTruncatable,
+        type: 'cultural-elements'
+      });
+    }
+    
+    return segments.filter(segment => segment.content && segment.content.length > 0);
   }
   
   static validateLength(prompt) {

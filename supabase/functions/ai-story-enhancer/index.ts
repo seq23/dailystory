@@ -294,43 +294,38 @@ serve(async (req) => {
         const messages = [
           {
             role: 'system',
-            content: `You are analyzing ${pageText} in an ${totalPages ? 'ongoing story' : 'never-ending story adventure'}.${previousContext}
+            content: `Extract concise story elements from ${pageText}.${previousContext}
 
-Extract story elements while maintaining consistency with established elements. You may reasonably infer details that maintain story continuity.
+BE CONCISE. Focus only on essential elements. Avoid verbose descriptions.
 
-ENHANCED RULES:
-- Use established character names (e.g., 'Sequoia' if previously mentioned) 
-- Maintain setting consistency unless story explicitly changes location
-- Include objects from previous pages if they logically remain present
-- Enhance emotional context based on story progression
-- For never-ending stories, focus on continuity and character development
-- Build upon established relationships and story elements
+RULES:
+- Use established character names if available
+- Keep descriptions brief and focused
+- Include only essential objects and settings
+- Maintain story continuity
 
 Return ONLY valid JSON:
 {
-  "characters": [{"name": "character_name", "description": "enhanced_description", "emotions": "contextual_emotion"}],
-  "setting": {"location": "consistent_location", "timeOfDay": "progressive_time", "weather": "contextual_weather", "season": "established_season"},
-  "objects": ["contextual_objects"],
-  "mood": "progressive_mood",
-  "narrativeElements": {"action": "specific_action", "focus": "story_focus", "perspective": "appropriate_perspective"}
+  "characters": [{"name": "name", "description": "brief_description", "emotions": "emotion"}],
+  "setting": {"location": "location", "timeOfDay": "time", "weather": "weather"},
+  "objects": ["essential_objects"],
+  "mood": "mood",
+  "narrativeElements": {"action": "action", "focus": "focus"}
 }
 
-Maintain story consistency while extracting meaningful details.`
+Keep all descriptions concise and essential.`
           },
           {
             role: 'user',
-            content: `Text content for ${pageText}:
+            content: `Text: "${storyText}"
 
-"${storyText}"
+Extract essential elements only:
+- Characters (brief descriptions)
+- Key actions and emotions
+- Essential objects and setting
+- Overall mood
 
-Analyze this text considering the established story context. Focus on:
-- Characters and their development (use established names when available)
-- Actions and emotions in context of story progression  
-- Objects and their continued presence or new introductions
-- Setting evolution and transitions
-- Mood progression throughout the story
-
-Maintain consistency with previous pages while extracting rich story elements.`
+Be concise. Focus on core narrative elements.`
           }
         ];
 
