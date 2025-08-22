@@ -191,14 +191,16 @@ export class MultiStageEnhancementPipeline {
         enhancedSetting = FrontendIntelligence.enhanceAISettingWithCulture(
           enhancedStoryData, 
           userInfo, 
-          culturalProfile
+          culturalProfile,
+          enhancedStoryText
         );
       } else if (!enhancedSetting) {
         // Fallback: enhance default setting
         enhancedSetting = FrontendIntelligence.enhanceAISettingWithCulture(
           { location: "indoor scene" }, 
           userInfo, 
-          culturalProfile
+          culturalProfile,
+          enhancedStoryText
         );
       }
       
