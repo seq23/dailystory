@@ -111,11 +111,14 @@ serve(async (req) => {
         console.log('🔍 TIER 1 DEBUG - AI enhancer result:', {
           success: aiEnhancerResult?.success !== false,
           hasEnhancedPrompt: !!aiEnhancerResult?.enhancedPrompt,
-          hasNegativePrompt: !!aiEnhancerResult?.negativePrompt
+          hasNegativePrompt: !!aiEnhancerResult?.negativePrompt,
+          error: aiEnhancerResult?.error || 'none'
         });
 
-        if (!aiEnhancerResult?.enhancedPrompt) {
-          throw new Error('AI enhancer did not return enhanced prompt');
+        // Check if AI enhancer failed and return error to trigger Tier 2 fallback
+        if (aiEnhancerResult?.success === false || aiEnhancerResult?.error || !aiEnhancerResult?.enhancedPrompt) {
+          console.log('⚠️ AI Enhancer failed - orchestrator will handle fallback to Tier 2');
+          throw new Error(aiEnhancerResult?.error || 'AI enhancer did not return enhanced prompt');
         }
 
         const enhancementResult = {

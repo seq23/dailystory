@@ -451,172 +451,25 @@ Focus on emotional storytelling and character feelings.`
         return createCorsResponse(result);
 
       } catch (error) {
-        // OpenAI FAILURE → Skip to Tier 2 immediately (no more generic fallback)
-        console.error('❌ Critical error in AI Story Enhancer:', {
+        // OpenAI FAILURE → Return error to Orchestrator (no internal fallback)
+        console.error('❌ AI Story Enhancer failed - returning error to Orchestrator:', {
           errorMessage: error.message,
           errorStack: error.stack,
           requestData: requestBody ? Object.keys(requestBody) : 'no-request-body',
           dependencyStatus: importResults
         });
         
-        // Safely extract parameters for fallback, with defaults if parsing failed
-        const fallbackParams = {
-          storyText: requestBody?.storyText || 'Unable to extract story text',
-          userInfo: requestBody?.userInfo || {},
-          sessionId: requestBody?.sessionId || 'unknown-session',
-          pageNumber: requestBody?.pageNumber || 1,
-          totalPages: requestBody?.totalPages || null
-        };
-        
-        return await useTier2Pipeline(
-          fallbackParams.storyText, 
-          fallbackParams.userInfo, 
-          fallbackParams.sessionId, 
-          fallbackParams.pageNumber, 
-          fallbackParams.totalPages, 
-          0, 
-          error.message,
-          0
-        );
+        return new Response(JSON.stringify({
+          success: false,
+          error: error.message,
+          errorType: 'ai-enhancement-failed',
+          processingMethod: 'openai-failed',
+          requestId: requestBody?.sessionId || 'unknown-session'
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
     }
   );
 });
-
-/**
- * Tier 2 Pipeline Fallback - Uses MultiStageEnhancementPipeline when OpenAI fails or quality is too low
- */
-async function useTier2Pipeline(storyText, userInfo, sessionId, pageNumber, totalPages, qualityScore = 0, errorMessage = null, depth = 0) {
-  // Prevent infinite recursion
-  if (depth > 2) {
-    console.warn(`🚫 Max recursion depth reached (${depth}) - using emergency fallback`);
-    const emergencyFallback = {
-      enhancedStoryData: {
-        characters: [{ name: "character", description: "child", emotions: "neutral" }],
-        setting: { location: "scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
-        objects: [],
-        mood: "neutral",
-        narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
-      },
-      extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
-      contextualInfo: { pageNumber, totalPages: 'unlimited', sessionId, processingTimestamp: new Date().toISOString(), isNeverEnding: true },
-      narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
-      validation: { contentValid: false, processingMethod: 'max-depth-emergency', qualityScore: 0, modelUsed: 'none' },
-      emergencyFallback: true,
-      errors: [`Max recursion depth ${depth}`, errorMessage].filter(Boolean)
-    };
-    
-    return createCorsResponse(emergencyFallback);
-  }
-
-  try {
-    console.log(`🚀 Tier 2 Pipeline: Processing fallback for session ${sessionId}, page ${pageNumber} (depth: ${depth})`);
-    
-    // Import and use the Tier 2 pipeline with proper error handling
-    let MultiStageEnhancementPipeline;
-    try {
-      const pipelineModule = await import('../_shared/MultiStageEnhancementPipeline.js');
-      MultiStageEnhancementPipeline = pipelineModule.MultiStageEnhancementPipeline;
-    } catch (importError) {
-      console.error('❌ Failed to import MultiStageEnhancementPipeline:', importError.message);
-      throw new Error(`Pipeline import failed: ${importError.message}`);
-    }
-    
-    if (!MultiStageEnhancementPipeline?.processThroughPipeline) {
-      throw new Error('MultiStageEnhancementPipeline.processThroughPipeline is not available');
-    }
-    
-    const tier2Result = await MultiStageEnhancementPipeline.processThroughPipeline(
-      storyText, 
-      userInfo, 
-      sessionId, 
-      pageNumber, 
-      totalPages
-    );
-    
-    // Format Tier 2 result to match expected AI enhancer structure
-    const formattedResult = {
-      enhancedStoryData: {
-        characters: [{ 
-          name: tier2Result.characterDescription?.name || "character", 
-          description: tier2Result.characterDescription?.appearance || "child", 
-          emotions: "neutral" 
-        }],
-        setting: { 
-          location: tier2Result.settingContext?.location || "scene", 
-          timeOfDay: tier2Result.settingContext?.timeOfDay || "daytime", 
-          weather: tier2Result.settingContext?.weather || "clear", 
-          season: "unspecified" 
-        },
-        objects: tier2Result.objectContext || [],
-        mood: "neutral",
-        narrativeElements: { 
-          action: "general activity", 
-          focus: "character", 
-          perspective: "eye level" 
-        }
-      },
-      extractedElements: { 
-        characterCount: 1, 
-        objectCount: tier2Result.objectContext?.length || 0, 
-        complexity: 'simple' 
-      },
-      contextualInfo: { 
-        pageNumber, 
-        totalPages: totalPages || 'unlimited', 
-        sessionId, 
-        originalTextLength: storyText?.length || 0,
-        processingTimestamp: new Date().toISOString(), 
-        isNeverEnding: !totalPages 
-      },
-      narrativeEnhancements: { 
-        sceneType: 'general', 
-        emotionalTone: 'neutral', 
-        visualFocus: 'balanced' 
-      },
-      validation: {
-        contentValid: true,
-        mismatches: [],
-        processingMethod: 'tier-2-fallback',
-        qualityScore: qualityScore,
-        modelUsed: 'tier-2-pipeline'
-      },
-      tier2Used: true,
-      originalError: errorMessage,
-      depth
-    };
-    
-    console.log(`✅ Tier 2 Pipeline complete: Using template-based enhancement (depth: ${depth})`);
-    return createCorsResponse(formattedResult);
-    
-  } catch (tier2Error) {
-    console.error(`❌ Tier 2 Pipeline failed (depth: ${depth}): ${tier2Error.message}`);
-    
-    // Final fallback - absolute minimum structure
-    const emergencyFallback = {
-      enhancedStoryData: {
-        characters: [{ name: "character", description: "child", emotions: "neutral" }],
-        setting: { location: "scene", timeOfDay: "daytime", weather: "clear", season: "unspecified" },
-        objects: [],
-        mood: "neutral",
-        narrativeElements: { action: "general activity", focus: "character", perspective: "eye level" }
-      },
-      extractedElements: { characterCount: 1, objectCount: 0, complexity: 'simple' },
-      contextualInfo: { 
-        pageNumber: pageNumber || 1, 
-        totalPages: totalPages || 'unlimited', 
-        sessionId: sessionId || 'unknown-session', 
-        originalTextLength: storyText?.length || 0,
-        processingTimestamp: new Date().toISOString(), 
-        isNeverEnding: !totalPages 
-      },
-      narrativeEnhancements: { sceneType: 'general', emotionalTone: 'neutral', visualFocus: 'balanced' },
-      validation: { contentValid: false, processingMethod: 'emergency-fallback', qualityScore: 0, modelUsed: 'none' },
-      emergencyFallback: true,
-      errors: [errorMessage, tier2Error.message].filter(Boolean),
-      depth
-    };
-    
-    return createCorsResponse(emergencyFallback);
-  }
-}
