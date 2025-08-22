@@ -37,7 +37,7 @@ export class UnifiedCharacterDescriptor {
         "short coils", "tapered natural cut", "twisted sponge curls", "low caesar cut"
       ],
       girl: [
-        "natural afro puffs", "beautiful braids", "twist-out curls", "protective cornrows",
+        "natural afro puffs", "detailed braids", "twist-out curls", "protective cornrows",
         "goddess locs", "bantu knots", "wash-and-go curls", "elegant updo braids",
         "natural hair crown", "twisted protective style", "curly ponytail", "adorned braids with beads"
       ]

@@ -272,12 +272,12 @@ export class BackendTokenManager {
       });
     }
 
-    // HIGH PRIORITY - Secondary Schema Elements
+    // CRITICAL PRIORITY - Additional Schema Elements (Never Truncated)
     if (aiSchemaData?.objects?.length > 0) {
       segments.push({
         content: aiSchemaData.objects.join(', '),
-        priority: PromptPriority.HIGH,
-        canTruncate: true,
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
         type: 'ai-objects'
       });
     }
@@ -286,8 +286,8 @@ export class BackendTokenManager {
       const secondaryChars = aiSchemaData.secondaryCharacters.map(char => `${char.name} (${char.role})`).join(', ');
       segments.push({
         content: secondaryChars,
-        priority: PromptPriority.HIGH,
-        canTruncate: true,
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
         type: 'ai-secondary-characters'
       });
     }
@@ -295,8 +295,8 @@ export class BackendTokenManager {
     if (aiSchemaData?.sceneTransition) {
       segments.push({
         content: aiSchemaData.sceneTransition,
-        priority: PromptPriority.HIGH,
-        canTruncate: true,
+        priority: PromptPriority.CRITICAL,
+        canTruncate: false,
         type: 'ai-scene-transition'
       });
     }
@@ -339,12 +339,12 @@ export class BackendTokenManager {
       }
     );
 
-    // Add cultural elements if provided  
+    // Add cultural elements if provided (LOW PRIORITY for all characters)
     if (culturalElements && culturalElements.length > 0) {
       segments.push({
         content: culturalElements,
-        priority: isAfricanAmericanCharacter ? PromptPriority.CRITICAL : PromptPriority.LOW,
-        canTruncate: !isAfricanAmericanCharacter,
+        priority: PromptPriority.LOW,
+        canTruncate: true,
         type: 'cultural-elements'
       });
     }
