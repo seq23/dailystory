@@ -14,10 +14,11 @@ serve(async (req) => {
       return createCorsErrorResponse('Discount code is required', 400);
     }
 
-    // Create Supabase client
+    // Create Supabase client with service role for discount code access
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     console.log(`[Validate Discount] Checking code: ${code}`);
