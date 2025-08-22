@@ -437,6 +437,20 @@ export class EnhancedImageCache {
   static extractStoryMarkers(text: string, userInfo?: any): string {
     const markers: string[] = [];
     
+    // CRITICAL FIX: Validate text parameter to prevent runtime errors
+    if (!text || typeof text !== 'string') {
+      console.warn('⚠️ extractStoryMarkers called with invalid text:', text);
+      // Return user info markers only if text is invalid
+      if (userInfo?.avatar?.type) {
+        const fallbackMarkers = [userInfo.avatar.type];
+        if (userInfo.avatar.skinTone) {
+          fallbackMarkers.push(userInfo.avatar.skinTone);
+        }
+        return fallbackMarkers.join(',').toLowerCase();
+      }
+      return 'default';
+    }
+    
     // Extract key visual elements that should remain consistent
     const colorMatches = text.match(/\b(red|blue|green|yellow|purple|pink|orange|brown|black|white|colorful)\b/gi);
     const objectMatches = text.match(/\b(ball|car|bike|tree|house|animal|bird|dog|cat|flower)\b/gi);

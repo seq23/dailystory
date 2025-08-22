@@ -7,14 +7,16 @@ import { LoadingSpinner } from "@/components/LoadingStates";
 interface AdaptiveEnhancedLoadingProps {
   isPremium: boolean;
   userName?: string;
+  message?: string; // PHASE 3: Add custom message support
 }
 
-export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhancedLoadingProps) {
+export function AdaptiveEnhancedLoading({ isPremium, userName, message }: AdaptiveEnhancedLoadingProps) {
   const { t } = useTranslation();
 
   const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
 
-  const title = userName
+  // PHASE 3: Use custom message if provided, otherwise use default
+  const title = message || (userName
     ? (
         isPremium
           ? t("premium.loading.titleWithName", {
@@ -30,7 +32,7 @@ export function AdaptiveEnhancedLoading({ isPremium, userName }: AdaptiveEnhance
         isPremium
           ? t("premium.loading.title", { defaultValue: "Forging your premium reading adventure..." })
           : t("auth.loading.title", { defaultValue: "Getting things ready..." })
-      );
+      ));
 
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1") {
     console.log("🔤 AdaptiveEnhancedLoading text", { title, userName });

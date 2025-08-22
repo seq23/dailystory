@@ -278,20 +278,21 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
-  // Update stable story only when content stabilizes
+  // PHASE 1: Update stable story ONLY when story is confirmed stable - prevents flickering
   useEffect(() => {
-    if (isStoryStable && story.length > 0) {
+    if (isStoryStable && story.length > 0 && !stableStory.length) {
+      console.log('📚 PHASE 1: Updating stable display buffer - no more flicker will occur');
       setStableStory(story);
-      console.log('📚 Stable display buffer updated - no more flicker');
     }
-  }, [isStoryStable, story]);
+  }, [isStoryStable, story, stableStory.length]);
 
-  // Initialize stable story on first load
+  // PHASE 1: Initialize stable story ONLY on first stable load - no updates after that
   useEffect(() => {
-    if (story.length > 0 && stableStory.length === 0) {
+    if (story.length > 0 && stableStory.length === 0 && isStoryStable) {
+      console.log('📚 PHASE 1: Initializing stable story buffer - first stable load');
       setStableStory(story);
     }
-  }, [story, stableStory.length]);
+  }, [story, stableStory.length, isStoryStable]);
   
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
@@ -505,16 +506,16 @@ useEffect(() => {
   })();
   }, [isPremium]);
 
-  // Start timer only when story content is ready and stable (but respect user pause)
+  // FIXED: Start timer immediately when story is stable (Phase 2)
   useEffect(() => {
-    // Start timer when stable display content is available, but not if user manually paused
-    if (stableDisplayedStory.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && timerEnabled) {
-      console.log('⏰ Auto-starting timer - stable display content is ready and not user-paused');
+    // Start timer immediately when story is stable and not manually paused
+    if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && timerEnabled) {
+      console.log('⏰ FIXED: Auto-starting timer at 20:00 - story is now stable');
       setIsTimerRunning(true);
-    } else if (stableDisplayedStory.length > 0 && userPausedTimer) {
+    } else if (isStoryStable && story.length > 0 && userPausedTimer) {
       console.log('⏸️ Timer auto-start blocked - user has manually paused');
     }
-  }, [stableDisplayedStory.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
+  }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -1266,28 +1267,27 @@ const initializeStory = async () => {
         hasPlaceholders: result.pages.some(page => page.includes('{'))
       });
 
-      // 🔧 FIX: Process pages for placeholder resolution BEFORE initial setStory()
-      // This prevents story flickering by ensuring users never see placeholder text
+      // PHASE 1: STORY STABILIZATION LOADING STATE - Process in background, show loading until complete
+      console.log('📝 PHASE 1: Processing story content in background - users will see loading state until complete...');
+      
       let processedPages = result.pages;
       try {
-        console.log('📝 Post-processing story content BEFORE initial render...');
         const { EnhancedPostProcessor } = await import('@/services/EnhancedPostProcessor');
         processedPages = await EnhancedPostProcessor.processStoryContent(
           result.pages,
           userInfo,
           characterSessionId
         );
-        console.log('✅ Post-processed story pages - no flickering will occur', {
+        console.log('✅ PHASE 1: Story fully processed in background - ready for stable display', {
           processedFirstPage: processedPages[0]?.substring(0, 100),
           stillHasPlaceholders: processedPages.some(page => page.includes('{'))
         });
       } catch (error) {
         console.warn('Failed to post-process story pages:', error);
-        // Use original pages if post-processing fails
         processedPages = result.pages;
       }
 
-      // Now set the final processed story - users will never see placeholder text
+      // PHASE 6: ATOMIC STORY STATE UPDATE - Set final processed story only once
       setStory(processedPages);
       setStoryTitle(result.title);
       setIsStoryComplete(true);
@@ -1364,29 +1364,15 @@ const initializeStory = async () => {
     if (remaining > 0) {
       setTimeout(() => {
         setIsLoading(false);
-        // Set story as stable immediately after loading is complete
+        // PHASE 6: Mark story as stable immediately - no more content changes
         setIsStoryStable(true);
-        console.log('📚 Story is now stable - ready for image generation');
-        // Dispatch event for image generation to begin
-        window.dispatchEvent(new CustomEvent('story:stable', { 
-          detail: { 
-            storyText: story.join(' '), 
-            timestamp: Date.now() 
-          } 
-        }));
+        console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
       }, remaining);
     } else {
       setIsLoading(false);
-      // Set story as stable immediately after loading is complete
+      // PHASE 6: Mark story as stable immediately - no more content changes
       setIsStoryStable(true);
-      console.log('📚 Story is now stable - ready for image generation');
-      // Dispatch event for image generation to begin
-      window.dispatchEvent(new CustomEvent('story:stable', { 
-        detail: { 
-          storyText: story.join(' '), 
-          timestamp: Date.now() 
-        } 
-      }));
+      console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
     }
   }
 };
@@ -2470,9 +2456,18 @@ const handleRestartTimer = () => {
     return () => { cancelled = true; };
   }, [currentPage, pageImages, story.length]);
 
+  // PHASE 1: Show proper loading state with phase messages
   if (isLoading || forceLoaderActive) {
+    const loadingMessage = isStoryStable 
+      ? "Preparing your story..." 
+      : "Creating your magical story...";
+    
     return (
-      <AdaptiveEnhancedLoading isPremium={isPremium} userName={userInfo.name} />
+      <AdaptiveEnhancedLoading 
+        isPremium={isPremium} 
+        userName={userInfo.name} 
+        message={loadingMessage}
+      />
     );
   }
 
