@@ -222,6 +222,11 @@ export class MultiStageEnhancementPipeline {
       // Animal details now handled by UnifiedCharacterDescriptor
       const animalDetails = '';
       
+      // 6.5. CRITICAL FIX: Get secondary characters for prompt building
+      const secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
+      const characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
+      const secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
+      
       // NEW: Use enhanced cultural setting logic instead of override
       let enhancedSetting = existingSetting;
       if (!enhancedSetting && enhancedStoryData) {
@@ -301,7 +306,8 @@ export class MultiStageEnhancementPipeline {
         styleFramework.brandSuffix || '',
         visualDetails || '',
         '', // culturalElements - set as empty for now
-        enhancedStoryData // Pass AI schema data for new 3-field processing
+        enhancedStoryData, // Pass AI schema data for new 3-field processing
+        secondaryCharacterPrompt // CRITICAL FIX: Add secondary characters to prompt
       );
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);
@@ -841,6 +847,31 @@ export class MultiStageEnhancementPipeline {
       globalThis.StoryVisualStateManager.updateSetting(sessionId, detectedSetting);
       console.log('🌍 Updated story setting:', detectedSetting);
     }
+  }
+
+  // ============= SECONDARY CHARACTER PROMPT BUILDING =============
+  static buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals) {
+    const elements = [];
+    
+    // Process secondary characters
+    if (secondaryCharacterData && secondaryCharacterData.length > 0) {
+      const characters = secondaryCharacterData.map(char => {
+        const relation = char.relationshipType ? ` (${char.relationshipType})` : '';
+        return `${char.name} the ${char.type}${relation}`;
+      });
+      elements.push(`Secondary characters: ${characters.join(', ')}`);
+    }
+    
+    // Process character animals
+    if (characterAnimals && characterAnimals.length > 0) {
+      const animals = characterAnimals.map(animal => {
+        const dialogue = animal.hasDialogue ? ' (speaking)' : '';
+        return `${animal.name} the ${animal.species}${dialogue}`;
+      });
+      elements.push(`Character animals: ${animals.join(', ')}`);
+    }
+    
+    return elements.length > 0 ? elements.join(', ') : '';
   }
 
   // ============= FALLBACK SYSTEM =============

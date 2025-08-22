@@ -226,7 +226,7 @@ export class BackendTokenManager {
     return 'with natural emotional expression';
   }
   
-  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', culturalElements = '', aiSchemaData = null) {
+  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', culturalElements = '', aiSchemaData = null, secondaryCharacters = '') {
     // NEW MASTER PLAN: Brand suffix HIGH priority for ALL English speakers
     const brandSuffixPriority = PromptPriority.HIGH; // All English speakers get HIGH priority
     const brandSuffixTruncatable = false; // Never truncate brand suffix
@@ -310,6 +310,16 @@ export class BackendTokenManager {
         priority: PromptPriority.LOW,
         canTruncate: true,
         type: 'cultural-elements'
+      });
+    }
+
+    // MEDIUM PRIORITY - Secondary Characters (CRITICAL FIX)
+    if (secondaryCharacters && secondaryCharacters.trim().length > 0) {
+      segments.push({
+        content: secondaryCharacters,
+        priority: PromptPriority.MEDIUM,
+        canTruncate: true,
+        type: 'SECONDARY_CHARACTERS'
       });
     }
 
