@@ -206,8 +206,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         lastUserInfoRef.current = JSON.stringify({ name: userInfo.name, age: userInfo.age, isPremium });
         
         setIsLoading(false);
-        // For saved stories, mark as stable immediately
-        setIsStoryStable(true);
+        // For saved stories, use atomic stability setting
+        setStoryStableAtomically(storyPages);
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -278,6 +278,67 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
+  // ========== BULLETPROOF STORY STABILITY SYNCHRONIZATION ==========
+  
+  // BULLETPROOF: Atomic stability function - ensures stableStory is populated BEFORE isStoryStable becomes true
+  const setStoryStableAtomically = useCallback((storyToStabilize: string[] = story) => {
+    // Step 1: Validate that we have valid story content
+    if (!storyToStabilize || storyToStabilize.length === 0) {
+      console.warn('⚠️ Cannot set story stable - no valid story content provided');
+      return;
+    }
+    
+    // Step 2: Validate that story pages contain actual text content
+    const validPages = storyToStabilize.filter(page => page && typeof page === 'string' && page.trim().length > 0);
+    if (validPages.length === 0) {
+      console.warn('⚠️ Cannot set story stable - no valid text content found');
+      return;
+    }
+    
+    // Step 3: Set stableStory FIRST with validated content
+    setStableStory(validPages);
+    
+    // Step 4: Only AFTER stableStory is set, mark as stable
+    setIsStoryStable(true);
+    
+    console.log('✅ ATOMIC: Story stability set successfully', {
+      totalPages: validPages.length,
+      stableStoryPopulated: true,
+      isStoryStable: true
+    });
+    
+    // Step 5: Dispatch stability event for debugging
+    window.dispatchEvent(new CustomEvent('story:stable', { 
+      detail: { 
+        totalPages: validPages.length, 
+        timestamp: Date.now(),
+        validatedContent: true
+      } 
+    }));
+  }, [story]);
+
+  // BULLETPROOF: Text validation function - prevents ALL .slice() errors
+  const getValidStoryText = useCallback((pageIndex: number): string | null => {
+    // Check if stableStory exists and has content at the requested page
+    if (!stableStory || stableStory.length === 0) {
+      console.log('📸 getValidStoryText: stableStory not yet populated');
+      return null;
+    }
+    
+    if (pageIndex < 0 || pageIndex >= stableStory.length) {
+      console.log('📸 getValidStoryText: invalid page index', { pageIndex, totalPages: stableStory.length });
+      return null;
+    }
+    
+    const text = stableStory[pageIndex];
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      console.log('📸 getValidStoryText: invalid text content at page', pageIndex);
+      return null;
+    }
+    
+    return text;
+  }, [stableStory]);
+
   // PHASE 1: Update stable story ONLY when story is confirmed stable - prevents flickering
   useEffect(() => {
     if (isStoryStable && story.length > 0 && !stableStory.length) {
@@ -834,7 +895,7 @@ useEffect(() => {
         console.log('🔒 EMERGENCY FIX: Story content LOCKED - blocking any regeneration attempt');
       }
       setIsLoading(false);
-      setIsStoryStable(true);
+      setStoryStableAtomically();
       return;
     }
     
@@ -844,7 +905,7 @@ useEffect(() => {
         console.log('🔒 EMERGENCY FIX: Skipping story regeneration - same user context and story already exists');
       }
       setIsLoading(false);
-      setIsStoryStable(true);
+      setStoryStableAtomically();
       return;
     }
     
@@ -1131,7 +1192,7 @@ const initializeStory = async () => {
             setLiveContext(ctx);
             const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
             setStorySource(srcPremium);
-            setIsStoryStable(true); // Mark cached story as stable
+            setStoryStableAtomically(cached.pages); // Mark cached story as stable atomically
             return; // Early return
           }
         } else {
@@ -1208,7 +1269,7 @@ const initializeStory = async () => {
               isLocked: true
             }]);
             
-            setIsStoryStable(true); // Mark cached story as stable
+            setStoryStableAtomically(cached.pages); // Mark cached story as stable atomically
             return; // Early return - NO FALLBACK TO REGENERATION
           }
         } else {
@@ -1364,14 +1425,14 @@ const initializeStory = async () => {
     if (remaining > 0) {
       setTimeout(() => {
         setIsLoading(false);
-        // PHASE 6: Mark story as stable immediately - no more content changes
-        setIsStoryStable(true);
+        // PHASE 6: Mark story as stable atomically - no more content changes
+        setStoryStableAtomically();
         console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
       }, remaining);
     } else {
       setIsLoading(false);
-      // PHASE 6: Mark story as stable immediately - no more content changes
-      setIsStoryStable(true);
+      // PHASE 6: Mark story as stable atomically - no more content changes
+      setStoryStableAtomically();
       console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
     }
   }
@@ -1405,8 +1466,13 @@ const initializeStory = async () => {
       return;
     }
     
-    // Enhanced cache validation with story continuity markers
-    const storyText = stableDisplayedStory[currentPage];
+    // BULLETPROOF: Validate story text before any processing
+    const storyText = getValidStoryText(currentPage);
+    if (!storyText) {
+      console.log('📸 Skipping image generation - no valid story text for page', currentPage);
+      return;
+    }
+    
     const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
     
     // Validate userInfo structure before extracting markers
@@ -1414,14 +1480,20 @@ const initializeStory = async () => {
       console.warn('⚠️ Missing userInfo or avatar data for story markers');
     }
     
-    const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
-    const cachedImageUrl = EnhancedImageCache.getCachedImage(
-      storyText.slice(0, 120), 
-      characterSessionId, 
-      currentPage,
-      storyId,
-      storyMarkers
-    );
+    let storyMarkers, cachedImageUrl;
+    try {
+      storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+      cachedImageUrl = EnhancedImageCache.getCachedImage(
+        storyText.slice(0, 120),
+        characterSessionId, 
+        currentPage,
+        storyId,
+        storyMarkers
+      );
+    } catch (error) {
+      console.error('❌ Image cache lookup failed:', error);
+      return;
+    }
     
     if (cachedImageUrl) {
       console.log('📸 Using cached image for page', currentPage);
@@ -1449,16 +1521,41 @@ const initializeStory = async () => {
         }));
         
         // Cache with story continuity markers to prevent re-generation
-        const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
-        
-        // Validate userInfo before extracting markers
-        if (!userInfo || !userInfo.avatar) {
-          console.warn('⚠️ Missing userInfo or avatar data for caching story markers');
+        try {
+          const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+          
+          // Validate userInfo before extracting markers
+          if (!userInfo || !userInfo.avatar) {
+            console.warn('⚠️ Missing userInfo or avatar data for caching story markers');
+          }
+          
+          const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+          EnhancedImageCache.cacheImage(
+            storyText.slice(0, 120),
+            result.url,
+            characterSessionId,
+            currentPage,
+            undefined,
+            storyId,
+            storyMarkers
+          );
+          
+          try {
+            const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+            const images = story.map((s, idx) => ({ url: idx === currentPage ? result.url : pageImages[idx], prompt: (s || '').slice(0, 120) }));
+            StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
+          } catch {}
+        } catch (cacheError) {
+          console.warn('Failed to cache generated image:', cacheError);
         }
-        
-        const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
-        EnhancedImageCache.cacheImage(
-          storyText.slice(0, 120),
+      }
+      
+    } catch (error) {
+      console.log('Image generation failed, continuing without image:', error);
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
           result.url,
           characterSessionId,
           currentPage,
@@ -1475,6 +1572,66 @@ const initializeStory = async () => {
       }
       
     } catch (error) {
+      console.error('❌ Image cache lookup failed:', error);
+      return;
+    }
+    
+    if (cachedImageUrl) {
+      console.log('📸 Using cached image for page', currentPage);
+      setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
+      return;
+    }
+    
+    setIsGeneratingImage(true);
+    
+    try {
+      const result = await SimpleImageService.generateStoryImage(
+        storyText, 
+        userInfo, 
+        currentDifficulty,
+        storyId,
+        currentPage + 1,
+        characterSessionId,
+        isPremium
+      );
+      
+      if (result.success && result.url) {
+        setPageImages(prev => ({
+          ...prev,
+          [currentPage]: result.url
+        }));
+        
+        // Cache with story continuity markers to prevent re-generation
+        try {
+          const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+          
+          // Validate userInfo before extracting markers
+          if (!userInfo || !userInfo.avatar) {
+            console.warn('⚠️ Missing userInfo or avatar data for caching story markers');
+          }
+          
+          const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+          EnhancedImageCache.cacheImage(
+            storyText.slice(0, 120),
+            result.url,
+            characterSessionId,
+            currentPage,
+            undefined,
+            storyId,
+            storyMarkers
+          );
+          
+          try {
+            const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+            const images = story.map((s, idx) => ({ url: idx === currentPage ? result.url : pageImages[idx], prompt: (s || '').slice(0, 120) }));
+            StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
+          } catch {}
+        } catch (cacheError) {
+          console.warn('Failed to cache generated image:', cacheError);
+        }
+      }
+      
+    } catch (error) {
       console.log('Image generation failed, continuing without image:', error);
     } finally {
       setIsGeneratingImage(false);
@@ -1485,8 +1642,13 @@ const initializeStory = async () => {
   const generateImageForIndex = async (index: number) => {
     if (pageImages[index]) return;
     
-    // Enhanced cache validation - check EnhancedImageCache first
-    const storyText = story[index];
+    // BULLETPROOF: Validate story text before any processing
+    const storyText = getValidStoryText(index);
+    if (!storyText) {
+      console.log('📸 Skipping image generation for index - no valid story text for page', index);
+      return;
+    }
+    
     try {
       const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
       
@@ -1497,7 +1659,7 @@ const initializeStory = async () => {
       
       const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
       const cachedImageUrl = EnhancedImageCache.getCachedImage(
-        storyText.slice(0, 120), 
+        storyText.slice(0, 120),
         characterSessionId, 
         index,
         storyId,
