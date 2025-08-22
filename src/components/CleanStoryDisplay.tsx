@@ -1119,7 +1119,6 @@ const initializeStory = async () => {
         processedPages = result.pages;
       }
 
-      // PHASE 6: ATOMIC STORY STATE UPDATE - Set final processed story only once
       setStory(processedPages);
       setStoryTitle(result.title);
       setIsStoryComplete(true);
@@ -1128,7 +1127,6 @@ const initializeStory = async () => {
       setStorySource(srcFree as any);
 
       // Persist guest story for refresh-resume with avatar-aware cache key
-      // 🔧 FIX: Cache the PROCESSED pages (not original) to maintain consistency on refresh
       try {
         const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
         StorySessionCache.cacheStorySession(

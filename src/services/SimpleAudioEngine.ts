@@ -195,7 +195,7 @@ export class SimpleAudioEngine {
       await audio.play();
       this.playing = true;
     } catch (error) {
-      console.error('🎵 EMERGENCY FIX: ElevenLabs failed, implementing enhanced fallback:', error);
+      console.error('🎵 ElevenLabs failed, implementing enhanced fallback:', error);
       
       // Enhanced error analysis for better user experience
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -204,14 +204,14 @@ export class SimpleAudioEngine {
       
       if (errorMessage.includes('404') || errorMessage.includes('Function not found')) {
         fallbackMessage = 'Audio service temporarily unavailable - using device voice';
-        console.error('🚨 EMERGENCY FIX: ElevenLabs edge function not deployed or returning 404');
+        console.error('🚨 ElevenLabs edge function not deployed or returning 404');
       } else if (errorMessage.includes('dictionary') || errorMessage.includes('pronunciation_dictionary_not_found')) {
         fallbackMessage = 'Using standard pronunciation - phonetic dictionary unavailable';
       } else if (errorMessage.includes('network') || errorMessage.includes('fetch') || !navigator.onLine) {
         fallbackMessage = 'Network connection issue - using offline voice';
       } else if (errorMessage.includes('API key') || errorMessage.includes('unauthorized')) {
         fallbackMessage = 'Audio service configuration issue - using device voice';
-        console.error('🚨 EMERGENCY FIX: ElevenLabs API key not configured properly');
+        console.error('🚨 ElevenLabs API key not configured properly');
       }
       
       // Enhanced fallback with specific error messaging and user notification
