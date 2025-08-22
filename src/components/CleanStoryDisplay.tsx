@@ -585,13 +585,20 @@ const [highlightSave, setHighlightSave] = useState(false);
     if (!highlightSave) return;
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
+  }, [highlightSave]);
+
   // Set story stable when story content is ready
-  useEffect(() => {  
+  useEffect(() => {
     if (story.length > 0 && !isStoryStable) {
       setIsStoryStable(true);
       console.log('✅ Story marked as stable', { pages: story.length });
     }
   }, [story, isStoryStable]);
+
+  const currentStoryText = displayedStory[currentPage] || "";
+  const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
+  const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
+  const contentHash = hashText(effectiveAudioText);
 
   useEffect(() => {
     try { 
@@ -917,13 +924,13 @@ useEffect(() => {
 
 // Magic wand DRAMATIC animation effect for free users on page 6 - CONTINUOUS until clicked
 useEffect(() => {
-  if (!isPremium && currentPage === 5 && stableDisplayedStory.length > 5) { // Show on page 6 (index 5)
+  if (!isPremium && currentPage === 5 && displayedStory.length > 5) { // Show on page 6 (index 5)
     setIsMagicWandAnimating(true);
     // NO TIMEOUT - Keep animating until user clicks!
   } else {
     setIsMagicWandAnimating(false);
   }
-}, [currentPage, stableDisplayedStory.length, isPremium]);
+}, [currentPage, displayedStory.length, isPremium]);
 
 // Subtle pulse for wand every 3 pages
 useEffect(() => {
@@ -1574,8 +1581,8 @@ const initializeStory = async () => {
     clearHighlighting();
 
     // Count words for the page we're leaving (once per page)
-    if (stableDisplayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
-      const pageWordCount = countWords(stableDisplayedStory[currentPage]);
+    if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
+      const pageWordCount = countWords(displayedStory[currentPage]);
       setSessionWordsRead(prev => prev + pageWordCount);
       setPagesCompleted(prev => {
         const next = new Set(prev);
@@ -1596,7 +1603,7 @@ const initializeStory = async () => {
         setCurrentPage(prev => prev + 1);
       }
       setTimeout(() => setJustAdvanced(false), 600);
-    } else if (currentPage < stableDisplayedStory.length - 1) {
+    } else if (currentPage < displayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
     } else {
@@ -1835,7 +1842,7 @@ const handleDockCoach = () => {
       timeSpent,
       wordsRead: totalWordsRead,
       pagesRead: pagesCompleted.size,
-      storyCompleted: currentPage === stableDisplayedStory.length - 1,
+      storyCompleted: currentPage === displayedStory.length - 1,
       readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
     });
     
@@ -2378,7 +2385,7 @@ const handleRestartTimer = () => {
   const mobileTextConfig = getMobileTextConfig(currentDifficulty);
   const mobileContainerConfig = getMobileStoryContainer(currentDifficulty);
 
-  const progress = stableDisplayedStory.length > 0 ? ((currentPage + 1) / stableDisplayedStory.length) * 100 : 0;
+  const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStoryText || "") <= 8;
   const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
@@ -2477,7 +2484,7 @@ const handleRestartTimer = () => {
           currentDifficulty={currentDifficulty}
           userInfo={userInfo}
           onHome={onHome}
-          onNewStory={isPremium && stableDisplayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
+          onNewStory={isPremium && displayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
           onIncreaseDifficulty={() => handleDifficultyChange('up')}
           onDecreaseDifficulty={() => handleDifficultyChange('down')}
           showLevelControls={true}
@@ -2619,7 +2626,7 @@ const handleRestartTimer = () => {
                         {/* Background fill to avoid cropping/margins */}
                         <img
                           src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
                           className="absolute inset-0 h-full w-full object-cover blur-md scale-110 brightness-[1.05]"
                           loading="lazy"
                           decoding="async"
@@ -2632,7 +2639,7 @@ const handleRestartTimer = () => {
                         {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
                         <ImageWithFallback
                           src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${stableDisplayedStory[currentPage]?.substring(0, 100)}...`}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
           className="relative z-10 h-full w-full object-contain"
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
@@ -2661,7 +2668,7 @@ const handleRestartTimer = () => {
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
                   <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
-                    {isPremium && isLoadingNextPage && currentPage === stableDisplayedStory.length - 1 && !isStoryComplete && (
+                    {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                           <div className="flex items-center gap-2">
