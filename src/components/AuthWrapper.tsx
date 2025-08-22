@@ -6,17 +6,36 @@ import { GuestExperience } from "@/components/GuestExperience";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import SubscriptionManager from "@/services/subscriptionManager";
 import { SubscriptionGate } from "@/components/SubscriptionGate";
+import { useLocation } from "react-router-dom";
 
 export const AuthWrapper = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
   const [premiumSafetyTick, setPremiumSafetyTick] = useState(0);
+  const location = useLocation();
 
   // Expose premium status globally for voice features and events
   useEffect(() => {
     (window as any).__IS_PREMIUM = isPremium === true;
   }, [isPremium]);
+
+  // Clean up orphaned story URL parameters on app initialization
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.has('session') && urlParams.get('session') === 'story') {
+      // Check if there's actually an active story session
+      const hasActiveSession = Boolean(
+        localStorage.getItem('story-session-data') || 
+        sessionStorage.getItem('last_story_text')
+      );
+      
+      if (!hasActiveSession) {
+        console.log('📍 AuthWrapper: Clearing orphaned story URL parameters');
+        window.history.replaceState(null, '', '/');
+      }
+    }
+  }, [location.search]);
 
   useEffect(() => {
     // 1) Listen for auth changes FIRST (sync-only updates inside handler)

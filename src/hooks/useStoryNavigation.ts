@@ -43,6 +43,7 @@ export const useStoryNavigation = ({
     } else if (!isInStorySession && location.search.includes('session=story')) {
       // Clear story session parameters when exiting story
       console.log('📍 Clearing story navigation');
+      window.history.replaceState(null, '', '/');
       navigate('/', { replace: true });
     }
   }, [isInStorySession, currentPage, totalPages, storyTitle, navigate, location]);

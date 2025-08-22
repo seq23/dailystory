@@ -35,7 +35,7 @@ const SessionEnded = ({ onHome, onNewStory, isPremium = false, onUpgrade }: Sess
 const location = useLocation();
   const navigate = useNavigate();
 
-  // Clear any remaining caches on component mount as fallback
+  // Clear any remaining caches and URL params on component mount as fallback
   React.useEffect(() => {
     const clearRemainingCaches = async () => {
       try {
@@ -61,9 +61,19 @@ const location = useLocation();
         console.warn('Fallback cache clearing failed:', error);
       }
     };
+
+    // Clear story session URL parameters from browser history
+    const clearUrlHistory = () => {
+      const urlParams = new URLSearchParams(location.search);
+      if (urlParams.has('session') || urlParams.has('page') || urlParams.has('total') || urlParams.has('title')) {
+        console.log('📍 SessionEnded: Clearing story URL parameters from history');
+        window.history.replaceState(null, '', '/');
+      }
+    };
     
     clearRemainingCaches();
-  }, []);
+    clearUrlHistory();
+  }, [location.search]);
 
   // Ensure language is properly loaded from localStorage on component mount
   React.useEffect(() => {
@@ -188,6 +198,8 @@ const handleHome = async () => {
         reason: 'navigation-home'
       });
     } catch {}
+    // Clear URL history and navigate to clean home
+    window.history.replaceState(null, '', '/');
     navigate('/');
   };
 
@@ -200,7 +212,8 @@ const handleHome = async () => {
         reason: 'new-session'
       });
     } catch {}
-    // Navigate to home with query for new story without full reload
+    // Clear URL history and navigate to new story
+    window.history.replaceState(null, '', '/');
     navigate('/?action=new-story');
   };
 
