@@ -139,33 +139,25 @@ export class BackendTokenManager {
         'emotional state', 'emotional transition', 'emotional arc', 'emotional depth', 'emotional atmosphere',
         // Compound eye colors to protect from compression
         'hazel-green', 'hazel-brown', 'almond-shaped', 'deep-set', 'wide-set',
-      // African American skin tone terms to protect (full list)
-      'fair brown skin', 'light caramel skin', 'warm beige skin', 'peachy brown skin',
-      'light bronze skin', 'warm honey skin', 'golden caramel skin', 'honey bronze skin',
-      'caramel skin', 'deep amber skin', 'golden bronze skin', 'warm mahogany skin',
-      'cool espresso skin', 'dark chocolate skin', 'deep umber skin', 'cool walnut skin',
-      'rich coffee skin', 'deep chestnut skin', 'rich cocoa skin', 'deep ebony skin',
-      // African American hair styles to protect from compression
-      'twist out', 'bantu knots', 'braid out', 'cornrows', 'box braids', 'senegalese twists',
-      'marley twists', 'havana twists', 'passion twists', 'sisterlocs', 'traditional locs',
-      'fuller well-defined lips', 'naturally full lips', 'wider nasal bridge', 'fuller rounded nostrils',
-      // Cultural pride elements
-      'cultural pride symbols', 'community strength', 'rich heritage', 'strong family bonds',
-      // African American facial features to protect
-      'almond-shaped dark brown eyes', 'round rich brown eyes', 'deep-set hazel eyes',
-      'prominent amber eyes', 'almond-shaped hazel-green eyes', 'expressive dark brown eyes',
-      'broader noble nose', 'narrow refined nose', 'slightly upturned nose', 'well-proportioned nose'
+        // NEW MASTER PLAN: Direct Avatar Descriptions to Protect
+        'fair skin white boy with red hair', 'fair skin white girl with red hair',
+        'white boy with blonde hair', 'white girl with blonde hair',
+        'medium skin white boy with brown hair', 'medium skin white girl with brown hair',
+        'olive skin white boy with black hair', 'olive skin white girl with black hair',
+        'black boy', 'black girl',
+        // Cultural pride elements
+        'cultural pride symbols', 'community strength', 'rich heritage', 'strong family bonds'
     ];
     
     let compressed = text;
     
-    // Check if this text contains protected African American descriptors
-    const containsAfricanAmericanContent = protectedTerms.some(term => 
+    // Check if this text contains protected avatar descriptors
+    const containsAvatarContent = protectedTerms.some(term => 
       compressed.toLowerCase().includes(term.toLowerCase())
     );
     
-    if (containsAfricanAmericanContent) {
-      console.log('🔒 Protecting African American cultural content from aggressive compression');
+    if (containsAvatarContent) {
+      console.log('🔒 Protecting avatar cultural content from aggressive compression');
       // Apply minimal compression only to preserve cultural integrity
       compressed = compressed.replace(/\s+/g, ' ').trim();
       return compressed;
@@ -234,8 +226,8 @@ export class BackendTokenManager {
     return 'with natural emotional expression';
   }
   
-  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', isAfricanAmericanCharacter = false, culturalElements = '', aiSchemaData = null) {
-    // NEW MASTER PLAN: Brand suffix HIGH priority for ALL English speakers (not just African American)
+  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', culturalElements = '', aiSchemaData = null) {
+    // NEW MASTER PLAN: Brand suffix HIGH priority for ALL English speakers
     const brandSuffixPriority = PromptPriority.HIGH; // All English speakers get HIGH priority
     const brandSuffixTruncatable = false; // Never truncate brand suffix
     
@@ -326,9 +318,6 @@ export class BackendTokenManager {
     
     // Phase 4: Enhanced Logging and Monitoring
     console.log(`🔧 Created ${segments.length} prompt segments with priorities:`, segments.map(s => `${s.type}(${s.priority})`));
-    if (isAfricanAmericanCharacter) {
-      console.log('🔒 African American Character Protection: Enhanced priorities applied');
-    }
     
     return segments;
   }

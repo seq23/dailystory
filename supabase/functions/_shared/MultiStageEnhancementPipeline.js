@@ -112,17 +112,26 @@ export class MultiStageEnhancementPipeline {
       enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
       // Animal injection now handled by UnifiedCharacterDescriptor
       
-      // If AI enhancement data is available, incorporate it into the story context
-      if (enhancedStoryData && enhancedStoryData.characters) {
-        console.log('🧠 Incorporating AI-enhanced character and setting data');
-        // Enrich the story text with AI-discovered details for better cultural processing
-        const aiCharacterDescriptions = enhancedStoryData.characters.map(char => 
-          `${char.name || 'character'}: ${char.description || ''} (${char.emotions || 'neutral'})`
-        ).join(', ');
-        const aiSettingInfo = enhancedStoryData.setting ? 
-          `Setting: ${enhancedStoryData.setting.location || ''} at ${enhancedStoryData.setting.timeOfDay || 'daytime'} with ${enhancedStoryData.setting.weather || 'clear'} weather` : '';
+      // NEW MASTER PLAN: If AI enhancement data is available (3-field schema), incorporate it
+      if (enhancedStoryData && enhancedStoryData.primaryScene) {
+        console.log('🧠 Incorporating AI-enhanced data (NEW 3-FIELD SCHEMA)');
+        // Use primaryScene and visualComponents from new schema
+        const aiContext = [];
         
-        enhancedStoryText = `${enhancedStoryText}\n[AI Context: ${aiCharacterDescriptions}. ${aiSettingInfo}. Mood: ${enhancedStoryData.mood || 'neutral'}]`;
+        if (enhancedStoryData.primaryScene) {
+          aiContext.push(`Primary Scene: ${enhancedStoryData.primaryScene}`);
+        }
+        
+        if (enhancedStoryData.visualComponents) {
+          const vc = enhancedStoryData.visualComponents;
+          if (vc.setting) aiContext.push(`Setting: ${vc.setting}`);
+          if (vc.lighting) aiContext.push(`Lighting: ${vc.lighting}`);
+          if (vc.mood) aiContext.push(`Mood: ${vc.mood}`);
+        }
+        
+        if (aiContext.length > 0) {
+          enhancedStoryText = `${enhancedStoryText}\n[AI Context: ${aiContext.join(', ')}]`;
+        }
       }
       
       console.log('🎯 Visual detail enhancement applied:', {
@@ -230,24 +239,23 @@ export class MultiStageEnhancementPipeline {
       // PHASE 4 & 5: Track cultural text before token optimization
       CulturalTextTracker.trackTextEntry(sessionId, pageNumber, enhancedPrompt, 'enhanced-prompt');
       
-      // Apply token optimization before returning
-      const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
-      
-      // CRITICAL FIX: Use the character description from UnifiedCharacterConsistency
+      // NEW MASTER PLAN: Apply token optimization with updated parameters
       const fullCharacterDescription = characterDescription;
       
-      console.log('🔧 PHASE 2: Token Manager - Full Character Description:', fullCharacterDescription);
+      console.log('🔧 NEW MASTER PLAN: Token Manager - Full Character Description:', fullCharacterDescription);
       
       // PHASE 4: Track character description for cultural text
       CulturalTextTracker.trackTextEntry(sessionId, pageNumber, fullCharacterDescription, 'character-description');
       
+      // NEW MASTER PLAN: Pass aiSchemaData to createPromptSegments for 3-field schema support
       const promptSegments = BackendTokenManager.createPromptSegments(
         sceneContext,
-        fullCharacterDescription, // Pass the complete description instead of just "Alex character"
+        fullCharacterDescription,
         styleFramework.prompt || 'children\'s book illustration',
         styleFramework.brandSuffix || '',
         visualDetails || '',
-        isAfricanAmericanCharacter
+        '', // culturalElements - set as empty for now
+        enhancedStoryData // Pass AI schema data for new 3-field processing
       );
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);
@@ -347,17 +355,15 @@ export class MultiStageEnhancementPipeline {
       
       const negativePrompt = this.buildSimpleNegativePrompt(userInfo, pageNumber);
       
-      // Apply token optimization to simple template as well
-      // Import FrontendIntelligence for African American detection
-      const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
-      const isAfricanAmericanCharacter = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(userInfo);
+      // NEW MASTER PLAN: Apply token optimization with updated parameters
       const promptSegments = BackendTokenManager.createPromptSegments(
         enhancedStoryText,
         characterDescription,
         framework.prompt || 'children\'s book illustration',
         framework.brandSuffix || '',
-        '',
-        isAfricanAmericanCharacter
+        '', // visualDetails
+        '', // culturalElements
+        null // aiSchemaData - not available in Tier 2
       );
       
       const optimization = BackendTokenManager.optimizePrompt(promptSegments);

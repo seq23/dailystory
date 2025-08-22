@@ -243,12 +243,10 @@ class UnifiedCharacterConsistency {
     // Mock gender determination for explicit text generation
     const mockUserInfo = { avatar: { skinTone: physicalTraits.skinTone } };
     
-    // PHASE 2: Add explicit African-American identification when applicable
-    if (culturalProfile === 'african-american') {
-      const gender = this.determineCulturalProfile(mockUserInfo).gender || 'child';
-      const genderText = gender === 'male' ? 'boy' : gender === 'female' ? 'girl' : 'child';
-      description = `${characterName} is a ${physicalTraits.age || 'young'} African-American ${genderText}`;
-      console.log(`🎭 PHASE 2: Generated explicit African-American character description: "${description}"`);
+    // NEW MASTER PLAN: Use direct visual descriptions from avatar identity
+    if (avatarIdentity && avatarIdentity.directVisualDescription) {
+      description = `${characterName} is a ${physicalTraits.age || 'young'} ${avatarIdentity.directVisualDescription}`;
+      console.log(`🎭 NEW MASTER PLAN: Generated direct visual character description: "${description}"`);
     } else {
       description = `${characterName} is a ${physicalTraits.age || 'young'} child`;
     }
