@@ -440,6 +440,28 @@ export class FrontendIntelligence {
     }
   }
   
+  // PHASE 2: Basic prompt fallback method for safety
+  static buildBasicPromptFallback(storyText, userInfo, details) {
+    console.log('🎨 FI-PROMPT: Using basic prompt fallback');
+    
+    const name = userInfo?.name || 'Alex';
+    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    
+    // Basic character description
+    let characterDesc = `${name}, a ${gender}`;
+    
+    // Add basic avatar details if available
+    if (userInfo?.avatar?.skinTone) {
+      const skinTone = userInfo.avatar.skinTone.replace(/_/g, ' ');
+      characterDesc += ` with ${skinTone} skin`;
+    }
+    
+    // Basic prompt structure
+    const basicPrompt = `${storyText} featuring ${characterDesc}, 3D rendered, Pixar-like animation style, children's book illustration, bright and colorful, high quality`;
+    
+    return basicPrompt;
+  }
+  
   // PHASE 3: Dynamic prompt building method (replaces template)
   static buildEnhancedPromptWithSafety(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty) {
     console.log('🎨 FI-PROMPT: Building dynamic enhanced prompt (Phase 3)');
