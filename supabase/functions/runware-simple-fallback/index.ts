@@ -344,17 +344,17 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
 function getHardcodedStyle(difficulty: string) {
   const styles = {
     'beginner': {
-      prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics, single main character focus',
-      quality: 'Ultra premium children\'s book illustration with depth and dimension', 
-      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light, high quality 3D animation',
+      prompt: 'Beautiful, award winning children\'s book illustration with single main character focus. Professional animation quality',
+      quality: 'High-quality 3D animation, Volumetric lighting effects, Enhanced facial detail and realistic proportions, More sophisticated material rendering', 
+      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
     },
     'easy': {
-      prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics',
-      quality: 'Premium children\'s book illustration with depth and dimension',
-      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light, high quality 3D animation',
+      prompt: 'Beautiful, award winning children\'s book illustration with single main character focus. Professional animation quality',
+      quality: 'High-quality 3D animation, Volumetric lighting effects, Enhanced facial detail and realistic proportions, More sophisticated material rendering',
+      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
