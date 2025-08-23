@@ -2,32 +2,39 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
-// Hardcoded avatar fallback descriptions for Tier 1 validation
+// Hardcoded avatar fallback descriptions for Tier 1 validation - PHASE 1: GENDER NEUTRAL SYSTEM
 const AVATAR_FALLBACK_DESCRIPTIONS = {
   // PALE SKIN TONE
   "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
   "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
-  "prefer-not-to-answer/pale": "{name} is a young boy with pale skin, red hair, and green eyes",
-
+  "child/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+  
   // LIGHT SKIN TONE  
   "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
   "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "prefer-not-to-answer/light": "{name} is a young boy with light skin, blonde hair, and blue eyes",
+  "child/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
 
   // MEDIUM SKIN TONE
   "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
   "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
-  "prefer-not-to-answer/medium": "{name} is a young boy with medium skin, brown hair, and brown eyes",
+  "child/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
 
   // OLIVE SKIN TONE
   "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
   "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
-  "prefer-not-to-answer/olive": "{name} is a young boy with olive skin, natural textured hair, and dark eyes",
+  "child/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
 
   // DARK SKIN TONE (Enhanced descriptions)
   "girl/dark": "{name} is a young African American girl with authentic representation and diverse natural features, soft warm lighting",
   "boy/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
-  "prefer-not-to-answer/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
+  "child/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting",
+
+  // BACKWARD COMPATIBILITY ALIASES - prefer-not-to-answer → child
+  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+  "prefer-not-to-answer/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting",
 
   // DEFAULT FALLBACK
   "default": "{name} is a young child with a bright smile and cheerful demeanor"
@@ -40,11 +47,11 @@ function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo
   // If no avatar identity provided, use fallback
   if (!avatarIdentity) {
     console.log('🔍 TIER 1 VALIDATION: No avatarIdentity provided, using fallback');
-    const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+    const avatarType = userInfo?.avatar?.type || 'child';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     const fallbackKey = `${avatarType}/${skinTone}`;
     const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 TIER 1 VALIDATION: Applied fallback ${fallbackKey} for missing identity`);
+    console.log(`🔍 TIER 1 VALIDATION: Applied fallback ${fallbackKey} for missing identity (PHASE 1 FIX: child default)`);
     return fallbackDescription.replace('{name}', userName);
   }
   
@@ -62,11 +69,11 @@ function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo
   
   if (isGeneric) {
     console.log('🔍 TIER 1 VALIDATION: Generic description detected, using enhanced fallback');
-    const avatarType = avatarIdentity.type || 'prefer-not-to-answer';
+    const avatarType = avatarIdentity.type || 'child';
     const skinTone = avatarIdentity.skinTone || 'medium';
     const fallbackKey = `${avatarType}/${skinTone}`;
     const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 TIER 1 VALIDATION: Applied fallback ${fallbackKey}: ${fallbackDescription}`);
+    console.log(`🔍 TIER 1 VALIDATION: Applied fallback ${fallbackKey}: ${fallbackDescription} (PHASE 1 FIX: child default)`);
     return fallbackDescription.replace('{name}', userName);
   }
   
@@ -749,11 +756,12 @@ async function callTierFunction(functionName: string, params: any) {
 // NEW MASTER PLAN: Avatar Identity Mapper with Direct Visual Descriptions
 function mapAvatarIdentity(userInfo: any) {
   const avatar = userInfo?.avatar || {};
-  const { type = 'prefer-not-to-answer', skinTone = 'medium' } = avatar;
+  const { type, skinTone = 'medium' } = avatar;
   const { nativeLanguage = 'en' } = userInfo;
 
-  // Map avatar type and skin tone to standardized identity
-  const avatarType = type === 'prefer-not-to-answer' ? 'child' : type;
+  // Map avatar type and skin tone to standardized identity - PHASE 2: Enhanced mapping logic
+  const avatarType = type === 'prefer-not-to-answer' ? 'child' : (type || 'child');
+  console.log(`🎯 AVATAR MAPPING - Original type: ${type} → Mapped type: ${avatarType} (PHASE 2 FIX: proper null handling)`);
   const genderText = avatarType === 'boy' ? 'boy' : avatarType === 'girl' ? 'girl' : 'child';
   
   // Standardized skin tone mapping

@@ -505,9 +505,9 @@ function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, origina
     negatives.push('boy character, male character, masculine features');
   } else if (avatarType === 'boy') {
     negatives.push('girl character, female character, feminine features, dress, skirt');
-  } else if (avatarType === 'prefer-not-to-answer') {
+  } else if (avatarType === 'child' || avatarType === 'prefer-not-to-answer') {
     negatives.push('masculine features, feminine features, boy characteristics, girl characteristics, gender-specific clothing, dress, skirt, masculine clothing, gendered accessories, gendered hairstyles');
-    console.log(`🎯 GENDER NEUTRAL NEGATIVES - Applied comprehensive gender-neutral negative prompts`);
+    console.log(`🎯 GENDER NEUTRAL NEGATIVES - Applied comprehensive gender-neutral negative prompts for ${avatarType} (PHASE 3 FIX: child OR prefer-not-to-answer)`);
   }
   
   // 8. Style framework compatibility (hardcoded defaults)
