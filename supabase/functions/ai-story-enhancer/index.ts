@@ -517,8 +517,6 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
               fullContent: content
             });
           }
-            }
-          }
 
           // CRITICAL: Parse using trimmed content with bulletproof error handling
           try {
