@@ -197,7 +197,7 @@ export class MultiStageEnhancementPipeline {
       
       // 3. Generate story-based character consistency using UnifiedCharacterConsistency with pre-processed avatar identity
       console.log('🎭 Generating story-based character consistency with pre-processed avatar identity');
-      const characterConsistencyData = characterConsistency.getCharacterSeed(
+      const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo,
@@ -468,7 +468,7 @@ export class MultiStageEnhancementPipeline {
       
       // Generate story-based character consistency 
       console.log('🎭 Generating premium character consistency');
-      const characterConsistencyData = characterConsistency.getCharacterSeed(
+      const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo,

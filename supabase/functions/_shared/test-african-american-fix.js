@@ -19,7 +19,7 @@ const testStoryText = "Alex smiled as she walked through the garden, looking at 
 console.log('🧪 Testing African American Character Generation...');
 
 // Test 1: Should detect African American user
-const shouldApply = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(testUserInfo);
+const shouldApply = FrontendIntelligence.shouldApplyAfricanAmericanCulturalVariations(testUserInfo.avatar);
 console.log('✅ Should apply African American variations:', shouldApply);
 
 // Test 2: Generate expanded facial features (should have 20+ variations)
@@ -27,7 +27,7 @@ const facialFeatures = FrontendIntelligence.generateExpandedAfricanAmericanFeatu
 console.log('✅ Generated facial features:', facialFeatures);
 
 // Test 3: Get hair mapping for dark skin + English
-const hairMapping = FrontendIntelligence.getUniversalHairMapping(testUserInfo);
+const hairMapping = FrontendIntelligence.getUniversalHairMapping(testUserInfo.avatar, 'girl', testUserInfo);
 console.log('✅ Hair mapping:', hairMapping);
 
 // Test 4: Build complete character description
