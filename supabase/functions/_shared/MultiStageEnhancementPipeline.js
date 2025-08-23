@@ -19,7 +19,7 @@ import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 // AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
-import { mapAvatarIdentity } from '../runware-generate-image/index.ts'; // Source of truth avatar processing
+import { mapAvatarIdentity } from './mapAvatarIdentity.js'; // Source of truth avatar processing
 import { realContextCollector } from './RealContextCollector.js'; // Real context integration
 import { tier25FallbackProcessor } from './Tier25FallbackProcessor.js'; // Tier 2.5 fallback
 

@@ -753,7 +753,7 @@ async function callTierFunction(functionName: string, params: any) {
 }
 
 // NEW MASTER PLAN: Avatar Identity Mapper with Direct Visual Descriptions
-export function mapAvatarIdentity(userInfo: any) {
+function mapAvatarIdentity(userInfo: any) {
   const avatar = userInfo?.avatar || {};
   const { type, skinTone = 'medium' } = avatar;
   const { nativeLanguage = 'en' } = userInfo;
