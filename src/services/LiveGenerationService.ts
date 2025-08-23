@@ -369,6 +369,15 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     console.log(`🚀 Live Generation: Using enhanced fallback first page (reason: ${reason})`);
     
     try {
+      // Get proper prompt config to preserve page expectations
+      let promptConfig: any;
+      if (difficulty === 'expert') {
+        // For expert users, we can't easily get their adaptive grade here, so use a reasonable default
+        promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories (12-16 pages)
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
+      }
+      
       // Use enhanced fallback system
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
       const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
@@ -383,8 +392,9 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         difficulty,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: 6, // Simple fixed value
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        totalExpectedPages: promptConfig.expectedPages || 999, // Use same logic as main generation
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
+        openEnded: !promptConfig.expectedPages // Preserve unlimited behavior
       };
 
       try {
@@ -400,6 +410,14 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       };
     } catch (error) {
       console.error('🚀 Enhanced fallback failed:', error);
+      // Get proper prompt config for emergency fallback too
+      let promptConfig: any;
+      if (difficulty === 'expert') {
+        promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
+      }
+      
       // Emergency fallback using Enhanced Template Library
       const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
       const rawContent = emergencyFallback.split('\n\n')[0] || `${userInfo.name} began a wonderful adventure.`;
@@ -409,8 +427,9 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         difficulty,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: 6,
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        totalExpectedPages: promptConfig.expectedPages || 999, // Preserve unlimited behavior
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
+        openEnded: !promptConfig.expectedPages
       };
 
       return {
