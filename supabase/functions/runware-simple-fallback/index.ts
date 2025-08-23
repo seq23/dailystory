@@ -284,8 +284,8 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     };
     
     const hairMap = {
-      'pale': 'blonde hair',
-      'light': 'brown hair',
+      'pale': 'red hair',
+      'light': 'blonde hair',
       'medium': 'brown hair', 
       'olive': 'dark brown hair',
       'dark': 'black hair'
