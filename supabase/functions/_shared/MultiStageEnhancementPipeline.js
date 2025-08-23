@@ -274,7 +274,8 @@ export class MultiStageEnhancementPipeline {
         userInfo,
         culturalProfile,
         styleFramework,
-        pageNumber
+        pageNumber,
+        avatarIdentity
       );
       
       // 9. Premium generation parameters using style framework
@@ -529,12 +530,13 @@ export class MultiStageEnhancementPipeline {
         imageDifficulty
       );
       
-      // Generate unified negative prompt
+      // 8. Generate unified negative prompt
       const negativePrompt = this.buildUnifiedNegativePrompt(
         userInfo,
         culturalProfile,
         styleFramework,
-        pageNumber
+        pageNumber,
+        avatarIdentity
       );
       
       // Premium generation parameters using style framework
@@ -623,37 +625,9 @@ export class MultiStageEnhancementPipeline {
     return `${storyText} showing ${characterDescription}, ${styleElements}, ${framework.brandSuffix || 'enhanced children\'s book illustration'}`;
   }
 
-  static buildSimpleCharacterDescription(userInfo, difficulty) {
-    // Use local character generation logic (UnifiedCharacterDescriptor not available in edge functions)
-    console.log('Building simple character description with local logic');
-      
-    // Fallback to legacy logic for compatibility
-    const name = userInfo?.name || 'Alex';
-    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
-    const skinTone = userInfo?.avatar?.skinTone || 'medium';
-    
-    // Apply age range modifier based on difficulty level
-    let ageRange = '5-8 years old'; // Default for beginner/easy/medium
-    if (difficulty === 'hard') {
-      ageRange = '9-11 years old';
-    } else if (difficulty === 'expert') {
-      ageRange = '11-13 years old';
-    }
-    
-    // Simple skin tone mapping
-    const skinMap = {
-      light: 'light skin',
-      medium: 'medium skin',
-      olive: 'olive skin', 
-      dark: 'dark skin',
-      pale: 'pale skin'
-    };
-    
-    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'})`;
-  }
   
   // ============= UNIFIED NEGATIVE PROMPT SYSTEM (SINGLE SOURCE OF TRUTH) =============
-  static buildUnifiedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber) {
+  static buildUnifiedNegativePrompt(userInfo, culturalProfile, styleFramework, pageNumber, avatarIdentity) {
     const negatives = [];
     
     // PHASE 3.1: FIRST - New Pixar negative for Levels 0-1 (Beginner/Easy)
@@ -663,7 +637,7 @@ export class MultiStageEnhancementPipeline {
     }
     
     // PHASE 3.1: SECOND - African American cultural sensitivity (priority protection)
-    if (userInfo?.avatar?.skinTone === 'dark' && (userInfo?.avatar?.type === 'boy' || userInfo?.avatar?.type === 'girl')) {
+    if (avatarIdentity?.skinTone === 'dark' && (avatarIdentity?.type === 'boy' || avatarIdentity?.type === 'girl')) {
       negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
     }
     
@@ -690,9 +664,9 @@ export class MultiStageEnhancementPipeline {
     negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
     
     // 7. Gender consistency enforcement (unchanged #7)
-    if (userInfo?.avatar?.type === 'girl') {
+    if (avatarIdentity?.type === 'girl') {
       negatives.push('boy character, male character, masculine features');
-    } else if (userInfo?.avatar?.type === 'boy') {
+    } else if (avatarIdentity?.type === 'boy') {
       negatives.push('girl character, female character, feminine features, dress, skirt');
     }
     
@@ -1052,7 +1026,7 @@ export class MultiStageEnhancementPipeline {
     
     return {
       enhancedPrompt: `${storyText}, ${framework.prompt}, children's book illustration`,
-      negativePrompt: this.buildUnifiedNegativePrompt(userInfo, {}, {}, 1),
+      negativePrompt: this.buildUnifiedNegativePrompt(userInfo, {}, {}, 1, null),
       generationParams: framework.parameters,
       metadata: {
         tier: tier,
