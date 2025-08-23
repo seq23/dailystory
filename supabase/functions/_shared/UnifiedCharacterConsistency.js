@@ -1,25 +1,73 @@
 /**
  * Backend Unified Character Consistency Service
  * Ensures character appearance consistency across all story sessions and generation attempts
+ * Now connected to StoryVisualStateManager for character persistence
  */
+
+// Import StoryVisualStateManager for character persistence
+const StoryVisualStateManagerModule = await import('./storyVisualState.js');
+const { StoryVisualStateManager } = StoryVisualStateManagerModule;
 
 class UnifiedCharacterConsistency {
   constructor() {
-    // STATELESS: No persistent storage - generate fresh for each request
-    console.log('🎭 Character Consistency: Using stateless, avatar-aware generation');
+    console.log('🎭 Character Consistency: Using persistence-aware, avatar-based generation');
   }
 
   /**
-   * Generate fresh character seed for each request - STATELESS & AVATAR-AWARE
-   * Always uses current avatar settings, no persistent caching
+   * Get character seed with persistence support - checks cache first, generates if needed
+   * Now connected to StoryVisualStateManager for cross-page character consistency
    */
   async getCharacterSeed(userId, storyId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new') {
-    // ALWAYS generate fresh character based on current avatar settings
+    const sessionId = storyId; // Use storyId as sessionId for consistency
+    const characterName = userInfo.name || 'child';
+    
+    // STEP 1: Check if character already exists in StoryVisualStateManager
+    const existingCharacterSeed = StoryVisualStateManager.getCharacterSeed(sessionId, characterName);
+    
+    if (existingCharacterSeed !== undefined) {
+      // STEP 2: Character exists - retrieve cached description and return consistent data
+      const storyState = StoryVisualStateManager.getStoryState(sessionId);
+      const existingCharacter = storyState?.characters?.get(characterName);
+      
+      if (existingCharacter && existingCharacter.description) {
+        console.log(`🎭 CACHED: Using existing character for ${characterName} (seed: ${existingCharacterSeed})`);
+        
+        return {
+          seed: existingCharacterSeed,
+          characterDescription: existingCharacter.description,
+          culturalContext: existingCharacter.culturalContext || '',
+          avatarIdentity: {
+            type: existingCharacter.avatarType || avatarIdentity?.type,
+            skinTone: existingCharacter.skinTone || avatarIdentity?.skinTone
+          }
+        };
+      }
+    }
+    
+    // STEP 3: No existing character - generate fresh character data
     const seedData = await this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
-    console.log(`🎭 STATELESS: Fresh character generated for ${userInfo.name}: ${seedData.baseSeed} (Avatar: ${avatarIdentity ? 'Optimized' : 'Local'})`);
+    console.log(`🎭 FRESH: Generated new character for ${userInfo.name}: ${seedData.baseSeed} (Avatar: ${avatarIdentity ? 'Optimized' : 'Local'})`);
 
     const characterDescription = this.buildContextualCharacterDescription(seedData, storyContext);
     const culturalContext = this.buildCulturalContext(seedData);
+
+    // STEP 4: Store new character in StoryVisualStateManager for future pages
+    StoryVisualStateManager.updateCharacterWithSeed(
+      sessionId, 
+      characterName, 
+      seedData.baseSeed,
+      {
+        description: characterDescription,
+        culturalContext: culturalContext,
+        avatarType: seedData.avatarType || avatarIdentity?.type,
+        skinTone: seedData.skinTone || avatarIdentity?.skinTone,
+        physicalTraits: seedData.physicalTraits,
+        culturalElements: seedData.culturalElements,
+        generatedAt: Date.now()
+      }
+    );
+    
+    console.log(`🎭 STORED: Cached character ${characterName} for session ${sessionId} (seed: ${seedData.baseSeed})`);
 
     return {
       seed: seedData.baseSeed,
