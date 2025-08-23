@@ -285,7 +285,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
       clothingDesc = ' in contemporary Hispanic fashion';
     }
     
-    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}`;
+    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic hair texture, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft warm lighting' : ''}`;
   }
   
   // Comprehensive setting detection with 15+ categories
