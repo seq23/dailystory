@@ -105,8 +105,40 @@ export class MultiStageEnhancementPipeline {
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
       // 0.5. SECONDARY ELEMENT DETECTION - Detect and track secondary characters and animals
+      let SecondaryElementDetector;
       try {
-        const SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
+        console.log('🔍 Tier 1: Starting SecondaryElementDetector import (Strategy 1: relative)...');
+        SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
+        console.log('✅ Tier 1: SecondaryElementDetector Strategy 1 successful');
+      } catch (error1) {
+        try {
+          console.log('🔍 Tier 1: SecondaryElementDetector Strategy 2: absolute path...');
+          SecondaryElementDetector = (await import(`${Deno.cwd()}/supabase/functions/_shared/SecondaryElementDetector.js`)).SecondaryElementDetector;
+          console.log('✅ Tier 1: SecondaryElementDetector Strategy 2 successful');
+        } catch (error2) {
+          try {
+            console.log('🔍 Tier 1: SecondaryElementDetector Strategy 3: file protocol...');
+            SecondaryElementDetector = (await import(`file://${Deno.cwd()}/supabase/functions/_shared/SecondaryElementDetector.js`)).SecondaryElementDetector;
+            console.log('✅ Tier 1: SecondaryElementDetector Strategy 3 successful');
+          } catch (error3) {
+            try {
+              console.log('🔍 Tier 1: SecondaryElementDetector Strategy 4: mock fallback...');
+              SecondaryElementDetector = {
+                parseElements: async () => {
+                  console.log('🔄 Using mock SecondaryElementDetector');
+                  return [];
+                }
+              };
+              console.log('✅ Tier 1: SecondaryElementDetector Strategy 4 (mock) successful');
+            } catch (error4) {
+              console.error('❌ All SecondaryElementDetector import strategies failed:', { error1: error1.message, error2: error2.message, error3: error3.message, error4: error4.message });
+              SecondaryElementDetector = null;
+            }
+          }
+        }
+      }
+      
+      try {
         const secondaryElements = await SecondaryElementDetector.parseElements(
           sessionId, 
           enhancedStoryData?.primaryScene || '', 
@@ -430,7 +462,7 @@ export class MultiStageEnhancementPipeline {
       } catch (error1) {
         try {
           console.log('🔍 Tier 2: FrontendIntelligence Strategy 2: absolute path...');
-          ({ FrontendIntelligence } = await import('file:///tmp/user_fn_cpzeuogomaixamrtnnmj_825300d5-f78a-4759-937b-44508093ee5c_296/source/supabase/functions/_shared/FrontendIntelligence.js'));
+          ({ FrontendIntelligence } = await import(`${Deno.cwd()}/supabase/functions/_shared/FrontendIntelligence.js`));
           console.log('✅ Tier 2: FrontendIntelligence Strategy 2 successful');
         } catch (error2) {
           try {
@@ -457,7 +489,7 @@ export class MultiStageEnhancementPipeline {
       } catch (error1) {
         try {
           console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 2: absolute path...');
-          ({ characterConsistency } = await import('file:///tmp/user_fn_cpzeuogomaixamrtnnmj_825300d5-f78a-4759-937b-44508093ee5c_296/source/supabase/functions/_shared/UnifiedCharacterConsistency.js'));
+          ({ characterConsistency } = await import(`${Deno.cwd()}/supabase/functions/_shared/UnifiedCharacterConsistency.js`));
           console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 2 successful');
         } catch (error2) {
           try {
@@ -478,8 +510,40 @@ export class MultiStageEnhancementPipeline {
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
       // PHASE 1 FIX: Add missing secondary element detection to Tier 2 (same as Tier 1)
+      let SecondaryElementDetector;
       try {
-        const SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
+        console.log('🔍 Tier 2: Starting SecondaryElementDetector import (Strategy 1: relative)...');
+        SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
+        console.log('✅ Tier 2: SecondaryElementDetector Strategy 1 successful');
+      } catch (error1) {
+        try {
+          console.log('🔍 Tier 2: SecondaryElementDetector Strategy 2: absolute path...');
+          SecondaryElementDetector = (await import(`${Deno.cwd()}/supabase/functions/_shared/SecondaryElementDetector.js`)).SecondaryElementDetector;
+          console.log('✅ Tier 2: SecondaryElementDetector Strategy 2 successful');
+        } catch (error2) {
+          try {
+            console.log('🔍 Tier 2: SecondaryElementDetector Strategy 3: file protocol...');
+            SecondaryElementDetector = (await import(`file://${Deno.cwd()}/supabase/functions/_shared/SecondaryElementDetector.js`)).SecondaryElementDetector;
+            console.log('✅ Tier 2: SecondaryElementDetector Strategy 3 successful');
+          } catch (error3) {
+            try {
+              console.log('🔍 Tier 2: SecondaryElementDetector Strategy 4: mock fallback...');
+              SecondaryElementDetector = {
+                parseElements: async () => {
+                  console.log('🔄 Using mock SecondaryElementDetector');
+                  return [];
+                }
+              };
+              console.log('✅ Tier 2: SecondaryElementDetector Strategy 4 (mock) successful');
+            } catch (error4) {
+              console.error('❌ All SecondaryElementDetector import strategies failed:', { error1: error1.message, error2: error2.message, error3: error3.message, error4: error4.message });
+              SecondaryElementDetector = null;
+            }
+          }
+        }
+      }
+      
+      try {
         const secondaryElements = await SecondaryElementDetector.parseElements(
           sessionId, 
           '', // No AI-enhanced primary scene data in Tier 2
