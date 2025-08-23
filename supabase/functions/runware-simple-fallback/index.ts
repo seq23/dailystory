@@ -301,7 +301,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
       clothingDesc = ' in contemporary Hispanic fashion';
     }
     
-    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic hair texture, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft warm lighting' : ''}`;
+    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic natural black hair texture, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft golden hour lighting' : ''}`;
   }
   
   // Comprehensive setting detection with 15+ categories
@@ -447,12 +447,12 @@ function getHardcodedStyle(difficulty: string) {
       strength: 0.9
     },
     'medium': {
-      prompt: 'Digital illustration with painterly qualities, soft brush strokes, focused character presentation',
-      quality: 'Ultra professional children\'s book illustration standard',
-      suffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
-      steps: 12,
-      cfgScale: 4.0,
-      strength: 0.9
+      prompt: 'Digital painting style, painterly brush strokes, cinematic composition, soft artistic lighting, professional digital artwork quality',
+      quality: 'ultra professional digital illustration standard, high quality professional artwork, focused character presentation, culturally accurate, natural lighting for dark skin, authentic features',
+      suffix: 'Digital illustration with painterly qualities, soft brush strokes, professional children\'s book digital illustration, rich textures and depth, artistic rendering, warm natural lighting optimized for dark skin tones, culturally accurate, safe wholesome content',
+      steps: 19,
+      cfgScale: 7.5,
+      strength: 0.8
     },
     'hard': {
       prompt: '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed, advanced digital painting techniques',
