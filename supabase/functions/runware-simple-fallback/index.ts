@@ -433,7 +433,7 @@ function getHardcodedStyle(difficulty: string) {
     'beginner': {
       prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering',
       quality: 'High-quality 3D animated character illustration for early readers',
-      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
+      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for dark skin tones',
       steps: 15,
       cfgScale: 7.0,
       strength: 0.75
@@ -441,7 +441,7 @@ function getHardcodedStyle(difficulty: string) {
     'easy': {
       prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering',
       quality: 'High-quality 3D animated character illustration for early readers',
-      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
+      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for dark skin tones',
       steps: 15,
       cfgScale: 7.0,
       strength: 0.75
@@ -457,7 +457,7 @@ function getHardcodedStyle(difficulty: string) {
     'hard': {
       prompt: 'Professional digital illustration with sophisticated artistic technique, refined color theory and palette mastery, intricate compositional details, advanced lighting techniques, mature visual storytelling',
       quality: 'Gallery-quality digital illustration with sophisticated artistic maturity, professional composition and advanced visual narrative techniques',
-      suffix: 'professional digital illustration, sophisticated artistic maturity, refined visual storytelling, advanced composition techniques, gallery-worthy quality',
+      suffix: 'professional digital illustration, sophisticated artistic maturity, refined visual storytelling, advanced composition techniques, gallery-worthy quality, warm natural lighting optimized for dark skin tones',
       steps: 20,
       cfgScale: 8.0,
       strength: 0.85
@@ -465,7 +465,7 @@ function getHardcodedStyle(difficulty: string) {
     'expert': {
       prompt: 'Fine art digital illustration with masterful artistic technique, complex color harmonies and advanced tonal relationships, museum-quality detail work, professional lighting mastery, cinematic visual narrative sophistication',
       quality: 'Museum-quality fine art digital illustration with masterful artistic sophistication, cinematic composition and professional visual narrative excellence',
-      suffix: 'fine art digital illustration, masterful artistic sophistication, cinematic visual narrative, museum-quality professional artwork, advanced compositional mastery',
+      suffix: 'fine art digital illustration, masterful artistic sophistication, cinematic visual narrative, museum-quality professional artwork, advanced compositional mastery, warm natural lighting optimized for dark skin tones',
       steps: 25,
       cfgScale: 8.5,
       strength: 0.9

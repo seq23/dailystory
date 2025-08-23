@@ -18,7 +18,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: 'pixar_3d',
-    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
+    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for dark skin tones',
     negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
@@ -47,7 +47,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: 'pixar_3d',
-    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
+    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for dark skin tones',
     
     negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
@@ -77,7 +77,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
-    brandSuffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation',
+    brandSuffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation, warm natural lighting optimized for dark skin tones',
     negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
@@ -106,7 +106,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'nuanced_artistic',
     detailLevel: 'highly detailed',
     rendering: 'advanced_digital_painting',
-    brandSuffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation',
+    brandSuffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation, warm natural lighting optimized for dark skin tones',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
@@ -134,7 +134,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     colorPaletteKey: 'complex_professional',
     detailLevel: 'intricate and complex',
     rendering: 'masterful_artistic_technique',
-    brandSuffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation',
+    brandSuffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation, warm natural lighting optimized for dark skin tones',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
