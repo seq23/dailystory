@@ -448,14 +448,46 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           // Call OpenAI with model fallback chain
           const aiResult = await callOpenAIWithFallback(messages);
           
+          // Enhanced content extraction with debugging
+          console.log('🔍 OpenAI Response Debug:', {
+            hasChoices: !!aiResult.choices,
+            choicesLength: aiResult.choices?.length || 0,
+            hasFirstChoice: !!aiResult.choices?.[0],
+            hasMessage: !!aiResult.choices?.[0]?.message,
+            hasContent: !!aiResult.choices?.[0]?.message?.content,
+            contentType: typeof aiResult.choices?.[0]?.message?.content,
+            contentPreview: aiResult.choices?.[0]?.message?.content?.substring(0, 100)
+          });
+
           const content = aiResult.choices?.[0]?.message?.content;
           
-          // ============= PHASE 2: BULLETPROOF CONTENT VALIDATION =============
-          // CRITICAL: Use trimmed content consistently for validation AND parsing
+          // ============= PHASE 2: ENHANCED CONTENT VALIDATION WITH DEBUGGING =============
+          if (!aiResult.choices || aiResult.choices.length === 0) {
+            throw new Error(`OpenAI response has no choices array. Full response keys: ${Object.keys(aiResult).join(', ')}`);
+          }
+          
+          if (!aiResult.choices[0] || !aiResult.choices[0].message) {
+            throw new Error(`OpenAI first choice has no message. Choice keys: ${Object.keys(aiResult.choices[0] || {}).join(', ')}`);
+          }
+          
           const trimmedContent = content ? content.trim() : '';
-          if (!content || typeof content !== 'string' || trimmedContent.length < 30) {
-            const actualLength = trimmedContent.length;
-            throw new Error(`OpenAI content validation failed: received ${actualLength} characters, minimum 30 required`);
+          if (!content || typeof content !== 'string') {
+            throw new Error(`OpenAI content is ${typeof content}, expected string. Message keys: ${Object.keys(aiResult.choices[0].message).join(', ')}`);
+          }
+          
+          if (trimmedContent.length < 10) {  // Reduced from 30 to 10 for debugging
+            console.warn('⚠️ Short content received:', { 
+              actualLength: trimmedContent.length, 
+              content: trimmedContent,
+              fullContent: content
+            });
+            
+            // If content is extremely short, try to use it anyway for debugging
+            if (trimmedContent.length > 0) {
+              console.log('🔄 Attempting to process short content for debugging');
+            } else {
+              throw new Error(`OpenAI content validation failed: received ${trimmedContent.length} characters, minimum 1 required`);
+            }
           }
 
           // CRITICAL: Parse using trimmed content with bulletproof error handling

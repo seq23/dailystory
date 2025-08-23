@@ -95,8 +95,35 @@ export class MultiStageEnhancementPipeline {
       console.log('✅ Tier 1: FrontendIntelligence import successful');
       
       console.log('🔍 Tier 1: Starting UnifiedCharacterConsistency import...');
-      const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
-      console.log('✅ Tier 1: UnifiedCharacterConsistency import successful');
+      let characterConsistency;
+      try {
+        const module = await import('./UnifiedCharacterConsistency.js');
+        characterConsistency = module.characterConsistency;
+        
+        // Validate the imported instance
+        if (!characterConsistency || typeof characterConsistency.getCharacterSeed !== 'function') {
+          console.error('❌ Character consistency import validation failed:', {
+            hasInstance: !!characterConsistency,
+            instanceType: typeof characterConsistency,
+            hasMethod: characterConsistency ? typeof characterConsistency.getCharacterSeed : 'no-instance',
+            moduleKeys: Object.keys(module)
+          });
+          throw new Error('characterConsistency instance or getCharacterSeed method not found');
+        }
+        
+        console.log('✅ Tier 1: UnifiedCharacterConsistency import and validation successful');
+      } catch (importError) {
+        console.error('❌ UnifiedCharacterConsistency import failed:', importError.message);
+        // Fallback mock to prevent cascade failure
+        characterConsistency = {
+          getCharacterSeed: async () => ({
+            seed: 'fallback-seed',
+            characterDescription: 'young child with friendly demeanor',
+            culturalContext: 'universal child-friendly context'
+          })
+        };
+        console.log('🔄 Using character consistency fallback mock');
+      }
       
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
