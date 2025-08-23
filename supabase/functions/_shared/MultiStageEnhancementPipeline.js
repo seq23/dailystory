@@ -19,6 +19,9 @@ import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 // AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
+import { avatarIdentityProcessor } from './AvatarIdentityProcessor.js'; // Unified avatar processing
+import { realContextCollector } from './RealContextCollector.js'; // Real context integration
+import { tier25FallbackProcessor } from './Tier25FallbackProcessor.js'; // Tier 2.5 fallback
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -94,32 +97,18 @@ export class MultiStageEnhancementPipeline {
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
       console.log('✅ Tier 1: FrontendIntelligence import successful');
       
+      // Import characterConsistency singleton with safety
       console.log('🔍 Tier 1: Starting UnifiedCharacterConsistency import...');
       let characterConsistency;
       try {
-        const module = await import('./UnifiedCharacterConsistency.js');
+        const { characterConsistency: importedInstance } = await import('./UnifiedCharacterConsistency.js');
         
-        // Enhanced validation with multiple fallback strategies
-        if (module.characterConsistency && typeof module.characterConsistency.getCharacterSeed === 'function') {
-          characterConsistency = module.characterConsistency;
-          console.log('✅ Tier 1: UnifiedCharacterConsistency Strategy 1 (instance) successful');
-        } else if (module.UnifiedCharacterConsistency && typeof module.UnifiedCharacterConsistency === 'function') {
-          // Try to instantiate if it's a class
-          characterConsistency = new module.UnifiedCharacterConsistency();
-          console.log('✅ Tier 1: UnifiedCharacterConsistency Strategy 1 (class) successful');
-        } else if (module.default && typeof module.default.getCharacterSeed === 'function') {
-          characterConsistency = module.default;
-          console.log('✅ Tier 1: UnifiedCharacterConsistency Strategy 1 (default export) successful');
+        if (importedInstance && typeof importedInstance.getCharacterSeed === 'function') {
+          characterConsistency = importedInstance;
+          console.log('✅ Tier 1: UnifiedCharacterConsistency import successful');
         } else {
-          throw new Error('No valid characterConsistency found in module');
+          throw new Error('Invalid characterConsistency instance');
         }
-        
-        // Final validation
-        if (!characterConsistency || typeof characterConsistency.getCharacterSeed !== 'function') {
-          throw new Error('characterConsistency getCharacterSeed method not available');
-        }
-        
-        console.log('✅ Tier 1: UnifiedCharacterConsistency import and validation successful');
       } catch (importError) {
         console.error('❌ UnifiedCharacterConsistency import failed:', importError.message);
         // Fallback mock to prevent cascade failure
@@ -139,8 +128,19 @@ export class MultiStageEnhancementPipeline {
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
       
-      // 0. Initialize and analyze visual state for consistency
-      const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
+      // 0. Initialize and analyze visual state for consistency WITH SAFETY
+      let visualState;
+      try {
+        if (globalThis.StoryVisualStateManager?.getOrCreateStoryState) {
+          visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
+          console.log('✅ Visual state initialized successfully');
+        } else {
+          throw new Error('StoryVisualStateManager not available');
+        }
+      } catch (error) {
+        console.error('❌ Visual state initialization failed, using Tier 2.5 fallback:', error.message);
+        throw new Error(`Tier 1 failed: Visual state unavailable - ${error.message}`);
+      }
       
       // 0.5. SECONDARY ELEMENT DETECTION - Detect and track secondary characters and animals
       let SecondaryElementDetector;
@@ -215,15 +215,46 @@ export class MultiStageEnhancementPipeline {
       // CRITICAL: Analyze animals FIRST before any text processing to ensure immediate inclusion
       // Animal processing now handled by UnifiedCharacterDescriptor
       
-      globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
-      globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
+      // Visual tracking with safety checks
+      try {
+        if (globalThis.VisualDetailTracker?.analyzeTextForDetails) {
+          globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+        }
+        if (globalThis.StoryVisualStateManager?.analyzeAndTrackVisualDetails) {
+          globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
+        }
+        if (globalThis.AdvancedPronounResolver?.analyzeRelationships) {
+          globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
+        }
+      } catch (error) {
+        console.warn('⚠️ Visual tracking failed, continuing without:', error.message);
+      }
       
-      // 1. Analyze relationships and resolve pronouns first
-      globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
+      // 2. REAL CONTEXT INTEGRATION - Collect actual story context first
+      const realContextData = await realContextCollector.collectRealStoryContext(sessionId, pageNumber, storyText);
+      console.log('📚 Real context collected:', {
+        previousPages: realContextData.previousPages.length,
+        visualElements: realContextData.visualElements.length,
+        hasCharacterDescriptions: realContextData.characterDescriptions.length > 0
+      });
       
-      // 2. Enhance story text with consistent visual details AND pronoun resolution
-      let enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
-      enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
+      // 2.5. Enhance story text with consistent visual details AND pronoun resolution
+      let enhancedStoryText = storyText; // Start with original text
+      try {
+        if (globalThis.AdvancedPronounResolver?.resolveComplexPronouns) {
+          enhancedStoryText = globalThis.AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
+        }
+        if (globalThis.VisualDetailTracker?.injectConsistentDetails) {
+          enhancedStoryText = globalThis.VisualDetailTracker.injectConsistentDetails(sessionId, enhancedStoryText, pageNumber);
+        }
+        
+        // Add real context to enhanced story text
+        enhancedStoryText = realContextCollector.enhanceStoryTextWithRealContext(enhancedStoryText, realContextData);
+        
+      } catch (error) {
+        console.warn('⚠️ Story enhancement failed, using original text:', error.message);
+        enhancedStoryText = storyText;
+      }
       // Animal injection now handled by UnifiedCharacterDescriptor
       
       // NEW MASTER PLAN: If AI enhancement data is available (3-field schema), incorporate it
@@ -274,38 +305,60 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
       
-      // 3. Generate story-based character consistency using UnifiedCharacterConsistency with pre-processed avatar identity
-      console.log('🎭 Generating story-based character consistency with pre-processed avatar identity');
+      // 3. Generate story-based character consistency with standardized avatar processing
+      console.log('🎭 Generating story-based character consistency with standardized avatar identity');
+      
+      // Process avatar identity using standardized processor
+      const processedAvatarIdentity = avatarIdentityProcessor.mapAvatarIdentity(userInfo, avatarIdentity);
+      
       const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo,
         enhancedStoryText, // Pass story context for contextual analysis
-        avatarIdentity // Pass pre-processed avatar identity from orchestrator
+        processedAvatarIdentity // Pass standardized avatar identity
       );
       
       const characterSeed = characterConsistencyData.seed;
       const characterDescription = characterConsistencyData.characterDescription;
       
-      // 4. Get cultural profile
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
+      // 4. Get cultural profile with standardized processing
+      const culturalProfileData = avatarIdentityProcessor.determineCulturalProfile(userInfo, processedAvatarIdentity);
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[culturalProfileData.baseCulturalProfile] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // 5. Extract scene and emotional context from enhanced text using AI-enhanced method
       const sceneContext = this.extractAIEnhancedSceneContext(enhancedStoryText, enhancedStoryData);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
       
-      // 6. Get existing visual state for consistency AND enhance with cultural context
-      const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
-      const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
-      const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
-      // Animal details now handled by UnifiedCharacterDescriptor
-      const animalDetails = '';
+      // 6. Get existing visual state for consistency WITH SAFETY
+      let existingSetting = '';
+      let visualDetails = '';
+      let storyStateDetails = '';
+      let secondaryCharacterData = [];
+      let characterAnimals = [];
+      let secondaryCharacterPrompt = '';
       
-      // 6.5. CRITICAL FIX: Get secondary characters for prompt building
-      const secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
-      const characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
-      const secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
+      try {
+        if (globalThis.StoryVisualStateManager?.getSettingForPrompt) {
+          existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
+        }
+        if (globalThis.VisualDetailTracker?.getVisualDetailsForPrompt) {
+          visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+        }
+        if (globalThis.StoryVisualStateManager?.getVisualDetailsForPrompt) {
+          storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+        }
+        if (globalThis.StoryVisualStateManager?.getSecondaryCharacters) {
+          secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
+        }
+        if (globalThis.StoryVisualStateManager?.getCharacterAnimals) {
+          characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
+        }
+        secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
+      } catch (error) {
+        console.warn('⚠️ Visual state retrieval failed, using empty values:', error.message);
+      }
       
       // NEW: Use enhanced cultural setting logic instead of override
       let enhancedSetting = existingSetting;
@@ -343,7 +396,8 @@ export class MultiStageEnhancementPipeline {
           animalDetails,
           pageNumber,
           totalPages,
-          avatarIdentity // Pass avatarIdentity for African American detection
+          processedAvatarIdentity, // Pass processed avatar identity
+          secondaryCharacterPrompt // Include secondary characters
         },
         imageDifficulty // Pass difficulty as parameter
       );
@@ -360,8 +414,8 @@ export class MultiStageEnhancementPipeline {
         // Re-validate the enhanced prompt
         const revalidation = this.validateAvatarConsistency(finalPrompt, validationResult.fixedAvatarIdentity, userInfo, 'tier1-revalidated');
         if (!revalidation.isValid) {
-          console.error('❌ Tier 1: Re-validation failed, cascading to Tier 2');
-          throw new Error(`Tier 1 avatar validation failed: ${revalidation.reason}`);
+          console.error('❌ Tier 1: Re-validation failed, IMMEDIATE cascade to Tier 2.5');
+          throw new Error(`Tier 1 failed immediately: ${revalidation.reason}`);
         }
       }
       
@@ -532,42 +586,49 @@ export class MultiStageEnhancementPipeline {
         }
       }
 
+      // Import characterConsistency singleton with safety (Tier 2)
       console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import...');
       try {
-        console.log('🔍 Tier 2: Import Strategy 1 (relative path)...');
-        const module = await import('./UnifiedCharacterConsistency.js');
+        const { characterConsistency: importedInstance } = await import('./UnifiedCharacterConsistency.js');
         
-        // Enhanced validation with multiple fallback strategies (matching Tier 1)
-        if (module.characterConsistency && typeof module.characterConsistency.getCharacterSeed === 'function') {
-          characterConsistency = module.characterConsistency;
-          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 (instance) successful');
-        } else if (module.UnifiedCharacterConsistency && typeof module.UnifiedCharacterConsistency === 'function') {
-          // Try to instantiate if it's a class
-          characterConsistency = new module.UnifiedCharacterConsistency();
-          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 (class) successful');
-        } else if (module.default && typeof module.default.getCharacterSeed === 'function') {
-          characterConsistency = module.default;
-          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 (default export) successful');
+        if (importedInstance && typeof importedInstance.getCharacterSeed === 'function') {
+          characterConsistency = importedInstance;
+          console.log('✅ Tier 2: UnifiedCharacterConsistency import successful');
         } else {
-          throw new Error('No valid characterConsistency found in module');
+          throw new Error('Invalid characterConsistency instance');
         }
-        
-        // Final validation
-        if (!characterConsistency || typeof characterConsistency.getCharacterSeed !== 'function') {
-          throw new Error('characterConsistency getCharacterSeed method not available');
-        }
-        
-        console.log('✅ Tier 2: UnifiedCharacterConsistency import and validation successful');
       } catch (importError) {
-        console.error('❌ Tier 2: UnifiedCharacterConsistency import failed - factory component "UnifiedCharacterConsistency" caused cascade to Tier 2.5:', importError.message);
-        // Natural fallback - no explicit throw, let Tier 2 cascade to Tier 2.5
-        characterConsistency = null;
+        console.error('❌ Tier 2: UnifiedCharacterConsistency import failed:', importError.message);
+        // Fallback mock to prevent cascade failure
+        characterConsistency = {
+          getCharacterSeed: async (name, storyId, userInfo, storyText, avatarIdentity) => {
+            console.log('🔄 Tier 2: Using enhanced character consistency fallback mock');
+            return {
+              seed: `fallback-tier2-${Date.now()}`,
+              characterDescription: avatarIdentity?.visualDescription || 'young child with friendly demeanor',
+              culturalContext: userInfo?.culturalProfile || 'universal child-friendly context'
+            };
+          }
+        };
+        console.log('🔄 Tier 2: Enhanced character consistency fallback mock activated');
       }
       
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
       
-      // Initialize and analyze visual state for consistency
+      // Initialize and analyze visual state for consistency WITH SAFETY
+      let visualState;
+      try {
+        if (globalThis.StoryVisualStateManager?.getOrCreateStoryState) {
+          visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
+          console.log('✅ Tier 2: Visual state initialized successfully');
+        } else {
+          throw new Error('StoryVisualStateManager not available');
+        }
+      } catch (error) {
+        console.error('❌ Tier 2: Visual state initialization failed, cascading to Tier 2.5:', error.message);
+        throw new Error(`Tier 2 failed: Visual state unavailable - ${error.message}`);
+      }
       const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
       // PHASE 1 FIX: Add missing secondary element detection to Tier 2 (same as Tier 1)
@@ -666,44 +727,66 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected premium style framework:', imageDifficulty, styleFramework.name);
       
-      // Generate story-based character consistency 
-      console.log('🎭 Generating premium character consistency');
+      // Generate story-based character consistency with standardized avatar processing (Tier 2)
+      console.log('🎭 Generating premium character consistency with processed avatar identity');
       console.log('🔍 Tier 2: characterConsistency availability check:', !!characterConsistency);
       
       if (!characterConsistency) {
-        console.error('❌ Tier 2: Character consistency factory component failed - cascading to Tier 2.5');
-        // Natural cascade to Tier 2.5 - no explicit throw, let the process handle fallback
-        return null;
+        console.error('❌ Tier 2: Character consistency factory component failed - IMMEDIATE cascade to Tier 2.5');
+        throw new Error('Tier 2 failed: Character consistency unavailable');
       }
+      
+      // Process avatar identity using standardized processor (Tier 2)
+      const processedAvatarIdentity = avatarIdentityProcessor.mapAvatarIdentity(userInfo, avatarIdentity);
       
       const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
         userInfo,
         enhancedStoryText,
-        avatarIdentity // Pass processed avatar identity from orchestrator
+        processedAvatarIdentity // Pass standardized avatar identity
       );
       
       const characterSeed = characterConsistencyData.seed;
       const characterDescription = characterConsistencyData.characterDescription;
       
-      // Get cultural profile
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[userInfo.nativeLanguage] || 
+      // Get cultural profile with standardized processing (Tier 2)
+      const culturalProfileData = avatarIdentityProcessor.determineCulturalProfile(userInfo, processedAvatarIdentity);
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[culturalProfileData.baseCulturalProfile] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // Extract scene and emotional context from enhanced text (no AI enhancement)
       const sceneContext = this.extractAIEnhancedSceneContext(enhancedStoryText, {}, pageNumber, totalPages, userInfo, sessionId);
       const emotionalContext = FrontendIntelligence.detectEmotionalContext(enhancedStoryText);
       
-      // Get existing visual state for consistency
-      const existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
-      const visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
-      const storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+      // Get existing visual state for consistency WITH SAFETY (Tier 2)
+      let existingSetting = '';
+      let visualDetails = '';
+      let storyStateDetails = '';
+      let secondaryCharacterData = [];
+      let characterAnimals = [];
+      let secondaryCharacterPrompt = '';
       
-      // PHASE 2 FIX: Get secondary characters for prompt building (same as Tier 1)
-      const secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
-      const characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
-      const secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
+      try {
+        if (globalThis.StoryVisualStateManager?.getSettingForPrompt) {
+          existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
+        }
+        if (globalThis.VisualDetailTracker?.getVisualDetailsForPrompt) {
+          visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+        }
+        if (globalThis.StoryVisualStateManager?.getVisualDetailsForPrompt) {
+          storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
+        }
+        if (globalThis.StoryVisualStateManager?.getSecondaryCharacters) {
+          secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
+        }
+        if (globalThis.StoryVisualStateManager?.getCharacterAnimals) {
+          characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
+        }
+        secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
+      } catch (error) {
+        console.warn('⚠️ Tier 2: Visual state retrieval failed, using empty values:', error.message);
+      }
       
       // Enhanced setting logic without AI data
       let enhancedSetting = existingSetting;
@@ -846,6 +929,22 @@ export class MultiStageEnhancementPipeline {
       
       // Throw error to enable proper tier cascading (Tier 2 → Tier 2.5)
       throw new Error(`Tier 2 processing failed: ${error.message}`);
+    }
+  }
+
+  // ============= TIER 2.5: ULTRA-FAST FALLBACK PROCESSING =============
+  static async processTier25Fallback(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, avatarIdentity) {
+    console.log(`🚨 TIER 2.5 FALLBACK ACTIVATED: Ultra-fast processing for page ${pageNumber}/${totalPages}`);
+    
+    try {
+      return await tier25FallbackProcessor.processTier25Fallback(
+        storyText, userInfo, storyId, sessionId, pageNumber, totalPages, avatarIdentity
+      );
+    } catch (error) {
+      console.error('❌ TIER 2.5 FAILED - using ultimate fallback:', error.message);
+      
+      // Ultimate fallback that cannot fail
+      return tier25FallbackProcessor.generateUltimateFallback(storyText, userInfo);
     }
   }
   
