@@ -780,12 +780,6 @@ export class MultiStageEnhancementPipeline {
     }
   }
   
-  // ============= SIMPLE TEMPLATE PROCESSING =============
-  static buildEnhancedTemplatePrompt(storyText, characterDescription, framework, userInfo) {
-    const styleElements = framework.prompt || 'children\'s book illustration';
-    
-    return `${storyText} showing ${characterDescription}, ${styleElements}, ${framework.brandSuffix || 'enhanced children\'s book illustration'}`;
-  }
 
   
   // ============= UNIFIED NEGATIVE PROMPT SYSTEM (SINGLE SOURCE OF TRUTH) =============

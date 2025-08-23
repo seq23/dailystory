@@ -93,13 +93,6 @@ export class FrontendIntelligence {
     }
   };
   
-  // ============= PREMIUM PROMPT TEMPLATE =============
-  // This template is used to build high-quality prompts for image generation
-  static PREMIUM_PROMPT_TEMPLATE = `
-  An award winning children's book illustration with warm tones, detail, and soft lighting of {characterDescription} in a {settingDescription}, {sceneDescription}.
-  The scene is filled with {visualDetails} and the overall mood is {emotionalContext}.
-  The art style is {styleDescription}, reminiscent of {artInspiration}.
-  `;
   
   // ============= AFRICAN AMERICAN CULTURAL ARRAYS =============
   // Elaborate arrays for African American character generation
@@ -443,26 +436,12 @@ export class FrontendIntelligence {
     }
   }
   
-  // PHASE 2: Basic prompt fallback method for safety
+  // PHASE 2: Emergency method - throws error for clean routing to Tier 2.5
   static buildBasicPromptFallback(storyText, userInfo, details, avatarIdentity) {
-    console.log('🎨 FI-PROMPT: Using basic prompt fallback');
+    console.log('🎨 FI-PROMPT: buildBasicPromptFallback called - routing to Tier 2.5');
     
-    const name = userInfo?.name || 'Alex';
-    const gender = avatarIdentity?.type || userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
-    
-    // Basic character description
-    let characterDesc = `${name}, a ${gender}`;
-    
-    // Add basic avatar details if available
-    if (userInfo?.avatar?.skinTone) {
-      const skinTone = userInfo.avatar.skinTone.replace(/_/g, ' ');
-      characterDesc += ` with ${skinTone} skin`;
-    }
-    
-    // Basic prompt structure
-    const basicPrompt = `${storyText} featuring ${characterDesc}, 3D rendered, Pixar-like animation style, children's book illustration, bright and colorful, high quality`;
-    
-    return basicPrompt;
+    // ARCHITECTURAL CHANGE: Tier 2 should only do AI enhancement or fail cleanly to Tier 2.5
+    throw new Error('Tier 2 basic prompt fallback triggered. Routing to Tier 2.5 for template-based generation.');
   }
   
   // PHASE 3: Dynamic prompt building method (replaces template)
@@ -546,69 +525,11 @@ export class FrontendIntelligence {
       console.error('🚨 FI-PROMPT: Error in enhanced prompt building:', error);
       this.logPromptError('buildEnhancedPromptWithSafety', error, { storyText, imageDifficulty });
       
-      // Fallback to template-based approach
-      return this.buildTemplateBasedPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty);
+      // ARCHITECTURAL CHANGE: Tier 2 should only do AI enhancement or fail cleanly to Tier 2.5
+      throw new Error(`Tier 2 AI enhancement failed: ${error.message}. Routing to Tier 2.5 fallback.`);
     }
   }
   
-  // PHASE 3: Template-based fallback method
-  static buildTemplateBasedPrompt(storyText, userInfo, characterSeed, culturalProfile, sceneContext, emotionalContext, styleFramework, details, imageDifficulty) {
-    console.log('🎨 FI-PROMPT: Using template-based fallback');
-    
-    try {
-      const avatarIdentity = details?.avatarIdentity || null;
-      const characterDescription = this.buildAdvancedCharacterDescription(userInfo, culturalProfile, characterSeed, imageDifficulty, avatarIdentity);
-      const settingDescription = details.existingSetting || 'vibrant setting';
-      const sceneDescription = sceneContext || this.detectSceneContext(storyText);
-      const visualDetails = details.visualDetails || 'rich details';
-      const emotionalContextMood = emotionalContext?.mood || 'neutral mood';
-      
-      let styleDescription = styleFramework?.prompt || 'children\'s book illustration';
-      if (this.FEATURE_FLAGS?.pixarStylingPrecision && imageDifficulty <= 1) {
-        styleDescription = "3D rendered, Pixar-like animation style";
-      }
-      
-      const artInspiration = styleFramework?.brandSuffix || 'Disney animation';
-      
-      let enhancedPrompt = this.PREMIUM_PROMPT_TEMPLATE
-        .replace('{characterDescription}', characterDescription)
-        .replace('{settingDescription}', settingDescription)
-        .replace('{sceneDescription}', sceneDescription)
-        .replace('{visualDetails}', visualDetails)
-        .replace('{emotionalContext}', emotionalContextMood)
-        .replace('{styleDescription}', styleDescription)
-        .replace('{artInspiration}', artInspiration);
-      
-      enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);
-      
-      // Generate unified negative prompt using hardcoded constants
-      const negativePrompt = Tier25FallbackConstants.generateUnifiedNegativePrompt(userInfo, imageDifficulty);
-      
-      // Get hardcoded generation parameters
-      const generationParams = Tier25FallbackConstants.getGenerationParams(imageDifficulty);
-      
-      // Get hardcoded metadata
-      const metadata = Tier25FallbackConstants.getFallbackMetadata(imageDifficulty);
-      
-      console.log('🎨 FI-PROMPT: Template-based prompt complete with negative prompt and params');
-      
-      // Return consistent structure matching Tier 2
-      return {
-        enhancedPrompt,
-        negativePrompt,
-        generationParams,
-        metadata
-      };
-    } catch (error) {
-      console.error('🚨 FI-PROMPT: Template fallback failed:', error);
-      // Emergency fallback - return basic structure
-      return {
-        enhancedPrompt: `${storyText} - 3D rendered, Pixar-like animation style, children's book illustration`,
-        negativePrompt: Tier25FallbackConstants.generateUnifiedNegativePrompt(userInfo, imageDifficulty),
-        generationParams: Tier25FallbackConstants.getGenerationParams(imageDifficulty),
-        metadata: { ...Tier25FallbackConstants.getFallbackMetadata(imageDifficulty), emergency_fallback: true }
-      };
-  }
   
   // ============= CHARACTER DESCRIPTION BUILDING =============
   // This method builds a character description based on user info and character seed
