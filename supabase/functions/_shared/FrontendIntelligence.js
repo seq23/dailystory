@@ -20,7 +20,6 @@
 // ============= END IMPORT STANDARDS =============
 
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
-import { Tier25FallbackConstants } from './Tier25FallbackConstants.js';
 
 export class FrontendIntelligence {
   
