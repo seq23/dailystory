@@ -7,27 +7,27 @@ const AVATAR_FALLBACK_DESCRIPTIONS = {
   // PALE SKIN TONE
   "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
   "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
-  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+  "prefer-not-to-answer/pale": "{name} is a young boy with pale skin, red hair, and green eyes",
 
   // LIGHT SKIN TONE  
   "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
   "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "prefer-not-to-answer/light": "{name} is a young boy with light skin, blonde hair, and blue eyes",
 
   // MEDIUM SKIN TONE
   "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
   "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
-  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+  "prefer-not-to-answer/medium": "{name} is a young boy with medium skin, brown hair, and brown eyes",
 
   // OLIVE SKIN TONE
   "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
   "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
-  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+  "prefer-not-to-answer/olive": "{name} is a young boy with olive skin, natural textured hair, and dark eyes",
 
   // DARK SKIN TONE (Enhanced descriptions)
   "girl/dark": "{name} is a young African American girl with authentic representation and diverse natural features, soft warm lighting",
   "boy/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
-  "prefer-not-to-answer/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting",
+  "prefer-not-to-answer/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
 
   // DEFAULT FALLBACK
   "default": "{name} is a young child with a bright smile and cheerful demeanor"
@@ -753,7 +753,7 @@ function mapAvatarIdentity(userInfo: any) {
   const { nativeLanguage = 'en' } = userInfo;
 
   // Map avatar type and skin tone to standardized identity
-  const avatarType = type === 'prefer-not-to-answer' ? 'child' : type;
+  const avatarType = type === 'prefer-not-to-answer' ? 'boy' : type;
   const genderText = avatarType === 'boy' ? 'boy' : 'girl';
   
   // Standardized skin tone mapping
