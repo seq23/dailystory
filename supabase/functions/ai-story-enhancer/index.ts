@@ -16,8 +16,8 @@ const AI_MODELS = [
 class UnifiedCircuitBreaker {
   private failures = 0;
   private lastFailure = 0;
-  private readonly threshold = 3;
-  private readonly timeout = 30000; // 30 seconds
+  private readonly threshold = 2;
+  private readonly timeout = 15000; // 15 seconds
   
   isOpen(): boolean {
     const isCurrentlyOpen = this.failures >= this.threshold && (Date.now() - this.lastFailure < this.timeout);
@@ -93,8 +93,8 @@ console.log('🔧 Enhanced circuit breaker with monitoring initialized');
 // Initialize circuit breaker state tracking
 CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
   event: 'initialization',
-  threshold: 3,
-  timeout: 30000
+  threshold: 2,
+  timeout: 15000
 });
 
 // ============= MODEL-SPECIFIC PROMPT OPTIMIZATION =============
@@ -173,7 +173,7 @@ function parseAIResponse(content, options = {}) {
   }
 }
 
-async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
+async function callOpenAIWithFallback(messages: any[], timeout = 6000) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Circuit breaker check with enhanced logging
@@ -192,7 +192,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
     const model = AI_MODELS[modelIndex];
     console.log(`🤖 Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
     
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 1; attempt++) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -208,7 +208,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
           requestBody.temperature = 0.3;
         }
         
-        console.log(`⏳ Attempting ${model.name} (attempt ${attempt}/3, timeout: ${timeout}ms)`);
+        console.log(`⏳ Attempting ${model.name} (attempt ${attempt}/1, timeout: ${timeout}ms)`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -271,12 +271,8 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
             retryable: true
           });
           
-          if (attempt < 3) {
-            const backoffDelay = 500; // Reduced for faster fallbacks  
-            console.log(`⏳ Retrying after ${backoffDelay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-            continue;
-          }
+          // Skip retries - go to next model immediately
+          break;
         } else {
           const errorText = await response.text();
           console.error(`❌ Model ${model.name} failed with status ${response.status}: ${errorText}`);
@@ -310,11 +306,8 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
           });
         }
         
-        if (attempt < 3) {
-          const backoffDelay = Math.min(2000 * attempt, 10000);
-          console.log(`⏳ Retrying after ${backoffDelay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, backoffDelay));
-        }
+        // Skip retries - go to next model immediately
+        break;
       }
     }
     

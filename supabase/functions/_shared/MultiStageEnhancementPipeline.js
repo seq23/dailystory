@@ -628,7 +628,6 @@ export class MultiStageEnhancementPipeline {
         console.error('❌ Tier 2: Visual state initialization failed, cascading to Tier 2.5:', error.message);
         throw new Error(`Tier 2 failed: Visual state unavailable - ${error.message}`);
       }
-      const visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
       
       // PHASE 1 FIX: Add missing secondary element detection to Tier 2 (same as Tier 1)
       let SecondaryElementDetector;
