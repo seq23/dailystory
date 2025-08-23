@@ -19,7 +19,7 @@ import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 // AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
-import { avatarIdentityProcessor } from './AvatarIdentityProcessor.js'; // Unified avatar processing
+import { mapAvatarIdentity } from '../runware-generate-image/index.ts'; // Source of truth avatar processing
 import { realContextCollector } from './RealContextCollector.js'; // Real context integration
 import { tier25FallbackProcessor } from './Tier25FallbackProcessor.js'; // Tier 2.5 fallback
 
@@ -308,8 +308,8 @@ export class MultiStageEnhancementPipeline {
       // 3. Generate story-based character consistency with standardized avatar processing
       console.log('🎭 Generating story-based character consistency with standardized avatar identity');
       
-      // Process avatar identity using standardized processor
-      const processedAvatarIdentity = avatarIdentityProcessor.mapAvatarIdentity(userInfo, avatarIdentity);
+      // Process avatar identity using runware source of truth
+      const processedAvatarIdentity = mapAvatarIdentity(userInfo);
       
       const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
@@ -322,9 +322,8 @@ export class MultiStageEnhancementPipeline {
       const characterSeed = characterConsistencyData.seed;
       const characterDescription = characterConsistencyData.characterDescription;
       
-      // 4. Get cultural profile with standardized processing
-      const culturalProfileData = avatarIdentityProcessor.determineCulturalProfile(userInfo, processedAvatarIdentity);
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[culturalProfileData.baseCulturalProfile] || 
+      // 4. Get cultural profile from processed identity
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[processedAvatarIdentity.culturalProfile] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // 5. Extract scene and emotional context from enhanced text using AI-enhanced method
@@ -736,8 +735,8 @@ export class MultiStageEnhancementPipeline {
         throw new Error('Tier 2 failed: Character consistency unavailable');
       }
       
-      // Process avatar identity using standardized processor (Tier 2)
-      const processedAvatarIdentity = avatarIdentityProcessor.mapAvatarIdentity(userInfo, avatarIdentity);
+      // Process avatar identity using runware source of truth (Tier 2)
+      const processedAvatarIdentity = mapAvatarIdentity(userInfo);
       
       const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
@@ -750,9 +749,8 @@ export class MultiStageEnhancementPipeline {
       const characterSeed = characterConsistencyData.seed;
       const characterDescription = characterConsistencyData.characterDescription;
       
-      // Get cultural profile with standardized processing (Tier 2)
-      const culturalProfileData = avatarIdentityProcessor.determineCulturalProfile(userInfo, processedAvatarIdentity);
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[culturalProfileData.baseCulturalProfile] || 
+      // Get cultural profile from processed identity (Tier 2)
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[processedAvatarIdentity.culturalProfile] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // Extract scene and emotional context from enhanced text (no AI enhancement)
