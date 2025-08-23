@@ -21,7 +21,7 @@ import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
 import { mapAvatarIdentity } from './mapAvatarIdentity.js'; // Source of truth avatar processing
 import { realContextCollector } from './RealContextCollector.js'; // Real context integration
-import { tier25FallbackProcessor } from './Tier25FallbackProcessor.js'; // Tier 2.5 fallback
+
 
 function selectWeightedElement(array) {
   if (!array || array.length === 0) return '';
@@ -930,21 +930,6 @@ export class MultiStageEnhancementPipeline {
     }
   }
 
-  // ============= TIER 2.5: ULTRA-FAST FALLBACK PROCESSING =============
-  static async processTier25Fallback(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, avatarIdentity) {
-    console.log(`🚨 TIER 2.5 FALLBACK ACTIVATED: Ultra-fast processing for page ${pageNumber}/${totalPages}`);
-    
-    try {
-      return await tier25FallbackProcessor.processTier25Fallback(
-        storyText, userInfo, storyId, sessionId, pageNumber, totalPages, avatarIdentity
-      );
-    } catch (error) {
-      console.error('❌ TIER 2.5 FAILED - using ultimate fallback:', error.message);
-      
-      // Ultimate fallback that cannot fail
-      return tier25FallbackProcessor.generateUltimateFallback(storyText, userInfo);
-    }
-  }
   
 
   
