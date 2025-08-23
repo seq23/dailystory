@@ -452,7 +452,7 @@ export class MultiStageEnhancementPipeline {
     console.log('🔍 TIER 2 DEBUG - avatarIdentity received:', avatarIdentity);
     console.log('🔍 TIER 2 DEBUG - avatarIdentity.visualDescription:', avatarIdentity?.visualDescription);
 
-      // Bulletproof module imports with 4-strategy fallback hierarchy
+      // Declare variables at method scope to prevent scoping issues
       let FrontendIntelligence, characterConsistency;
       
       try {
@@ -486,16 +486,19 @@ export class MultiStageEnhancementPipeline {
         console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import (Strategy 1: relative)...');
         ({ characterConsistency } = await import('./UnifiedCharacterConsistency.js'));
         console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 successful');
+        console.log('✅ Tier 2: characterConsistency object loaded:', !!characterConsistency);
       } catch (error1) {
         try {
           console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 2: absolute path...');
           ({ characterConsistency } = await import(`${Deno.cwd()}/supabase/functions/_shared/UnifiedCharacterConsistency.js`));
           console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 2 successful');
+          console.log('✅ Tier 2: characterConsistency object loaded:', !!characterConsistency);
         } catch (error2) {
           try {
             console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 3: working directory...');
             ({ characterConsistency } = await import(`${Deno.cwd()}/supabase/functions/_shared/UnifiedCharacterConsistency.js`));
             console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 3 successful');
+            console.log('✅ Tier 2: characterConsistency object loaded:', !!characterConsistency);
           } catch (error3) {
             console.error('❌ All UnifiedCharacterConsistency import strategies failed:', { error1: error1.message, error2: error2.message, error3: error3.message });
             throw new Error(`Tier 2 processing failed: UnifiedCharacterConsistency module unavailable`);
@@ -607,6 +610,12 @@ export class MultiStageEnhancementPipeline {
       
       // Generate story-based character consistency 
       console.log('🎭 Generating premium character consistency');
+      console.log('🔍 Tier 2: characterConsistency availability check:', !!characterConsistency);
+      
+      if (!characterConsistency) {
+        throw new Error('Character consistency module not loaded - cannot proceed with Tier 2');
+      }
+      
       const characterConsistencyData = await characterConsistency.getCharacterSeed(
         userInfo.name || 'user',
         storyId,
