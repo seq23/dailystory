@@ -304,17 +304,63 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic natural black hair texture with individual strand detail, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft golden hour lighting' : ''}`;
   }
   
-  // Comprehensive setting detection with 15+ categories
+  // Context-aware setting detection with action priority and departure detection
   let baseSetting = 'outdoor scene';
-  if (text.includes('house') || text.includes('home') || text.includes('bedroom') || text.includes('kitchen') || text.includes('living room')) baseSetting = 'home';
-  else if (text.includes('beach') || text.includes('ocean') || text.includes('sea') || text.includes('sand')) baseSetting = 'beach';
-  else if (text.includes('forest') || text.includes('tree') || text.includes('woods')) baseSetting = 'forest';
-  else if (text.includes('school') || text.includes('classroom') || text.includes('library')) baseSetting = 'school';
-  else if (text.includes('park') || text.includes('playground')) baseSetting = 'park';
-  else if (text.includes('garden') || text.includes('flower')) baseSetting = 'garden';
-  else if (text.includes('field') || text.includes('meadow')) baseSetting = 'field';
-  else if (text.includes('restaurant') || text.includes('cafe') || text.includes('store')) baseSetting = 'restaurant';
-  else if (text.includes('bed') || text.includes('sleep') || text.includes('pillow')) baseSetting = 'bedroom';
+  const settingScores = {
+    'park': 0,
+    'home': 0,
+    'beach': 0,
+    'forest': 0,
+    'school': 0,
+    'garden': 0,
+    'field': 0,
+    'restaurant': 0,
+    'bedroom': 0
+  };
+  
+  // Base keyword scoring
+  if (text.includes('park') || text.includes('playground')) settingScores.park += 30;
+  if (text.includes('beach') || text.includes('ocean') || text.includes('sea') || text.includes('sand')) settingScores.beach += 30;
+  if (text.includes('forest') || text.includes('tree') || text.includes('woods')) settingScores.forest += 30;
+  if (text.includes('school') || text.includes('classroom') || text.includes('library')) settingScores.school += 30;
+  if (text.includes('garden') || text.includes('flower')) settingScores.garden += 30;
+  if (text.includes('field') || text.includes('meadow')) settingScores.field += 30;
+  if (text.includes('restaurant') || text.includes('cafe') || text.includes('store')) settingScores.restaurant += 30;
+  if (text.includes('bed') || text.includes('sleep') || text.includes('pillow')) settingScores.bedroom += 30;
+  
+  // Word-boundary home detection (not within other words like "mom")
+  const homePattern = /\b(house|home|bedroom|kitchen|living room)\b/i;
+  if (homePattern.test(text)) settingScores.home += 30;
+  
+  // Action-context priority scoring (action + location = heavy weight to that location)
+  if (text.includes('explore') && text.includes('park')) settingScores.park += 50;
+  if (text.includes('going to') && text.includes('park')) settingScores.park += 40;
+  if (text.includes('arrived at') && text.includes('park')) settingScores.park += 45;
+  if (text.includes('playing at') && text.includes('park')) settingScores.park += 40;
+  
+  // Departure context scoring (leaving FROM a location, not AT that location)
+  if ((text.includes('goodbye') || text.includes('leaving') || text.includes('left')) && homePattern.test(text)) {
+    settingScores.home -= 20; // Reduce home score if departing from home
+  }
+  
+  // Current location indicators (AT/IN/INSIDE + location = strong presence)
+  if (text.includes('at the park') || text.includes('in the park')) settingScores.park += 35;
+  if (text.includes('at home') || text.includes('in the house')) settingScores.home += 35;
+  if (text.includes('at school') || text.includes('in school')) settingScores.school += 35;
+  if (text.includes('at the beach') || text.includes('on the beach')) settingScores.beach += 35;
+  
+  // Find the setting with the highest score
+  let highestScore = 0;
+  let topSetting = 'outdoor scene';
+  
+  Object.entries(settingScores).forEach(([setting, score]) => {
+    if (score > highestScore) {
+      highestScore = score;
+      topSetting = setting;
+    }
+  });
+  
+  baseSetting = topSetting;
   
   // Apply cultural enhancement bypass logic
   const culturallyEnhancedSetting = applyCulturalSettingEnhancement(baseSetting, userInfo);
