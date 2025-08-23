@@ -98,17 +98,25 @@ export class MultiStageEnhancementPipeline {
       let characterConsistency;
       try {
         const module = await import('./UnifiedCharacterConsistency.js');
-        characterConsistency = module.characterConsistency;
         
-        // Validate the imported instance
+        // Enhanced validation with multiple fallback strategies
+        if (module.characterConsistency && typeof module.characterConsistency.getCharacterSeed === 'function') {
+          characterConsistency = module.characterConsistency;
+          console.log('✅ Tier 1: UnifiedCharacterConsistency Strategy 1 (instance) successful');
+        } else if (module.UnifiedCharacterConsistency && typeof module.UnifiedCharacterConsistency === 'function') {
+          // Try to instantiate if it's a class
+          characterConsistency = new module.UnifiedCharacterConsistency();
+          console.log('✅ Tier 1: UnifiedCharacterConsistency Strategy 1 (class) successful');
+        } else if (module.default && typeof module.default.getCharacterSeed === 'function') {
+          characterConsistency = module.default;
+          console.log('✅ Tier 1: UnifiedCharacterConsistency Strategy 1 (default export) successful');
+        } else {
+          throw new Error('No valid characterConsistency found in module');
+        }
+        
+        // Final validation
         if (!characterConsistency || typeof characterConsistency.getCharacterSeed !== 'function') {
-          console.error('❌ Character consistency import validation failed:', {
-            hasInstance: !!characterConsistency,
-            instanceType: typeof characterConsistency,
-            hasMethod: characterConsistency ? typeof characterConsistency.getCharacterSeed : 'no-instance',
-            moduleKeys: Object.keys(module)
-          });
-          throw new Error('characterConsistency instance or getCharacterSeed method not found');
+          throw new Error('characterConsistency getCharacterSeed method not available');
         }
         
         console.log('✅ Tier 1: UnifiedCharacterConsistency import and validation successful');
@@ -116,13 +124,16 @@ export class MultiStageEnhancementPipeline {
         console.error('❌ UnifiedCharacterConsistency import failed:', importError.message);
         // Fallback mock to prevent cascade failure
         characterConsistency = {
-          getCharacterSeed: async () => ({
-            seed: 'fallback-seed',
-            characterDescription: 'young child with friendly demeanor',
-            culturalContext: 'universal child-friendly context'
-          })
+          getCharacterSeed: async (name, storyId, userInfo, storyText, avatarIdentity) => {
+            console.log('🔄 Using enhanced character consistency fallback mock');
+            return {
+              seed: `fallback-${Date.now()}`,
+              characterDescription: avatarIdentity?.visualDescription || 'young child with friendly demeanor',
+              culturalContext: userInfo?.culturalProfile || 'universal child-friendly context'
+            };
+          }
         };
-        console.log('🔄 Using character consistency fallback mock');
+        console.log('🔄 Enhanced character consistency fallback mock activated');
       }
       
       // Set current storyId for FrontendIntelligence to use

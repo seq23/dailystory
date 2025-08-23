@@ -42,22 +42,11 @@ export const useImageWithFallback = (
       // For external URLs, validate with Image object
       const img = new Image();
       
-      img.onload = () => {
-        debugLog('Image loaded successfully', url);
-        setImageSrc(url);
-        setIsLoading(false);
-        setError(null);
-        resolve(true);
-      };
-      
-      img.onerror = (e) => {
-        debugLog('Image failed to load', { url, error: e });
-        resolve(false);
-      };
-      
       // Add timeout for slow loading images
       const timeoutId = setTimeout(() => {
         debugLog('Image load timeout', url);
+        img.onload = null;
+        img.onerror = null;
         resolve(false);
       }, 10000);
       
@@ -70,6 +59,13 @@ export const useImageWithFallback = (
         resolve(true);
       };
       
+      img.onerror = (e) => {
+        clearTimeout(timeoutId);
+        debugLog('Image failed to load', { url, error: e });
+        resolve(false);
+      };
+      
+      // Preload image to check validity before setting
       img.src = url;
     });
   }, [debugLog]);

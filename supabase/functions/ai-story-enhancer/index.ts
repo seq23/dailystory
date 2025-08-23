@@ -148,7 +148,38 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
         
         if (response.ok) {
           const result = await response.json();
-          console.log(`✅ Model ${model.name} succeeded on attempt ${attempt}`);
+          
+          // Enhanced content validation
+          const content = result?.choices?.[0]?.message?.content;
+          if (!content || content.trim() === '') {
+            console.error(`❌ Model ${model.name} returned empty content on attempt ${attempt}:`, {
+              hasChoices: !!result?.choices,
+              choicesLength: result?.choices?.length,
+              hasMessage: !!result?.choices?.[0]?.message,
+              contentType: typeof content,
+              contentValue: JSON.stringify(content)
+            });
+            
+            // Log as OpenAI content validation failure
+            const error = new Error(`OpenAI returned empty content for model ${model.name}`);
+            TierFailureLogger.logTier1OpenAIFailure(error, {
+              model: model.name,
+              attempt,
+              failureType: 'empty_content'
+            });
+            
+            // Continue to next attempt/model instead of returning empty result
+            if (attempt < 3) {
+              const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+              console.log(`⏳ Retrying after ${backoffDelay}ms due to empty content...`);
+              await new Promise(resolve => setTimeout(resolve, backoffDelay));
+              continue;
+            } else {
+              break; // Try next model
+            }
+          }
+          
+          console.log(`✅ Model ${model.name} succeeded on attempt ${attempt} with valid content`);
           circuitBreaker.recordSuccess();
           return result;
         } else if (response.status === 503 || response.status === 429 || response.status === 502) {
@@ -472,7 +503,11 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           
           const trimmedContent = content ? content.trim() : '';
           if (!content || typeof content !== 'string') {
-            throw new Error(`OpenAI content is ${typeof content}, expected string. Message keys: ${Object.keys(aiResult.choices[0].message).join(', ')}`);
+            throw new Error(`OpenAI content is null or undefined, expected string. Message keys: ${Object.keys(aiResult.choices[0].message).join(', ')}`);
+          }
+          
+          if (trimmedContent.length === 0) {
+            throw new Error(`OpenAI returned empty content string. Full message: ${JSON.stringify(aiResult.choices[0].message)}`);
           }
           
           if (trimmedContent.length < 10) {  // Reduced from 30 to 10 for debugging
@@ -481,12 +516,7 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
               content: trimmedContent,
               fullContent: content
             });
-            
-            // If content is extremely short, try to use it anyway for debugging
-            if (trimmedContent.length > 0) {
-              console.log('🔄 Attempting to process short content for debugging');
-            } else {
-              throw new Error(`OpenAI content validation failed: received ${trimmedContent.length} characters, minimum 1 required`);
+          }
             }
           }
 

@@ -328,13 +328,41 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   
   const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide'];
   
-  // Detect animals mentioned in story
-  animalKeywords.forEach(animal => {
-    if (text.includes(animal) && animals.length < 2) {
-      animals.push(animal);
-      console.log(`🐾 TIER 2.5 ANIMAL DEBUG - Detected: ${animal}`);
-    }
+  // ENHANCED ANIMAL DETECTION with name-based deduplication
+  const namedAnimals = new Set();
+  const genericAnimals = new Set();
+  
+  // First pass: detect named animals (e.g., "Fluffy the cat", "Whiskers")
+  const namedAnimalPatterns = [
+    /(\w+)\s+the\s+(cat|dog|bunny|rabbit|bird|bear|fox|deer|squirrel)/gi,
+    /(\w+)\s*,?\s*(?:her|his|their)\s+(cat|dog|bunny|rabbit|bird|bear|fox|deer|squirrel)/gi
+  ];
+  
+  namedAnimalPatterns.forEach(pattern => {
+    const matches = [...pageText.matchAll(pattern)];
+    matches.forEach(match => {
+      const animalName = match[1].toLowerCase();
+      const animalType = match[2].toLowerCase();
+      if (animalName && animalType && namedAnimals.size < 1) {
+        namedAnimals.add(`${animalName} the ${animalType}`);
+        console.log(`🐾 TIER 2.5 NAMED ANIMAL DEBUG - Detected: ${animalName} the ${animalType}`);
+      }
+    });
   });
+  
+  // Second pass: only add generic animals if no named animals found
+  if (namedAnimals.size === 0) {
+    animalKeywords.forEach(animal => {
+      if (text.includes(animal) && genericAnimals.size < 1) {
+        genericAnimals.add(animal);
+        console.log(`🐾 TIER 2.5 GENERIC ANIMAL DEBUG - Detected: ${animal}`);
+      }
+    });
+  }
+  
+  // Combine results with priority to named animals
+  const finalAnimals = [...namedAnimals, ...genericAnimals].slice(0, 1);
+  animals.push(...finalAnimals);
   
   // Detect secondary characters mentioned in story
   const secondaryCharacters = [];
