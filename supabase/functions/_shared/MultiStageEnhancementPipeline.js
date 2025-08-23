@@ -274,6 +274,25 @@ export class MultiStageEnhancementPipeline {
         imageDifficulty // Pass difficulty as parameter
       );
       
+      // 7.5. AVATAR CONSISTENCY VALIDATION - Tier 1
+      console.log('🔍 Tier 1: Validating avatar consistency in generated prompt');
+      const validationResult = this.validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo, 'tier1');
+      
+      let finalPrompt = enhancedPrompt;
+      if (!validationResult.isValid) {
+        console.warn('⚠️ Tier 1: Avatar validation failed, generating enhanced prompt:', validationResult.reason);
+        finalPrompt = this.generateEnhancedAvatarPrompt(enhancedStoryText, validationResult.fixedAvatarIdentity, userInfo, styleFramework);
+        
+        // Re-validate the enhanced prompt
+        const revalidation = this.validateAvatarConsistency(finalPrompt, validationResult.fixedAvatarIdentity, userInfo, 'tier1-revalidated');
+        if (!revalidation.isValid) {
+          console.error('❌ Tier 1: Re-validation failed, cascading to Tier 2');
+          throw new Error(`Tier 1 avatar validation failed: ${revalidation.reason}`);
+        }
+      }
+      
+      console.log('✅ Tier 1: Avatar validation passed');
+      
       // 8. Generate unified negative prompt with style framework considerations
       const negativePrompt = this.buildUnifiedNegativePrompt(
         userInfo,
@@ -543,6 +562,25 @@ export class MultiStageEnhancementPipeline {
         },
         imageDifficulty
       );
+      
+      // 7.5. AVATAR CONSISTENCY VALIDATION - Tier 2
+      console.log('🔍 Tier 2: Validating avatar consistency in generated prompt');
+      const validationResult = this.validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo, 'tier2');
+      
+      let finalPrompt = enhancedPrompt;
+      if (!validationResult.isValid) {
+        console.warn('⚠️ Tier 2: Avatar validation failed, generating enhanced prompt:', validationResult.reason);
+        finalPrompt = this.generateEnhancedAvatarPrompt(enhancedStoryText, validationResult.fixedAvatarIdentity, userInfo, styleFramework);
+        
+        // Re-validate the enhanced prompt
+        const revalidation = this.validateAvatarConsistency(finalPrompt, validationResult.fixedAvatarIdentity, userInfo, 'tier2-revalidated');
+        if (!revalidation.isValid) {
+          console.error('❌ Tier 2: Re-validation failed, cascading to Tier 2.5');
+          throw new Error(`Tier 2 avatar validation failed: ${revalidation.reason}`);
+        }
+      }
+      
+      console.log('✅ Tier 2: Avatar validation passed');
       
       // 8. Generate unified negative prompt
       const negativePrompt = this.buildUnifiedNegativePrompt(
@@ -1035,6 +1073,170 @@ export class MultiStageEnhancementPipeline {
           reject(error);
         });
     });
+  }
+
+  // ============= AVATAR CONSISTENCY VALIDATION =============
+  static validateAvatarConsistency(prompt, avatarIdentity, userInfo, tier) {
+    console.log('🔍 Avatar Validation: Starting comprehensive validation', { tier, avatarIdentity, userInfo: userInfo?.name });
+    
+    if (!prompt) {
+      console.warn('⚠️ Avatar Validation: No prompt provided');
+      return { isValid: false, reason: 'missing_prompt' };
+    }
+    
+    // 1. Expanded Generic Pattern Detection
+    const genericPatterns = [
+      /\ba\s+(boy|girl|child|kid)\b/gi,
+      /\b(young|small|little)\s+(boy|girl|child|kid)\b/gi,
+      /\b(the|a)\s+(character|person|figure)\b/gi,
+      /\b(main|primary)\s+(character|child)\b/gi,
+      /\bgeneric\s+(description|character|child)\b/gi,
+      /\bplaceholder\s+(character|name|child)\b/gi,
+      /\bunnamed\s+(character|child|kid)\b/gi,
+      /\b(simple|basic)\s+(character|description)\b/gi
+    ];
+    
+    let hasGenericContent = false;
+    const foundGenericPatterns = [];
+    
+    for (const pattern of genericPatterns) {
+      const matches = prompt.match(pattern);
+      if (matches) {
+        hasGenericContent = true;
+        foundGenericPatterns.push(...matches);
+      }
+    }
+    
+    // 2. Avatar Identity Mapping Validation
+    let avatarMappingIssues = [];
+    
+    if (avatarIdentity) {
+      // Check if visualDescription maps properly to type and skinTone
+      if (avatarIdentity.visualDescription && (!avatarIdentity.type || !avatarIdentity.skinTone)) {
+        console.warn('⚠️ Avatar Validation: visualDescription exists but type/skinTone missing');
+        avatarMappingIssues.push('incomplete_avatar_mapping');
+        
+        // Attempt to extract from visualDescription
+        const desc = avatarIdentity.visualDescription.toLowerCase();
+        if (!avatarIdentity.type) {
+          if (desc.includes('girl')) avatarIdentity.type = 'girl';
+          else if (desc.includes('boy')) avatarIdentity.type = 'boy';
+        }
+        
+        if (!avatarIdentity.skinTone) {
+          if (desc.includes('dark') || desc.includes('black') || desc.includes('african')) {
+            avatarIdentity.skinTone = 'dark';
+          } else if (desc.includes('light') || desc.includes('white') || desc.includes('pale')) {
+            avatarIdentity.skinTone = 'light';
+          } else if (desc.includes('medium') || desc.includes('brown') || desc.includes('tan')) {
+            avatarIdentity.skinTone = 'medium';
+          }
+        }
+      }
+      
+      // Validate character name presence in prompt
+      const characterName = userInfo?.name || avatarIdentity?.name;
+      if (characterName && !prompt.toLowerCase().includes(characterName.toLowerCase())) {
+        avatarMappingIssues.push('missing_character_name');
+      }
+      
+      // Validate gender consistency
+      if (avatarIdentity.type && avatarIdentity.type !== 'prefer-not-to-answer') {
+        const genderPattern = avatarIdentity.type === 'girl' ? /\b(boy|male|he|him|his)\b/gi : /\b(girl|female|she|her|hers)\b/gi;
+        if (genderPattern.test(prompt)) {
+          avatarMappingIssues.push('gender_inconsistency');
+        }
+      }
+    } else {
+      avatarMappingIssues.push('missing_avatar_identity');
+    }
+    
+    // 3. Prompt Content Analysis for Missing/Generic Descriptions
+    const hasSpecificCharacterDetails = [
+      /with\s+(dark|light|medium|brown|blonde|black|red)\s+(hair|skin)/gi,
+      /wearing\s+(a|the|colorful|bright)/gi,
+      /(smiling|happy|excited|curious|thoughtful)/gi,
+      /\d+\s+year[s]?\s+old/gi,
+      /(ethnic|cultural|traditional|diverse)/gi
+    ].some(pattern => pattern.test(prompt));
+    
+    const lackingSpecifics = !hasSpecificCharacterDetails;
+    
+    // 4. Calculate Overall Validation Score
+    let validationScore = 100;
+    let issues = [];
+    
+    if (hasGenericContent) {
+      validationScore -= 40;
+      issues.push(`generic_patterns_found: ${foundGenericPatterns.join(', ')}`);
+    }
+    
+    if (avatarMappingIssues.length > 0) {
+      validationScore -= 30;
+      issues.push(`avatar_mapping_issues: ${avatarMappingIssues.join(', ')}`);
+    }
+    
+    if (lackingSpecifics) {
+      validationScore -= 20;
+      issues.push('lacking_specific_character_details');
+    }
+    
+    const isValid = validationScore >= 70; // Require 70% score to pass
+    
+    console.log('🔍 Avatar Validation Result:', {
+      tier,
+      isValid,
+      validationScore,
+      issues,
+      foundGenericPatterns,
+      avatarMappingIssues,
+      lackingSpecifics
+    });
+    
+    return {
+      isValid,
+      validationScore,
+      issues,
+      reason: issues.length > 0 ? issues.join(', ') : null,
+      foundGenericPatterns,
+      avatarMappingIssues,
+      fixedAvatarIdentity: avatarIdentity // Return the potentially fixed avatar identity
+    };
+  }
+  
+  // Helper method to generate enhanced avatar-specific prompt when validation fails
+  static generateEnhancedAvatarPrompt(storyText, avatarIdentity, userInfo, styleFramework) {
+    console.log('🔧 Avatar Validation: Generating enhanced avatar-specific prompt');
+    
+    const characterName = userInfo?.name || 'the child';
+    let characterDescription = characterName;
+    
+    if (avatarIdentity) {
+      if (avatarIdentity.type && avatarIdentity.type !== 'prefer-not-to-answer') {
+        characterDescription = `${characterName}, a ${avatarIdentity.type}`;
+      }
+      
+      if (avatarIdentity.skinTone) {
+        const skinToneDesc = avatarIdentity.skinTone === 'dark' ? 'with beautiful dark skin' : 
+                           avatarIdentity.skinTone === 'medium' ? 'with warm medium-toned skin' :
+                           avatarIdentity.skinTone === 'light' ? 'with light skin' : '';
+        if (skinToneDesc) characterDescription += ` ${skinToneDesc}`;
+      }
+      
+      if (avatarIdentity.visualDescription) {
+        // Extract additional details from visual description
+        const desc = avatarIdentity.visualDescription.toLowerCase();
+        if (desc.includes('hair')) {
+          const hairMatch = desc.match(/(blonde|brown|black|red|curly|straight|wavy)\s+hair/gi);
+          if (hairMatch) characterDescription += `, with ${hairMatch[0]}`;
+        }
+      }
+    }
+    
+    const enhancedPrompt = `${storyText} featuring ${characterDescription}, ${styleFramework.prompt}, ${styleFramework.brandSuffix}`;
+    
+    console.log('🔧 Avatar Validation: Enhanced prompt generated:', enhancedPrompt);
+    return enhancedPrompt;
   }
 
   // ============= TIER 2.5 FALLBACK SYSTEM (ONLY FOR FINAL TIER FAILURES) =============
