@@ -9,6 +9,7 @@ import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
+import { toast } from '@/hooks/use-toast';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -368,6 +369,13 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
   private static generateEnhancedFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): LivePageResult {
     console.log(`🚀 Live Generation: Using enhanced fallback first page (reason: ${reason})`);
     
+    // Show toast notification for template usage
+    toast({
+      title: "Pre-written Story",
+      description: "AI service temporarily unavailable. Enjoying quality pre-written content instead!",
+      variant: "default"
+    });
+    
     try {
       // Get proper prompt config to preserve page expectations
       let promptConfig: any;
@@ -447,6 +455,13 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     reason: string
   ): LivePageResult {
     console.log(`🚀 Live Generation: Using enhanced fallback templates page ${pageNumber} (reason: ${reason})`);
+    
+    // Show toast notification for template usage
+    toast({
+      title: "Pre-written Story",
+      description: "AI service temporarily unavailable. Enjoying quality pre-written content instead!",
+      variant: "default"
+    });
     
     try {
       // Use enhanced fallback system for continuation (187 templates available)

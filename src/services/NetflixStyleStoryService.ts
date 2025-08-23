@@ -10,6 +10,7 @@ import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DiagnosticTool } from '@/utils/diagnostics';
 import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
+import { toast } from '@/hooks/use-toast';
 
 export interface NetflixStoryResult {
   pages: string[];
@@ -227,6 +228,13 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
       userName: userInfo.name,
       fallbackMethod: 'enhanced_templates',
       timestamp: new Date().toISOString()
+    });
+    
+    // Show toast notification for template usage
+    toast({
+      title: "Pre-written Story",
+      description: "AI service temporarily unavailable. Enjoying quality pre-written content instead!",
+      variant: "default"
     });
     
     try {
