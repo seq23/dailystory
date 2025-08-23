@@ -455,19 +455,19 @@ function getHardcodedStyle(difficulty: string) {
       strength: 0.8
     },
     'hard': {
-      prompt: '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed, advanced digital painting techniques',
-      quality: 'Sophisticated artistic children\'s book illustration',
-      suffix: 'artistic children\'s book illustration, refined quality, diverse representation',
-      steps: 12,
-      cfgScale: 4.0,
-      strength: 0.9
+      prompt: 'Professional digital illustration with sophisticated artistic technique, refined color theory and palette mastery, intricate compositional details, advanced lighting techniques, mature visual storytelling',
+      quality: 'Gallery-quality digital illustration with sophisticated artistic maturity, professional composition and advanced visual narrative techniques',
+      suffix: 'professional digital illustration, sophisticated artistic maturity, refined visual storytelling, advanced composition techniques, gallery-worthy quality',
+      steps: 20,
+      cfgScale: 8.0,
+      strength: 0.85
     },
     'expert': {
-      prompt: '2D digital illustration (masterful artistic technique), complex color theory, intricate details',
-      quality: 'Masterful children\'s book art with diverse representation',
-      suffix: 'masterful children\'s book art, sophisticated quality, diverse representation',
-      steps: 12,
-      cfgScale: 4.0,
+      prompt: 'Fine art digital illustration with masterful artistic technique, complex color harmonies and advanced tonal relationships, museum-quality detail work, professional lighting mastery, cinematic visual narrative sophistication',
+      quality: 'Museum-quality fine art digital illustration with masterful artistic sophistication, cinematic composition and professional visual narrative excellence',
+      suffix: 'fine art digital illustration, masterful artistic sophistication, cinematic visual narrative, museum-quality professional artwork, advanced compositional mastery',
+      steps: 25,
+      cfgScale: 8.5,
       strength: 0.9
     }
   };
