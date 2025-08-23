@@ -26,6 +26,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 import { SynchronizedAudioControls } from "@/components/SynchronizedAudioControls";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
+import { StoryContentLogger } from "@/utils/StoryContentLogger";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
@@ -163,7 +164,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       if (currentStory?.isFromSavedStory && currentStory.segments) {
         console.log('📖 Loading saved story with cached content');
         const storyPages = currentStory.segments.map((s: any) => s.text);
+        StoryContentLogger.logStoryChange('saved_story_load', 'before', storyPages, { 
+          source: 'saved story segments',
+          segmentCount: currentStory.segments.length
+        });
         setStory(storyPages);
+        StoryContentLogger.logStoryChange('saved_story_load', 'after', storyPages, {
+          currentPage: 0,
+          isComplete: true,
+          title: currentStory.title || `${userInfo.name}'s Story`
+        });
         setCurrentPage(0);
         setIsStoryComplete(true);
         setStoryTitle(currentStory.title || `${userInfo.name}'s Story`);
@@ -957,7 +967,16 @@ const initializeStory = async () => {
           const cached = StorySessionCache.getCachedStorySession(cacheId);
           if (cached && cached.pages?.length) {
             console.log('♻️ Restoring premium story from cache');
+            StoryContentLogger.logStoryChange('premium_cache_restore', 'before', cached.pages, {
+              cacheId,
+              cachedPageCount: cached.pages.length,
+              currentPage: cached.currentPage || 0,
+              isComplete: !!cached.isComplete
+            });
             setStory(cached.pages);
+            StoryContentLogger.logStoryChange('premium_cache_restore', 'after', cached.pages, {
+              restoredCurrentPage: Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1))
+            });
             setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
             setIsStoryComplete(!!cached.isComplete);
             setStoryTitle(`${userInfo.name}'s Live Adventure`);
@@ -994,7 +1013,17 @@ const initializeStory = async () => {
         return;
       }
       
+      StoryContentLogger.logStoryChange('premium_first_page', 'before', [result.content], {
+        userInfo: effectiveUser.name,
+        difficulty: currentDifficulty,
+        hasNextContext: !!result.nextContext,
+        isComplete: result.isComplete
+      });
       setStory([result.content]);
+      StoryContentLogger.logStoryChange('premium_first_page', 'after', [result.content], {
+        expertGradeLevel: result.nextContext?.expertGradeLevel,
+        title: `${userInfo.name}'s Live Adventure`
+      });
       setLiveContext(result.nextContext || null);
       // Sync UI with adaptive expert grade if returned
       if (result.nextContext?.expertGradeLevel) {
@@ -1033,7 +1062,18 @@ const initializeStory = async () => {
           const cached = StorySessionCache.getCachedStorySession('guest', avatarType);
           if (cached && cached.pages?.length) {
             console.log(`♻️ Restoring guest story from cache (avatar: ${avatarType}) - CONTENT LOCKED AFTER RESTORE`);
+            StoryContentLogger.logStoryChange('guest_cache_restore', 'before', cached.pages, {
+              avatarType,
+              cachedPageCount: cached.pages.length,
+              currentPage: cached.currentPage || 0,
+              isContentLocked: true
+            });
             setStory(cached.pages);
+            StoryContentLogger.logStoryChange('guest_cache_restore', 'after', cached.pages, {
+              restoredCurrentPage: Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)),
+              title: `${userInfo.name}'s Adventure`,
+              storySource: 'unknown'
+            });
             setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
             setStoryTitle(`${userInfo.name}'s Adventure`);
             setIsStoryComplete(true);
@@ -1119,10 +1159,21 @@ const initializeStory = async () => {
         processedPages = result.pages;
       }
 
+      StoryContentLogger.logStoryChange('free_complete_story', 'before', processedPages, {
+        originalPageCount: result.pages.length,
+        processedPageCount: processedPages.length,
+        title: result.title,
+        storySource: (window as any).__LAST_STORY_SOURCE__ || 'unknown'
+      });
       setStory(processedPages);
       setStoryTitle(result.title);
       setIsStoryComplete(true);
       const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      StoryContentLogger.logStoryChange('free_complete_story', 'after', processedPages, {
+        isComplete: true,
+        finalSource: srcFree,
+        title: result.title
+      });
       console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
       setStorySource(srcFree as any);
 
@@ -1453,7 +1504,17 @@ const initializeStory = async () => {
       setJustAdvanced(true);
       const result = await generateNextPage();
       if (result && !result.error) {
+        StoryContentLogger.logStoryChange('premium_next_page', 'before', [...story, result.content], {
+          currentPageBeforeAdd: currentPage,
+          newPageContent: result.content.substring(0, 100),
+          hasNextContext: !!result.nextContext,
+          isComplete: result.isComplete
+        });
         setStory(prev => [...prev, result.content]);
+        StoryContentLogger.logStoryChange('premium_next_page', 'after', [...story, result.content], {
+          newCurrentPage: currentPage + 1,
+          totalPages: story.length + 1
+        });
         setLiveContext(result.nextContext || null);
         setIsStoryComplete(result.isComplete);
         setCurrentPage(prev => prev + 1);
@@ -1492,7 +1553,16 @@ const initializeStory = async () => {
             };
             const result = await LiveGenerationService.generateNextPage(newContext);
             if (result && !result.error) {
+              StoryContentLogger.logStoryChange('premium_sequel_generation', 'before', [...story, result.content], {
+                sequelContext: 'continuation',
+                newPageContent: result.content.substring(0, 100),
+                totalExpectedPages: Math.max(story.length + 1, 6)
+              });
               setStory(prev => [...prev, result.content]);
+              StoryContentLogger.logStoryChange('premium_sequel_generation', 'after', [...story, result.content], {
+                newCurrentPage: currentPage + 1,
+                totalPages: story.length + 1
+              });
               setLiveContext(result.nextContext || newContext);
               setIsStoryComplete(result.isComplete);
               setCurrentPage(prev => prev + 1);
@@ -1510,7 +1580,16 @@ const initializeStory = async () => {
         // Fallback: continue generation if story not marked complete
         const result = await generateNextPage();
         if (result && !result.error) {
+          StoryContentLogger.logStoryChange('premium_fallback_next', 'before', [...story, result.content], {
+            fallbackReason: 'story not complete',
+            newPageContent: result.content.substring(0, 100),
+            hasNextContext: !!result.nextContext
+          });
           setStory(prev => [...prev, result.content]);
+          StoryContentLogger.logStoryChange('premium_fallback_next', 'after', [...story, result.content], {
+            newCurrentPage: currentPage + 1,
+            totalPages: story.length + 1
+          });
           setLiveContext(result.nextContext || null);
           setIsStoryComplete(result.isComplete);
           setCurrentPage(prev => prev + 1);
@@ -1928,7 +2007,18 @@ const handleRestartTimer = () => {
         if ((first as any).error) {
           throw new Error((first as any).error);
         }
+        StoryContentLogger.logStoryChange('premium_rewrite_first', 'before', [first.content], {
+          isRewrite: isRewrite,
+          sessionType: sessionTypeParam,
+          userInfo: effectiveUser.name,
+          hasNextContext: !!first.nextContext
+        });
         setStory([first.content]);
+        StoryContentLogger.logStoryChange('premium_rewrite_first', 'after', [first.content], {
+          expertGradeLevel: first.nextContext?.expertGradeLevel,
+          isComplete: first.isComplete,
+          title: `${userInfo.name}'s Live Adventure`
+        });
         setCurrentPage(0);
         setLiveContext(first.nextContext || null);
         if (first.nextContext?.expertGradeLevel) {
@@ -1956,7 +2046,17 @@ const handleRestartTimer = () => {
         
         const result = await NetflixStyleStoryService.generateCompleteStory(refreshUserInfo);
         const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
+        StoryContentLogger.logStoryChange('free_story_rewrite', 'before', newStory, {
+          originalPageCount: originalPageCount,
+          totalGeneratedPages: result.pages.length,
+          slicedToCount: newStory.length,
+          userInfo: refreshUserInfo.name
+        });
         setStory(newStory);
+        StoryContentLogger.logStoryChange('free_story_rewrite', 'after', newStory, {
+          currentPage: 0,
+          isRewrite: true
+        });
         setCurrentPage(0);
       }
     } catch (error) {
@@ -2048,7 +2148,17 @@ const handleRestartTimer = () => {
     try {
       const result = await LiveGenerationService.generateEndingPage(liveContext);
       if (result && !result.error) {
+        StoryContentLogger.logStoryChange('premium_ending_page', 'before', [...story, result.content], {
+          endingPageContent: result.content.substring(0, 100),
+          currentStoryLength: story.length,
+          hasLiveContext: !!liveContext
+        });
         setStory(prev => [...prev, result.content]);
+        StoryContentLogger.logStoryChange('premium_ending_page', 'after', [...story, result.content], {
+          endingPageIndex: story.length,
+          isComplete: true,
+          liveContextCleared: true
+        });
         setIsStoryComplete(true);
         setLiveContext(null);
 
