@@ -120,6 +120,77 @@ import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse 
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
+// Hardcoded avatar fallback descriptions
+const AVATAR_FALLBACK_DESCRIPTIONS = {
+  // PALE SKIN TONE
+  "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+  "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
+  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+
+  // LIGHT SKIN TONE  
+  "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+
+  // MEDIUM SKIN TONE
+  "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
+  "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+
+  // OLIVE SKIN TONE
+  "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+  "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
+  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+
+  // DARK SKIN TONE (Enhanced descriptions)
+  "girl/dark": "{name} is a young black girl, rich dark brown skin, curly black hair in ponytails, bright brown eyes, joyful expression, soft natural lighting",
+  "boy/dark": "{name} is a young black boy, rich dark brown skin, short textured black hair, warm brown eyes, friendly smile, natural lighting",
+  "prefer-not-to-answer/dark": "{name} is a young black child, rich dark brown skin, curly black hair in ponytails, bright brown eyes, joyful expression, soft natural lighting",
+
+  // DEFAULT FALLBACK
+  "default": "{name} is a young child with a bright smile and cheerful demeanor"
+};
+
+// Avatar consistency validation function
+function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo: any): string {
+  const userName = userInfo?.name || 'child';
+  
+  // If no avatar identity provided, use fallback
+  if (!avatarIdentity) {
+    console.log('🔍 VALIDATION: No avatarIdentity provided, using fallback');
+    const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    const fallbackKey = `${avatarType}/${skinTone}`;
+    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
+    return fallbackDescription.replace('{name}', userName);
+  }
+  
+  // Check if prompt contains generic descriptions
+  const genericPatterns = [
+    `${userName} is a young child`,
+    `${userName} is a child`,
+    'young child with',
+    'child with'
+  ];
+  
+  const isGeneric = genericPatterns.some(pattern => 
+    prompt.toLowerCase().includes(pattern.toLowerCase())
+  );
+  
+  if (isGeneric) {
+    console.log('🔍 VALIDATION: Generic description detected, using enhanced fallback');
+    const avatarType = avatarIdentity.type || 'prefer-not-to-answer';
+    const skinTone = avatarIdentity.skinTone || 'medium';
+    const fallbackKey = `${avatarType}/${skinTone}`;
+    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
+    console.log(`🔍 VALIDATION: Using fallback ${fallbackKey}: ${fallbackDescription}`);
+    return fallbackDescription.replace('{name}', userName);
+  }
+  
+  // Replace {name} placeholder if present
+  return prompt.replace('{name}', userName);
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -179,7 +250,12 @@ serve(async (req) => {
       avatarIdentity
     );
 
-    const finalPrompt = enhancementResult.enhancedPrompt;
+    // Validate and enhance character consistency with hardcoded fallbacks
+    const validatedPrompt = validateAvatarConsistency(enhancementResult.enhancedPrompt, avatarIdentity, userInfo);
+    console.log(`🔍 VALIDATION: Original prompt validated/enhanced`);
+    console.log(`📝 Validated Prompt: ${validatedPrompt}`);
+
+    const finalPrompt = validatedPrompt;
     const negativePrompt = enhancementResult.negativePrompt;
     const optimizedParameters = enhancementResult.generationParams;
 

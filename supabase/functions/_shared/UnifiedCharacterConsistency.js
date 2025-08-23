@@ -66,6 +66,7 @@ class UnifiedCharacterConsistency {
       culturalElements,
       avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'prefer-not-to-answer',
       skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
+      avatarIdentity: avatarIdentity,
       contextualAppearance: {
         currentClothing: culturalElements.clothing,
         currentHairStyle: 'natural style',
