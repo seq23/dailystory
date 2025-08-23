@@ -89,9 +89,14 @@ export class MultiStageEnhancementPipeline {
       
       console.log(`🧠 Enhanced Data: ${enhancedStoryData ? 'AI-enhanced input available' : 'Using standard processing'}`);
       
-      // Import fresh frontend intelligence and character consistency
+      // Import fresh frontend intelligence and character consistency with comprehensive error handling
+      console.log('🔍 Tier 1: Starting FrontendIntelligence import...');
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      console.log('✅ Tier 1: FrontendIntelligence import successful');
+      
+      console.log('🔍 Tier 1: Starting UnifiedCharacterConsistency import...');
       const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
+      console.log('✅ Tier 1: UnifiedCharacterConsistency import successful');
       
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
@@ -380,8 +385,12 @@ export class MultiStageEnhancementPipeline {
       };
       
     } catch (error) {
-      console.error('❌ Tier 1 High-Quality processing failed:', error);
-      return this.createFallbackResult(storyText, userInfo, 'tier1-high-quality');
+      console.error('❌ Tier 1 High-Quality processing failed - cascading to Tier 2:', error.message);
+      console.error('🔍 Tier 1 Error Stack:', error.stack);
+      console.error('🔍 Tier 1 Function Context:', { storyId, sessionId, pageNumber, totalPages });
+      
+      // Throw error to enable proper tier cascading (Tier 1 → Tier 2)
+      throw new Error(`Tier 1 processing failed: ${error.message}`);
     }
   }
   
@@ -392,9 +401,14 @@ export class MultiStageEnhancementPipeline {
     console.log('🔍 TIER 2 DEBUG - avatarIdentity received:', avatarIdentity);
     console.log('🔍 TIER 2 DEBUG - avatarIdentity.visualDescription:', avatarIdentity?.visualDescription);
 
-      // Load all required modules for premium processing
+      // Load all required modules for premium processing with comprehensive error handling
+      console.log('🔍 Tier 2: Starting FrontendIntelligence import...');
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      console.log('✅ Tier 2: FrontendIntelligence import successful');
+      
+      console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import...');
       const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
+      console.log('✅ Tier 2: UnifiedCharacterConsistency import successful');
       
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
@@ -613,8 +627,12 @@ export class MultiStageEnhancementPipeline {
       };
       
     } catch (error) {
-      console.error('❌ Tier 2 premium processing failed:', error);
-      return this.createFallbackResult(storyText, userInfo, pageNumber);
+      console.error('❌ Tier 2 premium processing failed - cascading to Tier 2.5:', error.message);
+      console.error('🔍 Tier 2 Error Stack:', error.stack);
+      console.error('🔍 Tier 2 Function Context:', { storyId, sessionId, pageNumber, totalPages });
+      
+      // Throw error to enable proper tier cascading (Tier 2 → Tier 2.5)
+      throw new Error(`Tier 2 processing failed: ${error.message}`);
     }
   }
   
@@ -1019,20 +1037,34 @@ export class MultiStageEnhancementPipeline {
     });
   }
 
-  // ============= FALLBACK SYSTEM =============
+  // ============= TIER 2.5 FALLBACK SYSTEM (ONLY FOR FINAL TIER FAILURES) =============
   static createFallbackResult(storyText, userInfo, tier) {
+    console.warn('🚨 Tier 2.5 Fallback activated:', { tier, storyTextLength: storyText?.length || 0 });
+    
     const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
     const framework = getStyleFramework(difficulty);
     
+    // Use the new brand suffix from framework instead of hardcoded text
+    const fallbackPrompt = `${storyText}, ${framework.prompt}, ${framework.brandSuffix}`;
+    
+    console.log('📝 Tier 2.5 Fallback Prompt:', fallbackPrompt);
+    console.log('🎨 Tier 2.5 Framework Used:', { 
+      difficulty, 
+      frameworkName: framework.name, 
+      brandSuffix: framework.brandSuffix 
+    });
+    
     return {
-      enhancedPrompt: `${storyText}, ${framework.prompt}, children's book illustration`,
+      enhancedPrompt: fallbackPrompt,
       negativePrompt: this.buildUnifiedNegativePrompt(userInfo, {}, {}, 1, null),
       generationParams: framework.parameters,
       metadata: {
-        tier: tier,
-        qualityScore: tier === 'tier1-fallback' ? 70 : 60,
+        tier: `tier-2.5-fallback-${tier}`,
+        qualityScore: 50, // Lower score for final fallback
         difficulty: difficulty,
-        styleFramework: 'Fallback'
+        styleFramework: framework.name,
+        brandSuffix: framework.brandSuffix,
+        fallbackReason: 'All tier processing failed'
       }
     };
   }
