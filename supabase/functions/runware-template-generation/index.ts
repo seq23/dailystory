@@ -1,4 +1,4 @@
-// PHASE 5: Circuit Breaker and Enhanced Error Handling
+// ENHANCED CIRCUIT BREAKER AND ERROR HANDLING WITH MONITORING
 class ServiceCircuitBreaker {
   static circuits = new Map();
   
@@ -11,6 +11,13 @@ class ServiceCircuitBreaker {
         threshold: 3,
         timeout: 30000 // 30 seconds
       });
+      
+      // Initialize circuit breaker state tracking
+      CircuitBreakerMonitor.trackCircuitBreakerState(serviceName, 'CLOSED', {
+        event: 'initialization',
+        threshold: 3,
+        timeout: 30000
+      });
     }
     return this.circuits.get(serviceName);
   }
@@ -22,10 +29,28 @@ class ServiceCircuitBreaker {
     if (circuit.state === 'OPEN') {
       const timeSinceLastFailure = Date.now() - circuit.lastFailureTime;
       if (timeSinceLastFailure < circuit.timeout) {
-        throw new Error(`Circuit breaker is OPEN for ${serviceName}. Failing fast.`);
+        // Log circuit breaker preventing operation
+        CircuitBreakerMonitor.trackCircuitBreakerState(serviceName, 'OPEN', {
+          timeRemaining: circuit.timeout - timeSinceLastFailure,
+          failures: circuit.failures,
+          context
+        });
+        
+        const error = new Error(`Circuit breaker is OPEN for ${serviceName}. Failing fast.`);
+        TierFailureLogger.logRunwareFailure(error, {
+          ...context,
+          circuitBreakerState: 'OPEN',
+          timeRemaining: circuit.timeout - timeSinceLastFailure
+        });
+        
+        throw error;
       } else {
         circuit.state = 'HALF_OPEN';
         console.log(`🔄 CIRCUIT: ${serviceName} moving to HALF_OPEN state`);
+        CircuitBreakerMonitor.trackCircuitBreakerState(serviceName, 'HALF_OPEN', {
+          event: 'timeout_recovery',
+          context
+        });
       }
     }
     
@@ -37,7 +62,19 @@ class ServiceCircuitBreaker {
         circuit.state = 'CLOSED';
         circuit.failures = 0;
         console.log(`✅ CIRCUIT: ${serviceName} restored to CLOSED state`);
+        CircuitBreakerMonitor.trackCircuitBreakerState(serviceName, 'CLOSED', {
+          event: 'success_recovery',
+          failures: circuit.failures
+        });
       }
+      
+      // Track service health on success
+      CircuitBreakerMonitor.trackServiceHealth(serviceName, {
+        status: 'healthy',
+        failures: circuit.failures,
+        lastSuccess: Date.now(),
+        context
+      });
       
       return result;
     } catch (error) {
@@ -49,10 +86,32 @@ class ServiceCircuitBreaker {
         context
       });
       
+      // Log Runware-specific failures
+      TierFailureLogger.logRunwareFailure(error, {
+        ...context,
+        failures: circuit.failures,
+        threshold: circuit.threshold
+      });
+      
+      // Track service health on failure
+      CircuitBreakerMonitor.trackServiceHealth(serviceName, {
+        status: 'degraded',
+        failures: circuit.failures,
+        lastFailure: circuit.lastFailureTime,
+        errorMessage: error.message,
+        context
+      });
+      
       // Check if we should open the circuit
       if (circuit.failures >= circuit.threshold) {
         circuit.state = 'OPEN';
         console.error(`💥 CIRCUIT: ${serviceName} circuit breaker is now OPEN`);
+        CircuitBreakerMonitor.trackCircuitBreakerState(serviceName, 'OPEN', {
+          event: 'threshold_exceeded',
+          failures: circuit.failures,
+          threshold: circuit.threshold,
+          context
+        });
       }
       
       throw error;
@@ -115,8 +174,9 @@ class EnhancedRetryManager {
   }
 }
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 

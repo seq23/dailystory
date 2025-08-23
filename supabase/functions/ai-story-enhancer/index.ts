@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 import { validateAndEnhanceContent } from "../_shared/SimpleContentValidator.js";
+import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
 
 // AI Model Fallback Chain Configuration - UPDATED TO FLAGSHIP MODELS
 const AI_MODELS = [
@@ -10,7 +11,7 @@ const AI_MODELS = [
   { name: 'gpt-4o-mini', maxTokens: 'max_tokens', supportsTemperature: true }
 ] as const;
 
-// ============= PHASE 4: UNIFIED CIRCUIT BREAKER SYSTEM =============
+// ============= ENHANCED CIRCUIT BREAKER SYSTEM WITH MONITORING =============
 // Bulletproof circuit breaker to prevent cascading failures
 class UnifiedCircuitBreaker {
   private failures = 0;
@@ -19,36 +20,96 @@ class UnifiedCircuitBreaker {
   private readonly timeout = 30000; // 30 seconds
   
   isOpen(): boolean {
+    const isCurrentlyOpen = this.failures >= this.threshold && (Date.now() - this.lastFailure < this.timeout);
+    
     if (this.failures >= this.threshold) {
       if (Date.now() - this.lastFailure < this.timeout) {
+        // Log circuit breaker state
+        CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'OPEN', {
+          failures: this.failures,
+          threshold: this.threshold,
+          timeoutRemaining: this.timeout - (Date.now() - this.lastFailure)
+        });
         return true;
       }
       // Reset circuit breaker after timeout
       this.failures = 0;
+      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
+        event: 'timeout_reset',
+        failures: this.failures
+      });
     }
     return false;
   }
   
   recordSuccess(): void {
+    const wasOpen = this.failures >= this.threshold;
     this.failures = 0;
+    
+    if (wasOpen) {
+      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
+        event: 'success_recovery',
+        failures: this.failures
+      });
+    }
+    
+    // Track service health on success
+    CircuitBreakerMonitor.trackServiceHealth('OPENAI_API', {
+      status: 'healthy',
+      failures: this.failures,
+      lastSuccess: Date.now()
+    });
   }
   
   recordFailure(): void {
     this.failures++;
     this.lastFailure = Date.now();
+    
+    if (this.failures >= this.threshold) {
+      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'OPEN', {
+        failures: this.failures,
+        threshold: this.threshold,
+        event: 'threshold_exceeded'
+      });
+    } else {
+      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'HALF_OPEN', {
+        failures: this.failures,
+        threshold: this.threshold
+      });
+    }
+    
+    // Track service health on failure
+    CircuitBreakerMonitor.trackServiceHealth('OPENAI_API', {
+      status: 'degraded',
+      failures: this.failures,
+      lastFailure: this.lastFailure
+    });
   }
 }
 
 const circuitBreaker = new UnifiedCircuitBreaker();
-console.log('🔧 Phase 4: Unified circuit breaker initialized');
+console.log('🔧 Enhanced circuit breaker with monitoring initialized');
+
+// Initialize circuit breaker state tracking
+CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
+  event: 'initialization',
+  threshold: 3,
+  timeout: 30000
+});
 
 async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
-  // Circuit breaker check
+  // Circuit breaker check with enhanced logging
   if (circuitBreaker.isOpen()) {
     console.warn('🚫 Circuit breaker is open, skipping OpenAI - using Tier 2 immediately');
-    throw new Error('Circuit breaker open - service degraded');
+    const error = new Error('Circuit breaker open - service degraded');
+    TierFailureLogger.logTier1OpenAIFailure(error, { 
+      reason: 'circuit_breaker_open',
+      timeout: 12000,
+      models: AI_MODELS.map(m => m.name)
+    });
+    throw error;
   }
   
   for (let modelIndex = 0; modelIndex < AI_MODELS.length; modelIndex++) {
@@ -94,6 +155,15 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
           const errorText = await response.text();
           console.warn(`⚠️ Model ${model.name} returned ${response.status} on attempt ${attempt}: ${errorText}`);
           
+          // Log service-specific failures
+          const error = new Error(`${response.status}: ${errorText}`);
+          TierFailureLogger.logTier1OpenAIFailure(error, {
+            model: model.name,
+            attempt,
+            status: response.status,
+            retryable: true
+          });
+          
           if (attempt < 3) {
             const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 8000); // Exponential backoff, max 8s
             console.log(`⏳ Retrying after ${backoffDelay}ms...`);
@@ -103,13 +173,34 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
         } else {
           const errorText = await response.text();
           console.error(`❌ Model ${model.name} failed with status ${response.status}: ${errorText}`);
+          
+          // Log non-retryable failures
+          const error = new Error(`${response.status}: ${errorText}`);
+          TierFailureLogger.logTier1OpenAIFailure(error, {
+            model: model.name,
+            attempt,
+            status: response.status,
+            retryable: false
+          });
+          
           break; // Don't retry on non-transient errors
         }
       } catch (error) {
         if (error.name === 'AbortError') {
           console.warn(`⏰ Model ${model.name} timed out after ${timeout}ms on attempt ${attempt}`);
+          TierFailureLogger.logTier1OpenAIFailure(error, {
+            model: model.name,
+            attempt,
+            timeout,
+            errorType: 'timeout'
+          });
         } else {
           console.error(`❌ Model ${model.name} error on attempt ${attempt}:`, error.message);
+          TierFailureLogger.logTier1OpenAIFailure(error, {
+            model: model.name,
+            attempt,
+            errorType: 'network_or_unknown'
+          });
         }
         
         if (attempt < 3) {
@@ -122,10 +213,26 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
     
     console.warn(`❌ Model ${model.name} failed after 3 attempts, trying next model...`);
     circuitBreaker.recordFailure();
+    
+    // Log model exhaustion
+    TierFailureLogger.logTier1OpenAIFailure(new Error(`Model ${model.name} exhausted after 3 attempts`), {
+      model: model.name,
+      totalAttempts: 3,
+      failureType: 'model_exhausted'
+    });
   }
   
   console.error('🚫 All AI models exhausted - circuit breaker will activate if failures continue');
-  throw new Error('All AI models failed after multiple attempts - service may be degraded');
+  
+  // Log complete model chain failure
+  const error = new Error('All AI models failed after multiple attempts - service may be degraded');
+  TierFailureLogger.logTier1OpenAIFailure(error, {
+    models: AI_MODELS.map(m => m.name),
+    totalModels: AI_MODELS.length,
+    failureType: 'all_models_exhausted'
+  });
+  
+  throw error;
 }
 
 serve(async (req) => {
@@ -357,18 +464,57 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
             throw new Error(`JSON parsing failed: ${parseError.message} - Content: "${trimmedContent.substring(0, 100)}..."`);
           }
           
-          // ULTRA-LEAN VALIDATION WITH QUALITY GATE
+          // ULTRA-LEAN VALIDATION WITH QUALITY GATE & MONITORING
           validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+          
+          // Track quality score for monitoring
+          QualityGateMonitor.trackQualityScore(validationResult.qualityScore || 100, {
+            tier: 'TIER_1',
+            sessionId,
+            storyId,
+            enhancementMethod: 'openai',
+            contentLength: storyText.length
+          });
           
           // QUALITY GATE: If score too low (0-30) → Return error to Orchestrator for Tier 2
           if (validationResult.useTier2) {
             console.log(`🚀 Quality gate triggered - returning error to Orchestrator (score: ${validationResult.qualityScore}/100)`);
+            
+            // Log validation failure that triggers Tier 2
+            TierFailureLogger.logTier1ValidationFailure(validationResult, {
+              sessionId,
+              storyId,
+              pageNumber,
+              trigger: 'quality_too_low'
+            });
+            
+            // Track quality gate failure
+            QualityGateMonitor.trackValidationFailure('QUALITY_TOO_LOW', {
+              score: validationResult.qualityScore,
+              mismatches: validationResult.mismatches
+            }, { sessionId, storyId, tier: 'TIER_1' });
+            
             return createCorsErrorResponse(`Quality gate failure - score: ${validationResult.qualityScore}/100`, 422);
           }
           
           // If major mismatches detected, trigger re-analysis once
           if (validationResult.requiresReanalysis) {
             console.log(`🔄 Re-analyzing due to content mismatches (score: ${validationResult.qualityScore}/100)...`);
+            
+            // Log reanalysis requirement
+            TierFailureLogger.logTier1ValidationFailure(validationResult, {
+              sessionId,
+              storyId,
+              pageNumber,
+              trigger: 'requires_reanalysis'
+            });
+            
+            // Track validation failure requiring reanalysis
+            QualityGateMonitor.trackValidationFailure('REQUIRES_REANALYSIS', {
+              score: validationResult.qualityScore,
+              mismatches: validationResult.mismatches
+            }, { sessionId, storyId, tier: 'TIER_1' });
+            
             const retryResult = await callOpenAIWithFallback(messages);
             if (retryResult.choices?.[0]?.message?.content) {
               // PHASE 2: Apply same bulletproof validation to retry response
@@ -380,6 +526,16 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
               try {
                 enhancedStoryData = JSON.parse(retryTrimmedContent);
                 validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+                
+                // Track retry quality score
+                QualityGateMonitor.trackQualityScore(validationResult.qualityScore || 100, {
+                  tier: 'TIER_1_RETRY',
+                  sessionId,
+                  storyId,
+                  enhancementMethod: 'openai_retry',
+                  contentLength: storyText.length
+                });
+                
               } catch (retryParseError) {
                 throw new Error(`Retry JSON parsing failed: ${retryParseError.message}`);
               }
@@ -387,6 +543,15 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
               // If still bad after retry → Return error to Orchestrator
               if (validationResult.useTier2 || validationResult.requiresReanalysis) {
                 console.log(`🚀 Re-analysis failed - returning error to Orchestrator`);
+                
+                // Log retry failure
+                TierFailureLogger.logTier1ValidationFailure(validationResult, {
+                  sessionId,
+                  storyId,
+                  pageNumber,
+                  trigger: 'reanalysis_failed'
+                });
+                
                 return createCorsErrorResponse('Re-analysis failed - quality insufficient', 422);
               }
             }
@@ -396,6 +561,15 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           
         } catch (parseError) {
           console.error('Failed to parse AI response - returning error to Orchestrator:', parseError.message);
+          
+          // Log parsing failure
+          TierFailureLogger.logTier1OpenAIFailure(parseError, {
+            sessionId,
+            storyId,
+            pageNumber,
+            failureType: 'parsing_failed'
+          });
+          
           return createCorsErrorResponse(`Parse error: ${parseError.message}`, 422);
         }
 
