@@ -1432,6 +1432,9 @@ const initializeStory = async () => {
     try { audioEngineRef.current.stop(); } catch {}
     setIsAudioPlaying(false);
     clearHighlighting();
+    
+    // Set story as unstable during navigation to prevent image generation conflicts
+    setIsStoryStable(false);
 
     // Count words for the page we're leaving (once per page)
     if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
@@ -1454,11 +1457,22 @@ const initializeStory = async () => {
         setLiveContext(result.nextContext || null);
         setIsStoryComplete(result.isComplete);
         setCurrentPage(prev => prev + 1);
+        
+        // Stabilize story content after generation with delay to prevent flickering
+        setTimeout(() => {
+          setIsStoryStable(true);
+          console.log('📚 Story stabilized after next page generation');
+        }, 500);
+      } else {
+        // Re-stabilize on error
+        setIsStoryStable(true);
       }
       setTimeout(() => setJustAdvanced(false), 600);
     } else if (currentPage < displayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
+      // Re-stabilize immediately for existing content
+      setTimeout(() => setIsStoryStable(true), 100);
     } else {
       // Last page reached
       if (isPremium) {

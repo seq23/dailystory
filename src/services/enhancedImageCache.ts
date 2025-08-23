@@ -411,7 +411,7 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Validate story continuity for cached images
+   * Validate story continuity for cached images with enhanced story-image alignment
    */
   private static validateStoryContinuity(cached: CachedImage, currentMarkers: string): boolean {
     // Simple validation: if we have contextual markers, they should remain consistent
@@ -422,13 +422,40 @@ export class EnhancedImageCache {
     const currentElements = currentMarkers.toLowerCase().split(',').map(s => s.trim());
     const timeAgo = Date.now() - cached.timestamp;
     
-    // Allow some flexibility for recent images (within 5 minutes)
-    if (timeAgo < 5 * 60 * 1000) {
+    // Enhanced story alignment validation - check for story content fingerprint match
+    const storyFingerprint = this.extractStoryFingerprint(currentMarkers);
+    const cachedFingerprint = cached.storyHash || 'unknown';
+    
+    // If story content has changed significantly, invalidate cache
+    if (storyFingerprint !== cachedFingerprint && timeAgo > 2 * 60 * 1000) {
+      console.log('📸 Story content fingerprint mismatch:', {
+        current: storyFingerprint,
+        cached: cachedFingerprint,
+        ageMinutes: Math.round(timeAgo / 60000)
+      });
+      return false;
+    }
+    
+    // Allow flexibility for very recent images (within 2 minutes) to handle story post-processing
+    if (timeAgo < 2 * 60 * 1000) {
       return true;
     }
     
     // For older cached images, be more strict about context matching
-    return false;
+    return currentElements.length > 0 && currentElements.some(element => 
+      cachedFingerprint.includes(element) || storyFingerprint.includes(element)
+    );
+  }
+
+  /**
+   * Extract story fingerprint for content alignment validation
+   */
+  private static extractStoryFingerprint(markers: string): string {
+    if (!markers) return 'default';
+    
+    // Create a normalized fingerprint from story markers
+    const elements = markers.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+    return elements.sort().join('-');
   }
 
   /**

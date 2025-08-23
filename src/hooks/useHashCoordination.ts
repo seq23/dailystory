@@ -8,6 +8,8 @@ import { useEffect, useRef } from 'react';
 export const useHashCoordination = (contentHash?: string) => {
   const lastHashRef = useRef<string | undefined>();
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const storyStabilityRef = useRef<boolean>(false);
+  const stabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Skip if no content hash
@@ -26,14 +28,16 @@ export const useHashCoordination = (contentHash?: string) => {
       clearTimeout(syncTimeoutRef.current);
     }
 
-    // Debounce hash updates to avoid rapid changes during content generation
-    syncTimeoutRef.current = setTimeout(() => {
-      // Sync audio service with new hash
-      // TODO: Replace with SimplifiedAudioEngine
-      // if (typeof SimplifiedAudioEngine.syncContentHash === 'function') {
-      //   SimplifiedAudioEngine.syncContentHash(contentHash);
-      // }
+    // Mark story as unstable during content changes
+    storyStabilityRef.current = false;
+    
+    // Clear existing stability timeout
+    if (stabilityTimeoutRef.current) {
+      clearTimeout(stabilityTimeoutRef.current);
+    }
 
+    // Debounce hash updates with faster sync for better coordination
+    syncTimeoutRef.current = setTimeout(() => {
       // Update global hash reference
       (window as any).__pageContentHash = contentHash;
 
@@ -42,16 +46,36 @@ export const useHashCoordination = (contentHash?: string) => {
         detail: {
           previousHash,
           newHash: contentHash,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          isStable: false
         }
       }));
 
-      console.log(`✅ Hash coordination complete: ${contentHash?.slice(0,10)}`);
-    }, 300); // 300ms debounce to handle rapid content changes
+      console.log(`🔄 Hash coordination (unstable): ${contentHash?.slice(0,10)}`);
+      
+      // Set story as stable after additional delay to prevent image generation during rapid changes
+      stabilityTimeoutRef.current = setTimeout(() => {
+        storyStabilityRef.current = true;
+        
+        // Emit story stabilized event for image generation
+        window.dispatchEvent(new CustomEvent('story:stabilized', {
+          detail: {
+            contentHash,
+            timestamp: Date.now()
+          }
+        }));
+        
+        console.log(`✅ Story stabilized: ${contentHash?.slice(0,10)}`);
+      }, 200); // Additional 200ms for content stability
+      
+    }, 100); // Reduced from 300ms to 100ms for faster sync
 
     return () => {
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
+      }
+      if (stabilityTimeoutRef.current) {
+        clearTimeout(stabilityTimeoutRef.current);
       }
     };
   }, [contentHash]);
@@ -62,11 +86,15 @@ export const useHashCoordination = (contentHash?: string) => {
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
       }
+      if (stabilityTimeoutRef.current) {
+        clearTimeout(stabilityTimeoutRef.current);
+      }
     };
   }, []);
 
   return {
     currentHash: contentHash,
-    isCoordinated: Boolean(contentHash && lastHashRef.current === contentHash)
+    isCoordinated: Boolean(contentHash && lastHashRef.current === contentHash),
+    isStoryStable: storyStabilityRef.current
   };
 };
