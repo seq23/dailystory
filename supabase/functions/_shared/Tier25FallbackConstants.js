@@ -40,10 +40,10 @@ export class Tier25FallbackConstants {
       height: 768
     },
     medium: {
-      cfg_scale: 8.0,
-      steps: 35,
+      cfg_scale: 8.5,
+      steps: 40,
       sampler: "DPM++ 2M Karras",
-      strength: 0.85,
+      strength: 0.9,
       width: 1024,
       height: 1024
     },

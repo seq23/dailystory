@@ -301,7 +301,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
       clothingDesc = ' in contemporary Hispanic fashion';
     }
     
-    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic natural black hair texture, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft golden hour lighting' : ''}`;
+    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic natural black hair texture with individual strand detail, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft golden hour lighting' : ''}`;
   }
   
   // Comprehensive setting detection with 15+ categories
@@ -449,7 +449,7 @@ function getHardcodedStyle(difficulty: string) {
     'medium': {
       prompt: 'Digital painting style, painterly brush strokes, cinematic composition, soft artistic lighting, professional digital artwork quality',
       quality: 'ultra professional digital illustration standard, high quality professional artwork, focused character presentation, culturally accurate, natural lighting for dark skin, authentic features',
-      suffix: 'Digital illustration with painterly qualities, soft brush strokes, professional children\'s book digital illustration, rich textures and depth, artistic rendering, warm natural lighting optimized for dark skin tones, culturally accurate, safe wholesome content',
+      suffix: 'Digital illustration with painterly qualities, soft brush strokes, rich textures and depth, artistic rendering, warm natural lighting optimized for dark skin tones, culturally accurate, safe wholesome content',
       steps: 19,
       cfgScale: 7.5,
       strength: 0.8
