@@ -1239,35 +1239,4 @@ export class MultiStageEnhancementPipeline {
     return enhancedPrompt;
   }
 
-  // ============= TIER 2.5 FALLBACK SYSTEM (ONLY FOR FINAL TIER FAILURES) =============
-  static createFallbackResult(storyText, userInfo, tier) {
-    console.warn('🚨 Tier 2.5 Fallback activated:', { tier, storyTextLength: storyText?.length || 0 });
-    
-    const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-    const framework = getStyleFramework(difficulty);
-    
-    // Use the new brand suffix from framework instead of hardcoded text
-    const fallbackPrompt = `${storyText}, ${framework.prompt}, ${framework.brandSuffix}`;
-    
-    console.log('📝 Tier 2.5 Fallback Prompt:', fallbackPrompt);
-    console.log('🎨 Tier 2.5 Framework Used:', { 
-      difficulty, 
-      frameworkName: framework.name, 
-      brandSuffix: framework.brandSuffix 
-    });
-    
-    return {
-      enhancedPrompt: fallbackPrompt,
-      negativePrompt: this.buildUnifiedNegativePrompt(userInfo, {}, {}, 1, null),
-      generationParams: framework.parameters,
-      metadata: {
-        tier: `tier-2.5-fallback-${tier}`,
-        qualityScore: 50, // Lower score for final fallback
-        difficulty: difficulty,
-        styleFramework: framework.name,
-        brandSuffix: framework.brandSuffix,
-        fallbackReason: 'All tier processing failed'
-      }
-    };
-  }
 }
