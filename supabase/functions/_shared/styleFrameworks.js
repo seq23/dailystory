@@ -178,20 +178,6 @@ export function getStyleFramework(difficulty) {
   return framework;
 }
 
-// Legacy prompt building - now handled by MultiStageEnhancementPipeline
-// DO NOT USE - kept for backwards compatibility only
-export function buildCompletePrompt(framework, sceneDescription, characterDescription = '', culturalContext = '', storyElements = null) {
-  console.warn('⚠️ buildCompletePrompt() is deprecated - use MultiStageEnhancementPipeline');
-  
-  // Simple fallback for emergency use only
-  const simplePrompt = `${sceneDescription}, ${framework.prompt}, ${framework.brandSuffix}`;
-  const negativePrompt = framework.negativePrompt || "text, words, scary, dark";
-  
-  return {
-    positivePrompt: simplePrompt,
-    negativePrompt
-  };
-}
 
 // Helper function to get optimized parameters - KEEP THIS (technical only)
 export function getOptimizedParameters(framework, characterComplexity = 1) {
