@@ -7,37 +7,37 @@ const AVATAR_FALLBACK_DESCRIPTIONS = {
   // PALE SKIN TONE
   "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
   "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
-  "child/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+  "child/pale": "{name} is a young child with pale skin, red hair, and green eyes, with no gender specific characteristics",
   
   // LIGHT SKIN TONE  
   "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
   "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "child/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "child/light": "{name} is a young child with light skin, blonde hair, and blue eyes, with no gender specific characteristics",
 
   // MEDIUM SKIN TONE
   "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
   "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
-  "child/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+  "child/medium": "{name} is a young child with medium skin, brown hair, and brown eyes, with no gender specific characteristics",
 
   // OLIVE SKIN TONE
   "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
   "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
-  "child/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+  "child/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes, with no gender specific characteristics",
 
   // DARK SKIN TONE (Enhanced descriptions)
   "girl/dark": "{name} is a young African American girl with authentic representation and diverse natural features, soft warm lighting",
   "boy/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
-  "child/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting",
+  "child/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting, with no gender specific characteristics",
 
   // BACKWARD COMPATIBILITY ALIASES - prefer-not-to-answer → child
-  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes",
-  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
-  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
-  "prefer-not-to-answer/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting",
+  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes, with no gender specific characteristics",
+  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes, with no gender specific characteristics",
+  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes, with no gender specific characteristics",
+  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes, with no gender specific characteristics",
+  "prefer-not-to-answer/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting, with no gender specific characteristics",
 
   // DEFAULT FALLBACK
-  "default": "{name} is a young child with a bright smile and cheerful demeanor"
+  "default": "{name} is a young child with a bright smile and cheerful demeanor, with no gender specific characteristics"
 };
 
 // Avatar consistency validation function for Tier 1
