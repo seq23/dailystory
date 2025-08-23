@@ -97,6 +97,82 @@ CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
   timeout: 30000
 });
 
+// ============= MODEL-SPECIFIC PROMPT OPTIMIZATION =============
+
+function detectModelFamily() {
+  // Detect which model family we're likely to hit first
+  const primaryModel = AI_MODELS[0]?.name || '';
+  
+  const isNewModel = primaryModel.includes('gpt-5') || 
+                     primaryModel.includes('gpt-4.1') || 
+                     primaryModel.includes('o3') || 
+                     primaryModel.includes('o4');
+                     
+  console.log('🤖 Model Family Detection:', {
+    primaryModel,
+    isNewModel,
+    useSimplifiedPrompt: isNewModel
+  });
+  
+  return {
+    modelFamily: isNewModel ? 'GPT-5_FAMILY' : 'LEGACY_FAMILY',
+    useSimplifiedPrompt: isNewModel
+  };
+}
+
+// ============= PROGRESSIVE JSON PARSING =============
+
+function parseAIResponse(content, options = {}) {
+  console.log('🔍 Progressive JSON Parsing:', {
+    contentLength: content.length,
+    modelFamily: options.modelFamily,
+    firstChars: content.substring(0, 50)
+  });
+  
+  // Strategy 1: Try direct JSON parsing (most common)
+  try {
+    const parsed = JSON.parse(content);
+    console.log('✅ Direct JSON parsing successful');
+    return parsed;
+  } catch (directError) {
+    console.log('⚠️ Direct JSON parsing failed, trying extraction methods');
+  }
+  
+  // Strategy 2: Extract JSON from text (for models that add reasoning)
+  try {
+    // Look for JSON blocks in various formats
+    const jsonPatterns = [
+      /```json\s*(\{[\s\S]*?\})\s*```/i,
+      /```\s*(\{[\s\S]*?\})\s*```/i,
+      /(\{[\s\S]*?\})/,
+      /"?(\{[\s\S]*?\})"?/
+    ];
+    
+    for (const pattern of jsonPatterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        try {
+          const extracted = JSON.parse(match[1].trim());
+          console.log('✅ JSON extraction successful with pattern');
+          return extracted;
+        } catch (e) {
+          continue;
+        }
+      }
+    }
+    
+    throw new Error('No valid JSON found in content');
+  } catch (extractionError) {
+    console.error('❌ All parsing strategies failed:', {
+      directError: 'Invalid JSON syntax',
+      extractionError: extractionError.message,
+      content: content.substring(0, 200)
+    });
+    
+    throw new Error(`Progressive parsing failed: ${extractionError.message}`);
+  }
+}
+
 async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -433,10 +509,40 @@ serve(async (req) => {
           }
         }
 
+        // Model-specific prompt optimization
+        const { modelFamily, useSimplifiedPrompt } = detectModelFamily();
+        
         const messages = [
           {
             role: 'system',
-            content: `You are an expert children's story analyzer. Extract ONLY these 3 fields from the story text:
+            content: useSimplifiedPrompt ? 
+              // GPT-5/4.1 optimized prompt (simplified, less rigid)
+              `Extract visual elements from children's story for image generation.
+
+Return JSON with exactly these 3 fields:
+{
+  "characters": "visual description of characters",
+  "visualComponents": {
+    "sceneType": "indoor/outdoor/mixed",
+    "lighting": "bright/dim/natural/dramatic", 
+    "keyObjects": "important objects in scene",
+    "setting": "specific location",
+    "mood": "emotional tone"
+  },
+  "primaryScene": "complete sentence describing the full visual scene"
+}
+
+Rules:
+- Use provided avatar identity for main character
+- Include all characters in primaryScene
+- Focus on visual details for image generation
+- Make primaryScene one comprehensive sentence
+- Specify gender based on avatar (boy/girl/child)
+
+Example: "fair skin white boy with red hair and his grandmother in cozy kitchen with warm lighting"`
+            :
+              // Legacy model prompt (more detailed, explicit)
+              `You are an expert children's story analyzer. Extract ONLY these 3 fields from the story text:
 
 RESPONSE FORMAT (JSON only, no other text):
 {
@@ -518,9 +624,9 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
             });
           }
 
-          // CRITICAL: Parse using trimmed content with bulletproof error handling
+          // ENHANCED: Progressive JSON parsing with model-specific handling
           try {
-            enhancedStoryData = JSON.parse(trimmedContent);
+            enhancedStoryData = parseAIResponse(trimmedContent, { modelFamily });
           } catch (parseError) {
             throw new Error(`JSON parsing failed: ${parseError.message} - Content: "${trimmedContent.substring(0, 100)}..."`);
           }

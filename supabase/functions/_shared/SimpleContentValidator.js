@@ -34,169 +34,191 @@ export function validateAndEnhanceContent(enhancedStoryData, storyText) {
 }
 
 /**
- * NEW MASTER PLAN: Detect mismatches in streamlined 3-field schema
+ * SCHEMA-ALIGNED: Detect mismatches in actual 3-field schema only
+ * Fields we validate: characters, visualComponents, primaryScene
  */
 function detectContentMismatches(data, text) {
   const mismatches = [];
   const textLower = text.toLowerCase();
   
-  // NEW: Validate primaryScene presence and quality
-  if (!data.primaryScene || data.primaryScene.length < 10) {
+  console.log('🔍 Schema Validation - Checking actual 3-field structure:', {
+    hasCharacters: !!data.characters,
+    hasVisualComponents: !!data.visualComponents,  
+    hasPrimaryScene: !!data.primaryScene,
+    visualComponentsKeys: data.visualComponents ? Object.keys(data.visualComponents) : [],
+    primarySceneLength: data.primaryScene?.length || 0
+  });
+  
+  // 1. VALIDATE primaryScene (Critical for image generation)
+  if (!data.primaryScene || data.primaryScene.length < 15) {
     mismatches.push('missing-primary-scene: Primary scene description too short or missing');
   }
   
-  // NEW: Validate visualComponents structure
+  // 2. VALIDATE visualComponents structure (matching actual prompt schema)
   if (!data.visualComponents) {
     mismatches.push('missing-visual-components: Visual components object missing');
   } else {
     const vc = data.visualComponents;
     if (!vc.sceneType) mismatches.push('missing-scene-type: Scene type not specified');
     if (!vc.lighting) mismatches.push('missing-lighting: Lighting not specified');
-  }
-  
-  // Action mismatch detection
-  if (data.narrativeElements?.action) {
-    const actionWords = {
-      'sleeping': ['sleep', 'nap', 'rest', 'bed'],
-      'running': ['run', 'sprint', 'race'],
-      'crying': ['cry', 'tear', 'sob'],
-      'laughing': ['laugh', 'giggle', 'smile']
+    
+    // Enhanced lighting validation using the CORRECT field path
+    const lightingWords = {
+      'bright': ['sun', 'sunny', 'bright', 'shine', 'shining', 'yellow', 'warm light'],
+      'dark': ['dark', 'night', 'shadow', 'dim', 'gloomy'],
+      'cloudy': ['cloud', 'cloudy', 'overcast', 'gray sky'],
+      'rainy': ['rain', 'rainy', 'wet', 'storm']
     };
     
-    for (const [aiAction, keywords] of Object.entries(actionWords)) {
-      if (data.narrativeElements.action.includes(aiAction)) {
-        const oppositeFound = Object.entries(actionWords)
-          .filter(([action]) => action !== aiAction)
-          .some(([_, oppKeywords]) => oppKeywords.some(word => textLower.includes(word)));
+    for (const [condition, keywords] of Object.entries(lightingWords)) {
+      const hasCondition = keywords.some(word => textLower.includes(word));
+      if (hasCondition && vc.lighting) {
+        const aiLighting = vc.lighting.toLowerCase();
+        const aiSetting = vc.setting?.toLowerCase() || '';
         
-        if (oppositeFound && !keywords.some(word => textLower.includes(word))) {
-          mismatches.push(`action-mismatch: AI says ${aiAction} but story suggests otherwise`);
+        if (condition === 'bright' && !aiLighting.includes('bright') && !aiSetting.includes('sunny') && !aiSetting.includes('outdoor')) {
+          mismatches.push(`lighting-mismatch: Story mentions ${keywords.join('/')} but AI lighting is "${vc.lighting}"`);
+        }
+        if (condition === 'dark' && !aiLighting.includes('dim') && !aiLighting.includes('dramatic') && !aiSetting.includes('dark')) {
+          mismatches.push(`lighting-mismatch: Story mentions darkness but AI lighting is "${vc.lighting}"`);
+        }
+      }
+    }
+    
+    // Validate setting context using the CORRECT field path
+    if (vc.setting) {
+      const indoorWords = ['bedroom', 'kitchen', 'house', 'room', 'inside'];
+      const outdoorWords = ['park', 'forest', 'outside', 'garden', 'yard', 'bright', 'sun'];
+      
+      const hasIndoor = indoorWords.some(word => textLower.includes(word));
+      const hasOutdoor = outdoorWords.some(word => textLower.includes(word));
+      
+      if (hasIndoor && vc.sceneType === 'outdoor') {
+        mismatches.push('setting-mismatch: AI says outdoor but story mentions indoor location');
+      }
+      if (hasOutdoor && vc.sceneType === 'indoor') {
+        mismatches.push('setting-mismatch: AI says indoor but story mentions outdoor location');
+      }
+    }
+  }
+
+  // 3. VALIDATE characters (only check what we actually request)
+  if (!data.characters || (typeof data.characters === 'string' && data.characters.length < 5)) {
+    mismatches.push('missing-characters: Character description too short or missing');
+  }
+
+  // Enhanced mood validation using the CORRECT field path
+  if (data.visualComponents?.mood) {
+    const emotionalWords = {
+      'happy': ['happy', 'joy', 'smile', 'laugh', 'giggle', 'cheerful', 'excited', 'plays'],
+      'sad': ['sad', 'cry', 'tear', 'unhappy', 'lonely', 'worried'],
+      'playful': ['play', 'fun', 'game', 'adventure', 'explore']
+    };
+    
+    for (const [emotion, keywords] of Object.entries(emotionalWords)) {
+      const hasEmotion = keywords.some(word => textLower.includes(word));
+      if (hasEmotion) {
+        const aiMood = data.visualComponents.mood.toLowerCase();
+        
+        if (emotion === 'happy' && !aiMood.includes('happy') && !aiMood.includes('joy') && !aiMood.includes('cheerful')) {
+          mismatches.push(`mood-mismatch: Story suggests happiness but AI mood is "${data.visualComponents.mood}"`);
+        }
+        if (emotion === 'sad' && !aiMood.includes('sad') && !aiMood.includes('worried')) {
+          mismatches.push(`mood-mismatch: Story suggests sadness but AI mood is "${data.visualComponents.mood}"`);
         }
       }
     }
   }
 
-  // ENHANCED: Lighting/Weather mismatch detection
-  const lightingWords = {
-    'bright': ['sun', 'sunny', 'bright', 'shine', 'shining', 'yellow', 'warm light'],
-    'dark': ['dark', 'night', 'shadow', 'dim', 'gloomy'],
-    'cloudy': ['cloud', 'cloudy', 'overcast', 'gray sky'],
-    'rainy': ['rain', 'rainy', 'wet', 'storm']
-  };
-  
-  for (const [condition, keywords] of Object.entries(lightingWords)) {
-    const hasCondition = keywords.some(word => textLower.includes(word));
-    if (hasCondition) {
-      // Check if AI missed obvious lighting/weather cues
-      const aiWeather = data.setting?.weather?.toLowerCase() || '';
-      const aiLocation = data.setting?.location?.toLowerCase() || '';
-      
-      if (condition === 'bright' && (!aiWeather.includes('sun') && !aiLocation.includes('bright') && !aiLocation.includes('outdoor'))) {
-        mismatches.push(`scene-mismatch: Story mentions ${keywords.join('/')} but AI missed bright/sunny context`);
-      }
-      if (condition === 'dark' && (!aiWeather.includes('dark') && !aiLocation.includes('dark'))) {
-        mismatches.push(`scene-mismatch: Story mentions darkness but AI missed dark context`);
-      }
-    }
-  }
-
-  // ENHANCED: Emotional expression mismatch detection  
-  const emotionalWords = {
-    'happy': ['happy', 'joy', 'smile', 'laugh', 'giggle', 'cheerful', 'excited', 'plays'],
-    'sad': ['sad', 'cry', 'tear', 'unhappy', 'lonely', 'worried'],
-    'playful': ['play', 'fun', 'game', 'adventure', 'explore']
-  };
-  
-  for (const [emotion, keywords] of Object.entries(emotionalWords)) {
-    const hasEmotion = keywords.some(word => textLower.includes(word));
-    if (hasEmotion && data.characters?.length > 0) {
-      const aiEmotions = data.characters.map(c => c.emotions?.toLowerCase() || '').join(' ');
-      const aiMood = data.mood?.toLowerCase() || '';
-      
-      if (emotion === 'happy' && !aiEmotions.includes('happy') && !aiEmotions.includes('joy') && !aiMood.includes('happy')) {
-        mismatches.push(`emotion-mismatch: Story suggests happiness/joy but AI missed emotional context`);
-      }
-      if (emotion === 'sad' && !aiEmotions.includes('sad') && !aiMood.includes('sad')) {
-        mismatches.push(`emotion-mismatch: Story suggests sadness but AI missed emotional context`);
-      }
-    }
-  }
-
-  // Setting contradiction check (enhanced)
-  if (data.setting?.location) {
-    const indoorWords = ['bedroom', 'kitchen', 'house', 'room', 'inside'];
-    const outdoorWords = ['park', 'forest', 'outside', 'garden', 'yard', 'bright', 'sun'];
+  // Enhanced object detection using the CORRECT field path
+  if (data.visualComponents?.keyObjects) {
+    const textWords = text.toLowerCase().split(/\s+/);
+    const commonObjects = ['book', 'ball', 'toy', 'car', 'dog', 'cat', 'tree', 'flower'];
+    const keyObjectsLower = data.visualComponents.keyObjects.toLowerCase();
     
-    const hasIndoor = indoorWords.some(word => textLower.includes(word));
-    const hasOutdoor = outdoorWords.some(word => textLower.includes(word));
-    
-    if (hasIndoor && data.setting.location.includes('outdoor')) {
-      mismatches.push('setting-mismatch: AI says outdoor but story mentions indoor location');
-    }
-    if (hasOutdoor && data.setting.location.includes('indoor')) {
-      mismatches.push('setting-mismatch: AI says indoor but story mentions outdoor location');
+    const missingObjects = commonObjects.filter(obj => 
+      textWords.includes(obj) && !keyObjectsLower.includes(obj)
+    );
+    if (missingObjects.length > 0) {
+      mismatches.push(`missing-objects: Story mentions ${missingObjects.join(', ')} but AI keyObjects is "${data.visualComponents.keyObjects}"`);
     }
   }
   
-  // Missing objects detection (minor fixable issue)
-  const textWords = text.toLowerCase().split(/\s+/);
-  const commonObjects = ['book', 'ball', 'toy', 'car', 'dog', 'cat', 'tree', 'flower'];
-  const missingObjects = commonObjects.filter(obj => 
-    textWords.includes(obj) && 
-    (!data.objects || !data.objects.some(o => o.toLowerCase().includes(obj)))
-  );
-  if (missingObjects.length > 0) {
-    mismatches.push(`missing-objects: Story mentions ${missingObjects.join(', ')} but AI missed them`);
-  }
-
-  // Generic names detection (minor fixable issue)  
-  if (data.characters?.some(c => c.name === "character")) {
-    mismatches.push(`generic-names: AI used generic "character" name instead of extracting actual name`);
-  }
+  console.log('📊 Schema Validation Results:', {
+    totalMismatches: mismatches.length,
+    mismatchTypes: mismatches.map(m => m.split(':')[0]),
+    criticalIssues: mismatches.filter(m => m.includes('missing-primary-scene') || m.includes('missing-visual-components')).length
+  });
 
   return mismatches;
 }
 
 /**
- * NEW MASTER PLAN: Calculate quality score for 3-field schema
+ * SCHEMA-ALIGNED: Calculate quality score for actual 3-field schema
  */
 function calculateQualityScore(data, text, mismatches) {
   let score = 100;
   
-  // NEW SCHEMA CRITICAL ERRORS → Trigger Tier 2 Fallback (Score ≤ 40)
+  console.log('📊 Quality Score Calculation - Schema-aligned scoring:', {
+    totalMismatches: mismatches.length,
+    startingScore: score,
+    hasPrimaryScene: !!data.primaryScene,
+    hasVisualComponents: !!data.visualComponents,
+    hasCharacters: !!data.characters
+  });
+  
+  // SCHEMA-ALIGNED CRITICAL ERRORS → Trigger Tier 2 Fallback (Score ≤ 40)
   mismatches.forEach(mismatch => {
     if (mismatch.includes('missing-primary-scene')) {
-      score -= 70; // Missing primary scene = critical error for new schema
+      score -= 70; // Missing primary scene = critical for image generation
     } else if (mismatch.includes('missing-visual-components')) {
-      score -= 50; // Missing visual components = major error
+      score -= 50; // Missing visual components = major structural error
+    } else if (mismatch.includes('missing-characters')) {
+      score -= 30; // Missing character description = major error
     } else if (mismatch.includes('missing-scene-type')) {
-      score -= 15; // Missing scene type = moderate error (fixable)
+      score -= 15; // Missing scene type = moderate error (fixable in Tier 2)
     } else if (mismatch.includes('missing-lighting')) {
-      score -= 15; // Missing lighting = moderate error (fixable)
-    } else if (mismatch.includes('scene-mismatch')) {
-      score -= 60; // Scene context mismatch = critical visual error
-    } else if (mismatch.includes('action-mismatch')) {
-      score -= 60; // Wrong action = critical error
+      score -= 15; // Missing lighting = moderate error (fixable in Tier 2)
+    } else if (mismatch.includes('lighting-mismatch')) {
+      score -= 25; // Wrong lighting context = visual error
     } else if (mismatch.includes('setting-mismatch')) {
-      score -= 30; // Indoor/outdoor mismatch = major error
-    } else if (mismatch.includes('emotion-mismatch')) {
-      score -= 5; // Missing emotions = minor error (fixable)
+      score -= 20; // Indoor/outdoor mismatch = visual context error  
+    } else if (mismatch.includes('mood-mismatch')) {
+      score -= 10; // Mood mismatch = moderate error (affects image tone)
     } else if (mismatch.includes('missing-objects')) {
       score -= 5; // Missing objects = minor error (fixable)
-    } else if (mismatch.includes('generic-names')) {
-      score -= 2; // Generic names = minor error (fixable)
     } else {
-      score -= 10; // Other mismatches
+      score -= 8; // Other mismatches = minor errors
     }
   });
   
-  // NEW SCHEMA: Check completeness of 3-field structure
+  // SCHEMA COMPLETENESS CHECKS (aligned with actual prompt structure)
   if (!data.primaryScene) score -= 70;
   if (!data.visualComponents) score -= 50;
-  if (!data.characters) score -= 15;
+  if (!data.characters) score -= 30;
   
-  // Ensure minimum score
-  return Math.max(0, score);
+  // Bonus for high-quality primaryScene (key for image generation)
+  if (data.primaryScene && data.primaryScene.length > 30) {
+    score += 5; // Reward detailed scene descriptions
+  }
+  
+  // Bonus for complete visualComponents structure
+  if (data.visualComponents && 
+      data.visualComponents.sceneType && 
+      data.visualComponents.lighting && 
+      data.visualComponents.setting) {
+    score += 5; // Reward complete visual structure
+  }
+  
+  const finalScore = Math.max(0, Math.min(100, score));
+  
+  console.log('📊 Quality Score Final:', {
+    finalScore,
+    triggerTier2: finalScore <= 40,
+    qualityLevel: finalScore > 80 ? 'HIGH' : finalScore > 40 ? 'MEDIUM' : 'LOW'
+  });
+  
+  return finalScore;
 }
 
 /**
