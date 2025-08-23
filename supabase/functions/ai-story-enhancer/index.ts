@@ -524,69 +524,66 @@ serve(async (req) => {
     "secondaryCharacterAppearance": "visual description for image generation",
     "secondaryCharacterAction": "what they're doing",` : '';
 
-        // Model-specific prompt optimization with NEW SCHEMA
+        // Model-specific prompt optimization with OPTIMIZED SCHEMA
         const { modelFamily, useSimplifiedPrompt } = detectModelFamily();
         
         const messages = [
           {
             role: 'system',
             content: useSimplifiedPrompt ? 
-              // GPT-5/4.1 optimized prompt with NEW OBJECT-BASED SCHEMA
-              `Extract visual elements from children's story for image generation.
+              // GPT-5/4.1+ optimized prompt - streamlined and focused
+              `Text analyzer for image generation. Extract visual data.
 
-RESPOND WITH VALID JSON ONLY:
+JSON ONLY:
 {
   "characters": {
-    "characterAppearance": "from avatar identity + story descriptors", 
-    "characterClothing": "what they're wearing",
-    "characterPosition": "standing/sitting/running/jumping",
-    "characterMood": "emotional state/expression",${secondaryCharacterFields}
+    "characterAppearance": "integrate avatar identity with story context",
+    "characterClothing": "clothing/outfit details", 
+    "characterPosition": "body position/pose",
+    "characterMood": "emotion/expression",${secondaryCharacterFields}
   },
   "visualComponents": {
-    "action": "specific activity being performed", 
-    "setting": "specific location context",        
+    "action": "primary activity",
+    "setting": "location context", 
     "sceneType": "indoor/outdoor/mixed",
-    "lighting": "appropriate lighting for scene",
-    "keyObjects": "important props/items"
+    "lighting": "scene lighting",
+    "keyObjects": "important items"
   },
-  "primaryScene": "complete sentence describing the full visual scene. use characters + visual components + context synthesis (where applicable) to provide a cohesive visual scene for the current page. can use previous pages as needed"
+  "primaryScene": "comprehensive visual description for image generation"
 }
 
-Avatar Identity: ${JSON.stringify(avatarIdentity)}
-Rules: Use avatar for characterAppearance, prioritize action/setting in visualComponents, make primaryScene comprehensive and contextual.`
+Avatar: ${JSON.stringify(avatarIdentity)}
+Priority: characterAppearance uses avatar identity, action/setting drive scene composition.`
             :
-              // Legacy model prompt with NEW SCHEMA (more detailed)
-              `You are an expert children's story analyzer. Extract visual elements using this NEW SCHEMA:
+              // Legacy models - detailed instructions with examples
+              `Text analyzer extracting visual elements for image generation.
 
-RESPONSE FORMAT (JSON only, no other text):
+JSON RESPONSE:
 {
   "characters": {
-    "characterAppearance": "${avatarIdentity?.visualDescription || 'child'} + story descriptors",
-    "characterClothing": "what they're wearing based on story context",
-    "characterPosition": "standing/sitting/running/jumping/lying down",
-    "characterMood": "emotional state/expression from story",${secondaryCharacterFields}
+    "characterAppearance": "base: ${avatarIdentity?.visualDescription || 'child'}, enhanced with story context",
+    "characterClothing": "outfit/clothing from story", 
+    "characterPosition": "standing/sitting/running/jumping/lying",
+    "characterMood": "emotional state/facial expression",${secondaryCharacterFields}
   },
   "visualComponents": {
-    "action": "specific activity being performed - TOP PRIORITY",
-    "setting": "specific location context - SECOND PRIORITY", 
-    "sceneType": "indoor/outdoor/mixed",
-    "lighting": "bright/dim/natural/dramatic/golden hour",
-    "keyObjects": "important props/items in scene"
+    "action": "main activity - HIGHEST PRIORITY",
+    "setting": "specific location - SECOND PRIORITY",
+    "sceneType": "indoor/outdoor/mixed environment", 
+    "lighting": "natural/bright/dim/golden/dramatic",
+    "keyObjects": "story-relevant props/items"
   },
-  "primaryScene": "complete sentence describing the full visual scene. use characters + visual components + context synthesis (where applicable) to provide a cohesive visual scene for the current page. can use previous pages as needed"
+  "primaryScene": "complete visual scene description combining all elements"
 }
 
-CRITICAL RULES:
-1. characterAppearance MUST use avatarIdentity.visualDescription as base
-2. action and setting are TOP PRIORITIES in visualComponents
-3. primaryScene is the MASTER OUTPUT - must be comprehensive and contextual
-4. Include ALL characters (main + secondary) in primaryScene
-5. Focus on visual details for Runware image generation
-6. Make primaryScene rich with context but still one sentence${hasMultipleCharacters ? `
-7. CONDITIONAL: Story has secondary characters - include all 4 secondary fields
-8. secondaryCharacterAppearance must be detailed for image generation` : ''}
+REQUIREMENTS:
+- characterAppearance: Start with avatar identity, add story details
+- Prioritize action/setting in visual hierarchy  
+- primaryScene: Master output combining characters + visual components
+- Include secondary characters in scene when detected${hasMultipleCharacters ? `
+- SECONDARY CHARACTERS: Include secondaryCharacters, secondaryCharacterRelation, secondaryCharacterAppearance, secondaryCharacterAction` : ''}
 
-Example primaryScene: "fair skin white boy with red hair ${hasMultipleCharacters ? 'with his caring grandmother ' : ''}playing with colorful blocks in bright sunny living room with warm afternoon lighting"`
+Example: "${avatarIdentity?.visualDescription || 'child'} ${hasMultipleCharacters ? 'with friendly teacher ' : ''}building with blocks in sunny classroom with natural lighting"`
           },
           {
             role: 'user', 
