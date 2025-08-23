@@ -19,6 +19,8 @@
 //   }
 // ============= END IMPORT STANDARDS =============
 
+import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
+
 export class FrontendIntelligence {
   
   // ============= PHASE 1: SAFETY FOUNDATION =============
@@ -674,13 +676,9 @@ export class FrontendIntelligence {
     console.log(`🎭 DEBUG: Using avatar type: ${avatarIdentity?.type || userInfo?.avatar?.type}, Gender: ${gender}`);
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     
-    // Apply age range modifier based on difficulty level
-    let ageRange = '5-8 years old'; // Default for beginner/easy/medium
-    if (difficulty === 'hard') {
-      ageRange = '9-11 years old';
-    } else if (difficulty === 'expert') {
-      ageRange = '11-13 years old';
-    }
+    // Get age category from Tier 1 system (replaces hardcoded numeric ranges)
+    const ageCategory = UnifiedCharacterDescriptor.getAgeFromDifficulty(difficulty);
+    console.log(`🎯 Using age category from Tier 1: ${ageCategory} (difficulty: ${difficulty})`);
     
     // Enhanced skin tone mapping with cultural considerations
     const skinMap = {
@@ -723,7 +721,7 @@ export class FrontendIntelligence {
       }
     }
     
-    return `${name} (${gender}, ${ageRange}, with ${skinMap[skinTone] || 'medium skin'}${facialFeatures}${hairStyling}${culturalElements})`;
+    return `${name} (${ageCategory} ${gender}, with ${skinMap[skinTone] || 'medium skin'}${facialFeatures}${hairStyling}${culturalElements})`;
   }
 
 }
