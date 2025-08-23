@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { mapAvatarIdentity } from "../_shared/AvatarIdentityMapper.js";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,6 +17,10 @@ serve(async (req) => {
 
     const { pageText, userInfo, difficultyLevel = 'medium' } = await req.json();
     
+    // Process avatar identity for consistent gender handling
+    const avatarIdentity = mapAvatarIdentity(userInfo);
+    console.log(`🎭 Tier 2.5: Avatar identity processed - type: ${avatarIdentity?.type}, skinTone: ${avatarIdentity?.skinTone}`);
+    
     // Use DifficultyLevelMapper for consistent difficulty handling
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo) || difficultyLevel;
     console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user info or fallback: ${difficultyLevel}`);
@@ -23,13 +28,13 @@ serve(async (req) => {
     console.log('🎨 Tier 2.5: Simple fallback generation with hardcoded extraction');
 
     // Enhanced hardcoded scene extraction with cultural bypass
-    const extractedScene = extractSimpleSceneWithCulturalBypass(pageText, userInfo);
+    const extractedScene = extractSimpleSceneWithCulturalBypass(pageText, userInfo, avatarIdentity);
     
     // Enhanced hardcoded style with exact styleFrameworks.js verbiage
     const style = getHardcodedStyle(mappedDifficulty);
     
     // Build final prompt with enhanced negative prompts
-    const negativePrompt = getEnhancedNegativePrompt(userInfo);
+    const negativePrompt = getEnhancedNegativePrompt(userInfo, avatarIdentity);
     const finalPrompt = `${extractedScene}. ${style.prompt}. ${style.quality}. ${style.suffix}`;
     
     // 🔍 TIER 2.5 DEBUG LOGGING - Full prompts for debugging
@@ -124,7 +129,7 @@ serve(async (req) => {
 });
 
 // Enhanced scene extraction with cultural bypass and improved analysis  
-function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any): string {
+function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, avatarIdentity?: any): string {
   if (!pageText) return 'a friendly character in a beautiful scene';
   
   const text = pageText.toLowerCase();
@@ -166,7 +171,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any):
   
   if (userInfo?.name) {
     character = userInfo.name;
-    genderType = userInfo.avatar?.type || 'child';
+    genderType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
   } else if (text.includes('girl') || text.includes('she')) {
     character = 'girl';
     genderType = 'girl';
@@ -177,9 +182,9 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any):
   
   // Enhanced avatar description with stronger gender enforcement
   let avatarDesc = '';
-  if (userInfo?.avatar) {
-    const skinTone = userInfo.avatar.skinTone || 'medium';
-    const type = userInfo.avatar.type || 'child';
+  if (userInfo?.avatar || avatarIdentity) {
+    const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+    const type = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
     genderType = type; // Ensure we use the avatar type
     
     const skinMap = {
@@ -299,7 +304,7 @@ function getHardcodedStyle(difficulty: string) {
 }
 
 // Unified negative prompt system for Tier 2.5 (hardcoded but comprehensive)
-function getEnhancedNegativePrompt(userInfo?: any): string {
+function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any): string {
   const negatives = [];
   
   // 1. Page-specific negatives (first page only in practice)
@@ -322,18 +327,21 @@ function getEnhancedNegativePrompt(userInfo?: any): string {
   // 6. Style prevention
   negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
   
-  // 7. Gender consistency enforcement
-  if (userInfo?.avatar?.type === 'girl') {
+  // 7. Gender consistency enforcement (with fallback pattern)
+  const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
+  if (avatarType === 'girl') {
     negatives.push('boy character, male character, masculine features');
-  } else if (userInfo?.avatar?.type === 'boy') {
+  } else if (avatarType === 'boy') {
     negatives.push('girl character, female character, feminine features, dress, skirt');
   }
   
   // 8. Style framework compatibility (hardcoded defaults)
   negatives.push('copyrighted characters, brand logos, watermarks');
   
-  // 9. Cultural sensitivity - NEW trigger condition
-  if (userInfo?.avatar?.skinTone === 'dark' && (userInfo?.avatar?.type === 'boy' || userInfo?.avatar?.type === 'girl')) {
+  // 9. Cultural sensitivity - NEW trigger condition (with fallback pattern)
+  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+  const genderType = avatarIdentity?.type || userInfo?.avatar?.type;
+  if (skinTone === 'dark' && (genderType === 'boy' || genderType === 'girl')) {
     negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
   }
   

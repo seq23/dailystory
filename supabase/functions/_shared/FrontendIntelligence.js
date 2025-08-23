@@ -441,11 +441,11 @@ export class FrontendIntelligence {
   }
   
   // PHASE 2: Basic prompt fallback method for safety
-  static buildBasicPromptFallback(storyText, userInfo, details) {
+  static buildBasicPromptFallback(storyText, userInfo, details, avatarIdentity) {
     console.log('🎨 FI-PROMPT: Using basic prompt fallback');
     
     const name = userInfo?.name || 'Alex';
-    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    const gender = avatarIdentity?.type || userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
     
     // Basic character description
     let characterDesc = `${name}, a ${gender}`;
@@ -586,10 +586,10 @@ export class FrontendIntelligence {
   
   // ============= CHARACTER DESCRIPTION BUILDING =============
   // This method builds a character description based on user info and character seed
-  static buildCharacterDescription(userInfo, characterSeed) {
+  static buildCharacterDescription(userInfo, characterSeed, avatarIdentity) {
     // Placeholder: Implement real AI-driven character description here
     const name = userInfo?.name || 'Alex';
-    const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
+    const gender = avatarIdentity?.type || userInfo?.avatar?.type === 'girl' ? 'girl' : 'boy';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     
     return `${name} (${gender}, ${skinTone} skin)`;
@@ -632,12 +632,11 @@ export class FrontendIntelligence {
     }
     
     // Fallback: Check userInfo.avatar if avatarIdentity doesn't have clear indicators
-    if (userInfo?.avatar) {
-      const avatar = userInfo.avatar;
-      const skinTone = avatar.skinTone?.toLowerCase() || '';
-      const type = avatar.type?.toLowerCase() || '';
+    if (userInfo?.avatar || avatarIdentity) {
+      const skinTone = (avatarIdentity?.skinTone || userInfo?.avatar?.skinTone)?.toLowerCase() || '';
+      const type = (avatarIdentity?.type || userInfo?.avatar?.type)?.toLowerCase() || '';
       
-      // Check for dark skin tone combined with specific descriptors
+      // Check for dark skin tone combined with specific descriptors (with fallback pattern)
       if (skinTone === 'dark' && (type === 'girl' || type === 'boy')) {
         console.log('✅ FI-PROMPT: African American detected via dark skin tone + gender');
         return true;

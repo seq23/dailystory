@@ -101,8 +101,11 @@ class UnifiedCharacterConsistency {
     const { nativeLanguage, avatar } = userInfo;
     const skinTone = avatar.skinTone || 'medium';
     
-    // FIXED: Use avatar type instead of random assignment
-    const gender = avatar.type === 'girl' ? 'female' : avatar.type === 'boy' ? 'male' : 'child';
+    // FIXED: Use avatar type with fallback pattern
+    const gender = avatar.type === 'girl' ? 'female' : 
+                   avatar.type === 'boy' ? 'male' : 
+                   userInfo?.avatar?.type === 'girl' ? 'female' : 
+                   userInfo?.avatar?.type === 'boy' ? 'male' : 'child';
     console.log(`🎭 DEBUG: Avatar type: ${avatar.type}, Gender assigned: ${gender}`);
     
     // NEW MASTER PLAN: Direct visual description mapping (no cultural profiles)
@@ -189,8 +192,10 @@ class UnifiedCharacterConsistency {
     // Import FrontendIntelligence for consistent hair mapping
     const { FrontendIntelligence } = require('./FrontendIntelligence.js');
     
-    // Determine gender from avatar type for proper hair selection
-    const gender = avatar?.type === 'girl' ? 'girl' : 'boy';
+    // Determine gender from avatar type for proper hair selection (with fallback)
+    const gender = avatar?.type === 'girl' ? 'girl' : 
+                   avatar?.type === 'boy' ? 'boy' : 
+                   avatar?.type || 'child';
     
     return FrontendIntelligence.getUniversalHairMapping(avatar, gender);
   }
