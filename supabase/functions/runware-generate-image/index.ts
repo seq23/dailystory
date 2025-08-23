@@ -25,9 +25,9 @@ const AVATAR_FALLBACK_DESCRIPTIONS = {
   "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
 
   // DARK SKIN TONE (Enhanced descriptions)
-  "girl/dark": "{name} is a young black girl, rich dark brown skin, curly black hair in ponytails, bright brown eyes, joyful expression, soft natural lighting",
-  "boy/dark": "{name} is a young black boy, rich dark brown skin, short textured black hair, warm brown eyes, friendly smile, natural lighting",
-  "prefer-not-to-answer/dark": "{name} is a young black child, rich dark brown skin, curly black hair in ponytails, bright brown eyes, joyful expression, soft natural lighting",
+  "girl/dark": "{name} is a young African American girl with authentic representation and diverse natural features, soft warm lighting",
+  "boy/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
+  "prefer-not-to-answer/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting",
 
   // DEFAULT FALLBACK
   "default": "{name} is a young child with a bright smile and cheerful demeanor"
