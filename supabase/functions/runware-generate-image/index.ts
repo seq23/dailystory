@@ -2,6 +2,79 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
+// Hardcoded avatar fallback descriptions for Tier 1 validation
+const AVATAR_FALLBACK_DESCRIPTIONS = {
+  // PALE SKIN TONE
+  "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+  "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
+  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes",
+
+  // LIGHT SKIN TONE  
+  "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+
+  // MEDIUM SKIN TONE
+  "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
+  "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+
+  // OLIVE SKIN TONE
+  "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+  "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
+  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
+
+  // DARK SKIN TONE (Enhanced descriptions)
+  "girl/dark": "{name} is a young black girl, rich dark brown skin, curly black hair in ponytails, bright brown eyes, joyful expression, soft natural lighting",
+  "boy/dark": "{name} is a young black boy, rich dark brown skin, short textured black hair, warm brown eyes, friendly smile, natural lighting",
+  "prefer-not-to-answer/dark": "{name} is a young black child, rich dark brown skin, curly black hair in ponytails, bright brown eyes, joyful expression, soft natural lighting",
+
+  // DEFAULT FALLBACK
+  "default": "{name} is a young child with a bright smile and cheerful demeanor"
+};
+
+// Avatar consistency validation function for Tier 1
+function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo: any): string {
+  const userName = userInfo?.name || 'child';
+  
+  // If no avatar identity provided, use fallback
+  if (!avatarIdentity) {
+    console.log('🔍 TIER 1 VALIDATION: No avatarIdentity provided, using fallback');
+    const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    const fallbackKey = `${avatarType}/${skinTone}`;
+    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
+    console.log(`🔍 TIER 1 VALIDATION: Applied fallback ${fallbackKey} for missing identity`);
+    return fallbackDescription.replace('{name}', userName);
+  }
+  
+  // Check if prompt contains generic descriptions
+  const genericPatterns = [
+    `${userName} is a young child`,
+    `${userName} is a child`,
+    'young child with',
+    'child with'
+  ];
+  
+  const isGeneric = genericPatterns.some(pattern => 
+    prompt.toLowerCase().includes(pattern.toLowerCase())
+  );
+  
+  if (isGeneric) {
+    console.log('🔍 TIER 1 VALIDATION: Generic description detected, using enhanced fallback');
+    const avatarType = avatarIdentity.type || 'prefer-not-to-answer';
+    const skinTone = avatarIdentity.skinTone || 'medium';
+    const fallbackKey = `${avatarType}/${skinTone}`;
+    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
+    console.log(`🔍 TIER 1 VALIDATION: Applied fallback ${fallbackKey}: ${fallbackDescription}`);
+    return fallbackDescription.replace('{name}', userName);
+  }
+  
+  // Replace {name} placeholder if present and return original prompt
+  console.log('🔍 TIER 1 VALIDATION: Prompt passed validation, using AI-enhanced version');
+  return prompt.replace('{name}', userName);
+}
+
 /**
  * ============================================================================
  * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
@@ -165,14 +238,19 @@ serve(async (req) => {
         });
         
         const positivePrompt = enhancementResult.enhancedPrompt;
+        
+        // NEW: Validate and apply hardcoded fallbacks if needed for Tier 1
+        const validatedPrompt = validateAvatarConsistency(positivePrompt, avatarIdentity, userInfo);
+        
         const negativePrompt = enhancementResult.negativePrompt;
 
         console.log(`🎨 Premium AI-enhanced prompt (${positivePrompt.length} chars):`, positivePrompt.substring(0, 100) + '...');
+        console.log(`🔍 TIER 1 VALIDATION: Final validated prompt (${validatedPrompt.length} chars):`, validatedPrompt.substring(0, 100) + '...');
 
-        // Generate with Runware Tier 1 (Premium) - PHASE 1 FIX: Pass sessionId and pageNumber
+        // Generate with Runware Tier 1 (Premium) - Using validated prompt with hardcoded fallbacks
         const tier1Result = await generateWithRunwarePremium(
           apiKey, 
-          positivePrompt, 
+          validatedPrompt, 
           negativePrompt, 
           enhancementResult?.metadata?.characterSeed,
           sessionId,
@@ -190,7 +268,7 @@ serve(async (req) => {
             try {
               StoryVisualStateManager.addSuccessfulPrompt(
                 sessionId, 
-                positivePrompt,
+                validatedPrompt,
                 enhancementResult.generationParams, 
                 tier1Result.seed || enhancementResult.metadata.characterSeed,
                 tier1Result.imageURL,
@@ -211,11 +289,12 @@ serve(async (req) => {
             qualityScore: enhancementResult.qualityScore || 95,
             metadata: {
               model: "runware:100@1",
-              promptLength: positivePrompt.length,
+              promptLength: validatedPrompt.length,
               sessionId: sessionId || 'unknown',
               pageNumber,
               isGuestUser,
-              orchestrated: true
+              orchestrated: true,
+              validationApplied: validatedPrompt !== positivePrompt
             }
           });
         }
