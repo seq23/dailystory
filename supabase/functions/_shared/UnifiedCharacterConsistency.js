@@ -258,7 +258,7 @@ class UnifiedCharacterConsistency {
       // Strategy 2: Absolute path import  
       try {
         console.log('🔍 Strategy 2: Absolute path import...');
-        const { FrontendIntelligence } = await import('file:///tmp/user_fn_cpzeuogomaixamrtnnmj_825300d5-f78a-4759-937b-44508093ee5c_296/source/supabase/functions/_shared/FrontendIntelligence.js');
+        const { FrontendIntelligence } = await import(`file://${Deno.cwd()}/supabase/functions/_shared/FrontendIntelligence.js`);
         console.log('✅ Strategy 2: FrontendIntelligence absolute import successful');
         
         const gender = avatar?.type === 'girl' ? 'girl' : avatar?.type === 'boy' ? 'boy' : avatar?.type || 'child';
