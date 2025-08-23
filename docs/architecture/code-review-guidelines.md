@@ -160,6 +160,31 @@ if (isGuestUser && dailyCount > limit) {
 - [ ] No subscription-based cultural feature restrictions
 - [ ] Character consistency improvements universal
 
+#### Avatar Identity Handling
+```javascript
+// ✅ CORRECT: Robust fallback pattern
+const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
+
+// ✅ CORRECT: Dual parameter functions
+function processAvatar(avatarIdentity, userInfo) {
+  const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
+}
+
+// ❌ WRONG: Direct usage without fallback
+const avatarType = avatarIdentity.type;
+
+// ❌ WRONG: Unsafe default gender
+const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'boy';
+```
+
+**Avatar Fallback Review Checklist:**
+- [ ] All avatar type usage implements three-level fallback pattern: `avatarIdentity?.type || userInfo?.avatar?.type || 'child'`
+- [ ] Functions accept both `avatarIdentity` and `userInfo` parameters when possible
+- [ ] No direct usage of `userInfo.avatar.type` without fallback consideration
+- [ ] 'child' used as final fallback for gender neutrality
+- [ ] Function signatures clearly indicate avatar parameter expectations
+- [ ] Logging includes avatar source tracking (optimized/fallback/default)
+
 ## Security Review Criteria
 
 ### Authentication & Authorization
@@ -254,6 +279,26 @@ const maxIterations = isGuestUser ? 1 : 5;
 
 // ❌ REJECT: Quality degradation for guests
 const qualityLevel = isPremium ? 'high' : 'medium';
+```
+
+### Avatar Handling Anti-Patterns
+```javascript
+// ❌ REJECT: No fallback - will break when avatarIdentity is null
+const avatarType = avatarIdentity.type;
+
+// ❌ REJECT: Only partial fallback - ignores userInfo.avatar
+const avatarType = avatarIdentity?.type || 'child';
+
+// ❌ REJECT: Unsafe gender default
+const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'boy';
+
+// ❌ REJECT: Wrong fallback order
+const avatarType = userInfo?.avatar?.type || avatarIdentity?.type || 'child';
+
+// ❌ REJECT: Missing avatarIdentity parameter
+function processAvatar(userInfo) {
+  const avatarType = userInfo.avatar.type; // No optimization support
+}
 ```
 
 ### Security Bypasses

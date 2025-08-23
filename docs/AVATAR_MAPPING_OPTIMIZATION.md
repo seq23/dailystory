@@ -18,12 +18,15 @@ This document outlines the comprehensive avatar mapping optimization that has be
   - `nativeLanguage`: User's native language
   - `name`: Character name
 
+**Fallback Strategy**: All functions implement the robust pattern `avatarIdentity?.type || userInfo?.avatar?.type || 'child'` to ensure reliable avatar type resolution even when avatar identity processing fails or is unavailable.
+
 ### Phase 2: Updated MultiStageEnhancementPipeline Interface ✅
 **Location**: `supabase/functions/_shared/MultiStageEnhancementPipeline.js`
 
 - Modified `processTier1HighQuality()` to accept `avatarIdentity` parameter
 - All calls now pass pre-processed avatar data instead of raw userInfo
 - Enhanced logging to track optimization usage
+- **Dual Data Strategy**: Functions receive both `avatarIdentity` (optimized) and `userInfo` (fallback) to ensure reliability
 
 ### Phase 3: Streamlined UnifiedCharacterConsistency ✅
 **Location**: `supabase/functions/_shared/UnifiedCharacterConsistency.js`
@@ -32,6 +35,7 @@ This document outlines the comprehensive avatar mapping optimization that has be
 - Added optimized `generatePhysicalTraitsFromIdentity()` method
 - Maintained backward compatibility with fallback methods
 - Preserved avatar identity for premium rewrites
+- **Fallback Implementation**: All avatar type usage follows `avatarIdentity?.type || userInfo?.avatar?.type || 'child'` pattern
 
 ### Phase 4: All Tier Functions Updated ✅
 **Location**: `supabase/functions/runware-generate-image/index.ts`
@@ -55,6 +59,7 @@ This document outlines the comprehensive avatar mapping optimization that has be
 2. **Reduced Redundancy**: Eliminated duplicate cultural profile determination
 3. **Streamlined Flow**: Clean data flow through all enhancement layers
 4. **Faster Fallbacks**: All tiers receive consistent avatar data
+5. **Robust Error Recovery**: Fallback pattern ensures system continues functioning even with processing failures
 
 ### Consistency Improvements
 1. **Unified Avatar Processing**: All tiers use same avatar interpretation
@@ -67,6 +72,7 @@ This document outlines the comprehensive avatar mapping optimization that has be
 2. **Clear Data Flow**: Explicit avatar identity parameter passing
 3. **Backward Compatibility**: Fallback methods preserved
 4. **Enhanced Logging**: Clear tracking of optimization vs local processing
+5. **Consistent Fallback Pattern**: Standardized `avatarIdentity?.type || userInfo?.avatar?.type || 'child'` usage across all functions
 
 ## Data Flow
 
