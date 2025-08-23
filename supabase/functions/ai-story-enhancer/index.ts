@@ -337,8 +337,12 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           // Call OpenAI with model fallback chain
           const aiResult = await callOpenAIWithFallback(messages);
           
-          if (!aiResult.choices?.[0]?.message?.content) {
-            throw new Error('No content received from OpenAI fallback chain');
+          const content = aiResult.choices?.[0]?.message?.content;
+          
+          // Bulletproof content validation with 30-character minimum
+          if (!content || typeof content !== 'string' || content.trim().length < 30) {
+            const actualLength = content ? content.trim().length : 0;
+            throw new Error(`OpenAI content validation failed: received ${actualLength} characters, minimum 30 required`);
           }
 
           enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);

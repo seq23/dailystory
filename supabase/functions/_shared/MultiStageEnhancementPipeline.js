@@ -420,14 +420,56 @@ export class MultiStageEnhancementPipeline {
     console.log('🔍 TIER 2 DEBUG - avatarIdentity received:', avatarIdentity);
     console.log('🔍 TIER 2 DEBUG - avatarIdentity.visualDescription:', avatarIdentity?.visualDescription);
 
-      // Load all required modules for premium processing with comprehensive error handling
-      console.log('🔍 Tier 2: Starting FrontendIntelligence import...');
-      const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
-      console.log('✅ Tier 2: FrontendIntelligence import successful');
+      // Bulletproof module imports with 4-strategy fallback hierarchy
+      let FrontendIntelligence, characterConsistency;
       
-      console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import...');
-      const { characterConsistency } = await import('./UnifiedCharacterConsistency.js');
-      console.log('✅ Tier 2: UnifiedCharacterConsistency import successful');
+      try {
+        console.log('🔍 Tier 2: Starting FrontendIntelligence import (Strategy 1: relative)...');
+        ({ FrontendIntelligence } = await import('./FrontendIntelligence.js'));
+        console.log('✅ Tier 2: FrontendIntelligence Strategy 1 successful');
+      } catch (error1) {
+        try {
+          console.log('🔍 Tier 2: FrontendIntelligence Strategy 2: absolute path...');
+          ({ FrontendIntelligence } = await import('file:///tmp/user_fn_cpzeuogomaixamrtnnmj_825300d5-f78a-4759-937b-44508093ee5c_296/source/supabase/functions/_shared/FrontendIntelligence.js'));
+          console.log('✅ Tier 2: FrontendIntelligence Strategy 2 successful');
+        } catch (error2) {
+          try {
+            console.log('🔍 Tier 2: FrontendIntelligence Strategy 3: working directory...');
+            ({ FrontendIntelligence } = await import(`${Deno.cwd()}/supabase/functions/_shared/FrontendIntelligence.js`));
+            console.log('✅ Tier 2: FrontendIntelligence Strategy 3 successful');
+          } catch (error3) {
+            try {
+              console.log('🔍 Tier 2: FrontendIntelligence Strategy 4: URL import...');
+              ({ FrontendIntelligence } = await import('https://deno.land/x/frontend_intelligence@latest/mod.js'));
+              console.log('✅ Tier 2: FrontendIntelligence Strategy 4 successful');
+            } catch (error4) {
+              console.error('❌ All FrontendIntelligence import strategies failed:', { error1: error1.message, error2: error2.message, error3: error3.message, error4: error4.message });
+              throw new Error(`Tier 2 processing failed: FrontendIntelligence module unavailable`);
+            }
+          }
+        }
+      }
+
+      try {
+        console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import (Strategy 1: relative)...');
+        ({ characterConsistency } = await import('./UnifiedCharacterConsistency.js'));
+        console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 successful');
+      } catch (error1) {
+        try {
+          console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 2: absolute path...');
+          ({ characterConsistency } = await import('file:///tmp/user_fn_cpzeuogomaixamrtnnmj_825300d5-f78a-4759-937b-44508093ee5c_296/source/supabase/functions/_shared/UnifiedCharacterConsistency.js'));
+          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 2 successful');
+        } catch (error2) {
+          try {
+            console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 3: working directory...');
+            ({ characterConsistency } = await import(`${Deno.cwd()}/supabase/functions/_shared/UnifiedCharacterConsistency.js`));
+            console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 3 successful');
+          } catch (error3) {
+            console.error('❌ All UnifiedCharacterConsistency import strategies failed:', { error1: error1.message, error2: error2.message, error3: error3.message });
+            throw new Error(`Tier 2 processing failed: UnifiedCharacterConsistency module unavailable`);
+          }
+        }
+      }
       
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
