@@ -520,28 +520,37 @@ export class MultiStageEnhancementPipeline {
         }
       }
 
+      console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import...');
+      let characterConsistency;
       try {
-        console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import (Strategy 1: relative)...');
-        ({ characterConsistency } = await import('./UnifiedCharacterConsistency.js'));
-        console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 successful');
-        console.log('✅ Tier 2: characterConsistency object loaded:', !!characterConsistency);
-      } catch (error1) {
-        try {
-          console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 2: absolute path...');
-          ({ characterConsistency } = await import(`${Deno.cwd()}/supabase/functions/_shared/UnifiedCharacterConsistency.js`));
-          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 2 successful');
-          console.log('✅ Tier 2: characterConsistency object loaded:', !!characterConsistency);
-        } catch (error2) {
-          try {
-            console.log('🔍 Tier 2: UnifiedCharacterConsistency Strategy 3: working directory...');
-            ({ characterConsistency } = await import(`${Deno.cwd()}/supabase/functions/_shared/UnifiedCharacterConsistency.js`));
-            console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 3 successful');
-            console.log('✅ Tier 2: characterConsistency object loaded:', !!characterConsistency);
-          } catch (error3) {
-            console.error('❌ All UnifiedCharacterConsistency import strategies failed:', { error1: error1.message, error2: error2.message, error3: error3.message });
-            throw new Error(`Tier 2 processing failed: UnifiedCharacterConsistency module unavailable`);
-          }
+        console.log('🔍 Tier 2: Import Strategy 1 (relative path)...');
+        const module = await import('./UnifiedCharacterConsistency.js');
+        
+        // Enhanced validation with multiple fallback strategies (matching Tier 1)
+        if (module.characterConsistency && typeof module.characterConsistency.getCharacterSeed === 'function') {
+          characterConsistency = module.characterConsistency;
+          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 (instance) successful');
+        } else if (module.UnifiedCharacterConsistency && typeof module.UnifiedCharacterConsistency === 'function') {
+          // Try to instantiate if it's a class
+          characterConsistency = new module.UnifiedCharacterConsistency();
+          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 (class) successful');
+        } else if (module.default && typeof module.default.getCharacterSeed === 'function') {
+          characterConsistency = module.default;
+          console.log('✅ Tier 2: UnifiedCharacterConsistency Strategy 1 (default export) successful');
+        } else {
+          throw new Error('No valid characterConsistency found in module');
         }
+        
+        // Final validation
+        if (!characterConsistency || typeof characterConsistency.getCharacterSeed !== 'function') {
+          throw new Error('characterConsistency getCharacterSeed method not available');
+        }
+        
+        console.log('✅ Tier 2: UnifiedCharacterConsistency import and validation successful');
+      } catch (importError) {
+        console.error('❌ Tier 2: UnifiedCharacterConsistency import failed - factory component "UnifiedCharacterConsistency" caused cascade to Tier 2.5:', importError.message);
+        // Natural fallback - no explicit throw, let Tier 2 cascade to Tier 2.5
+        characterConsistency = null;
       }
       
       // Set current storyId for FrontendIntelligence to use
@@ -651,7 +660,9 @@ export class MultiStageEnhancementPipeline {
       console.log('🔍 Tier 2: characterConsistency availability check:', !!characterConsistency);
       
       if (!characterConsistency) {
-        throw new Error('Character consistency module not loaded - cannot proceed with Tier 2');
+        console.error('❌ Tier 2: Character consistency factory component failed - cascading to Tier 2.5');
+        // Natural cascade to Tier 2.5 - no explicit throw, let the process handle fallback
+        return null;
       }
       
       const characterConsistencyData = await characterConsistency.getCharacterSeed(
