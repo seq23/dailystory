@@ -278,7 +278,7 @@ serve(async (req) => {
   try {
     console.log('🏭 Tier 2: Template-based image generation starting...');
     
-    const { pageText, storyId, sessionId = storyId, userInfo, avatarIdentity, pageNumber = 1, totalPages = 10 } = await req.json();
+    const { pageText, storyId, sessionId = storyId, userInfo, avatarIdentity, pageNumber = 1, totalPages } = await req.json();
 
     if (!pageText) {
       return createCorsErrorResponse('Missing pageText parameter', 400);

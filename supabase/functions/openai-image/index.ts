@@ -105,7 +105,7 @@ serve(async (req) => {
       sessionId || 'openai-session',
       sessionId || 'openai-session',
       pageNumber || 1,
-      10, // totalPages
+      undefined, // totalPages - let stories be ongoing
       aiEnhancedStoryData // Add AI story data
     );
 
