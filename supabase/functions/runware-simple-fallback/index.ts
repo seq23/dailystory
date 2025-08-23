@@ -237,19 +237,28 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     }
   });
   
-  // Character detection with gender enforcement
+  // CHARACTER DETECTION WITH DIRECT AVATAR TYPE PRIORITY
   let character = 'child';
-  let genderType = 'child';
+  
+  // CRITICAL FIX: Direct avatar type assignment - NO conditions, takes absolute priority
+  let genderType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
+  console.log(`🎯 TIER 2.5 GENDER DEBUG - Direct avatar type: ${genderType} (avatarIdentity: ${avatarIdentity?.type}, userInfo.avatar: ${userInfo?.avatar?.type})`);
   
   if (userInfo?.name) {
     character = userInfo.name;
-    genderType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
+    // Gender type already set above - do NOT override here
   } else if (text.includes('girl') || text.includes('she')) {
     character = 'girl';
-    genderType = 'girl';
+    // Only override if no explicit avatar selection
+    if (!avatarIdentity?.type && !userInfo?.avatar?.type) {
+      genderType = 'girl';
+    }
   } else if (text.includes('boy') || text.includes('he')) {
     character = 'boy';
-    genderType = 'boy';
+    // Only override if no explicit avatar selection  
+    if (!avatarIdentity?.type && !userInfo?.avatar?.type) {
+      genderType = 'boy';
+    }
   }
   
   // Enhanced avatar description with stronger gender enforcement
@@ -257,7 +266,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   if (userInfo?.avatar || avatarIdentity) {
     const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
     const type = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
-    genderType = type; // Ensure we use the avatar type
+    // Gender type already set above - do NOT override here (genderType = type was the bug!)
     
     const skinMap = {
       'pale': 'fair skin',
@@ -303,10 +312,24 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   // Apply cultural enhancement bypass logic
   const culturallyEnhancedSetting = applyCulturalSettingEnhancement(baseSetting, userInfo);
   
-  // Enhanced object detection (removed forced animal injection)
+  // RESTORED COMPREHENSIVE ANIMAL DETECTION + OBJECT DETECTION
   const objects = [];
+  const animals = [];
+  
+  // Comprehensive animal detection array
+  const animalKeywords = ['bunny', 'rabbit', 'cat', 'kitten', 'dog', 'puppy', 'bird', 'bear', 'fox', 'deer', 'squirrel', 'mouse', 'lion', 'elephant', 'giraffe', 'monkey', 'tiger', 'zebra', 'horse', 'cow', 'pig', 'sheep', 'goat', 'duck', 'goose', 'chicken', 'fish', 'butterfly', 'bee', 'frog', 'turtle', 'snake'];
+  
   const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide'];
   
+  // Detect animals mentioned in story
+  animalKeywords.forEach(animal => {
+    if (text.includes(animal) && animals.length < 2) {
+      animals.push(animal);
+      console.log(`🐾 TIER 2.5 ANIMAL DEBUG - Detected: ${animal}`);
+    }
+  });
+  
+  // Detect objects mentioned in story  
   allObjects.forEach(obj => {
     if (text.includes(obj) && objects.length < 2) objects.push(obj);
   });
@@ -328,14 +351,24 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   let scene = `${agePrefix} ${genderType}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${culturallyEnhancedSetting}`;
+  
+  // Add detected animals to scene (character-animal interaction)
+  if (animals.length > 0) {
+    scene += ` with ${animals.join(' and ')}`;
+    console.log(`🐾 TIER 2.5 SCENE DEBUG - Added animals to scene: ${animals.join(', ')}`);
+  }
+  
+  // Add objects to scene
   if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;
   
   // Add emotion detection without AI
   const emotionalContext = detectEmotionFromText(text);
   if (emotionalContext) scene += `, ${emotionalContext}`;
   
-  // Use best scene as primary context
+  // Use best scene as primary context  
   scene += `. Scene: ${bestScene}`;
+  
+  console.log(`🎯 TIER 2.5 FINAL DEBUG - Final scene: ${scene}`);
   
   return scene;
 }
