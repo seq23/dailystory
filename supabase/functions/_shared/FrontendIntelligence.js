@@ -20,6 +20,7 @@
 // ============= END IMPORT STANDARDS =============
 
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
+import { Tier25FallbackConstants } from './Tier25FallbackConstants.js';
 
 export class FrontendIntelligence {
   
@@ -95,7 +96,7 @@ export class FrontendIntelligence {
   // ============= PREMIUM PROMPT TEMPLATE =============
   // This template is used to build high-quality prompts for image generation
   static PREMIUM_PROMPT_TEMPLATE = `
-  A captivating children's book illustration of {characterDescription} in a {settingDescription}, {sceneDescription}.
+  An award winning children's book illustration with warm tones, detail, and soft lighting of {characterDescription} in a {settingDescription}, {sceneDescription}.
   The scene is filled with {visualDetails} and the overall mood is {emotionalContext}.
   The art style is {styleDescription}, reminiscent of {artInspiration}.
   `;
@@ -580,10 +581,33 @@ export class FrontendIntelligence {
       
       enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);
       
-      return enhancedPrompt;
+      // Generate unified negative prompt using hardcoded constants
+      const negativePrompt = Tier25FallbackConstants.generateUnifiedNegativePrompt(userInfo, imageDifficulty);
+      
+      // Get hardcoded generation parameters
+      const generationParams = Tier25FallbackConstants.getGenerationParams(imageDifficulty);
+      
+      // Get hardcoded metadata
+      const metadata = Tier25FallbackConstants.getFallbackMetadata(imageDifficulty);
+      
+      console.log('🎨 FI-PROMPT: Template-based prompt complete with negative prompt and params');
+      
+      // Return consistent structure matching Tier 2
+      return {
+        enhancedPrompt,
+        negativePrompt,
+        generationParams,
+        metadata
+      };
     } catch (error) {
       console.error('🚨 FI-PROMPT: Template fallback failed:', error);
-      return `${storyText} - 3D rendered, Pixar-like animation style, children's book illustration`;
+      // Emergency fallback - return basic structure
+      return {
+        enhancedPrompt: `${storyText} - 3D rendered, Pixar-like animation style, children's book illustration`,
+        negativePrompt: Tier25FallbackConstants.generateUnifiedNegativePrompt(userInfo, imageDifficulty),
+        generationParams: Tier25FallbackConstants.getGenerationParams(imageDifficulty),
+        metadata: { ...Tier25FallbackConstants.getFallbackMetadata(imageDifficulty), emergency_fallback: true }
+      };
   }
   
   // ============= CHARACTER DESCRIPTION BUILDING =============
