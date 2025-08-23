@@ -40,7 +40,7 @@ serve(async (req) => {
     const style = getHardcodedStyle(mappedDifficulty);
     
     // Build final prompt with enhanced negative prompts
-    const negativePrompt = getEnhancedNegativePrompt(userInfo, avatarIdentity);
+    const negativePrompt = getEnhancedNegativePrompt(userInfo, avatarIdentity, avatarIdentity?.type || userInfo?.avatar?.type);
     const finalPrompt = `${extractedScene}. ${style.prompt}. ${style.quality}. ${style.suffix}`;
     
     // 🔍 TIER 2.5 DEBUG LOGGING - Full prompts for debugging
@@ -237,26 +237,33 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     }
   });
   
-  // CHARACTER DETECTION WITH DIRECT AVATAR TYPE PRIORITY
+  // CHARACTER DETECTION WITH AVATAR TYPE MAPPING
   let character = 'child';
   
-  // CRITICAL FIX: Direct avatar type assignment - NO conditions, takes absolute priority
-  let genderType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
-  console.log(`🎯 TIER 2.5 GENDER DEBUG - Direct avatar type: ${genderType} (avatarIdentity: ${avatarIdentity?.type}, userInfo.avatar: ${userInfo?.avatar?.type})`);
+  // Store original avatar type for detection in scene construction and negative prompting
+  const originalAvatarType = avatarIdentity?.type || userInfo?.avatar?.type;
+  
+  // Map avatar types: "prefer-not-to-answer" → "child", others unchanged
+  const mapAvatarTypeForPrompt = (type: string | undefined): string => {
+    if (type === 'prefer-not-to-answer') return 'child';
+    return type || 'child';
+  };
+  
+  let genderType = mapAvatarTypeForPrompt(originalAvatarType);
+  console.log(`🎯 AVATAR MAPPING - Original: ${originalAvatarType} → Mapped: ${genderType}`);
   
   if (userInfo?.name) {
     character = userInfo.name;
-    // Gender type already set above - do NOT override here
   } else if (text.includes('girl') || text.includes('she')) {
     character = 'girl';
     // Only override if no explicit avatar selection
-    if (!avatarIdentity?.type && !userInfo?.avatar?.type) {
+    if (!originalAvatarType) {
       genderType = 'girl';
     }
   } else if (text.includes('boy') || text.includes('he')) {
     character = 'boy';
     // Only override if no explicit avatar selection  
-    if (!avatarIdentity?.type && !userInfo?.avatar?.type) {
+    if (!originalAvatarType) {
       genderType = 'boy';
     }
   }
@@ -349,6 +356,13 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   
   // Build enhanced scene description with age-specified character
   let scene = `${agePrefix} ${genderType}`;
+  
+  // Add gender-neutral appendage for "prefer-not-to-answer" selection
+  if (originalAvatarType === 'prefer-not-to-answer') {
+    scene = `${agePrefix} child with no gender specific characteristics`;
+    console.log(`🎯 GENDER NEUTRAL - Applied neutral characteristics for prefer-not-to-answer`);
+  }
+  
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${culturallyEnhancedSetting}`;
   
@@ -422,7 +436,7 @@ function getHardcodedStyle(difficulty: string) {
 }
 
 // Unified negative prompt system for Tier 2.5 (hardcoded but comprehensive)
-function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any): string {
+function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, originalAvatarType?: string): string {
   const negatives = [];
   
   // 1. Page-specific negatives (first page only in practice)
@@ -445,12 +459,15 @@ function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any): string
   // 6. Style prevention
   negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
   
-  // 7. Gender consistency enforcement (with fallback pattern)
-  const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
+  // 7. Gender consistency enforcement (with enhanced prefer-not-to-answer handling)
+  const avatarType = originalAvatarType || avatarIdentity?.type || userInfo?.avatar?.type || 'child';
   if (avatarType === 'girl') {
     negatives.push('boy character, male character, masculine features');
   } else if (avatarType === 'boy') {
     negatives.push('girl character, female character, feminine features, dress, skirt');
+  } else if (avatarType === 'prefer-not-to-answer') {
+    negatives.push('masculine features, feminine features, boy characteristics, girl characteristics, gender-specific clothing, dress, skirt, masculine clothing, gendered accessories, gendered hairstyles');
+    console.log(`🎯 GENDER NEUTRAL NEGATIVES - Applied comprehensive gender-neutral negative prompts`);
   }
   
   // 8. Style framework compatibility (hardcoded defaults)
