@@ -13,9 +13,9 @@ class UnifiedCharacterConsistency {
    * Generate fresh character seed for each request - STATELESS & AVATAR-AWARE
    * Always uses current avatar settings, no persistent caching
    */
-  getCharacterSeed(userId, storyId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new') {
+  async getCharacterSeed(userId, storyId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new') {
     // ALWAYS generate fresh character based on current avatar settings
-    const seedData = this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
+    const seedData = await this.createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity);
     console.log(`🎭 STATELESS: Fresh character generated for ${userInfo.name}: ${seedData.baseSeed} (Avatar: ${avatarIdentity ? 'Optimized' : 'Local'})`);
 
     const characterDescription = this.buildContextualCharacterDescription(seedData, storyContext);
@@ -41,7 +41,7 @@ class UnifiedCharacterConsistency {
    * Create new character seed with complete profile - AVATAR-AWARE
    * Always uses current avatar settings for fresh generation
    */
-  createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity = null) {
+  async createNewCharacterSeed(userId, storyId, userInfo, avatarIdentity = null) {
     // Generate seed based on current avatar settings, not just user name
     const avatarSeedInput = avatarIdentity ? 
       `${userId}-${userInfo.name || 'child'}-${avatarIdentity.skinTone || 'medium'}` : 
@@ -53,7 +53,7 @@ class UnifiedCharacterConsistency {
     const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo).profile;
     const physicalTraits = avatarIdentity ? 
       this.generatePhysicalTraitsFromIdentity(avatarIdentity, baseSeed) : 
-      this.generatePhysicalTraits(userInfo, baseSeed);
+      await this.generatePhysicalTraits(userInfo, baseSeed);
     const culturalElements = this.generateCulturalElements(culturalProfile, userInfo);
 
     return {
@@ -153,7 +153,7 @@ class UnifiedCharacterConsistency {
   /**
    * Generate consistent physical traits (FALLBACK for backward compatibility)
    */
-  generatePhysicalTraits(userInfo, seed) {
+  async generatePhysicalTraits(userInfo, seed) {
     const avatar = userInfo.avatar || {};
     const random = this.createSeededRandom(seed);
     
@@ -166,7 +166,7 @@ class UnifiedCharacterConsistency {
     };
     
     const skinTone = skinToneMap[avatar.skinTone] || 'medium';
-    const hairColor = this.getUniversalHairMapping(avatar);
+    const hairColor = await this.getUniversalHairMapping(avatar, userInfo);
     
     const eyeColorOptions = skinTone === 'dark' ? ['brown', 'dark brown'] : 
                            skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
@@ -188,16 +188,29 @@ class UnifiedCharacterConsistency {
   /**
    * Universal hair mapping - now uses FrontendIntelligence for consistency
    */
-  getUniversalHairMapping(avatar) {
-    // Import FrontendIntelligence for consistent hair mapping
-    const { FrontendIntelligence } = require('./FrontendIntelligence.js');
-    
-    // Determine gender from avatar type for proper hair selection (with fallback)
-    const gender = avatar?.type === 'girl' ? 'girl' : 
-                   avatar?.type === 'boy' ? 'boy' : 
-                   avatar?.type || 'child';
-    
-    return FrontendIntelligence.getUniversalHairMapping(avatar, gender);
+  async getUniversalHairMapping(avatar, userInfo = null) {
+    try {
+      // Import FrontendIntelligence for consistent hair mapping
+      const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      
+      // Determine gender from avatar type for proper hair selection (with fallback)
+      const gender = avatar?.type === 'girl' ? 'girl' : 
+                     avatar?.type === 'boy' ? 'boy' : 
+                     avatar?.type || 'child';
+      
+      return FrontendIntelligence.getUniversalHairMapping(avatar, gender, userInfo);
+    } catch (error) {
+      console.warn('⚠️ FrontendIntelligence import failed, using fallback hair mapping:', error.message);
+      // Fallback hair mapping
+      const hairColorMap = {
+        'blonde': 'blonde',
+        'brown': 'brown', 
+        'black': 'black',
+        'red': 'red',
+        'gray': 'gray'
+      };
+      return hairColorMap[avatar?.hairColor] || 'brown';
+    }
   }
 
   /**

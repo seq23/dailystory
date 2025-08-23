@@ -332,7 +332,6 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
         ];
 
         let validationResult;
-        let enhancedStoryData;
         
         try {
           // Call OpenAI with model fallback chain
