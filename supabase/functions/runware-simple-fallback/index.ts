@@ -325,7 +325,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   const agePrefix = ageMapping[mappedDifficulty] || '7-year-old';
   
   // Build enhanced scene description with age-specified character
-  let scene = `${agePrefix} ${character}`;
+  let scene = `${agePrefix} ${genderType}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${culturallyEnhancedSetting}`;
   if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;

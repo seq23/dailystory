@@ -319,6 +319,7 @@ CRITICAL RULES:
 3. Keep visualComponents concise and visual-focused
 4. primaryScene must be one complete sentence with all characters and scene elements
 5. Focus on what Runware image generation needs, not complex emotions
+6. MUST explicitly include "boy", "girl", or "child" in character descriptions based on the provided avatar identity
 
 Example: If story has main character + grandmother, primaryScene should be:
 "fair skin white boy with red hair with his grandmother in cozy indoor scene with warm lighting"`
