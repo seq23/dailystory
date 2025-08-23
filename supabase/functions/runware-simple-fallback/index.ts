@@ -21,7 +21,7 @@ serve(async (req) => {
     
     // Process avatar identity inline for consistent gender handling
     const avatarIdentity = userInfo?.avatar ? {
-      type: userInfo.avatar.type || 'child',
+      type: userInfo.avatar.type === 'prefer-not-to-answer' ? 'child' : (userInfo.avatar.type || 'child'),
       skinTone: userInfo.avatar.skinTone || 'medium'
     } : null;
     console.log(`🎭 Tier 2.5: Avatar identity processed - type: ${avatarIdentity?.type}, skinTone: ${avatarIdentity?.skinTone}`);

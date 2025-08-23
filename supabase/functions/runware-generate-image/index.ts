@@ -753,8 +753,8 @@ function mapAvatarIdentity(userInfo: any) {
   const { nativeLanguage = 'en' } = userInfo;
 
   // Map avatar type and skin tone to standardized identity
-  const avatarType = type === 'prefer-not-to-answer' ? 'boy' : type;
-  const genderText = avatarType === 'boy' ? 'boy' : 'girl';
+  const avatarType = type === 'prefer-not-to-answer' ? 'child' : type;
+  const genderText = avatarType === 'boy' ? 'boy' : avatarType === 'girl' ? 'girl' : 'child';
   
   // Standardized skin tone mapping
   const skinToneMap = {
@@ -770,11 +770,11 @@ function mapAvatarIdentity(userInfo: any) {
   let visualDescription = '';
   if (nativeLanguage === 'en') {
     const visualDescriptionMap = {
-      'fair': `fair skin white ${genderText} with red hair`,
-      'light': `white ${genderText} with blonde hair`,
-      'medium': `medium skin white ${genderText} with brown hair`,
-      'olive': `olive skin white ${genderText} with black hair`,
-      'dark': `black ${genderText}`
+      'fair': genderText === 'child' ? `fair skin child with no gender specific characteristics, red hair` : `fair skin white ${genderText} with red hair`,
+      'light': genderText === 'child' ? `white child with no gender specific characteristics, blonde hair` : `white ${genderText} with blonde hair`,
+      'medium': genderText === 'child' ? `medium skin white child with no gender specific characteristics, brown hair` : `medium skin white ${genderText} with brown hair`,
+      'olive': genderText === 'child' ? `olive skin white child with no gender specific characteristics, black hair` : `olive skin white ${genderText} with black hair`,
+      'dark': genderText === 'child' ? `black child with no gender specific characteristics` : `black ${genderText}`
     };
     visualDescription = visualDescriptionMap[standardizedSkinTone] || `${genderText}`;
   }

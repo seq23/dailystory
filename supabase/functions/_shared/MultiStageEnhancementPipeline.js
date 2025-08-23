@@ -819,11 +819,14 @@ export class MultiStageEnhancementPipeline {
     // 6. Style prevention (unchanged #6)
     negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
     
-    // 7. Gender consistency enforcement (unchanged #7)
+    // 7. Gender consistency enforcement (enhanced with child/prefer-not-to-answer handling)
     if (avatarIdentity?.type === 'girl') {
       negatives.push('boy character, male character, masculine features');
     } else if (avatarIdentity?.type === 'boy') {
       negatives.push('girl character, female character, feminine features, dress, skirt');
+    } else if (avatarIdentity?.type === 'child' || avatarIdentity?.type === 'prefer-not-to-answer') {
+      negatives.push('masculine features, feminine features, boy characteristics, girl characteristics, gender-specific clothing, dress, skirt, masculine clothing, gendered accessories, gendered hairstyles');
+      console.log('🎯 GENDER NEUTRAL NEGATIVES - Applied comprehensive gender-neutral negative prompts for child/prefer-not-to-answer');
     }
     
     // 8. Style framework compatibility (unchanged #8)

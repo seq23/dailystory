@@ -427,6 +427,7 @@ CRITICAL RULES:
 4. primaryScene must be one complete sentence with all characters and scene elements
 5. Focus on what Runware image generation needs, not complex emotions
 6. MUST explicitly include "boy", "girl", or "child" in character descriptions based on the provided avatar identity
+7. If avatarIdentity.type is "child" or "prefer-not-to-answer", use "child with no gender specific characteristics" in descriptions
 
 Example: If story has main character + grandmother, primaryScene should be:
 "fair skin white boy with red hair with his grandmother in cozy indoor scene with warm lighting"`

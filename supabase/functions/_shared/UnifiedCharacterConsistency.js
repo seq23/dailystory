@@ -112,7 +112,7 @@ class UnifiedCharacterConsistency {
       culturalProfile,
       physicalTraits,
       culturalElements,
-      avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'prefer-not-to-answer',
+      avatarType: avatarIdentity?.type || userInfo.avatar?.type === 'prefer-not-to-answer' ? 'child' : userInfo.avatar?.type || 'child',
       skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
       avatarIdentity: avatarIdentity,
       contextualAppearance: {
@@ -150,11 +150,11 @@ class UnifiedCharacterConsistency {
     const { nativeLanguage, avatar } = userInfo;
     const skinTone = avatar.skinTone || 'medium';
     
-    // FIXED: Use avatar type with fallback pattern
-    const gender = avatar.type === 'girl' ? 'female' : 
-                   avatar.type === 'boy' ? 'male' : 
-                   userInfo?.avatar?.type === 'girl' ? 'female' : 
-                   userInfo?.avatar?.type === 'boy' ? 'male' : 'child';
+    // FIXED: Use avatar type with fallback pattern - handle child/prefer-not-to-answer
+    const avatarType = avatar.type === 'prefer-not-to-answer' ? 'child' : avatar.type;
+    const gender = avatarType === 'girl' ? 'female' : 
+                   avatarType === 'boy' ? 'male' : 
+                   avatarType === 'child' ? 'child' : 'child';
     console.log(`🎭 DEBUG: Avatar type: ${avatar.type}, Gender assigned: ${gender}`);
     
     // NEW MASTER PLAN: Direct visual description mapping (no cultural profiles)
@@ -385,12 +385,24 @@ class UnifiedCharacterConsistency {
     // Mock gender determination for explicit text generation
     const mockUserInfo = { avatar: { skinTone: physicalTraits.skinTone } };
     
-    // NEW MASTER PLAN: Use direct visual descriptions if available
+    // NEW MASTER PLAN: Use direct visual descriptions if available, handle child/prefer-not-to-answer
     if (seedData.avatarIdentity && seedData.avatarIdentity.directVisualDescription) {
       description = `${characterName} is a ${physicalTraits.age || 'young'} ${seedData.avatarIdentity.directVisualDescription}`;
       console.log(`🎭 NEW MASTER PLAN: Generated direct visual character description: "${description}"`);
     } else {
-      description = `${characterName} is a ${physicalTraits.age || 'young'} child`;
+      // Handle avatar type mapping: prefer-not-to-answer → child
+      const avatarType = seedData.avatarType === 'prefer-not-to-answer' ? 'child' : seedData.avatarType;
+      
+      if (avatarType === 'child' || avatarType === 'prefer-not-to-answer') {
+        description = `${characterName} is a ${physicalTraits.age || 'young'} child with no gender specific characteristics`;
+        console.log(`🎯 GENDER NEUTRAL: Applied neutral characteristics for ${avatarType} type`);
+      } else if (avatarType === 'boy') {
+        description = `${characterName} is a ${physicalTraits.age || 'young'} boy`;
+      } else if (avatarType === 'girl') {
+        description = `${characterName} is a ${physicalTraits.age || 'young'} girl`;
+      } else {
+        description = `${characterName} is a ${physicalTraits.age || 'young'} child`;
+      }
     }
     
     // Add physical characteristics
