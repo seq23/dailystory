@@ -25,6 +25,15 @@ const visualMap = {
   'olive': 'olive skin white child with black hair',
   'dark': 'black child'
 };
+
+// CORRECTED HAIR MAP (matches all tiers as of latest fix):
+const hairMap = {
+  'pale': 'red hair',        // ✅ CORRECT (was incorrectly 'blonde hair' in Tier 2.5)
+  'light': 'blonde hair',    // ✅ CORRECT (was incorrectly 'brown hair' in Tier 2.5)  
+  'medium': 'brown hair',    // ✅ CORRECT
+  'olive': 'dark brown hair', // ✅ CORRECT
+  'dark': 'black hair'       // ✅ CORRECT
+};
 ```
 
 ### Why This Mapping is Intentional
