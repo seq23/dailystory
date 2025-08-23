@@ -362,7 +362,7 @@ function getHardcodedStyle(difficulty: string) {
     'medium': {
       prompt: 'Digital illustration with painterly qualities, soft brush strokes, focused character presentation',
       quality: 'Ultra professional children\'s book illustration standard',
-      suffix: 'professional children\'s book illustration, warm colors, safe wholesome content, Caldecott Medal style',
+      suffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
