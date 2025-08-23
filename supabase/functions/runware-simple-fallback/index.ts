@@ -311,8 +311,21 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     if (text.includes(obj) && objects.length < 2) objects.push(obj);
   });
   
-  // Build enhanced scene description with cultural bypass and emotion detection
-  let scene = `${character}`;
+  // Add age category mapping based on difficulty to ensure consistent child characters
+  const ageMapping = {
+    'beginner': '5-year-old',
+    'easy': '7-year-old', 
+    'medium': '9-year-old',
+    'hard': '11-year-old',
+    'expert': '13-year-old'
+  };
+  
+  // Get mapped difficulty from userInfo (inlined for nuclear independence)
+  const mappedDifficulty = mapDifficultyInline(userInfo, 'medium');
+  const agePrefix = ageMapping[mappedDifficulty] || '7-year-old';
+  
+  // Build enhanced scene description with age-specified character
+  let scene = `${agePrefix} ${character}`;
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${culturallyEnhancedSetting}`;
   if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;
@@ -333,7 +346,7 @@ function getHardcodedStyle(difficulty: string) {
     'beginner': {
       prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics, single main character focus',
       quality: 'Ultra premium children\'s book illustration with depth and dimension', 
-      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed indoor environment, soft natural window light, high quality 3D animation',
+      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light, high quality 3D animation',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
@@ -341,7 +354,7 @@ function getHardcodedStyle(difficulty: string) {
     'easy': {
       prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics',
       quality: 'Premium children\'s book illustration with depth and dimension',
-      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed indoor environment, soft natural window light, high quality 3D animation',
+      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light, high quality 3D animation',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
