@@ -13,20 +13,20 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Professional animation studio quality with depth and dimension',
     
     // Prompt components
-    prompt: '3D Pixar animation style, soft volumetric lighting, warm golden tones, smooth rounded features, high-quality 3D rendering, child-friendly, professional animation studio quality',
+    prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: 'pixar_3d',
-    brandSuffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light, high quality 3D animation',
+    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
     negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 4.0,
-      steps: 12,
+      cfgScale: 7.0,
+      steps: 15,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9,
+      strength: 0.75,
       outputFormat: 'WEBP'
     }
   },
@@ -42,21 +42,21 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Professional animation studio quality with depth and dimension',
     
     // Prompt components
-    prompt: '3D Pixar animation style, soft volumetric lighting, warm golden tones, smooth rounded features, high-quality 3D rendering, child-friendly, professional animation studio quality',
+    prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
     rendering: 'pixar_3d',
-    brandSuffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light, high quality 3D animation',
+    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
     
     negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 4.0,
-      steps: 12,
+      cfgScale: 7.0,
+      steps: 15,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9,
+      strength: 0.75,
       outputFormat: 'WEBP'
     }
   },
@@ -72,20 +72,20 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Ultra professional children\'s book illustration standard',
     
     // Prompt components
-    prompt: '2D painterly digital illustration style, soft natural lighting, expressive design, masterful composition, warm tones, light rays',
+    prompt: 'Digital painting style with painterly brush strokes, artistic color harmony, cinematic lighting, professional artwork quality. Professional painterly digital art with artistic sophistication',
     complexity: 'minimal',
     colorPaletteKey: 'warm_pastels',
     detailLevel: 'medium',
     rendering: 'painterly',
-    brandSuffix: 'professional children\'s book digital illustration, natural lighting for dark skin, culturally accurate, safe wholesome content, high quality professional artwork',
+    brandSuffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation',
     negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 4.0,
-      steps: 12,
+      cfgScale: 7.5,
+      steps: 18,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9,
+      strength: 0.8,
       outputFormat: 'WEBP'
     }
   },
@@ -101,19 +101,19 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Sophisticated artistic children\'s book illustration',
     
     // Prompt components
-    prompt: '2D digital illustration (sophisticated artistic style), nuanced color gradients, artistic palette, highly detailed, advanced digital painting techniques',
+    prompt: 'Professional digital illustration with sophisticated artistic maturity, nuanced color gradients, refined visual storytelling, advanced digital painting techniques. Gallery-worthy professional digital illustration',
     complexity: 'high',
     colorPaletteKey: 'nuanced_artistic',
     detailLevel: 'highly detailed',
     rendering: 'advanced_digital_painting',
-    brandSuffix: 'artistic children\'s book illustration, refined quality, diverse representation',
+    brandSuffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 4.0,
-      steps: 12,
+      cfgScale: 8.0,
+      steps: 20,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9,
+      strength: 0.85,
       outputFormat: 'WEBP'
     }
   },
@@ -129,17 +129,17 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Masterful children\'s book art with diverse representation',
     
     // Prompt components
-    prompt: '2D digital illustration (masterful artistic technique), complex color theory, intricate details',
+    prompt: 'Fine art digital illustration with masterful artistic sophistication, complex color harmonies, cinematic visual narrative, museum-quality artistic techniques. Museum-quality fine art digital illustration',
     complexity: 'very_high',
     colorPaletteKey: 'complex_professional',
     detailLevel: 'intricate and complex',
     rendering: 'masterful_artistic_technique',
-    brandSuffix: 'masterful children\'s book art, sophisticated quality, diverse representation',
+    brandSuffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation',
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 4.0,
-      steps: 12,
+      cfgScale: 8.5,
+      steps: 25,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.9,
       outputFormat: 'WEBP'
