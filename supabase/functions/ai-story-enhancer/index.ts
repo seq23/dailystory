@@ -246,7 +246,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
             
             // Continue to next attempt/model instead of returning empty result
             if (attempt < 3) {
-              const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+              const backoffDelay = 500; // Reduced from exponential to 500ms for faster fallbacks
               console.log(`⏳ Retrying after ${backoffDelay}ms due to empty content...`);
               await new Promise(resolve => setTimeout(resolve, backoffDelay));
               continue;
@@ -272,7 +272,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
           });
           
           if (attempt < 3) {
-            const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 8000); // Exponential backoff, max 8s
+            const backoffDelay = 500; // Reduced for faster fallbacks  
             console.log(`⏳ Retrying after ${backoffDelay}ms...`);
             await new Promise(resolve => setTimeout(resolve, backoffDelay));
             continue;

@@ -533,7 +533,6 @@ export class MultiStageEnhancementPipeline {
       }
 
       console.log('🔍 Tier 2: Starting UnifiedCharacterConsistency import...');
-      let characterConsistency;
       try {
         console.log('🔍 Tier 2: Import Strategy 1 (relative path)...');
         const module = await import('./UnifiedCharacterConsistency.js');
