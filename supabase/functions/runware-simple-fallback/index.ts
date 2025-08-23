@@ -263,7 +263,7 @@ function getHardcodedStyle(difficulty: string) {
     'beginner': {
       prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics, single main character focus',
       quality: 'Ultra premium children\'s book illustration with depth and dimension', 
-      suffix: 'professional children\'s book illustration, Pixar-style quality, diverse inclusive characters',
+      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed indoor environment, soft natural window light, high quality 3D animation',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
@@ -271,7 +271,7 @@ function getHardcodedStyle(difficulty: string) {
     'easy': {
       prompt: 'High-quality 3D-rendered digital illustration with cartoon aesthetics',
       quality: 'Premium children\'s book illustration with depth and dimension',
-      suffix: 'children\'s book illustration, warm earth tones, diverse inclusive characters, professional artwork',
+      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed indoor environment, soft natural window light, high quality 3D animation',
       steps: 12,
       cfgScale: 4.0,
       strength: 0.9
