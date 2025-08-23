@@ -79,8 +79,7 @@ serve(async (req) => {
           storyText: positivePrompt,
           userInfo,
           sessionId: sessionId || 'openai-session',
-          pageNumber: pageNumber || 1,
-          totalPages: 10
+          pageNumber: pageNumber || 1
         })
       });
       

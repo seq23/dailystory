@@ -213,7 +213,6 @@ serve(async (req) => {
           storyId,
           sessionId,
           pageNumber,
-          totalPages: isGuestUser, // Reusing existing parameter mapping
           avatarIdentity, // Pass pre-processed avatar identity directly
           enhancedStoryData
         });
