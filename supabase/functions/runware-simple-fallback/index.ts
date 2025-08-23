@@ -336,6 +336,40 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     }
   });
   
+  // Detect secondary characters mentioned in story
+  const secondaryCharacters = [];
+  const familyKeywords = ['mom', 'mother', 'dad', 'father', 'sister', 'brother', 'grandma', 'grandpa', 'aunt', 'uncle'];
+  const friendKeywords = ['friend', 'buddy', 'pal'];
+  const communityKeywords = ['teacher', 'neighbor', 'doctor', 'librarian', 'coach', 'nurse', 'principal', 'cashier', 'mailman', 'firefighter'];
+  
+  // Detect family members (highest priority)
+  familyKeywords.forEach(family => {
+    if (text.toLowerCase().includes(family) && secondaryCharacters.length < 2) {
+      secondaryCharacters.push(`friendly ${family}`);
+      console.log(`👨‍👩‍👧‍👦 TIER 2.5 FAMILY DEBUG - Detected: ${family}`);
+    }
+  });
+  
+  // Detect friends (if space available)
+  if (secondaryCharacters.length < 2) {
+    friendKeywords.forEach(friendType => {
+      if (text.toLowerCase().includes(friendType) && secondaryCharacters.length < 2) {
+        secondaryCharacters.push(`friendly friend`);
+        console.log(`👫 TIER 2.5 FRIEND DEBUG - Detected: ${friendType}`);
+      }
+    });
+  }
+  
+  // Detect community roles (if space available)
+  if (secondaryCharacters.length < 2) {
+    communityKeywords.forEach(role => {
+      if (text.toLowerCase().includes(role) && secondaryCharacters.length < 2) {
+        secondaryCharacters.push(`friendly ${role}`);
+        console.log(`🏘️ TIER 2.5 COMMUNITY DEBUG - Detected: ${role}`);
+      }
+    });
+  }
+  
   // Detect objects mentioned in story  
   allObjects.forEach(obj => {
     if (text.includes(obj) && objects.length < 2) objects.push(obj);
@@ -370,6 +404,12 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   if (animals.length > 0) {
     scene += ` with ${animals.join(' and ')}`;
     console.log(`🐾 TIER 2.5 SCENE DEBUG - Added animals to scene: ${animals.join(', ')}`);
+  }
+  
+  // Add secondary characters to scene (family, friends, community)
+  if (secondaryCharacters.length > 0) {
+    scene += ` with ${secondaryCharacters.join(' and ')}`;
+    console.log(`👨‍👩‍👧‍👦 TIER 2.5 SCENE DEBUG - Added secondary characters to scene: ${secondaryCharacters.join(', ')}`);
   }
   
   // Add objects to scene
