@@ -240,7 +240,11 @@ export class MultiStageEnhancementPipeline {
           const vc = enhancedStoryData.visualComponents;
           if (vc.setting) aiContext.push(`Setting: ${vc.setting}`);
           if (vc.lighting) aiContext.push(`Lighting: ${vc.lighting}`);
-          if (vc.mood) aiContext.push(`Mood: ${vc.mood}`);
+        }
+        
+        // Add character mood from characters object
+        if (enhancedStoryData.characters?.characterMood) {
+          aiContext.push(`Mood: ${enhancedStoryData.characters.characterMood}`);
         }
         
         if (aiContext.length > 0) {
@@ -407,13 +411,21 @@ export class MultiStageEnhancementPipeline {
         promptParts.push(fullCharacterDescription);
       }
       
-      // MEDIUM: Visual Components
+      // HIGH PRIORITY: Action and Setting first
       if (enhancedStoryData?.visualComponents) {
         const vc = enhancedStoryData.visualComponents;
+        // TOP PRIORITY: Action
+        if (vc.action) promptParts.push(vc.action);
+        // SECOND PRIORITY: Setting  
         if (vc.setting) promptParts.push(vc.setting);
+        // LOWER PRIORITY: Other visual components
         if (vc.lighting) promptParts.push(vc.lighting);
-        if (vc.mood) promptParts.push(vc.mood);
         if (vc.keyObjects) promptParts.push(vc.keyObjects);
+      }
+      
+      // Character mood from characters object
+      if (enhancedStoryData?.characters?.characterMood) {
+        promptParts.push(enhancedStoryData.characters.characterMood);
       }
       
       // MEDIUM: Visual details and secondary characters
@@ -932,17 +944,26 @@ export class MultiStageEnhancementPipeline {
     console.log('🧠 Using AI-enhanced scene context extraction');
     
     if (enhancedStoryData) {
-      // Build rich context from AI analysis
-      const characters = enhancedStoryData.characters?.map(char => 
-        `${char.name || 'character'} (${char.description || 'child'}, feeling ${char.emotions || 'neutral'})`
-      ).join(', ') || '';
+      // Build rich context from AI analysis - characters is now an object
+      let characters = '';
+      if (enhancedStoryData.characters) {
+        const char = enhancedStoryData.characters;
+        const characterParts = [];
+        if (char.characterAppearance) characterParts.push(char.characterAppearance);
+        if (char.characterPosition) characterParts.push(char.characterPosition);
+        if (char.characterMood) characterParts.push(`feeling ${char.characterMood}`);
+        if (char.secondaryCharacters) characterParts.push(`with ${char.secondaryCharacters}`);
+        characters = characterParts.join(', ');
+      }
       
       // Enhanced setting detection with validation
       let setting = '';
-      if (enhancedStoryData.setting) {
-        const location = enhancedStoryData.setting.location || 'indoor scene';
-        const timeOfDay = enhancedStoryData.setting.timeOfDay || 'daytime';
-        const weather = enhancedStoryData.setting.weather || 'clear';
+      if (enhancedStoryData.visualComponents?.setting) {
+        const location = enhancedStoryData.visualComponents.setting || 'indoor scene';
+        // Extract lighting info for time context
+        const lighting = enhancedStoryData.visualComponents.lighting || 'natural lighting';
+        // Use sceneType for weather context
+        const sceneType = enhancedStoryData.visualComponents.sceneType || 'mixed';
         
         // Validate setting against story text for accuracy
         const storyLower = storyText.toLowerCase();
@@ -972,18 +993,20 @@ export class MultiStageEnhancementPipeline {
           }
         }
         
-        setting = `${validatedLocation} during ${timeOfDay} with ${weather} weather`;
+        setting = `${validatedLocation} with ${lighting}`;
       }
       
-      const objects = enhancedStoryData.objects?.length > 0 ? 
-        `, featuring ${enhancedStoryData.objects.slice(0, 3).join(', ')}` : '';
+      const objects = enhancedStoryData.visualComponents?.keyObjects ? 
+        `, featuring ${enhancedStoryData.visualComponents.keyObjects}` : '';
       
-      const mood = enhancedStoryData.mood ? `, ${enhancedStoryData.mood} mood` : '';
+      const mood = enhancedStoryData.characters?.characterMood ? 
+        `, ${enhancedStoryData.characters.characterMood} mood` : '';
       
-      const lighting = enhancedStoryData.lighting ? `, ${enhancedStoryData.lighting}` : '';
+      const lighting = enhancedStoryData.visualComponents?.lighting ? 
+        `, ${enhancedStoryData.visualComponents.lighting}` : '';
       
-      const action = enhancedStoryData.narrativeElements?.action ? 
-        `, ${enhancedStoryData.narrativeElements.action}` : '';
+      const action = enhancedStoryData.visualComponents?.action ? 
+        `, ${enhancedStoryData.visualComponents.action}` : '';
       
       const richContext = `${characters} in ${setting}${objects}${mood}${lighting}${action}`;
       
