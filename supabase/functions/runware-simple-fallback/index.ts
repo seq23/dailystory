@@ -431,20 +431,20 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
 function getHardcodedStyle(difficulty: string) {
   const styles = {
     'beginner': {
-      prompt: 'Beautiful, award winning children\'s book illustration with single main character focus. Professional animation quality',
-      quality: 'High-quality 3D animation, Volumetric lighting effects, Enhanced facial detail and realistic proportions, More sophisticated material rendering', 
-      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light',
-      steps: 12,
-      cfgScale: 4.0,
-      strength: 0.9
+      prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering',
+      quality: 'High-quality 3D animated character illustration for early readers',
+      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
+      steps: 15,
+      cfgScale: 7.0,
+      strength: 0.75
     },
     'easy': {
-      prompt: 'Beautiful, award winning children\'s book illustration with single main character focus. Professional animation quality',
-      quality: 'High-quality 3D animation, Volumetric lighting effects, Enhanced facial detail and realistic proportions, More sophisticated material rendering',
-      suffix: 'photorealistic 3D render, Pixar animation quality, detailed facial features, realistic proportions, cinematic lighting, detailed environment, soft natural light',
-      steps: 12,
-      cfgScale: 4.0,
-      strength: 0.9
+      prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering',
+      quality: 'High-quality 3D animated character illustration for early readers',
+      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation',
+      steps: 15,
+      cfgScale: 7.0,
+      strength: 0.75
     },
     'medium': {
       prompt: 'Digital painting style, painterly brush strokes, cinematic composition, soft artistic lighting, professional digital artwork quality',
