@@ -71,9 +71,11 @@ static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity) {
 ### Why This Trigger is Specific
 
 - **English + Dark skin**: Targets Black American children specifically
-- **Provides rich cultural context**: Adds expanded African American arrays
-- **Additive enhancement**: Doesn't restrict other users, only adds for this demographic
-- **Authentic representation**: Ensures Black American children see authentic cultural elements
+- **English + Non-dark skin**: NO cultural enhancements applied (hair mapping only)
+- **Non-English + Any skin**: Native language cultural profile applied
+- **Provides rich cultural context**: Adds expanded African American arrays for appropriate demographics only
+- **Additive enhancement**: Doesn't restrict other users, only adds for specific demographic
+- **Authentic representation**: Ensures Black American children see authentic cultural elements while preventing inappropriate cultural assignments
 
 ### Enhanced Arrays Applied
 
@@ -89,8 +91,11 @@ When triggered, adds these cultural elements:
 ```
 1. User selects avatar → 
 2. Skin tone determines base hair color →
-3. Cultural enhancement detection (English + dark skin) →
-4. Apply expanded cultural arrays (if triggered) →
+3. Cultural enhancement detection:
+   - English + dark skin → African American enhancements only
+   - English + non-dark skin → NO cultural enhancements  
+   - Non-English + any skin → Native language cultural profile
+4. Apply appropriate enhancements (if any) →
 5. Generate comprehensive character description
 ```
 
@@ -121,8 +126,9 @@ Verify each avatar type produces expected hair colors:
 ### Cultural Enhancement Test
 Verify cultural arrays only apply when intended:
 - English + dark skin → Enhanced cultural elements
-- Other combinations → Standard descriptions
-- No restrictions on other users
+- English + non-dark skin → NO cultural enhancements (hair mapping only)
+- Non-English + any skin → Native language cultural profile
+- No inappropriate cultural assignments for English + non-dark skin users
 
 ## Common Misconceptions
 
@@ -133,7 +139,10 @@ Verify cultural arrays only apply when intended:
 ❌ **WRONG**: It ensures ALL hair colors are represented through avatar diversity, not stereotypes.
 
 ### "Cultural enhancements should apply to everyone"
-❌ **WRONG**: Specific cultural elements should only apply where authentic and appropriate.
+❌ **WRONG**: Specific cultural elements should only apply where authentic and appropriate. English + non-dark skin users should receive NO cultural profile enhancements.
+
+### "English users should get English cultural profiles regardless of skin tone"  
+❌ **WRONG**: This creates inappropriate cultural assignments. Only English + dark skin users get African American enhancements. English + non-dark skin users get hair mapping only.
 
 ## Regression Prevention
 

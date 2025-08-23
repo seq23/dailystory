@@ -79,41 +79,52 @@ const ageMapping = {
 
 ## 3. CULTURAL ENHANCEMENT SYSTEM
 
-### ✅ LANGUAGE + SKIN TONE MATRIX
+### ✅ LANGUAGE + SKIN TONE MATRIX (CORRECTED)
 
 ```javascript
-// Trigger Logic:
-English + dark skin = African American enhancements (shouldApplyAfricanAmericanCulturalVariations)
-French + dark skin = African-French/Francophone Black world ("african-french")
-Spanish + dark skin = Hispanic/Latino with African heritage ("hispanic-multicultural")
-Other language + dark skin = General African heritage ("african")
+// CORRECTED Trigger Logic:
+English + dark skin = African American enhancements ONLY (shouldApplyAfricanAmericanCulturalVariations)
+English + non-dark skin = NO cultural enhancements (hair mapping handled separately)
+French + any skin = French language cultural profile ("fr")
+Spanish + any skin = Spanish language cultural profile ("es") 
+Chinese + any skin = Chinese language cultural profile ("zh")
+Arabic + any skin = Arabic language cultural profile ("ar")
+Hindi + any skin = Hindi language cultural profile ("hi")
+Other non-English + any skin = Respective native language cultural profile
 ```
 
+### CRITICAL CLARIFICATION
+- **English users**: Only dark skin users get African American cultural enhancements. Non-dark skin English users receive NO cultural profile enhancements (hair mapping is handled separately by UnifiedCharacterConsistency.js).
+- **Non-English users**: All users regardless of skin tone get their native language cultural profile applied.
+
 ### Implementation Locations
-- **Main Trigger**: `supabase/functions/_shared/FrontendIntelligence.js` (shouldApplyAfricanAmericanCulturalVariations, lines 555-580)
-- **Cultural Profiles**: `supabase/functions/runware-generate-image/index.ts` (lines 798-802)
+- **Main Cultural Enhancement Logic**: `supabase/functions/_shared/FrontendIntelligence.js` (enhanceVisualPromptWithCulture, lines 299-354)
+- **African American Detection**: `supabase/functions/_shared/FrontendIntelligence.js` (shouldApplyAfricanAmericanCulturalVariations, lines 576-625)
+- **Native Language Detection**: `supabase/functions/_shared/FrontendIntelligence.js` (shouldApplyNativeLanguageCulturalProfile, lines 628-639)  
+- **Cultural Profiles**: `supabase/functions/_shared/FrontendIntelligence.js` (CULTURAL_VISUAL_PROFILES, lines 51-94)
 - **Enhancement Arrays**: `supabase/functions/_shared/FrontendIntelligence.js` (EXPANDED_AFRICAN_AMERICAN_* arrays)
-- **Tier 2.5 Implementation**: `supabase/functions/runware-simple-fallback/index.ts` (lines 296-302, 528-545)
-- **Character Consistency**: `supabase/functions/_shared/UnifiedCharacterConsistency.js` (lines 171-173)
+- **Character Consistency**: `supabase/functions/_shared/UnifiedCharacterConsistency.js` (hair mapping handled separately)
 
 ### Specific Enhancements Applied
 
-#### African American (English + dark skin)
-- **Hairstyles**: Natural textures, braids, locs, twist-outs
-- **Settings**: Churches, barbershops, family cookouts, community events
-- **Cultural Elements**: Heritage symbols, community strength, family traditions
-- **Details**: Soul food, gospel music, extended family gatherings
-- **Clothing**: "modern American fashion"
+#### English + Dark Skin → African American Enhancements ONLY
+- **Hairstyles**: Natural textures, braids, locs, twist-outs (via separate hair mapping system)
+- **Settings**: Churches, barbershops, family cookouts, community events (story-context based only)
+- **Cultural Elements**: Heritage symbols, community strength, family traditions (story-context based only)
+- **Details**: Soul food, gospel music, extended family gatherings (story-context based only)
+- **NO base cultural profile keywords applied** (skin tone, hair, clothing keywords from English profile are skipped)
 
-#### African-French (French + dark skin) 
-- **Profile**: "african-french"
-- **Clothing**: "African-French fusion style"
-- **Cultural Context**: Larger Francophone Black world representation
+#### English + Non-Dark Skin → NO Cultural Enhancements
+- **Hair mapping**: Handled separately by `UnifiedCharacterConsistency.js` based on avatar skin tone
+- **Cultural elements**: None applied (no English cultural profile keywords)
+- **Settings**: Only story-context based, no cultural enhancements
+- **Result**: Clean character generation without inappropriate cultural elements
 
-#### Hispanic-African Heritage (Spanish + dark skin)
-- **Profile**: "hispanic-multicultural" 
-- **Clothing**: "contemporary Hispanic fashion"
-- **Cultural Context**: Latino community with African heritage elements
+#### Non-English + Any Skin → Native Language Cultural Profile  
+- **Full Cultural Profile**: All keywords from native language profile applied (skin tone, hair, clothing, cultural elements)
+- **Example Languages**: Spanish, French, Chinese, Arabic, Hindi
+- **Hair mapping**: Combined with native language hair style keywords
+- **Cultural Context**: Authentic representation matching user's native language
 
 ---
 
@@ -141,11 +152,14 @@ All tiers + unknown → "7-year-old child" fallback ✅
 
 ### Cultural Enhancement Test  
 ```bash
-# Test language + skin combinations:
-English + dark → shouldApplyAfricanAmericanCulturalVariations = true ✅
-French + dark → "african-french" profile ✅
-Spanish + dark → "hispanic-multicultural" profile ✅
-German + dark → General African heritage ✅
+# CORRECTED Test language + skin combinations:
+English + dark → shouldApplyAfricanAmericanCulturalVariations = true, African American enhancements applied ✅
+English + pale/light/medium/olive → NO cultural enhancements, hair mapping only ✅  
+French + any skin → Native language cultural profile applied ✅
+Spanish + any skin → Native language cultural profile applied ✅
+Chinese + any skin → Native language cultural profile applied ✅
+Arabic + any skin → Native language cultural profile applied ✅
+Hindi + any skin → Native language cultural profile applied ✅
 ```
 
 ---
@@ -181,9 +195,11 @@ German + dark → General African heritage ✅
 - Verify age mapping (7-year-old default)
 
 ### Cultural Issues
-- Check shouldApplyAfricanAmericanCulturalVariations trigger
-- Verify language + skin tone matrix results
-- Look for cultural profile assignments
+- Check shouldApplyAfricanAmericanCulturalVariations trigger (English + dark skin only)
+- Check shouldApplyNativeLanguageCulturalProfile trigger (non-English languages only)
+- Verify English + non-dark skin gets NO cultural enhancements
+- Verify non-English languages get full cultural profiles regardless of skin tone
+- Look for cultural profile assignments and enhancement applications
 
 ---
 
@@ -193,6 +209,10 @@ German + dark → General African heritage ✅
 - **Hair Fix Applied**: Corrected Tier 2.5 pale→red, light→blonde mappings
 - **Gender System Documented**: Comprehensive prefer-not-to-answer handling
 - **Cultural Matrix Documented**: Language + skin tone enhancement logic
+- **v2.0** (Cultural Fix Applied): Fixed English + non-dark skin cultural enhancement bug
+  - English + non-dark skin now receives NO cultural enhancements (hair mapping only)
+  - Added shouldApplyNativeLanguageCulturalProfile method for non-English detection
+  - Updated enhanceVisualPromptWithCulture logic to differentiate properly
 
-**Last Updated**: Post hair-color-consistency fix
-**Status**: All three tiers verified consistent ✅
+**Last Updated**: Post cultural-enhancement-fix
+**Status**: All three systems corrected and verified ✅

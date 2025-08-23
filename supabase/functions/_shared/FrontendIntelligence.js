@@ -299,33 +299,54 @@ export class FrontendIntelligence {
   static enhanceVisualPromptWithCulture(visualPrompt, userInfo, culturalProfile, storyText = '') {
     let enhancedPrompt = visualPrompt;
     
+    // CRITICAL FIX: Only apply cultural profiles based on proper language + skin tone detection
     if (userInfo.nativeLanguage && culturalProfile) {
-      // Enhance skin tones
-      const skinToneKeyword = this.getRandomElement(culturalProfile.skinToneKeywords);
-      enhancedPrompt += `, ${skinToneKeyword}`;
       
-      // Enhance hair styles
-      const hairStyleKeyword = this.getRandomElement(culturalProfile.hairStyleKeywords);
-      enhancedPrompt += `, ${hairStyleKeyword}`;
-      
-      // Enhance clothing
-      const clothingKeyword = this.getRandomElement(culturalProfile.clothingKeywords);
-      enhancedPrompt += `, ${clothingKeyword}`;
-      
-      // Only enhance setting if story contains relevant keywords
-      const culturalSetting = this.detectCulturalSettingFromStory(storyText, userInfo);
-      if (culturalSetting) {
-        enhancedPrompt += `, ${culturalSetting}`;
-      }
-      
-      // Only add cultural pride elements if story context warrants it
-      const culturalPrideElement = this.detectCulturalPrideFromStory(storyText, userInfo.avatarIdentity, userInfo);
-      if (culturalPrideElement) {
-        enhancedPrompt += `, ${culturalPrideElement}`;
+      // Check if African American enhancements should be applied (English + dark skin)
+      if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo.avatarIdentity, userInfo)) {
+        console.log('🎯 Applying African American cultural enhancements only (no base cultural profile)');
+        
+        // Only apply cultural pride elements and settings - no base profile keywords
+        const culturalPrideElement = this.detectCulturalPrideFromStory(storyText, userInfo.avatarIdentity, userInfo);
+        if (culturalPrideElement) {
+          enhancedPrompt += `, ${culturalPrideElement}`;
+        }
+        
+        const culturalSetting = this.detectCulturalSettingFromStory(storyText, userInfo);
+        if (culturalSetting) {
+          enhancedPrompt += `, ${culturalSetting}`;
+        }
+        
+      } else if (this.shouldApplyNativeLanguageCulturalProfile(userInfo)) {
+        console.log('🌍 Applying native language cultural profile for non-English user');
+        
+        // Apply full cultural profile for non-English users
+        const skinToneKeyword = this.getRandomElement(culturalProfile.skinToneKeywords);
+        enhancedPrompt += `, ${skinToneKeyword}`;
+        
+        const hairStyleKeyword = this.getRandomElement(culturalProfile.hairStyleKeywords);
+        enhancedPrompt += `, ${hairStyleKeyword}`;
+        
+        const clothingKeyword = this.getRandomElement(culturalProfile.clothingKeywords);
+        enhancedPrompt += `, ${clothingKeyword}`;
+        
+        const culturalSetting = this.detectCulturalSettingFromStory(storyText, userInfo);
+        if (culturalSetting) {
+          enhancedPrompt += `, ${culturalSetting}`;
+        }
+        
+        const culturalPrideElement = this.detectCulturalPrideFromStory(storyText, userInfo.avatarIdentity, userInfo);
+        if (culturalPrideElement) {
+          enhancedPrompt += `, ${culturalPrideElement}`;
+        } else {
+          const culturalElement = this.getRandomElement(culturalProfile.culturalElements);
+          enhancedPrompt += `, ${culturalElement}`;
+        }
+        
       } else {
-        // Add general cultural elements as fallback
-        const culturalElement = this.getRandomElement(culturalProfile.culturalElements);
-        enhancedPrompt += `, ${culturalElement}`;
+        console.log('⭕ English + non-dark skin user - NO cultural enhancements applied (hair mapping handled separately)');
+        // English + non-dark skin users get NO cultural enhancements
+        // Hair mapping is handled separately by UnifiedCharacterConsistency.js
       }
     }
     
@@ -553,6 +574,14 @@ export class FrontendIntelligence {
   
   // PHASE 4: Enhanced African American character treatment verification
   static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo = null) {
+    // Enhanced detection - specifically English + dark skin combination
+    const nativeLanguage = userInfo?.nativeLanguage?.toLowerCase() || 'en';
+    
+    // Must be English-speaking for African American enhancements
+    if (nativeLanguage !== 'en') {
+      return false;
+    }
+    
     // PHASE 4: Enhanced detection with multiple keywords and fallback sources
     const keywords = [
       'black', 'african american', 'african-american', 'black american', 
@@ -561,7 +590,8 @@ export class FrontendIntelligence {
     
     console.log('🎯 FI-PROMPT: Checking African American cultural variations', {
       avatarIdentity: avatarIdentity ? 'present' : 'missing',
-      userInfo: userInfo ? 'present' : 'missing'
+      userInfo: userInfo ? 'present' : 'missing',
+      language: nativeLanguage
     });
     
     // Primary: Check avatarIdentity.visualDescription (from AI enhancement)
@@ -585,13 +615,27 @@ export class FrontendIntelligence {
       
       // Check for dark skin tone combined with specific descriptors (with fallback pattern)
       if (skinTone === 'dark' && (type === 'girl' || type === 'boy')) {
-        console.log('✅ FI-PROMPT: African American detected via dark skin tone + gender');
+        console.log('✅ FI-PROMPT: African American detected via English language + dark skin tone + gender');
         return true;
       }
     }
     
     console.log('⭕ FI-PROMPT: African American cultural variations not detected');
     return false;
+  }
+
+  // NEW METHOD: Determine if native language cultural profile should be applied
+  static shouldApplyNativeLanguageCulturalProfile(userInfo) {
+    const nativeLanguage = userInfo?.nativeLanguage?.toLowerCase() || 'en';
+    
+    // Only apply native language profiles for non-English languages
+    if (nativeLanguage === 'en') {
+      console.log('⭕ English language - no native cultural profile applied');
+      return false;
+    }
+    
+    console.log(`✅ Non-English language (${nativeLanguage}) - native cultural profile will be applied`);
+    return true;
   }
   
   static generateExpandedAfricanAmericanFeatures() {
