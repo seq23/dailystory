@@ -10,8 +10,9 @@ const AI_MODELS = [
   { name: 'gpt-4o-mini', maxTokens: 'max_tokens', supportsTemperature: true }
 ] as const;
 
-// Circuit breaker to prevent cascading failures
-class CircuitBreaker {
+// ============= PHASE 4: UNIFIED CIRCUIT BREAKER SYSTEM =============
+// Bulletproof circuit breaker to prevent cascading failures
+class UnifiedCircuitBreaker {
   private failures = 0;
   private lastFailure = 0;
   private readonly threshold = 3;
@@ -38,7 +39,8 @@ class CircuitBreaker {
   }
 }
 
-const circuitBreaker = new CircuitBreaker();
+const circuitBreaker = new UnifiedCircuitBreaker();
+console.log('🔧 Phase 4: Unified circuit breaker initialized');
 
 async function callOpenAIWithFallback(messages: any[], timeout = 12000) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -339,13 +341,20 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
           
           const content = aiResult.choices?.[0]?.message?.content;
           
-          // Bulletproof content validation with 30-character minimum
-          if (!content || typeof content !== 'string' || content.trim().length < 30) {
-            const actualLength = content ? content.trim().length : 0;
+          // ============= PHASE 2: BULLETPROOF CONTENT VALIDATION =============
+          // CRITICAL: Use trimmed content consistently for validation AND parsing
+          const trimmedContent = content ? content.trim() : '';
+          if (!content || typeof content !== 'string' || trimmedContent.length < 30) {
+            const actualLength = trimmedContent.length;
             throw new Error(`OpenAI content validation failed: received ${actualLength} characters, minimum 30 required`);
           }
 
-          enhancedStoryData = JSON.parse(aiResult.choices[0].message.content);
+          // CRITICAL: Parse using trimmed content with bulletproof error handling
+          try {
+            enhancedStoryData = JSON.parse(trimmedContent);
+          } catch (parseError) {
+            throw new Error(`JSON parsing failed: ${parseError.message} - Content: "${trimmedContent.substring(0, 100)}..."`);
+          }
           
           // ULTRA-LEAN VALIDATION WITH QUALITY GATE
           validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
@@ -361,8 +370,18 @@ Extract the 3-field schema focusing on visual clarity for image generation.`
             console.log(`🔄 Re-analyzing due to content mismatches (score: ${validationResult.qualityScore}/100)...`);
             const retryResult = await callOpenAIWithFallback(messages);
             if (retryResult.choices?.[0]?.message?.content) {
-              enhancedStoryData = JSON.parse(retryResult.choices[0].message.content);
-              validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+              // PHASE 2: Apply same bulletproof validation to retry response
+              const retryTrimmedContent = retryResult.choices[0].message.content.trim();
+              if (retryTrimmedContent.length < 30) {
+                throw new Error(`Retry response too short: ${retryTrimmedContent.length} characters, minimum 30 required`);
+              }
+              
+              try {
+                enhancedStoryData = JSON.parse(retryTrimmedContent);
+                validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
+              } catch (retryParseError) {
+                throw new Error(`Retry JSON parsing failed: ${retryParseError.message}`);
+              }
               
               // If still bad after retry → Return error to Orchestrator
               if (validationResult.useTier2 || validationResult.requiresReanalysis) {

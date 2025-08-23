@@ -235,30 +235,62 @@ class UnifiedCharacterConsistency {
   }
 
   /**
-   * Universal hair mapping - now uses FrontendIntelligence for consistency
+   * Universal hair mapping - PHASE 3: BULLETPROOF with 4-Strategy Import System
    */
   async getUniversalHairMapping(avatar, userInfo = null) {
+    // ============= PHASE 3: 4-STRATEGY BULLETPROOF IMPORT =============
+    console.log('🔍 UnifiedCharacterConsistency - Starting bulletproof FrontendIntelligence import...');
+    
+    // Strategy 1: Standard relative import
     try {
-      // Import FrontendIntelligence for consistent hair mapping
+      console.log('🔍 Strategy 1: Standard relative import...');
       const { FrontendIntelligence } = await import('./FrontendIntelligence.js');
+      console.log('✅ Strategy 1: FrontendIntelligence import successful');
       
-      // Determine gender from avatar type for proper hair selection (with fallback)
       const gender = avatar?.type === 'girl' ? 'girl' : 
                      avatar?.type === 'boy' ? 'boy' : 
                      avatar?.type || 'child';
       
       return FrontendIntelligence.getUniversalHairMapping(avatar, gender, userInfo);
-    } catch (error) {
-      console.warn('⚠️ FrontendIntelligence import failed, using fallback hair mapping:', error.message);
-      // Fallback hair mapping
-      const hairColorMap = {
-        'blonde': 'blonde',
-        'brown': 'brown', 
-        'black': 'black',
-        'red': 'red',
-        'gray': 'gray'
-      };
-      return hairColorMap[avatar?.hairColor] || 'brown';
+    } catch (error1) {
+      console.log('⚠️ Strategy 1 failed:', error1.message);
+      
+      // Strategy 2: Absolute path import  
+      try {
+        console.log('🔍 Strategy 2: Absolute path import...');
+        const { FrontendIntelligence } = await import('file:///tmp/user_fn_cpzeuogomaixamrtnnmj_825300d5-f78a-4759-937b-44508093ee5c_296/source/supabase/functions/_shared/FrontendIntelligence.js');
+        console.log('✅ Strategy 2: FrontendIntelligence absolute import successful');
+        
+        const gender = avatar?.type === 'girl' ? 'girl' : avatar?.type === 'boy' ? 'boy' : avatar?.type || 'child';
+        return FrontendIntelligence.getUniversalHairMapping(avatar, gender, userInfo);
+      } catch (error2) {
+        console.log('⚠️ Strategy 2 failed:', error2.message);
+        
+        // Strategy 3: Working directory import
+        try {
+          console.log('🔍 Strategy 3: Working directory import...');
+          const { FrontendIntelligence } = await import(`${Deno.cwd()}/supabase/functions/_shared/FrontendIntelligence.js`);
+          console.log('✅ Strategy 3: FrontendIntelligence working directory import successful');
+          
+          const gender = avatar?.type === 'girl' ? 'girl' : avatar?.type === 'boy' ? 'boy' : avatar?.type || 'child';
+          return FrontendIntelligence.getUniversalHairMapping(avatar, gender, userInfo);
+        } catch (error3) {
+          console.log('⚠️ Strategy 3 failed:', error3.message);
+          
+          // Strategy 4: Nuclear fallback - bulletproof hair mapping
+          console.log('🛡️ Strategy 4: Nuclear fallback hair mapping');
+          const hairColorMap = {
+            'blonde': 'blonde',
+            'brown': 'brown', 
+            'black': 'black',
+            'red': 'red',
+            'gray': 'gray'
+          };
+          const fallbackColor = hairColorMap[avatar?.hairColor] || 'brown';
+          console.log(`🛡️ Nuclear hair mapping: ${avatar?.hairColor || 'undefined'} → ${fallbackColor}`);
+          return fallbackColor;
+        }
+      }
     }
   }
 
