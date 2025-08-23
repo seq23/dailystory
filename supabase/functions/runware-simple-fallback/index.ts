@@ -2,7 +2,6 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
-import { mapAvatarIdentity } from "../_shared/AvatarIdentityMapper.js";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,8 +16,11 @@ serve(async (req) => {
 
     const { pageText, userInfo, difficultyLevel = 'medium' } = await req.json();
     
-    // Process avatar identity for consistent gender handling
-    const avatarIdentity = mapAvatarIdentity(userInfo);
+    // Process avatar identity inline for consistent gender handling
+    const avatarIdentity = userInfo?.avatar ? {
+      type: userInfo.avatar.type || 'child',
+      skinTone: userInfo.avatar.skinTone || 'medium'
+    } : null;
     console.log(`🎭 Tier 2.5: Avatar identity processed - type: ${avatarIdentity?.type}, skinTone: ${avatarIdentity?.skinTone}`);
     
     // Use DifficultyLevelMapper for consistent difficulty handling
