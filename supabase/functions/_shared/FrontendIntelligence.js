@@ -149,49 +149,9 @@ export class FrontendIntelligence {
     'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
   ];
   
-  static EXPANDED_AFRICAN_AMERICAN_SETTINGS = [
-    // Standard American settings
-    'suburban neighborhood', 'local park', 'school playground', 'family backyard', 
-    'community center', 'local library', 'main street', 'shopping district',
-    'neighborhood street', 'public playground', 'town square', 'local diner',
-    
-    // Creole/Southern settings
-    'New Orleans French Quarter', 'Louisiana bayou', 'creole cottage', 'southern porch', 
-    'jazz club', 'bourbon street', 'plantation style home', 'southern garden',
-    'creole marketplace', 'Louisiana street fair', 'jazz festival venue', 'bayou cabin',
-    
-    // Black cultural settings
-    'family barbershop', 'beauty salon', 'church gathering hall', 'family reunion park', 
-    'soul food restaurant', 'community barbecue', 'neighborhood block party', 'gospel church',
-    'family cookout', 'community garden', 'local barber shop', 'sunday dinner table',
-    
-    // Heritage/Cultural settings  
-    'community cultural center', 'african american heritage museum',
-    'cultural celebration space', 'community pride event', 'heritage festival',
-    'cultural education center', 'african diaspora exhibit', 'community gathering',
-    'cultural arts center', 'heritage celebration venue'
-  ];
+  // Removed EXPANDED_AFRICAN_AMERICAN_SETTINGS array
   
-  static CULTURAL_PRIDE_ELEMENTS = [
-    // Standard American elements
-    'American traditions', 'neighborhood community', 'school pride', 'local sports teams', 
-    'Fourth of July celebrations', 'hometown pride', 'community volunteering', 'local festivals',
-    'patriotic values', 'civic participation', 'community service', 'school spirit',
-    
-    // Creole elements
-    'creole heritage', 'Louisiana culture', 'jazz music traditions', 'creole cuisine', 
-    'Mardi Gras celebrations', 'French Quarter history', 'bayou traditions', 'creole storytelling',
-    'Louisiana folklore', 'jazz heritage', 'creole cooking traditions', 'southern hospitality',
-    
-    // Black cultural elements
-    'soul food traditions', 'church community', 'extended family gatherings', 'musical heritage', 
-    'Sunday dinner traditions', 'community support networks', 'gospel music', 'family storytelling',
-    'generational wisdom', 'community uplift', 'collective strength', 'family recipes',
-    
-    // Heritage/Cultural elements
-    'cultural symbols', 'community strength', 'rich heritage', 'family bonds',
-    'ancestral pride', 'cultural resilience', 'historical consciousness', 'community activism'
-  ];
+  // Removed CULTURAL_PRIDE_ELEMENTS array
 
   // ============= CULTURAL PRIDE KEYWORDS MAP =============
   // Keywords that warrant cultural pride elements in the story context
@@ -380,19 +340,7 @@ export class FrontendIntelligence {
     // Check each keyword category for matches
     for (const [keyword, prideElements] of Object.entries(this.CULTURAL_PRIDE_KEYWORDS)) {
       if (lowerStoryText.includes(keyword.toLowerCase())) {
-        // Apply African American cultural pride elements if appropriate
-        if (this.shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo)) {
-          // Use African American specific pride elements when available
-          const africanAmericanPrideElements = this.CULTURAL_PRIDE_ELEMENTS.filter(element =>
-            element.toLowerCase().includes(keyword) || 
-            prideElements.some(prideElement => prideElement.toLowerCase().includes(keyword))
-          );
-          
-          if (africanAmericanPrideElements.length > 0) {
-            return this.getRandomElement(africanAmericanPrideElements);
-          }
-        }
-        
+        // Skip African American cultural pride elements - use general elements only
         // Return general cultural pride element
         return this.getRandomElement(prideElements);
       }
@@ -413,19 +361,7 @@ export class FrontendIntelligence {
     // Check each keyword category for matches
     for (const [keyword, culturalSettings] of Object.entries(this.CULTURAL_SETTING_KEYWORDS)) {
       if (lowerStoryText.includes(keyword)) {
-        // Apply African American cultural settings if appropriate
-        if (this.shouldApplyAfricanAmericanCulturalVariations(userInfo?.avatarIdentity, userInfo)) {
-          // Use African American specific settings when available
-          const africanAmericanSettings = this.EXPANDED_AFRICAN_AMERICAN_SETTINGS.filter(setting =>
-            setting.toLowerCase().includes(keyword) || 
-            culturalSettings.some(cultSetting => cultSetting.toLowerCase().includes(keyword))
-          );
-          
-          if (africanAmericanSettings.length > 0) {
-            return this.getRandomElement(africanAmericanSettings);
-          }
-        }
-        
+        // Skip African American cultural settings - use general settings only
         // Return general cultural setting
         return this.getRandomElement(culturalSettings);
       }

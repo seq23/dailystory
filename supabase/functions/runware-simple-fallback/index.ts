@@ -600,19 +600,8 @@ function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, origina
 
 // Cultural bypass implementation for Tier 2.5
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any): string {
-  if (userInfo?.nativeLanguage === 'en' && userInfo?.avatar?.skinTone === 'dark') {
-    // African American Route: Full cultural enhancement
-    const culturalEnhancements = {
-      'home': 'cozy home with African American family photos and cultural artwork',
-      'bedroom': 'cozy bedroom with African American family photos and cultural displays',
-      'kitchen': 'warm kitchen with soul food ingredients and family recipes',
-      'school': 'diverse classroom with multicultural learning materials',
-      'park': 'community park with diverse families and cultural celebration elements',
-      'restaurant': 'family-friendly restaurant with diverse community atmosphere'
-    };
-    return culturalEnhancements[baseSetting] || `${baseSetting} with African American cultural elements and community atmosphere`;
-  } else if (userInfo?.nativeLanguage === 'en') {
-    // Standard American Route: BYPASS - minimal processing
+  if (userInfo?.nativeLanguage === 'en') {
+    // All English speakers get the same generic route - no special cultural enhancements
     return `${baseSetting} scene`;
   } else {
     // International Route: Basic cultural adaptation
