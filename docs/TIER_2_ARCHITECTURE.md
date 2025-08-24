@@ -80,11 +80,14 @@ Tier 4: SVG Placeholder
 4. **Single source of truth** - Avatar handling in orchestrator only
 5. **Database-backed character consistency** - Uses `character_consistency_cache` table
 6. **Enhanced narrative processing** - Improved story coherence through advanced processing
+7. **TIER 1 FAIL-FAST** - Removed all repair mechanisms, immediate Tier 2 triggering
 
 ## Recent Enhancements (2024)
 - **Database-Backed Character Consistency**: Eliminated race conditions across edge function instances
 - **Advanced Narrative Processing**: Enhanced narrative coherence through improved processing
 - **Scalable Architecture**: Multiple instances can share character state via database
+- **Tier 1 Fail-Fast Implementation**: Removed `applyBasicFixes()` function and all repair mechanisms
+- **Strict Validation**: Tier 1 now triggers Tier 2 immediately when AI extraction is insufficient
 - **Zero Breaking Changes**: Maintained full API compatibility during enhancement
 
 ## Future Considerations

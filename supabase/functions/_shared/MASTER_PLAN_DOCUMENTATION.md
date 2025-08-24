@@ -128,6 +128,8 @@ LOW: Style framework (can be truncated if needed)
 5. **DO NOT** make brand suffix conditional based on character type
 6. **DO NOT** re-introduce BackendTokenManager to edge functions
 7. **DO NOT** change negative prompt ordering (Pixar anti-toy must be first for Levels 0-1)
+8. **DO NOT** re-introduce `applyBasicFixes()` or any repair mechanisms in Tier 1
+9. **DO NOT** add fallback scene generation or safety nets to Tier 1 validation
 
 ### ✅ ALWAYS MAINTAIN:
 1. **MAINTAIN**: Direct visual descriptions in avatar mapping
@@ -137,6 +139,8 @@ LOW: Style framework (can be truncated if needed)
 5. **MAINTAIN**: Cultural elements as LOW priority (can be truncated)
 6. **MAINTAIN**: Direct prompt construction without BackendTokenManager
 7. **MAINTAIN**: Negative prompt order - Pixar anti-toy FIRST, cultural sensitivity SECOND
+8. **MAINTAIN**: Tier 1 strict fail-fast validation (30-character minimum for `primaryScene`)
+9. **MAINTAIN**: Immediate Tier 2 triggering when Tier 1 validation fails
 
 ## EXPECTED PERFORMANCE OUTCOMES
 
@@ -174,10 +178,29 @@ LOW: Style framework (can be truncated if needed)
 - ✅ Pixar anti-toy negative prompts first for Levels 0-1
 - ✅ African American cultural sensitivity prompts prioritized
 
+## TIER 1 FAIL-FAST IMPLEMENTATION (DECEMBER 2024)
+
+### ✅ COMPLETED: Tier 1 Strict Fail-Fast Implementation
+
+#### 7. **PHASE 5: Tier 1 Fail-Fast Enforcement**
+- **REMOVED**: `applyBasicFixes()` function completely from `ai-story-enhancer/index.ts` (Lines 46-70)
+- **ELIMINATED**: All repair attempts and fallback scene generation in Tier 1
+- **IMPLEMENTED**: Strict fail-fast validation:
+  - Binary validation: `primaryScene` exists and ≥30 characters
+  - Immediate Tier 2 triggering when validation fails
+  - No internal repair mechanisms or safety nets
+- **ENHANCED**: Non-critical error logging with clarifying comments in `runware-generate-image/index.ts`
+
+#### Expected Flow After Implementation:
+```
+BEFORE: AI extracts insufficient primaryScene → applyBasicFixes() creates fallback → validation accepts → Tier 1 continues with poor data
+AFTER:  AI extracts insufficient primaryScene → validation rejects → immediate Tier 2 trigger
+```
+
 ## FILES MODIFIED
 
-1. `supabase/functions/ai-story-enhancer/index.ts` - New 3-field schema + direct prompt building
-2. `supabase/functions/runware-generate-image/index.ts` - Direct avatar descriptions
+1. `supabase/functions/ai-story-enhancer/index.ts` - New 3-field schema + direct prompt building + fail-fast validation
+2. `supabase/functions/runware-generate-image/index.ts` - Direct avatar descriptions + enhanced error logging
 3. `supabase/functions/_shared/MultiStageEnhancementPipeline.js` - BackendTokenManager removal + negative prompt reordering
 4. `supabase/functions/_shared/styleFrameworks.js` - New negative prompts for Levels 0-1
 5. `supabase/functions/_shared/UnifiedCharacterConsistency.js` - Visual description generation
