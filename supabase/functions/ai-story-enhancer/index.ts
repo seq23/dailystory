@@ -26,7 +26,6 @@ const QualityGateMonitor = {
   }
 };
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
-import { SessionStateManager } from "../_shared/SessionStateManager.js";
 
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
@@ -454,7 +453,6 @@ serve(async (req) => {
       importResults.cors = '✅ SUCCESS (static)';
       importResults.errorHandling = '✅ SUCCESS (static)';
       importResults.MultiStageEnhancementPipeline = '✅ SUCCESS (static)';
-      importResults.SessionStateManager = '✅ SUCCESS (static)';
       
       console.log('✅ All shared modules loaded via static imports');
       
