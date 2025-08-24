@@ -290,41 +290,42 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate physical traits from avatar identity
+   * Generate physical traits from avatar identity - ONLY for African Americans, others get minimal traits
    */
   generatePhysicalTraitsFromIdentity(avatarIdentity, seed) {
-    const random = this.createSeededRandom(seed);
-    
-    const hairColor = this.getHairColorFromAvatar(avatarIdentity);
     const skinTone = avatarIdentity.skinTone || 'medium';
-    
-    // Use expanded arrays for African American cultural profile
     const culturalProfile = avatarIdentity?.culturalProfile;
-    const eyeColorOptions = (culturalProfile === 'african-american') ? 
-      CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_EYE_COLORS.map(e => e.replace(' eyes', '')) :
-      skinTone === 'dark' ? ['brown', 'dark brown'] : 
-      skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
-      ['brown', 'hazel', 'green'];
     
-    const builds = ['slim', 'average', 'sturdy'];
-    const heights = ['short', 'average height', 'tall for their age'];
+    // Only generate detailed physical traits for African American characters
+    if (culturalProfile === 'african-american') {
+      const random = this.createSeededRandom(seed);
+      const hairColor = this.getHairColorFromAvatar(avatarIdentity);
+      
+      const builds = ['slim', 'average', 'sturdy'];
+      const heights = ['short', 'average height', 'tall for their age'];
+      
+      return {
+        skinTone,
+        hairColor,
+        build: builds[Math.floor(random() * builds.length)],
+        height: heights[Math.floor(random() * heights.length)],
+        isAfricanAmerican: true
+      };
+    }
     
+    // Minimal traits for non-African American characters - let Runware decide the rest
     return {
       skinTone,
-      hairColor,
-      eyeColor: eyeColorOptions[Math.floor(random() * eyeColorOptions.length)],
-      build: builds[Math.floor(random() * builds.length)],
-      height: heights[Math.floor(random() * heights.length)]
+      avatarType: avatarIdentity?.type || 'child',
+      isAfricanAmerican: false
     };
   }
 
   /**
-   * Fallback physical traits generation
+   * Fallback physical traits generation - ONLY for African Americans, others get minimal traits
    */
   generatePhysicalTraits(userInfo, seed) {
     const avatar = userInfo.avatar || {};
-    const random = this.createSeededRandom(seed);
-    
     const skinToneMap = {
       'pale': 'fair',
       'light': 'light', 
@@ -334,25 +335,30 @@ export class CharacterConsistencyService {
     };
     
     const skinTone = skinToneMap[avatar.skinTone] || 'medium';
-    const hairColor = this.getHairColorFromAvatar(avatar);
+    const isAfricanAmerican = this.shouldApplyAfricanAmericanCulturalVariations(null, { nativeLanguage: userInfo.nativeLanguage || 'en', avatar: { skinTone: avatar.skinTone } });
     
-    // Use expanded arrays for African American cultural profile - need to determine profile
-    const isAfricanAmerican = this.shouldApplyAfricanAmericanCulturalVariations(null, { nativeLanguage: 'en', avatar: { skinTone } });
-    const eyeColorOptions = isAfricanAmerican ? 
-      CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_EYE_COLORS.map(e => e.replace(' eyes', '')) :
-      skinTone === 'dark' ? ['brown', 'dark brown'] : 
-      skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
-      ['brown', 'hazel', 'green'];
+    // Only generate detailed physical traits for African American characters
+    if (isAfricanAmerican) {
+      const random = this.createSeededRandom(seed);
+      const hairColor = this.getHairColorFromAvatar(avatar);
+      
+      const builds = ['slim', 'average', 'sturdy'];
+      const heights = ['short', 'average height', 'tall for their age'];
+      
+      return {
+        skinTone,
+        hairColor,
+        build: builds[Math.floor(random() * builds.length)],
+        height: heights[Math.floor(random() * heights.length)],
+        isAfricanAmerican: true
+      };
+    }
     
-    const builds = ['slim', 'average', 'sturdy'];
-    const heights = ['short', 'average height', 'tall for their age'];
-    
+    // Minimal traits for non-African American characters - let Runware decide the rest
     return {
       skinTone,
-      hairColor,
-      eyeColor: eyeColorOptions[Math.floor(random() * eyeColorOptions.length)],
-      build: builds[Math.floor(random() * builds.length)],
-      height: heights[Math.floor(random() * heights.length)]
+      avatarType: avatar?.type || 'child',
+      isAfricanAmerican: false
     };
   }
 
@@ -401,10 +407,13 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate cultural elements with full African American support
+   * Generate cultural elements with full African American support - CONSISTENT SEEDING
    */
   generateCulturalElements(culturalProfile, userInfo) {
-    const random = this.createSeededRandom(Date.now());
+    // Use consistent seeding based on user info instead of Date.now()
+    const seedInput = `${userInfo.name || 'child'}-${userInfo.avatar?.skinTone || 'medium'}-${culturalProfile}`;
+    const seed = this.generateStableSeed(seedInput, culturalProfile);
+    const random = this.createSeededRandom(seed);
     const culturalStyleMap = {
       'african': {
         clothing: [
@@ -557,11 +566,43 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Build character description
+   * Detect physical features from page text
+   */
+  detectPageTextPhysicalFeatures(storyContext) {
+    if (!storyContext) return {};
+    
+    const text = storyContext.toLowerCase();
+    const features = {};
+    
+    // Height detection
+    if (text.includes('tall')) features.height = 'tall for their age';
+    else if (text.includes('short')) features.height = 'short';
+    else if (text.includes('average height')) features.height = 'average height';
+    
+    // Eye color detection
+    if (text.includes('blue eyes')) features.eyeColor = 'blue eyes';
+    else if (text.includes('brown eyes')) features.eyeColor = 'brown eyes';
+    else if (text.includes('green eyes')) features.eyeColor = 'green eyes';
+    else if (text.includes('hazel eyes')) features.eyeColor = 'hazel eyes';
+    else if (text.includes('dark eyes')) features.eyeColor = 'dark brown eyes';
+    
+    // Build detection
+    if (text.includes('slim') || text.includes('thin')) features.build = 'slim';
+    else if (text.includes('sturdy') || text.includes('stocky')) features.build = 'sturdy';
+    else if (text.includes('average build')) features.build = 'average';
+    
+    return features;
+  }
+
+  /**
+   * Build character description with page text overrides
    */
   buildCharacterDescription(seedData, storyContext, pageTextClothing = null) {
     const traits = seedData.physicalTraits;
     const cultural = seedData.culturalElements;
+    
+    // Detect physical features from page text
+    const pageTextFeatures = this.detectPageTextPhysicalFeatures(storyContext);
     
     // Use page text clothing if provided, otherwise use cultural clothing
     const clothing = pageTextClothing || 
@@ -569,19 +610,28 @@ export class CharacterConsistencyService {
     const accessories = cultural.accessories.slice(0, 2).join(' and ');
     
     // Enhanced description for African American characters with comprehensive arrays
-    if (seedData.culturalProfile === 'african-american') {
+    if (seedData.culturalProfile === 'african-american' && traits.isAfricanAmerican) {
       const random = this.createSeededRandom(seedData.baseSeed);
       
-      // Select comprehensive physical features
+      // Select comprehensive physical features, use page text overrides when available
       const skinTone = cultural.skinTones[Math.floor(random() * cultural.skinTones.length)];
-      const eyeColor = cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
+      const eyeColor = pageTextFeatures.eyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
       const facialFeatures = cultural.facialFeatures[Math.floor(random() * cultural.facialFeatures.length)];
+      const height = pageTextFeatures.height || traits.height;
+      const build = pageTextFeatures.build || traits.build;
       
-      return `A ${traits.height} ${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}. ${traits.build} build. Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+      return `A ${height} ${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}. ${build} build. Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
-    // Standard description for other cultural profiles
-    return `A ${traits.height} ${seedData.avatarType} with ${traits.skinTone} skin, ${traits.hairColor} hair, and ${traits.eyeColor} eyes. ${traits.build} build. Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+    // Minimal description for other cultural profiles - let Runware decide most features
+    const height = pageTextFeatures.height || 'average height';
+    const eyeColor = pageTextFeatures.eyeColor || '';
+    const build = pageTextFeatures.build || '';
+    
+    const eyeDescription = eyeColor ? ` with ${eyeColor}` : '';
+    const buildDescription = build ? ` ${build} build.` : '';
+    
+    return `A ${height} ${seedData.avatarType}${eyeDescription}.${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
 
   /**
