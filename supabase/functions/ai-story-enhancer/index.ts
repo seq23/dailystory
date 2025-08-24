@@ -660,59 +660,75 @@ serve(async (req) => {
 
 PRIMARY OBJECTIVE: Create rich, detailed visual descriptions that capture every element needed for perfect image generation.
 
+CONTEXT ANALYSIS REQUIRED: If previous page context is provided, you MUST:
+1. Analyze what happened in the previous scene to understand story progression
+2. Make visual inferences about how the current scene logically follows from the previous context
+3. Maintain visual continuity (setting elements, character positioning, objects that should remain)
+4. Ensure character consistency with previous appearances and emotional states
+5. Infer environmental details that would naturally carry forward or evolve
+
 JSON RESPONSE:
 {
-  "primaryScene": "MASTER VISUAL DESCRIPTION: Complete, comprehensive scene containing ALL visual elements - character appearance (using avatar identity), clothing, pose, expression, actions, setting details, lighting, objects, colors, mood, atmosphere. Minimum 120+ characters with rich descriptive language.",
+  "primaryScene": "MASTER VISUAL DESCRIPTION: Complete, comprehensive scene containing ALL visual elements - character appearance (using avatar identity), clothing, pose, expression, actions, setting details, lighting, objects, colors, mood, atmosphere. Use previous context to inform scene progression and visual continuity. Minimum 120+ characters with rich descriptive language.",
   "characters": {
-    "characterAppearance": "avatar identity integration for consistency",
-    "characterClothing": "clothing details for scene enhancement", 
-    "characterPosition": "pose/position for composition",
-    "characterMood": "emotion/expression for atmosphere",${secondaryCharacterFields}
+    "characterAppearance": "avatar identity integration for consistency with previous context",
+    "characterClothing": "clothing details considering previous scene continuity", 
+    "characterPosition": "pose/position that logically follows from previous context",
+    "characterMood": "emotion/expression progression from previous scene",${secondaryCharacterFields}
   },
   "visualComponents": {
-    "action": "primary activity details",
-    "setting": "environment and location specifics", 
-    "sceneType": "indoor/outdoor/mixed classification",
-    "lighting": "lighting conditions and mood",
-    "keyObjects": "important visual elements"
+    "action": "primary activity that naturally progresses from previous context",
+    "setting": "environment details with continuity from previous scene", 
+    "sceneType": "indoor/outdoor/mixed classification with context awareness",
+    "lighting": "lighting conditions that match or naturally progress from previous scene",
+    "keyObjects": "important visual elements including those that should carry forward from previous context"
   }
 }
 
 Avatar Identity: ${JSON.stringify(avatarIdentity)}
-CRITICAL: primaryScene is your MAIN OUTPUT - make it comprehensive, detailed, and visually rich with ALL scene elements included.`
+CRITICAL: primaryScene is your MAIN OUTPUT - make it comprehensive, detailed, visually rich, and contextually connected to previous scenes.`
             :
               // Legacy models - visual-first approach with comprehensive instructions
               `Generate comprehensive visual scene descriptions for professional illustration purposes.
 
 PRIMARY OBJECTIVE: Create the most detailed, visually rich scene description possible for image generation.
 
+PREVIOUS CONTEXT INTEGRATION REQUIREMENTS: When previous page context is provided, you MUST:
+1. Carefully analyze the previous scene to understand what happened before
+2. Make necessary visual inferences about how the current scene should naturally progress
+3. Ensure visual continuity between scenes (maintain consistent setting elements, character positioning, objects)
+4. Use previous context to inform character emotional states, clothing consistency, and environmental details
+5. Incorporate elements from previous scenes that would logically remain or evolve in the current scene
+6. Create seamless visual storytelling that feels connected to the previous page
+
 JSON RESPONSE:
 {
-  "primaryScene": "MASTER VISUAL DESCRIPTION: The complete, comprehensive visual scene containing ALL elements needed for perfect image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'child'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Minimum 120+ characters with rich, descriptive language and visual specificity.",
+  "primaryScene": "MASTER VISUAL DESCRIPTION: The complete, comprehensive visual scene containing ALL elements needed for perfect image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'child'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Use previous context to ensure visual continuity and logical scene progression. Minimum 120+ characters with rich, descriptive language and visual specificity.",
   "characters": {
-    "characterAppearance": "Avatar identity integration for consistency",
-    "characterClothing": "Clothing and outfit details", 
-    "characterPosition": "Body position and pose",
-    "characterMood": "Emotional expression and demeanor",${secondaryCharacterFields}
+    "characterAppearance": "Avatar identity integration for consistency, informed by previous context",
+    "characterClothing": "Clothing and outfit details with continuity from previous scenes", 
+    "characterPosition": "Body position and pose that logically follows from previous context",
+    "characterMood": "Emotional expression progression based on previous scene events",${secondaryCharacterFields}
   },
   "visualComponents": {
-    "action": "Primary activities and interactions",
-    "setting": "Environmental context and location", 
-    "sceneType": "Scene classification (indoor/outdoor/mixed)", 
-    "lighting": "Lighting conditions and atmosphere",
-    "keyObjects": "Important visual elements and props"
+    "action": "Primary activities that naturally continue or evolve from previous context",
+    "setting": "Environmental context with elements that carry forward from previous scenes", 
+    "sceneType": "Scene classification informed by previous context progression", 
+    "lighting": "Lighting conditions that match or naturally evolve from previous scenes",
+    "keyObjects": "Visual elements including those that should remain or naturally appear based on previous context"
   }
 }
 
 VISUAL QUALITY STANDARDS:
-- primaryScene: The MAIN OUTPUT - comprehensive visual narrative with ALL scene elements
-- Character Integration: Use avatar identity (${avatarIdentity?.visualDescription || 'child characteristics'}) as foundation
-- Visual Richness: Include colors, textures, lighting, mood, spatial relationships
-- Descriptive Language: Rich adjectives, specific details, atmospheric elements${hasMultipleCharacters ? `
-- Secondary Characters: Fully integrated into primaryScene with complete descriptions` : ''}
-- Minimum Length: 120+ characters with detailed visual specificity
+- primaryScene: The MAIN OUTPUT - comprehensive visual narrative with ALL scene elements and contextual continuity
+- Character Integration: Use avatar identity (${avatarIdentity?.visualDescription || 'child characteristics'}) as foundation with previous context awareness
+- Visual Continuity: Ensure seamless progression from previous scenes when context is provided
+- Visual Richness: Include colors, textures, lighting, mood, spatial relationships informed by context
+- Descriptive Language: Rich adjectives, specific details, atmospheric elements that connect to previous scenes${hasMultipleCharacters ? `
+- Secondary Characters: Fully integrated into primaryScene with complete descriptions and continuity` : ''}
+- Minimum Length: 120+ characters with detailed visual specificity and contextual awareness
 
-Example High-Quality primaryScene: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'sits next to a kind teacher ' : ''}carefully arranging vibrant wooden blocks into a towering structure on a polished wooden table in a sunlit classroom filled with colorful educational posters, warm natural lighting streaming through tall windows, creating a peaceful learning atmosphere with focused, joyful expressions and scattered art supplies nearby"`
+Example High-Quality primaryScene with Context: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'continues working alongside a encouraging teacher ' : ''}now adding the final colorful wooden block to complete their towering structure on the same polished wooden table, the classroom still filled with warm sunlight and educational posters, their expression showing proud satisfaction as they step back to admire their completed creation with scattered art supplies still nearby from their previous building efforts"`
           },
           {
             role: 'user', 
