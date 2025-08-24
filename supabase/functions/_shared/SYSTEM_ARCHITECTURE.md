@@ -38,6 +38,11 @@ Simplified, consolidated AI story generation system with focused orchestration a
 - Cultural representation with scalable architecture
 - Eliminates memory-based cache limitations
 
+#### Security & Monitoring (`_shared/SecurityValidator.js`, `_shared/MetricsCollector.js`)
+- **Request validation**: Rate limiting, content security, malicious pattern detection
+- **Performance tracking**: Success rates, tier fallback patterns, system health monitoring
+- **Analytics collection**: Comprehensive metrics for system optimization
+
 #### Frontend Intelligence (`_shared/FrontendIntelligence.js`)
 - User interaction analysis
 - Session management

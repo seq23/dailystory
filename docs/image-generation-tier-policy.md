@@ -95,7 +95,7 @@ All users, regardless of subscription status, receive the highest quality Tier 1
 
 #### Enhancement Components
 - `supabase/functions/ai-story-enhancer/index.ts` - AI enhancement pipeline
-- `supabase/functions/_shared/UnifiedCharacterConsistency.js` - Character consistency
+- `supabase/functions/_shared/CharacterConsistencyService.js` - Character consistency
 
 #### Supporting Infrastructure
 - `supabase/functions/_shared/MultiStageEnhancementPipeline.js` - Pipeline orchestration
