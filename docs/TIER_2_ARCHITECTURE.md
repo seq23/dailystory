@@ -1,14 +1,14 @@
 # Tier 2 Architecture Documentation
 
 ## Overview
-Tier 2 (`runware-template-generation`) is **MISLEADINGLY NAMED** - it contains **NO TEMPLATES** and is purely dynamic prompt building with enhanced capabilities.
+Tier 2 is the **Multi-Service Dynamic Pipeline** that orchestrates 5+ systematic services to build comprehensive prompts with database-backed character consistency.
 
-## Tier 2 Functionality
-- **Dynamic Prompt Building**: Uses enhanced pipeline with advanced pronoun resolution
-- **Database-Backed Character Consistency**: Eliminates race conditions across edge function instances
-- **Advanced Narrative Processing**: Includes pronoun resolution for story coherence
-- **NO Templates**: Despite the name "runware-template-generation", there are zero templates
-- **NO Internal Fallbacks**: Pure dynamic system that fails fast to trigger Tier 2.5
+## Tier 2 Functionality  
+- **Multi-Service Orchestra**: Coordinates CharacterConsistencyService, SecondaryElementDetector, VisualDetailTracker, RealContextCollector, and StyleFrameworks
+- **Database-Backed Character Consistency**: Eliminates race conditions across edge function instances via `character_consistency_cache` table
+- **Advanced Narrative Processing**: Includes pronoun resolution and systematic story element detection
+- **Dynamic Prompt Building**: Uses enhanced pipeline with 5+ service dependencies
+- **NO Internal Fallbacks**: Pure dynamic system that fails fast to trigger Tier 2.5 (Premium Templates)
 
 ## Architecture Principles
 
@@ -36,26 +36,35 @@ Tier 2 uses enhanced pipeline with advanced capabilities:
 - `VisualDetailTracker`: Visual element tracking
 
 ### What Tier 2 Does NOT Have
-- ❌ Templates or template-based generation
+- ❌ Templates or hardcoded prompt systems (that's Tier 2.5)
 - ❌ Internal avatar fallback handling
-- ❌ Safety nets or error recovery
+- ❌ Safety nets or error recovery  
 - ❌ Duplicate functions from orchestrator
 - ❌ AI story enhancer (primary difference from Tier 1)
 - ❌ Memory-based character cache (replaced with database-backed system)
+- ❌ Nuclear independence (requires multiple service dependencies)
 
-## Naming Issue
-The function name `runware-template-generation` is **MISLEADING**:
-- **Actual Functionality**: Dynamic prompt building with full pipeline
-- **Misleading Name Suggests**: Template-based generation
-- **Historical Note**: Name remains for backward compatibility
+## Tier 2 vs Tier 2.5 Distinction
+
+**TIER 2: Multi-Service Dynamic Pipeline**
+- **Function**: `MultiStageEnhancementPipeline.processTier2HighQuality`
+- **Dependencies**: 5+ systematic services + database calls
+- **Approach**: Dynamic orchestration of multiple AI services
+- **Complexity**: HIGH (imports, database calls, service coordination)
+
+**TIER 2.5: Premium Template System** 
+- **Function**: `runware-simple-fallback`
+- **Dependencies**: ZERO (nuclear independence)
+- **Approach**: Hardcoded templates with placeholder filling
+- **Complexity**: LOW (self-contained template system)
 
 ## Fallback Chain
 ```
-Tier 1: AI-Enhanced (ai-story-enhancer + full pipeline)
+Tier 1: AI-Enhanced (ai-story-enhancer + orchestrator validation)
   ↓ (on failure)
-Tier 2: Dynamic (full pipeline, no AI enhancer) ← YOU ARE HERE
+Tier 2: Multi-Service Dynamic (5+ services + database) ← YOU ARE HERE
   ↓ (on failure)
-Tier 2.5: Hardcoded Fallback (guaranteed success)
+Tier 2.5: Premium Templates (hardcoded arrays + templates)
   ↓ (on failure)
 Tier 3: OpenAI DALL-E
   ↓ (on failure)

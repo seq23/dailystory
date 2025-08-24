@@ -331,6 +331,14 @@ function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avata
 function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
   const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
   
+  // 🔍 PREMIUM TEMPLATE DEBUG LOGGING
+  console.log(`🎨 PREMIUM TEMPLATE PROCESSING START`);
+  console.log(`📋 Template Selected: ${template}`);
+  console.log(`🎬 Scene Input: ${scene}`);
+  console.log(`👤 User Info:`, userInfo ? JSON.stringify(userInfo, null, 2) : 'None');
+  console.log(`🎭 Avatar Identity:`, avatarIdentity ? JSON.stringify(avatarIdentity, null, 2) : 'None');
+  console.log(`📊 Difficulty: ${difficulty}`);
+  
   // CHARACTER DETECTION WITH AVATAR TYPE MAPPING
   let character = userInfo?.name || 'child';
   
@@ -381,6 +389,15 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
       HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : 
       HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
     hair = getRandomItem(hairstyles);
+
+    // 🔍 AFRICAN AMERICAN ARRAY DEBUG LOGGING
+    console.log(`🎯 AFRICAN AMERICAN ARRAYS SELECTED:`);
+    console.log(`   👤 Gender Type: ${genderType}`);
+    console.log(`   🎨 Skin: ${skin} (from ${HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length} options)`);
+    console.log(`   💇 Hair: ${hair} (from ${hairstyles.length} ${genderType === 'girl' || genderType === 'woman' ? 'girls' : 'boys'} hairstyles)`);
+    console.log(`   👁️ Eyes: ${eyes} (from ${HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length} options)`);
+    console.log(`   😊 Features: ${features} (from ${HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length} options)`);
+    console.log(`   👕 Clothing: ${clothing} (from ${HARDCODED_AFRICAN_AMERICAN_CLOTHING.length} options)`);
   } else {
     // Standard descriptions
     const skinMap = {
@@ -404,6 +421,14 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
     eyes = 'bright eyes';
     features = 'friendly face';
     clothing = 'casual comfortable clothing';
+
+    // 🔍 STANDARD MAPPING DEBUG LOGGING
+    console.log(`📊 STANDARD MAPPINGS SELECTED:`);
+    console.log(`   🎨 Skin: ${skin} (mapped from skinTone: ${skinTone})`);
+    console.log(`   💇 Hair: ${hair} (mapped from skinTone: ${skinTone})`);
+    console.log(`   👁️ Eyes: ${eyes} (standard)`);
+    console.log(`   😊 Features: ${features} (standard)`);
+    console.log(`   👕 Clothing: ${clothing} (standard)`);
   }
   
   // Setting determination
@@ -418,7 +443,7 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
   const suffix = style.suffix;
   
   // Fill template placeholders
-  return template
+  const filledTemplate = template
     .replace('{character}', character)
     .replace('{age}', age)
     .replace('{skin}', skin)
@@ -431,6 +456,26 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
     .replace('{emotion}', emotion)
     .replace('{quality}', quality)
     .replace('{suffix}', suffix || '');
+
+  // 🔍 FINAL TEMPLATE DEBUG LOGGING
+  console.log(`🎯 FINAL PLACEHOLDER VALUES:`);
+  console.log(`   {character} → ${character}`);
+  console.log(`   {age} → ${age}`);
+  console.log(`   {skin} → ${skin}`);
+  console.log(`   {hair} → ${hair}`);
+  console.log(`   {eyes} → ${eyes}`);
+  console.log(`   {features} → ${features}`);
+  console.log(`   {clothing} → ${clothing}`);
+  console.log(`   {scene} → ${scene}`);
+  console.log(`   {setting} → ${setting}`);
+  console.log(`   {emotion} → ${emotion}`);
+  console.log(`   {quality} → ${quality}`);
+  console.log(`   {suffix} → ${suffix || '(empty)'}`);
+  console.log(`🏁 FINAL ASSEMBLED TEMPLATE:`);
+  console.log(`   ${filledTemplate}`);
+  console.log(`🎨 PREMIUM TEMPLATE PROCESSING COMPLETE`);
+
+  return filledTemplate;
 }
 
 // Helper functions for nuclear independence
