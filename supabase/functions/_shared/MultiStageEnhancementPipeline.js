@@ -220,9 +220,9 @@ export class MultiStageEnhancementPipeline {
     try {
       // Enhanced cultural profiling
       const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
-      const artFramework = this.buildArtisticFramework(userInfo, pageNumber);
+      const artFramework = await this.buildArtisticFramework(userInfo, pageNumber);
       
-      // Build enhanced prompt
+      // Build enhanced prompt with proper style framework integration
       let enhancedPrompt = storyText;
       
       if (culturalProfile.culturalElements) {
@@ -233,8 +233,15 @@ export class MultiStageEnhancementPipeline {
         enhancedPrompt += `, ${artFramework.styleElements}`;
       }
       
+      // Add brand suffix for consistent styling across all tiers
+      if (artFramework.brandSuffix) {
+        enhancedPrompt += `, ${artFramework.brandSuffix}`;
+      }
+      
       // Use unified negative prompt
       const negativePrompt = this.buildUnifiedNegativePrompt(userInfo, culturalProfile, artFramework, pageNumber);
+      
+      console.log('✅ Tier 1 Enhanced Prompt with Style Framework:', enhancedPrompt.substring(0, 200) + '...');
       
       return {
         enhancedPrompt,
@@ -244,7 +251,8 @@ export class MultiStageEnhancementPipeline {
         metadata: {
           processingTier: 'tier-1-premium',
           culturalIntegration: true,
-          artFramework: true
+          artFramework: true,
+          styleFrameworkUsed: artFramework.framework?.name || 'fallback'
         }
       };
       
@@ -285,12 +293,42 @@ export class MultiStageEnhancementPipeline {
     return profile;
   }
   
-  static buildArtisticFramework(userInfo, pageNumber) {
-    return {
-      styleElements: 'high quality children book illustration, bright colors, engaging composition',
-      consistency: `page ${pageNumber} visual consistency`,
-      quality: 'premium artwork quality'
-    };
+  static async buildArtisticFramework(userInfo, pageNumber) {
+    try {
+      // Import style framework system (same as Tier 2)
+      const { getStyleFramework } = await import('./styleFrameworks.js');
+      const { DifficultyLevelMapper } = await import('./DifficultyLevelMapper.js');
+      
+      // Map user info to difficulty level (same logic as Tier 2)
+      const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+      
+      // Get dynamic style framework
+      const framework = getStyleFramework(difficulty);
+      
+      console.log(`🎨 Tier 1 using style framework for difficulty: ${difficulty}`, {
+        artStyle: framework.artStyle?.substring(0, 100),
+        brandSuffix: framework.brandSuffix?.substring(0, 100)
+      });
+      
+      return {
+        styleElements: framework.artStyle,
+        quality: framework.quality,
+        brandSuffix: framework.brandSuffix,
+        colorPalette: framework.colorPalette,
+        lighting: framework.lighting,
+        consistency: `page ${pageNumber} visual consistency`,
+        framework: framework
+      };
+    } catch (error) {
+      console.error('❌ Error building artistic framework in Tier 1:', error);
+      
+      // Fallback to basic framework
+      return {
+        styleElements: 'high quality children book illustration, bright colors, engaging composition',
+        consistency: `page ${pageNumber} visual consistency`,
+        quality: 'premium artwork quality'
+      };
+    }
   }
   
   static buildUnifiedNegativePrompt(userInfo, culturalProfile, framework, pageNumber) {

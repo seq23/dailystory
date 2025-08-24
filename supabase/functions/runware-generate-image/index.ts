@@ -450,10 +450,14 @@ serve(async (req) => {
         console.log('🔧 Starting Tier 2.5: Nuclear Hardcoded Fallback');
         console.log('🔍 TIER 2.5 DEBUG - Calling runware-simple-fallback function (FIXED VERSION)');
         
+        // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+        const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+        
         const tier25Result = await callTierFunction('runware-simple-fallback', {
           pageText,
           userInfo,
-          difficultyLevel: 'medium',
+          difficultyLevel: mappedDifficulty,
           avatarIdentity // Pass optimized avatar identity to all tiers
         });
         
@@ -488,9 +492,11 @@ serve(async (req) => {
       try {
         console.log('🎯 Starting Tier 3: OpenAI DALL-E Generation');
         
-        // Apply dynamic style framework for OpenAI tier
+        // Apply dynamic style framework for OpenAI tier (same as Tier 1 & 2)
         const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-        const tier3Style = getStyleFramework(userInfo?.preferredDifficulty || 'medium');
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+        const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+        const tier3Style = getStyleFramework(mappedDifficulty);
         
         const tier3Result = await callTierFunction('openai-image', {
           positivePrompt: `${tier3Style?.artStyle || 'Children\'s book illustration'}: ${pageText}. ${tier3Style?.quality || 'High quality rendering'}.`,
