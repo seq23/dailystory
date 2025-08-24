@@ -686,8 +686,8 @@ serve(async (req) => {
 
         // Get previous page context from request (passed by orchestrator)
         let previousContext = '';
-        if (requestBody.previousPageText) {
-          previousContext = `\n\nPREVIOUS STORY CONTEXT:\nPrevious page text: "${requestBody.previousPageText}"\n`;
+        if (previousPageText) {
+          previousContext = `\n\nPREVIOUS STORY CONTEXT:\nPrevious page text: "${previousPageText}"\n`;
           console.log('📖 Previous page context provided for story continuity');
         }
 
