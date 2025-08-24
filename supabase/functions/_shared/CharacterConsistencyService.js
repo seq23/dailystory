@@ -298,17 +298,11 @@ export class CharacterConsistencyService {
     
     // Only generate detailed physical traits for African American characters
     if (culturalProfile === 'african-american') {
-      const random = this.createSeededRandom(seed);
       const hairColor = this.getHairColorFromAvatar(avatarIdentity);
-      
-      const builds = ['slim', 'average', 'sturdy'];
-      const heights = ['short', 'average height', 'tall for their age'];
       
       return {
         skinTone,
         hairColor,
-        build: builds[Math.floor(random() * builds.length)],
-        height: heights[Math.floor(random() * heights.length)],
         isAfricanAmerican: true
       };
     }
@@ -339,17 +333,11 @@ export class CharacterConsistencyService {
     
     // Only generate detailed physical traits for African American characters
     if (isAfricanAmerican) {
-      const random = this.createSeededRandom(seed);
       const hairColor = this.getHairColorFromAvatar(avatar);
-      
-      const builds = ['slim', 'average', 'sturdy'];
-      const heights = ['short', 'average height', 'tall for their age'];
       
       return {
         skinTone,
         hairColor,
-        build: builds[Math.floor(random() * builds.length)],
-        height: heights[Math.floor(random() * heights.length)],
         isAfricanAmerican: true
       };
     }
@@ -617,21 +605,23 @@ export class CharacterConsistencyService {
       const skinTone = cultural.skinTones[Math.floor(random() * cultural.skinTones.length)];
       const eyeColor = pageTextFeatures.eyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
       const facialFeatures = cultural.facialFeatures[Math.floor(random() * cultural.facialFeatures.length)];
-      const height = pageTextFeatures.height || traits.height;
-      const build = pageTextFeatures.build || traits.build;
       
-      return `A ${height} ${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}. ${build} build. Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+      // Only include height/build if detected from page text
+      const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
+      const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
+      
+      return `A ${heightDescription}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
     // Minimal description for other cultural profiles - let Runware decide most features
-    const height = pageTextFeatures.height || 'average height';
     const eyeColor = pageTextFeatures.eyeColor || '';
-    const build = pageTextFeatures.build || '';
-    
     const eyeDescription = eyeColor ? ` with ${eyeColor}` : '';
-    const buildDescription = build ? ` ${build} build.` : '';
     
-    return `A ${height} ${seedData.avatarType}${eyeDescription}.${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+    // Only include height/build if detected from page text
+    const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
+    const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
+    
+    return `A ${heightDescription}${seedData.avatarType}${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
 
   /**
