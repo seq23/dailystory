@@ -30,13 +30,34 @@ import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementP
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
 /**
- * SIMPLE: Check if primaryScene exists and has minimum 30 characters
+ * VISUAL QUALITY: Check if primaryScene meets visual description standards
  */
 function checkPrimarySceneCriteria(data) {
-  const primarySceneExists = !!(data.primaryScene && data.primaryScene.length >= 30);
+  const scene = data.primaryScene;
+  if (!scene || typeof scene !== 'string') {
+    return { primaryScene: false, passCount: 0, details: 'missing_or_invalid' };
+  }
+
+  const hasMinLength = scene.length >= 120;
+  const hasCharacter = /\b(child|character|person|they|he|she|avatar)\b/i.test(scene);
+  const hasAction = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i.test(scene);
+  const hasSetting = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i.test(scene);
+  const hasDescriptiveWords = /\b(colorful|bright|sunny|warm|cheerful|detailed|realistic|beautiful)\b/i.test(scene);
+
+  const qualityScore = [hasMinLength, hasCharacter, hasAction, hasSetting, hasDescriptiveWords].filter(Boolean).length;
+  const isPrimarySceneValid = qualityScore >= 4; // Require at least 4 of 5 criteria
+
   return {
-    primaryScene: primarySceneExists,
-    passCount: primarySceneExists ? 1 : 0
+    primaryScene: isPrimarySceneValid,
+    passCount: isPrimarySceneValid ? 1 : 0,
+    details: {
+      length: scene.length,
+      hasCharacter,
+      hasAction, 
+      hasSetting,
+      hasDescriptiveWords,
+      qualityScore: `${qualityScore}/5`
+    }
   };
 }
 
@@ -52,15 +73,15 @@ function checkPrimarySceneCriteria(data) {
 function validateAndEnhanceContent(enhancedStoryData, storyText) {
   const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
   
-  console.log(`🔍 PRIMARY SCENE Check: ${fieldCheck.primaryScene ? 'PASS' : 'TIER 2'} (${enhancedStoryData.primaryScene?.length || 0} characters)`);
+  console.log(`🔍 VISUAL SCENE Check: ${fieldCheck.primaryScene ? 'PASS' : 'TIER 2'} - ${JSON.stringify(fieldCheck.details)}`);
   
-  // Simple decision: primaryScene exists with 30+ chars = accept, otherwise = Tier 2
+  // Enhanced decision: primaryScene meets visual quality standards = accept, otherwise = Tier 2
   if (!fieldCheck.primaryScene) {
-    console.log(`❌ Primary scene insufficient (${enhancedStoryData.primaryScene?.length || 0} chars) - falling back to Tier 2`);
+    console.log(`❌ Visual scene insufficient - Quality: ${fieldCheck.details?.qualityScore || '0/5'}, Length: ${enhancedStoryData.primaryScene?.length || 0} chars - falling back to Tier 2`);
     return { useTier2: true, fieldCheck };
   }
   
-  console.log(`✅ Primary scene validation passed (${enhancedStoryData.primaryScene.length} chars) - content accepted`);
+  console.log(`✅ Visual scene validation passed - Quality: ${fieldCheck.details.qualityScore}, Length: ${enhancedStoryData.primaryScene.length} chars - content accepted`);
   return { enhancedData: enhancedStoryData, fieldCheck };
 }
 
@@ -517,66 +538,75 @@ serve(async (req) => {
           {
             role: 'system',
             content: useSimplifiedPrompt ? 
-              // GPT-5/4.1+ optimized prompt - streamlined and focused
-              `Text analyzer for image generation. Extract visual data.
+              // GPT-5/4.1+ optimized prompt - visual-first approach
+              `Generate comprehensive visual scene descriptions for illustration purposes.
 
-JSON ONLY:
-{
-  "characters": {
-    "characterAppearance": "integrate avatar identity with story context",
-    "characterClothing": "clothing/outfit details", 
-    "characterPosition": "body position/pose",
-    "characterMood": "emotion/expression",${secondaryCharacterFields}
-  },
-  "visualComponents": {
-    "action": "primary activity",
-    "setting": "location context", 
-    "sceneType": "indoor/outdoor/mixed",
-    "lighting": "scene lighting",
-    "keyObjects": "important items"
-  },
-  "primaryScene": "comprehensive visual description for image generation"
-}
-
-Avatar: ${JSON.stringify(avatarIdentity)}
-Priority: characterAppearance uses avatar identity, action/setting drive scene composition.`
-            :
-              // Legacy models - detailed instructions with examples
-              `CRITICAL: primaryScene is the MASTER COMPREHENSIVE OUTPUT that will be sent directly to image generation.
+PRIMARY OBJECTIVE: Create rich, detailed visual descriptions that capture every element needed for perfect image generation.
 
 JSON RESPONSE:
 {
+  "primaryScene": "MASTER VISUAL DESCRIPTION: Complete, comprehensive scene containing ALL visual elements - character appearance (using avatar identity), clothing, pose, expression, actions, setting details, lighting, objects, colors, mood, atmosphere. Minimum 120+ characters with rich descriptive language.",
   "characters": {
-    "characterAppearance": "OPTIONAL: base avatar info for internal processing",
-    "characterClothing": "OPTIONAL: clothing info for internal processing", 
-    "characterPosition": "OPTIONAL: position info for internal processing",
-    "characterMood": "OPTIONAL: mood info for internal processing",${secondaryCharacterFields}
+    "characterAppearance": "avatar identity integration for consistency",
+    "characterClothing": "clothing details for scene enhancement", 
+    "characterPosition": "pose/position for composition",
+    "characterMood": "emotion/expression for atmosphere",${secondaryCharacterFields}
   },
   "visualComponents": {
-    "action": "OPTIONAL: action info for internal processing",
-    "setting": "OPTIONAL: setting info for internal processing",
-    "sceneType": "OPTIONAL: scene type for internal processing", 
-    "lighting": "OPTIONAL: lighting info for internal processing",
-    "keyObjects": "OPTIONAL: objects info for internal processing"
-  },
-  "primaryScene": "MASTER OUTPUT: Complete, comprehensive visual description containing ALL details - characters, secondary characters, actions, settings, lighting, objects, mood, colors, clothing, everything needed for perfect image generation"
+    "action": "primary activity details",
+    "setting": "environment and location specifics", 
+    "sceneType": "indoor/outdoor/mixed classification",
+    "lighting": "lighting conditions and mood",
+    "keyObjects": "important visual elements"
+  }
 }
 
-CRITICAL REQUIREMENTS:
-- primaryScene: Must contain EVERYTHING - ALL character details (${avatarIdentity?.visualDescription || 'child'}), ALL actions, ALL settings, ALL lighting, ALL objects, ALL secondary characters, ALL clothing, ALL mood
-- primaryScene: Minimum 100+ characters with rich detail and duplication encouraged
-- Other fields: Optional helper fields for internal processing only${hasMultipleCharacters ? `
-- SECONDARY CHARACTERS: Include all secondary character details IN primaryScene` : ''}
+Avatar Identity: ${JSON.stringify(avatarIdentity)}
+CRITICAL: primaryScene is your MAIN OUTPUT - make it comprehensive, detailed, and visually rich with ALL scene elements included.`
+            :
+              // Legacy models - visual-first approach with comprehensive instructions
+              `Generate comprehensive visual scene descriptions for professional illustration purposes.
 
-Example primaryScene: "${avatarIdentity?.visualDescription || 'A child'} ${hasMultipleCharacters ? 'playing alongside a friendly teacher ' : ''}carefully building with colorful wooden blocks on a smooth wooden table in a bright, sunny classroom with large windows, natural golden lighting streaming in, educational posters on the walls, cheerful and focused expressions, detailed realistic style"`
+PRIMARY OBJECTIVE: Create the most detailed, visually rich scene description possible for image generation.
+
+JSON RESPONSE:
+{
+  "primaryScene": "MASTER VISUAL DESCRIPTION: The complete, comprehensive visual scene containing ALL elements needed for perfect image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'child'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Minimum 120+ characters with rich, descriptive language and visual specificity.",
+  "characters": {
+    "characterAppearance": "Avatar identity integration for consistency",
+    "characterClothing": "Clothing and outfit details", 
+    "characterPosition": "Body position and pose",
+    "characterMood": "Emotional expression and demeanor",${secondaryCharacterFields}
+  },
+  "visualComponents": {
+    "action": "Primary activities and interactions",
+    "setting": "Environmental context and location", 
+    "sceneType": "Scene classification (indoor/outdoor/mixed)", 
+    "lighting": "Lighting conditions and atmosphere",
+    "keyObjects": "Important visual elements and props"
+  }
+}
+
+VISUAL QUALITY STANDARDS:
+- primaryScene: The MAIN OUTPUT - comprehensive visual narrative with ALL scene elements
+- Character Integration: Use avatar identity (${avatarIdentity?.visualDescription || 'child characteristics'}) as foundation
+- Visual Richness: Include colors, textures, lighting, mood, spatial relationships
+- Descriptive Language: Rich adjectives, specific details, atmospheric elements${hasMultipleCharacters ? `
+- Secondary Characters: Fully integrated into primaryScene with complete descriptions` : ''}
+- Minimum Length: 120+ characters with detailed visual specificity
+
+Example High-Quality primaryScene: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'sits next to a kind teacher ' : ''}carefully arranging vibrant wooden blocks into a towering structure on a polished wooden table in a sunlit classroom filled with colorful educational posters, warm natural lighting streaming through tall windows, creating a peaceful learning atmosphere with focused, joyful expressions and scattered art supplies nearby"`
           },
           {
             role: 'user', 
-            content: `Story text: "${storyText}"
+            content: `Content for visual scene generation: "${storyText}"
 
-Avatar identity: ${JSON.stringify(avatarIdentity)}
+Character Identity Foundation: ${JSON.stringify(avatarIdentity)}
 ${previousContext}
-Extract using the object-based schema with ${hasMultipleCharacters ? 'secondary character fields included' : 'core character fields only'}. Prioritize action/setting in visualComponents and make primaryScene comprehensive.`
+
+Generate a comprehensive visual scene description using the schema structure with ${hasMultipleCharacters ? 'secondary character elements integrated' : 'primary character focus'}. 
+
+Focus on creating the most detailed, visually rich primaryScene possible that captures every visual element needed for professional illustration generation. Make it comprehensive, descriptive, and atmospherically rich.`
           }
         ];
 
