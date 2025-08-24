@@ -790,8 +790,7 @@ function mapAvatarIdentity(userInfo: any) {
   let culturalProfile;
   if (nativeLanguage === 'en') {
     if (standardizedSkinTone === 'dark') culturalProfile = 'african-american';
-    else if (standardizedSkinTone === 'light' || standardizedSkinTone === 'fair') culturalProfile = 'european-american';
-    else culturalProfile = 'multicultural-american';
+    else culturalProfile = 'standard-american';
   } else if (nativeLanguage === 'es') {
     if (standardizedSkinTone === 'dark') culturalProfile = 'afro-hispanic';
     else if (standardizedSkinTone === 'olive' || standardizedSkinTone === 'medium') culturalProfile = 'hispanic-latino';
