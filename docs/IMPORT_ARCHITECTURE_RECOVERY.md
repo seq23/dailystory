@@ -51,7 +51,6 @@ supabase/functions/_shared/
 ├── RealContextCollector.js        ✅
 ├── SecurityValidator.js           ✅
 ├── SessionStateManager.js         ✅
-├── SimpleContentValidator.js      ✅
 ├── SYSTEM_ARCHITECTURE.md         ✅
 ├── VisualDetailTracker.js         ✅
 ├── cors.ts                        ✅
