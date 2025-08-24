@@ -250,15 +250,15 @@ serve(async (req) => {
         const aiSchemaData = enhancementResult.metadata?.aiSchemaData || null;
         
         // Use BackendTokenManager with AI schema for Tier 1
+        // New signature: (aiSchemaData, characterDescription, qualitySuffixes, styleFramework, sceneContext, secondaryCharacters, visualDetails)
         const promptSegments = BackendTokenManager.createPromptSegments(
-          null, // sceneContext (legacy)
-          null, // characterDescription (legacy) 
-          null, // styleFramework (legacy)
-          "professional quality children's book illustration, vibrant colors, detailed artwork", // qualitySuffixes
-          null, // visualDetails (legacy)
-          null, // culturalElements (legacy)
           aiSchemaData, // AI schema data from enhancer
-          null  // secondaryCharacters (legacy)
+          null, // characterDescription (handled by AI schema)
+          "professional quality children's book illustration, vibrant colors, detailed artwork", // qualitySuffixes
+          null, // styleFramework (handled by AI schema)
+          null, // sceneContext (handled by AI schema)
+          null, // secondaryCharacters (handled by AI schema)
+          null  // visualDetails (handled by AI schema)
         );
         
         // Build final prompt from segments

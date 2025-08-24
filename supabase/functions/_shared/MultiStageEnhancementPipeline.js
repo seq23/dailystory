@@ -837,14 +837,15 @@ export class MultiStageEnhancementPipeline {
       
       CulturalTextTracker.trackTextEntry(sessionId, pageNumber, fullCharacterDescription, 'character-description');
       
+      // Use BackendTokenManager with new signature (aiSchemaData, characterDescription, qualitySuffixes, styleFramework, sceneContext, secondaryCharacters, visualDetails)
       const promptSegments = BackendTokenManager.createPromptSegments(
-        sceneContext,
+        null, // aiSchemaData (null for legacy mode)
         fullCharacterDescription,
-        styleFramework.prompt || 'children\'s book illustration',
         styleFramework.brandSuffix || '',
-        visualDetails || '',
-        secondaryCharacterPrompt, // PHASE 2 FIX: Pass secondary character prompt instead of empty string
-        {} // No AI enhancement data for Tier 2
+        styleFramework.prompt || 'children\'s book illustration',
+        sceneContext,
+        secondaryCharacterPrompt, // PHASE 2 FIX: Pass secondary character prompt
+        visualDetails || ''
       );
       
       // Simple segment joining - preserve priority order and exact content

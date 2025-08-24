@@ -1,128 +1,136 @@
-// Pure Deno Backend Token Manager - Essentials Only
-// Stripped down to character count monitoring only
-
-export const MAX_LENGTH = 2900; // Runware 3000 limit minus 100-char buffer
-export const WARN_LENGTH = 2800;
-
-// Priority System for Prompt Segments
-export const PromptPriority = {
-  LOW: 1,       // Style framework, cultural elements
-  MEDIUM: 2,    // Characters, visual components  
-  HIGH: 3,      // Brand suffix, visual sub-fields
-  CRITICAL: 4   // Primary scene
-};
+// Pure Deno Backend Token Manager - Simplified & Restructured
+// Focused on intelligent prompt construction without truncation
 
 export class BackendTokenManager {
   
   /**
-   * Create prompt segments with priority classification
-   * Essential for character count monitoring
+   * Extract main action from page text for intelligent scene context
    */
-  static createPromptSegments(sceneContext, characterDescription, styleFramework, qualitySuffixes, visualDetails = '', culturalElements = '', aiSchemaData = null, secondaryCharacters = '') {
+  static extractMainAction(pageText) {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    // Split into sentences and filter meaningful ones
+    const sentences = pageText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    if (sentences.length === 0) return '';
+    
+    // Take first 2-3 sentences and extract key actions
+    const keyContent = sentences.slice(0, 3).join('. ').trim();
+    
+    // Extract action-oriented context (remove "children's book scene:" prefix)
+    // Focus on main verbs and activities
+    const actionMatch = keyContent.match(/(?:was|is|were|are)?\s*([a-z]*ing|[a-z]*ed|[a-z]+s)\s+([^,.!?]+)/i);
+    if (actionMatch) {
+      return `character ${actionMatch[1]} ${actionMatch[2]}`.toLowerCase();
+    }
+    
+    // Fallback: return first sentence without prefix
+    return sentences[0].trim().toLowerCase();
+  }
+  
+  /**
+   * Create simplified prompt segments without truncation logic
+   * New signature: (aiSchemaData, characterDescription, qualitySuffixes, styleFramework, sceneContext, secondaryCharacters, visualDetails)
+   */
+  static createPromptSegments(aiSchemaData = null, characterDescription = '', qualitySuffixes = '', styleFramework = '', sceneContext = '', secondaryCharacters = '', visualDetails = '') {
     let segments = [];
 
-    // CRITICAL PRIORITY - Primary Scene (never truncate)
+    // Tier 1: AI Schema Data (Enhanced Processing)
     if (aiSchemaData?.primaryScene) {
       segments.push({
         content: aiSchemaData.primaryScene,
-        priority: PromptPriority.CRITICAL,
-        canTruncate: false,
         type: 'primary-scene'
       });
     }
 
-    // MEDIUM PRIORITY - Characters and Visual Components
     if (aiSchemaData?.characters) {
       segments.push({
         content: aiSchemaData.characters,
-        priority: PromptPriority.MEDIUM,
-        canTruncate: true,
         type: 'characters'
       });
     }
 
-    // HIGH PRIORITY - Visual Components Sub-fields
+    // Process AI visual components with ACTION FIELD FIX
     if (aiSchemaData?.visualComponents) {
       const vc = aiSchemaData.visualComponents;
-      if (vc.sceneType) segments.push({ content: vc.sceneType, priority: PromptPriority.HIGH, canTruncate: false, type: 'scene-type' });
-      if (vc.lighting) segments.push({ content: vc.lighting, priority: PromptPriority.HIGH, canTruncate: false, type: 'lighting' });
-      if (vc.keyObjects) segments.push({ content: vc.keyObjects, priority: PromptPriority.HIGH, canTruncate: false, type: 'key-objects' });
-      if (vc.setting) segments.push({ content: vc.setting, priority: PromptPriority.MEDIUM, canTruncate: true, type: 'cultural-setting' });
-      if (vc.mood) segments.push({ content: vc.mood, priority: PromptPriority.HIGH, canTruncate: false, type: 'mood' });
+      if (vc.action) segments.push({ content: vc.action, type: 'action' });
+      if (vc.sceneType) segments.push({ content: vc.sceneType, type: 'scene-type' });
+      if (vc.lighting) segments.push({ content: vc.lighting, type: 'lighting' });
+      if (vc.keyObjects) segments.push({ content: vc.keyObjects, type: 'key-objects' });
+      if (vc.setting) segments.push({ content: vc.setting, type: 'cultural-setting' });
+      if (vc.mood) segments.push({ content: vc.mood, type: 'mood' });
     }
 
-    // Fallback to legacy parameters if new schema not available
-    if (!aiSchemaData?.primaryScene && sceneContext) {
-      segments.push({
-        content: sceneContext,
-        priority: PromptPriority.MEDIUM,
-        canTruncate: true,
-        type: 'scene-context-legacy'
-      });
-    }
+    // Tier 2: Legacy Processing with Intelligent SceneContext
 
-    if (!aiSchemaData?.characters && characterDescription) {
+    // Character description (both tiers, priority position for Tier 2)
+    if (characterDescription && characterDescription.trim().length > 0) {
       segments.push({
         content: characterDescription,
-        priority: PromptPriority.MEDIUM,
-        canTruncate: true,
-        type: 'character-description-legacy'
+        type: 'character-description'
       });
     }
 
-    // LOW PRIORITY - Style Framework
-    if (styleFramework) {
+    // Secondary characters (high priority after primary characters)
+    if (secondaryCharacters && secondaryCharacters.trim().length > 0) {
       segments.push({
-        content: styleFramework,
-        priority: PromptPriority.LOW,
-        canTruncate: true,
-        type: 'style-framework'
+        content: secondaryCharacters,
+        type: 'secondary-characters'
       });
     }
 
-    // HIGH PRIORITY - Brand Suffix
-    if (qualitySuffixes) {
+    // Scene context (intelligent for Tier 2, legacy fallback for Tier 1)
+    if (!aiSchemaData?.primaryScene && sceneContext) {
+      // For Tier 2: Extract intelligent scene context if it contains "Children's book scene:"
+      let processedSceneContext = sceneContext;
+      if (sceneContext.startsWith("Children's book scene:")) {
+        const pageText = sceneContext.replace("Children's book scene:", "").trim();
+        processedSceneContext = this.extractMainAction(pageText);
+      }
+      
+      if (processedSceneContext && processedSceneContext.trim().length > 0) {
+        segments.push({
+          content: processedSceneContext,
+          type: 'scene-context'
+        });
+      }
+    }
+
+    // Visual details (object persistence from VisualDetailTracker)
+    if (visualDetails && visualDetails.trim().length > 0) {
+      segments.push({
+        content: visualDetails,
+        type: 'visual-details'
+      });
+    }
+
+    // Quality suffixes (brand suffix)
+    if (qualitySuffixes && qualitySuffixes.trim().length > 0) {
       segments.push({
         content: qualitySuffixes,
-        priority: PromptPriority.HIGH,
-        canTruncate: false,
         type: 'brand-suffix'
       });
     }
 
-    // LOW PRIORITY - Cultural Elements
-    if (culturalElements && culturalElements.length > 0) {
+    // Style framework
+    if (styleFramework && styleFramework.trim().length > 0) {
       segments.push({
-        content: culturalElements,
-        priority: PromptPriority.LOW,
-        canTruncate: true,
-        type: 'cultural-elements'
-      });
-    }
-
-    // MEDIUM PRIORITY - Secondary Characters
-    if (secondaryCharacters && secondaryCharacters.trim().length > 0) {
-      segments.push({
-        content: secondaryCharacters,
-        priority: PromptPriority.MEDIUM,
-        canTruncate: true,
-        type: 'secondary-characters'
+        content: styleFramework,
+        type: 'style-framework'
       });
     }
 
     // Filter out empty segments
     segments = segments.filter(segment => segment.content && segment.content.trim().length > 0);
     
-    console.log(`🔧 Created ${segments.length} prompt segments for monitoring`);
+    console.log(`🔧 Created ${segments.length} prompt segments (${segments.map(s => s.type).join(', ')})`);
     
     return segments;
   }
   
   /**
-   * Calculate total character length of segments
-   * Essential for monitoring prompt length
+   * Build final prompt from segments
    */
-  static calculateLength(segments) {
-    return segments.reduce((sum, segment) => sum + segment.content.length, 0);
+  static buildPrompt(segments) {
+    return segments.map(segment => segment.content).join(', ');
   }
 }

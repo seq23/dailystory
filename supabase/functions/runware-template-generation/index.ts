@@ -302,23 +302,32 @@ serve(async (req) => {
 
     // Import BackendTokenManager for unified prompt construction  
     const { BackendTokenManager } = await import("../_shared/BackendTokenManager.js");
+    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
     
-    // Extract legacy parameters for Tier 2 (no AI schema)
-    const sceneContext = `Children's book scene: ${pageText}`;
+    // Extract parameters for Tier 2 with intelligent processing
     const characterDescription = avatarIdentity ? `${avatarIdentity.name || userInfo?.name || 'child'} with ${avatarIdentity.physicalDescription || 'cheerful appearance'}` : null;
-    const styleFramework = "children's book illustration style";
     const qualitySuffixes = "professional quality children's book illustration, vibrant colors, detailed artwork";
+    const styleFramework = "children's book illustration style";
+    const sceneContext = `Children's book scene: ${pageText}`; // Will be processed intelligently by BackendTokenManager
     
-    // Use BackendTokenManager without AI schema for Tier 2 (legacy mode)
+    // Get tracked visual details for object persistence
+    const sessionId = userInfo?.sessionId || 'anonymous';
+    const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+    
+    // Analyze current page for new details
+    if (pageText) {
+      VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1);
+    }
+    
+    // Use BackendTokenManager with new signature (aiSchemaData, characterDescription, qualitySuffixes, styleFramework, sceneContext, secondaryCharacters, visualDetails)
     const promptSegments = BackendTokenManager.createPromptSegments(
-      sceneContext,
-      characterDescription, 
-      styleFramework,
-      qualitySuffixes,
-      null, // visualDetails
-      null, // culturalElements  
       null, // aiSchemaData (null for Tier 2)
-      null  // secondaryCharacters
+      characterDescription,
+      qualitySuffixes,
+      styleFramework, 
+      sceneContext,
+      null, // secondaryCharacters (TODO: could be extracted from pageText)
+      visualDetails
     );
     
     // Build final prompt from segments
