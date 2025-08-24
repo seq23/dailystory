@@ -302,7 +302,7 @@ export class SessionStateManager {
     const allPrompts = [];
     
     // Collect prompts from all sessions
-    for (const [sessionId, state] of this.sessions.entries()) {
+    for (const [sessionId, state] of SessionStateManager.sessionStates.entries()) {
       if (state.imagePrompts) {
         state.imagePrompts.forEach(prompt => {
           allPrompts.push({

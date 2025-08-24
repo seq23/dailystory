@@ -28,7 +28,8 @@ export class MultiStageEnhancementPipeline {
     try {
       const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
       
-      const characterSeed = await CharacterConsistencyService.getCharacterSeed(
+      const characterService = new CharacterConsistencyService();
+      const characterSeed = await characterService.getCharacterSeed(
         sessionId, 
         userInfo?.id || 'anonymous', 
         userInfo, 

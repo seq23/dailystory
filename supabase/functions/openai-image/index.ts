@@ -138,12 +138,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: finalPrompt,
-        size: size,
-        quality: gptImageQuality,
-        output_format: 'webp',
-        background: 'opaque',
+        model: 'dall-e-3',
+        prompt: finalPrompt.slice(0, 4000), // dall-e-3 has a 4000 char limit
+        size: size === '1536x1024' ? '1792x1024' : (size === '1024x1536' ? '1024x1792' : '1024x1024'),
+        quality: gptImageQuality === 'high' ? 'hd' : 'standard',
+        style: 'vivid',
         n: 1
       }),
     });
@@ -168,7 +167,8 @@ serve(async (req) => {
     
     // PHASE 1: Store image prompt in SessionStateManager 
     const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
-    SessionStateManager.prototype.storeImagePrompt(sessionId || 'openai-session', {
+    const sessionManager = new SessionStateManager();
+    sessionManager.storeImagePrompt(sessionId || 'openai-session', {
       tier: '3',
       promptText: finalPrompt,
       negativePrompt: comprehensiveNegativePrompt,
@@ -179,8 +179,8 @@ serve(async (req) => {
       imageURL: imageUrl,
       seed: generatedSeed,
       provider: 'openai',
-      model: 'gpt-image-1',
-      cost: gptImageQuality === 'high' ? 0.12 : 0.08,
+      model: 'dall-e-3',
+      cost: gptImageQuality === 'high' ? 0.08 : 0.04, // dall-e-3 pricing
       generationTime: 0, // OpenAI doesn't provide this
       culturalProfile: enhancementResult.culturalProfile || {},
       styleFramework: enhancementResult.framework || {},
@@ -195,15 +195,15 @@ serve(async (req) => {
     console.log(`✅ TIER 3 SUCCESS - Session: ${sessionId}, Page: ${pageNumber}`);
     console.log(`🖼️ Image URL: ${imageUrl}`);
     console.log(`🎯 Final Prompt Used: ${finalPrompt}`);
-    console.log(`💰 Cost: ${gptImageQuality === 'high' ? 0.12 : 0.08}, Quality: ${gptImageQuality}`);
+    console.log(`💰 Cost: ${gptImageQuality === 'high' ? 0.08 : 0.04}, Quality: ${gptImageQuality}`);
     console.log(`🎲 Assigned seed ${generatedSeed} for consistency tracking`);
 
     return createCorsResponse({
       success: true,
       imageURL: imageUrl,
       provider: 'openai',
-      model: 'gpt-image-1',
-      cost: gptImageQuality === 'high' ? 0.12 : 0.08, // gpt-image-1 pricing
+      model: 'dall-e-3',
+      cost: gptImageQuality === 'high' ? 0.08 : 0.04, // dall-e-3 pricing
       pageNumber: pageNumber,
       seed: generatedSeed,
       quality: gptImageQuality,

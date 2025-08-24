@@ -661,7 +661,7 @@ serve(async (req) => {
           };
         }
         
-        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText } = requestBody);
+        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText = '' } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
           userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',

@@ -686,7 +686,7 @@ serve(async (req) => {
     console.error('❌ Image orchestration failed:', error);
     
     // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
-    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser || false ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
+    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
     
     return createCorsErrorResponse(
       `Image generation orchestration failed: ${error.message}`,
