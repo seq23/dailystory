@@ -12,15 +12,14 @@
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
-// PHASE 2.15: BackendTokenManager restored for essential functions only
 import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
-import './storyVisualState.js'; // Loads StoryVisualStateManager globally
+import { CharacterConsistencyService } from './CharacterConsistencyService.js';
+import { SessionStateManager } from './SessionStateManager.js';
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
-// AnimalCharacterManager removed - now using UnifiedCharacterDescriptor
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
-import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
-import { mapAvatarIdentity } from './mapAvatarIdentity.js'; // Source of truth avatar processing
-import { RealContextCollector } from './RealContextCollector.js'; // Real context integration
+import { CulturalTextTracker } from './CulturalTextTracker.js';
+import { mapAvatarIdentity } from './mapAvatarIdentity.js';
+import { RealContextCollector } from './RealContextCollector.js';
 
 
 function selectWeightedElement(array) {
@@ -29,6 +28,10 @@ function selectWeightedElement(array) {
 }
 
 export class MultiStageEnhancementPipeline {
+  
+  // ============= CLEAN ARCHITECTURE SERVICES =============
+  static characterService = new CharacterConsistencyService();
+  static sessionManager = new SessionStateManager();
   
   // ============= AI ENHANCEMENT CACHING SYSTEM =============
   static aiEnhancementCache = new Map();
@@ -128,19 +131,9 @@ export class MultiStageEnhancementPipeline {
       // Set current storyId for FrontendIntelligence to use
       globalThis.currentStoryId = storyId;
       
-      // 0. Initialize and analyze visual state for consistency WITH SAFETY
-      let visualState;
-      try {
-        if (globalThis.StoryVisualStateManager?.getOrCreateStoryState) {
-          visualState = globalThis.StoryVisualStateManager.getOrCreateStoryState(sessionId);
-          console.log('✅ Visual state initialized successfully');
-        } else {
-          throw new Error('StoryVisualStateManager not available');
-        }
-      } catch (error) {
-        console.error('❌ Visual state initialization failed, using Tier 2.5 fallback:', error.message);
-        throw new Error(`Tier 1 failed: Visual state unavailable - ${error.message}`);
-      }
+      // ============= SESSION & VISUAL STATE INITIALIZATION =============
+      const visualState = this.sessionManager.getOrCreateSessionState(sessionId);
+      console.log('✅ Visual state initialized with clean architecture');
       
       // 0.5. SECONDARY ELEMENT DETECTION - Detect and track secondary characters and animals
       let SecondaryElementDetector;
@@ -215,14 +208,12 @@ export class MultiStageEnhancementPipeline {
       // CRITICAL: Analyze animals FIRST before any text processing to ensure immediate inclusion
       // Animal processing now handled by UnifiedCharacterDescriptor
       
-      // Visual tracking with safety checks
+      // Visual tracking with clean architecture
       try {
         if (globalThis.VisualDetailTracker?.analyzeTextForDetails) {
           globalThis.VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
         }
-        if (globalThis.StoryVisualStateManager?.analyzeAndTrackVisualDetails) {
-          globalThis.StoryVisualStateManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
-        }
+        this.sessionManager.analyzeAndTrackVisualDetails(sessionId, storyText, pageNumber);
         if (globalThis.AdvancedPronounResolver?.analyzeRelationships) {
           globalThis.AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
         }
@@ -305,15 +296,15 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected style framework:', imageDifficulty, styleFramework.name);
       
-      // 3. Generate story-based character consistency with standardized avatar processing
-      console.log('🎭 Generating story-based character consistency with standardized avatar identity');
+      // 3. Generate story-based character consistency with clean architecture
+      console.log('🎭 Generating story-based character consistency with clean architecture');
       
       // Process avatar identity using runware source of truth
       const processedAvatarIdentity = mapAvatarIdentity(userInfo);
       
-      const characterConsistencyData = await characterConsistency.getCharacterSeed(
+      const characterConsistencyData = await this.characterService.getCharacterSeed(
+        sessionId,
         userInfo.name || 'user',
-        storyId,
         userInfo,
         enhancedStoryText, // Pass story context for contextual analysis
         processedAvatarIdentity // Pass standardized avatar identity
@@ -339,21 +330,13 @@ export class MultiStageEnhancementPipeline {
       let secondaryCharacterPrompt = '';
       
       try {
-        if (globalThis.StoryVisualStateManager?.getSettingForPrompt) {
-          existingSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
-        }
+        existingSetting = this.sessionManager.getSettingForPrompt(sessionId);
         if (globalThis.VisualDetailTracker?.getVisualDetailsForPrompt) {
           visualDetails = globalThis.VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
         }
-        if (globalThis.StoryVisualStateManager?.getVisualDetailsForPrompt) {
-          storyStateDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
-        }
-        if (globalThis.StoryVisualStateManager?.getSecondaryCharacters) {
-          secondaryCharacterData = globalThis.StoryVisualStateManager.getSecondaryCharacters(sessionId, pageNumber);
-        }
-        if (globalThis.StoryVisualStateManager?.getCharacterAnimals) {
-          characterAnimals = globalThis.StoryVisualStateManager.getCharacterAnimals(sessionId, pageNumber);
-        }
+        storyStateDetails = this.sessionManager.getVisualDetailsForPrompt(sessionId);
+        secondaryCharacterData = this.sessionManager.getSecondaryCharacters(sessionId, pageNumber);
+        characterAnimals = this.sessionManager.getCharacterAnimals(sessionId, pageNumber);
         secondaryCharacterPrompt = this.buildSecondaryCharacterPrompt(secondaryCharacterData, characterAnimals);
       } catch (error) {
         console.warn('⚠️ Visual state retrieval failed, using empty values:', error.message);
@@ -725,21 +708,15 @@ export class MultiStageEnhancementPipeline {
       
       console.log('🎨 Selected premium style framework:', imageDifficulty, styleFramework.name);
       
-      // Generate story-based character consistency with standardized avatar processing (Tier 2)
-      console.log('🎭 Generating premium character consistency with processed avatar identity');
-      console.log('🔍 Tier 2: characterConsistency availability check:', !!characterConsistency);
+      // Generate story-based character consistency with clean architecture (Tier 2)
+      console.log('🎭 Tier 2: Using clean character consistency architecture');
       
-      if (!characterConsistency) {
-        console.error('❌ Tier 2: Character consistency factory component failed - IMMEDIATE cascade to Tier 2.5');
-        throw new Error('Tier 2 failed: Character consistency unavailable');
-      }
-      
-      // Process avatar identity using runware source of truth (Tier 2)
+      // Process avatar identity using clean architecture
       const processedAvatarIdentity = mapAvatarIdentity(userInfo);
       
-      const characterConsistencyData = await characterConsistency.getCharacterSeed(
+      const characterConsistencyData = await this.characterService.getCharacterSeed(
+        sessionId,
         userInfo.name || 'user',
-        storyId,
         userInfo,
         enhancedStoryText,
         processedAvatarIdentity // Pass standardized avatar identity
@@ -1245,7 +1222,7 @@ export class MultiStageEnhancementPipeline {
     
     // Update setting if any new elements detected
     if (Object.keys(detectedSetting).length > 0) {
-      globalThis.StoryVisualStateManager.updateSetting(sessionId, detectedSetting);
+      this.sessionManager.updateSetting(sessionId, detectedSetting);
       console.log('🌍 Updated story setting:', detectedSetting);
     }
   }

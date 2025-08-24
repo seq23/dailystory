@@ -1,0 +1,458 @@
+/**
+ * Session State Manager - Clean Architecture
+ * Handles session state, visual tracking, and story context
+ * No globalThis dependencies, simple and reliable
+ */
+
+export class SessionStateManager {
+  constructor() {
+    this.sessionStates = new Map();
+    console.log('📋 SessionStateManager initialized with clean architecture');
+  }
+
+  /**
+   * Get or create session state
+   */
+  getOrCreateSessionState(sessionId, isNeverEnding = false, totalPages = null) {
+    if (!this.sessionStates.has(sessionId)) {
+      const state = {
+        sessionId,
+        isNeverEnding,
+        totalPages,
+        pageNumber: 1,
+        
+        // Visual tracking
+        characters: new Map(),
+        secondaryCharacters: new Map(),
+        characterAnimals: new Map(),
+        objects: new Map(),
+        relationships: new Map(),
+        
+        // Setting tracking
+        settings: [],
+        currentSetting: null,
+        locationHistory: [],
+        
+        // Prompt tracking
+        promptHistory: [],
+        lastSuccessfulPrompt: null,
+        
+        // Avatar tracking
+        avatarType: null,
+        skinTone: null,
+        coreCharacterTraits: new Map(),
+        
+        createdAt: Date.now(),
+        lastUpdated: Date.now()
+      };
+      
+      this.sessionStates.set(sessionId, state);
+      console.log(`📋 Created new session state: ${sessionId}`);
+    }
+    
+    return this.sessionStates.get(sessionId);
+  }
+
+  /**
+   * Update character with seed and appearance
+   */
+  updateCharacterWithSeed(sessionId, characterName, seed, appearance) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    const existing = state.characters.get(characterName);
+    const updatedCharacter = {
+      ...existing,
+      characterName,
+      seed,
+      appearance,
+      lastMention: state.pageNumber,
+      firstMention: existing?.firstMention || state.pageNumber,
+      updatedAt: Date.now()
+    };
+    
+    state.characters.set(characterName, updatedCharacter);
+    state.lastUpdated = Date.now();
+    
+    // Track core avatar traits for main character
+    if (characterName === 'child' || characterName === state.mainCharacterName) {
+      state.coreCharacterTraits.set('avatarType', appearance.avatarType || state.avatarType);
+      state.coreCharacterTraits.set('skinTone', appearance.skinTone || state.skinTone);
+    }
+    
+    console.log(`📋 Updated character ${characterName} with seed ${seed} for session ${sessionId}`);
+    return updatedCharacter;
+  }
+
+  /**
+   * Get character seed for consistency
+   */
+  getCharacterSeed(sessionId, characterName) {
+    const state = this.getOrCreateSessionState(sessionId);
+    const character = state.characters.get(characterName);
+    return character ? character.seed : null;
+  }
+
+  /**
+   * Update secondary character
+   */
+  updateSecondaryCharacter(sessionId, characterName, type, relationship, hasDialogue, pageNumber) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    const secondaryChar = {
+      characterName,
+      type, // 'family' | 'community'
+      relationship,
+      hasDialogue,
+      pageNumber,
+      firstMention: state.secondaryCharacters.get(characterName)?.firstMention || pageNumber,
+      lastMention: pageNumber,
+      updatedAt: Date.now()
+    };
+    
+    state.secondaryCharacters.set(characterName, secondaryChar);
+    state.lastUpdated = Date.now();
+    
+    console.log(`📋 Updated secondary character ${characterName} (${type}) for session ${sessionId}`);
+  }
+
+  /**
+   * Update character animal
+   */
+  updateCharacterAnimal(sessionId, animalName, species, hasDialogue, pageNumber) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    const animal = {
+      animalName,
+      species,
+      hasDialogue,
+      pageNumber,
+      firstMention: state.characterAnimals.get(animalName)?.firstMention || pageNumber,
+      lastMention: pageNumber,
+      updatedAt: Date.now()
+    };
+    
+    state.characterAnimals.set(animalName, animal);
+    state.lastUpdated = Date.now();
+    
+    console.log(`📋 Updated character animal ${animalName} (${species}) for session ${sessionId}`);
+  }
+
+  /**
+   * Get secondary characters
+   */
+  getSecondaryCharacters(sessionId, pageNumber = null) {
+    const state = this.getOrCreateSessionState(sessionId);
+    const characters = Array.from(state.secondaryCharacters.values());
+    
+    if (pageNumber) {
+      return characters.filter(char => char.lastMention >= pageNumber - 2);
+    }
+    
+    return characters;
+  }
+
+  /**
+   * Get character animals
+   */
+  getCharacterAnimals(sessionId, pageNumber = null) {
+    const state = this.getOrCreateSessionState(sessionId);
+    const animals = Array.from(state.characterAnimals.values());
+    
+    if (pageNumber) {
+      return animals.filter(animal => animal.lastMention >= pageNumber - 2);
+    }
+    
+    return animals;
+  }
+
+  /**
+   * Update story setting
+   */
+  updateSetting(sessionId, newSetting) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    // Add to location history if location changed
+    if (state.currentSetting && state.currentSetting.location !== newSetting.location) {
+      state.locationHistory.push(state.currentSetting.location);
+    }
+    
+    state.currentSetting = {
+      ...newSetting,
+      pageNumber: state.pageNumber,
+      timestamp: Date.now()
+    };
+    
+    state.settings.push(state.currentSetting);
+    state.lastUpdated = Date.now();
+    
+    console.log(`📋 Updated setting for session ${sessionId}: ${newSetting.location}`);
+  }
+
+  /**
+   * Get setting for prompt generation
+   */
+  getSettingForPrompt(sessionId) {
+    const state = this.getOrCreateSessionState(sessionId);
+    if (!state.currentSetting) return '';
+    
+    const setting = state.currentSetting;
+    return `${setting.location || 'outdoor setting'}${setting.timeOfDay ? `, ${setting.timeOfDay}` : ''}${setting.weather ? `, ${setting.weather}` : ''}`;
+  }
+
+  /**
+   * Add successful prompt for consistency
+   */
+  addSuccessfulPrompt(sessionId, prompt, params, seed, imageURL, pageNumber) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    const promptEntry = {
+      prompt,
+      params,
+      seed,
+      imageURL,
+      pageNumber,
+      timestamp: Date.now()
+    };
+    
+    state.promptHistory.push(promptEntry);
+    state.lastSuccessfulPrompt = promptEntry;
+    state.lastUpdated = Date.now();
+    
+    // Keep only last 10 prompts for memory efficiency
+    if (state.promptHistory.length > 10) {
+      state.promptHistory = state.promptHistory.slice(-10);
+    }
+    
+    console.log(`📋 Stored successful prompt for page ${pageNumber} of session ${sessionId}`);
+  }
+
+  /**
+   * Get prompt history
+   */
+  getPromptHistory(sessionId, limit = null) {
+    const state = this.getOrCreateSessionState(sessionId);
+    const history = state.promptHistory || [];
+    
+    return limit ? history.slice(-limit) : history;
+  }
+
+  /**
+   * Analyze and track visual details from text
+   */
+  analyzeAndTrackVisualDetails(sessionId, text, pageNumber) {
+    const state = this.getOrCreateSessionState(sessionId);
+    state.pageNumber = pageNumber;
+    state.lastUpdated = Date.now();
+    
+    // Simple object detection and tracking
+    const objectPatterns = [
+      /\b(toy|ball|book|chair|table|bed|door|window|tree|flower)\b/gi,
+      /\b(car|bike|truck|boat|plane|train)\b/gi,
+      /\b(house|building|school|park|store|restaurant)\b/gi
+    ];
+    
+    objectPatterns.forEach(pattern => {
+      const matches = text.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const objectKey = match.toLowerCase();
+          const existing = state.objects.get(objectKey);
+          
+          if (existing) {
+            existing.lastMention = pageNumber;
+            existing.mentions.push(pageNumber);
+          } else {
+            state.objects.set(objectKey, {
+              name: objectKey,
+              firstMention: pageNumber,
+              lastMention: pageNumber,
+              mentions: [pageNumber],
+              descriptions: []
+            });
+          }
+        });
+      }
+    });
+    
+    console.log(`📋 Analyzed visual details for session ${sessionId}, page ${pageNumber}`);
+  }
+
+  /**
+   * Get visual details for prompt generation
+   */
+  getVisualDetailsForPrompt(sessionId) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    const recentCharacters = Array.from(state.characters.values())
+      .filter(char => char.lastMention >= state.pageNumber - 2)
+      .map(char => ({
+        name: char.characterName,
+        description: char.appearance?.description || 'character',
+        seed: char.seed
+      }));
+    
+    const recentObjects = Array.from(state.objects.values())
+      .filter(obj => obj.lastMention >= state.pageNumber - 2)
+      .map(obj => obj.name);
+    
+    return {
+      characters: recentCharacters,
+      objects: recentObjects,
+      setting: state.currentSetting
+    };
+  }
+
+  /**
+   * Clear session state with cache cleanup
+   */
+  clearSessionState(sessionId) {
+    if (this.sessionStates.has(sessionId)) {
+      this.sessionStates.delete(sessionId);
+      console.log(`📋 Cleared session state: ${sessionId}`);
+      
+      // Clean up related caches
+      SessionStateManager.clearSessionCache(sessionId);
+      return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Clear associated caches for session
+   */
+  static clearSessionCache(sessionId) {
+    // Clean up AI enhancement cache
+    if (globalThis.MultiStageEnhancementPipeline) {
+      globalThis.MultiStageEnhancementPipeline.clearSessionCache(sessionId);
+    }
+    
+    // Clean up advanced pronoun resolver
+    if (globalThis.AdvancedPronounResolver) {
+      globalThis.AdvancedPronounResolver.clearSession(sessionId);
+    }
+    
+    console.log(`🧹 Cleared caches for session ${sessionId}`);
+  }
+
+  /**
+   * Context-aware clearing for different story transitions
+   */
+  clearBasedOnContext(sessionId, isPremium, context = 'session-end') {
+    console.log(`📋 Clearing session state based on context: ${context}, isPremium: ${isPremium}`);
+    
+    switch (context) {
+      case 'rewrite':
+        if (isPremium) {
+          // Premium rewrite: Clear story content but preserve avatar identity
+          this.clearStoryContentOnly(sessionId);
+          console.log('📋 Premium rewrite: Cleared story content, preserved avatar identity');
+        } else {
+          // Free rewrite: Clear everything
+          this.clearSessionState(sessionId);
+          console.log('📋 Free rewrite: Cleared all state');
+        }
+        break;
+      
+      case 'next-story':
+        this.clearSessionState(sessionId);
+        console.log('📋 Next story: Cleared all state for fresh start');
+        break;
+      
+      case 'continue-story':
+        console.log('📋 Continue story: Keeping all state for Part II');
+        break;
+      
+      default:
+        this.clearSessionState(sessionId);
+        console.log('📋 Default clearing: Cleared all state');
+    }
+  }
+
+  /**
+   * Clear only story content while preserving avatar identity
+   */
+  clearStoryContentOnly(sessionId) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    // Preserve core avatar traits
+    const preservedAvatarType = state.coreCharacterTraits.get('avatarType');
+    const preservedSkinTone = state.coreCharacterTraits.get('skinTone');
+    
+    // Clear story-specific data
+    state.characters.clear();
+    state.secondaryCharacters.clear();
+    state.characterAnimals.clear();
+    state.objects.clear();
+    state.relationships.clear();
+    state.settings = [];
+    state.currentSetting = null;
+    state.locationHistory = [];
+    state.promptHistory = [];
+    state.lastSuccessfulPrompt = null;
+    state.pageNumber = 1;
+    
+    // Restore avatar traits
+    state.coreCharacterTraits.clear();
+    if (preservedAvatarType) state.coreCharacterTraits.set('avatarType', preservedAvatarType);
+    if (preservedSkinTone) state.coreCharacterTraits.set('skinTone', preservedSkinTone);
+    
+    state.lastUpdated = Date.now();
+    
+    console.log(`📋 Cleared story content only for session: ${sessionId}`);
+  }
+
+  /**
+   * Create continuation session
+   */
+  createContinuationSession(originalSessionId, newSessionId) {
+    const originalState = this.sessionStates.get(originalSessionId);
+    if (!originalState) {
+      console.log(`📋 Original session ${originalSessionId} not found for continuation`);
+      return false;
+    }
+    
+    // Create new session with preserved character data
+    const newState = {
+      ...originalState,
+      sessionId: newSessionId,
+      pageNumber: 1,
+      promptHistory: [],
+      lastSuccessfulPrompt: null,
+      createdAt: Date.now(),
+      lastUpdated: Date.now()
+    };
+    
+    // Deep copy character data
+    newState.characters = new Map(originalState.characters);
+    newState.secondaryCharacters = new Map(originalState.secondaryCharacters);
+    newState.characterAnimals = new Map(originalState.characterAnimals);
+    newState.coreCharacterTraits = new Map(originalState.coreCharacterTraits);
+    
+    this.sessionStates.set(newSessionId, newState);
+    
+    console.log(`📋 Created continuation session: ${newSessionId} from ${originalSessionId}`);
+    return true;
+  }
+
+  /**
+   * Get monitoring data
+   */
+  getMonitoringData() {
+    return {
+      totalSessions: this.sessionStates.size,
+      activeSessions: Array.from(this.sessionStates.keys()),
+      oldestSession: this.sessionStates.size > 0 ? 
+        Math.min(...Array.from(this.sessionStates.values()).map(s => s.createdAt)) : null,
+      note: 'Clean session state management'
+    };
+  }
+
+  /**
+   * Clear all state
+   */
+  clearAllState() {
+    this.sessionStates.clear();
+    console.log('📋 Session state manager cleared');
+    return { cleared: true, message: 'All session state cleared' };
+  }
+}
