@@ -315,14 +315,22 @@ export class SimpleImageService {
     }
   }
 
-  // Move SVG generation to backend and remove from frontend
-  // TIER 4: SVG Placeholder (guaranteed success) - MOVED TO BACKEND
+  // TIER 4: SVG Placeholder (guaranteed success) - Proper fallback
   private static generateSVGPlaceholder(cleanScene: string, userInfo?: UserInfo): ImageResult {
-    console.warn('SVG generation moved to backend - this should not be called');
+    console.warn('🎨 Using local SVG fallback due to backend unavailability');
     
-    // Fallback for legacy compatibility only
+    // Provide a proper fallback placeholder
     return {
-      url: 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="#f0f9ff"/><text x="200" y="200" text-anchor="middle" font-family="Arial">Moved to Backend</text></svg>'),
+      url: 'data:image/svg+xml;base64,' + btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+          <rect width="100%" height="100%" fill="#f8f9fa"/>
+          <circle cx="200" cy="120" r="40" fill="#e9ecef"/>
+          <rect x="160" y="170" width="80" height="60" rx="5" fill="#e9ecef"/>
+          <text x="50%" y="260" text-anchor="middle" font-family="Arial" font-size="12" fill="#6c757d">
+            Image loading...
+          </text>
+        </svg>
+      `),
       success: true,
       provider: 'svg-fallback',
       model: 'placeholder',

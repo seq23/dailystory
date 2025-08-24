@@ -132,7 +132,7 @@ serve(async (req) => {
 
   try {
     // Import orchestrator services (removed MultiStageEnhancementPipeline since we now call ai-story-enhancer directly)
-    const { StoryVisualStateManager } = await import('../_shared/storyVisualState.js');
+    const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
     const { SecurityValidator } = await import('../_shared/SecurityValidator.js');
     
     // Parse request
@@ -142,7 +142,7 @@ serve(async (req) => {
       storyId,
       sessionId = storyId,
       pageNumber = 1,
-      isGuestUser,
+      isGuestUser = false, // Default to false for analytics tracking
       enhancedStoryData,
       forceTier // Optional: force specific tier for testing
     } = await req.json();
@@ -291,8 +291,8 @@ serve(async (req) => {
           // Store visual state for consistency
           if (sessionId && enhancementResult?.metadata?.characterSeed) {
             try {
-              StoryVisualStateManager.addSuccessfulPrompt(
-                sessionId, 
+              const sessionManager = new SessionStateManager(sessionId);
+              await sessionManager.addSuccessfulPrompt(
                 validatedPrompt,
                 enhancementResult.generationParams, 
                 tier1Result.seed || enhancementResult.metadata.characterSeed,
