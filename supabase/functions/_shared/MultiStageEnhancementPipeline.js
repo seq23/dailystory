@@ -20,7 +20,7 @@ import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 import { CulturalTextTracker } from './CulturalTextTracker.js'; // PHASE 4 & 5: Cultural text tracking
 import { mapAvatarIdentity } from './mapAvatarIdentity.js'; // Source of truth avatar processing
-import { realContextCollector } from './RealContextCollector.js'; // Real context integration
+import { RealContextCollector } from './RealContextCollector.js'; // Real context integration
 
 
 function selectWeightedElement(array) {
@@ -231,7 +231,7 @@ export class MultiStageEnhancementPipeline {
       }
       
       // 2. REAL CONTEXT INTEGRATION - Collect actual story context first
-      const realContextData = await realContextCollector.collectRealStoryContext(sessionId, pageNumber, storyText);
+      const realContextData = await RealContextCollector.collectRealStoryContext(sessionId, pageNumber, storyText);
       console.log('📚 Real context collected:', {
         previousPages: realContextData.previousPages.length,
         visualElements: realContextData.visualElements.length,
@@ -249,7 +249,7 @@ export class MultiStageEnhancementPipeline {
         }
         
         // Add real context to enhanced story text
-        enhancedStoryText = realContextCollector.enhanceStoryTextWithRealContext(enhancedStoryText, realContextData);
+        enhancedStoryText = RealContextCollector.enhanceStoryTextWithRealContext(enhancedStoryText, realContextData);
         
       } catch (error) {
         console.warn('⚠️ Story enhancement failed, using original text:', error.message);
