@@ -162,8 +162,8 @@ export class CharacterConsistencyService {
       this.generatePhysicalTraitsFromIdentity(avatarIdentity, baseSeed) :
       this.generatePhysicalTraits(userInfo, baseSeed);
     
-    // Determine cultural profile
-    const culturalProfile = this.determineCulturalProfile(userInfo);
+    // Determine cultural profile - use avatarIdentity cultural profile if available (set by mapAvatarIdentity)
+    const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo);
     const culturalElements = this.generateCulturalElements(culturalProfile, userInfo);
     
     return {
