@@ -27,15 +27,16 @@ Simplified, consolidated AI story generation system with focused orchestration a
 
 ### 3. Enhancement Pipeline (`_shared/MultiStageEnhancementPipeline.js`)
 - **Tier 1**: Premium pipeline with cultural profiling
-- **Tier 2**: Systematic service wrappers
-- **Utilities**: Prompt building, cultural integration
+- **Tier 2**: Enhanced systematic service wrappers with **AdvancedPronounResolver**
+- **Utilities**: Prompt building, cultural integration, narrative coherence
 
 ### 4. Support Services
 
 #### Character Consistency (`_shared/CharacterConsistencyService.js`)
-- Avatar identity management
-- Character appearance tracking
-- Cultural representation
+- **Database-backed avatar identity management** via `character_consistency_cache` table
+- Character appearance tracking with race condition elimination
+- Cultural representation with scalable architecture
+- Eliminates memory-based cache limitations
 
 #### Frontend Intelligence (`_shared/FrontendIntelligence.js`)
 - User interaction analysis
@@ -61,6 +62,8 @@ Story Request → AI Story Enhancer → Enhancement Pipeline → Image Generator
 3. **Aggressive Cleanup**: Removed redundant systems
 4. **Cultural Integration**: Unified cultural context handling
 5. **Performance Optimization**: Streamlined processing pipeline
+6. **Database-Backed Character Consistency**: Eliminated race conditions across edge function instances
+7. **Enhanced Narrative Processing**: Advanced pronoun resolution for story coherence
 
 ## Configuration
 
