@@ -808,7 +808,7 @@ function mapAvatarIdentity(userInfo: any) {
     'light': 'blonde',
     'medium': 'brown', 
     'olive': 'black',
-    'dark': 'natural textured hair'
+    'dark': 'realistic textured natural hair'
   };
   const hairColor = hairColorMap[standardizedSkinTone] || 'brown';
 
