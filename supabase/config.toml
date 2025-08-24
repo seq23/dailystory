@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.log-personal-info-incident]
 verify_jwt = false
+
+[functions.debug-recent-image-prompts]
+verify_jwt = false

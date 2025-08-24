@@ -387,22 +387,22 @@ useEffect(() => {
 // Image generation event listener - triggers when story becomes stable
 useEffect(() => {
   const handleStoryStabilized = (event: CustomEvent) => {
-    const { sessionId, pages } = event.detail || {};
-    
-    if (!pages || !Array.isArray(pages) || pages.length === 0) {
-      console.warn('🖼️ Story stabilized event received but no valid pages provided');
+    // Use component's local story state instead of event.detail.pages
+    if (!story || !Array.isArray(story) || story.length === 0) {
+      console.warn('🖼️ Story stabilized event received but no valid story state');
       return;
     }
     
     console.log('🖼️ Story stabilized - checking for image generation opportunities', {
-      pageCount: pages.length,
+      pageCount: story.length,
       currentPage: currentPage,
-      sessionId: sessionId || characterSessionId
+      sessionId: characterSessionId,
+      contentHash: event.detail?.contentHash
     });
     
     // Start with the first page
     const pageToGenerate = 0;
-    const pageText = pages[pageToGenerate];
+    const pageText = story[pageToGenerate];
     
     if (!pageText || typeof pageText !== 'string') {
       console.warn('🖼️ Invalid page text for image generation:', pageText);
@@ -411,21 +411,21 @@ useEffect(() => {
     
     ImageGenerationTrigger.triggerAutoGeneration({
       currentPage: pageToGenerate,
-      totalPages: pages.length,
+      totalPages: story.length,
       hasCurrentImage: !!pageImages[pageToGenerate],
       allImages: Object.values(pageImages),
       isNetworkAvailable: isNetworkAvailable,
       userInfo: userInfo,
       storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
       pageText: pageText,
-      sessionId: sessionId || characterSessionId,
+      sessionId: characterSessionId,
       isGuestUser: !isPremium
     });
   };
   
   window.addEventListener('story:stabilized', handleStoryStabilized as EventListener);
   return () => window.removeEventListener('story:stabilized', handleStoryStabilized as EventListener);
-}, [currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, characterSessionId, isPremium]);
+}, [story, currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, characterSessionId, isPremium]);
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
