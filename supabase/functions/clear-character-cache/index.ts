@@ -15,15 +15,15 @@ serve(async (req) => {
   }
 
   try {
-    // Use existing CharacterConsistencyService instead of non-existent UnifiedCharacterConsistency
+    // Use database-backed CharacterConsistencyService
     const characterService = new CharacterConsistencyService();
-    const result = characterService.clearServerState();
+    const result = await characterService.clearServerState();
     
     console.log('🎭 Character cache cleared:', result)
 
     return new Response(JSON.stringify({
       success: true,
-      cleared: true,
+      cleared: result.cleared,
       message: result.message,
       timestamp: new Date().toISOString()
     }), {

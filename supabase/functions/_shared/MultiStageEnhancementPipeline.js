@@ -135,7 +135,28 @@ export class MultiStageEnhancementPipeline {
         console.log('⚠️ Style framework fallback:', styleError.message);
       }
       
-      // ============= Step 6: Parse Action and Scene Setting =============
+      // ============= Step 6: Advanced Pronoun Resolution =============
+      try {
+        console.log('🔍 Step 6: Processing advanced pronoun resolution...');
+        const { AdvancedPronounResolver } = await import('./AdvancedPronounResolver.js');
+        
+        // Analyze relationships first
+        await AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
+        
+        // Resolve complex pronouns
+        const resolvedText = await AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
+        
+        if (resolvedText && resolvedText !== storyText) {
+          console.log('✅ Pronoun resolution applied:', resolvedText.substring(0, 100) + '...');
+          storyText = resolvedText; // Use resolved text for further processing
+        }
+        
+      } catch (pronounError) {
+        console.log('⚠️ AdvancedPronounResolver fallback:', pronounError.message);
+        // Continue without pronoun resolution - non-breaking
+      }
+      
+      // ============= Step 7: Parse Action and Scene Setting =============
       const actionMatch = storyText.match(/\b(running|walking|playing|dancing|jumping|sitting|standing|lying|flying|swimming|climbing|spinning|twirling)\b/i);
       const action = actionMatch ? actionMatch[0] : 'playing';
       
@@ -143,7 +164,7 @@ export class MultiStageEnhancementPipeline {
       primarySceneComponents.push(`Setting: ${currentSetting}`);
       primarySceneComponents.push(`Action: ${action}`);
       
-      // ============= Step 7: Build Final Primary Scene =============
+      // ============= Step 8: Build Final Primary Scene =============
       const baseScene = storyText.trim();
       
       // Create comprehensive primary scene
@@ -157,7 +178,7 @@ export class MultiStageEnhancementPipeline {
       
       console.log('✅ Comprehensive Primary Scene Built:', primaryScene.substring(0, 200) + '...');
       
-      // ============= Step 8: Build Unified Negative Prompt =============
+      // ============= Step 9: Build Unified Negative Prompt =============
       const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
       const framework = { styleElements: styleFramework?.name || 'children book style' };
       
@@ -179,7 +200,7 @@ export class MultiStageEnhancementPipeline {
         negativePrompt: negativePrompt,
         metadata: {
           processingTier: 'tier-2-comprehensive',
-          servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks'],
+          servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks', 'AdvancedPronounResolver'],
           components: primarySceneComponents.length,
           success: true
         }

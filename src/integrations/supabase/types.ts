@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      character_consistency_cache: {
+        Row: {
+          character_data: Json
+          character_key: string
+          created_at: string | null
+          session_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          character_data: Json
+          character_key: string
+          created_at?: string | null
+          session_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          character_data?: Json
+          character_key?: string
+          created_at?: string | null
+          session_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       child_profiles: {
         Row: {
           avatar: Json | null
