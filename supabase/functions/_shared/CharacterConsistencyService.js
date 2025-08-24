@@ -49,8 +49,95 @@ export class CharacterConsistencyService {
     ]
   };
   
+  static EXPANDED_AFRICAN_AMERICAN_SKIN_TONES = [
+    'light brown complexion',
+    'medium brown skin',
+    'rich brown complexion',
+    'deep brown skin',
+    'warm caramel complexion',
+    'golden brown skin',
+    'mahogany complexion',
+    'dark chocolate skin',
+    'ebony complexion',
+    'honey-toned skin',
+    'bronze complexion',
+    'chestnut brown skin',
+    'amber-toned complexion',
+    'cocoa brown skin',
+    'espresso complexion',
+    'mocha-colored skin',
+    'sienna brown complexion',
+    'russet brown skin',
+    'copper-toned complexion',
+    'warm brown skin with golden undertones'
+  ];
+
+  static EXPANDED_AFRICAN_AMERICAN_EYE_COLORS = [
+    'dark brown eyes',
+    'deep chocolate brown eyes',
+    'warm brown eyes',
+    'amber brown eyes',
+    'rich mahogany eyes',
+    'hazel brown eyes',
+    'golden brown eyes',
+    'coffee brown eyes',
+    'chestnut brown eyes',
+    'honey brown eyes',
+    'dark amber eyes',
+    'bronze brown eyes',
+    'caramel brown eyes',
+    'espresso brown eyes',
+    'warm hazel eyes',
+    'warm hazel-green eyes'
+  ];
+
   static EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-    'authentic african american features'
+    // Eyes
+    'expressive almond-shaped eyes',
+    'bright wide-set eyes',
+    'sparkling round eyes',
+    'gentle oval-shaped eyes',
+    'striking large eyes',
+    'warm smiling eyes',
+    'intelligent alert eyes',
+    'kind gentle eyes',
+    'curious bright eyes',
+    'confident strong eyes',
+    
+    // Lips
+    'full natural lips',
+    'warm smiling lips',
+    'gentle curved lips',
+    'expressive full lips',
+    'kind smiling mouth',
+    'naturally full lips',
+    'soft rounded lips',
+    'bright cheerful smile',
+    'warm genuine smile',
+    'friendly welcoming smile',
+    
+    // Nose
+    'strong defined nose',
+    'graceful nose shape',
+    'noble nose profile',
+    'distinctive nose',
+    'well-proportioned nose',
+    'beautiful nose shape',
+    'elegant nose line',
+    'natural nose contour',
+    'refined nose features',
+    'classic nose profile',
+    
+    // Combined facial harmony
+    'harmonious facial features, authentic African American features',
+    'beautiful natural features, authentic African American features',
+    'expressive facial structure, authentic African American features',
+    'warm facial expression, authentic African American features',
+    'confident facial features, authentic African American features',
+    'gentle facial characteristics, authentic African American features',
+    'striking natural beauty, authentic African American features',
+    'dignified facial features, authentic African American features',
+    'radiant facial expression, authentic African American features'
   ];
   
   static EXPANDED_AFRICAN_AMERICAN_CLOTHING = [
@@ -111,7 +198,7 @@ export class CharacterConsistencyService {
   /**
    * Get or create character seed with full consistency support
    */
-  async getCharacterSeed(sessionId, userId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new') {
+  async getCharacterSeed(sessionId, userId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new', pageTextClothing = null) {
     const characterName = userInfo.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
@@ -119,12 +206,22 @@ export class CharacterConsistencyService {
     if (this.characterCache.has(cacheKey)) {
       const cached = this.characterCache.get(cacheKey);
       console.log(`🎭 CACHED: Using existing character for ${characterName} (seed: ${cached.seed})`);
+      
+      // If page text clothing is provided, update the description
+      if (pageTextClothing) {
+        cached.characterDescription = this.buildCharacterDescription(
+          { ...cached, culturalElements: cached.culturalElements }, 
+          storyContext, 
+          pageTextClothing
+        );
+      }
+      
       return cached;
     }
     
     // Generate new character
     const seedData = await this.createNewCharacterSeed(userId, userInfo, avatarIdentity);
-    const characterDescription = this.buildCharacterDescription(seedData, storyContext);
+    const characterDescription = this.buildCharacterDescription(seedData, storyContext, pageTextClothing);
     const culturalContext = this.buildCulturalContext(seedData);
     
     const characterData = {
@@ -201,9 +298,13 @@ export class CharacterConsistencyService {
     const hairColor = this.getHairColorFromAvatar(avatarIdentity);
     const skinTone = avatarIdentity.skinTone || 'medium';
     
-    const eyeColorOptions = skinTone === 'dark' ? ['brown', 'dark brown'] : 
-                           skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
-                           ['brown', 'hazel', 'green'];
+    // Use expanded arrays for African American cultural profile
+    const culturalProfile = avatarIdentity?.culturalProfile;
+    const eyeColorOptions = (culturalProfile === 'african-american') ? 
+      CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_EYE_COLORS.map(e => e.replace(' eyes', '')) :
+      skinTone === 'dark' ? ['brown', 'dark brown'] : 
+      skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
+      ['brown', 'hazel', 'green'];
     
     const builds = ['slim', 'average', 'sturdy'];
     const heights = ['short', 'average height', 'tall for their age'];
@@ -235,9 +336,13 @@ export class CharacterConsistencyService {
     const skinTone = skinToneMap[avatar.skinTone] || 'medium';
     const hairColor = this.getHairColorFromAvatar(avatar);
     
-    const eyeColorOptions = skinTone === 'dark' ? ['brown', 'dark brown'] : 
-                           skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
-                           ['brown', 'hazel', 'green'];
+    // Use expanded arrays for African American cultural profile - need to determine profile
+    const isAfricanAmerican = this.shouldApplyAfricanAmericanCulturalVariations(null, { nativeLanguage: 'en', avatar: { skinTone } });
+    const eyeColorOptions = isAfricanAmerican ? 
+      CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_EYE_COLORS.map(e => e.replace(' eyes', '')) :
+      skinTone === 'dark' ? ['brown', 'dark brown'] : 
+      skinTone === 'pale' ? ['blue', 'green', 'brown', 'hazel'] :
+      ['brown', 'hazel', 'green'];
     
     const builds = ['slim', 'average', 'sturdy'];
     const heights = ['short', 'average height', 'tall for their age'];
@@ -329,6 +434,9 @@ export class CharacterConsistencyService {
       },
       'african-american': {
         clothing: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_CLOTHING,
+        skinTones: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_SKIN_TONES,
+        eyeColors: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_EYE_COLORS,
+        facialFeatures: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES,
         accessories: [
           'backpack with cultural pins', 'stylish sneakers', 'baseball cap', 'smartwatch', 
           'friendship bracelet', 'sports equipment', 'water bottle', 'glasses', 
@@ -451,13 +559,28 @@ export class CharacterConsistencyService {
   /**
    * Build character description
    */
-  buildCharacterDescription(seedData, storyContext) {
+  buildCharacterDescription(seedData, storyContext, pageTextClothing = null) {
     const traits = seedData.physicalTraits;
     const cultural = seedData.culturalElements;
     
-    const clothing = cultural.clothing[Math.floor(Math.random() * cultural.clothing.length)];
+    // Use page text clothing if provided, otherwise use cultural clothing
+    const clothing = pageTextClothing || 
+      cultural.clothing[Math.floor(Math.random() * cultural.clothing.length)];
     const accessories = cultural.accessories.slice(0, 2).join(' and ');
     
+    // Enhanced description for African American characters with comprehensive arrays
+    if (seedData.culturalProfile === 'african-american') {
+      const random = this.createSeededRandom(seedData.baseSeed);
+      
+      // Select comprehensive physical features
+      const skinTone = cultural.skinTones[Math.floor(random() * cultural.skinTones.length)];
+      const eyeColor = cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
+      const facialFeatures = cultural.facialFeatures[Math.floor(random() * cultural.facialFeatures.length)];
+      
+      return `A ${traits.height} ${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}. ${traits.build} build. Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+    }
+    
+    // Standard description for other cultural profiles
     return `A ${traits.height} ${seedData.avatarType} with ${traits.skinTone} skin, ${traits.hairColor} hair, and ${traits.eyeColor} eyes. ${traits.build} build. Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
 
