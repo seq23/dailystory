@@ -214,95 +214,9 @@ class EnhancedRetryManager {
   }
 }
 
-// Hardcoded avatar fallback descriptions
-const AVATAR_FALLBACK_DESCRIPTIONS = {
-  // PALE SKIN TONE
-  "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
-  "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
-  "prefer-not-to-answer/pale": "{name} is a young child with pale skin, red hair, and green eyes, with no gender specific characteristics",
-
-  // LIGHT SKIN TONE  
-  "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "prefer-not-to-answer/light": "{name} is a young child with light skin, blonde hair, and blue eyes, with no gender specific characteristics",
-
-  // MEDIUM SKIN TONE
-  "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
-  "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
-  "prefer-not-to-answer/medium": "{name} is a young child with medium skin, brown hair, and brown eyes, with no gender specific characteristics",
-
-  // OLIVE SKIN TONE
-  "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
-  "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
-  "prefer-not-to-answer/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes, with no gender specific characteristics",
-
-  // DARK SKIN TONE (Enhanced descriptions)
-  "girl/dark": "{name} is a young African American girl with authentic representation and diverse natural features, soft warm lighting",
-  "boy/dark": "{name} is a young African American boy with authentic representation and diverse natural features, soft warm lighting",
-  "prefer-not-to-answer/dark": "{name} is a young African American child with authentic representation and diverse natural features, soft warm lighting, with no gender specific characteristics",
-
-  // DEFAULT FALLBACK
-  "default": "{name} is a young child with a bright smile and cheerful demeanor, with no gender specific characteristics"
-};
-
-// Enhanced avatar consistency validation function
-function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo: any, characterDescription: string = ''): string {
-  const userName = userInfo?.name || 'child';
-  
-  // If no avatar identity provided, use fallback
-  if (!avatarIdentity) {
-    console.log('🔍 VALIDATION: No avatarIdentity provided, using enhanced fallback');
-    const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
-    const skinTone = userInfo?.avatar?.skinTone || 'medium';
-    const fallbackKey = `${avatarType}/${skinTone}`;
-    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 VALIDATION: Using avatar fallback ${fallbackKey}: ${fallbackDescription}`);
-    return fallbackDescription.replace('{name}', userName);
-  }
-  
-  // Check if prompt contains generic or weak character descriptions
-  const genericPatterns = [
-    'with cheerful appearance',
-    'with cheerful demeanor', 
-    'young child with',
-    'child with',
-    `${userName} is a young child`,
-    `${userName} is a child`,
-    'bright smile and cheerful',
-    'cheerful appearance'
-  ];
-  
-  const isGeneric = genericPatterns.some(pattern => 
-    prompt.toLowerCase().includes(pattern.toLowerCase())
-  );
-  
-  // Also check if characterDescription itself is generic/weak
-  const isWeakCharacterDescription = !characterDescription || 
-    characterDescription.includes('cheerful appearance') ||
-    characterDescription.includes('cheerful demeanor') ||
-    characterDescription.length < 20;
-  
-  if (isGeneric || isWeakCharacterDescription) {
-    console.log('🔍 VALIDATION: Generic/weak description detected, using enhanced fallback');
-    const avatarType = avatarIdentity.type || 'prefer-not-to-answer';
-    const skinTone = avatarIdentity.skinTone || 'medium';
-    const fallbackKey = `${avatarType}/${skinTone}`;
-    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 VALIDATION: Using enhanced fallback ${fallbackKey}: ${fallbackDescription}`);
-    
-    // Replace the generic character part with the detailed fallback
-    let enhancedPrompt = prompt;
-    genericPatterns.forEach(pattern => {
-      const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-      enhancedPrompt = enhancedPrompt.replace(regex, fallbackDescription.replace('{name}', userName));
-    });
-    
-    return enhancedPrompt;
-  }
-  
-  // Replace {name} placeholder if present
-  return prompt.replace('{name}', userName);
-}
+// TIER 2: Pure dynamic prompt building (no internal fallbacks)
+// Import validateAvatarConsistency from orchestrator (runware-generate-image) as single source of truth
+// NOTE: validateAvatarConsistency will be called by the orchestrator, not internally
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -345,20 +259,14 @@ serve(async (req) => {
       return createCorsErrorResponse('Missing storyId parameter', 400);
     }
 
-    // Validate user info for consistency
-    const validationResult = validateUserInfo(userInfo);
-    if (!validationResult.valid) {
-      console.warn(`⚠️ User info validation warning: ${validationResult.error}`);
-    }
+    // NO VALIDATION FALLBACKS - Let errors propagate to orchestrator for Tier 2.5 fallback
 
-    console.log(`🏭 Using full dynamic pipeline for page ${pageNumber}/${totalPages} (Tier 2: Same as Tier 1 minus AI enhancer)`);
+    console.log(`🏭 TIER 2: Pure dynamic prompt building (no AI enhancer, no internal fallbacks)`);
+    console.log(`🚨 CRITICAL: If any dynamic system fails, Tier 2 will error and orchestrator falls back to Tier 2.5`);
 
-    // Initialize session state and collect context
-    let sessionState = SessionStateManager.getSessionState(sessionId);
-    if (!sessionState) {
-      sessionState = SessionStateManager.initializeSession(sessionId, userInfo);
-      console.log(`📋 Created new session state: ${sessionId}`);
-    }
+    // Initialize session state - if this fails, let it error to trigger Tier 2.5
+    const sessionState = SessionStateManager.getOrCreateSessionState(sessionId);
+    console.log(`📋 Session state loaded for ${sessionId}`);
 
     // Use full multi-stage enhancement pipeline for all processing
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
@@ -467,12 +375,9 @@ serve(async (req) => {
     const enhancedPrompt = promptSegments.map(segment => segment.content).filter(Boolean).join(', ');
     console.log(`📏 Prompt length: ${enhancedPrompt.length} chars`);
 
-    // Validate and enhance character consistency with improved fallbacks
-    const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo, characterDescription);
-    console.log(`🔍 VALIDATION: Enhanced prompt validated with character consistency`);
-    console.log(`📝 Enhanced Prompt (FULL): ${validatedPrompt}`);
-
-    const finalPrompt = validatedPrompt;
+    // NO AVATAR VALIDATION IN TIER 2 - This is handled by orchestrator (single source of truth)
+    // Use the dynamic prompt as-is, any failures will trigger Tier 2.5 fallback
+    const finalPrompt = enhancedPrompt;
     
     // Use dynamic negative prompt from style framework
     const negativePrompt = styleFramework.negativePrompt || "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime";
