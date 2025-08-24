@@ -450,9 +450,13 @@ export class FrontendIntelligence {
       // 6. Art Inspiration enhancement
       const artInspiration = styleFramework?.brandSuffix || 'high-quality children\'s book illustration';
       
-      // PHASE 3: Build dynamic prompt (no template dependency)
+      // PHASE 3: Use BackendTokenManager for unified prompt construction
+      // Note: FrontendIntelligence is deprecated - BackendTokenManager should be used instead
+      console.warn('⚠️ FrontendIntelligence.buildPremiumPrompt is deprecated. Use BackendTokenManager.createPromptSegments instead.');
+      
+      // Legacy fallback - build basic prompt components
       const promptComponents = [
-        `A captivating children's book illustration featuring ${characterDescription}`,
+        `Children's book illustration featuring ${characterDescription}`,
         `in ${settingDescription}`,
         `${sceneDescription}`,
         `The scene includes ${visualDetails}`,
@@ -460,7 +464,7 @@ export class FrontendIntelligence {
         `Quality: ${artInspiration}`
       ];
       
-      let enhancedPrompt = promptComponents.join('. ') + '.';
+      let enhancedPrompt = promptComponents.join(', ');
       
       // 7. Cultural enhancement with story context
       enhancedPrompt = this.enhanceVisualPromptWithCulture(enhancedPrompt, userInfo, culturalProfile, storyText);

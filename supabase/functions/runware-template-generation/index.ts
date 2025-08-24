@@ -300,24 +300,47 @@ serve(async (req) => {
       finalMappedLevel: mappedDifficulty
     });
 
-    const enhancementResult = await MultiStageEnhancementPipeline.processTier2HighQuality(
-      pageText,
-      userInfo,
-      storyId,
-      sessionId,
-      pageNumber,
-      totalPages,
-      avatarIdentity
+    // Import BackendTokenManager for unified prompt construction  
+    const { BackendTokenManager } = await import("../_shared/BackendTokenManager.js");
+    
+    // Extract legacy parameters for Tier 2 (no AI schema)
+    const sceneContext = `Children's book scene: ${pageText}`;
+    const characterDescription = avatarIdentity ? `${avatarIdentity.name || userInfo?.name || 'child'} with ${avatarIdentity.physicalDescription || 'cheerful appearance'}` : null;
+    const styleFramework = "children's book illustration style";
+    const qualitySuffixes = "professional quality children's book illustration, vibrant colors, detailed artwork";
+    
+    // Use BackendTokenManager without AI schema for Tier 2 (legacy mode)
+    const promptSegments = BackendTokenManager.createPromptSegments(
+      sceneContext,
+      characterDescription, 
+      styleFramework,
+      qualitySuffixes,
+      null, // visualDetails
+      null, // culturalElements  
+      null, // aiSchemaData (null for Tier 2)
+      null  // secondaryCharacters
     );
+    
+    // Build final prompt from segments
+    const enhancedPrompt = promptSegments.map(segment => segment.content).join(', ');
 
     // Validate and enhance character consistency with hardcoded fallbacks
-    const validatedPrompt = validateAvatarConsistency(enhancementResult.enhancedPrompt, avatarIdentity, userInfo);
+    const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo);
     console.log(`🔍 VALIDATION: Original prompt validated/enhanced`);
     console.log(`📝 Validated Prompt: ${validatedPrompt}`);
 
     const finalPrompt = validatedPrompt;
-    const negativePrompt = enhancementResult.negativePrompt;
-    const optimizedParameters = enhancementResult.generationParams;
+    
+    // Use simple negative prompt for Tier 2
+    const negativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime";
+    
+    // Use default generation parameters for Tier 2
+    const optimizedParameters = {
+      model: "runware:100@1",
+      steps: 8,
+      CFGScale: 3.0,
+      scheduler: "FlowMatchEulerDiscreteScheduler"
+    };
 
     // 🔍 TIER 2 DEBUG LOGGING - Full prompts for debugging
     console.log(`🔍 TIER 2 DEBUG - Session: ${sessionId}, Page: ${pageNumber}/${totalPages}`);
@@ -346,9 +369,9 @@ serve(async (req) => {
         imageURL: result.url,
         provider: 'runware-template',
         prompt: finalPrompt,
-        qualityScore: enhancementResult.qualityScore || 0.8,
+        qualityScore: 0.8,
         enhancementLevel: 'template-based',
-        optimizations: enhancementResult.appliedOptimizations || [],
+        appliedOptimizations: [],
         processingTime: result.processingTime
       });
     } else {
