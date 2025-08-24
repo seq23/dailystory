@@ -5,6 +5,15 @@ class VisualDetailTracker {
   static detailRegistry = new Map();
 
   static analyzeTextForDetails(sessionId, text, pageNumber) {
+    console.log('🔍 VisualDetailTracker: Starting text analysis...');
+    
+    // Input validation - fail fast
+    if (!sessionId) throw new Error('VisualDetailTracker.analyzeTextForDetails: sessionId is required');
+    if (typeof text !== 'string') throw new Error('VisualDetailTracker.analyzeTextForDetails: text must be a string');
+    if (typeof pageNumber !== 'number') throw new Error('VisualDetailTracker.analyzeTextForDetails: pageNumber must be a number');
+    
+    console.log(`🎨 Analyzing text for visual details: session=${sessionId}, page=${pageNumber}, textLength=${text.length}`);
+    
     if (!this.detailRegistry.has(sessionId)) {
       this.detailRegistry.set(sessionId, []);
     }
@@ -101,6 +110,13 @@ class VisualDetailTracker {
   }
 
   static getConsistentDetailDescription(sessionId, detailName, type) {
+    console.log(`🔍 VisualDetailTracker: Getting consistent description for ${detailName} (${type})...`);
+    
+    // Input validation - fail fast
+    if (!sessionId) throw new Error('VisualDetailTracker.getConsistentDetailDescription: sessionId is required');
+    if (!detailName) throw new Error('VisualDetailTracker.getConsistentDetailDescription: detailName is required');
+    if (!type) throw new Error('VisualDetailTracker.getConsistentDetailDescription: type is required');
+    
     if (!this.detailRegistry.has(sessionId)) {
       return null;
     }
@@ -127,6 +143,12 @@ class VisualDetailTracker {
   }
 
   static injectConsistentDetails(sessionId, text, pageNumber) {
+    console.log(`🔍 VisualDetailTracker: Injecting consistent details for session ${sessionId}, page ${pageNumber}...`);
+    
+    // Input validation - fail fast
+    if (!sessionId) throw new Error('VisualDetailTracker.injectConsistentDetails: sessionId is required');
+    if (typeof text !== 'string') throw new Error('VisualDetailTracker.injectConsistentDetails: text must be a string');
+    
     if (!this.detailRegistry.has(sessionId)) {
       return text;
     }
@@ -159,6 +181,11 @@ class VisualDetailTracker {
   }
 
   static getVisualDetailsForPrompt(sessionId) {
+    console.log(`🔍 VisualDetailTracker: Getting visual details for prompt, session ${sessionId}...`);
+    
+    // Input validation - fail fast
+    if (!sessionId) throw new Error('VisualDetailTracker.getVisualDetailsForPrompt: sessionId is required');
+    
     const details = this.getSessionDetails(sessionId);
     
     if (details.length === 0) return null;

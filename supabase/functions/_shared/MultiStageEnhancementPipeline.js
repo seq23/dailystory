@@ -7,226 +7,199 @@ export class MultiStageEnhancementPipeline {
   // ============= TIER 2: SYSTEMATIC SERVICE WRAPPERS ONLY =============
   
   static async processTier2HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData, avatarIdentity) {
+    console.log('🚀 Tier 2: Starting enhancement pipeline...');
     console.log('📈 MultiStageEnhancementPipeline - Processing Tier 2: Comprehensive Scene Builder');
     console.log('🎯 Target: Build detailed primaryScene using ALL available systematic services');
     
+    // ============= Tier 2: Comprehensive Scene Building =============
+    console.log('🔄 Phase 1: Building comprehensive scene using all available functions...');
+    
+    let primarySceneComponents = [];
+    let characterDescription = '';
+    let secondaryElements = [];
+    let visualDetails = '';
+    let contextualInfo = '';
+    let styleFramework = null;
+    
+    // ============= Step 1: Get Main Character Description =============
+    console.log('👤 Step 1: Character consistency processing...');
+    console.log('🔍 Step 1: Getting character consistency data...');
+    
     try {
-      // ============= Tier 2: Comprehensive Scene Building =============
-      console.log('🔄 Phase 1: Building comprehensive scene using all available functions...');
+      const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
       
-      let primarySceneComponents = [];
-      let characterDescription = '';
-      let secondaryElements = [];
-      let visualDetails = '';
-      let contextualInfo = '';
-      let styleFramework = null;
-      
-      // ============= Step 1: Get Main Character Description =============
-      try {
-        console.log('🔍 Step 1: Getting character consistency data...');
-        const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
-        
-        const characterSeed = await CharacterConsistencyService.getCharacterSeed(
-          sessionId, 
-          userInfo?.id || 'anonymous', 
-          userInfo, 
-          storyText, 
-          avatarIdentity, 
-          'story', 
-          storyText
-        );
-        
-        if (characterSeed && characterSeed.description) {
-          characterDescription = characterSeed.description;
-          console.log(`✅ Character description: ${characterDescription.substring(0, 100)}...`);
-          primarySceneComponents.push(characterDescription);
-        }
-        
-      } catch (characterError) {
-        console.log('⚠️ Character consistency fallback:', characterError.message);
-        // Use avatar identity as fallback
-        if (avatarIdentity?.visualDescription) {
-          characterDescription = avatarIdentity.visualDescription;
-          primarySceneComponents.push(characterDescription);
-        }
-      }
-      
-      // ============= Step 2: Detect Secondary Characters and Animals =============
-      try {
-        console.log('🔍 Step 2: Detecting secondary elements...');
-        const { SecondaryElementDetector } = await import('./SecondaryElementDetector.js');
-        
-        secondaryElements = await SecondaryElementDetector.parseElements(sessionId, storyText, storyText, pageNumber);
-        console.log(`📊 Found ${secondaryElements.length} secondary elements:`, secondaryElements.map(e => e.name));
-        
-        if (secondaryElements.length > 0) {
-          const elementDescriptions = secondaryElements
-            .filter(e => e.needsConsistency)
-            .map(e => {
-              if (e.category === 'character_animal') {
-                return `${e.name} ${e.species}`;
-              }
-              return e.name;
-            })
-            .join(', ');
-          
-          if (elementDescriptions) {
-            primarySceneComponents.push(`Secondary characters: ${elementDescriptions}`);
-          }
-        }
-        
-      } catch (detectorError) {
-        console.log('⚠️ SecondaryElementDetector fallback:', detectorError.message);
-      }
-      
-      // ============= Step 3: Get Visual Details and Objects =============
-      try {
-        console.log('🔍 Step 3: Getting visual details...');
-        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
-        
-        await VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
-        visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
-        console.log(`🎨 Visual details: ${visualDetails}`);
-        
-        if (visualDetails) {
-          primarySceneComponents.push(`Objects and details: ${visualDetails}`);
-        }
-        
-      } catch (trackerError) {
-        console.log('⚠️ VisualDetailTracker fallback:', trackerError.message);
-      }
-      
-      // ============= Step 4: Get Story Context and Continuity =============
-      try {
-        console.log('🔍 Step 4: Getting story context...');
-        const { RealContextCollector } = await import('./RealContextCollector.js');
-        
-        const contextData = await RealContextCollector.collectRealStoryContext(sessionId, pageNumber, storyText);
-        const contextualAddition = RealContextCollector.buildContextualPromptAddition(contextData, storyText);
-        
-        if (contextualAddition) {
-          contextualInfo = contextualAddition;
-          primarySceneComponents.push(`Context: ${contextualAddition}`);
-        }
-        
-      } catch (contextError) {
-        console.log('⚠️ RealContextCollector fallback:', contextError.message);
-      }
-      
-      // ============= Step 5: Add Style Framework =============
-      try {
-        console.log('🔍 Step 5: Getting style framework...');
-        const { getStyleFramework, getOptimizedParameters } = await import('./styleFrameworks.js');
-        
-        // Determine difficulty based on user info or default to medium
-        const difficulty = userInfo?.preferredDifficulty || 'medium';
-        styleFramework = getStyleFramework(difficulty);
-        
-        if (styleFramework) {
-          console.log(`🎨 Style framework: ${styleFramework.name}`);
-          primarySceneComponents.push(`Style: ${styleFramework.artStyle}`);
-          primarySceneComponents.push(`Quality: ${styleFramework.quality}`);
-          if (styleFramework.brandSuffix) {
-            primarySceneComponents.push(styleFramework.brandSuffix);
-          }
-        }
-        
-      } catch (styleError) {
-        console.log('⚠️ Style framework fallback:', styleError.message);
-      }
-      
-      // ============= Step 6: Enhanced Context Collection with Character Names =============
-      try {
-        console.log('🔍 Step 6: Enhancing context collection with character names...');
-        
-        // Extract character names from story text for better pronoun clarity
-        const characterNames = this.extractCharacterNamesFromText(storyText);
-        if (characterNames.length > 0) {
-          const characterContext = `Character names in scene: ${characterNames.join(', ')}`;
-          primarySceneComponents.push(characterContext);
-          console.log('✅ Added character names for context:', characterNames);
-        }
-        
-      } catch (contextError) {
-        console.log('⚠️ Character name extraction fallback:', contextError.message);
-        // Continue without character context - non-breaking
-      }
-      
-      // ============= Step 7: Parse Action and Scene Setting =============
-      const actionMatch = storyText.match(/\b(running|walking|playing|dancing|jumping|sitting|standing|lying|flying|swimming|climbing|spinning|twirling)\b/i);
-      const action = actionMatch ? actionMatch[0] : 'playing';
-      
-      const currentSetting = this.updateSettingFromText(storyText, 'outdoor_playground');
-      primarySceneComponents.push(`Setting: ${currentSetting}`);
-      primarySceneComponents.push(`Action: ${action}`);
-      
-      // ============= Step 8: Build Final Primary Scene =============
-      const baseScene = storyText.trim();
-      
-      // Create comprehensive primary scene
-      let primaryScene = `${baseScene}. `;
-      
-      if (primarySceneComponents.length > 0) {
-        primaryScene += primarySceneComponents.join('. ') + '.';
-      }
-      
-      // Style framework already included in Step 5, no additional hardcoded style needed
-      
-      console.log('✅ Comprehensive Primary Scene Built:', primaryScene.substring(0, 200) + '...');
-      
-      // ============= Step 9: Build Unified Negative Prompt =============
-      const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
-      const framework = { styleElements: styleFramework?.name || 'children book style' };
-      
-      const negativePrompt = this.buildUnifiedNegativePrompt(
+      const characterSeed = await CharacterConsistencyService.getCharacterSeed(
+        sessionId, 
+        userInfo?.id || 'anonymous', 
         userInfo, 
-        culturalProfile, 
-        framework, 
-        pageNumber
+        storyText, 
+        avatarIdentity, 
+        'story', 
+        storyText
       );
       
-      console.log('✅ Tier 2 Enhancement Complete:', {
-        primarySceneLength: primaryScene.length,
-        componentsUsed: primarySceneComponents.length,
-        negativePromptLength: negativePrompt.length
-      });
-      
-      return {
-        enhancedPrompt: primaryScene,
-        negativePrompt: negativePrompt,
-        metadata: {
-          processingTier: 'tier-2-comprehensive',
-          servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks'],
-          components: primarySceneComponents.length,
-          success: true
-        }
-      };
-      
-    } catch (error) {
-      console.error('🚨 Tier 2 Enhancement Pipeline Error:', error);
-      
-      // ============= NUCLEAR FALLBACK: Basic Scene Construction =============
-      console.log('🛡️ Engaging nuclear fallback for Tier 2...');
-      
-      const cleanText = storyText ? storyText.trim() : 'A magical scene unfolds';
-      // Apply basic style framework for fallback
-      const { getStyleFramework } = await import('./styleFrameworks.js');
-      const fallbackStyle = getStyleFramework('easy'); // Use easy difficulty for fallback
-      const fallbackScene = `${cleanText}. ${fallbackStyle?.artStyle || 'Children book illustration style'}.`;
-      
-      const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
-      const fallbackNegative = this.buildUnifiedNegativePrompt(userInfo, culturalProfile, {}, pageNumber);
-      
-      return {
-        enhancedPrompt: fallbackScene,
-        negativePrompt: fallbackNegative,
-        metadata: {
-          processingTier: 'tier-2-fallback',
-          error: error.message,
-          success: false
-        }
-      };
+      if (characterSeed && characterSeed.description) {
+        characterDescription = characterSeed.description;
+        console.log(`✅ Character description: ${characterDescription.substring(0, 100)}...`);
+        primarySceneComponents.push(characterDescription);
+      }
+    } catch (characterError) {
+      throw new Error(`Tier2.CharacterConsistency failed: ${characterError.message}`);
     }
+    
+    // ============= Step 2: Detect Secondary Characters and Animals =============
+    console.log('🔍 Step 2: Secondary element detection...');
+    console.log('🔍 Step 2: Detecting secondary elements...');
+    
+    try {
+      const { SecondaryElementDetector } = await import('./SecondaryElementDetector.js');
+      
+      secondaryElements = await SecondaryElementDetector.parseElements(sessionId, storyText, storyText, pageNumber);
+      console.log(`📊 Found ${secondaryElements.length} secondary elements:`, secondaryElements.map(e => e.name));
+      
+      if (secondaryElements.length > 0) {
+        const elementDescriptions = secondaryElements
+          .filter(e => e.needsConsistency)
+          .map(e => {
+            if (e.category === 'character_animal') {
+              return `${e.name} ${e.species}`;
+            }
+            return e.name;
+          })
+          .join(', ');
+        
+        if (elementDescriptions) {
+          primarySceneComponents.push(`Secondary characters: ${elementDescriptions}`);
+        }
+      }
+    } catch (detectorError) {
+      throw new Error(`Tier2.SecondaryElementDetector failed: ${detectorError.message}`);
+    }
+    
+    // ============= Step 3: Get Visual Details and Objects =============
+    console.log('🎨 Step 3: Visual detail tracking...');
+    console.log('🔍 Step 3: Getting visual details...');
+    
+    try {
+      const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
+      
+      await VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+      visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+      console.log(`🎨 Visual details: ${visualDetails}`);
+      
+      if (visualDetails) {
+        primarySceneComponents.push(`Objects and details: ${visualDetails}`);
+      }
+    } catch (trackerError) {
+      throw new Error(`Tier2.VisualDetailTracker failed: ${trackerError.message}`);
+    }
+    
+    // ============= Step 4: Get Story Context and Continuity =============
+    console.log('📖 Step 4: Story context collection...');
+    console.log('🔍 Step 4: Getting story context...');
+    
+    try {
+      const { RealContextCollector } = await import('./RealContextCollector.js');
+      
+      const contextData = await RealContextCollector.collectRealStoryContext(sessionId, pageNumber, storyText);
+      const contextualAddition = RealContextCollector.buildContextualPromptAddition(contextData, storyText);
+      
+      if (contextualAddition) {
+        contextualInfo = contextualAddition;
+        primarySceneComponents.push(`Context: ${contextualAddition}`);
+      }
+    } catch (contextError) {
+      throw new Error(`Tier2.RealContextCollector failed: ${contextError.message}`);
+    }
+    
+    // ============= Step 5: Add Style Framework =============
+    console.log('🎯 Step 5: Style framework application...');
+    console.log('🔍 Step 5: Getting style framework...');
+    
+    try {
+      const { getStyleFramework, getOptimizedParameters } = await import('./styleFrameworks.js');
+      
+      // Determine difficulty based on user info or default to medium
+      const difficulty = userInfo?.preferredDifficulty || 'medium';
+      styleFramework = getStyleFramework(difficulty);
+      
+      if (styleFramework) {
+        console.log(`🎨 Style framework: ${styleFramework.name}`);
+        primarySceneComponents.push(`Style: ${styleFramework.artStyle}`);
+        primarySceneComponents.push(`Quality: ${styleFramework.quality}`);
+        if (styleFramework.brandSuffix) {
+          primarySceneComponents.push(styleFramework.brandSuffix);
+        }
+      }
+    } catch (styleError) {
+      throw new Error(`Tier2.StyleFramework failed: ${styleError.message}`);
+    }
+    
+    // ============= Step 6: Enhanced Context Collection with Character Names =============
+    try {
+      console.log('🔍 Step 6: Enhancing context collection with character names...');
+      
+      // Extract character names from story text for better pronoun clarity
+      const characterNames = this.extractCharacterNamesFromText(storyText);
+      if (characterNames.length > 0) {
+        const characterContext = `Character names in scene: ${characterNames.join(', ')}`;
+        primarySceneComponents.push(characterContext);
+        console.log('✅ Added character names for context:', characterNames);
+      }
+    } catch (contextError) {
+      throw new Error(`Tier2.CharacterNameExtraction failed: ${contextError.message}`);
+    }
+    
+    // ============= Step 7: Parse Action and Scene Setting =============
+    const actionMatch = storyText.match(/\b(running|walking|playing|dancing|jumping|sitting|standing|lying|flying|swimming|climbing|spinning|twirling)\b/i);
+    const action = actionMatch ? actionMatch[0] : 'playing';
+    
+    const currentSetting = this.updateSettingFromText(storyText, 'outdoor_playground');
+    primarySceneComponents.push(`Setting: ${currentSetting}`);
+    primarySceneComponents.push(`Action: ${action}`);
+    
+    // ============= Step 8: Build Final Primary Scene =============
+    const baseScene = storyText.trim();
+    
+    // Create comprehensive primary scene
+    let primaryScene = `${baseScene}. `;
+    
+    if (primarySceneComponents.length > 0) {
+      primaryScene += primarySceneComponents.join('. ') + '.';
+    }
+    
+    // Style framework already included in Step 5, no additional hardcoded style needed
+    
+    console.log('✅ Comprehensive Primary Scene Built:', primaryScene.substring(0, 200) + '...');
+    
+    // ============= Step 9: Build Unified Negative Prompt =============
+    const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
+    const framework = { styleElements: styleFramework?.name || 'children book style' };
+    
+    const negativePrompt = this.buildUnifiedNegativePrompt(
+      userInfo, 
+      culturalProfile, 
+      framework, 
+      pageNumber
+    );
+    
+    console.log('✅ Tier 2: Successfully completed all steps');
+    console.log('✅ Tier 2 Enhancement Complete:', {
+      primarySceneLength: primaryScene.length,
+      componentsUsed: primarySceneComponents.length,
+      negativePromptLength: negativePrompt.length
+    });
+    
+    return {
+      enhancedPrompt: primaryScene,
+      negativePrompt: negativePrompt,
+      metadata: {
+        processingTier: 'tier-2-comprehensive',
+        servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks'],
+        components: primarySceneComponents.length,
+        success: true
+      }
+    };
   }
   
   // ============= TIER 1: PREMIUM PIPELINE =============

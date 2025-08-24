@@ -12,45 +12,47 @@ export class SecondaryElementDetector {
    */
   static async parseElements(sessionId, primaryScene, storyText, pageNumber) {
     console.log(`🔍 SecondaryElementDetector - Bulletproof parsing for session ${sessionId}, page ${pageNumber}`);
+    console.log('🔍 Step 2: Detecting secondary elements...');
     
     const detectedElements = [];
     
-    try {
-      // ============= BULLETPROOF OPERATION WITH DEFENSIVE VALIDATION =============
-      const safeSessionId = sessionId || 'unknown';
-      const safePageNumber = pageNumber || 1;
-      const safePrimaryScene = primaryScene || '';
-      const safeStoryText = storyText || '';
-      
-      console.log(`🛡️ SecondaryElementDetector - Defensive validation complete: session=${safeSessionId}, page=${safePageNumber}`);
-      
-      // Test any external dependencies with bulletproof import strategies
-      await this.testBulletproofImports();
-      // Combine primaryScene and storyText for comprehensive analysis
-      const combinedText = `${safePrimaryScene} ${safeStoryText}`.toLowerCase();
-      
-      // Detect secondary characters (family, friends, teachers)
-      const secondaryCharacters = this.detectSecondaryCharacters(combinedText);
-      detectedElements.push(...secondaryCharacters);
-      
-      // Detect character animals (pets with dialogue/names)
-      const characterAnimals = this.detectCharacterAnimals(combinedText);
-      detectedElements.push(...characterAnimals);
-      
-      // Detect background animals (atmospheric only - no consistency tracking needed)
-      const backgroundAnimals = this.detectBackgroundAnimals(combinedText);
-      detectedElements.push(...backgroundAnimals);
-      
-      console.log(`✅ Bulletproof detection complete: ${detectedElements.length} secondary elements:`, detectedElements.map(e => `${e.name} (${e.type})`));
-      
-      return detectedElements;
-      
-    } catch (error) {
-      console.error('🚨 SecondaryElementDetector bulletproof error handling:', error);
-      // ============= NUCLEAR FALLBACK: Always return valid array =============
-      console.log('🛡️ Returning empty array for bulletproof operation');
-      return [];
+    // ============= BULLETPROOF OPERATION WITH DEFENSIVE VALIDATION =============
+    const safeSessionId = sessionId || 'unknown';
+    const safePageNumber = pageNumber || 1;
+    const safePrimaryScene = primaryScene || '';
+    const safeStoryText = storyText || '';
+    
+    // Input validation - fail fast for invalid inputs
+    if (!sessionId) throw new Error('SecondaryElementDetector.parseElements: sessionId is required');
+    if (typeof primaryScene !== 'string' && typeof storyText !== 'string') {
+      throw new Error('SecondaryElementDetector.parseElements: at least one text input must be a string');
     }
+    if (typeof pageNumber !== 'number') {
+      throw new Error('SecondaryElementDetector.parseElements: pageNumber must be a number');
+    }
+    
+    console.log(`🛡️ SecondaryElementDetector - Input validation passed: session=${safeSessionId}, page=${safePageNumber}`);
+    
+    // Test any external dependencies with bulletproof import strategies
+    await this.testBulletproofImports();
+    // Combine primaryScene and storyText for comprehensive analysis
+    const combinedText = `${safePrimaryScene} ${safeStoryText}`.toLowerCase();
+    
+    // Detect secondary characters (family, friends, teachers)
+    const secondaryCharacters = this.detectSecondaryCharacters(combinedText);
+    detectedElements.push(...secondaryCharacters);
+    
+    // Detect character animals (pets with dialogue/names)
+    const characterAnimals = this.detectCharacterAnimals(combinedText);
+    detectedElements.push(...characterAnimals);
+    
+    // Detect background animals (atmospheric only - no consistency tracking needed)
+    const backgroundAnimals = this.detectBackgroundAnimals(combinedText);
+    detectedElements.push(...backgroundAnimals);
+    
+    console.log(`✅ Bulletproof detection complete: ${detectedElements.length} secondary elements:`, detectedElements.map(e => `${e.name} (${e.type})`));
+    
+    return detectedElements;
   }
   
   // ============= PHASE 3: 4-STRATEGY BULLETPROOF IMPORT TESTING =============

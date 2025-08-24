@@ -13,68 +13,62 @@ export class CharacterConsistencyService {
    * Save character data to database
    */
   async saveCharacterToDatabase(sessionId, characterKey, characterData) {
-    try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+    console.log(`💾 Attempting to save character ${characterKey} to database for session ${sessionId}...`);
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'), 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
 
-      const { error } = await supabase
-        .from('character_consistency_cache')
-        .upsert({
-          session_id: sessionId,
-          character_key: characterKey,
-          character_data: characterData,
-          updated_at: new Date().toISOString()
-        });
+    const { error } = await supabase
+      .from('character_consistency_cache')
+      .upsert({
+        session_id: sessionId,
+        character_key: characterKey,
+        character_data: characterData,
+        updated_at: new Date().toISOString()
+      });
 
-      if (error) {
-        console.error('❌ Database save error:', error);
-        return false;
-      }
-      
-      console.log(`💾 Saved character ${characterKey} to database for session ${sessionId}`);
-      return true;
-    } catch (error) {
-      console.error('❌ Character database save failed:', error);
-      return false;
+    if (error) {
+      console.error('❌ Database save error:', error);
+      throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${error.message}`);
     }
+    
+    console.log(`💾 Saved character ${characterKey} to database for session ${sessionId}`);
+    return true;
   }
 
   /**
    * Get character data from database
    */
   async getCharacterFromDatabase(sessionId, characterKey) {
-    try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+    console.log(`📖 Attempting to retrieve character ${characterKey} from database for session ${sessionId}...`);
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'), 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
 
-      const { data, error } = await supabase
-        .from('character_consistency_cache')
-        .select('character_data')
-        .eq('session_id', sessionId)
-        .eq('character_key', characterKey)
-        .single();
+    const { data, error } = await supabase
+      .from('character_consistency_cache')
+      .select('character_data')
+      .eq('session_id', sessionId)
+      .eq('character_key', characterKey)
+      .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is expected sometimes
-        console.error('❌ Database fetch error:', error);
-        return null;
-      }
-      
-      if (data?.character_data) {
-        console.log(`📖 Retrieved character ${characterKey} from database for session ${sessionId}`);
-        return data.character_data;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('❌ Character database fetch failed:', error);
-      return null;
+    if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is expected sometimes
+      console.error('❌ Database fetch error:', error);
+      throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${error.message}`);
     }
+    
+    if (data?.character_data) {
+      console.log(`📖 Retrieved character ${characterKey} from database for session ${sessionId}`);
+      return data.character_data;
+    }
+    
+    return null;
   }
 
   // ============= CULTURAL ARRAYS (Moved from FrontendIntelligence) =============
@@ -732,91 +726,82 @@ export class CharacterConsistencyService {
    * Clear character data for session (DATABASE-BACKED)
    */
   async clearCharacterData(sessionId) {
-    try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+    console.log(`🎭 Attempting to clear character data for session: ${sessionId}...`);
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'), 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
 
-      const { error } = await supabase
-        .from('character_consistency_cache')
-        .delete()
-        .eq('session_id', sessionId);
+    const { error } = await supabase
+      .from('character_consistency_cache')
+      .delete()
+      .eq('session_id', sessionId);
 
-      if (error) {
-        console.error('❌ Database clear error:', error);
-        return false;
-      }
-      
-      console.log(`🎭 Cleared character data for session: ${sessionId}`);
-      return true;
-    } catch (error) {
-      console.error('❌ Character database clear failed:', error);
-      return false;
+    if (error) {
+      console.error('❌ Database clear error:', error);
+      throw new Error(`CharacterConsistencyService.clearCharacterData failed: ${error.message}`);
     }
+    
+    console.log(`🎭 Cleared character data for session: ${sessionId}`);
+    return true;
   }
 
   /**
    * Get monitoring data (DATABASE-BACKED)
    */
   async getActiveCharacterSeeds() {
-    try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+    console.log('📊 Attempting to get active character monitoring data...');
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'), 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
 
-      const { data, error } = await supabase
-        .from('character_consistency_cache')
-        .select('session_id')
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('character_consistency_cache')
+      .select('session_id')
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('❌ Database monitoring error:', error);
-        return { total: 0, sessions: [], note: 'Database monitoring failed' };
-      }
-
-      const uniqueSessions = [...new Set(data?.map(row => row.session_id) || [])];
-      
-      return {
-        total: data?.length || 0,
-        sessions: uniqueSessions,
-        note: 'Database-backed character consistency service'
-      };
-    } catch (error) {
-      console.error('❌ Character monitoring failed:', error);
-      return { total: 0, sessions: [], note: 'Database monitoring failed' };
+    if (error) {
+      console.error('❌ Database monitoring error:', error);
+      throw new Error(`CharacterConsistencyService.getActiveCharacterSeeds failed: ${error.message}`);
     }
+
+    const uniqueSessions = [...new Set(data?.map(row => row.session_id) || [])];
+    
+    return {
+      total: data?.length || 0,
+      sessions: uniqueSessions,
+      note: 'Database-backed character consistency service'
+    };
   }
 
   /**
    * Clear all state (DATABASE-BACKED)
    */
   async clearServerState() {
-    try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+    console.log('🎭 Attempting to clear all character consistency data from database...');
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'), 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
 
-      const { error } = await supabase
-        .from('character_consistency_cache')
-        .delete()
-        .neq('session_id', ''); // Delete all records
+    const { error } = await supabase
+      .from('character_consistency_cache')
+      .delete()
+      .neq('session_id', ''); // Delete all records
 
-      if (error) {
-        console.error('❌ Database clear all error:', error);
-        return { cleared: false, message: 'Database clear failed' };
-      }
-      
-      console.log('🎭 Character consistency service cleared from database');
-      return { cleared: true, message: 'Database-backed character consistency cleared' };
-    } catch (error) {
-      console.error('❌ Character clear all failed:', error);
-      return { cleared: false, message: 'Database clear failed' };
+    if (error) {
+      console.error('❌ Database clear all error:', error);
+      throw new Error(`CharacterConsistencyService.clearServerState failed: ${error.message}`);
     }
+    
+    console.log('🎭 Character consistency service cleared from database');
+    return { cleared: true, message: 'Database-backed character consistency cleared' };
   }
 }

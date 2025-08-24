@@ -7,76 +7,53 @@ export class RealContextCollector {
   
   // ============= CONTEXT COLLECTION =============
   static async collectRealStoryContext(sessionId, pageNumber, storyText) {
-    try {
-      console.log(`🔍 Collecting real context for session ${sessionId}, page ${pageNumber}`);
-      
-      const contextData = {
-        previousPages: [],
-        characterDescriptions: [],
-        visualElements: [],
-        settingContinuity: [],
-        narrativeContinuity: []
-      };
-      
-      // Collect previous story content safely
-      try {
-        const promptHistory = SessionStateManager.getPromptHistory(sessionId, 3);
-        
-        for (const entry of promptHistory) {
-          if (entry.originalText && entry.pageNumber < pageNumber) {
-            contextData.previousPages.push({
-              pageNumber: entry.pageNumber,
-              content: entry.originalText,
-              visualDescription: entry.visualDescription || ''
-            });
-          }
-        }
-      } catch (error) {
-        console.warn('⚠️ Could not collect prompt history:', error.message);
+    console.log(`🔍 Collecting real context for session ${sessionId}, page ${pageNumber}`);
+    console.log('📖 Step 4: Story context collection...');
+    
+    const contextData = {
+      previousPages: [],
+      characterDescriptions: [],
+      visualElements: [],
+      settingContinuity: [],
+      narrativeContinuity: []
+    };
+    
+    // Collect previous story content - fail if this fails
+    console.log('📖 Collecting prompt history...');
+    const promptHistory = SessionStateManager.getPromptHistory(sessionId, 3);
+    
+    for (const entry of promptHistory) {
+      if (entry.originalText && entry.pageNumber < pageNumber) {
+        contextData.previousPages.push({
+          pageNumber: entry.pageNumber,
+          content: entry.originalText,
+          visualDescription: entry.visualDescription || ''
+        });
       }
-      
-      // Collect character consistency data
-      try {
-        const characterDetails = SessionStateManager.getVisualDetailsForPrompt(sessionId);
-        if (characterDetails) {
-          contextData.characterDescriptions.push(characterDetails);
-        }
-      } catch (error) {
-        console.warn('⚠️ Could not collect character details:', error.message);
-      }
-      
-      // Collect visual elements
-      if (globalThis.VisualDetailTracker?.getSessionDetails) {
-        try {
-          const visualDetails = globalThis.VisualDetailTracker.getSessionDetails(sessionId);
-          contextData.visualElements = visualDetails || [];
-        } catch (error) {
-          console.warn('⚠️ Could not collect visual details:', error.message);
-        }
-      }
-      
-      // Collect setting continuity
-      try {
-        const currentSetting = SessionStateManager.getSettingForPrompt(sessionId);
-        if (currentSetting) {
-          contextData.settingContinuity.push(currentSetting);
-        }
-      } catch (error) {
-        console.warn('⚠️ Could not collect setting:', error.message);
-      }
-      
-      return contextData;
-      
-    } catch (error) {
-      console.error('❌ Real context collection failed:', error.message);
-      return {
-        previousPages: [],
-        characterDescriptions: [],
-        visualElements: [],
-        settingContinuity: [],
-        narrativeContinuity: []
-      };
     }
+    
+    // Collect character consistency data - fail if this fails
+    console.log('📖 Collecting character details...');
+    const characterDetails = SessionStateManager.getVisualDetailsForPrompt(sessionId);
+    if (characterDetails) {
+      contextData.characterDescriptions.push(characterDetails);
+    }
+    
+    // Collect visual elements - fail if this fails
+    if (globalThis.VisualDetailTracker?.getSessionDetails) {
+      console.log('📖 Collecting visual details...');
+      const visualDetails = globalThis.VisualDetailTracker.getSessionDetails(sessionId);
+      contextData.visualElements = visualDetails || [];
+    }
+    
+    // Collect setting continuity - fail if this fails
+    console.log('📖 Collecting setting data...');
+    const currentSetting = SessionStateManager.getSettingForPrompt(sessionId);
+    if (currentSetting) {
+      contextData.settingContinuity.push(currentSetting);
+    }
+    
+    return contextData;
   }
   
   // ============= CONTEXT INTEGRATION =============
