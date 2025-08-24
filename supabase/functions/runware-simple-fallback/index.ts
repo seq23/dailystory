@@ -280,17 +280,17 @@ const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
   'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
 ];
 
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Objects & Secondary Characters)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}",
-  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}",
-  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}",
-  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}",
-  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}"
+  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
 };
 
 function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
-  if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', userInfo, avatarIdentity, difficulty || 'medium');
+  if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', pageText, userInfo, avatarIdentity, difficulty || 'medium');
   
   const text = pageText.toLowerCase();
   const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
@@ -347,10 +347,10 @@ function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avata
 
   console.log(`🔍 SCENE ANALYSIS: Best score: ${bestScore}, Detected setting: ${detectedSetting}`);
   
-  return fillPremiumTemplate(bestScene, userInfo, avatarIdentity, difficulty || 'medium', detectedSetting);
+  return fillPremiumTemplate(bestScene, pageText, userInfo, avatarIdentity, difficulty || 'medium', detectedSetting);
 }
 
-function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any, difficulty?: string, detectedSetting?: string): string {
+function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?: any, avatarIdentity?: any, difficulty?: string, detectedSetting?: string): string {
   const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
   
   // 🔍 PREMIUM TEMPLATE DEBUG LOGGING
@@ -453,6 +453,16 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
     console.log(`   👕 Clothing: ${clothing} (standard)`);
   }
   
+  // Object detection from original page text
+  const detectedObjects = detectObjects(originalPageText || scene);
+  const objectsText = detectedObjects.length > 0 ? ` with ${detectedObjects.join(', ')}` : '';
+  console.log(`🔍 OBJECTS DETECTED: ${detectedObjects.length > 0 ? detectedObjects.join(', ') : 'none'}`);
+  
+  // Secondary character detection from original page text  
+  const detectedSecondaryChars = detectSecondaryCharacters(originalPageText || scene);
+  const secondaryCharsText = detectedSecondaryChars.length > 0 ? ` alongside ${detectedSecondaryChars.join(', ')}` : '';
+  console.log(`🔍 SECONDARY CHARACTERS DETECTED: ${detectedSecondaryChars.length > 0 ? detectedSecondaryChars.join(', ') : 'none'}`);
+
   // Setting determination with bedroom detection
   const baseSetting = detectedSetting === 'bedroom' ? 'cozy bedroom scene' : 
                      detectedSetting === 'indoor' ? 'indoor scene' : 'outdoor scene';
@@ -477,9 +487,16 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
     .replace('{clothing}', clothing)
     .replace('{scene}', scene)
     .replace('{setting}', setting)
+    .replace('{objects}', objectsText)
+    .replace('{secondary_characters}', secondaryCharsText)
     .replace('{emotion}', emotion)
     .replace('{quality}', quality)
     .replace('{suffix}', suffix || '');
+
+  // Append full page text at the end for complete context
+  const finalPromptWithPageText = originalPageText ? 
+    `${filledTemplate}. Full story context: "${originalPageText}"` : 
+    filledTemplate;
 
   // 🔍 FINAL TEMPLATE DEBUG LOGGING
   console.log(`🎯 FINAL PLACEHOLDER VALUES:`);
@@ -492,14 +509,106 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
   console.log(`   {clothing} → ${clothing}`);
   console.log(`   {scene} → ${scene}`);
   console.log(`   {setting} → ${setting}`);
+  console.log(`   {objects} → ${objectsText || '(none)'}`);
+  console.log(`   {secondary_characters} → ${secondaryCharsText || '(none)'}`);
   console.log(`   {emotion} → ${emotion}`);
   console.log(`   {quality} → ${quality}`);
   console.log(`   {suffix} → ${suffix || '(empty)'}`);
   console.log(`🏁 FINAL ASSEMBLED TEMPLATE:`);
   console.log(`   ${filledTemplate}`);
+  console.log(`📄 FULL PAGE TEXT APPENDED: ${originalPageText ? 'YES' : 'NO'}`);
   console.log(`🎨 PREMIUM TEMPLATE PROCESSING COMPLETE`);
 
-  return filledTemplate;
+  return finalPromptWithPageText;
+}
+
+// ============= OBJECT & SECONDARY CHARACTER DETECTION =============
+// Nuclear independence - inline detection for bulletproof operation
+
+function detectObjects(text: string): string[] {
+  if (!text) return [];
+  
+  const objects: string[] = [];
+  const lowerText = text.toLowerCase();
+  
+  // Color + object patterns (e.g., "red shiny ball", "blue toy car")
+  const colorObjectPatterns = [
+    /(\w+)\s+(shiny|sparkly|bright|colorful|beautiful|big|small|tiny|huge|little)\s+(ball|toy|book|doll|car|truck|bike|flower|butterfly|bird)/g,
+    /(red|blue|green|yellow|orange|purple|pink|white|black|brown)\s+(ball|toy|book|doll|car|truck|bike|flower|butterfly|bird)/g,
+    /favorite\s+(ball|toy|book|doll|car|truck|bike|flower|butterfly|bird)/g
+  ];
+  
+  colorObjectPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(lowerText)) !== null) {
+      const objectDesc = match[0];
+      if (!objects.includes(objectDesc)) {
+        objects.push(objectDesc);
+      }
+    }
+  });
+  
+  // Simple object detection (toys, items, etc.)
+  const simpleObjects = [
+    'ball', 'toy car', 'doll', 'stuffed animal', 'teddy bear', 'book', 'bicycle', 'bike',
+    'flower', 'butterfly', 'backpack', 'lunchbox', 'crayon', 'pencil', 'notebook'
+  ];
+  
+  simpleObjects.forEach(obj => {
+    if (lowerText.includes(obj) && !objects.some(o => o.includes(obj))) {
+      objects.push(obj);
+    }
+  });
+  
+  console.log(`🔍 OBJECT DETECTION: Found ${objects.length} objects in "${text.substring(0, 100)}..."`);
+  return objects.slice(0, 3); // Limit to 3 objects to avoid prompt overflow
+}
+
+function detectSecondaryCharacters(text: string): string[] {
+  if (!text) return [];
+  
+  const characters: string[] = [];
+  const lowerText = text.toLowerCase();
+  
+  // Named animal patterns (e.g., "doggy named Max", "cat called Whiskers")
+  const namedAnimalPatterns = [
+    /(doggy|dog|puppy|cat|kitten|bunny|rabbit|bird|fish|hamster|guinea pig)\s+(named|called)\s+(\w+)/g,
+    /(pet|animal)\s+(named|called)\s+(\w+)/g
+  ];
+  
+  namedAnimalPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(lowerText)) !== null) {
+      const animalType = match[1];
+      const name = match[3];
+      const charDesc = `${name} the ${animalType}`;
+      if (!characters.includes(charDesc)) {
+        characters.push(charDesc);
+      }
+    }
+  });
+  
+  // Named people patterns (e.g., "friend Sarah", "teacher Ms. Johnson", "mom", "dad")
+  const namedPeoplePatterns = [
+    /(friend|buddy|pal)\s+(\w+)/g,
+    /(teacher|miss|mr|mrs|ms)\s+(\w+)/g,
+    /(mom|mother|dad|father|grandma|grandpa|sister|brother)\s+(\w+)?/g
+  ];
+  
+  namedPeoplePatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(lowerText)) !== null) {
+      const role = match[1];
+      const name = match[2] || '';
+      const charDesc = name ? `${role} ${name}` : role;
+      if (!characters.includes(charDesc) && charDesc !== 'mom' && charDesc !== 'dad') {
+        characters.push(charDesc);
+      }
+    }
+  });
+  
+  console.log(`🔍 CHARACTER DETECTION: Found ${characters.length} secondary characters in "${text.substring(0, 100)}..."`);
+  return characters.slice(0, 2); // Limit to 2 characters to avoid prompt overflow
 }
 
 // Helper functions for nuclear independence
