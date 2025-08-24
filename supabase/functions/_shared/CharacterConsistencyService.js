@@ -261,10 +261,15 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Determine cultural profile
+   * Determine cultural profile with African American detection
    */
   determineCulturalProfile(userInfo) {
     const nativeLanguage = userInfo.nativeLanguage || 'en';
+    
+    // Check for African American cultural variations first
+    if (this.shouldApplyAfricanAmericanCulturalVariations(null, userInfo)) {
+      return 'african-american';
+    }
     
     if (nativeLanguage === 'es') return 'hispanic-american';
     if (nativeLanguage === 'fr') return 'french-american';
@@ -276,10 +281,28 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate cultural elements
+   * Generate cultural elements with full African American support
    */
   generateCulturalElements(culturalProfile, userInfo) {
+    const random = this.createSeededRandom(Date.now());
     const culturalStyleMap = {
+      'african-american': {
+        clothing: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_CLOTHING,
+        accessories: [
+          'backpack with cultural pins', 'stylish sneakers', 'baseball cap', 'smartwatch', 
+          'friendship bracelet', 'sports equipment', 'water bottle', 'glasses', 
+          'headphones', 'school supplies', 'athletic socks', 'trendy accessories'
+        ],
+        markers: [
+          'urban community', 'cultural celebration', 'local community center', 'neighborhood park',
+          'African American traditions', 'family heritage', 'community pride', 'modern American identity',
+          'multicultural environment', 'diverse neighborhood'
+        ],
+        hairstyles: {
+          boys: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES.boys,
+          girls: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES.girls
+        }
+      },
       'standard-american': {
         clothing: [
           'casual t-shirt and jeans', 'hoodie and sneakers', 'polo shirt and khakis',
@@ -311,7 +334,19 @@ export class CharacterConsistencyService {
       }
     };
     
-    return culturalStyleMap[culturalProfile] || culturalStyleMap['standard-american'];
+    const selectedProfile = culturalStyleMap[culturalProfile] || culturalStyleMap['standard-american'];
+    
+    // For African American profiles, add gender-appropriate hairstyle selection
+    if (culturalProfile === 'african-american' && selectedProfile.hairstyles) {
+      const gender = userInfo?.avatar?.gender || (Math.random() < 0.5 ? 'boy' : 'girl');
+      const genderKey = gender === 'girl' ? 'girls' : 'boys';
+      const hairstyles = selectedProfile.hairstyles[genderKey];
+      
+      selectedProfile.selectedHairstyle = hairstyles[Math.floor(random() * hairstyles.length)];
+      console.log(`🎭 CULTURAL: Selected ${gender} hairstyle: ${selectedProfile.selectedHairstyle}`);
+    }
+    
+    return selectedProfile;
   }
 
   /**

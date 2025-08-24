@@ -733,15 +733,41 @@ function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, origina
   return negatives.join(', ');
 }
 
-// Cultural bypass implementation for Tier 2.5
+// Enhanced cultural intelligence for Tier 2.5
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any): string {
-  if (userInfo?.nativeLanguage === 'en') {
-    // All English speakers get the same generic route - no special cultural enhancements
+  // Enhanced African American detection for English speakers
+  if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
+    // Check for African American cultural markers
+    const isAfricanAmericanUser = userInfo?.avatar?.skinTone === 'dark' || 
+                                  userInfo?.avatar?.type === 'african_american' ||
+                                  userInfo?.name?.toLowerCase().includes('african') ||
+                                  Math.random() < 0.25; // 25% cultural enhancement chance
+    
+    if (isAfricanAmericanUser) {
+      const culturalElements = [
+        'with authentic African American community elements',
+        'in a diverse urban neighborhood setting', 
+        'with rich cultural community atmosphere',
+        'featuring authentic multicultural American environment',
+        'with vibrant community cultural elements'
+      ];
+      const element = culturalElements[Math.floor(Math.random() * culturalElements.length)];
+      return `${baseSetting} ${element}`;
+    }
+    
     return `${baseSetting} scene`;
   } else {
-    // International Route: Basic cultural adaptation
+    // International Route: Enhanced cultural adaptation
     const language = userInfo?.nativeLanguage || 'international';
-    return `${baseSetting} with ${language} cultural elements`;
+    const culturalEnhancements = {
+      'es': 'with Hispanic American cultural elements and familia atmosphere',
+      'fr': 'with French American cultural elements',
+      'de': 'with German American cultural elements', 
+      'it': 'with Italian American cultural elements',
+      'pt': 'with Portuguese American cultural elements'
+    };
+    
+    return `${baseSetting} ${culturalEnhancements[language] || `with ${language} cultural elements`}`;
   }
 }
 
