@@ -271,36 +271,74 @@ serve(async (req) => {
         // 3. Avatar Validation
         const validatedAvatar = validateAvatarConsistency(avatarIdentity, userInfo, sessionId);
         
-        // 4. Prompt Building (primaryScene as MASTER with character consistency always added)
+        // PHASE 5: Generate unique request ID for cross-function correlation
+        const requestId = `IMG-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+        console.log(`🎯 [${requestId}] Starting Runware prompt assembly phase`);
+
+        // PHASE 4: Detailed Runware prompt construction debugging
         const segments = [];
         
         // PRIMARY MASTER: Use primaryScene as the comprehensive base
         if (aiSchema.primaryScene) {
           segments.push(aiSchema.primaryScene);
-          console.log('🎯 Using primaryScene as MASTER prompt base');
+          console.log(`🎯 [${requestId}] Segment 1 - Primary Scene Added:`, {
+            length: aiSchema.primaryScene.length,
+            preview: aiSchema.primaryScene.substring(0, 150) + '...',
+            source: 'AI-enhanced primaryScene (MASTER)'
+          });
+        } else {
+          console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema - this may impact quality`);
         }
         
         // ALWAYS ADD: Character consistency data (no conditional checks)
         if (characterData.characterDescription) {
           segments.push(characterData.characterDescription);
-          console.log('✅ Added character consistency data');
+          console.log(`✅ [${requestId}] Segment 2 - Character Consistency Added:`, {
+            length: characterData.characterDescription.length,
+            preview: characterData.characterDescription.substring(0, 100) + '...',
+            seed: characterData.seed,
+            source: 'CharacterConsistencyService'
+          });
+        } else {
+          console.warn(`⚠️ [${requestId}] Missing character consistency data`);
         }
         
         // ALWAYS ADD: Style framework for quality
         if (storyFramework.qualitySuffixes) {
           segments.push(storyFramework.qualitySuffixes);
+          console.log(`🎨 [${requestId}] Segment 3 - Style Framework Added:`, {
+            length: storyFramework.qualitySuffixes.length,
+            content: storyFramework.qualitySuffixes,
+            gradeLevel: userInfo.gradeLevel || 'K',
+            source: 'styleFrameworks'
+          });
+        } else {
+          console.warn(`⚠️ [${requestId}] Missing style framework quality suffixes`);
         }
         
         // Build final prompts - primaryScene is master, everything else enhances it
         const enhancedPrompt = segments.filter(s => s && s.trim()).join(', ');
         const negativePrompt = storyFramework.negativePrompt || 'blurry, low quality';
         
-        console.log('🔧 Direct assembly complete:', {
-          segments: segments.length,
-          promptLength: enhancedPrompt.length,
+        // PHASE 4: Comprehensive prompt assembly logging
+        console.log(`🔧 [${requestId}] Runware Prompt Assembly Complete:`, {
+          totalSegments: segments.length,
+          finalPromptLength: enhancedPrompt.length,
+          segmentBreakdown: segments.map((seg, i) => ({
+            segment: i + 1,
+            length: seg.length,
+            preview: seg.substring(0, 50) + '...'
+          })),
           hasCharacterData: !!characterData.characterDescription,
-          hasAiSchema: !!aiSchema.primaryScene
+          hasAiSchema: !!aiSchema.primaryScene,
+          hasStyleFramework: !!storyFramework.qualitySuffixes,
+          negativePromptLength: negativePrompt.length,
+          assemblyMethod: 'comma-separated concatenation'
         });
+
+        console.log(`🎯 [${requestId}] Final Runware Prompt (${enhancedPrompt.length} chars):`, 
+          enhancedPrompt.substring(0, 200) + (enhancedPrompt.length > 200 ? '...' : ''));
+        console.log(`🚫 [${requestId}] Negative Prompt:`, negativePrompt);
 
         const enhancementResult = {
           enhancedPrompt,
@@ -310,24 +348,51 @@ serve(async (req) => {
             aiEnhancement: true,
             characterSeed: characterData.seed,
             segmentCount: segments.length,
+            requestId: requestId, // PHASE 5: Cross-function correlation
             ...aiEnhancerResult.metadata
           }
         };
         
-        // Validate and apply hardcoded fallbacks if needed for Tier 1
+        // PHASE 4: Detailed avatar validation with before/after comparison
+        console.log(`🔍 [${requestId}] Avatar Validation Phase - Before:`, {
+          promptLength: enhancedPrompt.length,
+          avatarIdentityType: avatarIdentity.type,
+          avatarIdentitySkinTone: avatarIdentity.skinTone,
+          promptPreview: enhancedPrompt.substring(0, 150) + '...'
+        });
+
         const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo);
 
-        console.log(`🎨 Premium AI-enhanced prompt (${enhancedPrompt.length} chars):`, enhancedPrompt.substring(0, 100) + '...');
-        console.log(`🔍 TIER 1 VALIDATION: Final validated prompt (${validatedPrompt.length} chars):`, validatedPrompt.substring(0, 100) + '...');
+        console.log(`🔍 [${requestId}] Avatar Validation Phase - After:`, {
+          originalLength: enhancedPrompt.length,
+          validatedLength: validatedPrompt.length,
+          changed: enhancedPrompt !== validatedPrompt,
+          lengthDifference: validatedPrompt.length - enhancedPrompt.length,
+          validatedPreview: validatedPrompt.substring(0, 150) + '...',
+          validationApplied: enhancedPrompt !== validatedPrompt ? 'YES - fallback used' : 'NO - passed validation'
+        });
 
-        // Generate with Runware Tier 1 (Premium) - Using validated prompt with hardcoded fallbacks
+        console.log(`🎨 [${requestId}] Final Tier 1 Prompt Ready for Runware (${validatedPrompt.length} chars):`, 
+          validatedPrompt.substring(0, 200) + (validatedPrompt.length > 200 ? '...' : ''));
+
+        // PHASE 4: Generate with Runware Tier 1 (Premium) with enhanced logging
+        console.log(`🚀 [${requestId}] Initiating Runware Premium Generation:`, {
+          apiKeyPresent: !!apiKey,
+          promptLength: validatedPrompt.length,
+          negativePromptLength: negativePrompt.length,
+          characterSeed: characterData.seed,
+          sessionId: sessionId,
+          pageNumber: pageNumber
+        });
+
         const tier1Result = await generateWithRunwarePremium(
           apiKey, 
           validatedPrompt, 
           negativePrompt, 
           characterData.seed,
           sessionId,
-          pageNumber
+          pageNumber,
+          requestId // PHASE 5: Pass requestId for correlation
         );
         
         if (tier1Result.success) {
@@ -575,23 +640,25 @@ class RunwareWebSocketManager {
     seed?: number, 
     sessionId?: string, 
     pageNumber?: number,
-    attempt: number = 1
+    attempt: number = 1,
+    requestId?: string // PHASE 5: Cross-function correlation
   ): Promise<any> {
     try {
-      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber);
+      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId);
     } catch (error) {
       const wsError = error as WebSocketError;
+      const logPrefix = requestId ? `[${requestId}]` : '';
       
       // Check if error is retryable and we haven't exceeded max attempts
       if (wsError.isRetryable && attempt < this.MAX_RETRIES) {
         const delay = Math.min(this.BASE_DELAY * Math.pow(2, attempt - 1), this.MAX_DELAY);
-        console.warn(`🔄 WebSocket attempt ${attempt} failed, retrying in ${delay}ms: ${wsError.message}`);
+        console.warn(`🔄 ${logPrefix} WebSocket attempt ${attempt} failed, retrying in ${delay}ms: ${wsError.message}`);
         
         await new Promise(resolve => setTimeout(resolve, delay));
-        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1);
+        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1, requestId);
       }
       
-      console.error(`❌ WebSocket failed after ${attempt} attempts: ${wsError.message}`);
+      console.error(`❌ ${logPrefix} WebSocket failed after ${attempt} attempts: ${wsError.message}`);
       throw wsError;
     }
   }
@@ -602,7 +669,8 @@ class RunwareWebSocketManager {
     negativePrompt: string, 
     seed?: number, 
     sessionId?: string, 
-    pageNumber?: number
+    pageNumber?: number,
+    requestId?: string // PHASE 5: Cross-function correlation
   ): Promise<any> {
     return new Promise((resolve, reject) => {
       let ws: WebSocket;
@@ -643,15 +711,18 @@ class RunwareWebSocketManager {
         }, this.CONNECTION_TIMEOUT);
 
         ws.onopen = () => {
-          console.log(`📡 WebSocket connected to Runware (attempt ${sessionId || 'unknown'})`);
+          const logPrefix = requestId ? `[${requestId}]` : '';
+          console.log(`📡 ${logPrefix} WebSocket connected to Runware (session ${sessionId || 'unknown'})`);
           
           // Send authentication with error handling
           try {
+            console.log(`🔐 ${logPrefix} Sending Runware authentication...`);
             ws.send(JSON.stringify([{
               taskType: "authentication",
               apiKey: apiKey
             }]));
           } catch (sendError) {
+            console.error(`❌ ${logPrefix} Failed to send authentication:`, sendError.message);
             safeReject(new WebSocketError(
               `Failed to send authentication: ${sendError.message}`,
               'AUTH',
@@ -693,20 +764,37 @@ class RunwareWebSocketManager {
             if (response.data) {
               for (const item of response.data) {
                 if (item.taskType === "authentication") {
-                  console.log(`✅ Runware authenticated for session ${sessionId || 'unknown'}`);
+                  const logPrefix = requestId ? `[${requestId}]` : '';
+                  console.log(`✅ ${logPrefix} Runware authenticated for session ${sessionId || 'unknown'}`);
                   
-                  // PHASE 1 FIX: Emergency Truncation with proper parameters
-                  console.log(`📏 Original prompt length: ${positivePrompt.length} characters`);
+                  // PHASE 4: Detailed prompt length and truncation logging
+                  console.log(`📏 ${logPrefix} Runware Prompt Length Analysis:`, {
+                    originalLength: positivePrompt.length,
+                    limit: 2990,
+                    withinLimit: positivePrompt.length <= 2990,
+                    truncationRequired: positivePrompt.length > 2990,
+                    excessChars: positivePrompt.length > 2990 ? positivePrompt.length - 2990 : 0
+                  });
+
                   if (positivePrompt.length > 2990) {
-                    console.warn(`🚨 EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId || 'unknown'} page ${pageNumber || 0}...`);
+                    console.warn(`🚨 ${logPrefix} EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId || 'unknown'} page ${pageNumber || 0}...`);
+                    const originalPrompt = positivePrompt;
                     positivePrompt = positivePrompt.substring(0, 2990);
-                    console.log(`✂️ Truncated to ${positivePrompt.length} characters for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
+                    console.log(`✂️ ${logPrefix} Prompt truncated:`, {
+                      originalLength: originalPrompt.length,
+                      truncatedLength: positivePrompt.length,
+                      removedChars: originalPrompt.length - positivePrompt.length,
+                      truncatedContent: originalPrompt.substring(2990, 2990 + 50) + '...',
+                      sessionId: sessionId || 'unknown',
+                      pageNumber: pageNumber || 0
+                    });
                   }
 
-                  // Send premium image generation request
+                  // PHASE 4: Detailed Runware generation request construction
+                  const taskUUID = crypto.randomUUID();
                   const imageRequest = [{
                     taskType: "imageInference",
-                    taskUUID: crypto.randomUUID(),
+                    taskUUID: taskUUID,
                     positivePrompt: positivePrompt,
                     negativePrompt: negativePrompt,
                     width: 1024,
@@ -720,11 +808,27 @@ class RunwareWebSocketManager {
                     ...(seed && { seed })
                   }];
                   
-                  console.log(`🚀 Sending premium image generation request for session ${sessionId || 'unknown'}`);
+                  console.log(`🚀 ${logPrefix} Runware Generation Request:`, {
+                    taskUUID: taskUUID,
+                    positivePromptLength: positivePrompt.length,
+                    negativePromptLength: negativePrompt.length,
+                    model: "runware:100@1",
+                    dimensions: "1024x1024",
+                    hasSeed: !!seed,
+                    seedValue: seed || 'random',
+                    sessionId: sessionId || 'unknown',
+                    pageNumber: pageNumber || 0,
+                    CFGScale: 4.0,
+                    steps: 12
+                  });
+
+                  console.log(`🎨 ${logPrefix} Final Runware Prompt Being Sent:`, 
+                    positivePrompt.substring(0, 300) + (positivePrompt.length > 300 ? '...' : ''));
                   
                   try {
                     ws.send(JSON.stringify(imageRequest));
                   } catch (sendError) {
+                    console.error(`❌ ${logPrefix} Failed to send image request:`, sendError.message);
                     safeReject(new WebSocketError(
                       `Failed to send image request: ${sendError.message}`,
                       'NETWORK',
@@ -733,7 +837,17 @@ class RunwareWebSocketManager {
                   }
                   
                 } else if (item.taskType === "imageInference") {
-                  console.log(`🎯 Premium image generated successfully for session ${sessionId || 'unknown'}:`, item.imageURL);
+                  const logPrefix = requestId ? `[${requestId}]` : '';
+                  console.log(`🎯 ${logPrefix} Runware Generation Complete:`, {
+                    taskUUID: item.taskUUID,
+                    imageURL: item.imageURL,
+                    seed: item.seed,
+                    NSFWContent: item.NSFWContent || false,
+                    cost: item.cost || 'unknown',
+                    sessionId: sessionId || 'unknown',
+                    pageNumber: pageNumber || 0,
+                    generatedSuccessfully: true
+                  });
                   
                   safeResolve({
                     success: true,
@@ -794,9 +908,24 @@ async function generateWithRunwarePremium(
   negativePrompt: string, 
   seed?: number, 
   sessionId?: string, 
-  pageNumber?: number
+  pageNumber?: number,
+  requestId?: string // PHASE 5: Cross-function correlation
 ) {
-  console.log(`🚀 Starting enhanced WebSocket generation for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
+  const logPrefix = requestId ? `[${requestId}]` : '';
+  console.log(`🚀 ${logPrefix} Starting enhanced WebSocket generation for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
+  
+  // PHASE 4: Detailed Runware generation parameters logging
+  console.log(`🚀 ${logPrefix} Runware Generation Parameters:`, {
+    apiKeyLength: apiKey?.length || 0,
+    positivePromptLength: positivePrompt.length,
+    negativePromptLength: negativePrompt.length,
+    hasSeed: !!seed,
+    seedValue: seed || 'random',
+    sessionId: sessionId || 'unknown',
+    pageNumber: pageNumber || 0,
+    promptPreview: positivePrompt.substring(0, 100) + '...',
+    negativePromptContent: negativePrompt
+  });
   
   try {
     return await RunwareWebSocketManager.connectWithRetry(
@@ -805,14 +934,18 @@ async function generateWithRunwarePremium(
       negativePrompt, 
       seed, 
       sessionId, 
-      pageNumber
+      pageNumber,
+      1, // attempt
+      requestId // PHASE 5: Pass requestId for correlation
     );
   } catch (error) {
     const wsError = error as WebSocketError;
-    console.error(`💥 Enhanced WebSocket generation failed for session ${sessionId || 'unknown'}:`, {
+    console.error(`💥 ${logPrefix} Enhanced WebSocket generation failed for session ${sessionId || 'unknown'}:`, {
       type: wsError.type,
       retryable: wsError.isRetryable,
-      message: wsError.message
+      message: wsError.message,
+      promptLength: positivePrompt.length,
+      sessionId: sessionId
     });
     
     // Re-throw with additional context for tier fallback logic

@@ -35,17 +35,46 @@ import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementP
 function checkPrimarySceneCriteria(data) {
   const scene = data.primaryScene;
   if (!scene || typeof scene !== 'string') {
+    console.log('🔍 VALIDATION DEBUG: Missing or invalid primaryScene', { 
+      hasScene: !!scene, 
+      sceneType: typeof scene,
+      sceneValue: scene 
+    });
     return { primaryScene: false, passCount: 0, details: 'missing_or_invalid' };
   }
 
-  const hasMinLength = scene.length >= 120;
-  const hasCharacter = /\b(child|character|person|they|he|she|avatar)\b/i.test(scene);
-  const hasAction = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i.test(scene);
-  const hasSetting = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i.test(scene);
-  const hasDescriptiveWords = /\b(colorful|bright|sunny|warm|cheerful|detailed|realistic|beautiful)\b/i.test(scene);
+  // PHASE 3: Detailed validation with regex match examples
+  const lengthTest = scene.length >= 120;
+  const characterRegex = /\b(child|character|person|they|he|she|avatar)\b/i;
+  const actionRegex = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i;
+  const settingRegex = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i;
+  const descriptiveRegex = /\b(colorful|bright|sunny|warm|cheerful|detailed|realistic|beautiful)\b/i;
+  
+  const characterMatch = scene.match(characterRegex);
+  const actionMatch = scene.match(actionRegex);
+  const settingMatch = scene.match(settingRegex);
+  const descriptiveMatch = scene.match(descriptiveRegex);
 
-  const qualityScore = [hasMinLength, hasCharacter, hasAction, hasSetting, hasDescriptiveWords].filter(Boolean).length;
+  const hasCharacter = !!characterMatch;
+  const hasAction = !!actionMatch;
+  const hasSetting = !!settingMatch;
+  const hasDescriptiveWords = !!descriptiveMatch;
+
+  const qualityScore = [lengthTest, hasCharacter, hasAction, hasSetting, hasDescriptiveWords].filter(Boolean).length;
   const isPrimarySceneValid = qualityScore >= 4; // Require at least 4 of 5 criteria
+
+  // PHASE 3: Detailed validation logging with match examples
+  console.log('🔍 VALIDATION DEBUG: Primary Scene Criteria Analysis:', {
+    sceneLength: scene.length,
+    lengthTest: `${lengthTest} (>= 120 chars)`,
+    characterTest: `${hasCharacter} ${characterMatch ? `(matched: "${characterMatch[0]}")` : '(no match)'}`,
+    actionTest: `${hasAction} ${actionMatch ? `(matched: "${actionMatch[0]}")` : '(no match)'}`,
+    settingTest: `${hasSetting} ${settingMatch ? `(matched: "${settingMatch[0]}")` : '(no match)'}`,
+    descriptiveTest: `${hasDescriptiveWords} ${descriptiveMatch ? `(matched: "${descriptiveMatch[0]}")` : '(no match)'}`,
+    qualityScore: `${qualityScore}/5`,
+    validationResult: isPrimarySceneValid ? 'PASS' : 'TIER 2 TRIGGER',
+    scenePreview: scene.substring(0, 150) + (scene.length > 150 ? '...' : '')
+  });
 
   return {
     primaryScene: isPrimarySceneValid,
@@ -56,7 +85,13 @@ function checkPrimarySceneCriteria(data) {
       hasAction, 
       hasSetting,
       hasDescriptiveWords,
-      qualityScore: `${qualityScore}/5`
+      qualityScore: `${qualityScore}/5`,
+      matchExamples: {
+        character: characterMatch?.[0] || 'none',
+        action: actionMatch?.[0] || 'none',
+        setting: settingMatch?.[0] || 'none',
+        descriptive: descriptiveMatch?.[0] || 'none'
+      }
     }
   };
 }
@@ -73,15 +108,37 @@ function checkPrimarySceneCriteria(data) {
 function validateAndEnhanceContent(enhancedStoryData, storyText) {
   const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
   
-  console.log(`🔍 VISUAL SCENE Check: ${fieldCheck.primaryScene ? 'PASS' : 'TIER 2'} - ${JSON.stringify(fieldCheck.details)}`);
+  // PHASE 3: Enhanced validation logging with detailed pass/fail reasoning
+  console.log('🔍 VALIDATION SUMMARY:', {
+    result: fieldCheck.primaryScene ? 'PASS' : 'TIER 2 TRIGGER',
+    qualityScore: fieldCheck.details?.qualityScore || '0/5',
+    sceneLength: enhancedStoryData.primaryScene?.length || 0,
+    criteria: fieldCheck.details,
+    decision: fieldCheck.primaryScene ? 'Accept for Tier 1' : 'Fallback to Tier 2',
+    tier2Reason: !fieldCheck.primaryScene ? 'Insufficient visual quality criteria' : null
+  });
   
   // Enhanced decision: primaryScene meets visual quality standards = accept, otherwise = Tier 2
   if (!fieldCheck.primaryScene) {
-    console.log(`❌ Visual scene insufficient - Quality: ${fieldCheck.details?.qualityScore || '0/5'}, Length: ${enhancedStoryData.primaryScene?.length || 0} chars - falling back to Tier 2`);
+    console.log(`❌ TIER 2 TRIGGER: Visual scene validation failed`, {
+      qualityScore: fieldCheck.details?.qualityScore || '0/5',
+      sceneLength: enhancedStoryData.primaryScene?.length || 0,
+      missingCriteria: Object.entries(fieldCheck.details || {})
+        .filter(([key, value]) => key !== 'qualityScore' && key !== 'length' && !value)
+        .map(([key]) => key),
+      tier2Reasoning: 'Insufficient visual elements for high-quality image generation'
+    });
     return { useTier2: true, fieldCheck };
   }
   
-  console.log(`✅ Visual scene validation passed - Quality: ${fieldCheck.details.qualityScore}, Length: ${enhancedStoryData.primaryScene.length} chars - content accepted`);
+  console.log(`✅ TIER 1 APPROVED: Visual scene validation passed`, {
+    qualityScore: fieldCheck.details.qualityScore,
+    sceneLength: enhancedStoryData.primaryScene.length,
+    passedCriteria: Object.entries(fieldCheck.details)
+      .filter(([key, value]) => key !== 'qualityScore' && key !== 'length' && value)
+      .map(([key]) => key),
+    contentDecision: 'Proceeding with AI-enhanced generation'
+  });
   return { enhancedData: enhancedStoryData, fieldCheck };
 }
 
@@ -204,19 +261,39 @@ function detectModelFamily() {
 // ============= PROGRESSIVE JSON PARSING =============
 
 function parseAIResponse(content, options = {}) {
-  console.log('🔍 Progressive JSON Parsing:', {
+  // PHASE 2: Enhanced parsing debug with detailed analysis
+  console.log('🔍 PARSING DEBUG: Progressive JSON Analysis:', {
     contentLength: content.length,
     modelFamily: options.modelFamily,
-    firstChars: content.substring(0, 50)
+    contentType: typeof content,
+    firstLine: content.split('\n')[0] || '',
+    lastLine: content.split('\n').pop() || '',
+    hasJsonStart: content.trim().startsWith('{'),
+    hasJsonEnd: content.trim().endsWith('}'),
+    firstChars: content.substring(0, 100),
+    lastChars: content.substring(content.length - 50)
   });
   
   // Strategy 1: Try direct JSON parsing (most common)
   try {
     const parsed = JSON.parse(content);
-    console.log('✅ Direct JSON parsing successful');
+    console.log('✅ PARSING SUCCESS: Direct JSON parsing successful', {
+      parsedKeys: Object.keys(parsed || {}),
+      primarySceneLength: parsed.primaryScene?.length || 0,
+      hasCharacters: !!parsed.characters,
+      hasVisualComponents: !!parsed.visualComponents
+    });
     return parsed;
   } catch (directError) {
-    console.log('⚠️ Direct JSON parsing failed, trying extraction methods');
+    console.log('⚠️ PARSING ATTEMPT 1 FAILED: Direct parsing failed, analyzing content structure:', {
+      errorMessage: directError.message,
+      contentStructure: {
+        hasCodeBlocks: content.includes('```'),
+        hasJsonKeywords: /["'][a-zA-Z]+["']\s*:/.test(content),
+        curlyBraceCount: (content.match(/\{/g) || []).length,
+        straightBraceCount: (content.match(/\}/g) || []).length
+      }
+    });
   }
   
   // Strategy 2: Extract JSON from text (for models that add reasoning)
@@ -229,14 +306,27 @@ function parseAIResponse(content, options = {}) {
       /"?(\{[\s\S]*?\})"?/
     ];
     
-    for (const pattern of jsonPatterns) {
+    for (let i = 0; i < jsonPatterns.length; i++) {
+      const pattern = jsonPatterns[i];
       const match = content.match(pattern);
+      console.log(`🔍 PARSING ATTEMPT ${i + 2}: Pattern ${i + 1}`, {
+        patternMatched: !!match,
+        matchedContent: match ? match[1]?.substring(0, 100) + '...' : 'none'
+      });
+      
       if (match && match[1]) {
         try {
           const extracted = JSON.parse(match[1].trim());
-          console.log('✅ JSON extraction successful with pattern');
+          console.log(`✅ PARSING SUCCESS: JSON extraction successful with pattern ${i + 1}`, {
+            extractedKeys: Object.keys(extracted || {}),
+            primarySceneLength: extracted.primaryScene?.length || 0,
+            extractedFrom: `Pattern ${i + 1}`,
+            originalLength: content.length,
+            extractedLength: match[1].length
+          });
           return extracted;
         } catch (e) {
+          console.log(`⚠️ Pattern ${i + 1} matched but parse failed:`, e.message);
           continue;
         }
       }
@@ -244,17 +334,26 @@ function parseAIResponse(content, options = {}) {
     
     throw new Error('No valid JSON found in content');
   } catch (extractionError) {
-    console.error('❌ All parsing strategies failed:', {
-      directError: 'Invalid JSON syntax',
+    console.error('❌ PARSING COMPLETE FAILURE: All parsing strategies exhausted:', {
+      directParseError: 'Invalid JSON syntax',
       extractionError: extractionError.message,
-      content: content.substring(0, 200)
+      contentAnalysis: {
+        length: content.length,
+        lines: content.split('\n').length,
+        hasOpeningBrace: content.includes('{'),
+        hasClosingBrace: content.includes('}'),
+        suspectedJsonStart: content.indexOf('{'),
+        suspectedJsonEnd: content.lastIndexOf('}')
+      },
+      contentSample: content.substring(0, 300) + (content.length > 300 ? '...' : ''),
+      allStrategiesAttempted: jsonPatterns.length + 1
     });
     
     throw new Error(`Progressive parsing failed: ${extractionError.message}`);
   }
 }
 
-async function callOpenAIWithFallback(messages: any[], timeout = 6000) {
+async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Circuit breaker check with enhanced logging
@@ -271,7 +370,8 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000) {
   
   for (let modelIndex = 0; modelIndex < AI_MODELS.length; modelIndex++) {
     const model = AI_MODELS[modelIndex];
-    console.log(`🤖 Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
+    const logPrefix = requestId ? `[${requestId}]` : '';
+    console.log(`🤖 ${logPrefix} Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
     
     for (let attempt = 1; attempt <= 1; attempt++) {
       try {
@@ -289,7 +389,20 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000) {
           requestBody.temperature = 0.3;
         }
         
-        console.log(`⏳ Attempting ${model.name} (attempt ${attempt}/1, timeout: ${timeout}ms)`);
+        // PHASE 1: Detailed OpenAI request logging
+        console.log(`🤖 ${logPrefix} OpenAI Request Configuration:`, {
+          model: model.name,
+          maxTokensParam: model.maxTokens,
+          maxTokensValue: 600,
+          supportsTemperature: model.supportsTemperature,
+          temperature: model.supportsTemperature ? 0.3 : 'not supported',
+          timeout: timeout,
+          attempt: `${attempt}/1`,
+          messagesCount: messages.length,
+          totalPromptLength: messages.reduce((sum, msg) => sum + msg.content.length, 0)
+        });
+        
+        console.log(`⏳ ${logPrefix} Attempting ${model.name} (attempt ${attempt}/1, timeout: ${timeout}ms)`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -534,6 +647,10 @@ serve(async (req) => {
         // Model-specific prompt optimization with OPTIMIZED SCHEMA
         const { modelFamily, useSimplifiedPrompt } = detectModelFamily();
         
+        // PHASE 1: Generate unique request ID for cross-function tracing
+        const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+        console.log(`🧠 [${requestId}] Starting OpenAI prompt construction phase`);
+
         const messages = [
           {
             role: 'system',
@@ -610,22 +727,53 @@ Focus on creating the most detailed, visually rich primaryScene possible that ca
           }
         ];
 
+        // PHASE 1: Detailed OpenAI Prompt Construction Debugging
+        console.log(`🧠 [${requestId}] OpenAI Prompt Construction Complete:`, {
+          modelFamily: modelFamily,
+          useSimplifiedPrompt: useSimplifiedPrompt,
+          systemPromptLength: messages[0].content.length,
+          userPromptLength: messages[1].content.length,
+          totalMessageLength: messages.reduce((sum, msg) => sum + msg.content.length, 0),
+          avatarIdentityKeys: Object.keys(avatarIdentity || {}),
+          hasMultipleCharacters: hasMultipleCharacters,
+          previousContextLength: previousContext.length,
+          storyTextLength: storyText.length,
+          secondaryCharacterFields: secondaryCharacterFields ? 'included' : 'excluded',
+          timestamp: new Date().toISOString()
+        });
+
+        console.log(`🧠 [${requestId}] System Prompt (${messages[0].content.length} chars):`, 
+          messages[0].content.substring(0, 200) + '...');
+        console.log(`🧠 [${requestId}] User Prompt (${messages[1].content.length} chars):`, 
+          messages[1].content.substring(0, 200) + '...');
+        console.log(`🧠 [${requestId}] Avatar Identity:`, JSON.stringify(avatarIdentity, null, 2));
+
         let validationResult;
         
         try {
-          // Call OpenAI with model fallback chain
-          const aiResult = await callOpenAIWithFallback(messages);
+          // PHASE 1: Enhanced OpenAI API call with detailed logging
+          console.log(`🧠 [${requestId}] Calling OpenAI with model fallback chain...`);
+          const aiResult = await callOpenAIWithFallback(messages, 6000, requestId);
           
-          // Enhanced content extraction with debugging
-          console.log('🔍 OpenAI Response Debug:', {
+          // PHASE 2: Enhanced OpenAI response analysis with complete structure logging
+          console.log(`🔍 [${requestId}] OpenAI Response Structure Analysis:`, {
+            responseKeys: Object.keys(aiResult || {}),
             hasChoices: !!aiResult.choices,
             choicesLength: aiResult.choices?.length || 0,
             hasFirstChoice: !!aiResult.choices?.[0],
+            firstChoiceKeys: aiResult.choices?.[0] ? Object.keys(aiResult.choices[0]) : [],
             hasMessage: !!aiResult.choices?.[0]?.message,
+            messageKeys: aiResult.choices?.[0]?.message ? Object.keys(aiResult.choices[0].message) : [],
             hasContent: !!aiResult.choices?.[0]?.message?.content,
             contentType: typeof aiResult.choices?.[0]?.message?.content,
-            contentPreview: aiResult.choices?.[0]?.message?.content?.substring(0, 100)
+            contentLength: aiResult.choices?.[0]?.message?.content?.length || 0,
+            model: aiResult.model || 'unknown',
+            usage: aiResult.usage || 'no usage data'
           });
+
+          console.log(`🔍 [${requestId}] Content Preview:`, 
+            aiResult.choices?.[0]?.message?.content?.substring(0, 200) + 
+            (aiResult.choices?.[0]?.message?.content?.length > 200 ? '...' : ''));
 
           const content = aiResult.choices?.[0]?.message?.content;
           
@@ -655,10 +803,24 @@ Focus on creating the most detailed, visually rich primaryScene possible that ca
             });
           }
 
-          // ENHANCED: Progressive JSON parsing with model-specific handling
+          // PHASE 2: Enhanced Progressive JSON parsing with model-specific handling
           try {
-            enhancedStoryData = parseAIResponse(trimmedContent, { modelFamily });
+            console.log(`🔍 [${requestId}] Starting JSON parsing phase`);
+            enhancedStoryData = parseAIResponse(trimmedContent, { modelFamily, requestId });
+            console.log(`✅ [${requestId}] JSON parsing successful - Schema extracted:`, {
+              extractedFields: Object.keys(enhancedStoryData || {}),
+              primarySceneLength: enhancedStoryData.primaryScene?.length || 0,
+              charactersPresent: !!enhancedStoryData.characters,
+              visualComponentsPresent: !!enhancedStoryData.visualComponents,
+              schemaValid: !!(enhancedStoryData.primaryScene && enhancedStoryData.characters && enhancedStoryData.visualComponents)
+            });
           } catch (parseError) {
+            console.error(`❌ [${requestId}] JSON parsing failed:`, {
+              parseError: parseError.message,
+              contentLength: trimmedContent.length,
+              contentStart: trimmedContent.substring(0, 100),
+              contentEnd: trimmedContent.substring(trimmedContent.length - 100)
+            });
             throw new Error(`JSON parsing failed: ${parseError.message} - Content: "${trimmedContent.substring(0, 100)}..."`);
           }
           
