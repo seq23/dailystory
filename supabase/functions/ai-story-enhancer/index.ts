@@ -100,29 +100,48 @@ function checkPrimarySceneCriteria(data) {
 // This ensures immediate Tier 2 triggering when AI extraction is insufficient
 
 /**
- * TIER 1 FAIL-FAST VALIDATION: Binary primaryScene check - no repair attempts
+ * RELAXED VALIDATION: Accept if primaryScene exists and meets basic criteria
  * @param {Object} enhancedStoryData - AI extracted data  
  * @param {string} storyText - Original story text (unused, kept for compatibility)
  * @returns {Object} - Enhanced data or immediate Tier 2 trigger
  */
 function validateAndEnhanceContent(enhancedStoryData, storyText) {
+  // Check if we have ANY form of primaryScene (even from fallback extraction)
+  if (!enhancedStoryData || !enhancedStoryData.primaryScene) {
+    console.log(`❌ TIER 2 TRIGGER: No primaryScene found in data`, {
+      hasData: !!enhancedStoryData,
+      dataKeys: enhancedStoryData ? Object.keys(enhancedStoryData) : [],
+      tier2Reasoning: 'Missing primaryScene content'
+    });
+    return { useTier2: true, fieldCheck: { primaryScene: false, passCount: 0, details: 'no_primary_scene' } };
+  }
+  
   const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
+  
+  // RELAXED VALIDATION: Accept if primaryScene exists and meets 2/5 criteria OR if it was extracted via fallback
+  const isFallbackExtraction = enhancedStoryData.extractionMethod === 'fallback_text_extraction' || 
+                               enhancedStoryData.extractionMethod === 'full_content_fallback';
+  
+  // Accept fallback extractions with lower standards, or regular extractions with 2/5 criteria
+  const shouldAccept = isFallbackExtraction || fieldCheck.primaryScene;
   
   // PHASE 3: Enhanced validation logging with detailed pass/fail reasoning
   console.log('🔍 VALIDATION SUMMARY:', {
-    result: fieldCheck.primaryScene ? 'PASS' : 'TIER 2 TRIGGER',
+    result: shouldAccept ? 'PASS' : 'TIER 2 TRIGGER',
     qualityScore: fieldCheck.details?.qualityScore || '0/5',
     sceneLength: enhancedStoryData.primaryScene?.length || 0,
+    extractionMethod: enhancedStoryData.extractionMethod || 'standard_json',
+    isFallbackExtraction: isFallbackExtraction,
     criteria: fieldCheck.details,
-    decision: fieldCheck.primaryScene ? 'Accept for Tier 1' : 'Fallback to Tier 2',
-    tier2Reason: !fieldCheck.primaryScene ? 'Insufficient visual quality criteria' : null
+    decision: shouldAccept ? 'Accept for Tier 1' : 'Fallback to Tier 2',
+    tier2Reason: !shouldAccept ? 'Insufficient visual quality criteria' : null
   });
   
-  // Enhanced decision: primaryScene meets visual quality standards = accept, otherwise = Tier 2
-  if (!fieldCheck.primaryScene) {
+  if (!shouldAccept) {
     console.log(`❌ TIER 2 TRIGGER: Visual scene validation failed`, {
       qualityScore: fieldCheck.details?.qualityScore || '0/5',
       sceneLength: enhancedStoryData.primaryScene?.length || 0,
+      extractionMethod: enhancedStoryData.extractionMethod || 'standard_json',
       missingCriteria: Object.entries(fieldCheck.details || {})
         .filter(([key, value]) => key !== 'qualityScore' && key !== 'length' && !value)
         .map(([key]) => key),
@@ -132,9 +151,10 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
   }
   
   console.log(`✅ TIER 1 APPROVED: Visual scene validation passed`, {
-    qualityScore: fieldCheck.details.qualityScore,
+    qualityScore: fieldCheck.details?.qualityScore || 'fallback',
     sceneLength: enhancedStoryData.primaryScene.length,
-    passedCriteria: Object.entries(fieldCheck.details)
+    extractionMethod: enhancedStoryData.extractionMethod || 'standard_json',
+    passedCriteria: Object.entries(fieldCheck.details || {})
       .filter(([key, value]) => key !== 'qualityScore' && key !== 'length' && value)
       .map(([key]) => key),
     contentDecision: 'Proceeding with AI-enhanced generation'
@@ -258,11 +278,11 @@ function detectModelFamily() {
   };
 }
 
-// ============= PROGRESSIVE JSON PARSING =============
+// ============= ROBUST JSON PARSING WITH FALLBACKS =============
 
 function parseAIResponse(content, options = {}) {
   // PHASE 2: Enhanced parsing debug with detailed analysis
-  console.log('🔍 PARSING DEBUG: Progressive JSON Analysis:', {
+  console.log('🔍 PARSING DEBUG: Robust JSON Analysis:', {
     contentLength: content.length,
     modelFamily: options.modelFamily,
     contentType: typeof content,
@@ -280,12 +300,11 @@ function parseAIResponse(content, options = {}) {
     console.log('✅ PARSING SUCCESS: Direct JSON parsing successful', {
       parsedKeys: Object.keys(parsed || {}),
       primarySceneLength: parsed.primaryScene?.length || 0,
-      hasCharacters: !!parsed.characters,
-      hasVisualComponents: !!parsed.visualComponents
+      hasPrimaryScene: !!parsed.primaryScene
     });
     return parsed;
   } catch (directError) {
-    console.log('⚠️ PARSING ATTEMPT 1 FAILED: Direct parsing failed, analyzing content structure:', {
+    console.log('⚠️ PARSING ATTEMPT 1 FAILED: Direct parsing failed, trying extraction methods:', {
       errorMessage: directError.message,
       contentStructure: {
         hasCodeBlocks: content.includes('```'),
@@ -332,24 +351,67 @@ function parseAIResponse(content, options = {}) {
       }
     }
     
-    throw new Error('No valid JSON found in content');
+    throw new Error('No valid JSON found, attempting fallback extraction');
   } catch (extractionError) {
-    console.error('❌ PARSING COMPLETE FAILURE: All parsing strategies exhausted:', {
-      directParseError: 'Invalid JSON syntax',
-      extractionError: extractionError.message,
-      contentAnalysis: {
-        length: content.length,
-        lines: content.split('\n').length,
-        hasOpeningBrace: content.includes('{'),
-        hasClosingBrace: content.includes('}'),
-        suspectedJsonStart: content.indexOf('{'),
-        suspectedJsonEnd: content.lastIndexOf('}')
-      },
-      contentSample: content.substring(0, 300) + (content.length > 300 ? '...' : ''),
-      allStrategiesAttempted: jsonPatterns.length + 1
-    });
-    
-    throw new Error(`Progressive parsing failed: ${extractionError.message}`);
+    // Strategy 3: FALLBACK - Extract just primaryScene if possible
+    console.log('🔄 FALLBACK STRATEGY: Attempting primaryScene extraction from text');
+    try {
+      // Look for primaryScene content in various patterns
+      const primaryScenePatterns = [
+        /"primaryScene"\s*:\s*"([^"]+)"/i,
+        /'primaryScene'\s*:\s*'([^']+)'/i,
+        /primaryScene\s*:\s*"([^"]+)"/i,
+        /primaryScene\s*:\s*'([^']+)'/i,
+        /"primaryScene"\s*:\s*`([^`]+)`/i
+      ];
+      
+      for (const pattern of primaryScenePatterns) {
+        const match = content.match(pattern);
+        if (match && match[1] && match[1].length >= 30) {
+          const primaryScene = match[1].trim();
+          console.log('✅ FALLBACK SUCCESS: Extracted primaryScene from text', {
+            primarySceneLength: primaryScene.length,
+            extractedContent: primaryScene.substring(0, 100) + '...'
+          });
+          return {
+            primaryScene: primaryScene,
+            extractionMethod: 'fallback_text_extraction'
+          };
+        }
+      }
+      
+      // Strategy 4: LAST RESORT - Use the entire content as primaryScene if it's descriptive enough
+      if (content.length >= 30 && /\b(child|character|room|playing|sitting|standing|holding|looking)\b/i.test(content)) {
+        console.log('✅ LAST RESORT SUCCESS: Using entire content as primaryScene', {
+          contentLength: content.length,
+          extractionMethod: 'full_content_fallback'
+        });
+        return {
+          primaryScene: content.trim(),
+          extractionMethod: 'full_content_fallback'
+        };
+      }
+      
+      throw new Error('No extractable primaryScene content found');
+    } catch (fallbackError) {
+      console.error('❌ PARSING COMPLETE FAILURE: All strategies exhausted including fallbacks:', {
+        directParseError: 'Invalid JSON syntax',
+        extractionError: extractionError.message,
+        fallbackError: fallbackError.message,
+        contentAnalysis: {
+          length: content.length,
+          lines: content.split('\n').length,
+          hasOpeningBrace: content.includes('{'),
+          hasClosingBrace: content.includes('}'),
+          suspectedJsonStart: content.indexOf('{'),
+          suspectedJsonEnd: content.lastIndexOf('}')
+        },
+        contentSample: content.substring(0, 300) + (content.length > 300 ? '...' : ''),
+        allStrategiesAttempted: jsonPatterns.length + 4 // JSON patterns + fallback strategies
+      });
+      
+      throw new Error(`All parsing strategies failed: ${fallbackError.message}`);
+    }
   }
 }
 
@@ -655,80 +717,41 @@ serve(async (req) => {
           {
             role: 'system',
             content: useSimplifiedPrompt ? 
-              // GPT-5/4.1+ optimized prompt - visual-first approach
-              `Generate comprehensive visual scene descriptions for illustration purposes.
+              // GPT-5/4.1+ optimized prompt - SIMPLIFIED STRUCTURE
+              `Generate visual scene descriptions for illustration purposes.
 
-PRIMARY OBJECTIVE: Create rich, detailed visual descriptions that capture every element needed for perfect image generation.
+PRIMARY OBJECTIVE: Create rich, detailed visual descriptions for perfect image generation.
 
-CONTEXT ANALYSIS REQUIRED: If previous page context is provided, you MUST:
-1. Analyze what happened in the previous scene to understand story progression
-2. Make visual inferences about how the current scene logically follows from the previous context
-3. Maintain visual continuity (setting elements, character positioning, objects that should remain)
-4. Ensure character consistency with previous appearances and emotional states
-5. Infer environmental details that would naturally carry forward or evolve
-
-JSON RESPONSE:
+SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
 {
-  "primaryScene": "MASTER VISUAL DESCRIPTION: Complete, comprehensive scene containing ALL visual elements - character appearance (using avatar identity), clothing, pose, expression, actions, setting details, lighting, objects, colors, mood, atmosphere. Use previous context to inform scene progression and visual continuity. Minimum 120+ characters with rich descriptive language.",
-  "characters": {
-    "characterAppearance": "avatar identity integration for consistency with previous context",
-    "characterClothing": "clothing details considering previous scene continuity", 
-    "characterPosition": "pose/position that logically follows from previous context",
-    "characterMood": "emotion/expression progression from previous scene",${secondaryCharacterFields}
-  },
-  "visualComponents": {
-    "action": "primary activity that naturally progresses from previous context",
-    "setting": "environment details with continuity from previous scene", 
-    "sceneType": "indoor/outdoor/mixed classification with context awareness",
-    "lighting": "lighting conditions that match or naturally progress from previous scene",
-    "keyObjects": "important visual elements including those that should carry forward from previous context"
-  }
+  "primaryScene": "Complete visual scene description containing ALL elements - character appearance (using avatar identity), clothing, pose, expression, actions, setting details, lighting, objects, colors, mood, atmosphere. Minimum 30+ characters with rich descriptive language.",
+  "characterDetails": "optional character-specific details",
+  "settingDetails": "optional environment details"
 }
 
 Avatar Identity: ${JSON.stringify(avatarIdentity)}
-CRITICAL: primaryScene is your MAIN OUTPUT - make it comprehensive, detailed, visually rich, and contextually connected to previous scenes.`
+CRITICAL: Focus on creating a comprehensive primaryScene - this is the MAIN requirement.`
             :
-              // Legacy models - visual-first approach with comprehensive instructions
-              `Generate comprehensive visual scene descriptions for professional illustration purposes.
+              // Legacy models - SIMPLIFIED visual-first approach
+              `Generate visual scene descriptions for professional illustration purposes.
 
-PRIMARY OBJECTIVE: Create the most detailed, visually rich scene description possible for image generation.
+PRIMARY OBJECTIVE: Create detailed, visually rich scene descriptions for image generation.
 
-PREVIOUS CONTEXT INTEGRATION REQUIREMENTS: When previous page context is provided, you MUST:
-1. Carefully analyze the previous scene to understand what happened before
-2. Make necessary visual inferences about how the current scene should naturally progress
-3. Ensure visual continuity between scenes (maintain consistent setting elements, character positioning, objects)
-4. Use previous context to inform character emotional states, clothing consistency, and environmental details
-5. Incorporate elements from previous scenes that would logically remain or evolve in the current scene
-6. Create seamless visual storytelling that feels connected to the previous page
-
-JSON RESPONSE:
+SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
 {
-  "primaryScene": "MASTER VISUAL DESCRIPTION: The complete, comprehensive visual scene containing ALL elements needed for perfect image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'child'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Use previous context to ensure visual continuity and logical scene progression. Minimum 120+ characters with rich, descriptive language and visual specificity.",
-  "characters": {
-    "characterAppearance": "Avatar identity integration for consistency, informed by previous context",
-    "characterClothing": "Clothing and outfit details with continuity from previous scenes", 
-    "characterPosition": "Body position and pose that logically follows from previous context",
-    "characterMood": "Emotional expression progression based on previous scene events",${secondaryCharacterFields}
-  },
-  "visualComponents": {
-    "action": "Primary activities that naturally continue or evolve from previous context",
-    "setting": "Environmental context with elements that carry forward from previous scenes", 
-    "sceneType": "Scene classification informed by previous context progression", 
-    "lighting": "Lighting conditions that match or naturally evolve from previous scenes",
-    "keyObjects": "Visual elements including those that should remain or naturally appear based on previous context"
-  }
+  "primaryScene": "The complete visual scene containing ALL elements needed for image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'child'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Minimum 30+ characters with rich, descriptive language.",
+  "characterDetails": "optional additional character information",
+  "settingDetails": "optional environment details"
 }
 
 VISUAL QUALITY STANDARDS:
-- primaryScene: The MAIN OUTPUT - comprehensive visual narrative with ALL scene elements and contextual continuity
-- Character Integration: Use avatar identity (${avatarIdentity?.visualDescription || 'child characteristics'}) as foundation with previous context awareness
-- Visual Continuity: Ensure seamless progression from previous scenes when context is provided
-- Visual Richness: Include colors, textures, lighting, mood, spatial relationships informed by context
-- Descriptive Language: Rich adjectives, specific details, atmospheric elements that connect to previous scenes${hasMultipleCharacters ? `
-- Secondary Characters: Fully integrated into primaryScene with complete descriptions and continuity` : ''}
-- Minimum Length: 120+ characters with detailed visual specificity and contextual awareness
+- primaryScene: The MAIN OUTPUT - comprehensive visual narrative (REQUIRED)
+- Character Integration: Use avatar identity as foundation
+- Visual Richness: Include colors, textures, lighting, mood, spatial relationships
+- Descriptive Language: Rich adjectives, specific details, atmospheric elements
+- Minimum Length: 30+ characters with detailed visual specificity
 
-Example High-Quality primaryScene with Context: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'continues working alongside a encouraging teacher ' : ''}now adding the final colorful wooden block to complete their towering structure on the same polished wooden table, the classroom still filled with warm sunlight and educational posters, their expression showing proud satisfaction as they step back to admire their completed creation with scattered art supplies still nearby from their previous building efforts"`
+Example primaryScene: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'working alongside a encouraging teacher ' : ''}adding colorful wooden blocks to build a tall structure on a polished wooden table, the classroom filled with warm sunlight and educational posters, their expression showing focused concentration"`
           },
           {
             role: 'user', 
