@@ -83,24 +83,29 @@ export class CharacterConsistencyService {
   };
 
   /**
-   * Enhanced cultural detection (moved from FrontendIntelligence)
+   * Deterministic African American cultural variations (English + dark skin)
    */
   shouldApplyAfricanAmericanCulturalVariations(avatarIdentity, userInfo) {
-    if (!avatarIdentity && !userInfo) return false;
+    if (!userInfo) return false;
     
-    // Check avatar identity
-    if (avatarIdentity?.type === 'african_american' || 
-        avatarIdentity?.skinTone === 'african_american' ||
-        avatarIdentity?.ethnicity === 'african_american') {
-      return true;
-    }
+    // Check for English language + dark skin combination
+    const isEnglish = userInfo.nativeLanguage === 'en' || !userInfo.nativeLanguage;
+    const hasDarkSkin = (avatarIdentity?.skinTone === 'dark') || (userInfo?.avatar?.skinTone === 'dark');
     
-    // Check user language preference (English users more likely for AA variations)
-    if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
-      return Math.random() < 0.3; // 30% chance for English users
-    }
+    return isEnglish && hasDarkSkin;
+  }
+
+  /**
+   * Deterministic African cultural variations (non-English + dark skin)
+   */
+  shouldApplyAfricanCulturalVariations(avatarIdentity, userInfo) {
+    if (!userInfo) return false;
     
-    return false;
+    // Check for non-English language + dark skin combination
+    const isNonEnglish = userInfo.nativeLanguage && userInfo.nativeLanguage !== 'en';
+    const hasDarkSkin = (avatarIdentity?.skinTone === 'dark') || (userInfo?.avatar?.skinTone === 'dark');
+    
+    return isNonEnglish && hasDarkSkin;
   }
 
   /**
@@ -261,22 +266,32 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Determine cultural profile with African American detection
+   * Determine cultural profile with priority order: African -> African American -> Language-based
    */
   determineCulturalProfile(userInfo) {
     const nativeLanguage = userInfo.nativeLanguage || 'en';
     
-    // Check for African American cultural variations first
+    // Priority 1: African cultural variations (non-English + dark skin)
+    if (this.shouldApplyAfricanCulturalVariations(null, userInfo)) {
+      return 'african';
+    }
+    
+    // Priority 2: African American cultural variations (English + dark skin)
     if (this.shouldApplyAfricanAmericanCulturalVariations(null, userInfo)) {
       return 'african-american';
     }
     
+    // Priority 3: Language-based cultural variations (all skin tones for non-English)
     if (nativeLanguage === 'es') return 'hispanic-american';
     if (nativeLanguage === 'fr') return 'french-american';
     if (nativeLanguage === 'de') return 'german-american';
     if (nativeLanguage === 'it') return 'italian-american';
     if (nativeLanguage === 'pt') return 'portuguese-american';
+    if (nativeLanguage === 'ar') return 'arabic-american';
+    if (nativeLanguage === 'zh') return 'chinese-american';
+    if (nativeLanguage === 'hi') return 'indian-american';
     
+    // Priority 4: Standard American (English + non-dark skin)
     return 'standard-american';
   }
 
@@ -286,6 +301,32 @@ export class CharacterConsistencyService {
   generateCulturalElements(culturalProfile, userInfo) {
     const random = this.createSeededRandom(Date.now());
     const culturalStyleMap = {
+      'african': {
+        clothing: [
+          'traditional African-inspired shirt', 'colorful dashiki-style top', 'African print casual wear',
+          'kente pattern accessories', 'modern African fashion', 'traditional woven clothing',
+          'bright colorful attire', 'African-inspired school uniform', 'cultural celebration outfit'
+        ],
+        accessories: [
+          'traditional African jewelry', 'cultural beads', 'traditional headwrap', 'African-inspired backpack',
+          'cultural artifacts', 'traditional patterns', 'ethnic accessories', 'cultural symbols'
+        ],
+        markers: [
+          'African traditions', 'ancestral heritage', 'traditional community', 'cultural ceremonies',
+          'tribal customs', 'African diaspora', 'traditional crafts', 'cultural preservation',
+          'community elders', 'traditional music and dance'
+        ],
+        hairstyles: {
+          boys: [
+            'traditional African cut', 'ethnic buzz cut', 'cultural fade', 'tribal-inspired style',
+            'African natural hair', 'traditional braided style', 'ethnic hair patterns'
+          ],
+          girls: [
+            'traditional African braids', 'ethnic hair wrapping', 'cultural cornrows', 'tribal hairstyles',
+            'African natural curls', 'traditional headwrap style', 'ethnic protective styles'
+          ]
+        }
+      },
       'african-american': {
         clothing: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_CLOTHING,
         accessories: [
@@ -331,19 +372,77 @@ export class CharacterConsistencyService {
           'familia traditions', 'bilingual household', 'cultural celebrations',
           'community festivals', 'heritage pride', 'multicultural identity'
         ]
+      },
+      'french-american': {
+        clothing: [
+          'stylish casual wear', 'chic everyday outfit', 'elegant simple clothing',
+          'fashionable school attire', 'sophisticated casual style'
+        ],
+        accessories: [
+          'stylish accessories', 'elegant bag', 'fashionable items',
+          'cultural books', 'artistic supplies'
+        ],
+        markers: [
+          'French cultural heritage', 'bilingual household', 'artistic appreciation',
+          'cultural sophistication', 'European traditions'
+        ]
+      },
+      'arabic-american': {
+        clothing: [
+          'modest cultural wear', 'traditional-inspired outfit', 'modern modest clothing',
+          'cultural celebration attire', 'family gathering outfit'
+        ],
+        accessories: [
+          'cultural jewelry', 'traditional patterns', 'family heirlooms',
+          'cultural symbols', 'religious items'
+        ],
+        markers: [
+          'Middle Eastern heritage', 'cultural traditions', 'family values',
+          'community gatherings', 'religious observance'
+        ]
+      },
+      'chinese-american': {
+        clothing: [
+          'modern casual wear', 'traditional-inspired outfit', 'festive celebration clothing',
+          'cultural ceremony attire', 'family gathering style'
+        ],
+        accessories: [
+          'cultural symbols', 'traditional jewelry', 'family artifacts',
+          'educational items', 'cultural decorations'
+        ],
+        markers: [
+          'Chinese heritage', 'family traditions', 'cultural festivals',
+          'educational excellence', 'community respect'
+        ]
+      },
+      'indian-american': {
+        clothing: [
+          'colorful traditional wear', 'modern fusion style', 'cultural celebration outfit',
+          'festive attire', 'family gathering clothing'
+        ],
+        accessories: [
+          'traditional jewelry', 'cultural artifacts', 'family heirlooms',
+          'cultural symbols', 'festive decorations'
+        ],
+        markers: [
+          'Indian heritage', 'cultural diversity', 'family traditions',
+          'spiritual values', 'community celebrations'
+        ]
       }
     };
     
     const selectedProfile = culturalStyleMap[culturalProfile] || culturalStyleMap['standard-american'];
     
-    // For African American profiles, add gender-appropriate hairstyle selection
-    if (culturalProfile === 'african-american' && selectedProfile.hairstyles) {
-      const gender = userInfo?.avatar?.gender || (Math.random() < 0.5 ? 'boy' : 'girl');
+    // For profiles with hairstyles, add gender-appropriate selection
+    if (selectedProfile.hairstyles) {
+      const gender = userInfo?.avatar?.gender || userInfo?.avatar?.type || (Math.random() < 0.5 ? 'boy' : 'girl');
       const genderKey = gender === 'girl' ? 'girls' : 'boys';
       const hairstyles = selectedProfile.hairstyles[genderKey];
       
-      selectedProfile.selectedHairstyle = hairstyles[Math.floor(random() * hairstyles.length)];
-      console.log(`🎭 CULTURAL: Selected ${gender} hairstyle: ${selectedProfile.selectedHairstyle}`);
+      if (hairstyles && hairstyles.length > 0) {
+        selectedProfile.selectedHairstyle = hairstyles[Math.floor(random() * hairstyles.length)];
+        console.log(`🎭 CULTURAL: Selected ${gender} hairstyle for ${culturalProfile}: ${selectedProfile.selectedHairstyle}`);
+      }
     }
     
     return selectedProfile;
