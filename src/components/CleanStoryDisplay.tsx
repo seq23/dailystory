@@ -72,6 +72,7 @@ import { StoryVisualStateManager } from "@/services/storyVisualState";
 import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
+import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 
 
 interface CleanStoryDisplayProps {
@@ -382,6 +383,49 @@ useEffect(() => {
   window.addEventListener('story:navigation:change', handleStoryNavigation as EventListener);
   return () => window.removeEventListener('story:navigation:change', handleStoryNavigation as EventListener);
 }, [currentPage, story.length]);
+
+// Image generation event listener - triggers when story becomes stable
+useEffect(() => {
+  const handleStoryStabilized = (event: CustomEvent) => {
+    const { sessionId, pages } = event.detail || {};
+    
+    if (!pages || !Array.isArray(pages) || pages.length === 0) {
+      console.warn('🖼️ Story stabilized event received but no valid pages provided');
+      return;
+    }
+    
+    console.log('🖼️ Story stabilized - checking for image generation opportunities', {
+      pageCount: pages.length,
+      currentPage: currentPage,
+      sessionId: sessionId || characterSessionId
+    });
+    
+    // Start with the first page
+    const pageToGenerate = 0;
+    const pageText = pages[pageToGenerate];
+    
+    if (!pageText || typeof pageText !== 'string') {
+      console.warn('🖼️ Invalid page text for image generation:', pageText);
+      return;
+    }
+    
+    ImageGenerationTrigger.triggerAutoGeneration({
+      currentPage: pageToGenerate,
+      totalPages: pages.length,
+      hasCurrentImage: !!pageImages[pageToGenerate],
+      allImages: Object.values(pageImages),
+      isNetworkAvailable: isNetworkAvailable,
+      userInfo: userInfo,
+      storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
+      pageText: pageText,
+      sessionId: sessionId || characterSessionId,
+      isGuestUser: !isPremium
+    });
+  };
+  
+  window.addEventListener('story:stabilized', handleStoryStabilized as EventListener);
+  return () => window.removeEventListener('story:stabilized', handleStoryStabilized as EventListener);
+}, [currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, characterSessionId, isPremium]);
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
