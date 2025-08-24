@@ -419,8 +419,8 @@ serve(async (req) => {
           }
 
           // PHASE 1: Store successful Tier 1 image prompt  
-          const { SessionStateManager } = await import('./_shared/SessionStateManager.js');
-          SessionStateManager.prototype.storeImagePrompt(sessionId, {
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+          globalSessionManager.storeImagePrompt(sessionId, {
             tier: '1',
             promptText: validatedPrompt,
             negativePrompt: enhancementResult.negativePrompt || '',
@@ -514,8 +514,8 @@ serve(async (req) => {
           
           if (tier2GenerationResult.success) {
             // PHASE 1: Store Tier 2 image prompt
-            const { SessionStateManager } = await import('./_shared/SessionStateManager.js');
-            SessionStateManager.prototype.storeImagePrompt(sessionId, {
+            const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+            globalSessionManager.storeImagePrompt(sessionId, {
               tier: '2',
               promptText: tier2Result.enhancedPrompt,
               negativePrompt: tier2Result.negativePrompt,
@@ -651,8 +651,8 @@ serve(async (req) => {
     const svgResult = generateSVGPlaceholder(pageText, userInfo);
     
     // PHASE 1: Store Tier 4 SVG prompt
-    const { SessionStateManager } = await import('./_shared/SessionStateManager.js');
-    SessionStateManager.prototype.storeImagePrompt(sessionId, {
+    const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+    globalSessionManager.storeImagePrompt(sessionId, {
       tier: '4',
       promptText: `SVG Placeholder: ${pageText.substring(0, 100)}...`,
       negativePrompt: '',

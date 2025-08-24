@@ -166,9 +166,8 @@ serve(async (req) => {
     const generatedSeed = seed || Math.floor(Math.random() * 2147483647);
     
     // PHASE 1: Store image prompt in SessionStateManager 
-    const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
-    const sessionManager = new SessionStateManager();
-    sessionManager.storeImagePrompt(sessionId || 'openai-session', {
+    const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+    globalSessionManager.storeImagePrompt(sessionId || 'openai-session', {
       tier: '3',
       promptText: finalPrompt,
       negativePrompt: comprehensiveNegativePrompt,

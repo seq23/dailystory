@@ -109,9 +109,8 @@ serve(async (req) => {
               
               // PHASE 1: Store image prompt in SessionStateManager
               try {
-                const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
-                const sessionManager = new SessionStateManager();
-                sessionManager.storeImagePrompt('tier-2-5-session', {
+                const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+                globalSessionManager.storeImagePrompt('tier-2-5-session', {
                   tier: '2.5',
                   promptText: finalPrompt,
                   negativePrompt: negativePrompt,

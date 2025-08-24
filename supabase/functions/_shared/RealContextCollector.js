@@ -1,7 +1,7 @@
 // Real Context Collector - Collects actual story content for continuity
 // Integrates with SessionStateManager to provide rich context
 
-import { SessionStateManager } from './SessionStateManager.js';
+import { globalSessionManager } from './SessionStateManager.js';
 
 export class RealContextCollector {
   
@@ -20,7 +20,7 @@ export class RealContextCollector {
     
     // Collect previous story content - fail if this fails
     console.log('📖 Collecting prompt history...');
-    const promptHistory = SessionStateManager.getPromptHistory(sessionId, 3);
+    const promptHistory = globalSessionManager.getPromptHistory(sessionId, 3);
     
     for (const entry of promptHistory) {
       if (entry.originalText && entry.pageNumber < pageNumber) {
@@ -34,7 +34,7 @@ export class RealContextCollector {
     
     // Collect character consistency data - fail if this fails
     console.log('📖 Collecting character details...');
-    const characterDetails = SessionStateManager.getVisualDetailsForPrompt(sessionId);
+    const characterDetails = globalSessionManager.getVisualDetailsForPrompt(sessionId);
     if (characterDetails) {
       contextData.characterDescriptions.push(characterDetails);
     }
@@ -48,7 +48,7 @@ export class RealContextCollector {
     
     // Collect setting continuity - fail if this fails
     console.log('📖 Collecting setting data...');
-    const currentSetting = SessionStateManager.getSettingForPrompt(sessionId);
+    const currentSetting = globalSessionManager.getSettingForPrompt(sessionId);
     if (currentSetting) {
       contextData.settingContinuity.push(currentSetting);
     }

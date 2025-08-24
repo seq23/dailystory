@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { SessionStateManager } from '../_shared/SessionStateManager.js';
+import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.js';
 
 serve(async (req) => {
   console.log(`🖼️ Debug: Recent Image Prompts Request: ${req.method} ${req.url}`);
@@ -22,7 +22,7 @@ serve(async (req) => {
 
     if (globalSearch) {
       // Get prompts from all sessions
-      imagePrompts = SessionStateManager.getAllRecentImagePrompts(limit, tierFilter);
+      imagePrompts = globalSessionManager.getAllRecentImagePrompts(limit, tierFilter);
       
       console.log(`🌐 Retrieved ${imagePrompts.length} image prompts globally (limit: ${limit})`);
       
@@ -36,8 +36,8 @@ serve(async (req) => {
       });
     } else if (sessionId) {
       // Get prompts for specific session
-      imagePrompts = SessionStateManager.prototype.getRecentImagePrompts(sessionId, limit, tierFilter);
-      const storyState = SessionStateManager.getOrCreateSessionState(sessionId);
+      imagePrompts = globalSessionManager.getRecentImagePrompts(sessionId, limit, tierFilter);
+      const storyState = globalSessionManager.getOrCreateSessionState(sessionId);
       
       sessionInfo = {
         sessionId,

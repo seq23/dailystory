@@ -298,11 +298,11 @@ export class SessionStateManager {
   /**
    * Get all image prompts across all sessions (for global debugging)
    */
-  static getAllRecentImagePrompts(limit = 20, tierFilter = null) {
+  getAllRecentImagePrompts(limit = 20, tierFilter = null) {
     const allPrompts = [];
     
     // Collect prompts from all sessions
-    for (const [sessionId, state] of SessionStateManager.sessionStates.entries()) {
+    for (const [sessionId, state] of this.sessionStates.entries()) {
       if (state.imagePrompts) {
         state.imagePrompts.forEach(prompt => {
           allPrompts.push({
@@ -553,3 +553,6 @@ export class SessionStateManager {
     return { cleared: true, message: 'All session state cleared' };
   }
 }
+
+// Create global instance for cross-function access
+export const globalSessionManager = new SessionStateManager();
