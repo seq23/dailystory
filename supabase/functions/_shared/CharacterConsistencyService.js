@@ -221,7 +221,15 @@ export class CharacterConsistencyService {
     
     // Generate new character
     const seedData = await this.createNewCharacterSeed(userId, userInfo, avatarIdentity);
-    const characterDescription = this.buildCharacterDescription(seedData, storyContext, pageTextClothing);
+    
+    // FIXED: Include age and ageCategory from avatarIdentity in seedData for buildCharacterDescription
+    const enhancedSeedData = {
+      ...seedData,
+      age: avatarIdentity?.age,
+      ageCategory: avatarIdentity?.ageCategory
+    };
+    
+    const characterDescription = this.buildCharacterDescription(enhancedSeedData, storyContext, pageTextClothing);
     const culturalContext = this.buildCulturalContext(seedData);
     
     const characterData = {
@@ -351,9 +359,15 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Simple hair color mapping
+   * Simple hair color mapping - FIXED to use avatarIdentity.inferredHairColor
    */
-  getHairColorFromAvatar(avatar) {
+  getHairColorFromAvatar(avatarIdentity) {
+    // Use inferredHairColor from mapAvatarIdentity() if available
+    if (avatarIdentity?.inferredHairColor) {
+      return avatarIdentity.inferredHairColor;
+    }
+    
+    // Legacy fallback for direct hairColor field
     const hairColorMap = {
       'blonde': 'blonde',
       'brown': 'brown',
@@ -361,7 +375,7 @@ export class CharacterConsistencyService {
       'red': 'red',
       'gray': 'gray'
     };
-    return hairColorMap[avatar?.hairColor] || 'brown';
+    return hairColorMap[avatarIdentity?.hairColor] || 'brown';
   }
 
   /**
@@ -583,7 +597,7 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Build character description with page text overrides
+   * Build character description with page text overrides - ENHANCED with age context
    */
   buildCharacterDescription(seedData, storyContext, pageTextClothing = null) {
     const traits = seedData.physicalTraits;
@@ -596,6 +610,10 @@ export class CharacterConsistencyService {
     const clothing = pageTextClothing || 
       cultural.clothing[Math.floor(Math.random() * cultural.clothing.length)];
     const accessories = cultural.accessories.slice(0, 2).join(' and ');
+    
+    // FIXED: Extract age context from seedData (comes from avatarIdentity)
+    const ageContext = seedData.age ? `${seedData.age}-year-old ` : (seedData.ageCategory || '');
+    const agePrefix = ageContext && !ageContext.includes('-year-old') ? `${ageContext} ` : ageContext;
     
     // Enhanced description for African American characters with comprehensive arrays
     if (seedData.culturalProfile === 'african-american' && traits.isAfricanAmerican) {
@@ -610,7 +628,7 @@ export class CharacterConsistencyService {
       const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
       const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
       
-      return `A ${heightDescription}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+      return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
     // Minimal description for other cultural profiles - let Runware decide most features
@@ -621,7 +639,7 @@ export class CharacterConsistencyService {
     const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
     const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
     
-    return `A ${heightDescription}${seedData.avatarType}${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+    return `A ${heightDescription}${agePrefix}${seedData.avatarType}${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
 
   /**

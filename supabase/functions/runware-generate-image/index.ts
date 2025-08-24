@@ -864,17 +864,41 @@ function mapAvatarIdentity(userInfo: any) {
   };
   const standardizedSkinTone = skinToneMap[skinTone] || 'medium';
 
+  // Age extraction and mapping
+  let age = userInfo?.age;
+  let ageCategory = 'child';
+  
+  if (!age) {
+    // Fallback: map from difficulty level to age
+    const difficulty = userInfo?.readingLevel || userInfo?.difficultyLevel || 'easy';
+    const ageMap = {
+      'beginner': 5,    // Pre-reader
+      'easy': 6,        // Beginner 
+      'medium': 8,      // Developing
+      'hard': 10,       // Independent
+      'expert': 12      // Advanced
+    };
+    age = ageMap[difficulty] || 7;
+  }
+  
+  // Determine age category for descriptions
+  if (age <= 6) ageCategory = 'young child';
+  else if (age <= 9) ageCategory = 'child';  
+  else if (age <= 12) ageCategory = 'older child';
+  else ageCategory = 'teen';
+
   // NEW MASTER PLAN: Direct Visual Descriptions for English Speakers Only
   let visualDescription = '';
   if (nativeLanguage === 'en') {
+    const agePrefix = age ? `${age}-year-old ` : '';
     const visualDescriptionMap = {
-      'fair': genderText === 'child' ? `fair skin child with no gender specific characteristics, red hair` : `fair skin white ${genderText} with red hair`,
-      'light': genderText === 'child' ? `white child with no gender specific characteristics, blonde hair` : `white ${genderText} with blonde hair`,
-      'medium': genderText === 'child' ? `medium skin white child with no gender specific characteristics, brown hair` : `medium skin white ${genderText} with brown hair`,
-      'olive': genderText === 'child' ? `olive skin white child with no gender specific characteristics, black hair` : `olive skin white ${genderText} with black hair`,
-      'dark': genderText === 'child' ? `black child with no gender specific characteristics` : `black ${genderText}`
+      'fair': genderText === 'child' ? `${agePrefix}fair skin child with no gender specific characteristics, red hair` : `${agePrefix}fair skin white ${genderText} with red hair`,
+      'light': genderText === 'child' ? `${agePrefix}white child with no gender specific characteristics, blonde hair` : `${agePrefix}white ${genderText} with blonde hair`,
+      'medium': genderText === 'child' ? `${agePrefix}medium skin white child with no gender specific characteristics, brown hair` : `${agePrefix}medium skin white ${genderText} with brown hair`,
+      'olive': genderText === 'child' ? `${agePrefix}olive skin white child with no gender specific characteristics, black hair` : `${agePrefix}olive skin white ${genderText} with black hair`,
+      'dark': genderText === 'child' ? `${agePrefix}black child with no gender specific characteristics` : `${agePrefix}black ${genderText}`
     };
-    visualDescription = visualDescriptionMap[standardizedSkinTone] || `${genderText}`;
+    visualDescription = visualDescriptionMap[standardizedSkinTone] || `${agePrefix}${genderText}`;
   }
 
   // Cultural profile determination (legacy compatibility)
@@ -900,16 +924,18 @@ function mapAvatarIdentity(userInfo: any) {
     'olive': 'black',
     'dark': 'realistic natural black hair texture with individual strand detail'
   };
-  const hairColor = hairColorMap[standardizedSkinTone] || 'brown';
+  const inferredHairColor = hairColorMap[standardizedSkinTone] || 'brown';
 
   return {
     type: avatarType,
     skinTone: standardizedSkinTone,
-    hairColor,
+    inferredHairColor,  // FIXED: Renamed from hairColor for clarity
     culturalProfile,
     nativeLanguage,
     name: userInfo?.name || 'child',
-    visualDescription // NEW: Direct visual description for Runware optimization
+    age,               // NEW: Age from userInfo or difficulty mapping
+    ageCategory,       // NEW: Age category for descriptions
+    visualDescription  // NEW: Direct visual description for Runware optimization
   };
 }
 
