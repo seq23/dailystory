@@ -714,6 +714,25 @@ useEffect(() => {
   };
 }, [currentStory, contentHash]);
 
+  // Listen for auto-generated images
+  useEffect(() => {
+    const handleImageGenerated = (event: CustomEvent) => {
+      const { pageIndex, imageUrl } = event.detail;
+      console.log('🖼️ Auto-generated image received:', { pageIndex, imageUrl });
+      
+      setPageImages(prev => ({
+        ...prev,
+        [pageIndex]: imageUrl
+      }));
+    };
+    
+    window.addEventListener('image:generated', handleImageGenerated as EventListener);
+    
+    return () => {
+      window.removeEventListener('image:generated', handleImageGenerated as EventListener);
+    };
+  }, []);
+
   // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte) and auto-resume narration
   useEffect(() => {
     const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
