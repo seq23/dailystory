@@ -214,5 +214,113 @@ Hindi + any skin → Native language cultural profile applied ✅
   - Added shouldApplyNativeLanguageCulturalProfile method for non-English detection
   - Updated enhanceVisualPromptWithCulture logic to differentiate properly
 
-**Last Updated**: Post cultural-enhancement-fix
-**Status**: All three systems corrected and verified ✅
+---
+
+## 4. VISUAL-FIRST PROMPT OPTIMIZATION SYSTEM
+
+### ✅ ENHANCED AI SYSTEM PROMPTS (PHASE 6)
+
+The system prompts in `ai-story-enhancer/index.ts` have been enhanced to explicitly instruct OpenAI to use `previousPageText` for visual inferences and scene continuity:
+
+#### Core Instructions Added to System Prompts:
+```javascript
+// Enhanced system prompts include:
+- "Analyze the PREVIOUS STORY CONTEXT to understand what visual elements should continue or evolve"
+- "Use previous page information to ensure visual progression and continuity"
+- "Maintain continuity of setting, character positioning, and objects from previous scenes"
+- "If previous context shows the character in a specific location or situation, ensure logical visual progression"
+- "Inform your character and environmental descriptions using insights from the previous page"
+```
+
+#### Implementation Locations:
+- **Simplified Model Prompt**: `ai-story-enhancer/index.ts` (lines 540-620)
+- **Legacy Model Prompt**: `ai-story-enhancer/index.ts` (lines 650-750) 
+- **Previous Context Integration**: `ai-story-enhancer/index.ts` (lines 625-630, 722)
+
+### ✅ ENHANCED VALIDATION SYSTEM
+
+#### Quality Scoring Criteria (5-Point System):
+1. **Character presence and clarity** (20 points)
+2. **Setting and environment details** (20 points) 
+3. **Visual scene composition** (20 points)
+4. **Actionable visual elements** (20 points)
+5. **Narrative coherence with previous context** (20 points)
+
+#### Validation Requirements:
+- **Minimum Length**: 120+ characters for `primaryScene`
+- **Quality Threshold**: 60+ points (60% pass rate)
+- **Previous Context Integration**: Must reference or logically continue from previous page when available
+- **Fail-Fast Implementation**: Immediate Tier 2 triggering on validation failure
+
+### ✅ COMPREHENSIVE DEBUGGING SYSTEM
+
+#### Request ID Correlation System:
+- **Unique Request IDs**: Generated for each image generation request
+- **Cross-Function Tracking**: IDs passed through all tiers and functions
+- **Detailed Logging**: Enhanced logs with request correlation across ai-story-enhancer, runware-generate-image, and debug functions
+
+#### Enhanced Logging Components:
+1. **OpenAI Prompt Debugging**: Full system and user prompts logged with request IDs
+2. **Validation Step Tracking**: Each validation criterion logged with scores
+3. **Previous Context Integration**: Detailed logs of how previous page text influences current generation
+4. **Runware Assembly Debugging**: Complete prompt building process logged
+5. **Tier Fallback Tracking**: Detailed error propagation between tiers
+
+#### Implementation Locations:
+- **AI Story Enhancer**: `ai-story-enhancer/index.ts` (enhanced request structure logging)
+- **Runware Generator**: `runware-generate-image/index.ts` (tier system debugging)
+- **Debug Function**: `debug-prompt-history/index.ts` (prompt history tracking)
+
+---
+
+## CRITICAL TESTING SCENARIOS (UPDATED)
+
+### Visual-First Optimization Test
+```bash
+# Test previous context integration:
+Page 1 generation → stores context ✅
+Page 2 generation → references Page 1 context ✅
+Page 3 generation → maintains visual continuity ✅
+
+# Test enhanced validation:
+Short primaryScene (< 120 chars) → Tier 1 fails, Tier 2 triggers ✅
+Low quality score (< 60 points) → Tier 1 fails, Tier 2 triggers ✅
+Missing previous context reference → Quality score penalty ✅
+```
+
+### Enhanced Debugging Test
+```bash
+# Test request correlation:
+Generate image → unique request ID created ✅
+Check ai-story-enhancer logs → request ID present ✅
+Check runware-generate logs → same request ID tracked ✅
+Check debug-prompt-history → request ID correlated ✅
+
+# Test detailed validation logging:
+Tier 1 validation → each criterion logged with score ✅
+Previous context analysis → detailed integration logs ✅
+Runware assembly → complete prompt building logged ✅
+```
+
+---
+
+## REGRESSION PREVENTION RULES (UPDATED)
+
+### 🚫 NEVER DO
+1. **Remove previous context integration** - Breaks visual continuity
+2. **Lower validation thresholds** - Reduces output quality 
+3. **Remove enhanced logging** - Eliminates debugging capabilities
+4. **Skip request ID correlation** - Breaks cross-function tracking
+5. **Modify system prompt instructions** - Reduces AI's context awareness
+
+### ✅ ALWAYS DO
+1. **Test previous context usage** after AI prompt changes
+2. **Verify enhanced validation** maintains quality standards
+3. **Check request ID propagation** across all functions
+4. **Validate detailed logging** provides sufficient debugging info
+5. **Update debugging documentation** when adding new features
+
+---
+
+**Last Updated**: Post Visual-First Prompt Optimization (Phase 6)
+**Status**: All four systems implemented and verified ✅

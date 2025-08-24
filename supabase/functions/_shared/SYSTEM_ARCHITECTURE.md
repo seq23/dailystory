@@ -69,6 +69,28 @@ Story Request → AI Story Enhancer → Enhancement Pipeline → Image Generator
 5. **Performance Optimization**: Streamlined processing pipeline
 6. **Database-Backed Character Consistency**: Eliminated race conditions across edge function instances
 7. **Enhanced Narrative Processing**: Improved story coherence through advanced processing
+8. **Visual-First Prompt Optimization**: Enhanced AI prompts for previous context integration
+9. **Comprehensive Validation System**: 5-criteria quality scoring with 120+ character minimum
+10. **Advanced Debugging Infrastructure**: Request ID correlation and detailed cross-function logging
+
+## Enhanced Features (Phase 6)
+
+### Visual Continuity System
+- **Previous Context Integration**: AI explicitly instructed to use previous page text for visual continuity
+- **Enhanced System Prompts**: Detailed instructions for maintaining setting, character positioning, and object consistency
+- **Narrative Coherence Scoring**: Previous context integration evaluated as part of quality validation
+
+### Advanced Validation Framework
+- **5-Criteria Quality Scoring**: Character presence, setting details, visual composition, actionable elements, narrative coherence
+- **Enhanced Length Requirements**: Minimum 120+ characters for primary scene descriptions
+- **Quality Thresholds**: 60+ point requirement (60% pass rate) for Tier 1 acceptance
+- **Fail-Fast Implementation**: Immediate Tier 2 triggering without repair attempts
+
+### Comprehensive Debugging System
+- **Request ID Correlation**: Unique identifiers track requests across all functions
+- **Cross-Function Tracking**: Complete request lifecycle monitoring from orchestration to completion
+- **Enhanced Logging**: Detailed OpenAI prompt debugging, validation step tracking, and Runware assembly analysis
+- **Performance Monitoring**: Success rates, validation scores, and response time tracking
 
 ## Configuration
 

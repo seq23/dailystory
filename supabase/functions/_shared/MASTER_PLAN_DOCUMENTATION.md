@@ -224,4 +224,102 @@ AFTER:  AI extracts insufficient primaryScene → validation rejects → immedia
 
 ---
 
-**CRITICAL**: This master plan represents a complete architectural overhaul with token management simplification and negative prompt hierarchy optimization. Any deviation from these patterns constitutes a regression and must be immediately corrected to maintain system performance and consistency.
+## PHASE 6: VISUAL-FIRST PROMPT OPTIMIZATION (JANUARY 2025)
+
+### ✅ COMPLETED: Enhanced AI System Prompts for Visual Continuity
+
+#### 8. **PHASE 6: Visual-First Prompt Enhancement**
+- **ENHANCED**: AI system prompts in `ai-story-enhancer/index.ts` to explicitly require previous context usage
+- **IMPLEMENTED**: Previous page visual continuity instructions:
+  - "Analyze the PREVIOUS STORY CONTEXT to understand what visual elements should continue or evolve"
+  - "Use previous page information to ensure visual progression and continuity"  
+  - "Maintain continuity of setting, character positioning, and objects from previous scenes"
+  - "If previous context shows the character in a specific location or situation, ensure logical visual progression"
+  - "Inform your character and environmental descriptions using insights from the previous page"
+
+#### 9. **PHASE 6: Enhanced Validation System**
+- **UPGRADED**: Validation criteria from basic length check to comprehensive 5-criteria quality scoring:
+  1. Character presence and clarity (20 points)
+  2. Setting and environment details (20 points)
+  3. Visual scene composition (20 points) 
+  4. Actionable visual elements (20 points)
+  5. Narrative coherence with previous context (20 points)
+- **INCREASED**: Minimum length requirement from 30 to 120+ characters for `primaryScene`
+- **IMPLEMENTED**: Quality threshold of 60+ points (60% pass rate) for Tier 1 acceptance
+- **MAINTAINED**: Strict fail-fast approach - no repair functions, immediate Tier 2 triggering
+
+#### 10. **PHASE 6: Comprehensive Debugging System**
+- **IMPLEMENTED**: Request ID correlation system across all functions:
+  - Unique request IDs generated for each image generation request
+  - IDs propagated through ai-story-enhancer → runware-generate-image → debug functions
+  - Cross-function request tracking for complete debugging workflow
+- **ENHANCED**: Detailed logging system:
+  - OpenAI prompt debugging with full system and user prompts
+  - Validation step tracking with individual criterion scores
+  - Previous context integration analysis and logging
+  - Complete Runware prompt assembly debugging
+  - Tier fallback error propagation tracking
+- **ADDED**: Enhanced request structure logging with comprehensive data analysis
+
+#### Expected Flow After Phase 6:
+```
+BEFORE: AI generates without previous context awareness → basic validation → limited debugging
+AFTER:  AI explicitly uses previous context for visual continuity → enhanced 5-criteria validation → comprehensive cross-function debugging
+```
+
+## CRITICAL INTEGRATION POINTS (UPDATED)
+
+### 5. Visual-First Optimization Flow
+```
+Previous Page Context → Enhanced AI Instructions → Quality Scoring → Visual Continuity Validation
+```
+
+### 6. Enhanced Debugging Workflow
+```
+Request ID Generation → Cross-Function Tracking → Detailed Logging → Comprehensive Analysis
+```
+
+### 7. Quality Validation Pipeline
+```
+120+ Character Check → 5-Criteria Scoring → Previous Context Integration → Pass/Fail Decision
+```
+
+## REGRESSION PREVENTION CHECKLIST (UPDATED)
+
+### ❌ NEVER DO THESE AGAIN:
+10. **DO NOT** remove previous context integration from AI system prompts
+11. **DO NOT** lower validation requirements below 120 characters or 60 points
+12. **DO NOT** remove enhanced logging or request ID correlation
+13. **DO NOT** skip previous context analysis in validation scoring
+14. **DO NOT** modify system prompt instructions for visual continuity
+
+### ✅ ALWAYS MAINTAIN:
+10. **MAINTAIN**: Enhanced AI system prompts requiring previous context usage
+11. **MAINTAIN**: Comprehensive 5-criteria validation system with 60+ point threshold
+12. **MAINTAIN**: Request ID correlation across all functions for debugging
+13. **MAINTAIN**: Detailed logging for OpenAI prompts, validation steps, and Runware assembly
+14. **MAINTAIN**: Previous context integration requirements in all AI interactions
+
+## FILES MODIFIED (PHASE 6 ADDITIONS)
+
+6. `supabase/functions/ai-story-enhancer/index.ts` - Enhanced system prompts + comprehensive validation + detailed logging
+7. `supabase/functions/runware-generate-image/index.ts` - Request ID correlation + enhanced debugging
+8. `supabase/functions/debug-prompt-history/index.ts` - Cross-function request tracking
+
+## MONITORING & MAINTENANCE (UPDATED)
+
+### Additional Key Metrics to Track
+- Previous context integration rate (target: 95%+ when available)
+- Enhanced validation pass rate (target: 70-80% Tier 1 success)
+- Request ID correlation success (target: 100% tracking)
+- Visual continuity consistency scores
+
+### Additional Warning Signs of Regression
+- Previous context not being referenced in AI responses
+- Validation scores dropping below quality thresholds
+- Request ID correlation breaking between functions
+- Enhanced logging being removed or simplified
+
+---
+
+**CRITICAL**: This master plan now includes comprehensive visual-first optimization with enhanced validation, debugging, and previous context integration. The system ensures visual continuity, maintains high quality standards, and provides complete debugging capabilities across all functions. Any deviation from these enhanced patterns constitutes a regression and must be immediately corrected to maintain system performance and consistency.
