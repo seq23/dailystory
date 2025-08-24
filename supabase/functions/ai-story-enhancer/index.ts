@@ -4,7 +4,6 @@ import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
-import { StoryVisualStateManager } from '../_shared/storyVisualState.js';
 
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
@@ -503,8 +502,8 @@ serve(async (req) => {
         pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
         console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
 
-        // StoryVisualStateManager is now statically imported        
-        const previousPages = StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
+        // Get previous pages context for consistency using globalThis pattern (like in MultiStageEnhancementPipeline)        
+        const previousPages = globalThis.StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
         
         let previousContext = '';
         if (previousPages.length > 0) {
@@ -513,9 +512,9 @@ serve(async (req) => {
             previousContext += `Page ${page.pageNumber}: Previous story elements established\n`;
           });
           
-          const knownCharacters = StoryVisualStateManager?.getStoryState?.(sessionId)?.characters || new Map();
-          const knownSetting = StoryVisualStateManager?.getSettingForPrompt?.(sessionId);
-          const knownObjects = StoryVisualStateManager?.getVisualDetailsForPrompt?.(sessionId);
+          const knownCharacters = globalThis.StoryVisualStateManager?.getStoryState?.(sessionId)?.characters || new Map();
+          const knownSetting = globalThis.StoryVisualStateManager?.getSettingForPrompt?.(sessionId);
+          const knownObjects = globalThis.StoryVisualStateManager?.getVisualDetailsForPrompt?.(sessionId);
           
           if (knownCharacters.size > 0) {
             const charNames = Array.from(knownCharacters.keys()).join(', ');
