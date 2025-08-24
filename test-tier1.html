@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Tier 1</title>
+</head>
+<body>
+    <h1>Test Tier 1 AI Story Enhancer</h1>
+    <button onclick="testTier1()">Test Tier 1</button>
+    <div id="result"></div>
+
+    <script>
+        async function testTier1() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Create Supabase client
+                const { createClient } = window.supabase;
+                const supabase = createClient(
+                    'https://cpzeuogomaixamrtnnmj.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
+                );
+
+                const testData = {
+                    storyText: "A brave little girl named Emma discovered a magical forest behind her house. The trees sparkled with golden lights and friendly animals danced around her.",
+                    userInfo: {
+                        age: 7,
+                        difficulty: "beginner",
+                        userName: "Emma",
+                        avatarIdentity: {
+                            eyeColor: "brown",
+                            skinTone: "medium",
+                            hairColor: "black",
+                            hairStyle: "curly"
+                        }
+                    }
+                };
+
+                console.log('Calling ai-story-enhancer with:', testData);
+                
+                const { data, error } = await supabase.functions.invoke('ai-story-enhancer', {
+                    body: testData
+                });
+
+                if (error) {
+                    console.error('Error:', error);
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+                } else {
+                    console.log('Success:', data);
+                    resultDiv.innerHTML = `<div style="color: green;">Success: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                console.error('Unexpected error:', error);
+                resultDiv.innerHTML = `<div style="color: red;">Unexpected error: ${error.message}</div>`;
+            }
+        }
+    </script>
+    
+    <!-- Load Supabase JS -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</body>
+</html>
