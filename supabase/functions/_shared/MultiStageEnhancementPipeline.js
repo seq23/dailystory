@@ -7,98 +7,204 @@ export class MultiStageEnhancementPipeline {
   // ============= TIER 2: SYSTEMATIC SERVICE WRAPPERS ONLY =============
   
   static async processTier2HighQuality(storyText, userInfo, storyId, sessionId, pageNumber, totalPages, enhancedStoryData, avatarIdentity) {
-    console.log(`🔥 Tier 2 Systematic Services: storyId ${storyId}, session ${sessionId} page ${pageNumber}/${totalPages}`);
+    console.log('📈 MultiStageEnhancementPipeline - Processing Tier 2: Comprehensive Scene Builder');
+    console.log('🎯 Target: Build detailed primaryScene using ALL available systematic services');
     
     try {
-      // Import systematic services
-      let SecondaryElementDetector, VisualDetailTracker, RealContextCollector;
+      // ============= Tier 2: Comprehensive Scene Building =============
+      console.log('🔄 Phase 1: Building comprehensive scene using all available functions...');
       
-      try {
-        SecondaryElementDetector = (await import('./SecondaryElementDetector.js')).SecondaryElementDetector;
-      } catch (e) {
-        console.warn('SecondaryElementDetector not available:', e.message);
-      }
-      
-      try {
-        VisualDetailTracker = (await import('./VisualDetailTracker.js')).VisualDetailTracker;
-      } catch (e) {
-        console.warn('VisualDetailTracker not available:', e.message);
-      }
-      
-      try {
-        RealContextCollector = (await import('./RealContextCollector.js')).RealContextCollector;
-      } catch (e) {
-        console.warn('RealContextCollector not available:', e.message);
-      }
-      
-      let collectedContext = '';
+      let primarySceneComponents = [];
+      let characterDescription = '';
+      let secondaryElements = [];
       let visualDetails = '';
-      let secondaryCharacters = '';
+      let contextualInfo = '';
+      let styleFramework = null;
       
-      // Systematic service wrappers
-      if (SecondaryElementDetector) {
-        secondaryCharacters = SecondaryElementDetector.detectSecondaryCharacters(storyText, userInfo) || '';
+      // ============= Step 1: Get Main Character Description =============
+      try {
+        console.log('🔍 Step 1: Getting character consistency data...');
+        const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
+        
+        const characterSeed = await CharacterConsistencyService.getCharacterSeed(
+          sessionId, 
+          userInfo?.id || 'anonymous', 
+          userInfo, 
+          storyText, 
+          avatarIdentity, 
+          'story', 
+          storyText
+        );
+        
+        if (characterSeed && characterSeed.description) {
+          characterDescription = characterSeed.description;
+          console.log(`✅ Character description: ${characterDescription.substring(0, 100)}...`);
+          primarySceneComponents.push(characterDescription);
+        }
+        
+      } catch (characterError) {
+        console.log('⚠️ Character consistency fallback:', characterError.message);
+        // Use avatar identity as fallback
+        if (avatarIdentity?.visualDescription) {
+          characterDescription = avatarIdentity.visualDescription;
+          primarySceneComponents.push(characterDescription);
+        }
       }
       
-      if (VisualDetailTracker) {
-        visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId) || '';
+      // ============= Step 2: Detect Secondary Characters and Animals =============
+      try {
+        console.log('🔍 Step 2: Detecting secondary elements...');
+        const { SecondaryElementDetector } = await import('./SecondaryElementDetector.js');
+        
+        secondaryElements = await SecondaryElementDetector.parseElements(sessionId, storyText, storyText, pageNumber);
+        console.log(`📊 Found ${secondaryElements.length} secondary elements:`, secondaryElements.map(e => e.name));
+        
+        if (secondaryElements.length > 0) {
+          const elementDescriptions = secondaryElements
+            .filter(e => e.needsConsistency)
+            .map(e => {
+              if (e.category === 'character_animal') {
+                return `${e.name} ${e.species}`;
+              }
+              return e.name;
+            })
+            .join(', ');
+          
+          if (elementDescriptions) {
+            primarySceneComponents.push(`Secondary characters: ${elementDescriptions}`);
+          }
+        }
+        
+      } catch (detectorError) {
+        console.log('⚠️ SecondaryElementDetector fallback:', detectorError.message);
       }
       
-      if (RealContextCollector) {
-        collectedContext = await RealContextCollector.collectRealContext(
-          storyText, userInfo, sessionId, pageNumber, totalPages
-        ) || '';
+      // ============= Step 3: Get Visual Details and Objects =============
+      try {
+        console.log('🔍 Step 3: Getting visual details...');
+        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
+        
+        await VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+        visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+        console.log(`🎨 Visual details: ${visualDetails}`);
+        
+        if (visualDetails) {
+          primarySceneComponents.push(`Objects and details: ${visualDetails}`);
+        }
+        
+      } catch (trackerError) {
+        console.log('⚠️ VisualDetailTracker fallback:', trackerError.message);
       }
       
-      // Build comprehensive primaryScene using all systematic services
-      let primaryScene = '';
-      
-      // Start with story text as base scene description
-      if (storyText) {
-        // Clean and enhance story text for scene description
-        const cleanText = storyText.replace(/Page \d+ of \d+/g, '').trim();
-        primaryScene = `Scene: ${cleanText}`;
+      // ============= Step 4: Get Story Context and Continuity =============
+      try {
+        console.log('🔍 Step 4: Getting story context...');
+        const { RealContextCollector } = await import('./RealContextCollector.js');
+        
+        const contextData = await RealContextCollector.collectRealStoryContext(sessionId, pageNumber, storyText);
+        const contextualAddition = RealContextCollector.buildContextualPromptAddition(contextData, storyText);
+        
+        if (contextualAddition) {
+          contextualInfo = contextualAddition;
+          primarySceneComponents.push(`Context: ${contextualAddition}`);
+        }
+        
+      } catch (contextError) {
+        console.log('⚠️ RealContextCollector fallback:', contextError.message);
       }
       
-      // Enhance with all systematic service data
-      const enhancements = [];
-      if (secondaryCharacters) enhancements.push(`with ${secondaryCharacters}`);
-      if (visualDetails) enhancements.push(`featuring ${visualDetails}`);
-      if (collectedContext) enhancements.push(`in context of ${collectedContext}`);
-      
-      if (enhancements.length > 0) {
-        primaryScene += `, ${enhancements.join(', ')}`;
+      // ============= Step 5: Add Style Framework =============
+      try {
+        console.log('🔍 Step 5: Getting style framework...');
+        const { getStyleFramework, getOptimizedParameters } = await import('./styleFrameworks.js');
+        
+        // Determine difficulty based on user info or default to medium
+        const difficulty = userInfo?.preferredDifficulty || 'medium';
+        styleFramework = getStyleFramework(difficulty);
+        
+        if (styleFramework) {
+          console.log(`🎨 Style framework: ${styleFramework.name}`);
+          primarySceneComponents.push(`Style: ${styleFramework.artStyle}`);
+          primarySceneComponents.push(`Quality: ${styleFramework.quality}`);
+          if (styleFramework.brandSuffix) {
+            primarySceneComponents.push(styleFramework.brandSuffix);
+          }
+        }
+        
+      } catch (styleError) {
+        console.log('⚠️ Style framework fallback:', styleError.message);
       }
       
-      // Add visual quality descriptors
-      primaryScene += ', detailed realistic style, good lighting, high quality composition';
+      // ============= Step 6: Parse Action and Scene Setting =============
+      const actionMatch = storyText.match(/\b(running|walking|playing|dancing|jumping|sitting|standing|lying|flying|swimming|climbing|spinning|twirling)\b/i);
+      const action = actionMatch ? actionMatch[0] : 'playing';
       
-      const enhancedPrompt = primaryScene;
-      const negativePrompt = 'blurry, low quality, distorted';
+      const currentSetting = this.updateSettingFromText(storyText, 'outdoor_playground');
+      primarySceneComponents.push(`Setting: ${currentSetting}`);
+      primarySceneComponents.push(`Action: ${action}`);
       
-      console.log('✅ Tier 2 systematic processing complete');
+      // ============= Step 7: Build Final Primary Scene =============
+      const baseScene = storyText.trim();
+      
+      // Create comprehensive primary scene
+      let primaryScene = `${baseScene}. `;
+      
+      if (primarySceneComponents.length > 0) {
+        primaryScene += primarySceneComponents.join('. ') + '.';
+      }
+      
+      // Add technical quality parameters
+      primaryScene += ' Professional children\'s book illustration style, vibrant colors, clear details, high quality rendering.';
+      
+      console.log('✅ Comprehensive Primary Scene Built:', primaryScene.substring(0, 200) + '...');
+      
+      // ============= Step 8: Build Unified Negative Prompt =============
+      const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
+      const framework = { styleElements: styleFramework?.name || 'children book style' };
+      
+      const negativePrompt = this.buildUnifiedNegativePrompt(
+        userInfo, 
+        culturalProfile, 
+        framework, 
+        pageNumber
+      );
+      
+      console.log('✅ Tier 2 Enhancement Complete:', {
+        primarySceneLength: primaryScene.length,
+        componentsUsed: primarySceneComponents.length,
+        negativePromptLength: negativePrompt.length
+      });
       
       return {
-        enhancedPrompt,
-        negativePrompt,
+        enhancedPrompt: primaryScene,
+        negativePrompt: negativePrompt,
         metadata: {
-          processingTier: 'tier-2-systematic',
-          servicesUsed: ['SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector'],
-          primarySceneLength: primaryScene.length,
-          enhancementsAdded: enhancements.length
+          processingTier: 'tier-2-comprehensive',
+          servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks'],
+          components: primarySceneComponents.length,
+          success: true
         }
       };
       
     } catch (error) {
-      console.error('❌ Tier 2 systematic services error:', error);
+      console.error('🚨 Tier 2 Enhancement Pipeline Error:', error);
       
-      // Simple fallback
+      // ============= NUCLEAR FALLBACK: Basic Scene Construction =============
+      console.log('🛡️ Engaging nuclear fallback for Tier 2...');
+      
+      const cleanText = storyText ? storyText.trim() : 'A magical scene unfolds';
+      const fallbackScene = `${cleanText}. Professional children's book illustration style, vibrant colors, high quality.`;
+      
+      const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
+      const fallbackNegative = this.buildUnifiedNegativePrompt(userInfo, culturalProfile, {}, pageNumber);
+      
       return {
-        enhancedPrompt: `Story scene: ${storyText}`,
-        negativePrompt: 'blurry, low quality, distorted',
+        enhancedPrompt: fallbackScene,
+        negativePrompt: fallbackNegative,
         metadata: {
           processingTier: 'tier-2-fallback',
-          error: error.message
+          error: error.message,
+          success: false
         }
       };
     }
@@ -125,8 +231,12 @@ export class MultiStageEnhancementPipeline {
         enhancedPrompt += `, ${artFramework.styleElements}`;
       }
       
+      // Use unified negative prompt
+      const negativePrompt = this.buildUnifiedNegativePrompt(userInfo, culturalProfile, artFramework, pageNumber);
+      
       return {
         enhancedPrompt,
+        negativePrompt,
         culturalProfile,
         framework: artFramework,
         metadata: {
@@ -138,8 +248,10 @@ export class MultiStageEnhancementPipeline {
       
     } catch (error) {
       console.error('❌ Tier 1 premium error:', error);
+      const fallbackCultural = this.buildCulturalProfile(userInfo, enhancedStoryData);
       return {
         enhancedPrompt: storyText,
+        negativePrompt: this.buildUnifiedNegativePrompt(userInfo, fallbackCultural, {}, pageNumber),
         culturalProfile: {},
         framework: {},
         metadata: { processingTier: 'tier-1-fallback', error: error.message }

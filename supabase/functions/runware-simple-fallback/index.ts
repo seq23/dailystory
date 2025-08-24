@@ -684,53 +684,73 @@ function getHardcodedStyle(difficulty: string) {
   return styles[difficulty] || styles['medium'];
 }
 
-// Unified negative prompt system for Tier 2.5 (hardcoded but comprehensive)
+// Unified negative prompt system for Tier 2.5 (independent but consistent with MultiStageEnhancementPipeline)
 function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, originalAvatarType?: string): string {
-  const negatives = [];
+  console.log('🛡️ Tier 2.5: Building unified negative prompt (independent system)');
   
-  // 1. Page-specific negatives (first page only in practice)
-  if (userInfo?.name) {
-    negatives.push(`${userInfo.name} text, name in large letters`);
+  const baseNegative = [
+    // Quality control (base system)
+    'blurry', 'low quality', 'distorted', 'deformed', 'bad anatomy', 'bad proportions', 
+    'extra limbs', 'cloned faces', 'malformed limbs', 'missing arms', 'missing legs', 
+    'fused fingers', 'too many fingers', 'long neck', 'mutated hands', 'poorly drawn hands', 
+    'poorly drawn face', 'mutation', 'ugly', 'pixelated', 'obscure', 'unnatural colors', 
+    'poor lighting', 'dull', 'unclear', 'cropped', 'lowres', 'artifacts', 'duplicate',
+    
+    // Content safety
+    'scary', 'inappropriate', 'violent', 'dark themes', 'adult content', 'nsfw', 
+    'suggestive', 'weapons', 'blood', 'gore', 'frightening', 'mature themes',
+    
+    // Style prevention  
+    'photorealistic', 'realistic', 'photograph', 'anime', 'manga', 'comic book style',
+    'sketch', 'rough drawing', 'watermarks', 'copyrighted characters', 'brand logos',
+    
+    // Text prevention
+    'text', 'letters', 'words', 'writing', 'typography', 'captions', 'labels', 'name in image',
+    
+    // Body completeness
+    'floating head', 'portrait only', 'incomplete body', 'missing torso', 'poor composition'
+  ];
+  
+  // Add cultural sensitivity filters
+  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+  if (skinTone === 'dark') {
+    baseNegative.push(
+      'whitewashing', 'cultural insensitivity', 'stereotypes', 'caricature',
+      'lightened skin', 'whitewashed', 'caucasian features', 'stereotypical', 
+      'altered ethnicity', 'artificial skin lightening', 'oversaturated'
+    );
+    console.log('🛡️ Tier 2.5: Added cultural sensitivity filters for dark skin tone');
   }
   
-  // 2. Text prevention (exact specification)
-  negatives.push('NO text, letters, words, writing, typography, captions, labels');
-  
-  // 3. Body completeness
-  negatives.push('floating head, portrait only, incomplete body, missing torso');
-  
-  // 4. Quality control
-  negatives.push('ugly, deformed, bad anatomy, extra limb, mutation, poorly drawn, cropped, lowres, worst quality, low quality, blurry, pixelated, noise, artifacts');
-  
-  // 5. Content safety
-  negatives.push('adult, mature, violence, scary, dark, inappropriate, nsfw, suggestive, weapons, blood, gore, frightening');
-  
-  // 6. Style prevention
-  negatives.push('photorealistic, realistic, photograph, anime, manga, comic book style, sketch, rough drawing');
-  
-  // 7. Gender consistency enforcement (with enhanced prefer-not-to-answer handling)
+  // Add gender consistency enforcement
   const avatarType = originalAvatarType || avatarIdentity?.type || userInfo?.avatar?.type || 'child';
   if (avatarType === 'girl') {
-    negatives.push('boy character, male character, masculine features');
+    baseNegative.push('boy character', 'male character', 'masculine features');
+    console.log('🛡️ Tier 2.5: Added girl consistency filters');
   } else if (avatarType === 'boy') {
-    negatives.push('girl character, female character, feminine features, dress, skirt');
+    baseNegative.push('girl character', 'female character', 'feminine features', 'dress', 'skirt');
+    console.log('🛡️ Tier 2.5: Added boy consistency filters');
   } else if (avatarType === 'child' || avatarType === 'prefer-not-to-answer') {
-    negatives.push('masculine features, feminine features, boy characteristics, girl characteristics, gender-specific clothing, dress, skirt, masculine clothing, gendered accessories, gendered hairstyles');
-    console.log(`🎯 GENDER NEUTRAL NEGATIVES - Applied comprehensive gender-neutral negative prompts for ${avatarType} (PHASE 3 FIX: child OR prefer-not-to-answer)`);
+    baseNegative.push(
+      'masculine features', 'feminine features', 'boy characteristics', 'girl characteristics',
+      'gender-specific clothing', 'dress', 'skirt', 'masculine clothing', 'gendered accessories',
+      'gendered hairstyles'
+    );
+    console.log(`🛡️ Tier 2.5: Added gender-neutral filters for ${avatarType}`);
   }
   
-  // 8. Style framework compatibility (hardcoded defaults)
-  negatives.push('copyrighted characters, brand logos, watermarks');
+  // Add consistency filters for multi-page stories
+  baseNegative.push('inconsistent character design', 'style variations');
   
-  // 9. Cultural sensitivity - NEW trigger condition (with fallback pattern)
-  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
-  const genderType = avatarIdentity?.type || userInfo?.avatar?.type;
-  if (skinTone === 'dark' && (genderType === 'boy' || genderType === 'girl')) {
-    negatives.push('lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated');
+  // Add user-specific negatives
+  if (userInfo?.name) {
+    baseNegative.push(`${userInfo.name} text`, 'name in large letters');
   }
   
-  console.log(`📝 Using unified Tier 2.5 negative prompt with all 9 categories`);
-  return negatives.join(', ');
+  const finalNegative = baseNegative.join(', ');
+  console.log(`🛡️ Tier 2.5: Unified negative prompt built (${baseNegative.length} components)`);
+  
+  return finalNegative;
 }
 
 // Enhanced cultural intelligence for Tier 2.5
