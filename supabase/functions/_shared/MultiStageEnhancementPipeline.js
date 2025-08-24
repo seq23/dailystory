@@ -182,7 +182,7 @@ export class MultiStageEnhancementPipeline {
           
           for (const element of secondaryElements) {
             if (element.category === 'secondary_character') {
-              globalThis.StoryVisualStateManager.updateSecondaryCharacter(
+              this.sessionManager.updateSecondaryCharacter(
                 sessionId, 
                 element.name, 
                 element.type, 
@@ -190,7 +190,7 @@ export class MultiStageEnhancementPipeline {
                 pageNumber
               );
             } else if (element.category === 'character_animal') {
-              globalThis.StoryVisualStateManager.updateCharacterAnimal(
+              this.sessionManager.updateCharacterAnimal(
                 sessionId,
                 element.name,
                 element.species,

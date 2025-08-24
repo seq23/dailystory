@@ -454,12 +454,12 @@ serve(async (req) => {
       }
       
       try {
-        await import('../_shared/storyVisualState.js');
-        importResults.storyVisualState = '✅ SUCCESS';
-        console.log('✅ storyVisualState.js import - OK');
+        await import('../_shared/SessionStateManager.js');
+        importResults.SessionStateManager = '✅ SUCCESS';
+        console.log('✅ SessionStateManager.js import - OK');
       } catch (error) {
-        importResults.storyVisualState = `❌ FAILED: ${error.message}`;
-        console.error('❌ storyVisualState.js import - FAILED:', error.message);
+        importResults.SessionStateManager = `❌ FAILED: ${error.message}`;
+        console.error('❌ SessionStateManager.js import - FAILED:', error.message);
       }
       
       console.log('📊 Dependency Verification Results:', importResults);

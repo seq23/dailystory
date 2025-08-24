@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
-// Import StoryVisualStateManager (fixed import path)
-const StoryVisualStateManagerModule = await import('../_shared/storyVisualState.js');
-const { StoryVisualStateManager } = StoryVisualStateManagerModule;
+// Import SessionStateManager (updated to use clean architecture)
+const SessionStateManagerModule = await import('../_shared/SessionStateManager.js');
+const { SessionStateManager } = SessionStateManagerModule;
 
 serve(async (req) => {
   console.log(`🔍 Debug: Prompt History Request: ${req.method} ${req.url}`);
@@ -23,8 +23,8 @@ serve(async (req) => {
     }
 
     // Get prompt history for the session
-    const promptHistory = StoryVisualStateManager.getPromptHistory(sessionId, limit);
-    const storyState = StoryVisualStateManager.getStoryState(sessionId);
+    const promptHistory = SessionStateManager.getPromptHistory(sessionId, limit);
+    const storyState = SessionStateManager.getOrCreateSessionState(sessionId);
 
     console.log(`📚 Retrieved ${promptHistory.length} prompt history entries for session ${sessionId}`);
 

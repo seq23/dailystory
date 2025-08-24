@@ -1,5 +1,7 @@
 // Real Context Collector - Collects actual story content for continuity
-// Integrates with StoryVisualStateManager to provide rich context
+// Integrates with SessionStateManager to provide rich context
+
+import { SessionStateManager } from './SessionStateManager.js';
 
 export class RealContextCollector {
   
@@ -17,34 +19,30 @@ export class RealContextCollector {
       };
       
       // Collect previous story content safely
-      if (globalThis.StoryVisualStateManager?.getPromptHistory) {
-        try {
-          const promptHistory = globalThis.StoryVisualStateManager.getPromptHistory(sessionId, 3);
-          
-          for (const entry of promptHistory) {
-            if (entry.originalText && entry.pageNumber < pageNumber) {
-              contextData.previousPages.push({
-                pageNumber: entry.pageNumber,
-                content: entry.originalText,
-                visualDescription: entry.visualDescription || ''
-              });
-            }
+      try {
+        const promptHistory = SessionStateManager.getPromptHistory(sessionId, 3);
+        
+        for (const entry of promptHistory) {
+          if (entry.originalText && entry.pageNumber < pageNumber) {
+            contextData.previousPages.push({
+              pageNumber: entry.pageNumber,
+              content: entry.originalText,
+              visualDescription: entry.visualDescription || ''
+            });
           }
-        } catch (error) {
-          console.warn('⚠️ Could not collect prompt history:', error.message);
         }
+      } catch (error) {
+        console.warn('⚠️ Could not collect prompt history:', error.message);
       }
       
       // Collect character consistency data
-      if (globalThis.StoryVisualStateManager?.getVisualDetailsForPrompt) {
-        try {
-          const characterDetails = globalThis.StoryVisualStateManager.getVisualDetailsForPrompt(sessionId);
-          if (characterDetails) {
-            contextData.characterDescriptions.push(characterDetails);
-          }
-        } catch (error) {
-          console.warn('⚠️ Could not collect character details:', error.message);
+      try {
+        const characterDetails = SessionStateManager.getVisualDetailsForPrompt(sessionId);
+        if (characterDetails) {
+          contextData.characterDescriptions.push(characterDetails);
         }
+      } catch (error) {
+        console.warn('⚠️ Could not collect character details:', error.message);
       }
       
       // Collect visual elements
@@ -58,15 +56,13 @@ export class RealContextCollector {
       }
       
       // Collect setting continuity
-      if (globalThis.StoryVisualStateManager?.getSettingForPrompt) {
-        try {
-          const currentSetting = globalThis.StoryVisualStateManager.getSettingForPrompt(sessionId);
-          if (currentSetting) {
-            contextData.settingContinuity.push(currentSetting);
-          }
-        } catch (error) {
-          console.warn('⚠️ Could not collect setting:', error.message);
+      try {
+        const currentSetting = SessionStateManager.getSettingForPrompt(sessionId);
+        if (currentSetting) {
+          contextData.settingContinuity.push(currentSetting);
         }
+      } catch (error) {
+        console.warn('⚠️ Could not collect setting:', error.message);
       }
       
       return contextData;
