@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { SessionStateManager } from "../_shared/SessionStateManager.js";
+import { SecurityValidator } from "../_shared/SecurityValidator.js";
+import { BackendTokenManager } from "../_shared/BackendTokenManager.js";
 
 // Hardcoded avatar fallback descriptions for Tier 1 validation - PHASE 1: GENDER NEUTRAL SYSTEM
 const AVATAR_FALLBACK_DESCRIPTIONS = {
@@ -131,9 +134,7 @@ serve(async (req) => {
   }
 
   try {
-    // Import orchestrator services (removed MultiStageEnhancementPipeline since we now call ai-story-enhancer directly)
-    const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
-    const { SecurityValidator } = await import('../_shared/SecurityValidator.js');
+    // Orchestrator services are now statically imported
     
     // Parse request
     const { 
@@ -247,8 +248,7 @@ serve(async (req) => {
           metadata: enhancementResult?.metadata ? 'present' : 'missing'
         });
         
-        // Import BackendTokenManager for unified prompt construction
-        const { BackendTokenManager } = await import("../_shared/BackendTokenManager.js");
+        // BackendTokenManager is now statically imported
         
         // Extract AI schema data from enhancer result
         const aiSchemaData = enhancementResult.metadata?.aiSchemaData || null;

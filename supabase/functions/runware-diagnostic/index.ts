@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { getStyleFramework } from '../_shared/styleFrameworks.js';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -19,9 +20,8 @@ serve(async (req) => {
     
     console.log('✅ RUNWARE_API_KEY found:', runwareApiKey.substring(0, 10) + '...');
     
-    // Step 2: Test style frameworks import
+    // Step 2: Test style frameworks (now statically imported)
     try {
-      const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
       const framework = getStyleFramework('medium');
       console.log('✅ Style framework imported successfully:', framework.name);
     } catch (error) {

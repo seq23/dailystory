@@ -2,6 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
+import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
+import { SessionStateManager } from "../_shared/SessionStateManager.js";
+import { StoryVisualStateManager } from '../_shared/storyVisualState.js';
 
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
@@ -425,42 +428,13 @@ serve(async (req) => {
       // =================== PHASE 2: DEPENDENCY & DEPLOYMENT VERIFICATION ===================
       console.log('🔧 AI Story Enhancer: Starting Phase 2 Dependency Verification');
       
-      // Test all shared module imports proactively
-      try {
-        await import('../_shared/cors.ts');
-        importResults.cors = '✅ SUCCESS';
-        console.log('✅ cors.ts import - OK');
-      } catch (error) {
-        importResults.cors = `❌ FAILED: ${error.message}`;
-        console.error('❌ cors.ts import - FAILED:', error.message);
-      }
+      // Static imports are already loaded at module level - no need for dynamic testing
+      importResults.cors = '✅ SUCCESS (static)';
+      importResults.errorHandling = '✅ SUCCESS (static)';
+      importResults.MultiStageEnhancementPipeline = '✅ SUCCESS (static)';
+      importResults.SessionStateManager = '✅ SUCCESS (static)';
       
-      try {
-        await import('../_shared/errorHandling.ts');
-        importResults.errorHandling = '✅ SUCCESS';
-        console.log('✅ errorHandling.ts import - OK');
-      } catch (error) {
-        importResults.errorHandling = `❌ FAILED: ${error.message}`;
-        console.error('❌ errorHandling.ts import - FAILED:', error.message);
-      }
-      
-      try {
-        await import('../_shared/MultiStageEnhancementPipeline.js');
-        importResults.MultiStageEnhancementPipeline = '✅ SUCCESS';
-        console.log('✅ MultiStageEnhancementPipeline.js import - OK');
-      } catch (error) {
-        importResults.MultiStageEnhancementPipeline = `❌ FAILED: ${error.message}`;
-        console.error('❌ MultiStageEnhancementPipeline.js import - FAILED:', error.message);
-      }
-      
-      try {
-        await import('../_shared/SessionStateManager.js');
-        importResults.SessionStateManager = '✅ SUCCESS';
-        console.log('✅ SessionStateManager.js import - OK');
-      } catch (error) {
-        importResults.SessionStateManager = `❌ FAILED: ${error.message}`;
-        console.error('❌ SessionStateManager.js import - FAILED:', error.message);
-      }
+      console.log('✅ All shared modules loaded via static imports');
       
       console.log('📊 Dependency Verification Results:', importResults);
       
@@ -529,16 +503,7 @@ serve(async (req) => {
         pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
         console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
 
-        // Get previous pages context for consistency - move import outside try block
-        let StoryVisualStateManager;
-        try {
-          const storyStateModule = await import('../_shared/storyVisualState.js');
-          StoryVisualStateManager = storyStateModule.StoryVisualStateManager;
-        } catch (importError) {
-          console.warn('⚠️ Could not import StoryVisualStateManager:', importError.message);
-          StoryVisualStateManager = null;
-        }
-        
+        // StoryVisualStateManager is now statically imported        
         const previousPages = StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
         
         let previousContext = '';
@@ -739,16 +704,8 @@ Extract using the object-based schema with ${hasMultipleCharacters ? 'secondary 
         // PHASE 1: Use MultiStageEnhancementPipeline.processTier1HighQuality() 
         console.log('🎨 AI Enhancement successful - using MultiStageEnhancementPipeline');
         
-        // Import MultiStageEnhancementPipeline
-        let MultiStageEnhancementPipeline;
-        try {
-          const pipelineModule = await import('../_shared/MultiStageEnhancementPipeline.js');
-          MultiStageEnhancementPipeline = pipelineModule.MultiStageEnhancementPipeline;
-        } catch (importError) {
-          console.error('❌ Failed to import MultiStageEnhancementPipeline:', importError.message);
-          throw new Error(`MultiStageEnhancementPipeline import failed: ${importError.message}`);
-        }
-
+        // MultiStageEnhancementPipeline is now statically imported
+        
         // Call processTier1HighQuality with extracted 3-field schema
         const promptResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
           storyText,

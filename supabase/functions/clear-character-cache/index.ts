@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { UnifiedCharacterConsistency } from '../_shared/UnifiedCharacterConsistency.js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,11 +15,8 @@ serve(async (req) => {
   }
 
   try {
-    // Import the character consistency service
-    const { characterConsistency } = await import('../_shared/UnifiedCharacterConsistency.js')
-
-    // Clear any server-side state
-    const result = characterConsistency.clearServerState()
+    // UnifiedCharacterConsistency is now statically imported
+    const result = UnifiedCharacterConsistency.clearServerState()
     
     console.log('🎭 Character cache cleared:', result)
 

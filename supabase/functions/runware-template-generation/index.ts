@@ -179,6 +179,8 @@ import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse 
 import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { BackendTokenManager } from "../_shared/BackendTokenManager.js";
+import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 
 // Hardcoded avatar fallback descriptions
 const AVATAR_FALLBACK_DESCRIPTIONS = {
@@ -308,9 +310,7 @@ serve(async (req) => {
       finalMappedLevel: mappedDifficulty
     });
 
-    // Import BackendTokenManager for unified prompt construction  
-    const { BackendTokenManager } = await import("../_shared/BackendTokenManager.js");
-    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+    // BackendTokenManager and VisualDetailTracker are now statically imported
     
     // Extract parameters for Tier 2 with intelligent processing
     const characterDescription = avatarIdentity ? `${avatarIdentity.name || userInfo?.name || 'child'} with ${avatarIdentity.physicalDescription || 'cheerful appearance'}` : null;

@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-
-// Import SessionStateManager (updated to use clean architecture)
-const SessionStateManagerModule = await import('../_shared/SessionStateManager.js');
-const { SessionStateManager } = SessionStateManagerModule;
+import { SessionStateManager } from '../_shared/SessionStateManager.js';
 
 serve(async (req) => {
   console.log(`🔍 Debug: Prompt History Request: ${req.method} ${req.url}`);
