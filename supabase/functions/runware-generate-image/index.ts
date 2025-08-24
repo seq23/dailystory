@@ -488,8 +488,12 @@ serve(async (req) => {
       try {
         console.log('🎯 Starting Tier 3: OpenAI DALL-E Generation');
         
+        // Apply dynamic style framework for OpenAI tier
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
+        const tier3Style = getStyleFramework(userInfo?.preferredDifficulty || 'medium');
+        
         const tier3Result = await callTierFunction('openai-image', {
-          positivePrompt: `Children's book illustration: ${pageText}. Bright, colorful, safe for children.`,
+          positivePrompt: `${tier3Style?.artStyle || 'Children\'s book illustration'}: ${pageText}. ${tier3Style?.quality || 'High quality rendering'}.`,
           negativePrompt: "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime",
           size: '1024x1024',
           model: 'gpt-image-1',

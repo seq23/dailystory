@@ -153,8 +153,7 @@ export class MultiStageEnhancementPipeline {
         primaryScene += primarySceneComponents.join('. ') + '.';
       }
       
-      // Add technical quality parameters
-      primaryScene += ' Professional children\'s book illustration style, vibrant colors, clear details, high quality rendering.';
+      // Style framework already included in Step 5, no additional hardcoded style needed
       
       console.log('✅ Comprehensive Primary Scene Built:', primaryScene.substring(0, 200) + '...');
       
@@ -193,7 +192,10 @@ export class MultiStageEnhancementPipeline {
       console.log('🛡️ Engaging nuclear fallback for Tier 2...');
       
       const cleanText = storyText ? storyText.trim() : 'A magical scene unfolds';
-      const fallbackScene = `${cleanText}. Professional children's book illustration style, vibrant colors, high quality.`;
+      // Apply basic style framework for fallback
+      const { getStyleFramework } = await import('./styleFrameworks.js');
+      const fallbackStyle = getStyleFramework('easy'); // Use easy difficulty for fallback
+      const fallbackScene = `${cleanText}. ${fallbackStyle?.artStyle || 'Children book illustration style'}.`;
       
       const culturalProfile = this.buildCulturalProfile(userInfo, enhancedStoryData);
       const fallbackNegative = this.buildUnifiedNegativePrompt(userInfo, culturalProfile, {}, pageNumber);
