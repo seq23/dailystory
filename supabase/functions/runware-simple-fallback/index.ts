@@ -33,15 +33,15 @@ serve(async (req) => {
 
     console.log('🎨 Tier 2.5: Simple fallback generation with hardcoded extraction');
 
-    // Enhanced hardcoded scene extraction with cultural bypass
-    const extractedScene = extractSimpleSceneWithCulturalBypass(pageText, userInfo, avatarIdentity);
+    // Enhanced premium template with hardcoded scene extraction
+    const extractedScene = extractSceneWithPremiumTemplate(pageText, userInfo, avatarIdentity, mappedDifficulty);
     
     // Enhanced hardcoded style with exact styleFrameworks.js verbiage
     const style = getHardcodedStyle(mappedDifficulty);
     
     // Build final prompt with enhanced negative prompts
     const negativePrompt = getEnhancedNegativePrompt(userInfo, avatarIdentity, avatarIdentity?.type || userInfo?.avatar?.type);
-    const finalPrompt = `${extractedScene}. ${style.prompt}. ${style.quality}. ${style.suffix}`;
+    const finalPrompt = extractedScene;
     
     // 🔍 TIER 2.5 DEBUG LOGGING - Full prompts for debugging
     console.log(`🔍 TIER 2.5 DEBUG - Page: ${pageText ? 'with text' : 'no text'}`);
@@ -200,9 +200,97 @@ function mapDifficultyInline(userInfo, fallbackLevel = 'medium') {
   }
 }
 
-// ============= ENHANCED SCENE EXTRACTION WITH CULTURAL BYPASS =============
-function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, avatarIdentity?: any): string {
-  if (!pageText) return 'a friendly character in a beautiful scene';
+// ============= PREMIUM TEMPLATE SYSTEM WITH HARDCODED ARRAYS =============
+
+// HARDCODED AFRICAN AMERICAN ARRAYS (Nuclear Independence)
+const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
+    'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
+    'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
+    'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
+    'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
+    'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
+    'textured ponytail with locs', 'detailed nape area tapered'
+  ],
+  girls: [
+    'textured medium natural hair', 'textured long natural hair', 'textured shoulder-length hair', 
+    'textured chin-length hair', 'detailed twist out', 'detailed bantu knots', 'detailed rod set', 
+    'detailed braid out', 'textured high puff', 'textured low puff', 'textured side puff', 
+    'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
+    'detailed messy bun', 'detailed sleek bun', 'detailed cornrows', 'detailed box braids', 
+    'detailed micro braids', 'detailed jumbo braids', 'detailed goddess braids', 
+    'detailed dutch braids', 'detailed french braids', 'detailed fishtail braids', 
+    'detailed halo braid', 'detailed crown braid', 'detailed side braids', 
+    'detailed three strand twists', 'detailed senegalese twists', 'detailed marley twists', 
+    'detailed havana twists', 'detailed passion twists', 'detailed spring twists', 
+    'detailed kinky twists', 'detailed chunky twists', 'detailed protective twists', 
+    'textured sisterlocs', 'textured microlocs', 'textured traditional locs', 
+    'textured interlocked locs', 'detailed braided locs', 'detailed loc updo', 
+    'textured half up half down locs', 'textured afro puffs', 'textured large afro', 
+    'textured picked out afro', 'textured shaped afro', 'textured curly afro', 
+    'textured coily afro', 'textured kinky afro', 'textured side swept bangs', 
+    'textured face framing layers', 'textured layered cut', 'detailed blunt cut', 
+    'detailed asymmetrical cut'
+  ]
+};
+
+const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
+  'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
+  'warm caramel complexion', 'golden brown skin', 'mahogany complexion', 'dark chocolate skin',
+  'ebony complexion', 'honey-toned skin', 'bronze complexion', 'chestnut brown skin',
+  'amber-toned complexion', 'cocoa brown skin', 'espresso complexion', 'mocha-colored skin',
+  'sienna brown complexion', 'russet brown skin', 'copper-toned complexion', 'warm brown skin with golden undertones'
+];
+
+const HARDCODED_AFRICAN_AMERICAN_EYE_COLORS = [
+  'dark brown eyes', 'deep chocolate brown eyes', 'warm brown eyes', 'amber brown eyes',
+  'rich mahogany eyes', 'hazel brown eyes', 'golden brown eyes', 'coffee brown eyes',
+  'chestnut brown eyes', 'honey brown eyes', 'dark amber eyes', 'bronze brown eyes',
+  'caramel brown eyes', 'espresso brown eyes', 'warm hazel eyes', 'warm hazel-green eyes'
+];
+
+const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
+  'expressive almond-shaped eyes', 'bright wide-set eyes', 'sparkling round eyes', 'gentle oval-shaped eyes',
+  'striking large eyes', 'warm smiling eyes', 'intelligent alert eyes', 'kind gentle eyes',
+  'curious bright eyes', 'confident strong eyes', 'full natural lips', 'warm smiling lips',
+  'gentle curved lips', 'expressive full lips', 'kind smiling mouth', 'naturally full lips',
+  'soft rounded lips', 'bright cheerful smile', 'warm genuine smile', 'friendly welcoming smile',
+  'strong defined nose', 'graceful nose shape', 'noble nose profile', 'distinctive nose',
+  'well-proportioned nose', 'beautiful nose shape', 'elegant nose line', 'natural nose contour',
+  'refined nose features', 'classic nose profile', 'harmonious facial features, authentic African American features',
+  'beautiful natural features, authentic African American features', 'expressive facial structure, authentic African American features',
+  'warm facial expression, authentic African American features', 'confident facial features, authentic African American features'
+];
+
+const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
+  'casual t-shirt and jeans', 'hoodie and sneakers', 'polo shirt and khakis', 
+  'graphic tee and shorts', 'button-up shirt and pants', 'sweater and jeans', 
+  'tank top and cargo shorts', 'flannel shirt and jeans', 'jersey and joggers', 
+  'denim jacket and jeans', 'cardigan and slacks', 'henley shirt and chinos', 
+  'baseball cap and casual wear', 'sneakers and athletic socks', 'backpack and school clothes', 
+  'comfortable everyday outfit', 'playground-appropriate clothing', 'weekend casual wear', 
+  'school uniform alternatives', 'athletic wear and running shoes', 'layered casual look', 
+  'seasonal appropriate clothing', 'comfortable playtime outfit', 'trendy youth fashion', 
+  'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
+];
+
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY
+const PREMIUM_PROMPT_TEMPLATES = {
+  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}",
+  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}",
+  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}",
+  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}",
+  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}"
+};
+
+function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
+  if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', userInfo, avatarIdentity, difficulty || 'medium');
   
   const text = pageText.toLowerCase();
   const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
@@ -236,9 +324,15 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
       bestScene = sentence;
     }
   });
+
+  return fillPremiumTemplate(bestScene, userInfo, avatarIdentity, difficulty || 'medium');
+}
+
+function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
+  const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
   
   // CHARACTER DETECTION WITH AVATAR TYPE MAPPING
-  let character = 'child';
+  let character = userInfo?.name || 'child';
   
   // Store original avatar type for detection in scene construction and negative prompting
   const originalAvatarType = avatarIdentity?.type || userInfo?.avatar?.type;
@@ -252,29 +346,43 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   let genderType = mapAvatarTypeForPrompt(originalAvatarType);
   console.log(`🎯 AVATAR MAPPING - Original: ${originalAvatarType} → Mapped: ${genderType}`);
   
-  if (userInfo?.name) {
-    character = userInfo.name;
-  } else if (text.includes('girl') || text.includes('she')) {
-    character = 'girl';
+  const text = scene.toLowerCase();
+  if (text.includes('girl') || text.includes('she')) {
+    character = character === 'child' ? 'girl' : character;
     // Only override if no explicit avatar selection
     if (!originalAvatarType) {
       genderType = 'girl';
     }
   } else if (text.includes('boy') || text.includes('he')) {
-    character = 'boy';
+    character = character === 'child' ? 'boy' : character;
     // Only override if no explicit avatar selection  
     if (!originalAvatarType) {
       genderType = 'boy';
     }
   }
+
+  // Age determination
+  const age = getAgeFromDifficulty(difficulty || 'medium');
   
-  // Enhanced avatar description with stronger gender enforcement
-  let avatarDesc = '';
-  if (userInfo?.avatar || avatarIdentity) {
-    const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-    const type = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
-    // Gender type already set above - do NOT override here (genderType = type was the bug!)
+  // Avatar description components
+  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  const isAfricanAmerican = userInfo?.nativeLanguage === 'en' && skinTone === 'dark';
+  
+  let skin, hair, eyes, features, clothing;
+  
+  if (isAfricanAmerican) {
+    // Use hardcoded African American arrays
+    skin = getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES);
+    eyes = getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS);
+    features = getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES);
+    clothing = getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING);
     
+    const hairstyles = genderType === 'girl' || genderType === 'woman' ? 
+      HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : 
+      HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+    hair = getRandomItem(hairstyles);
+  } else {
+    // Standard descriptions
     const skinMap = {
       'pale': 'fair skin',
       'light': 'light skin', 
@@ -291,292 +399,46 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
       'dark': 'black hair'
     };
     
-    // Apply cultural clothing logic
-    let clothingDesc = '';
-    if (userInfo.nativeLanguage === 'en' && skinTone === 'dark') {
-      clothingDesc = ' in modern American fashion';
-    } else if (userInfo.nativeLanguage === 'fr' && skinTone === 'dark') {
-      clothingDesc = ' in African-French fusion style';
-    } else if (userInfo.nativeLanguage === 'es' && skinTone === 'dark') {
-      clothingDesc = ' in contemporary Hispanic fashion';
-    }
-    
-    avatarDesc = `${skinMap[skinTone] || 'medium skin'}, ${hairMap[skinTone] || 'brown hair'}${clothingDesc}${skinTone === 'dark' ? ', realistic natural black hair texture with individual strand detail, rich brown complexion, striking brown eyes, friendly face, authentic African American features, soft golden hour lighting' : ''}`;
+    skin = skinMap[skinTone] || 'medium skin';
+    hair = hairMap[skinTone] || 'brown hair';
+    eyes = 'bright eyes';
+    features = 'friendly face';
+    clothing = 'casual comfortable clothing';
   }
   
-  // Context-aware setting detection with action priority and departure detection
-  let baseSetting = 'outdoor scene';
-  const settingScores = {
-    'park': 0,
-    'home': 0,
-    'beach': 0,
-    'forest': 0,
-    'school': 0,
-    'garden': 0,
-    'field': 0,
-    'restaurant': 0,
-    'bedroom': 0
-  };
+  // Setting determination
+  const setting = applyCulturalSettingEnhancement('outdoor scene', userInfo);
   
-  // Base keyword scoring
-  if (text.includes('park') || text.includes('playground')) settingScores.park += 30;
-  if (text.includes('beach') || text.includes('ocean') || text.includes('sea') || text.includes('sand')) settingScores.beach += 30;
-  if (text.includes('forest') || text.includes('tree') || text.includes('woods')) settingScores.forest += 30;
-  if (text.includes('school') || text.includes('classroom') || text.includes('library')) settingScores.school += 30;
-  if (text.includes('garden') || text.includes('flower')) settingScores.garden += 30;
-  if (text.includes('field') || text.includes('meadow')) settingScores.field += 30;
-  if (text.includes('restaurant') || text.includes('cafe') || text.includes('store')) settingScores.restaurant += 30;
-  if (text.includes('bed') || text.includes('sleep') || text.includes('pillow')) settingScores.bedroom += 30;
+  // Emotion detection
+  const emotion = detectEmotionFromText(scene);
   
-  // Word-boundary home detection (not within other words like "mom")
-  const homePattern = /\b(house|home|bedroom|kitchen|living room)\b/i;
-  if (homePattern.test(text)) settingScores.home += 30;
+  // Quality and suffix based on difficulty
+  const style = getHardcodedStyle(difficulty || 'medium');
+  const quality = style.quality;
+  const suffix = style.suffix;
   
-  // Action-context priority scoring (action + location = heavy weight to that location)
-  if (text.includes('explore') && text.includes('park')) settingScores.park += 50;
-  if (text.includes('going to') && text.includes('park')) settingScores.park += 40;
-  if (text.includes('arrived at') && text.includes('park')) settingScores.park += 45;
-  if (text.includes('playing at') && text.includes('park')) settingScores.park += 40;
-  
-  // Departure context scoring (leaving FROM a location, not AT that location)
-  if ((text.includes('goodbye') || text.includes('leaving') || text.includes('left')) && homePattern.test(text)) {
-    settingScores.home -= 20; // Reduce home score if departing from home
-  }
-  
-  // Current location indicators (AT/IN/INSIDE + location = strong presence)
-  if (text.includes('at the park') || text.includes('in the park')) settingScores.park += 35;
-  if (text.includes('at home') || text.includes('in the house')) settingScores.home += 35;
-  if (text.includes('at school') || text.includes('in school')) settingScores.school += 35;
-  if (text.includes('at the beach') || text.includes('on the beach')) settingScores.beach += 35;
-  
-  // Find the setting with the highest score
-  let highestScore = 0;
-  let topSetting = 'outdoor scene';
-  
-  Object.entries(settingScores).forEach(([setting, score]) => {
-    if (score > highestScore) {
-      highestScore = score;
-      topSetting = setting;
-    }
-  });
-  
-  baseSetting = topSetting;
-  
-  // Apply cultural enhancement bypass logic
-  const culturallyEnhancedSetting = applyCulturalSettingEnhancement(baseSetting, userInfo);
-  
-  // ENHANCED COMPREHENSIVE VISUAL DETECTION SYSTEM
-  const objects = [];
-  const animals = [];
-  const clothingItems = [];
-  const colorObjectPairs = [];
-  const visualModifiers = [];
-  
-  // Comprehensive animal detection array
-  const animalKeywords = ['bunny', 'rabbit', 'cat', 'kitten', 'dog', 'puppy', 'bird', 'bear', 'fox', 'deer', 'squirrel', 'mouse', 'lion', 'elephant', 'giraffe', 'monkey', 'tiger', 'zebra', 'horse', 'cow', 'pig', 'sheep', 'goat', 'duck', 'goose', 'chicken', 'fish', 'butterfly', 'bee', 'frog', 'turtle', 'snake'];
-  
-  // PHASE 1: EXPANDED OBJECT DETECTION ARRAYS
-  const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide', 'backpack', 'lunchbox', 'crayon', 'pencil', 'notebook', 'apple', 'sandwich', 'cookie', 'juice', 'water', 'umbrella', 'sunglasses', 'camera', 'phone', 'tablet', 'game', 'puzzle', 'doll', 'truck', 'train', 'airplane'];
-  
-  // Comprehensive clothing detection
-  const clothingKeywords = ['dress', 'shirt', 'pants', 'skirt', 'shoes', 'sneakers', 'boots', 'sandals', 'hat', 'cap', 'jacket', 'coat', 'sweater', 'hoodie', 'socks', 'shorts', 'jeans', 'blouse', 'vest', 'scarf', 'gloves', 'mittens', 'pajamas', 'nightgown', 'uniform', 'costume', 'tutu', 'overalls', 'cardigan', 'blazer'];
-  
-  // Color keywords for association
-  const colorKeywords = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey', 'navy', 'maroon', 'turquoise', 'violet', 'magenta', 'cyan', 'lime', 'gold', 'silver', 'beige', 'tan', 'coral', 'lavender', 'mint', 'peach', 'ivory', 'crimson', 'emerald'];
-  
-  // Descriptive modifiers
-  const modifierKeywords = ['favorite', 'new', 'pretty', 'beautiful', 'cute', 'warm', 'cozy', 'soft', 'bright', 'sparkly', 'shiny', 'fluffy', 'comfortable', 'special', 'magical', 'amazing', 'wonderful', 'lovely', 'perfect', 'best', 'cool', 'awesome', 'fantastic', 'incredible', 'magnificent', 'gorgeous', 'stunning', 'elegant', 'stylish', 'trendy'];
-  
-  // PHASE 2: ADVANCED DETAIL EXTRACTION SYSTEM
-  function extractVisualDetails(fullText) {
-    const detectedDetails = {
-      clothing: [],
-      colorObjects: [],
-      modifiedItems: [],
-      rawDetails: []
-    };
-    
-    console.log(`👗 CLOTHING DETECTION - Starting comprehensive scan of text`);
-    
-    // Color-Clothing Association Detection
-    clothingKeywords.forEach(clothing => {
-      colorKeywords.forEach(color => {
-        // Pattern: "blue dress", "her red shirt", "favorite yellow hat"
-        const patterns = [
-          new RegExp(`\\b${color}\\s+${clothing}\\b`, 'gi'),
-          new RegExp(`\\b(her|his|their)\\s+${color}\\s+${clothing}\\b`, 'gi'),
-          new RegExp(`\\b(\\w+)\\s+${color}\\s+${clothing}\\b`, 'gi'),
-          new RegExp(`\\bwears?\\s+(?:a|an|her|his|their)?\\s*${color}\\s+${clothing}\\b`, 'gi'),
-          new RegExp(`\\b${clothing}\\s+(?:is|was)\\s+${color}\\b`, 'gi')
-        ];
-        
-        patterns.forEach(pattern => {
-          const matches = [...fullText.matchAll(pattern)];
-          matches.forEach(match => {
-            const fullMatch = match[0].toLowerCase().trim();
-            const colorClothingPair = `${color} ${clothing}`;
-            if (!detectedDetails.colorObjects.find(item => item.includes(colorClothingPair))) {
-              detectedDetails.colorObjects.push(colorClothingPair);
-              detectedDetails.rawDetails.push(fullMatch);
-              console.log(`👗 CLOTHING DETECTION - Found color-clothing pair: "${colorClothingPair}" from "${fullMatch}"`);
-            }
-          });
-        });
-      });
-    });
-    
-    // Modified Clothing Detection (favorite dress, new shoes, etc.)
-    modifierKeywords.forEach(modifier => {
-      clothingKeywords.forEach(clothing => {
-        const patterns = [
-          new RegExp(`\\b${modifier}\\s+${clothing}\\b`, 'gi'),
-          new RegExp(`\\b(her|his|their)\\s+${modifier}\\s+${clothing}\\b`, 'gi'),
-          new RegExp(`\\bwears?\\s+(?:a|an|her|his|their)?\\s*${modifier}\\s+${clothing}\\b`, 'gi')
-        ];
-        
-        patterns.forEach(pattern => {
-          const matches = [...fullText.matchAll(pattern)];
-          matches.forEach(match => {
-            const fullMatch = match[0].toLowerCase().trim();
-            const modifiedItem = `${modifier} ${clothing}`;
-            if (!detectedDetails.modifiedItems.find(item => item.includes(modifiedItem))) {
-              detectedDetails.modifiedItems.push(modifiedItem);
-              detectedDetails.rawDetails.push(fullMatch);
-              console.log(`👗 CLOTHING DETECTION - Found modified clothing: "${modifiedItem}" from "${fullMatch}"`);
-            }
-          });
-        });
-      });
-    });
-    
-    // Standalone Clothing Detection
-    clothingKeywords.forEach(clothing => {
-      const patterns = [
-        new RegExp(`\\bwears?\\s+(?:a|an|her|his|their)?\\s*${clothing}\\b`, 'gi'),
-        new RegExp(`\\b(her|his|their)\\s+${clothing}\\b`, 'gi'),
-        new RegExp(`\\bin\\s+(?:a|an|her|his|their)?\\s*${clothing}\\b`, 'gi')
-      ];
-      
-      patterns.forEach(pattern => {
-        if (pattern.test(fullText) && !detectedDetails.clothing.includes(clothing)) {
-          detectedDetails.clothing.push(clothing);
-          console.log(`👗 CLOTHING DETECTION - Found standalone clothing: "${clothing}"`);
-        }
-      });
-    });
-    
-    return detectedDetails;
-  }
-  
-  // Extract visual details from all page text
-  const visualDetails = extractVisualDetails(text);
-  console.log(`👗 CLOTHING DETECTION - Total details found:`, {
-    colorObjects: visualDetails.colorObjects.length,
-    modifiedItems: visualDetails.modifiedItems.length,
-    clothing: visualDetails.clothing.length,
-    rawDetails: visualDetails.rawDetails
-  });
-  
-  // ENHANCED ANIMAL DETECTION with name-based deduplication
-  const namedAnimals = new Set();
-  const genericAnimals = new Set();
-  
-  // First pass: detect named animals (e.g., "Fluffy the cat", "Whiskers")
-  const namedAnimalPatterns = [
-    /(\w+)\s+the\s+(cat|dog|bunny|rabbit|bird|bear|fox|deer|squirrel)/gi,
-    /(\w+)\s*,?\s*(?:her|his|their)\s+(cat|dog|bunny|rabbit|bird|bear|fox|deer|squirrel)/gi
-  ];
-  
-  namedAnimalPatterns.forEach(pattern => {
-    const matches = [...pageText.matchAll(pattern)];
-    matches.forEach(match => {
-      const animalName = match[1].toLowerCase();
-      const animalType = match[2].toLowerCase();
-      if (animalName && animalType && namedAnimals.size < 1) {
-        namedAnimals.add(`${animalName} the ${animalType}`);
-        console.log(`🐾 TIER 2.5 NAMED ANIMAL DEBUG - Detected: ${animalName} the ${animalType}`);
-      }
-    });
-  });
-  
-  // Second pass: only add generic animals if no named animals found
-  if (namedAnimals.size === 0) {
-    animalKeywords.forEach(animal => {
-      if (text.includes(animal) && genericAnimals.size < 1) {
-        genericAnimals.add(animal);
-        console.log(`🐾 TIER 2.5 GENERIC ANIMAL DEBUG - Detected: ${animal}`);
-      }
-    });
-  }
-  
-  // Combine results with priority to named animals
-  const finalAnimals = [...namedAnimals, ...genericAnimals].slice(0, 1);
-  animals.push(...finalAnimals);
-  
-  // Detect secondary characters mentioned in story
-  const secondaryCharacters = [];
-  const familyKeywords = ['mom', 'mother', 'dad', 'father', 'sister', 'brother', 'grandma', 'grandpa', 'aunt', 'uncle'];
-  const friendKeywords = ['friend', 'buddy', 'pal'];
-  const communityKeywords = ['teacher', 'neighbor', 'doctor', 'librarian', 'coach', 'nurse', 'principal', 'cashier', 'mailman', 'firefighter'];
-  
-  // Detect family members (highest priority)
-  familyKeywords.forEach(family => {
-    if (text.toLowerCase().includes(family) && secondaryCharacters.length < 2) {
-      secondaryCharacters.push(`friendly ${family}`);
-      console.log(`👨‍👩‍👧‍👦 TIER 2.5 FAMILY DEBUG - Detected: ${family}`);
-    }
-  });
-  
-  // Detect friends (if space available)
-  if (secondaryCharacters.length < 2) {
-    friendKeywords.forEach(friendType => {
-      if (text.toLowerCase().includes(friendType) && secondaryCharacters.length < 2) {
-        secondaryCharacters.push(`friendly friend`);
-        console.log(`👫 TIER 2.5 FRIEND DEBUG - Detected: ${friendType}`);
-      }
-    });
-  }
-  
-  // Detect community roles (if space available)
-  if (secondaryCharacters.length < 2) {
-    communityKeywords.forEach(role => {
-      if (text.toLowerCase().includes(role) && secondaryCharacters.length < 2) {
-        secondaryCharacters.push(`friendly ${role}`);
-        console.log(`🏘️ TIER 2.5 COMMUNITY DEBUG - Detected: ${role}`);
-      }
-    });
-  }
-  
-  // Detect objects mentioned in story  
-  allObjects.forEach(obj => {
-    if (text.includes(obj) && objects.length < 2) objects.push(obj);
-  });
-  
-  // PHASE 3: ENHANCED VISUAL ELEMENT INTEGRATION
-  // Combine all detected visual details for rich prompt construction
-  const allVisualElements = [];
-  
-  // Priority 1: Color-object pairs (most specific, e.g., "blue dress")
-  if (visualDetails.colorObjects.length > 0) {
-    allVisualElements.push(...visualDetails.colorObjects.slice(0, 2));
-    console.log(`👗 VISUAL INTEGRATION - Added color-object pairs: ${visualDetails.colorObjects.slice(0, 2).join(', ')}`);
-  }
-  
-  // Priority 2: Modified items (e.g., "favorite shoes", "new jacket")
-  if (visualDetails.modifiedItems.length > 0 && allVisualElements.length < 2) {
-    const remainingSlots = 2 - allVisualElements.length;
-    allVisualElements.push(...visualDetails.modifiedItems.slice(0, remainingSlots));
-    console.log(`👗 VISUAL INTEGRATION - Added modified items: ${visualDetails.modifiedItems.slice(0, remainingSlots).join(', ')}`);
-  }
-  
-  // Priority 3: Standalone clothing (lowest priority)
-  if (visualDetails.clothing.length > 0 && allVisualElements.length < 2) {
-    const remainingSlots = 2 - allVisualElements.length;
-    allVisualElements.push(...visualDetails.clothing.slice(0, remainingSlots));
-    console.log(`👗 VISUAL INTEGRATION - Added standalone clothing: ${visualDetails.clothing.slice(0, remainingSlots).join(', ')}`);
-  }
+  // Fill template placeholders
+  return template
+    .replace('{character}', character)
+    .replace('{age}', age)
+    .replace('{skin}', skin)
+    .replace('{hair}', hair)
+    .replace('{eyes}', eyes)
+    .replace('{features}', features)
+    .replace('{clothing}', clothing)
+    .replace('{scene}', scene)
+    .replace('{setting}', setting)
+    .replace('{emotion}', emotion)
+    .replace('{quality}', quality)
+    .replace('{suffix}', suffix || '');
+}
 
-  // Add age category mapping based on difficulty to ensure consistent child characters
+// Helper functions for nuclear independence
+function getRandomItem(array: string[]): string {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function getAgeFromDifficulty(difficulty: string): string {
   const ageMapping = {
     'beginner': '5-year-old',
     'easy': '7-year-old', 
@@ -584,57 +446,11 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     'hard': '11-year-old',
     'expert': '13-year-old'
   };
-  
-  // Get mapped difficulty from userInfo (inlined for nuclear independence)
-  const mappedDifficulty = mapDifficultyInline(userInfo, 'medium');
-  const agePrefix = ageMapping[mappedDifficulty] || '7-year-old';
-  
-  // Build enhanced scene description with age-specified character
-  let scene = `${agePrefix} ${genderType}`;
-  
-  // Add gender-neutral appendage for "prefer-not-to-answer" selection
-  if (originalAvatarType === 'prefer-not-to-answer') {
-    scene = `${agePrefix} child with no gender specific characteristics`;
-    console.log(`🎯 GENDER NEUTRAL - Applied neutral characteristics for prefer-not-to-answer`);
-  }
-
-  if (avatarDesc) scene += ` with ${avatarDesc}`;
-  scene += ` in ${culturallyEnhancedSetting}`;
-  
-  // PHASE 4: ENHANCED CLOTHING INTEGRATION
-  // Add detected clothing/visual details with priority system
-  if (allVisualElements.length > 0) {
-    scene += ` wearing ${allVisualElements.join(' and ')}`;
-    console.log(`👗 VISUAL INTEGRATION - Added clothing to scene: ${allVisualElements.join(', ')}`);
-  }
-  
-  // Add detected animals to scene (character-animal interaction)
-  if (animals.length > 0) {
-    scene += ` scene with ${animals.join(' and ')}`;
-    console.log(`🐾 TIER 2.5 SCENE DEBUG - Added animals to scene: ${animals.join(', ')}`);
-  }
-  
-  // Add secondary characters to scene (family, friends, community)
-  if (secondaryCharacters.length > 0) {
-    scene += ` with ${secondaryCharacters.join(' and ')}`;
-    console.log(`👨‍👩‍👧‍👦 TIER 2.5 SCENE DEBUG - Added secondary characters to scene: ${secondaryCharacters.join(', ')}`);
-  }
-  
-  // Add objects to scene
-  if (objects.length > 0) scene += ` with ${objects.join(' and ')}`;
-  
-  // Add emotion detection without AI
-  const emotionalContext = detectEmotionFromText(text);
-  if (emotionalContext) scene += `, ${emotionalContext}`;
-  
-  // Use best scene as primary context  
-  scene += `. Scene: ${bestScene}`;
-  
-  console.log(`🎯 TIER 2.5 FINAL DEBUG - Final scene: ${scene}`);
-  console.log(`👗 CLOTHING DETECTION - Final visual elements included: ${allVisualElements.length > 0 ? allVisualElements.join(', ') : 'none detected'}`);
-  
-  return scene;
+  return ageMapping[difficulty] || '7-year-old';
 }
+
+// ============= LEGACY FUNCTIONS REMOVED FOR NUCLEAR SIMPLICITY =============
+// Premium template system replaces the complex detection logic
 
 // Enhanced hardcoded styles with exact styleFrameworks.js verbiage
 function getHardcodedStyle(difficulty: string) {
