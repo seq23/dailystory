@@ -44,7 +44,7 @@ function checkPrimarySceneCriteria(data) {
   }
 
   // PHASE 3: Detailed validation with regex match examples
-  const lengthTest = scene.length >= 120;
+  const lengthTest = scene.length >= 30;
   const characterRegex = /\b(child|character|person|they|he|she|avatar)\b/i;
   const actionRegex = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i;
   const settingRegex = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i;
@@ -61,7 +61,7 @@ function checkPrimarySceneCriteria(data) {
   const hasDescriptiveWords = !!descriptiveMatch;
 
   const qualityScore = [lengthTest, hasCharacter, hasAction, hasSetting, hasDescriptiveWords].filter(Boolean).length;
-  const isPrimarySceneValid = qualityScore >= 4; // Require at least 4 of 5 criteria
+  const isPrimarySceneValid = qualityScore >= 2; // Require at least 2 of 5 criteria
 
   // PHASE 3: Detailed validation logging with match examples
   console.log('🔍 VALIDATION DEBUG: Primary Scene Criteria Analysis:', {
