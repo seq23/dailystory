@@ -31,7 +31,7 @@ Tier 2 uses enhanced pipeline with advanced capabilities:
 - `RealContextCollector`: Context collection from session history
 - `FrontendIntelligence`: Cultural enhancement and prompt building
 - `UnifiedCharacterDescriptor`: Character description generation
-- `AdvancedPronounResolver`: **NEW** - Complex pronoun and relationship resolution for narrative coherence
+
 - `StyleFrameworks`: Dynamic styling based on difficulty
 - `VisualDetailTracker`: Visual element tracking
 
@@ -79,11 +79,11 @@ Tier 4: SVG Placeholder
 3. **Pure dynamic building** - No templates despite name
 4. **Single source of truth** - Avatar handling in orchestrator only
 5. **Database-backed character consistency** - Uses `character_consistency_cache` table
-6. **Enhanced narrative processing** - Includes AdvancedPronounResolver for story coherence
+6. **Enhanced narrative processing** - Improved story coherence through advanced processing
 
 ## Recent Enhancements (2024)
 - **Database-Backed Character Consistency**: Eliminated race conditions across edge function instances
-- **Advanced Pronoun Resolution**: Added AdvancedPronounResolver for improved narrative coherence
+- **Advanced Narrative Processing**: Enhanced narrative coherence through improved processing
 - **Scalable Architecture**: Multiple instances can share character state via database
 - **Zero Breaking Changes**: Maintained full API compatibility during enhancement
 

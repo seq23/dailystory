@@ -41,7 +41,7 @@ Edge functions were failing to boot due to fundamental ES6 module import violati
 All these modules exist and work correctly:
 ```
 supabase/functions/_shared/
-├── AdvancedPronounResolver.js     ✅
+
 ├── BackendTokenManager.js         ✅ 
 ├── CharacterConsistencyService.js ✅
 ├── CulturalTextTracker.js         ✅
