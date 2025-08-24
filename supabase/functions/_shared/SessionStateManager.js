@@ -200,7 +200,7 @@ export class SessionStateManager {
   }
 
   /**
-   * Add successful prompt for consistency
+   * Add successful prompt for consistency (legacy)
    */
   addSuccessfulPrompt(sessionId, prompt, params, seed, imageURL, pageNumber) {
     const state = this.getOrCreateSessionState(sessionId);
@@ -224,6 +224,106 @@ export class SessionStateManager {
     }
     
     console.log(`📋 Stored successful prompt for page ${pageNumber} of session ${sessionId}`);
+  }
+
+  /**
+   * Store image generation prompt with tier information - ENHANCED CROSS-TIER SYSTEM
+   */
+  storeImagePrompt(sessionId, promptData) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    // Initialize imagePrompts array if it doesn't exist
+    if (!state.imagePrompts) {
+      state.imagePrompts = [];
+    }
+    
+    const imagePromptEntry = {
+      tier: promptData.tier,
+      promptText: promptData.promptText,
+      negativePrompt: promptData.negativePrompt || '',
+      originalPageText: promptData.originalPageText || '',
+      enhancedPrompt: promptData.enhancedPrompt || '',
+      pageNumber: promptData.pageNumber,
+      sessionId: sessionId,
+      timestamp: Date.now(),
+      success: promptData.success || false,
+      imageURL: promptData.imageURL || null,
+      seed: promptData.seed || null,
+      provider: promptData.provider || 'unknown',
+      model: promptData.model || '',
+      cost: promptData.cost || 0,
+      generationTime: promptData.generationTime || 0,
+      fallbackReason: promptData.fallbackReason || null,
+      metadata: {
+        culturalProfile: promptData.culturalProfile || {},
+        styleFramework: promptData.styleFramework || {},
+        objects: promptData.objects || [],
+        secondaryCharacters: promptData.secondaryCharacters || [],
+        bedroom: promptData.bedroom || false,
+        ...promptData.metadata
+      }
+    };
+    
+    state.imagePrompts.push(imagePromptEntry);
+    state.lastUpdated = Date.now();
+    
+    // Keep only last 6 prompts for memory efficiency and debug access
+    if (state.imagePrompts.length > 6) {
+      state.imagePrompts = state.imagePrompts.slice(-6);
+    }
+    
+    console.log(`📸 [TIER-${promptData.tier}] Stored image prompt for page ${promptData.pageNumber} of session ${sessionId}`);
+    return imagePromptEntry;
+  }
+
+  /**
+   * Get recent image prompts across all tiers
+   */
+  getRecentImagePrompts(sessionId, limit = 6, tierFilter = null) {
+    const state = this.getOrCreateSessionState(sessionId);
+    let prompts = state.imagePrompts || [];
+    
+    // Filter by tier if specified
+    if (tierFilter) {
+      const tiers = Array.isArray(tierFilter) ? tierFilter : [tierFilter];
+      prompts = prompts.filter(prompt => tiers.includes(prompt.tier));
+    }
+    
+    // Sort by timestamp (newest first) and apply limit
+    return prompts
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, limit);
+  }
+
+  /**
+   * Get all image prompts across all sessions (for global debugging)
+   */
+  static getAllRecentImagePrompts(limit = 20, tierFilter = null) {
+    const allPrompts = [];
+    
+    // Collect prompts from all sessions
+    for (const [sessionId, state] of this.sessions.entries()) {
+      if (state.imagePrompts) {
+        state.imagePrompts.forEach(prompt => {
+          allPrompts.push({
+            ...prompt,
+            sessionId
+          });
+        });
+      }
+    }
+    
+    // Filter by tier if specified
+    let filteredPrompts = allPrompts;
+    if (tierFilter) {
+      const tiers = Array.isArray(tierFilter) ? tierFilter : [tierFilter];
+      filteredPrompts = allPrompts.filter(prompt => tiers.includes(prompt.tier));
+    }
+    
+    // Sort by timestamp (newest first) and apply limit
+    return filteredPrompts
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, limit);
   }
 
   /**

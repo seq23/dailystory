@@ -418,6 +418,35 @@ serve(async (req) => {
             }
           }
 
+          // PHASE 1: Store successful Tier 1 image prompt  
+          const { SessionStateManager } = await import('./_shared/SessionStateManager.js');
+          SessionStateManager.prototype.storeImagePrompt(sessionId, {
+            tier: '1',
+            promptText: validatedPrompt,
+            negativePrompt: enhancementResult.negativePrompt || '',
+            originalPageText: pageText,
+            enhancedPrompt: validatedPrompt,
+            pageNumber: pageNumber,
+            success: true,
+            imageURL: tier1Result.imageURL,
+            seed: tier1Result.seed,
+            provider: 'runware-premium',
+            model: 'runware:100@1',
+            cost: 0.01,
+            generationTime: 0,
+            culturalProfile: enhancementResult.culturalProfile || {},
+            styleFramework: enhancementResult.framework || {},
+            metadata: {
+              aiEnhanced: true,
+              characterConsistency: true,
+              avatarValidated: true,
+              orchestrated: true,
+              validationApplied: validatedPrompt !== enhancedPrompt,
+              segmentCount: segments.length,
+              qualityScore: enhancementResult.qualityScore || 95
+            }
+          });
+
           return createCorsResponse({
             success: true,
             imageURL: tier1Result.imageURL,
@@ -484,6 +513,30 @@ serve(async (req) => {
           );
           
           if (tier2GenerationResult.success) {
+            // PHASE 1: Store Tier 2 image prompt
+            const { SessionStateManager } = await import('./_shared/SessionStateManager.js');
+            SessionStateManager.prototype.storeImagePrompt(sessionId, {
+              tier: '2',
+              promptText: tier2Result.enhancedPrompt,
+              negativePrompt: tier2Result.negativePrompt,
+              originalPageText: pageText,
+              enhancedPrompt: tier2Result.enhancedPrompt,
+              pageNumber: pageNumber,
+              success: true,
+              imageURL: tier2GenerationResult.imageURL,
+              seed: tier2GenerationResult.seed,
+              provider: 'runware-premium',
+              model: 'runware:100@1',
+              cost: tier2GenerationResult.cost || 0.01,
+              generationTime: tier2GenerationResult.generationTime || 0,
+              metadata: {
+                strippedPipeline: true,
+                fallbackFromTier1: true,
+                tier2Processing: true,
+                ...tier2Result.metadata
+              }
+            });
+            
             return createCorsResponse({
               success: true,
               imageURL: tier2GenerationResult.imageURL,
@@ -575,6 +628,7 @@ serve(async (req) => {
         });
 
         if (tier3Result.success) {
+          // PHASE 1: Store Tier 3 image prompt (already stored in openai-image function)
           console.log('✅ Tier 3 OpenAI succeeded');
           return createCorsResponse({
             success: true,
@@ -595,6 +649,29 @@ serve(async (req) => {
     // TIER 4: SVG Placeholder (Guaranteed Success)
     console.log('📝 Generating Tier 4: SVG Placeholder');
     const svgResult = generateSVGPlaceholder(pageText, userInfo);
+    
+    // PHASE 1: Store Tier 4 SVG prompt
+    const { SessionStateManager } = await import('./_shared/SessionStateManager.js');
+    SessionStateManager.prototype.storeImagePrompt(sessionId, {
+      tier: '4',
+      promptText: `SVG Placeholder: ${pageText.substring(0, 100)}...`,
+      negativePrompt: '',
+      originalPageText: pageText,
+      enhancedPrompt: `Generated SVG for ${avatarIdentity.name}`,
+      pageNumber: pageNumber,
+      success: true,
+      imageURL: svgResult.url,
+      seed: 0,
+      provider: 'svg-placeholder',
+      model: 'internal-svg',
+      cost: 0,
+      generationTime: 0,
+      fallbackReason: 'All image generation tiers failed',
+      metadata: {
+        avatarIdentity,
+        guaranteedFallback: true
+      }
+    });
     
     return createCorsResponse({
       success: true,

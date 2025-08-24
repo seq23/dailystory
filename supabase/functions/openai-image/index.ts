@@ -166,6 +166,32 @@ serve(async (req) => {
     // Generate a consistent seed for OpenAI (for tracking purposes)
     const generatedSeed = seed || Math.floor(Math.random() * 2147483647);
     
+    // PHASE 1: Store image prompt in SessionStateManager 
+    const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
+    SessionStateManager.prototype.storeImagePrompt(sessionId || 'openai-session', {
+      tier: '3',
+      promptText: finalPrompt,
+      negativePrompt: comprehensiveNegativePrompt,
+      originalPageText: positivePrompt,
+      enhancedPrompt: finalPrompt,
+      pageNumber: pageNumber || 1,
+      success: true,
+      imageURL: imageUrl,
+      seed: generatedSeed,
+      provider: 'openai',
+      model: 'gpt-image-1',
+      cost: gptImageQuality === 'high' ? 0.12 : 0.08,
+      generationTime: 0, // OpenAI doesn't provide this
+      culturalProfile: enhancementResult.culturalProfile || {},
+      styleFramework: enhancementResult.framework || {},
+      metadata: {
+        quality: gptImageQuality,
+        size: size,
+        aiEnhanced: !!aiEnhancedStoryData,
+        premiumPipeline: true
+      }
+    });
+    
     console.log(`✅ TIER 3 SUCCESS - Session: ${sessionId}, Page: ${pageNumber}`);
     console.log(`🖼️ Image URL: ${imageUrl}`);
     console.log(`🎯 Final Prompt Used: ${finalPrompt}`);

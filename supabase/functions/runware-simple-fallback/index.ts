@@ -107,6 +107,39 @@ serve(async (req) => {
               console.log(`🎯 Final Prompt Used: ${finalPrompt}`);
               console.log(`💰 Cost: ${item.cost}, Seed: ${item.seed}`);
               
+              // PHASE 1: Store image prompt in SessionStateManager
+              try {
+                const { SessionStateManager } = await import('../_shared/SessionStateManager.js');
+                SessionStateManager.prototype.storeImagePrompt(sessionId, {
+                  tier: '2.5',
+                  promptText: finalPrompt,
+                  negativePrompt: negativePrompt,
+                  originalPageText: pageText,
+                  enhancedPrompt: finalPrompt,
+                  pageNumber: pageNumber,
+                  success: true,
+                  imageURL: item.imageURL,
+                  seed: item.seed,
+                  provider: 'runware-simple-fallback',
+                  model: 'runware:100@1',
+                  cost: item.cost || 0.01,
+                  generationTime: 0,
+                  objects: detectedObjects || [],
+                  secondaryCharacters: detectedSecondaryChars || [],
+                  bedroom: detectedSetting === 'bedroom',
+                  metadata: {
+                    objectsDetected: objects.length,
+                    secondaryCharsDetected: secondaryCharacters.length,
+                    bedroomSceneDetected: bedroom,
+                    template: template?.name || 'fallback',
+                    culturalEnhancement: culturalEnhancement
+                  }
+                });
+                console.log(`📸 [TIER-2.5] Stored image prompt for session ${sessionId}, page ${pageNumber}`);
+              } catch (error) {
+                console.warn('⚠️ Failed to store Tier 2.5 prompt:', error.message);
+              }
+              
               resolve(createCorsResponse({
                 success: true,
                 imageURL: item.imageURL,
