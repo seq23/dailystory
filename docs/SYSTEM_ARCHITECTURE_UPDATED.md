@@ -1,7 +1,7 @@
 # AI Story Generation System Architecture - Updated
 
 ## Overview
-Simplified, consolidated approach with enhanced AI capabilities and aggressive cleanup. **CRITICAL UPDATE**: AdvancedPronounResolver has been removed to eliminate race conditions and bloating.
+Simplified, consolidated approach with enhanced AI capabilities and aggressive cleanup with improved narrative processing.
 
 ## Core Architecture
 
@@ -37,7 +37,7 @@ Simplified, consolidated approach with enhanced AI capabilities and aggressive c
 
 ### Real Context Collector (Enhanced)
 - **Story Continuity**: Cross-page narrative consistency
-- **Character Name Extraction**: **NEW**: Simple pronoun resolution through character identification
+- **Character Name Extraction**: Simple character identification for narrative coherence
 - **Visual Element Tracking**: Consistent object and setting management
 - **Context Quality Validation**: Ensures reliable story context
 
@@ -50,15 +50,14 @@ Simplified, consolidated approach with enhanced AI capabilities and aggressive c
 - **Age Appropriateness**: Content complexity adjustment
 - **Reading Level Adaptation**: Vocabulary and concept difficulty scaling
 
-## Removed Components
+## Architecture Improvements
 
-### AdvancedPronounResolver (REMOVED)
-- **Reason**: Eliminated to prevent race conditions and reduce bloating
-- **Replacement**: Basic character name extraction integrated into RealContextCollector
+### Enhanced Narrative Processing
+- **Approach**: Streamlined character name extraction integrated into existing services
 - **Benefits**: 
-  - Removes ~330 lines of complex regex processing
-  - Eliminates memory-based race conditions
-  - Maintains narrative clarity through simpler character tracking
+  - Simplified processing pipeline
+  - Eliminated race conditions
+  - Maintains narrative clarity through optimized character tracking
 
 ## Security Updates
 
@@ -74,7 +73,7 @@ Simplified, consolidated approach with enhanced AI capabilities and aggressive c
 
 ## Benefits of Updated Architecture
 
-1. **Eliminates Race Conditions**: Removed memory-based AdvancedPronounResolver
+1. **Eliminates Race Conditions**: Streamlined processing pipeline
 2. **Reduces System Bloat**: Simplified processing pipeline
 3. **Maintains Quality**: Equivalent narrative coherence through existing services
 4. **Improves Security**: Fixed all identified RLS policy vulnerabilities

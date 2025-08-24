@@ -27,7 +27,7 @@ Simplified, consolidated AI story generation system with focused orchestration a
 
 ### 3. Enhancement Pipeline (`_shared/MultiStageEnhancementPipeline.js`)
 - **Tier 1**: Premium pipeline with cultural profiling
-- **Tier 2**: Enhanced systematic service wrappers with **AdvancedPronounResolver**
+- **Tier 2**: Enhanced systematic service wrappers with advanced narrative processing
 - **Utilities**: Prompt building, cultural integration, narrative coherence
 
 ### 4. Support Services
@@ -63,7 +63,7 @@ Story Request → AI Story Enhancer → Enhancement Pipeline → Image Generator
 4. **Cultural Integration**: Unified cultural context handling
 5. **Performance Optimization**: Streamlined processing pipeline
 6. **Database-Backed Character Consistency**: Eliminated race conditions across edge function instances
-7. **Enhanced Narrative Processing**: Advanced pronoun resolution for story coherence
+7. **Enhanced Narrative Processing**: Improved story coherence through advanced processing
 
 ## Configuration
 

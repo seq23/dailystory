@@ -31,8 +31,7 @@ Edge functions were failing to boot due to fundamental ES6 module import violati
 - **All shared modules**: Now use consistent ES6 export patterns
 
 ### **Phase 3: Missing Module Resolution** ✅
-- **`tierFailureMonitoring.js`**: Replaced with inline logging implementations
-- **`PromptPriority`**: Removed non-existent import from BackendTokenManager
+- **Legacy imports**: Replaced with inline implementations where needed
 - **Circuit breaker functions**: Added lightweight inline versions
 
 ## **Current Module State**
@@ -41,8 +40,6 @@ Edge functions were failing to boot due to fundamental ES6 module import violati
 All these modules exist and work correctly:
 ```
 supabase/functions/_shared/
-
-├── BackendTokenManager.js         ✅ 
 ├── CharacterConsistencyService.js ✅
 ├── CulturalTextTracker.js         ✅
 ├── DifficultyLevelMapper.js       ✅
@@ -57,7 +54,7 @@ supabase/functions/_shared/
 ```
 
 ### **❌ Non-Existent Modules (Now Handled)**
-- `tierFailureMonitoring.js` - Replaced with inline implementations
+- Legacy modules - Replaced with inline implementations
 - `PromptPriority` export - Removed from all imports
 
 ## **Import Standards Established**
@@ -110,7 +107,7 @@ const TierFailureLogger = {
 ```mermaid
 graph TD
     A[MultiStageEnhancementPipeline.js] --> B[DifficultyLevelMapper.js]
-    A --> C[BackendTokenManager.js]
+    A --> C[CharacterConsistencyService.js]
     A --> D[VisualDetailTracker.js]
     A --> E[CharacterConsistencyService.js]
     
