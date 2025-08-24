@@ -323,11 +323,18 @@ export class SimpleImageService {
     return {
       url: 'data:image/svg+xml;base64,' + btoa(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
-          <rect width="100%" height="100%" fill="#f8f9fa"/>
-          <circle cx="200" cy="120" r="40" fill="#e9ecef"/>
-          <rect x="160" y="170" width="80" height="60" rx="5" fill="#e9ecef"/>
-          <text x="50%" y="260" text-anchor="middle" font-family="Arial" font-size="12" fill="#6c757d">
-            Image loading...
+          <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+          <!-- Broken image icon -->
+          <rect x="150" y="80" width="100" height="80" rx="8" fill="none" stroke="#dee2e6" stroke-width="2"/>
+          <circle cx="165" cy="100" r="8" fill="#dee2e6"/>
+          <path d="m170 130 20 20 30-30" stroke="#dee2e6" stroke-width="2" fill="none"/>
+          <path d="m150 80 100 80 m0-80-100 80" stroke="#dc3545" stroke-width="3" opacity="0.7"/>
+          <!-- Main message -->
+          <text x="50%" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#495057">
+            Images not working right now
+          </text>
+          <text x="50%" y="220" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6c757d">
+            Please try the retry button below
           </text>
         </svg>
       `),

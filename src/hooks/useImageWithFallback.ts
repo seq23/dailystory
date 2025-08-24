@@ -17,6 +17,7 @@ export const useImageWithFallback = (
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
+  const [isManualRetry, setIsManualRetry] = useState(false);
 
   const debugLog = useCallback((message: string, data?: any) => {
     console.log(`🖼️ useImageWithFallback: ${message}`, data || '');
@@ -121,10 +122,26 @@ export const useImageWithFallback = (
     loadImageWithRetry(src);
   }, [src, fallbackText, loadImageWithRetry, debugLog]);
 
+  const manualRetry = useCallback(() => {
+    if (!src) return;
+    
+    debugLog('Manual retry triggered');
+    setIsManualRetry(true);
+    setError(null);
+    setAttempts(0);
+    setIsLoading(true);
+    
+    loadImageWithRetry(src).finally(() => {
+      setIsManualRetry(false);
+    });
+  }, [src, loadImageWithRetry, debugLog]);
+
   return {
     imageSrc,
     isLoading,
     error,
-    isUsingFallback: ImageFallbackService.isFallbackImage(imageSrc) || error !== null
+    isUsingFallback: ImageFallbackService.isFallbackImage(imageSrc) || error !== null,
+    manualRetry,
+    isManualRetry
   };
 };
