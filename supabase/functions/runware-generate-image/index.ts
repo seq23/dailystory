@@ -211,7 +211,19 @@ serve(async (req) => {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
         console.log('🔍 TIER 1 DEBUG - Calling ai-story-enhancer directly (clean architecture)');
         
-        // Call ai-story-enhancer directly with pre-processed avatar identity
+        // Collect previous page text for context continuity
+        let previousPageText = '';
+        try {
+          if (pageNumber > 1) {
+            const sessionManager = new SessionStateManager(sessionId);
+            previousPageText = await sessionManager.getPreviousPageText(pageNumber - 1) || '';
+            console.log(`📖 Collected previous page context: ${previousPageText ? 'Yes' : 'No'}`);
+          }
+        } catch (error) {
+          console.warn('⚠️ Failed to collect previous page context (non-critical):', error);
+        }
+        
+        // Call ai-story-enhancer directly with pre-processed avatar identity and previous context
         const aiEnhancerResult = await callTierFunction('ai-story-enhancer', {
           storyText: pageText,
           userInfo,
@@ -219,7 +231,8 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           avatarIdentity, // Pass pre-processed avatar identity directly
-          enhancedStoryData
+          enhancedStoryData,
+          previousPageText // Pass previous page text for continuity
         });
 
         console.log('🔍 TIER 1 DEBUG - AI enhancer result:', {

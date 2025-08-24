@@ -500,7 +500,7 @@ serve(async (req) => {
           };
         }
         
-        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = requestBody);
+        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
           userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',
@@ -523,30 +523,11 @@ serve(async (req) => {
         pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
         console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
 
-        // Get previous pages context for consistency using globalThis pattern (like in MultiStageEnhancementPipeline)        
-        const previousPages = globalThis.StoryVisualStateManager?.getPromptHistory?.(sessionId, 3) || [];
-        
+        // Get previous page context from request (passed by orchestrator)
         let previousContext = '';
-        if (previousPages.length > 0) {
-          previousContext = `\n\nPREVIOUS STORY CONTEXT:\n`;
-          previousPages.reverse().forEach((page, index) => {
-            previousContext += `Page ${page.pageNumber}: Previous story elements established\n`;
-          });
-          
-          const knownCharacters = globalThis.StoryVisualStateManager?.getStoryState?.(sessionId)?.characters || new Map();
-          const knownSetting = globalThis.StoryVisualStateManager?.getSettingForPrompt?.(sessionId);
-          const knownObjects = globalThis.StoryVisualStateManager?.getVisualDetailsForPrompt?.(sessionId);
-          
-          if (knownCharacters.size > 0) {
-            const charNames = Array.from(knownCharacters.keys()).join(', ');
-            previousContext += `ESTABLISHED CHARACTERS: ${charNames}\n`;
-          }
-          if (knownSetting) {
-            previousContext += `ESTABLISHED SETTING: ${knownSetting}\n`;
-          }
-          if (knownObjects) {
-            previousContext += `ESTABLISHED OBJECTS: ${knownObjects}\n`;
-          }
+        if (requestBody.previousPageText) {
+          previousContext = `\n\nPREVIOUS STORY CONTEXT:\nPrevious page text: "${requestBody.previousPageText}"\n`;
+          console.log('📖 Previous page context provided for story continuity');
         }
 
         // Detect secondary characters for conditional schema
