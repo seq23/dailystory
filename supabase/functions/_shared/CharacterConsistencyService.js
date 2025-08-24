@@ -129,15 +129,15 @@ export class CharacterConsistencyService {
     'classic nose profile',
     
     // Combined facial harmony
-    'harmonious facial features, authentic African American features',
-    'beautiful natural features, authentic African American features',
-    'expressive facial structure, authentic African American features',
-    'warm facial expression, authentic African American features',
-    'confident facial features, authentic African American features',
-    'gentle facial characteristics, authentic African American features',
-    'striking natural beauty, authentic African American features',
-    'dignified facial features, authentic African American features',
-    'radiant facial expression, authentic African American features'
+    'harmonious facial features, authentic African American features, soft golden hour lighting',
+    'beautiful natural features, authentic African American features, soft golden hour lighting',
+    'expressive facial structure, authentic African American features, soft golden hour lighting',
+    'warm facial expression, authentic African American features, soft golden hour lighting',
+    'confident facial features, authentic African American features, soft golden hour lighting',
+    'gentle facial characteristics, authentic African American features, soft golden hour lighting',
+    'striking natural beauty, authentic African American features, soft golden hour lighting',
+    'dignified facial features, authentic African American features, soft golden hour lighting',
+    'radiant facial expression, authentic African American features, soft golden hour lighting'
   ];
   
   static EXPANDED_AFRICAN_AMERICAN_CLOTHING = [
