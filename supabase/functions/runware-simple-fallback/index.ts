@@ -295,13 +295,33 @@ function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avata
   const text = pageText.toLowerCase();
   const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
   
-  // Enhanced scene scoring with better visual prioritization
+  // Enhanced scene scoring with better visual prioritization and bedroom detection
   let bestScene = sentences[0] || pageText;
   let bestScore = 0;
+  let detectedSetting = 'outdoor'; // Default setting
   
   sentences.forEach(sentence => {
     let score = 0;
     const lowerSentence = sentence.toLowerCase();
+    
+    // 🛏️ BEDROOM SCENE DETECTION (High Priority)
+    if (lowerSentence.includes('wakes up') || lowerSentence.includes('wake up') || 
+        lowerSentence.includes('woke up') || lowerSentence.includes('sleeping') || 
+        lowerSentence.includes('bed') || lowerSentence.includes('bedroom') ||
+        lowerSentence.includes('pillow') || lowerSentence.includes('blanket') ||
+        lowerSentence.includes('dream') || lowerSentence.includes('morning')) {
+      score += 40; // High priority for bedroom scenes
+      detectedSetting = 'bedroom';
+      console.log('🛏️ BEDROOM SCENE DETECTED:', lowerSentence.substring(0, 100));
+    }
+    
+    // Indoor scene detection
+    if (lowerSentence.includes('room') || lowerSentence.includes('house') || 
+        lowerSentence.includes('kitchen') || lowerSentence.includes('living room') ||
+        lowerSentence.includes('inside') || lowerSentence.includes('home')) {
+      score += 25;
+      if (detectedSetting === 'outdoor') detectedSetting = 'indoor';
+    }
     
     // Visual richness indicators
     if (lowerSentence.includes('color') || lowerSentence.includes('bright') || lowerSentence.includes('beautiful')) score += 20;
@@ -325,10 +345,12 @@ function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avata
     }
   });
 
-  return fillPremiumTemplate(bestScene, userInfo, avatarIdentity, difficulty || 'medium');
+  console.log(`🔍 SCENE ANALYSIS: Best score: ${bestScore}, Detected setting: ${detectedSetting}`);
+  
+  return fillPremiumTemplate(bestScene, userInfo, avatarIdentity, difficulty || 'medium', detectedSetting);
 }
 
-function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
+function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any, difficulty?: string, detectedSetting?: string): string {
   const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
   
   // 🔍 PREMIUM TEMPLATE DEBUG LOGGING
@@ -431,8 +453,10 @@ function fillPremiumTemplate(scene: string, userInfo?: any, avatarIdentity?: any
     console.log(`   👕 Clothing: ${clothing} (standard)`);
   }
   
-  // Setting determination
-  const setting = applyCulturalSettingEnhancement('outdoor scene', userInfo);
+  // Setting determination with bedroom detection
+  const baseSetting = detectedSetting === 'bedroom' ? 'cozy bedroom scene' : 
+                     detectedSetting === 'indoor' ? 'indoor scene' : 'outdoor scene';
+  const setting = applyCulturalSettingEnhancement(baseSetting, userInfo, detectedSetting);
   
   // Emotion detection
   const emotion = detectEmotionFromText(scene);
@@ -615,7 +639,7 @@ function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, origina
 }
 
 // Enhanced cultural intelligence for Tier 2.5
-function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any): string {
+function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any, detectedSetting?: string): string {
   // Enhanced African American detection for English speakers
   if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
     // Check for African American cultural markers
@@ -625,7 +649,18 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any): s
                                   Math.random() < 0.25; // 25% cultural enhancement chance
     
     if (isAfricanAmericanUser) {
-      const culturalElements = [
+      // Choose culturally appropriate elements based on setting type
+      const culturalElements = detectedSetting === 'bedroom' ? [
+        'with authentic African American home atmosphere',
+        'in a warm, culturally rich bedroom setting',
+        'featuring diverse family home environment',
+        'with authentic multicultural home elements'
+      ] : detectedSetting === 'indoor' ? [
+        'with authentic African American community elements',
+        'in a diverse family home setting',
+        'with rich cultural home atmosphere',
+        'featuring authentic multicultural indoor environment'
+      ] : [
         'with authentic African American community elements',
         'in a diverse urban neighborhood setting', 
         'with rich cultural community atmosphere',
