@@ -1,8 +1,79 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
-import { validateAndEnhanceContent } from "../_shared/SimpleContentValidator.js";
 import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
+
+// ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
+
+/**
+ * ULTRA-SIMPLE: Check if 3 of 5 key fields exist (binary yes/no per field)
+ */
+function checkPrimarySceneCriteria(data) {
+  return {
+    primaryScene: !!(data.primaryScene && data.primaryScene.length > 0),
+    characterAppearance: !!(data.characters?.characterAppearance),
+    setting: !!(data.visualComponents?.setting),
+    action: !!(data.visualComponents?.action),
+    context: !!(data.visualComponents && Object.keys(data.visualComponents).length > 2), // sceneType, lighting, keyObjects
+    get passCount() {
+      return [this.primaryScene, this.characterAppearance, this.setting, this.action, this.context].filter(Boolean).length;
+    }
+  };
+}
+
+/**
+ * ULTRA-SIMPLIFIED: Basic fixes for primaryScene only
+ */
+function applyBasicFixes(data, text) {
+  const enhanced = { ...data };
+  
+  // ONLY fix primaryScene if missing/broken
+  if (!enhanced.primaryScene || enhanced.primaryScene.length < 10) {
+    const textLower = text.toLowerCase();
+    let sceneDescription = 'child in scene';
+    
+    // Basic scene detection for fallback
+    if (textLower.includes('outside') || textLower.includes('park')) {
+      sceneDescription = 'child outside in bright outdoor scene';
+    } else if (textLower.includes('home') || textLower.includes('house')) {
+      sceneDescription = 'child at home in cozy indoor scene';
+    } else if (textLower.includes('playing')) {
+      sceneDescription = 'child playing in colorful scene';
+    }
+    
+    enhanced.primaryScene = sceneDescription;
+    console.log('🔧 Applied primaryScene fallback:', sceneDescription);
+  }
+  
+  // Leave characters and visualComponents completely untouched - they're optional
+  
+  return enhanced;
+}
+
+/**
+ * ULTRA-SIMPLE VALIDATION: Binary field-existence check - informational only
+ * @param {Object} enhancedStoryData - AI extracted data
+ * @param {string} storyText - Original story text
+ * @returns {Object} - Enhanced data or tier 2 trigger (never blocks)
+ */
+function validateAndEnhanceContent(enhancedStoryData, storyText) {
+  const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
+  
+  console.log(`🔍 ULTRA-SIMPLE Field Check: ${fieldCheck.passCount}/5 fields present (${fieldCheck.passCount >= 3 ? 'PASS' : 'TIER 2'})`);
+  console.log(`📊 Field Status:`, fieldCheck);
+  
+  // Binary decision: 3+ fields = accept, <3 fields = Tier 2
+  if (fieldCheck.passCount < 3) {
+    console.log(`❌ Insufficient fields (${fieldCheck.passCount}/5) - falling back to Tier 2`);
+    return { useTier2: true, fieldCheck };
+  }
+  
+  // Apply basic fixes and accept content
+  const enhanced = applyBasicFixes(enhancedStoryData, storyText);
+  
+  console.log(`✅ Field validation passed (${fieldCheck.passCount}/5) - content accepted`);
+  return { enhancedData: enhanced, fieldCheck };
+}
 
 // AI Model Fallback Chain Configuration - UPDATED TO FLAGSHIP MODELS
 const AI_MODELS = [
@@ -374,15 +445,6 @@ serve(async (req) => {
       }
       
       try {
-        await import('../_shared/SimpleContentValidator.js');
-        importResults.SimpleContentValidator = '✅ SUCCESS';
-        console.log('✅ SimpleContentValidator.js import - OK');
-      } catch (error) {
-        importResults.SimpleContentValidator = `❌ FAILED: ${error.message}`;
-        console.error('❌ SimpleContentValidator.js import - FAILED:', error.message);
-      }
-      
-      try {
         await import('../_shared/MultiStageEnhancementPipeline.js');
         importResults.MultiStageEnhancementPipeline = '✅ SUCCESS';
         console.log('✅ MultiStageEnhancementPipeline.js import - OK');
@@ -640,97 +702,22 @@ Extract using the object-based schema with ${hasMultipleCharacters ? 'secondary 
             throw new Error(`JSON parsing failed: ${parseError.message} - Content: "${trimmedContent.substring(0, 100)}..."`);
           }
           
-          // ULTRA-LEAN VALIDATION WITH QUALITY GATE & MONITORING
+          // ULTRA-SIMPLE VALIDATION: 3 of 5 fields check only
           validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
           
-          // Track quality score for monitoring
-          QualityGateMonitor.trackQualityScore(validationResult.qualityScore || 100, {
-            tier: 'TIER_1',
-            sessionId,
-            storyId,
-            enhancementMethod: 'openai',
-            contentLength: storyText.length
-          });
-          
-          // QUALITY GATE: If score too low (0-30) → Return error to Orchestrator for Tier 2
+          // Simple check: If useTier2 flag set → Return error to Orchestrator for Tier 2
           if (validationResult.useTier2) {
-            console.log(`🚀 Quality gate triggered - returning error to Orchestrator (score: ${validationResult.qualityScore}/100)`);
+            console.log(`🚀 Field validation failed - returning error to Orchestrator for Tier 2`);
             
             // Log validation failure that triggers Tier 2
             TierFailureLogger.logTier1ValidationFailure(validationResult, {
               sessionId,
               storyId,
               pageNumber,
-              trigger: 'quality_too_low'
+              trigger: 'insufficient_fields'
             });
             
-            // Track quality gate failure
-            QualityGateMonitor.trackValidationFailure('QUALITY_TOO_LOW', {
-              score: validationResult.qualityScore,
-              mismatches: validationResult.mismatches
-            }, { sessionId, storyId, tier: 'TIER_1' });
-            
-            return createCorsErrorResponse(`Quality gate failure - score: ${validationResult.qualityScore}/100`, 422);
-          }
-          
-          // If major mismatches detected, trigger re-analysis once
-          if (validationResult.requiresReanalysis) {
-            console.log(`🔄 Re-analyzing due to content mismatches (score: ${validationResult.qualityScore}/100)...`);
-            
-            // Log reanalysis requirement
-            TierFailureLogger.logTier1ValidationFailure(validationResult, {
-              sessionId,
-              storyId,
-              pageNumber,
-              trigger: 'requires_reanalysis'
-            });
-            
-            // Track validation failure requiring reanalysis
-            QualityGateMonitor.trackValidationFailure('REQUIRES_REANALYSIS', {
-              score: validationResult.qualityScore,
-              mismatches: validationResult.mismatches
-            }, { sessionId, storyId, tier: 'TIER_1' });
-            
-            const retryResult = await callOpenAIWithFallback(messages);
-            if (retryResult.choices?.[0]?.message?.content) {
-              // PHASE 2: Apply same bulletproof validation to retry response
-              const retryTrimmedContent = retryResult.choices[0].message.content.trim();
-              if (retryTrimmedContent.length < 30) {
-                throw new Error(`Retry response too short: ${retryTrimmedContent.length} characters, minimum 30 required`);
-              }
-              
-              try {
-                enhancedStoryData = JSON.parse(retryTrimmedContent);
-                validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
-                
-                // Track retry quality score
-                QualityGateMonitor.trackQualityScore(validationResult.qualityScore || 100, {
-                  tier: 'TIER_1_RETRY',
-                  sessionId,
-                  storyId,
-                  enhancementMethod: 'openai_retry',
-                  contentLength: storyText.length
-                });
-                
-              } catch (retryParseError) {
-                throw new Error(`Retry JSON parsing failed: ${retryParseError.message}`);
-              }
-              
-              // If still bad after retry → Return error to Orchestrator
-              if (validationResult.useTier2 || validationResult.requiresReanalysis) {
-                console.log(`🚀 Re-analysis failed - returning error to Orchestrator`);
-                
-                // Log retry failure
-                TierFailureLogger.logTier1ValidationFailure(validationResult, {
-                  sessionId,
-                  storyId,
-                  pageNumber,
-                  trigger: 'reanalysis_failed'
-                });
-                
-                return createCorsErrorResponse('Re-analysis failed - quality insufficient', 422);
-              }
-            }
+            return createCorsErrorResponse(`Field validation failed - ${validationResult.fieldCheck.passCount}/5 fields present`, 422);
           }
           
           enhancedStoryData = validationResult.enhancedData;
@@ -783,10 +770,9 @@ Extract using the object-based schema with ${hasMultipleCharacters ? 'secondary 
             ...promptResult.metadata,
             aiEnhancement: true,
             validation: {
-              contentValid: !validationResult?.requiresReanalysis,
-              mismatches: validationResult?.mismatches || [],
-              processingMethod: validationResult?.requiresReanalysis ? 're-analyzed' : 'accepted',
-              qualityScore: validationResult?.qualityScore || 100,
+              fieldsPresent: validationResult?.fieldCheck?.passCount || 0,
+              fieldsPassed: validationResult?.fieldCheck?.passCount >= 3,
+              processingMethod: 'field-validated',
               modelUsed: 'openai-enhanced'
             },
              extractedElements: {
@@ -813,7 +799,7 @@ Extract using the object-based schema with ${hasMultipleCharacters ? 'secondary 
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`✅ AI Analysis complete - NEW SCHEMA: Characters(${!!enhancedStoryData.characters}), VisualComponents(${!!enhancedStoryData.visualComponents}), PrimaryScene(${!!enhancedStoryData.primaryScene}), quality: ${validationResult?.qualityScore || 100}/100`);
+        console.log(`✅ AI Analysis complete - NEW SCHEMA: Characters(${!!enhancedStoryData.characters}), VisualComponents(${!!enhancedStoryData.visualComponents}), PrimaryScene(${!!enhancedStoryData.primaryScene}), fields: ${validationResult?.fieldCheck?.passCount || 0}/5`);
 
         return createCorsResponse(result);
 
