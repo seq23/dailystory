@@ -219,6 +219,7 @@ serve(async (req) => {
             console.log(`📖 Collected previous page context: ${previousPageText ? 'Yes' : 'No'}`);
           }
         } catch (error) {
+          // NOTE: This is genuinely non-critical - previous page context is optional for continuity
           console.warn('⚠️ Failed to collect previous page context (non-critical):', error);
         }
         
@@ -347,6 +348,7 @@ serve(async (req) => {
                 pageNumber
               );
             } catch (error) {
+              // NOTE: This is genuinely non-critical - visual state storage is optional for consistency
               console.warn('⚠️ Failed to store visual state (non-critical):', error);
             }
           }

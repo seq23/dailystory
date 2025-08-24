@@ -40,40 +40,14 @@ function checkPrimarySceneCriteria(data) {
   };
 }
 
-/**
- * ULTRA-SIMPLIFIED: Basic fixes for primaryScene only
- */
-function applyBasicFixes(data, text) {
-  const enhanced = { ...data };
-  
-  // ONLY fix primaryScene if missing/broken
-  if (!enhanced.primaryScene || enhanced.primaryScene.length < 10) {
-    const textLower = text.toLowerCase();
-    let sceneDescription = 'child in scene';
-    
-    // Basic scene detection for fallback
-    if (textLower.includes('outside') || textLower.includes('park')) {
-      sceneDescription = 'child outside in bright outdoor scene';
-    } else if (textLower.includes('home') || textLower.includes('house')) {
-      sceneDescription = 'child at home in cozy indoor scene';
-    } else if (textLower.includes('playing')) {
-      sceneDescription = 'child playing in colorful scene';
-    }
-    
-    enhanced.primaryScene = sceneDescription;
-    console.log('🔧 Applied primaryScene fallback:', sceneDescription);
-  }
-  
-  // Leave characters and visualComponents completely untouched - they're optional
-  
-  return enhanced;
-}
+// REMOVED: applyBasicFixes function - Tier 1 now uses strict fail-fast validation
+// This ensures immediate Tier 2 triggering when AI extraction is insufficient
 
 /**
- * ULTRA-SIMPLE VALIDATION: Binary field-existence check - informational only
- * @param {Object} enhancedStoryData - AI extracted data
- * @param {string} storyText - Original story text
- * @returns {Object} - Enhanced data or tier 2 trigger (never blocks)
+ * TIER 1 FAIL-FAST VALIDATION: Binary primaryScene check - no repair attempts
+ * @param {Object} enhancedStoryData - AI extracted data  
+ * @param {string} storyText - Original story text (unused, kept for compatibility)
+ * @returns {Object} - Enhanced data or immediate Tier 2 trigger
  */
 function validateAndEnhanceContent(enhancedStoryData, storyText) {
   const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
