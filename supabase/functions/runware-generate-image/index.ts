@@ -140,7 +140,7 @@ serve(async (req) => {
       pageText, 
       userInfo, 
       storyId,
-      sessionId = storyId,
+      sessionId,
       pageNumber = 1,
       isGuestUser = false, // Default to false for analytics tracking
       enhancedStoryData,
@@ -158,6 +158,10 @@ serve(async (req) => {
     
     if (!sessionId) {
       return createCorsErrorResponse('Missing sessionId parameter', 400);
+    }
+    
+    if (!storyId) {
+      return createCorsErrorResponse('Missing storyId parameter', 400);
     }
 
     // Security validation

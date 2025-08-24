@@ -278,10 +278,18 @@ serve(async (req) => {
   try {
     console.log('🏭 Tier 2: Template-based image generation starting...');
     
-    const { pageText, storyId, sessionId = storyId, userInfo, avatarIdentity, pageNumber = 1, totalPages } = await req.json();
+    const { pageText, storyId, sessionId, userInfo, avatarIdentity, pageNumber = 1, totalPages } = await req.json();
 
     if (!pageText) {
       return createCorsErrorResponse('Missing pageText parameter', 400);
+    }
+    
+    if (!sessionId) {
+      return createCorsErrorResponse('Missing sessionId parameter', 400);
+    }
+    
+    if (!storyId) {
+      return createCorsErrorResponse('Missing storyId parameter', 400);
     }
 
     // Validate user info for consistency
@@ -311,7 +319,6 @@ serve(async (req) => {
     const sceneContext = `Children's book scene: ${pageText}`; // Will be processed intelligently by BackendTokenManager
     
     // Get tracked visual details for object persistence
-    const sessionId = userInfo?.sessionId || 'anonymous';
     const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
     
     // Analyze current page for new details
