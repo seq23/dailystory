@@ -903,7 +903,7 @@ function mapAvatarIdentity(userInfo: any) {
     'light': 'blonde',
     'medium': 'brown', 
     'olive': 'black',
-    'dark': 'realistic textured natural hair'
+    'dark': 'realistic natural black hair texture with individual strand detail'
   };
   const hairColor = hairColorMap[standardizedSkinTone] || 'brown';
 
