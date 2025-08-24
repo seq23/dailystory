@@ -12,7 +12,7 @@
 
 import { DifficultyLevelMapper } from './DifficultyLevelMapper.js';
 import { getStyleFramework, validateStyleFramework } from './styleFrameworks.js';
-import { BackendTokenManager, PromptPriority } from './BackendTokenManager.js';
+import { BackendTokenManager } from './BackendTokenManager.js';
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { SessionStateManager } from './SessionStateManager.js';
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally

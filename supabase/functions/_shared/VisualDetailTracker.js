@@ -176,10 +176,8 @@ class VisualDetailTracker {
   }
 }
 
-// Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { VisualDetailTracker };
-}
+// ES6 Export for modern modules (CommonJS removed for compatibility)
+export { VisualDetailTracker };
 
 // Also make it available as a global for direct import
 globalThis.VisualDetailTracker = VisualDetailTracker;

@@ -1,7 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
-import { TierFailureLogger, CircuitBreakerMonitor, QualityGateMonitor } from "../_shared/tierFailureMonitoring.js";
+// Inline implementations for missing tierFailureMonitoring functions
+const TierFailureLogger = {
+  logTier1OpenAIFailure(error, details) {
+    console.error('🚨 Tier 1 OpenAI Failure:', error, details);
+  },
+  logTier1ValidationFailure(error, details) {
+    console.error('🚨 Tier 1 Validation Failure:', error, details);
+  }
+};
+
+const CircuitBreakerMonitor = {
+  trackCircuitBreakerState(serviceName, state, details) {
+    console.log(`🔄 Circuit Breaker [${serviceName}]: ${state}`, details);
+  },
+  trackServiceHealth(serviceName, status, details) {
+    console.log(`💚 Service Health [${serviceName}]: ${status}`, details);
+  }
+};
+
+const QualityGateMonitor = {
+  trackQualityGate(gate, status, details) {
+    console.log(`✅ Quality Gate [${gate}]: ${status}`, details);
+  }
+};
 import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 
