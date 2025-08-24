@@ -702,30 +702,14 @@ Extract using the object-based schema with ${hasMultipleCharacters ? 'secondary 
           return createCorsErrorResponse(`Parse error: ${parseError.message}`, 422);
         }
 
-        // PHASE 1: Use MultiStageEnhancementPipeline.processTier1HighQuality() 
-        console.log('🎨 AI Enhancement successful - using MultiStageEnhancementPipeline');
-        
-        // MultiStageEnhancementPipeline is now statically imported
-        
-        // Call processTier1HighQuality with extracted 3-field schema
-        const promptResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
-          storyText,
-          userInfo,
-          storyId,
-          sessionId,
-          pageNumber,
-          totalPages,
-          enhancedStoryData, // Pass the extracted 3-field schema
-          avatarIdentity
-        );
+        // PHASE 1: Pure AI Extraction - Return schema to orchestrator
+        console.log('🎨 AI Enhancement successful - returning schema to orchestrator for technical assembly');
 
-        // Return structured response for orchestrator
+        // Return pure AI schema to orchestrator for technical assembly
         const result = {
           success: true,
-          enhancedPrompt: promptResult.enhancedPrompt,
-          negativePrompt: promptResult.negativePrompt,
+          aiSchema: enhancedStoryData, // Pure 3-field schema from AI
           metadata: {
-            ...promptResult.metadata,
             aiEnhancement: true,
             validation: {
               fieldsPresent: validationResult?.fieldCheck?.passCount || 0,

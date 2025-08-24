@@ -3,7 +3,6 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
-import { BackendTokenManager } from "../_shared/BackendTokenManager.js";
 
 // Hardcoded avatar fallback descriptions for Tier 1 validation - PHASE 1: GENDER NEUTRAL SYSTEM
 const AVATAR_FALLBACK_DESCRIPTIONS = {
@@ -185,17 +184,17 @@ serve(async (req) => {
       return createCorsErrorResponse('Rate limit exceeded. Please try again later.', 429);
     }
 
-    console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser})`);
-    console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
-    console.log('🔍 TIER SYSTEM DEBUG - Starting orchestrated tier progression', {
-      pageText: pageText.substring(0, 100) + '...',
-      userInfo: !!userInfo,
-      sessionId,
-      pageNumber,
-      totalPages: req.json.totalPages || 'unknown',
-      forceTier: forceTier || 'auto',
-      timestamp: new Date().toISOString()
-    });
+        console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser || false})`);
+        console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
+        console.log('🔍 TIER SYSTEM DEBUG - Starting orchestrated tier progression', {
+          pageText: pageText.substring(0, 100) + '...',
+          userInfo: !!userInfo,
+          sessionId,
+          pageNumber,
+          totalPages: 'unknown',
+          forceTier: forceTier || 'auto',
+          timestamp: new Date().toISOString()
+        });
 
     // PHASE 1: Avatar Identity Mapper - Process user avatar data once at orchestrator level
     const avatarIdentity = mapAvatarIdentity(userInfo);
@@ -235,58 +234,104 @@ serve(async (req) => {
           previousPageText // Pass previous page text for continuity
         });
 
-        console.log('🔍 TIER 1 DEBUG - AI enhancer result:', {
-          success: aiEnhancerResult?.success !== false,
-          hasEnhancedPrompt: !!aiEnhancerResult?.enhancedPrompt,
-          hasNegativePrompt: !!aiEnhancerResult?.negativePrompt,
-          error: aiEnhancerResult?.error || 'none'
-        });
-
-        // Check if AI enhancer failed and return error to trigger Tier 2 fallback
-        if (aiEnhancerResult?.success === false || aiEnhancerResult?.error || !aiEnhancerResult?.enhancedPrompt) {
-          console.log('⚠️ AI Enhancer failed - orchestrator will handle fallback to Tier 2');
-          throw new Error(aiEnhancerResult?.error || 'AI enhancer did not return enhanced prompt');
+        console.log('🔍 TIER 1 DEBUG - AI enhancer returned pure schema, doing direct technical assembly in orchestrator');
+        
+        if (!aiEnhancerResult.success) {
+          throw new Error(`AI enhancer failed: ${aiEnhancerResult.error || 'Unknown error'}`);
         }
 
-        const enhancementResult = {
-          enhancedPrompt: aiEnhancerResult.enhancedPrompt,
-          negativePrompt: aiEnhancerResult.negativePrompt,
-          metadata: aiEnhancerResult.metadata || {}
-        };
+        // Get the pure AI schema from enhancer
+        const aiSchema = aiEnhancerResult.aiSchema;
         
-        console.log('🔍 TIER 1 DEBUG - Enhancement result:', {
-          hasPrompt: !!enhancementResult?.enhancedPrompt,
-          promptLength: enhancementResult?.enhancedPrompt?.length || 0,
-          hasNegative: !!enhancementResult?.negativePrompt,
-          metadata: enhancementResult?.metadata ? 'present' : 'missing'
-        });
+        // PHASE 2: DIRECT TECHNICAL ASSEMBLY IN ORCHESTRATOR
+        console.log('🔧 Orchestrator: Starting direct technical assembly');
         
-        // BackendTokenManager is now statically imported
+        // Import services for direct assembly
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const { styleFrameworks } = await import('../_shared/styleFrameworks.js');
+        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
         
-        // Extract AI schema data from enhancer result
-        const aiSchemaData = enhancementResult.metadata?.aiSchemaData || null;
+        // Initialize character consistency service
+        const characterService = new CharacterConsistencyService();
         
-        // Use BackendTokenManager with AI schema for Tier 1
-        // New signature: (aiSchemaData, characterDescription, qualitySuffixes, styleFramework, sceneContext, secondaryCharacters, visualDetails)
-        const promptSegments = BackendTokenManager.createPromptSegments(
-          aiSchemaData, // AI schema data from enhancer
-          null, // characterDescription (handled by AI schema)
-          "professional quality children's book illustration, vibrant colors, detailed artwork", // qualitySuffixes
-          null, // styleFramework (handled by AI schema)
-          null, // sceneContext (handled by AI schema)
-          null, // secondaryCharacters (handled by AI schema)
-          null  // visualDetails (handled by AI schema)
+        // 1. Character Consistency Generation
+        const characterData = await characterService.getCharacterSeed(
+          sessionId, 
+          userInfo.id || 'unknown-user',
+          userInfo,
+          pageText,
+          avatarIdentity,
+          'standard'
         );
         
-        // Build final prompt from segments
-        const positivePrompt = promptSegments.map(segment => segment.content).join(', ');
+        // 2. Style Framework Application
+        const storyFramework = styleFrameworks.getFrameworkByAgeGroup(userInfo.gradeLevel || 'K');
+        
+        // 3. Avatar Validation
+        const validatedAvatar = validateAvatarConsistency(avatarIdentity, userInfo, sessionId);
+        
+        // 4. Prompt Building (Direct assembly replacing BackendTokenManager)
+        const segments = [];
+        
+        // Primary scene from AI
+        if (aiSchema.primaryScene) {
+          segments.push(aiSchema.primaryScene);
+        }
+        
+        // Character description from consistency service
+        if (characterData.characterDescription) {
+          segments.push(characterData.characterDescription);
+        }
+        
+        // Visual components from AI
+        if (aiSchema.visualComponents) {
+          const vc = aiSchema.visualComponents;
+          if (vc.action) segments.push(vc.action);
+          if (vc.setting) segments.push(vc.setting);
+          if (vc.lighting) segments.push(vc.lighting);
+          if (vc.keyObjects) segments.push(vc.keyObjects);
+        }
+        
+        // Characters from AI
+        if (aiSchema.characters) {
+          const chars = aiSchema.characters;
+          if (chars.characterClothing) segments.push(chars.characterClothing);
+          if (chars.characterPosition) segments.push(chars.characterPosition);
+          if (chars.characterMood) segments.push(chars.characterMood);
+        }
+        
+        // Style framework
+        if (storyFramework.qualitySuffixes) {
+          segments.push(storyFramework.qualitySuffixes);
+        }
+        
+        // Build final prompts
+        const enhancedPrompt = segments.filter(s => s && s.trim()).join(', ');
+        const negativePrompt = storyFramework.negativePrompt || 'blurry, low quality';
+        
+        console.log('🔧 Direct assembly complete:', {
+          segments: segments.length,
+          promptLength: enhancedPrompt.length,
+          hasCharacterData: !!characterData.characterDescription,
+          hasAiSchema: !!aiSchema.primaryScene
+        });
+
+        const enhancementResult = {
+          enhancedPrompt,
+          negativePrompt,
+          metadata: {
+            processingTier: 'tier-1-orchestrator-direct',
+            aiEnhancement: true,
+            characterSeed: characterData.seed,
+            segmentCount: segments.length,
+            ...aiEnhancerResult.metadata
+          }
+        };
         
         // Validate and apply hardcoded fallbacks if needed for Tier 1
-        const validatedPrompt = validateAvatarConsistency(positivePrompt, avatarIdentity, userInfo);
-        
-        const negativePrompt = enhancementResult.negativePrompt;
+        const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo);
 
-        console.log(`🎨 Premium AI-enhanced prompt (${positivePrompt.length} chars):`, positivePrompt.substring(0, 100) + '...');
+        console.log(`🎨 Premium AI-enhanced prompt (${enhancedPrompt.length} chars):`, enhancedPrompt.substring(0, 100) + '...');
         console.log(`🔍 TIER 1 VALIDATION: Final validated prompt (${validatedPrompt.length} chars):`, validatedPrompt.substring(0, 100) + '...');
 
         // Generate with Runware Tier 1 (Premium) - Using validated prompt with hardcoded fallbacks
@@ -294,7 +339,7 @@ serve(async (req) => {
           apiKey, 
           validatedPrompt, 
           negativePrompt, 
-          enhancementResult?.metadata?.characterSeed,
+          characterData.seed,
           sessionId,
           pageNumber
         );
@@ -306,13 +351,13 @@ serve(async (req) => {
           console.log(`🔒 TIER POLICY COMPLIANCE: User type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" received TIER 1 image - Policy maintained`);
           
           // Store visual state for consistency
-          if (sessionId && enhancementResult?.metadata?.characterSeed) {
+          if (sessionId && characterData?.seed) {
             try {
               const sessionManager = new SessionStateManager(sessionId);
               await sessionManager.addSuccessfulPrompt(
                 validatedPrompt,
-                enhancementResult.generationParams, 
-                tier1Result.seed || enhancementResult.metadata.characterSeed,
+                enhancementResult.metadata, 
+                characterData.seed,
                 tier1Result.imageURL,
                 pageNumber
               );
@@ -336,7 +381,9 @@ serve(async (req) => {
               pageNumber,
               isGuestUser,
               orchestrated: true,
-              validationApplied: validatedPrompt !== positivePrompt
+              validationApplied: validatedPrompt !== enhancedPrompt,
+              segmentCount: segments.length,
+              characterSeed: characterData.seed
             }
           });
         }
@@ -355,41 +402,54 @@ serve(async (req) => {
     // TIER 2: Template-based Generation  
     if (!forceTier || forceTier === 2) {
       try {
-        console.log('🎨 Starting Tier 2: Template-based Generation');
-        console.log('🔍 TIER 2 DEBUG - Calling runware-template-generation function');
+        console.log('🎨 Starting Tier 2: Template-based Generation (using stripped MultiStageEnhancementPipeline)');
         
-        const tier2Result = await callTierFunction('runware-template-generation', {
+        // Import stripped pipeline for systematic services only
+        const { MultiStageEnhancementPipeline } = await import('../_shared/MultiStageEnhancementPipeline.js');
+        
+        const tier2Result = await MultiStageEnhancementPipeline.processTier2HighQuality(
           pageText,
           userInfo,
           storyId,
           sessionId,
           pageNumber,
-          isGuestUser,
-          difficultyLevel: 'medium',
-          avatarIdentity // Pass optimized avatar identity to all tiers
-        });
+          null, // totalPages
+          null, // enhancedStoryData
+          avatarIdentity
+        );
         
-        console.log('🔍 TIER 2 DEBUG - Function response:', {
-          success: tier2Result?.success || false,
-          hasImageURL: !!tier2Result?.imageURL,
-          error: tier2Result?.error || 'none'
-        });
-
-        if (tier2Result.success) {
+        if (tier2Result?.enhancedPrompt) {
           console.log('✅ Tier 2 Template-based succeeded');
-          return createCorsResponse({
-            success: true,
-            imageURL: tier2Result.imageURL,
-            seed: tier2Result.seed,
-            provider: 'runware-orchestrator',
-            tier: 2,
-            enhancementLevel: 'template-based',
-            metadata: { ...tier2Result.metadata, orchestrated: true }
-          });
+          
+          // Generate with Runware using Tier 2 prompt
+          const tier2GenerationResult = await generateWithRunwarePremium(
+            apiKey, 
+            tier2Result.enhancedPrompt, 
+            tier2Result.negativePrompt,
+            undefined, // no seed for Tier 2
+            sessionId,
+            pageNumber
+          );
+          
+          if (tier2GenerationResult.success) {
+            return createCorsResponse({
+              success: true,
+              imageURL: tier2GenerationResult.imageURL,
+              seed: tier2GenerationResult.seed,
+              provider: 'runware-orchestrator',
+              tier: 2,
+              enhancementLevel: 'systematic-services',
+              metadata: { 
+                ...tier2Result.metadata, 
+                orchestrated: true,
+                promptLength: tier2Result.enhancedPrompt.length
+              }
+            });
+          }
         }
         
         console.log('⚠️ Tier 2 failed, falling back to Tier 2.5');
-        console.log('🔍 TIER 2 FAILURE DEBUG - Template generation failed');
+        console.log('🔍 TIER 2 FAILURE DEBUG - Systematic services failed');
       } catch (error) {
         console.log('⚠️ Tier 2 error, falling back to Tier 2.5:', error.message);
         console.log('🔍 TIER 2 ERROR DEBUG - Full error:', {
@@ -486,8 +546,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     
-    // TIER POLICY COMPLIANCE LOG - Log any orchestration failures
-    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
+    // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
+    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser || false ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
     
     return createCorsErrorResponse(
       `Image generation orchestration failed: ${error.message}`,
