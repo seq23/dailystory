@@ -18,7 +18,6 @@ import { SessionStateManager } from './SessionStateManager.js';
 import './VisualDetailTracker.js'; // Loads VisualDetailTracker globally
 import './AdvancedPronounResolver.js'; // Loads AdvancedPronounResolver globally
 import { CulturalTextTracker } from './CulturalTextTracker.js';
-import { mapAvatarIdentity } from './mapAvatarIdentity.js';
 import { RealContextCollector } from './RealContextCollector.js';
 
 
@@ -299,22 +298,20 @@ export class MultiStageEnhancementPipeline {
       // 3. Generate story-based character consistency with clean architecture
       console.log('🎭 Generating story-based character consistency with clean architecture');
       
-      // Process avatar identity using runware source of truth
-      const processedAvatarIdentity = mapAvatarIdentity(userInfo);
-      
+      // Use avatar identity already processed by orchestrator
       const characterConsistencyData = await this.characterService.getCharacterSeed(
         sessionId,
         userInfo.name || 'user',
         userInfo,
         enhancedStoryText, // Pass story context for contextual analysis
-        processedAvatarIdentity // Pass standardized avatar identity
+        avatarIdentity // Pass standardized avatar identity from orchestrator
       );
       
       const characterSeed = characterConsistencyData.seed;
       const characterDescription = characterConsistencyData.characterDescription;
       
       // 4. Get cultural profile from processed identity
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[processedAvatarIdentity.culturalProfile] || 
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[avatarIdentity.culturalProfile] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // 5. Extract scene and emotional context from enhanced text using AI-enhanced method
@@ -378,7 +375,7 @@ export class MultiStageEnhancementPipeline {
           animalDetails,
           pageNumber,
           totalPages,
-          processedAvatarIdentity, // Pass processed avatar identity
+          avatarIdentity, // Pass avatar identity from orchestrator
           secondaryCharacterPrompt // Include secondary characters
         },
         imageDifficulty // Pass difficulty as parameter
@@ -711,22 +708,20 @@ export class MultiStageEnhancementPipeline {
       // Generate story-based character consistency with clean architecture (Tier 2)
       console.log('🎭 Tier 2: Using clean character consistency architecture');
       
-      // Process avatar identity using clean architecture
-      const processedAvatarIdentity = mapAvatarIdentity(userInfo);
-      
+      // Use avatar identity already processed by orchestrator
       const characterConsistencyData = await this.characterService.getCharacterSeed(
         sessionId,
         userInfo.name || 'user',
         userInfo,
         enhancedStoryText,
-        processedAvatarIdentity // Pass standardized avatar identity
+        avatarIdentity // Pass standardized avatar identity from orchestrator
       );
       
       const characterSeed = characterConsistencyData.seed;
       const characterDescription = characterConsistencyData.characterDescription;
       
       // Get cultural profile from processed identity (Tier 2)
-      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[processedAvatarIdentity.culturalProfile] || 
+      const culturalProfile = FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.[avatarIdentity.culturalProfile] || 
                              FrontendIntelligence.CULTURAL_VISUAL_PROFILES?.['en'] || {};
       
       // Extract scene and emotional context from enhanced text (no AI enhancement)
