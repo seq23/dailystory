@@ -73,6 +73,7 @@ import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
+import { useHashCoordination } from '@/hooks/useHashCoordination';
 
 
 interface CleanStoryDisplayProps {
@@ -646,6 +647,9 @@ const [highlightSave, setHighlightSave] = useState(false);
   const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
+
+  // Enable hash coordination for image generation
+  useHashCoordination(contentHash);
 
   useEffect(() => {
     try { 
