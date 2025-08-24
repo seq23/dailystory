@@ -50,15 +50,30 @@ export class MultiStageEnhancementPipeline {
         ) || '';
       }
       
-      // Simple systematic prompt building
-      const segments = [];
+      // Build comprehensive primaryScene using all systematic services
+      let primaryScene = '';
       
-      if (storyText) segments.push(`Story: ${storyText}`);
-      if (secondaryCharacters) segments.push(`Secondary characters: ${secondaryCharacters}`);
-      if (visualDetails) segments.push(`Visual details: ${visualDetails}`);
-      if (collectedContext) segments.push(`Context: ${collectedContext}`);
+      // Start with story text as base scene description
+      if (storyText) {
+        // Clean and enhance story text for scene description
+        const cleanText = storyText.replace(/Page \d+ of \d+/g, '').trim();
+        primaryScene = `Scene: ${cleanText}`;
+      }
       
-      const enhancedPrompt = segments.join(', ');
+      // Enhance with all systematic service data
+      const enhancements = [];
+      if (secondaryCharacters) enhancements.push(`with ${secondaryCharacters}`);
+      if (visualDetails) enhancements.push(`featuring ${visualDetails}`);
+      if (collectedContext) enhancements.push(`in context of ${collectedContext}`);
+      
+      if (enhancements.length > 0) {
+        primaryScene += `, ${enhancements.join(', ')}`;
+      }
+      
+      // Add visual quality descriptors
+      primaryScene += ', detailed realistic style, good lighting, high quality composition';
+      
+      const enhancedPrompt = primaryScene;
       const negativePrompt = 'blurry, low quality, distorted';
       
       console.log('✅ Tier 2 systematic processing complete');
@@ -69,7 +84,8 @@ export class MultiStageEnhancementPipeline {
         metadata: {
           processingTier: 'tier-2-systematic',
           servicesUsed: ['SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector'],
-          segmentCount: segments.length
+          primarySceneLength: primaryScene.length,
+          enhancementsAdded: enhancements.length
         }
       };
       

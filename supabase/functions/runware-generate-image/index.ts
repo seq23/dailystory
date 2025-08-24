@@ -270,42 +270,27 @@ serve(async (req) => {
         // 3. Avatar Validation
         const validatedAvatar = validateAvatarConsistency(avatarIdentity, userInfo, sessionId);
         
-        // 4. Prompt Building (Direct assembly replacing BackendTokenManager)
+        // 4. Prompt Building (primaryScene as MASTER with character consistency always added)
         const segments = [];
         
-        // Primary scene from AI
+        // PRIMARY MASTER: Use primaryScene as the comprehensive base
         if (aiSchema.primaryScene) {
           segments.push(aiSchema.primaryScene);
+          console.log('🎯 Using primaryScene as MASTER prompt base');
         }
         
-        // Character description from consistency service
+        // ALWAYS ADD: Character consistency data (no conditional checks)
         if (characterData.characterDescription) {
           segments.push(characterData.characterDescription);
+          console.log('✅ Added character consistency data');
         }
         
-        // Visual components from AI
-        if (aiSchema.visualComponents) {
-          const vc = aiSchema.visualComponents;
-          if (vc.action) segments.push(vc.action);
-          if (vc.setting) segments.push(vc.setting);
-          if (vc.lighting) segments.push(vc.lighting);
-          if (vc.keyObjects) segments.push(vc.keyObjects);
-        }
-        
-        // Characters from AI
-        if (aiSchema.characters) {
-          const chars = aiSchema.characters;
-          if (chars.characterClothing) segments.push(chars.characterClothing);
-          if (chars.characterPosition) segments.push(chars.characterPosition);
-          if (chars.characterMood) segments.push(chars.characterMood);
-        }
-        
-        // Style framework
+        // ALWAYS ADD: Style framework for quality
         if (storyFramework.qualitySuffixes) {
           segments.push(storyFramework.qualitySuffixes);
         }
         
-        // Build final prompts
+        // Build final prompts - primaryScene is master, everything else enhances it
         const enhancedPrompt = segments.filter(s => s && s.trim()).join(', ');
         const negativePrompt = storyFramework.negativePrompt || 'blurry, low quality';
         

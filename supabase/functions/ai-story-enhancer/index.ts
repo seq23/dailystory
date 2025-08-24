@@ -30,18 +30,13 @@ import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementP
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
 /**
- * ULTRA-SIMPLE: Check if 3 of 5 key fields exist (binary yes/no per field)
+ * SIMPLE: Check if primaryScene exists and has minimum 30 characters
  */
 function checkPrimarySceneCriteria(data) {
+  const primarySceneExists = !!(data.primaryScene && data.primaryScene.length >= 30);
   return {
-    primaryScene: !!(data.primaryScene && data.primaryScene.length > 0),
-    characterAppearance: !!(data.characters?.characterAppearance),
-    setting: !!(data.visualComponents?.setting),
-    action: !!(data.visualComponents?.action),
-    context: !!(data.visualComponents && Object.keys(data.visualComponents).length > 2), // sceneType, lighting, keyObjects
-    get passCount() {
-      return [this.primaryScene, this.characterAppearance, this.setting, this.action, this.context].filter(Boolean).length;
-    }
+    primaryScene: primarySceneExists,
+    passCount: primarySceneExists ? 1 : 0
   };
 }
 
@@ -83,20 +78,16 @@ function applyBasicFixes(data, text) {
 function validateAndEnhanceContent(enhancedStoryData, storyText) {
   const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
   
-  console.log(`🔍 ULTRA-SIMPLE Field Check: ${fieldCheck.passCount}/5 fields present (${fieldCheck.passCount >= 3 ? 'PASS' : 'TIER 2'})`);
-  console.log(`📊 Field Status:`, fieldCheck);
+  console.log(`🔍 PRIMARY SCENE Check: ${fieldCheck.primaryScene ? 'PASS' : 'TIER 2'} (${enhancedStoryData.primaryScene?.length || 0} characters)`);
   
-  // Binary decision: 3+ fields = accept, <3 fields = Tier 2
-  if (fieldCheck.passCount < 3) {
-    console.log(`❌ Insufficient fields (${fieldCheck.passCount}/5) - falling back to Tier 2`);
+  // Simple decision: primaryScene exists with 30+ chars = accept, otherwise = Tier 2
+  if (!fieldCheck.primaryScene) {
+    console.log(`❌ Primary scene insufficient (${enhancedStoryData.primaryScene?.length || 0} chars) - falling back to Tier 2`);
     return { useTier2: true, fieldCheck };
   }
   
-  // Apply basic fixes and accept content
-  const enhanced = applyBasicFixes(enhancedStoryData, storyText);
-  
-  console.log(`✅ Field validation passed (${fieldCheck.passCount}/5) - content accepted`);
-  return { enhancedData: enhanced, fieldCheck };
+  console.log(`✅ Primary scene validation passed (${enhancedStoryData.primaryScene.length} chars) - content accepted`);
+  return { enhancedData: enhancedStoryData, fieldCheck };
 }
 
 // AI Model Fallback Chain Configuration - UPDATED TO FLAGSHIP MODELS
@@ -577,34 +568,33 @@ Avatar: ${JSON.stringify(avatarIdentity)}
 Priority: characterAppearance uses avatar identity, action/setting drive scene composition.`
             :
               // Legacy models - detailed instructions with examples
-              `Text analyzer extracting visual elements for image generation.
+              `CRITICAL: primaryScene is the MASTER COMPREHENSIVE OUTPUT that will be sent directly to image generation.
 
 JSON RESPONSE:
 {
   "characters": {
-    "characterAppearance": "base: ${avatarIdentity?.visualDescription || 'child'}, enhanced with story context",
-    "characterClothing": "outfit/clothing from story", 
-    "characterPosition": "standing/sitting/running/jumping/lying",
-    "characterMood": "emotional state/facial expression",${secondaryCharacterFields}
+    "characterAppearance": "OPTIONAL: base avatar info for internal processing",
+    "characterClothing": "OPTIONAL: clothing info for internal processing", 
+    "characterPosition": "OPTIONAL: position info for internal processing",
+    "characterMood": "OPTIONAL: mood info for internal processing",${secondaryCharacterFields}
   },
   "visualComponents": {
-    "action": "main activity - HIGHEST PRIORITY",
-    "setting": "specific location - SECOND PRIORITY",
-    "sceneType": "indoor/outdoor/mixed environment", 
-    "lighting": "natural/bright/dim/golden/dramatic",
-    "keyObjects": "story-relevant props/items"
+    "action": "OPTIONAL: action info for internal processing",
+    "setting": "OPTIONAL: setting info for internal processing",
+    "sceneType": "OPTIONAL: scene type for internal processing", 
+    "lighting": "OPTIONAL: lighting info for internal processing",
+    "keyObjects": "OPTIONAL: objects info for internal processing"
   },
-  "primaryScene": "complete visual scene description combining all elements"
+  "primaryScene": "MASTER OUTPUT: Complete, comprehensive visual description containing ALL details - characters, secondary characters, actions, settings, lighting, objects, mood, colors, clothing, everything needed for perfect image generation"
 }
 
-REQUIREMENTS:
-- characterAppearance: Start with avatar identity, add story details
-- Prioritize action/setting in visual hierarchy  
-- primaryScene: Master output combining characters + visual components
-- Include secondary characters in scene when detected${hasMultipleCharacters ? `
-- SECONDARY CHARACTERS: Include secondaryCharacters, secondaryCharacterRelation, secondaryCharacterAppearance, secondaryCharacterAction` : ''}
+CRITICAL REQUIREMENTS:
+- primaryScene: Must contain EVERYTHING - ALL character details (${avatarIdentity?.visualDescription || 'child'}), ALL actions, ALL settings, ALL lighting, ALL objects, ALL secondary characters, ALL clothing, ALL mood
+- primaryScene: Minimum 100+ characters with rich detail and duplication encouraged
+- Other fields: Optional helper fields for internal processing only${hasMultipleCharacters ? `
+- SECONDARY CHARACTERS: Include all secondary character details IN primaryScene` : ''}
 
-Example: "${avatarIdentity?.visualDescription || 'child'} ${hasMultipleCharacters ? 'with friendly teacher ' : ''}building with blocks in sunny classroom with natural lighting"`
+Example primaryScene: "${avatarIdentity?.visualDescription || 'A child'} ${hasMultipleCharacters ? 'playing alongside a friendly teacher ' : ''}carefully building with colorful wooden blocks on a smooth wooden table in a bright, sunny classroom with large windows, natural golden lighting streaming in, educational posters on the walls, cheerful and focused expressions, detailed realistic style"`
           },
           {
             role: 'user', 
