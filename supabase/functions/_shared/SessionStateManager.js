@@ -326,10 +326,7 @@ export class SessionStateManager {
       globalThis.MultiStageEnhancementPipeline.clearSessionCache(sessionId);
     }
     
-    // Clean up advanced pronoun resolver
-    if (globalThis.AdvancedPronounResolver) {
-      globalThis.AdvancedPronounResolver.clearSession(sessionId);
-    }
+    // Note: AdvancedPronounResolver removed - functionality replaced by RealContextCollector
     
     console.log(`🧹 Cleared caches for session ${sessionId}`);
   }

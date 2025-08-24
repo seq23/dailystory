@@ -83,6 +83,12 @@ export class RealContextCollector {
   static buildContextualPromptAddition(contextData, storyText) {
     const contextParts = [];
     
+    // Add character names for pronoun clarity (replaces AdvancedPronounResolver)
+    const characterNames = this.extractCharacterNamesFromText(storyText);
+    if (characterNames.length > 0) {
+      contextParts.push(`Characters present: ${characterNames.join(', ')}`);
+    }
+    
     // Add previous page continuity
     if (contextData.previousPages && contextData.previousPages.length > 0) {
       const recentPage = contextData.previousPages[contextData.previousPages.length - 1];
@@ -146,6 +152,24 @@ export class RealContextCollector {
       qualityLevel: qualityScore >= 3 ? 'high' : qualityScore >= 2 ? 'medium' : 'low',
       isUsable: qualityScore >= 1
     };
+  }
+
+  // ============= CHARACTER NAME EXTRACTION (replaces AdvancedPronounResolver) =============
+  static extractCharacterNamesFromText(text) {
+    if (!text) return [];
+    
+    // Simple but effective character name detection
+    const namePattern = /\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?\b/g;
+    const matches = text.match(namePattern) || [];
+    
+    // Filter out common capitalized words
+    const commonWords = ['The', 'A', 'An', 'This', 'That', 'Then', 'When', 'Where', 'Why', 'How', 'But', 'And', 'Or', 'So'];
+    const characterNames = matches
+      .filter(name => !commonWords.includes(name))
+      .filter(name => name.length > 2)
+      .slice(0, 4); // Keep top 4 character names
+    
+    return [...new Set(characterNames)]; // Remove duplicates
   }
 }
 

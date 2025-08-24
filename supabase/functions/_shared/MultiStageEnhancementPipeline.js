@@ -135,25 +135,21 @@ export class MultiStageEnhancementPipeline {
         console.log('⚠️ Style framework fallback:', styleError.message);
       }
       
-      // ============= Step 6: Advanced Pronoun Resolution =============
+      // ============= Step 6: Enhanced Context Collection with Character Names =============
       try {
-        console.log('🔍 Step 6: Processing advanced pronoun resolution...');
-        const { AdvancedPronounResolver } = await import('./AdvancedPronounResolver.js');
+        console.log('🔍 Step 6: Enhancing context collection with character names...');
         
-        // Analyze relationships first
-        await AdvancedPronounResolver.analyzeRelationships(sessionId, storyText, pageNumber);
-        
-        // Resolve complex pronouns
-        const resolvedText = await AdvancedPronounResolver.resolveComplexPronouns(sessionId, storyText, pageNumber);
-        
-        if (resolvedText && resolvedText !== storyText) {
-          console.log('✅ Pronoun resolution applied:', resolvedText.substring(0, 100) + '...');
-          storyText = resolvedText; // Use resolved text for further processing
+        // Extract character names from story text for better pronoun clarity
+        const characterNames = this.extractCharacterNamesFromText(storyText);
+        if (characterNames.length > 0) {
+          const characterContext = `Character names in scene: ${characterNames.join(', ')}`;
+          primarySceneComponents.push(characterContext);
+          console.log('✅ Added character names for context:', characterNames);
         }
         
-      } catch (pronounError) {
-        console.log('⚠️ AdvancedPronounResolver fallback:', pronounError.message);
-        // Continue without pronoun resolution - non-breaking
+      } catch (contextError) {
+        console.log('⚠️ Character name extraction fallback:', contextError.message);
+        // Continue without character context - non-breaking
       }
       
       // ============= Step 7: Parse Action and Scene Setting =============
@@ -200,7 +196,7 @@ export class MultiStageEnhancementPipeline {
         negativePrompt: negativePrompt,
         metadata: {
           processingTier: 'tier-2-comprehensive',
-          servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks', 'AdvancedPronounResolver'],
+          servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks'],
           components: primarySceneComponents.length,
           success: true
         }
@@ -402,5 +398,24 @@ export class MultiStageEnhancementPipeline {
     }
     
     return currentSetting || 'colorful indoor scene';
+  }
+
+  // ============= CHARACTER NAME EXTRACTION FOR CONTEXT =============
+  static extractCharacterNamesFromText(text) {
+    if (!text) return [];
+    
+    // Simple pattern matching for character names (proper nouns)
+    const namePattern = /\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?\b/g;
+    const matches = text.match(namePattern) || [];
+    
+    // Filter out common words that might be capitalized
+    const commonWords = ['The', 'A', 'An', 'This', 'That', 'Then', 'When', 'Where', 'Why', 'How', 'But', 'And', 'Or', 'So'];
+    const characterNames = matches
+      .filter(name => !commonWords.includes(name))
+      .filter(name => name.length > 2)
+      .slice(0, 3); // Limit to 3 most likely names
+    
+    // Remove duplicates
+    return [...new Set(characterNames)];
   }
 }
