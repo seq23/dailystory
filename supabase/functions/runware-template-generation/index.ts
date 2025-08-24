@@ -4,6 +4,14 @@ import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementP
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { BackendTokenManager } from "../_shared/BackendTokenManager.js";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
+import { SessionStateManager } from "../_shared/SessionStateManager.js";
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
+import { FrontendIntelligence } from "../_shared/FrontendIntelligence.js";
+import { CulturalTextTracker } from "../_shared/CulturalTextTracker.js";
+import { RealContextCollector } from "../_shared/RealContextCollector.js";
+import { UnifiedCharacterDescriptor } from "../_shared/UnifiedCharacterDescriptor.js";
+import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.js";
+import { getStyleFramework, validateStyleFramework } from "../_shared/styleFrameworks.js";
 
 // Inline implementations for missing tierFailureMonitoring functions
 const TierFailureLogger = {
@@ -237,40 +245,59 @@ const AVATAR_FALLBACK_DESCRIPTIONS = {
   "default": "{name} is a young child with a bright smile and cheerful demeanor, with no gender specific characteristics"
 };
 
-// Avatar consistency validation function
-function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo: any): string {
+// Enhanced avatar consistency validation function
+function validateAvatarConsistency(prompt: string, avatarIdentity: any, userInfo: any, characterDescription: string = ''): string {
   const userName = userInfo?.name || 'child';
   
   // If no avatar identity provided, use fallback
   if (!avatarIdentity) {
-    console.log('🔍 VALIDATION: No avatarIdentity provided, using fallback');
+    console.log('🔍 VALIDATION: No avatarIdentity provided, using enhanced fallback');
     const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     const fallbackKey = `${avatarType}/${skinTone}`;
     const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
+    console.log(`🔍 VALIDATION: Using avatar fallback ${fallbackKey}: ${fallbackDescription}`);
     return fallbackDescription.replace('{name}', userName);
   }
   
-  // Check if prompt contains generic descriptions
+  // Check if prompt contains generic or weak character descriptions
   const genericPatterns = [
+    'with cheerful appearance',
+    'with cheerful demeanor', 
+    'young child with',
+    'child with',
     `${userName} is a young child`,
     `${userName} is a child`,
-    'young child with',
-    'child with'
+    'bright smile and cheerful',
+    'cheerful appearance'
   ];
   
   const isGeneric = genericPatterns.some(pattern => 
     prompt.toLowerCase().includes(pattern.toLowerCase())
   );
   
-  if (isGeneric) {
-    console.log('🔍 VALIDATION: Generic description detected, using enhanced fallback');
+  // Also check if characterDescription itself is generic/weak
+  const isWeakCharacterDescription = !characterDescription || 
+    characterDescription.includes('cheerful appearance') ||
+    characterDescription.includes('cheerful demeanor') ||
+    characterDescription.length < 20;
+  
+  if (isGeneric || isWeakCharacterDescription) {
+    console.log('🔍 VALIDATION: Generic/weak description detected, using enhanced fallback');
     const avatarType = avatarIdentity.type || 'prefer-not-to-answer';
     const skinTone = avatarIdentity.skinTone || 'medium';
     const fallbackKey = `${avatarType}/${skinTone}`;
     const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 VALIDATION: Using fallback ${fallbackKey}: ${fallbackDescription}`);
-    return fallbackDescription.replace('{name}', userName);
+    console.log(`🔍 VALIDATION: Using enhanced fallback ${fallbackKey}: ${fallbackDescription}`);
+    
+    // Replace the generic character part with the detailed fallback
+    let enhancedPrompt = prompt;
+    genericPatterns.forEach(pattern => {
+      const regex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      enhancedPrompt = enhancedPrompt.replace(regex, fallbackDescription.replace('{name}', userName));
+    });
+    
+    return enhancedPrompt;
   }
   
   // Replace {name} placeholder if present
@@ -324,62 +351,140 @@ serve(async (req) => {
       console.warn(`⚠️ User info validation warning: ${validationResult.error}`);
     }
 
-    console.log(`🏭 Using lean enhancement pipeline for page ${pageNumber}/${totalPages}`);
+    console.log(`🏭 Using full dynamic pipeline for page ${pageNumber}/${totalPages} (Tier 2: Same as Tier 1 minus AI enhancer)`);
 
-    // Use lean multi-stage enhancement pipeline for all processing
+    // Initialize session state and collect context
+    let sessionState = SessionStateManager.getSessionState(sessionId);
+    if (!sessionState) {
+      sessionState = SessionStateManager.initializeSession(sessionId, userInfo);
+      console.log(`📋 Created new session state: ${sessionId}`);
+    }
+
+    // Use full multi-stage enhancement pipeline for all processing
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from user reading level: ${userInfo?.readingLevel}`, {
+    console.log(`🔄 Difficulty mapping: ${userInfo?.difficultyLevel || 'medium'} → ${mappedDifficulty}`, {
       userReadingLevel: userInfo?.readingLevel,
-      userDifficultyLevel: userInfo?.difficultyLevel,  
-      finalMappedLevel: mappedDifficulty
+      userDifficultyLevel: userInfo?.difficultyLevel || 'medium',
+      finalLevel: mappedDifficulty
     });
 
-    // BackendTokenManager and VisualDetailTracker are now statically imported
-    
-    // Extract parameters for Tier 2 with intelligent processing
-    const characterDescription = avatarIdentity ? `${avatarIdentity.name || userInfo?.name || 'child'} with ${avatarIdentity.physicalDescription || 'cheerful appearance'}` : null;
-    const qualitySuffixes = "professional quality children's book illustration, vibrant colors, detailed artwork";
-    const styleFramework = "children's book illustration style";
-    const sceneContext = `Children's book scene: ${pageText}`; // Will be processed intelligently by BackendTokenManager
-    
-    // Get tracked visual details for object persistence
-    const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
-    
-    // Analyze current page for new details
-    if (pageText) {
-      VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1);
+    // Generate consistent character using CharacterConsistencyService
+    console.log('🎭 Generating story-based character consistency with clean architecture');
+    const characterSeed = CharacterConsistencyService.getCharacterSeed(
+      sessionId, 
+      userInfo?.userId || 'anonymous',
+      userInfo,
+      pageText,
+      avatarIdentity,
+      'story'
+    );
+
+    // Detect secondary elements from story text
+    console.log('🔍 Detecting secondary story elements...');
+    const secondaryElements = SecondaryElementDetector.detectElements(pageText, sessionId, pageNumber);
+    console.log(`✅ Detected ${secondaryElements.length} secondary elements:`, secondaryElements.map(el => `${el.type} (${el.category})`));
+
+    // Update session visual state with secondary elements
+    if (secondaryElements.length > 0) {
+      console.log(`🎭 Found ${secondaryElements.length} secondary elements, updating visual state...`);
+      secondaryElements.forEach(element => {
+        SessionStateManager.updateSecondaryCharacter(sessionId, element.type, element.category, element.description);
+        console.log(`📋 Updated secondary character ${element.type} (${element.category}) for session ${sessionId}`);
+      });
     }
-    
-    // Use BackendTokenManager with new signature (aiSchemaData, characterDescription, qualitySuffixes, styleFramework, sceneContext, secondaryCharacters, visualDetails)
+
+    // Collect real context from session history
+    console.log(`🔍 Collecting real context for session ${sessionId}, page ${pageNumber}`);
+    const contextData = RealContextCollector.collectContext(sessionId, pageNumber, pageText);
+    console.log(`📚 Real context collected:`, {
+      previousPages: contextData.previousPageCount,
+      visualElements: contextData.visualElementCount,
+      hasCharacterDescriptions: contextData.hasCharacterDescriptions
+    });
+
+    // Track visual details with enhanced analysis
+    console.log(`📋 Analyzed visual details for session ${sessionId}, page ${pageNumber}`);
+    VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber);
+    const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+
+    // Get style framework for dynamic styling
+    const styleFramework = getStyleFramework(mappedDifficulty);
+    console.log(`🎨 Retrieved ${styleFramework.name} style framework for difficulty: ${mappedDifficulty}`);
+
+    // Use FrontendIntelligence for cultural enhancement and prompt building
+    console.log('🧠 Using AI-enhanced scene context extraction');
+    const enhancedContext = FrontendIntelligence.buildAdvancedContext(pageText, userInfo, characterSeed, contextData);
+    console.log(`✅ Built rich AI-enhanced context with validation:`, {
+      hasCharacters: enhancedContext.characters?.length > 0,
+      hasSetting: !!enhancedContext.setting,
+      hasObjects: enhancedContext.objects?.length > 0,
+      contextLength: enhancedContext.fullContext?.length || 0,
+      originalLocation: contextData.location,
+      validatedLocation: enhancedContext.setting?.description
+    });
+
+    // Build premium prompt using FrontendIntelligence
+    const premiumPromptData = FrontendIntelligence.buildPremiumPrompt(
+      pageText,
+      userInfo,
+      characterSeed,
+      enhancedContext,
+      styleFramework,
+      visualDetails,
+      mappedDifficulty
+    );
+
+    console.log(`🎯 Visual detail enhancement applied:`, {
+      originalLength: pageText.length,
+      enhancedLength: premiumPromptData.visualPrompt?.length || 0,
+      aiEnhanced: true,
+      changed: premiumPromptData.visualPrompt !== pageText,
+      trackedDetails: visualDetails.objects?.length || 0
+    });
+
+    // Generate character description using UnifiedCharacterDescriptor
+    const characterDescription = UnifiedCharacterDescriptor.generateCharacterDescription(
+      userInfo,
+      mappedDifficulty,
+      'rich',
+      true
+    );
+    console.log(`🎭 FRESH: Generated new character for ${userInfo?.name || 'child'} (seed: ${characterSeed.seed})`);
+
+    // Use BackendTokenManager for intelligent prompt segmentation
     const promptSegments = BackendTokenManager.createPromptSegments(
-      null, // aiSchemaData (null for Tier 2)
+      premiumPromptData, // Use premium AI-enhanced data
       characterDescription,
-      qualitySuffixes,
-      styleFramework, 
-      sceneContext,
-      null, // secondaryCharacters (TODO: could be extracted from pageText)
+      styleFramework.prompt,
+      styleFramework.name,
+      enhancedContext.fullContext,
+      secondaryElements,
       visualDetails
     );
-    
-    // Build final prompt from segments
-    const enhancedPrompt = promptSegments.map(segment => segment.content).join(', ');
+    console.log(`🔧 Created ${promptSegments.length} prompt segments (${promptSegments.map(s => s.type).join(', ')})`);
 
-    // Validate and enhance character consistency with hardcoded fallbacks
-    const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo);
-    console.log(`🔍 VALIDATION: Original prompt validated/enhanced`);
-    console.log(`📝 Validated Prompt: ${validatedPrompt}`);
+    // Build final enhanced prompt
+    const enhancedPrompt = promptSegments.map(segment => segment.content).filter(Boolean).join(', ');
+    console.log(`📏 Prompt length: ${enhancedPrompt.length} chars`);
+
+    // Validate and enhance character consistency with improved fallbacks
+    const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo, characterDescription);
+    console.log(`🔍 VALIDATION: Enhanced prompt validated with character consistency`);
+    console.log(`📝 Enhanced Prompt (FULL): ${validatedPrompt}`);
 
     const finalPrompt = validatedPrompt;
     
-    // Use simple negative prompt for Tier 2
-    const negativePrompt = "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime";
+    // Use dynamic negative prompt from style framework
+    const negativePrompt = styleFramework.negativePrompt || "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime";
     
-    // Use default generation parameters for Tier 2
+    // Use optimized parameters from style framework
     const optimizedParameters = {
-      model: "runware:100@1",
-      steps: 8,
-      CFGScale: 3.0,
-      scheduler: "FlowMatchEulerDiscreteScheduler"
+      model: styleFramework.parameters?.model || "runware:100@1",
+      steps: styleFramework.parameters?.steps || 8,
+      CFGScale: styleFramework.parameters?.CFGScale || 3.0,
+      scheduler: styleFramework.parameters?.scheduler || "FlowMatchEulerDiscreteScheduler",
+      width: styleFramework.parameters?.width || 1024,
+      height: styleFramework.parameters?.height || 1024
     };
 
     // 🔍 TIER 2 DEBUG LOGGING - Full prompts for debugging
