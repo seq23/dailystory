@@ -365,14 +365,117 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   // Apply cultural enhancement bypass logic
   const culturallyEnhancedSetting = applyCulturalSettingEnhancement(baseSetting, userInfo);
   
-  // RESTORED COMPREHENSIVE ANIMAL DETECTION + OBJECT DETECTION
+  // ENHANCED COMPREHENSIVE VISUAL DETECTION SYSTEM
   const objects = [];
   const animals = [];
+  const clothingItems = [];
+  const colorObjectPairs = [];
+  const visualModifiers = [];
   
   // Comprehensive animal detection array
   const animalKeywords = ['bunny', 'rabbit', 'cat', 'kitten', 'dog', 'puppy', 'bird', 'bear', 'fox', 'deer', 'squirrel', 'mouse', 'lion', 'elephant', 'giraffe', 'monkey', 'tiger', 'zebra', 'horse', 'cow', 'pig', 'sheep', 'goat', 'duck', 'goose', 'chicken', 'fish', 'butterfly', 'bee', 'frog', 'turtle', 'snake'];
   
-  const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide'];
+  // PHASE 1: EXPANDED OBJECT DETECTION ARRAYS
+  const allObjects = ['ball', 'book', 'toy', 'car', 'bike', 'flower', 'shell', 'kite', 'balloon', 'swing', 'slide', 'backpack', 'lunchbox', 'crayon', 'pencil', 'notebook', 'apple', 'sandwich', 'cookie', 'juice', 'water', 'umbrella', 'sunglasses', 'camera', 'phone', 'tablet', 'game', 'puzzle', 'doll', 'truck', 'train', 'airplane'];
+  
+  // Comprehensive clothing detection
+  const clothingKeywords = ['dress', 'shirt', 'pants', 'skirt', 'shoes', 'sneakers', 'boots', 'sandals', 'hat', 'cap', 'jacket', 'coat', 'sweater', 'hoodie', 'socks', 'shorts', 'jeans', 'blouse', 'vest', 'scarf', 'gloves', 'mittens', 'pajamas', 'nightgown', 'uniform', 'costume', 'tutu', 'overalls', 'cardigan', 'blazer'];
+  
+  // Color keywords for association
+  const colorKeywords = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey', 'navy', 'maroon', 'turquoise', 'violet', 'magenta', 'cyan', 'lime', 'gold', 'silver', 'beige', 'tan', 'coral', 'lavender', 'mint', 'peach', 'ivory', 'crimson', 'emerald'];
+  
+  // Descriptive modifiers
+  const modifierKeywords = ['favorite', 'new', 'pretty', 'beautiful', 'cute', 'warm', 'cozy', 'soft', 'bright', 'sparkly', 'shiny', 'fluffy', 'comfortable', 'special', 'magical', 'amazing', 'wonderful', 'lovely', 'perfect', 'best', 'cool', 'awesome', 'fantastic', 'incredible', 'magnificent', 'gorgeous', 'stunning', 'elegant', 'stylish', 'trendy'];
+  
+  // PHASE 2: ADVANCED DETAIL EXTRACTION SYSTEM
+  function extractVisualDetails(fullText) {
+    const detectedDetails = {
+      clothing: [],
+      colorObjects: [],
+      modifiedItems: [],
+      rawDetails: []
+    };
+    
+    console.log(`👗 CLOTHING DETECTION - Starting comprehensive scan of text`);
+    
+    // Color-Clothing Association Detection
+    clothingKeywords.forEach(clothing => {
+      colorKeywords.forEach(color => {
+        // Pattern: "blue dress", "her red shirt", "favorite yellow hat"
+        const patterns = [
+          new RegExp(`\\b${color}\\s+${clothing}\\b`, 'gi'),
+          new RegExp(`\\b(her|his|their)\\s+${color}\\s+${clothing}\\b`, 'gi'),
+          new RegExp(`\\b(\\w+)\\s+${color}\\s+${clothing}\\b`, 'gi'),
+          new RegExp(`\\bwears?\\s+(?:a|an|her|his|their)?\\s*${color}\\s+${clothing}\\b`, 'gi'),
+          new RegExp(`\\b${clothing}\\s+(?:is|was)\\s+${color}\\b`, 'gi')
+        ];
+        
+        patterns.forEach(pattern => {
+          const matches = [...fullText.matchAll(pattern)];
+          matches.forEach(match => {
+            const fullMatch = match[0].toLowerCase().trim();
+            const colorClothingPair = `${color} ${clothing}`;
+            if (!detectedDetails.colorObjects.find(item => item.includes(colorClothingPair))) {
+              detectedDetails.colorObjects.push(colorClothingPair);
+              detectedDetails.rawDetails.push(fullMatch);
+              console.log(`👗 CLOTHING DETECTION - Found color-clothing pair: "${colorClothingPair}" from "${fullMatch}"`);
+            }
+          });
+        });
+      });
+    });
+    
+    // Modified Clothing Detection (favorite dress, new shoes, etc.)
+    modifierKeywords.forEach(modifier => {
+      clothingKeywords.forEach(clothing => {
+        const patterns = [
+          new RegExp(`\\b${modifier}\\s+${clothing}\\b`, 'gi'),
+          new RegExp(`\\b(her|his|their)\\s+${modifier}\\s+${clothing}\\b`, 'gi'),
+          new RegExp(`\\bwears?\\s+(?:a|an|her|his|their)?\\s*${modifier}\\s+${clothing}\\b`, 'gi')
+        ];
+        
+        patterns.forEach(pattern => {
+          const matches = [...fullText.matchAll(pattern)];
+          matches.forEach(match => {
+            const fullMatch = match[0].toLowerCase().trim();
+            const modifiedItem = `${modifier} ${clothing}`;
+            if (!detectedDetails.modifiedItems.find(item => item.includes(modifiedItem))) {
+              detectedDetails.modifiedItems.push(modifiedItem);
+              detectedDetails.rawDetails.push(fullMatch);
+              console.log(`👗 CLOTHING DETECTION - Found modified clothing: "${modifiedItem}" from "${fullMatch}"`);
+            }
+          });
+        });
+      });
+    });
+    
+    // Standalone Clothing Detection
+    clothingKeywords.forEach(clothing => {
+      const patterns = [
+        new RegExp(`\\bwears?\\s+(?:a|an|her|his|their)?\\s*${clothing}\\b`, 'gi'),
+        new RegExp(`\\b(her|his|their)\\s+${clothing}\\b`, 'gi'),
+        new RegExp(`\\bin\\s+(?:a|an|her|his|their)?\\s*${clothing}\\b`, 'gi')
+      ];
+      
+      patterns.forEach(pattern => {
+        if (pattern.test(fullText) && !detectedDetails.clothing.includes(clothing)) {
+          detectedDetails.clothing.push(clothing);
+          console.log(`👗 CLOTHING DETECTION - Found standalone clothing: "${clothing}"`);
+        }
+      });
+    });
+    
+    return detectedDetails;
+  }
+  
+  // Extract visual details from all page text
+  const visualDetails = extractVisualDetails(text);
+  console.log(`👗 CLOTHING DETECTION - Total details found:`, {
+    colorObjects: visualDetails.colorObjects.length,
+    modifiedItems: visualDetails.modifiedItems.length,
+    clothing: visualDetails.clothing.length,
+    rawDetails: visualDetails.rawDetails
+  });
   
   // ENHANCED ANIMAL DETECTION with name-based deduplication
   const namedAnimals = new Set();
@@ -449,6 +552,30 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     if (text.includes(obj) && objects.length < 2) objects.push(obj);
   });
   
+  // PHASE 3: ENHANCED VISUAL ELEMENT INTEGRATION
+  // Combine all detected visual details for rich prompt construction
+  const allVisualElements = [];
+  
+  // Priority 1: Color-object pairs (most specific, e.g., "blue dress")
+  if (visualDetails.colorObjects.length > 0) {
+    allVisualElements.push(...visualDetails.colorObjects.slice(0, 2));
+    console.log(`👗 VISUAL INTEGRATION - Added color-object pairs: ${visualDetails.colorObjects.slice(0, 2).join(', ')}`);
+  }
+  
+  // Priority 2: Modified items (e.g., "favorite shoes", "new jacket")
+  if (visualDetails.modifiedItems.length > 0 && allVisualElements.length < 2) {
+    const remainingSlots = 2 - allVisualElements.length;
+    allVisualElements.push(...visualDetails.modifiedItems.slice(0, remainingSlots));
+    console.log(`👗 VISUAL INTEGRATION - Added modified items: ${visualDetails.modifiedItems.slice(0, remainingSlots).join(', ')}`);
+  }
+  
+  // Priority 3: Standalone clothing (lowest priority)
+  if (visualDetails.clothing.length > 0 && allVisualElements.length < 2) {
+    const remainingSlots = 2 - allVisualElements.length;
+    allVisualElements.push(...visualDetails.clothing.slice(0, remainingSlots));
+    console.log(`👗 VISUAL INTEGRATION - Added standalone clothing: ${visualDetails.clothing.slice(0, remainingSlots).join(', ')}`);
+  }
+
   // Add age category mapping based on difficulty to ensure consistent child characters
   const ageMapping = {
     'beginner': '5-year-old',
@@ -470,13 +597,20 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
     scene = `${agePrefix} child with no gender specific characteristics`;
     console.log(`🎯 GENDER NEUTRAL - Applied neutral characteristics for prefer-not-to-answer`);
   }
-  
+
   if (avatarDesc) scene += ` with ${avatarDesc}`;
   scene += ` in ${culturallyEnhancedSetting}`;
   
+  // PHASE 4: ENHANCED CLOTHING INTEGRATION
+  // Add detected clothing/visual details with priority system
+  if (allVisualElements.length > 0) {
+    scene += ` wearing ${allVisualElements.join(' and ')}`;
+    console.log(`👗 VISUAL INTEGRATION - Added clothing to scene: ${allVisualElements.join(', ')}`);
+  }
+  
   // Add detected animals to scene (character-animal interaction)
   if (animals.length > 0) {
-    scene += ` with ${animals.join(' and ')}`;
+    scene += ` scene with ${animals.join(' and ')}`;
     console.log(`🐾 TIER 2.5 SCENE DEBUG - Added animals to scene: ${animals.join(', ')}`);
   }
   
@@ -497,6 +631,7 @@ function extractSimpleSceneWithCulturalBypass(pageText: string, userInfo?: any, 
   scene += `. Scene: ${bestScene}`;
   
   console.log(`🎯 TIER 2.5 FINAL DEBUG - Final scene: ${scene}`);
+  console.log(`👗 CLOTHING DETECTION - Final visual elements included: ${allVisualElements.length > 0 ? allVisualElements.join(', ') : 'none detected'}`);
   
   return scene;
 }
