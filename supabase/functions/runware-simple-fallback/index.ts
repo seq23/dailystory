@@ -1,6 +1,35 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+// ============= TIER 2.5 NUCLEAR INDEPENDENCE - ZERO EXTERNAL DEPENDENCIES =============
+// This edge function is completely self-contained with no external imports
+
+// Nuclear Independent CORS Headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+// Nuclear Independent CORS Response Functions  
+function createCorsResponse(data: any, status = 200): Response {
+  const headers = { 
+    ...corsHeaders, 
+    'Content-Type': 'application/json' 
+  };
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+function createCorsErrorResponse(error: string | Error, status = 500): Response {
+  const errorMessage = error instanceof Error ? error.message : error;
+  console.error('Edge function error:', errorMessage);
+  return createCorsResponse({ 
+    success: false, 
+    error: errorMessage 
+  }, status);
+}
+
+function createCorsOptionsResponse(): Response {
+  return new Response(null, { headers: corsHeaders });
+}
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 // Moving all hardcoded data arrays and constants to the top to prevent initialization order issues
@@ -814,7 +843,7 @@ function detectEmotionFromText(text: string): string {
     if (keywords.some(keyword => text.includes(keyword))) {
       const contextMap = {
         happy: 'cheerful and joyful atmosphere',
-        sad: 'gentle and comforting mood',
+        sad: 'gentle and comforting mood',  
         excited: 'energetic and thrilling atmosphere',
         peaceful: 'calm and serene environment',
         surprised: 'magical and wonder-filled scene'
@@ -827,7 +856,8 @@ function detectEmotionFromText(text: string): string {
 }
 
 // ============= MAIN SERVE FUNCTION AT THE END =============
-serve(async (req) => {
+// Nuclear Independent HTTP Server (no external dependencies)
+async function serveHttp(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
   }
@@ -1855,34 +1885,11 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any, de
   }
 }
 
-// Emotion detection without AI for enhanced scene analysis
-function detectEmotionFromText(text: string): string {
-  const emotions = {
-    happy: ['happy', 'smiled', 'laughed', 'giggled', 'cheerful', 'joy', 'excited', 'delighted'],
-    sad: ['sad', 'cried', 'tears', 'sobbed', 'upset', 'disappointed'],
-    excited: ['excited', 'thrilled', 'amazed', 'wonderful', 'incredible', 'fantastic'],
-    peaceful: ['calm', 'peaceful', 'quiet', 'gentle', 'serene', 'relaxed'],
-    surprised: ['surprised', 'amazed', 'shocked', 'wow', 'incredible', 'unbelievable']
-  };
-  
-  for (const [emotion, keywords] of Object.entries(emotions)) {
-    if (keywords.some(keyword => text.includes(keyword))) {
-      const contextMap = {
-        happy: 'cheerful and joyful atmosphere',
-        sad: 'gentle and comforting mood',
-        excited: 'energetic and thrilling atmosphere',
-        peaceful: 'calm and serene environment',
-        surprised: 'magical and wonder-filled scene'
-      };
-      return contextMap[emotion] || 'positive atmosphere';
-    }
-  }
-  
-  return 'warm and engaging atmosphere';
-}
-
   } catch (error) {
     console.error('Tier 2.5 Edge Function Error:', error);
     return createCorsErrorResponse(`Tier 2.5 internal error: ${error.message}`, 500);
   }
-});
+}
+
+// Nuclear Independent Server Initialization
+Deno.serve(serveHttp);
