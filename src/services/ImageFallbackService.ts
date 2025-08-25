@@ -24,15 +24,35 @@ export class ImageFallbackService {
   }
 
   /**
-   * Detect if CSP blocks data URLs
+   * Detect if CSP blocks data URLs or blob URLs
    */
   static detectCSPIssues(): boolean {
+    // Check if we're in a restricted environment
+    if (typeof window === 'undefined') return false;
+    
     try {
-      const testImg = new Image();
-      testImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIj48L3N2Zz4=';
-      return false; // No immediate error
+      // Try to create a simple data URL image
+      const testDataUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIj48L3N2Zz4=';
+      const testImg = document.createElement('img');
+      
+      // Set up a quick test - if CSP blocks it, it won't load
+      let cspBlocked = false;
+      testImg.onerror = () => { cspBlocked = true; };
+      testImg.src = testDataUrl;
+      
+      // Also check for blob URL support
+      try {
+        const blob = new Blob(['<svg></svg>'], { type: 'image/svg+xml' });
+        const blobUrl = URL.createObjectURL(blob);
+        URL.revokeObjectURL(blobUrl);
+      } catch {
+        this.debugLog('Blob URLs not supported');
+        return true;
+      }
+      
+      return cspBlocked;
     } catch (error) {
-      this.debugLog('CSP blocks data URLs', error);
+      this.debugLog('CSP detection failed, assuming blocked', error);
       return true;
     }
   }
@@ -135,17 +155,26 @@ export class ImageFallbackService {
   static getBestFallback(config: Partial<FallbackImageConfig> = {}): string {
     const env = this.getEnvironmentInfo();
     
-    // Try blob URL first for CSP-safe environments
-    if (!env.hasCSPBlocking) {
-      try {
-        return this.generateBlobSVG(config);
-      } catch {
-        // Fall back to data URL
+    // Always prefer data URLs for better compatibility
+    // Blob URLs can be problematic with CSP and cleanup
+    try {
+      return this.generatePlaceholderSVG(config);
+    } catch (error) {
+      this.debugLog('Data URL generation failed, trying blob URL', error);
+      
+      // Only try blob URL as last resort
+      if (!env.hasCSPBlocking) {
+        try {
+          return this.generateBlobSVG(config);
+        } catch {
+          // Return a simple text-based fallback
+          return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCI+PHRleHQ+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+        }
       }
+      
+      // Final fallback - simple encoded SVG
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCI+PHRleHQ+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
     }
-    
-    // Fall back to data URL
-    return this.generatePlaceholderSVG(config);
   }
 
   /**

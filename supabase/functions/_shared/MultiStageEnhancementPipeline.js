@@ -166,7 +166,7 @@ export class MultiStageEnhancementPipeline {
     // Priority Order: Character Description → Core Action → Base Story → Setting → Secondary Elements → Style Group → Context
     
     const baseScene = storyText.trim();
-    const action = primarySceneComponents.find(comp => comp.startsWith('Action:')) || '';
+    const actionComponent = primarySceneComponents.find(comp => comp.startsWith('Action:')) || '';
     const setting = primarySceneComponents.find(comp => comp.startsWith('Setting:')) || '';
     const style = primarySceneComponents.find(comp => comp.startsWith('Style:')) || '';
     const quality = primarySceneComponents.find(comp => comp.startsWith('Quality:')) || '';
