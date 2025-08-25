@@ -242,6 +242,30 @@ export class MultiStageEnhancementPipeline {
       negativePromptLength: negativePrompt.length
     });
     
+    // ============= Step 10: Avatar Quality Validation for Tier 2.5 Fallback =============
+    try {
+      const { validateAvatarQuality } = await import('./avatarConsistency.js');
+      const qualityCheck = validateAvatarQuality(primaryScene, avatarIdentity, userInfo);
+      
+      if (!qualityCheck.isQualityAcceptable) {
+        console.log(`🔍 TIER 2 QUALITY CHECK: Avatar quality unacceptable (${qualityCheck.reason}) - should trigger Tier 2.5`);
+        // Note: This doesn't trigger Tier 2.5 directly, just logs for orchestrator to handle
+        return {
+          enhancedPrompt: primaryScene,
+          negativePrompt: negativePrompt,
+          metadata: {
+            processingTier: 'tier-2-comprehensive',
+            servicesUsed: ['CharacterConsistencyService', 'SecondaryElementDetector', 'VisualDetailTracker', 'RealContextCollector', 'styleFrameworks'],
+            components: primarySceneComponents.length,
+            success: true,
+            avatarQualityCheck: qualityCheck
+          }
+        };
+      }
+    } catch (qualityError) {
+      console.log('🔍 TIER 2 QUALITY CHECK: Avatar quality validation failed, proceeding without quality check');
+    }
+    
     return {
       enhancedPrompt: primaryScene,
       negativePrompt: negativePrompt,

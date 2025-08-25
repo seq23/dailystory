@@ -2764,11 +2764,11 @@ const handleRestartTimer = () => {
                   </div>
                 </div>
 
-                {/* Desktop: Perfectly mirrored split columns */}
+                  {/* Desktop: Perfectly mirrored split columns */}
                 <div className="hidden xl:grid grid-cols-2 gap-0 flex-1 min-h-0">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
-                  {/* DESKTOP IMAGE FIX: Show images on desktop regardless of layout */}
-                  {(layout !== 'classic' || window.innerWidth >= 1280) && (
+                  {/* DESKTOP IMAGE FIX: Always show images on desktop (xl breakpoint already filters) */}
+                  {(
                     <div className="xl:order-1 h-full min-h-0">
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
