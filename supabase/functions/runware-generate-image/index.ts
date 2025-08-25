@@ -460,6 +460,13 @@ serve(async (req) => {
         if (tier2Result?.enhancedPrompt) {
           console.log('✅ Tier 2 Template-based succeeded');
           
+          // Check for avatar quality issues that should trigger Tier 2.5
+          if (tier2Result.metadata?.avatarQualityCheck && !tier2Result.metadata.avatarQualityCheck.isQualityAcceptable) {
+            console.log('🔍 TIER 2.5 TRIGGER: Avatar quality check failed, forcing Tier 2.5 fallback');
+            console.log('🔍 QUALITY CHECK: Avatar quality unacceptable -', tier2Result.metadata.avatarQualityCheck.reason);
+            throw new Error(`Avatar quality check failed: ${tier2Result.metadata.avatarQualityCheck.reason}`);
+          }
+          
           // Generate with Runware using Tier 2 prompt
           const tier2GenerationResult = await generateWithRunwarePremium(
             apiKey, 

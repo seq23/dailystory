@@ -708,7 +708,7 @@ serve(async (req) => {
         });
       }
       // =================== PHASE 1: VARIABLE DECLARATION & SCOPE SETUP ===================
-      let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData;
+      let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText;
       let pageText = '';
       const importResults = {};
       

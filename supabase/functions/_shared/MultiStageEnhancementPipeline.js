@@ -28,6 +28,14 @@ export class MultiStageEnhancementPipeline {
     try {
       const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
       
+      console.log('🔍 AVATAR IDENTITY DEBUG - Tier 2 Flow:', {
+        hasAvatarIdentity: !!avatarIdentity,
+        avatarType: avatarIdentity?.type,
+        avatarSkinTone: avatarIdentity?.skinTone,
+        sessionId: sessionId,
+        userInfo: !!userInfo
+      });
+      
       const characterService = new CharacterConsistencyService();
       const characterSeed = await characterService.getCharacterSeed(
         sessionId, 
