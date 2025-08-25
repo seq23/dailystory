@@ -1,5 +1,5 @@
 /**
- * Level 0 Vocabulary Auditor - Ensures ALL content complies with Enhanced Level 0 standards (70% compliance)
+ * Level 0 Vocabulary Auditor - Ensures ALL content complies with Enhanced Level 0 standards (50% compliance)
  * This tool helps identify any remaining vocabulary violations in Level 0 content
  */
 
@@ -15,7 +15,7 @@ export interface VocabularyAuditResult {
 
 export class Level0VocabularyAuditor {
   /**
-   * Audit text content for Level 0 vocabulary and grammar compliance (70% threshold)
+   * Audit text content for Level 0 vocabulary and grammar compliance (50% threshold)
    */
   static auditText(text: string, context: string = 'unknown', userName?: string): VocabularyAuditResult {
     const sentences = text.split(/[.!?]+/)
@@ -52,8 +52,8 @@ export class Level0VocabularyAuditor {
     const compliantWords = totalWords - totalViolations;
     const compliancePercentage = totalWords > 0 ? Math.round((compliantWords / totalWords) * 100) : 100;
     
-    // Update compliance threshold to 70% for Level 0
-    const isCompliant = compliancePercentage >= 70;
+    // Update compliance threshold to 50% for Level 0
+    const isCompliant = compliancePercentage >= 50;
     
     return {
       isCompliant,
@@ -80,13 +80,13 @@ export class Level0VocabularyAuditor {
   }
 
   /**
-   * Generate a detailed audit report with 70% compliance threshold
+   * Generate a detailed audit report with 50% compliance threshold
    */
-  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Level 0 Vocabulary & Grammar Audit (70% Compliance)'): string {
+  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Level 0 Vocabulary & Grammar Audit (50% Compliance)'): string {
     const report = [
       `\n📊 ${title}`,
       `${'='.repeat(50)}`,
-      `✅ Compliant (≥70%): ${auditResult.isCompliant ? 'YES' : 'NO'}`,
+      `✅ Compliant (≥50%): ${auditResult.isCompliant ? 'YES' : 'NO'}`,
       `📈 Compliance: ${auditResult.compliancePercentage}%`,
       `🚨 Total Violations: ${auditResult.totalViolations}`,
       ''
@@ -98,26 +98,26 @@ export class Level0VocabularyAuditor {
         report.push(`${index + 1}. ${violation}`);
       });
       report.push('');
-      report.push('📚 Reminder: Level 0 allows 70% compliance with these 100 Enhanced Level 0 words:');
+      report.push('📚 Reminder: Level 0 allows 50% compliance with these 100 Enhanced Level 0 words:');
       report.push(Array.from(ENHANCED_LEVEL_0_VOCABULARY).sort().join(', '));
       report.push('');
-      report.push('🎯 30% of words can be story-specific, user inputs, or slightly advanced vocabulary.');
+      report.push('🎯 50% of words can be story-specific, user inputs, or slightly advanced vocabulary.');
     } else {
-      report.push('🎉 All content meets the 70% vocabulary compliance standard!');
+      report.push('🎉 All content meets the 50% vocabulary compliance standard!');
     }
 
     return report.join('\n');
   }
 
   /**
-   * Quick validation for single sentences with 70% compliance
+   * Quick validation for single sentences with 50% compliance
    */
   static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; grammarErrors: string[]; compliancePercentage: number } {
     const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
     const auditResult = this.auditText(sentence, 'single-sentence', userName);
     
     return {
-      isValid: auditResult.compliancePercentage >= 70,
+      isValid: auditResult.compliancePercentage >= 50,
       invalidWords: validation.invalidWords,
       grammarErrors: validation.grammarErrors || [],
       compliancePercentage: auditResult.compliancePercentage
@@ -125,7 +125,7 @@ export class Level0VocabularyAuditor {
   }
 
   /**
-   * Real-time vocabulary checker with 70% flexibility
+   * Real-time vocabulary checker with 50% flexibility
    */
   static isWordAllowed(word: string, userName?: string): boolean {
     const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
@@ -136,7 +136,7 @@ export class Level0VocabularyAuditor {
       return true;
     }
 
-    // With 70% compliance, individual words are more flexible
+    // With 50% compliance, individual words are more flexible
     return ENHANCED_LEVEL_0_VOCABULARY.has(cleanWord);
   }
 
