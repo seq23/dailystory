@@ -9,6 +9,7 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import type { UserInfo } from "@/types";
 import { guestSession } from "@/utils/guestSession";
 import { StorySessionCache } from "@/services/storySessionCache";
+import { SessionCacheManager } from "@/services/SessionCacheManager";
 import { APP_CONFIG } from "@/config/appConfig";
 
 type GuestState = "welcome" | "form" | "reading" | "upgrade" | "login";
@@ -120,9 +121,9 @@ const handleFormSubmit = (info: UserInfo) => {
 
   setUserInfo(info);
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
-  // Clear cache with avatar-aware key to ensure clean separation
+  // Clear all caches with new unified cache manager to ensure clean separation
   const avatarType = info.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : info.avatar?.type;
-  try { StorySessionCache.clearCachedSession('guest', true, avatarType); } catch {}
+  try { SessionCacheManager.clearOnNextStory('guest', avatarType); } catch {}
   setCurrentState("reading");
 };
 
