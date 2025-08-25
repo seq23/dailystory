@@ -318,8 +318,8 @@ export class CharacterConsistencyService {
    */
   async createNewCharacterSeed(userId, userInfo, avatarIdentity = null) {
     const avatarSeedInput = avatarIdentity ? 
-      `${userId}-${userInfo.name || 'child'}-${avatarIdentity.skinTone || 'medium'}` : 
-      `${userId}-${userInfo.name || 'child'}-${userInfo.avatar?.skinTone || 'medium'}`;
+      `${userId}-${userInfo.name || 'child'}-${avatarIdentity.skinTone || 'unknown'}` : 
+      `${userId}-${userInfo.name || 'child'}-${userInfo.avatar?.skinTone || 'unknown'}`;
     
     const baseSeed = this.generateStableSeed(avatarSeedInput, userInfo.name || 'child');
     
@@ -335,7 +335,7 @@ export class CharacterConsistencyService {
     return {
       baseSeed,
       avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'child',
-      skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium',
+      skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone,
       physicalTraits,
       culturalElements,
       culturalProfile

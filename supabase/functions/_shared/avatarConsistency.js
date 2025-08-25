@@ -47,7 +47,14 @@ export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
   if (!avatarIdentity) {
     console.log('🔍 AVATAR VALIDATION: No avatarIdentity provided, using fallback');
     const avatarType = userInfo?.avatar?.type || 'child';
-    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    const skinTone = userInfo?.avatar?.skinTone;
+    console.log('🎭 [FALLBACK DEBUG] Avatar fallback data:', { avatarType, skinTone });
+    
+    if (!skinTone) {
+      console.log('🚨 [FALLBACK DEBUG] Missing skinTone for avatar fallback - cannot generate correct description');
+      return `${userName} is a child`;
+    }
+    
     const fallbackKey = `${avatarType}/${skinTone}`;
     const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
     console.log(`🔍 AVATAR VALIDATION: Applied fallback ${fallbackKey} for missing identity`);

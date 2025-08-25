@@ -26,7 +26,8 @@ export class UnifiedCharacterDescriptor {
     let description = character;
     
     if (avatar) {
-      const skinTone = avatar.skinTone || 'medium';
+      const skinTone = avatar.skinTone;
+      console.log('🎭 [CHARACTER DEBUG] Avatar data received:', { type: avatar.type, skinTone: avatar.skinTone, fullAvatar: avatar });
       
       // NEW MASTER PLAN: Direct visual mapping (matches orchestrator output)
       const visualMap = {
@@ -38,7 +39,15 @@ export class UnifiedCharacterDescriptor {
       };
       
       // Use direct visual description
-      const directVisual = visualMap[skinTone] || 'child';
+      if (!skinTone) {
+        console.log('🚨 [CHARACTER DEBUG] Missing skinTone in avatar data, this will cause incorrect character generation');
+        return {
+          description: 'friendly child character',
+          age: this.getAgeFromDifficulty(difficulty),
+          gender: genderType
+        };
+      }
+      const directVisual = visualMap[skinTone] || `child with ${skinTone} skin`;
       
       // Adjust for gender
       if (genderType === 'boy') {
@@ -231,7 +240,13 @@ export class UnifiedCharacterDescriptor {
    */
   static generateFamilyCharacter(familyRole, mainCharacter, userInfo) {
     const culturalBase = this.extractCulturalBase(userInfo);
-    const skinTone = userInfo.avatar?.skinTone || 'medium';
+    const skinTone = userInfo.avatar?.skinTone;
+    console.log('👨‍👩‍👧‍👦 [FAMILY DEBUG] Generating family character with skinTone:', skinTone);
+    
+    if (!skinTone) {
+      console.log('🚨 [FAMILY DEBUG] Missing skinTone for family character generation');
+      return `${familyRole}`;
+    }
     
     const familyDescriptors = {
       mother: `loving ${familyRole} with ${skinTone} skin`,

@@ -675,7 +675,9 @@ serve(async (req) => {
       hasBody: !!requestBody,
       readingLevel: requestBody?.readingLevel,
       userName: requestBody?.config?.userName,
+      avatar: requestBody?.config?.userInfo?.avatar,
       avatarType: requestBody?.config?.userInfo?.avatar?.type,
+      avatarSkinTone: requestBody?.config?.userInfo?.avatar?.skinTone,
       bodyKeys: Object.keys(requestBody || {})
     });
     
