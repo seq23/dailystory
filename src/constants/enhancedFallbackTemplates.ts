@@ -1,11 +1,20 @@
 /**
- * Enhanced Fallback Templates System
- * Uses character-driven story arcs and context-aware generation for high-quality fallbacks
+ * Enhanced Fallback Templates System - PROTECTED LEVEL 0 INTEGRATION
+ * Combines preserved Level 0 system with new 35-template library for higher difficulties
  */
 
 import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
 import { ensureColorName } from "@/utils/colorConverter";
+
+// NEW TEMPLATE SYSTEM IMPORTS
+import { 
+  getFallbackTemplate, 
+  resolveStoryPlaceholders, 
+  FallbackLevel, 
+  StoryTemplate,
+  PersonalizationPlaceholders 
+} from "@/constants/newFallbackTemplates";
 
 export interface EnhancedFallbackTemplate {
   setup: string[];
@@ -17,334 +26,99 @@ export interface EnhancedFallbackTemplate {
   nextStorySeeds: string[];     // NEW: Ideas for next story
 }
 
-// Import all templates from the grade-based system including new Level 0
+// ===== PROTECTED LEVEL 0 SYSTEM - DO NOT MODIFY =====
+// Import Level 0 templates - these are preserved exactly as-is
 import { LEVEL_0_TEMPLATES } from './gradeBased/level0Templates';
 import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES } from './gradeBased/level0VocabularyCompliantTemplates';
 import { LEVEL_0_EXTENSIONS } from './gradeBased/level0ExtensionTemplates';
-import { LEVEL_1_TEMPLATES } from './gradeBased/level1Templates';
-import { LEVEL_1_EXTENSIONS } from './gradeBased/level1ExtensionTemplates';
-import { LEVEL_2_TEMPLATES } from './gradeBased/level2Templates';
-import { LEVEL_2_EXTENSIONS } from './gradeBased/level2ExtensionTemplates';
-import { LEVEL_3_TEMPLATES } from './gradeBased/level3Templates';
-import { LEVEL_3_EXTENSIONS } from './gradeBased/level3ExtensionTemplates';
-import { LEVEL_4_TEMPLATES } from './gradeBased/level4Templates';
-import { LEVEL_4_EXTENSIONS } from './gradeBased/level4ExtensionTemplates';
 
-/**
- * ALL 231+ TEMPLATES: Comprehensive fallback system with proper user placeholders
- * Level segregation ensures appropriate content for each difficulty
- * Never-ending story hooks create seamless continuation flow
- */
-export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
-  // BEGINNER: Vocabulary-compliant Level 0 templates (60) + Level 0 extensions (7) = 67 templates
-  beginner: [
-    // Convert vocabulary-compliant Level 0 templates to enhanced format
-    ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.map(template => ({
-      setup: template.slice(0, 2),
-      development: template.slice(2, 3),
-      climax: template.slice(3, 4),
-      resolution: template.slice(4, 5),
-      contextualContinuations: [],
-      continuationPoints: ["What happens next?", "Where will they go?"],
-      nextStorySeeds: ["Another adventure begins", "A new friend appears"]
-    })),
-    // Convert Level 0 extensions (universal access)
-    ...LEVEL_0_EXTENSIONS.map(template => ({
-      setup: template.slice(0, 2),
-      development: template.slice(2, 3),
-      climax: template.slice(3, 4),
-      resolution: template.slice(4, 5),
-      contextualContinuations: [],
-      continuationPoints: ["What happens next?", "Where will they go?"],
-      nextStorySeeds: ["Another adventure begins", "A new friend appears"]
-    })),
-    // Original enhanced fallback with proper user placeholders
-    {
-      setup: [
-        "{userName} sees a {favoriteAnimal}.",
-        "The {favoriteAnimal} is {favoriteColor}.",
-        "{userName} can play."
-      ],
-      development: [
-        "{userName} and {favoriteAnimal} play.",
-        "They run and jump.",
-        "The {favoriteAnimal} is happy."
-      ],
-      climax: [
-        "{userName} helps the {favoriteAnimal}.",
-        "They are good friends.",
-        "{userName} has fun."
-      ],
-      resolution: [
-        "{userName} is happy.",
-        "The {favoriteAnimal} is happy.",
-        "It is a good day. What adventure awaits next?"
-      ],
-      contextualContinuations: ["Together they discover new places", "New friends join their games"],
-      continuationPoints: ["What magical place will they explore?", "Who else wants to play?"],
-      nextStorySeeds: ["A mysterious door appears", "Strange sounds come from the forest"]
-    }
-  ],
-  // EASY: Level 1 templates (40) + Level 1 extensions (7) + enhanced fallbacks (2) = 49 templates  
-  easy: [
-    // Convert Level 1 templates to enhanced format
-    ...LEVEL_1_TEMPLATES.map(template => ({
-      setup: template.slice(0, 2),
-      development: template.slice(2, 3),
-      climax: template.slice(3, 4),
-      resolution: template.slice(4, 5),
-      contextualContinuations: [],
-      continuationPoints: ["What adventure comes next?", "Who will they meet?"],
-      nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
-    })),
-    // Convert Level 1 extensions
-    ...LEVEL_1_EXTENSIONS.map(template => ({
-      setup: template.slice(0, 2),
-      development: template.slice(2, 3),
-      climax: template.slice(3, 4),
-      resolution: template.slice(4, 5),
-      contextualContinuations: [],
-      continuationPoints: ["What adventure comes next?", "Who will they meet?"],
-      nextStorySeeds: ["A new challenge appears", "An exciting discovery awaits"]
-    })),
-    // Enhanced fallbacks with proper user placeholders and never-ending hooks
-    {
-      setup: [
-        "{userName} goes to the park today.",
-        "{userName} sees a {favoriteAnimal} there.",
-        "The {favoriteAnimal} looks friendly and nice."
-      ],
-      development: [
-        "{userName} says hello to the {favoriteAnimal}.",
-        "The {favoriteAnimal} wants to play together.",
-        "They play with a {favoriteColor} ball while thinking about {hobbies}."
-      ],
-      climax: [
-        "The ball rolls away fast toward the playground.",
-        "{userName} and {favoriteAnimal} run after it together.",
-        "They work as a team to retrieve it."
-      ],
-      resolution: [
-        "They get the ball back and share some {favoriteFood}.",
-        "{userName} and {favoriteAnimal} are happy friends.",
-        "They plan tomorrow's adventure. What exciting quest will they choose?"
-      ],
-      contextualContinuations: ["The next day brings new challenges", "Other animals want to join their friendship"],
-      continuationPoints: ["What thrilling adventure awaits tomorrow?", "Which new friend will they meet?"],
-      nextStorySeeds: ["A treasure map appears in the wind", "Strange footprints lead to mystery"]
-    },
-    {
-      setup: [
-        "{userName} finds a magical {favoriteColor} stone outside.",
-        "It sparkles like the {favoriteAnimal} in their dreams.",
-        "{userName} picks it up with curiosity."
-      ],
-      development: [
-        "A wise {favoriteAnimal} comes to investigate the discovery.",
-        "The {favoriteAnimal} knows ancient secrets about magical stones.",
-        "Together they study the stone's mysterious patterns."
-      ],
-      climax: [
-        "The stone begins glowing with {favoriteColor} light.",
-        "It whispers secrets about {specialRequest} adventures.",
-        "{userName} and {favoriteAnimal} listen with wonder."
-      ],
-      resolution: [
-        "The stone grants them a wish for {hobbies} adventures.",
-        "{userName} shares the magic with their {favoriteAnimal} friend.",
-        "They both feel the magic growing stronger. What wish will they make next?"
-      ],
-      contextualContinuations: ["The magic stone leads to hidden realms", "Ancient guardians emerge from the shadows"],
-      continuationPoints: ["What magical realm will the stone reveal?", "Which ancient secrets await discovery?"],
-      nextStorySeeds: ["A portal opens to enchanted lands", "Mystical creatures emerge from hiding"]
-    }
-  ],
-
-  // MEDIUM: Level 2 templates (40) + Level 2 extensions (6) + enhanced fallbacks (2) = 48 templates
-  medium: [
-    // Convert Level 2 templates to enhanced format (2 sentences per section for 38+ words)
-    ...LEVEL_2_TEMPLATES.map(template => ({
-      setup: [template.slice(0, 2).join(' ')],
-      development: [template.slice(1, 3).join(' ')],
-      climax: [template.slice(2, 4).join(' ')],
-      resolution: [template.slice(3, 5).join(' ')],
-      contextualContinuations: [],
-      continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
-      nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
-    })),
-    // Convert Level 2 extensions (2 sentences per section for proper word count)
-    ...LEVEL_2_EXTENSIONS.map(template => ({
-      setup: [template.slice(0, 2).join(' ')],
-      development: [template.slice(1, 3).join(' ')],
-      climax: [template.slice(2, 4).join(' ')],
-      resolution: [template.slice(3, 5).join(' ')],
-      contextualContinuations: [],
-      continuationPoints: ["What deeper mysteries await?", "How will this journey continue?"],
-      nextStorySeeds: ["A greater challenge emerges", "Hidden secrets are revealed"]
-    })),
-    // Enhanced medium-level fallbacks with comprehensive user personalization
-    {
-      setup: [
-        "{userName} discovers a mysterious path through the {favoriteColor} forest.",
-        "The path sparkles with stones that remind them of {favoriteAnimal} scales.",
-        "A wise {favoriteAnimal} appears, drawn by {userName}'s love of {hobbies}."
-      ],
-      development: [
-        "The {favoriteAnimal} leads {userName} to a hidden grove of {favoriteFood} trees.",
-        "In the center grows a magnificent tree bearing {favoriteColor} fruit.",
-        "The tree whispers secrets about {specialRequest} and natural magic."
-      ],
-      climax: [
-        "Suddenly, the tree begins losing its magical glow and strength.",
-        "{userName} realizes their {hobbies} skills might help save it.",
-        "Working with the {favoriteAnimal}, they combine wisdom and creativity."
-      ],
-      resolution: [
-        "{userName} learns that sharing {favoriteFood} and kindness heals everything.",
-        "The tree regains its vibrant {favoriteColor} glow completely.",
-        "The forest celebrates their teamwork and growing wisdom. What environmental challenge will they face next?"
-      ],
-      contextualContinuations: ["Ancient forest spirits emerge from hiding", "The tree's magic spreads to heal other wounded places"],
-      continuationPoints: ["What deeper environmental mysteries await discovery?", "How will their conservation journey continue?"],
-      nextStorySeeds: ["A dying river calls for their help", "Mysterious pollution threatens the animal kingdom"]
-    },
-    {
-      setup: [
-        "{userName} receives an invitation to a {favoriteColor} celebration of {specialRequest}.",
-        "The invitation features beautiful drawings of {favoriteAnimal} and {hobbies}.",
-        "A clever {favoriteAnimal} messenger delivered it while {userName} was enjoying {favoriteFood}."
-      ],
-      development: [
-        "At the celebration, {userName} meets friends who share their passion for {hobbies}.",
-        "Everyone displays talents related to {favoriteAnimal} care and {specialRequest}.",
-        "The {favoriteAnimal} teaches {userName} traditional dances from their culture."
-      ],
-      climax: [
-        "When it's {userName}'s turn to share their {hobbies} expertise,",
-        "they feel nervous about presenting their {favoriteColor} project.",
-        "The supportive friends encourage {userName} to share their {specialRequest} vision anyway."
-      ],
-      resolution: [
-        "{userName} discovers their unique talent for combining {hobbies} with {specialRequest}.",
-        "Everyone appreciates how {userName}'s {favoriteFood} recipes brought the community together.",
-        "The experience teaches them about leadership and cultural appreciation. Which tradition will they learn next?"
-      ],
-      contextualContinuations: ["Cultural exchange programs emerge from the celebration", "New international friendships blossom from shared interests"],
-      continuationPoints: ["What cultural celebrations will they organize next?", "Which global friends will join their mission?"],
-      nextStorySeeds: ["An international pen pal writes seeking help", "A cultural festival needs their unique skills"]
-    }
-  ],
-
-  // HARD: Level 3 templates (40) + Level 3 extensions (6) + enhanced fallback (1) = 47 templates
-  hard: [
-    // Convert Level 3 templates to enhanced format (3 sentences per section for 45+ words)
-    ...LEVEL_3_TEMPLATES.map(template => ({
-      setup: [template.slice(0, 2).join(' ') + (template[2] ? ' ' + template[2] : '')],
-      development: [template.slice(1, 3).join(' ') + (template[3] ? ' ' + template[3] : '')],
-      climax: [template.slice(2, 4).join(' ') + (template[4] ? ' ' + template[4] : '')],
-      resolution: [template.slice(3, 5).join(' ')],
-      contextualContinuations: [],
-      continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
-      nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
-    })),
-    // Convert Level 3 extensions (3 sentences per section for proper word count)
-    ...LEVEL_3_EXTENSIONS.map(template => ({
-      setup: [template.slice(0, 2).join(' ') + (template[2] ? ' ' + template[2] : '')],
-      development: [template.slice(1, 3).join(' ') + (template[3] ? ' ' + template[3] : '')],
-      climax: [template.slice(2, 4).join(' ') + (template[4] ? ' ' + template[4] : '')],
-      resolution: [template.slice(3, 5).join(' ')],
-      contextualContinuations: [],
-      continuationPoints: ["What moral complexities will emerge?", "How will leadership be tested?"],
-      nextStorySeeds: ["Greater responsibilities await", "Complex ethical dilemmas arise"]
-    })),
-    // Enhanced hard-level fallback with deep personalization and moral complexity
-    {
-      setup: [
-        "{userName} lived in a peaceful village where everyone shared {favoriteFood} and pursued {hobbies} together harmoniously.",
-        "One morning, they noticed that the village's ancient {favoriteColor} crystal had stopped glowing mysteriously.",
-        "The wise elder {favoriteAnimal} explained that this loss of light meant {specialRequest} was endangered."
-      ],
-      development: [
-        "{userName} volunteered to journey to distant mountains, using their {hobbies} skills for navigation.",
-        "Along the treacherous path, they encountered challenges that tested both their {specialRequest} values and determination.",
-        "A loyal {favoriteAnimal} companion joined the quest, sharing wisdom about {favoriteColor} crystal magic."
-      ],
-      climax: [
-        "At the mountain's peak, {userName} discovered the solution required sacrificing their prized {favoriteFood} collection.",
-        "They faced choosing between personal {hobbies} dreams and their community's survival needs.",
-        "With profound wisdom beyond their years, {userName} chose to embrace {specialRequest} over self-interest."
-      ],
-      resolution: [
-        "Their selfless choice restored the {favoriteColor} crystal's power and saved the entire community.",
-        "{userName} learned that true leadership means embodying {specialRequest} through service to others.",
-        "The village flourished with renewed {favoriteAnimal} populations and {favoriteFood} abundance. What greater moral challenge will test their character next?"
-      ],
-      contextualContinuations: ["Neighboring villages seek guidance from their wisdom", "Ancient prophecies reveal greater responsibilities ahead"],
-      continuationPoints: ["What complex ethical dilemmas will challenge their growing wisdom?", "How will their leadership inspire others to embrace sacrifice?"],
-      nextStorySeeds: ["A moral crisis divides two allied communities", "Ancient enemies seek reconciliation through their example"]
-    }
-  ],
-
-  // EXPERT: Level 4 templates (40) + Level 4 extensions (5) + Enhanced fallback (1) = 46 templates
-  expert: [
-    // Convert Level 4 templates to enhanced format (4-5 sentences per section for 49+ words)
-    ...LEVEL_4_TEMPLATES.map(template => ({
-      setup: [template.slice(0, 2).join(' ') + (template[2] ? ' ' + template[2] : '') + (template[3] ? ' ' + template[3] : '')],
-      development: [template.slice(1, 4).join(' ') + (template[4] ? ' ' + template[4] : '')],
-      climax: [template.slice(2, 5).join(' ')],
-      resolution: [template.slice(3, 5).join(' ') + (template[0] ? ' ' + template[0].replace(/\{userName\}/g, '{userName}') : '')],
-      contextualContinuations: [],
-      continuationPoints: ["What philosophical depths await exploration?", "How will wisdom manifest?"],
-      nextStorySeeds: ["Deeper philosophical questions emerge", "Abstract concepts take concrete form"]
-    })),
-    // Convert Level 4 extensions (4-5 sentences per section for substantial content)
-    ...LEVEL_4_EXTENSIONS.map(template => ({
-      setup: [template.slice(0, 2).join(' ') + (template[2] ? ' ' + template[2] : '') + (template[3] ? ' ' + template[3] : '')],
-      development: [template.slice(1, 4).join(' ') + (template[4] ? ' ' + template[4] : '')],
-      climax: [template.slice(2, 5).join(' ')],
-      resolution: [template.slice(3, 5).join(' ') + (template[0] ? ' ' + template[0].replace(/\{userName\}/g, '{userName}') : '')],
-      contextualContinuations: [],
-      continuationPoints: ["What philosophical depths await exploration?", "How will wisdom manifest?"],
-      nextStorySeeds: ["Deeper philosophical questions emerge", "Abstract concepts take concrete form"]
-    })),
-    {
-      setup: [
-        "{userName} began questioning fundamental principles about {specialRequest} that governed their society and beliefs.",
-        "These philosophical inquiries led to deep conversations with the enlightened {favoriteAnimal} who served as mentor.",
-        "Together they explored complex concepts of justice, truth, and how {hobbies} shapes human understanding."
-      ],
-      development: [
-        "Through rigorous intellectual discourse about {favoriteColor} symbolism, {userName} examined various worldviews and perspectives.",
-        "The journey revealed contradictions between idealistic {specialRequest} theories and practical realities of {favoriteFood} scarcity.",
-        "Each insight about {favoriteAnimal} behavior brought clarity and additional questions about ethical living."
-      ],
-      climax: [
-        "{userName} faced a profound moral dilemma where {specialRequest} values conflicted with {hobbies} community needs.",
-        "The decision required integrating philosophical understanding of {favoriteColor} justice with compassionate action.",
-        "No simple answer existed about balancing {favoriteAnimal} welfare with human {favoriteFood} requirements."
-      ],
-      resolution: [
-        "Through thoughtful reflection about {specialRequest}, {userName} developed nuanced understanding of ethical complexity.",
-        "They learned that wisdom means embracing paradox while maintaining commitment to {favoriteColor} truth and justice.",
-        "This growth transformed {userName} into a bridge between {hobbies} idealism and practical compassion. What profound philosophical question will challenge them next?"
-      ],
-      contextualContinuations: ["Philosophical schools seek their synthesized wisdom", "Ancient texts reveal deeper layers of ethical complexity"],
-      continuationPoints: ["What metaphysical mysteries will expand their consciousness?", "How will their philosophical insights reshape society?"],
-      nextStorySeeds: ["A cosmic ethical dilemma transcends earthly concerns", "Time itself becomes a philosophical laboratory"]
-    }
-  ]
+// ===== NEW TEMPLATE SYSTEM INTEGRATION =====
+// Map DifficultyLevel to FallbackLevel for new template system integration
+const DIFFICULTY_TO_FALLBACK_MAP: Record<Exclude<DifficultyLevel, 'beginner'>, FallbackLevel> = {
+  easy: 'level1',      // Ages 6-7
+  medium: 'level2',    // Ages 8-9  
+  hard: 'level3',      // Ages 10-11
+  expert: 'level4'     // Ages 12-13
 };
 
 /**
- * Enhanced fallback template selector with session management and continuation support
+ * PROTECTED LEVEL 0 SYSTEM - Complete Level 0 templates preserved exactly as-is
+ * This system is used only for 'beginner' difficulty level
+ * DO NOT MODIFY - Level 0 system remains fully intact
  */
+export const LEVEL_0_ENHANCED_TEMPLATES: EnhancedFallbackTemplate[] = [
+  // Convert vocabulary-compliant Level 0 templates to enhanced format
+  ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.map(template => ({
+    setup: template.slice(0, 2),
+    development: template.slice(2, 3),
+    climax: template.slice(3, 4),
+    resolution: template.slice(4, 5),
+    contextualContinuations: [],
+    continuationPoints: ["What happens next?", "Where will they go?"],
+    nextStorySeeds: ["Another adventure begins", "A new friend appears"]
+  })),
+  // Convert Level 0 extensions (universal access)
+  ...LEVEL_0_EXTENSIONS.map(template => ({
+    setup: template.slice(0, 2),
+    development: template.slice(2, 3),
+    climax: template.slice(3, 4),
+    resolution: template.slice(4, 5),
+    contextualContinuations: [],
+    continuationPoints: ["What happens next?", "Where will they go?"],
+    nextStorySeeds: ["Another adventure begins", "A new friend appears"]
+  })),
+  // Original enhanced fallback with proper user placeholders
+  {
+    setup: [
+      "{userName} sees a {favoriteAnimal}.",
+      "The {favoriteAnimal} is {favoriteColor}.",
+      "{userName} can play."
+    ],
+    development: [
+      "{userName} and {favoriteAnimal} play.",
+      "They run and jump.",
+      "The {favoriteAnimal} is happy."
+    ],
+    climax: [
+      "{userName} helps the {favoriteAnimal}.",
+      "They are good friends.",
+      "{userName} has fun."
+    ],
+    resolution: [
+      "{userName} is happy.",
+      "The {favoriteAnimal} is happy.",
+      "It is a good day. What adventure awaits next?"
+    ],
+    contextualContinuations: ["Together they discover new places", "New friends join their games"],
+    continuationPoints: ["What magical place will they explore?", "Who else wants to play?"],
+    nextStorySeeds: ["A mysterious door appears", "Strange sounds come from the forest"]
+  }
+];
+
+/**
+ * INTEGRATED FALLBACK SYSTEM
+ * Level 0 (beginner): Uses protected old system
+ * Levels 1-4 (easy/medium/hard/expert): Uses new 35-template system
+ */
+export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
+  // BEGINNER: Protected Level 0 system (67 templates)
+  beginner: LEVEL_0_ENHANCED_TEMPLATES,
+  
+  // EASY, MEDIUM, HARD, EXPERT: Uses new 35-template system
+  // Templates are generated dynamically from the new system
+  easy: [], // Generated dynamically from new system
+  medium: [], // Generated dynamically from new system  
+  hard: [], // Generated dynamically from new system
+  expert: [] // Generated dynamically from new system
+};
+
 export class EnhancedFallbackManager {
   private static usedTemplates: Map<string, Set<number>> = new Map();
   private static storyContext: Map<string, { characters: string[], themes: string[], plotElements: string[] }> = new Map();
 
   /**
+   * INTEGRATED FALLBACK SYSTEM - Preserves Level 0, uses new system for higher levels
    * Get an enhanced fallback template for the given difficulty and context
-   * Now supports story continuation with consistent narrative elements
    */
   static getFallbackTemplate(
     difficulty: DifficultyLevel,
@@ -352,13 +126,29 @@ export class EnhancedFallbackManager {
     pageIndex: number,
     existingStory?: string[]
   ): string {
-    const sessionKey = `${difficulty}-${userInfo.name || 'guest'}`;
-    
-    // Get available templates for this difficulty
-    const templates = ENHANCED_FALLBACK_TEMPLATES[difficulty];
+    // PROTECTED LEVEL 0 ROUTE - Use original system exactly as-is
+    if (difficulty === 'beginner') {
+      return this.getLevel0Fallback(userInfo, pageIndex, existingStory);
+    }
+
+    // NEW TEMPLATE SYSTEM ROUTE - Use 35-template library for higher difficulties
+    return this.getNewSystemFallback(difficulty, userInfo, pageIndex, existingStory);
+  }
+
+  /**
+   * PROTECTED LEVEL 0 SYSTEM - Preserved exactly as original
+   * Uses existing Level 0 templates with original logic
+   */
+  private static getLevel0Fallback(
+    userInfo: UserInfo,
+    pageIndex: number,
+    existingStory?: string[]
+  ): string {
+    const sessionKey = `beginner-${userInfo.name || 'guest'}`;
+    const templates = LEVEL_0_ENHANCED_TEMPLATES;
     
     if (!templates || templates.length === 0) {
-      return this.getBasicFallback(difficulty, userInfo, pageIndex);
+      return this.getBasicFallback('beginner', userInfo, pageIndex);
     }
 
     // Track used templates to avoid repetition
@@ -388,18 +178,116 @@ export class EnhancedFallbackManager {
     // Initialize or update story context for continuation
     this.updateStoryContext(sessionKey, selectedTemplate, userInfo, pageIndex);
 
-    // Generate context-aware fallback using story arc structure
+    // Generate Level 0 fallback using original logic
     return this.generateContextAwareFallback(
       selectedTemplate,
-      difficulty,
+      'beginner',
       userInfo,
       pageIndex,
       existingStory
     );
   }
 
+  /**
+   * NEW TEMPLATE SYSTEM - Uses 35-template library for enhanced content
+   * Integrates scenes, endings, and never-ending story capability
+   */
+  private static getNewSystemFallback(
+    difficulty: DifficultyLevel,
+    userInfo: UserInfo,
+    pageIndex: number,
+    existingStory?: string[]
+  ): string {
+    try {
+      // Map difficulty to new system level
+      const fallbackLevel = DIFFICULTY_TO_FALLBACK_MAP[difficulty as Exclude<DifficultyLevel, 'beginner'>];
+      if (!fallbackLevel) {
+        console.warn(`No fallback level mapping for difficulty: ${difficulty}`);
+        return this.getBasicFallback(difficulty, userInfo, pageIndex);
+      }
+
+      // Get template from new system
+      const template = getFallbackTemplate(fallbackLevel);
+      if (!template) {
+        console.warn(`No template found for fallback level: ${fallbackLevel}`);
+        return this.getBasicFallback(difficulty, userInfo, pageIndex);
+      }
+
+      // Convert userInfo to PersonalizationPlaceholders format
+      const placeholders: Partial<PersonalizationPlaceholders> = {
+        userName: userInfo.name || 'the child',
+        favoriteColor: userInfo.favoriteColor || 'blue',
+        favoriteAnimal: userInfo.favoriteAnimal || 'puppy',
+        favoriteFood: userInfo.favoriteFood || 'pasta',
+        hobbies: userInfo.hobbies || 'playing outside',
+        specialRequest: userInfo.specialRequest || 'adventure'
+      };
+
+      // Process template with new system
+      return this.processNewSystemTemplate(template, placeholders, pageIndex, difficulty);
+
+    } catch (error) {
+      console.error('Error in new system fallback:', error);
+      return this.getBasicFallback(difficulty, userInfo, pageIndex);
+    }
+  }
+
+  /**
+   * Process new system template with scene-based structure
+   */
+  private static processNewSystemTemplate(
+    template: StoryTemplate,
+    placeholders: Partial<PersonalizationPlaceholders>,
+    pageIndex: number,
+    difficulty: DifficultyLevel
+  ): string {
+    try {
+      // Determine which scene to use based on page index
+      const sceneIndex = pageIndex % template.scenes.length;
+      const scene = template.scenes[sceneIndex];
+      
+      // Get base text from scene
+      let content = scene.text;
+      
+      // Apply personalization using new system
+      content = resolveStoryPlaceholders(content, placeholders);
+      
+      // Add micro-variants for variety if available
+      if (scene.microVariants && scene.microVariants.alternatives.length > 0) {
+        const variantIndex = Math.floor(Math.random() * scene.microVariants.alternatives.length);
+        const variant = scene.microVariants.alternatives[variantIndex];
+        content = resolveStoryPlaceholders(variant, placeholders);
+      }
+      
+      // Add never-ending story hook if this is a story end
+      if (scene.hook && Math.random() < 0.3) { // 30% chance to add hook
+        const processedHook = resolveStoryPlaceholders(scene.hook, placeholders);
+        content += ` ${processedHook}`;
+      }
+      
+      // Ensure minimum word count for difficulty
+      const minWords = this.getMinimumWordsForDifficulty(difficulty);
+      const wordCount = content.split(/\s+/).length;
+      
+      if (wordCount < minWords) {
+        // Add random ending for word count extension
+        const randomEnding = template.endings[Math.floor(Math.random() * template.endings.length)];
+        const processedEnding = resolveStoryPlaceholders(randomEnding.text, placeholders);
+        content += ` ${processedEnding}`;
+      }
+      
+      return content;
+      
+    } catch (error) {
+      console.error('Error processing new system template:', error);
+      return this.getBasicFallback(difficulty, { 
+        name: placeholders.userName || 'the child' 
+      } as UserInfo, pageIndex);
+    }
+  }
+
    /**
-    * Generate context-aware fallback content
+    * Generate context-aware fallback content (PRESERVED FOR LEVEL 0)
     */
    private static generateContextAwareFallback(
      template: EnhancedFallbackTemplate,
@@ -539,29 +427,29 @@ export class EnhancedFallbackManager {
     
     const basicFallbacks = {
       beginner: [
-        `{userName} can play.`,
-        `{userName} is happy.`,
-        `{userName} has fun.`
+        `${name} can play.`,
+        `${name} is happy.`,
+        `${name} has fun.`
       ],
       easy: [
-        `{userName} has fun today.`,
-        `{userName} plays outside.`,
-        `{userName} feels happy.`
+        `${name} has fun today.`,
+        `${name} plays outside.`,
+        `${name} feels happy.`
       ],
       medium: [
-        `{userName} discovers something wonderful.`,
-        `{userName} learns something new today.`,
-        `{userName} makes a good friend.`
+        `${name} discovers something wonderful.`,
+        `${name} learns something new today.`,
+        `${name} makes a good friend.`
       ],
       hard: [
-        `{userName} faces a challenge with courage and determination.`,
-        `{userName} learns valuable lessons about perseverance and growth.`,
-        `{userName} discovers inner strength through this experience.`
+        `${name} faces a challenge with courage and determination.`,
+        `${name} learns valuable lessons about perseverance and growth.`,
+        `${name} discovers inner strength through this experience.`
       ],
       expert: [
-        `{userName} contemplates the deeper meaning of this experience and its implications.`,
-        `{userName} synthesizes new understanding from the complex challenges they have encountered.`,
-        `{userName} develops a more nuanced perspective on life's fundamental questions.`
+        `${name} contemplates the deeper meaning of this experience and its implications.`,
+        `${name} synthesizes new understanding from the complex challenges they have encountered.`,
+        `${name} develops a more nuanced perspective on life's fundamental questions.`
       ]
     };
     
@@ -627,7 +515,7 @@ export class EnhancedFallbackManager {
     const plotElement = context.plotElements[pageIndex % context.plotElements.length];
     const name = NameFormatter.capitalize(userInfo.name || 'Alex');
     
-    return `{userName} ${plotElement.toLowerCase()}.`;
+    return `${name} ${plotElement.toLowerCase()}.`;
   }
 
   /**
