@@ -462,6 +462,34 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Detect clothing from story text - extracts actual clothing descriptions
+   */
+  detectClothingFromText(text) {
+    if (!text) return null;
+    
+    const clothingPatterns = [
+      /wearing\s+([^.!?]+)/i,
+      /dressed\s+in\s+([^.!?]+)/i,
+      /has\s+on\s+([^.!?]+)/i,
+      /put\s+on\s+([^.!?]+)/i
+    ];
+    
+    for (const pattern of clothingPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const clothing = match[1].trim();
+        // Filter out non-clothing descriptions
+        if (clothing.length > 50 || clothing.includes('story') || clothing.includes('page')) {
+          continue;
+        }
+        return clothing;
+      }
+    }
+    
+    return null;
+  }
+
+  /**
    * Determine cultural profile with priority order: African -> African American -> Language-based
    */
   determineCulturalProfile(userInfo) {
@@ -714,15 +742,18 @@ export class CharacterConsistencyService {
       return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
-    // Minimal description for other cultural profiles - let Runware decide most features
+    // Minimal description for other cultural profiles - FIXED: Include hair color for ALL characters
+    const hairColor = traits.hairColor || 'brown'; // Fallback to prevent missing hair color
     const eyeColor = pageTextFeatures.eyeColor || '';
-    const eyeDescription = eyeColor ? ` with ${eyeColor}` : '';
+    const eyeDescription = eyeColor ? ` and ${eyeColor}` : '';
     
     // Only include height/build if detected from page text
     const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
     const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
     
-    return `A ${heightDescription}${agePrefix}${seedData.avatarType}${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+    console.log(`✅ Character Description - Hair Color Fixed: ${hairColor} for ${seedData.avatarType}`);
+    
+    return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${hairColor} hair${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
 
   /**

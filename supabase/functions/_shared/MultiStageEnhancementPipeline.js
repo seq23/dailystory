@@ -37,6 +37,10 @@ export class MultiStageEnhancementPipeline {
       });
       
       const characterService = new CharacterConsistencyService();
+      // FIXED: Use proper clothing detection instead of raw story text
+      const detectedClothing = characterService.detectClothingFromText(storyText);
+      console.log('🧥 Clothing Detection:', detectedClothing || 'No clothing detected');
+      
       const characterSeed = await characterService.getCharacterSeed(
         sessionId, 
         userInfo?.id || 'anonymous', 
@@ -44,7 +48,7 @@ export class MultiStageEnhancementPipeline {
         storyText, 
         avatarIdentity, 
         'story', 
-        storyText
+        detectedClothing
       );
       
       if (characterSeed && (characterSeed.characterDescription || characterSeed.description)) {
@@ -196,44 +200,50 @@ export class MultiStageEnhancementPipeline {
       !comp.startsWith('Quality:')
     );
     
-    // Build optimized primary scene with proper component order
+    // OPTIMIZED: Reorder components for Runware's left-to-right processing
     let primaryScene = '';
     
-    // 1. Character descriptions come first (from otherComponents)
-    const characterComps = otherComponents.filter(comp => 
-      comp.includes('character') || comp.includes('avatar') || comp.includes('protagonist')
-    );
+    // 1. Character descriptions with precise filtering
+    const characterComps = otherComponents.filter(comp => {
+      const lowerComp = comp.toLowerCase();
+      return lowerComp.match(/\b(character|avatar|protagonist|\d+-year-old|boy|girl|child|with .* hair)\b/) && 
+             !lowerComp.includes('story') && !lowerComp.includes('page');
+    });
     if (characterComps.length > 0) {
       primaryScene += characterComps.join('. ') + '. ';
+      console.log('👤 Character Components:', characterComps.length);
     }
     
-    // 2. Core action
+    // 2. Key Visual Style (early for better influence)
+    if (style) {
+      primaryScene += style + '. ';
+    }
+    
+    // 3. Core action
     if (action) {
       primaryScene += action + '. ';
     }
     
-    // 3. Base story text
+    // 4. Base story text (reduced emphasis)
     primaryScene += `${baseScene}. `;
     
-    // 4. Setting
+    // 5. Setting/Environment
     if (setting) {
       primaryScene += setting + '. ';
     }
     
-    // 5. Secondary elements (remaining components)
-    const secondaryComps = otherComponents.filter(comp => 
-      !comp.includes('character') && !comp.includes('avatar') && !comp.includes('protagonist')
-    );
+    // 6. Secondary elements (filtered to avoid story text)
+    const secondaryComps = otherComponents.filter(comp => {
+      const lowerComp = comp.toLowerCase();
+      return !lowerComp.match(/\b(character|avatar|protagonist|\d+-year-old|boy|girl|child|with .* hair)\b/) &&
+             !lowerComp.includes('story') && !lowerComp.includes('page') && comp.length < 100;
+    });
     if (secondaryComps.length > 0) {
       primaryScene += secondaryComps.join('. ') + '. ';
     }
     
-    // 6. Style group (grouped together)
-    if (style && quality) {
-      primaryScene += `${style}. ${quality}.`;
-    } else if (style) {
-      primaryScene += style + '.';
-    } else if (quality) {
+    // 7. Technical Quality (last)
+    if (quality) {
       primaryScene += quality + '.';
     }
     
