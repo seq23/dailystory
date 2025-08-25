@@ -94,11 +94,29 @@ const handleFormSubmit = (info: UserInfo) => {
     difficultyLevel: info.difficultyLevel
   });
 
+  console.log('🔍 [DEBUG] Avatar validation check:', {
+    hasAvatar: !!info.avatar,
+    hasAvatarType: !!info.avatar?.type,
+    avatarTypeValue: info.avatar?.type,
+    willTriggerFallback: !info.avatar || !info.avatar.type
+  });
+
   // Add avatar validation and fallback handling (Fix #4)
   if (!info.avatar || !info.avatar.type) {
     console.warn('⚠️ [DEBUG] Avatar data missing or corrupted, applying fallback');
+    console.log('🔍 [DEBUG] BEFORE fallback - avatar:', info.avatar);
     info.avatar = { type: "boy", skinTone: "medium" };
+    console.log('🔍 [DEBUG] AFTER fallback - avatar:', info.avatar);
+  } else {
+    console.log('✅ [DEBUG] Avatar validation passed - no fallback needed');
   }
+
+  console.log('🔍 [DEBUG] Final userInfo being set:', {
+    name: info.name,
+    avatar: info.avatar,
+    avatarType: info.avatar?.type,
+    avatarSkinTone: info.avatar?.skinTone
+  });
 
   setUserInfo(info);
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
