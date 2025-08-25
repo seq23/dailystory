@@ -499,6 +499,45 @@ export class SessionStateManager {
   }
 
   /**
+   * Get previous page text for context continuity
+   */
+  getPreviousPageText(sessionId, pageNumber) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    // Look for stored page text in prompt history
+    const targetPage = pageNumber;
+    const relevantPrompts = state.promptHistory
+      .filter(p => p.pageNumber === targetPage)
+      .sort((a, b) => b.timestamp - a.timestamp);
+    
+    if (relevantPrompts.length > 0) {
+      // If we have stored original page text in metadata
+      const prompt = relevantPrompts[0];
+      if (prompt.metadata && prompt.metadata.originalPageText) {
+        return prompt.metadata.originalPageText;
+      }
+      // Fallback to prompt text if available
+      if (prompt.prompt) {
+        return prompt.prompt.substring(0, 200); // Return first 200 chars as context
+      }
+    }
+    
+    // Look in image prompts as alternative source
+    if (state.imagePrompts) {
+      const imagePrompt = state.imagePrompts
+        .filter(p => p.pageNumber === targetPage)
+        .sort((a, b) => b.timestamp - a.timestamp)[0];
+      
+      if (imagePrompt && imagePrompt.originalPageText) {
+        return imagePrompt.originalPageText;
+      }
+    }
+    
+    console.log(`📋 No previous page text found for session ${sessionId}, page ${pageNumber}`);
+    return null;
+  }
+
+  /**
    * Create continuation session
    */
   createContinuationSession(originalSessionId, newSessionId) {

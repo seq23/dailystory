@@ -30,6 +30,19 @@ export function useReaderLayout(): UseReaderLayoutResult {
 
       const lowEnd = reduceMotion || deviceMemory < 2 || cores <= 2;
 
+      // DEBUG: Layout detection logging
+      console.log(`🖥️ Layout Detection Debug:`, {
+        windowWidth: window.innerWidth,
+        isWide,
+        reduceMotion,
+        deviceMemory,
+        cores,
+        lowEnd,
+        forcedParam,
+        forcedLocal,
+        runtime
+      });
+
       if (runtime) return runtime;
       if (forcedParam === "modern" || forcedParam === "classic" || forcedParam === "split") return forcedParam;
       if (forcedLocal === "modern" || forcedLocal === "classic" || forcedLocal === "split") return forcedLocal;

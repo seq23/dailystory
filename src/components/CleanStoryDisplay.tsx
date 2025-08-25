@@ -120,6 +120,18 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const preferMobileModal = forceDesktopModal || isMobile || (isTablet && (hasTouchCapability || runtimeTouch));
   const { layout, fallbackToClassic, overrideLayout, lowEnd, reason, isDevelopment } = useReaderLayout();
   
+  // DEBUG: Layout detection logging
+  useEffect(() => {
+    console.log(`🖥️ Desktop Image Debug - Layout Changed:`, {
+      layout,
+      lowEnd,
+      reason,
+      windowWidth: window.innerWidth,
+      isWideScreen: window.innerWidth >= 1280,
+      shouldShowImages: layout !== 'classic' || window.innerWidth >= 1280
+    });
+  }, [layout, lowEnd, reason]);
+  
   // Story state
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -2755,7 +2767,8 @@ const handleRestartTimer = () => {
                 {/* Desktop: Perfectly mirrored split columns */}
                 <div className="hidden xl:grid grid-cols-2 gap-0 flex-1 min-h-0">
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
-                  {layout !== 'classic' && (
+                  {/* DESKTOP IMAGE FIX: Show images on desktop regardless of layout */}
+                  {(layout !== 'classic' || window.innerWidth >= 1280) && (
                     <div className="xl:order-1 h-full min-h-0">
                       <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (

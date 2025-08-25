@@ -199,6 +199,23 @@ serve(async (req) => {
     // PHASE 1: Avatar Identity Mapper - Process user avatar data once at orchestrator level
     const avatarIdentity = mapAvatarIdentity(userInfo);
     console.log(`👤 Avatar Identity Mapped: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
+    
+    // ENHANCED AVATAR MAPPING DEBUG
+    console.log(`🔍 AVATAR MAPPING DETAILED DEBUG:`, {
+      input: {
+        userInfoAvatar: userInfo?.avatar,
+        userInfoName: userInfo?.name,
+        userInfoId: userInfo?.id
+      },
+      output: {
+        type: avatarIdentity.type,
+        skinTone: avatarIdentity.skinTone,
+        culturalProfile: avatarIdentity.culturalProfile,
+        nativeLanguage: avatarIdentity.nativeLanguage,
+        name: avatarIdentity.name
+      },
+      mapping: `${userInfo?.avatar?.type || 'unknown'}/${userInfo?.avatar?.skinTone || 'unknown'} → ${avatarIdentity.type}/${avatarIdentity.skinTone}`
+    });
 
     // ============================================================================ 
     // TIER 1: AI-Enhanced High-Quality - PROVIDED TO ALL USERS
@@ -336,9 +353,29 @@ serve(async (req) => {
           assemblyMethod: 'comma-separated concatenation'
         });
 
-        console.log(`🎯 [${requestId}] Final Runware Prompt (${enhancedPrompt.length} chars):`, 
-          enhancedPrompt.substring(0, 200) + (enhancedPrompt.length > 200 ? '...' : ''));
-        console.log(`🚫 [${requestId}] Negative Prompt:`, negativePrompt);
+        // COMPREHENSIVE DEBUGGING: Full prompt logging (no truncation for debugging)
+        console.log(`🎯 [${requestId}] FULL Runware Prompt (${enhancedPrompt.length} chars):`);
+        console.log(`📝 [${requestId}] COMPLETE POSITIVE PROMPT:`, enhancedPrompt);
+        console.log(`🚫 [${requestId}] COMPLETE NEGATIVE PROMPT:`, negativePrompt);
+        
+        // Avatar mapping debug logging
+        console.log(`👤 [${requestId}] AVATAR MAPPING DEBUG:`, {
+          originalAvatarType: userInfo?.avatar?.type,
+          originalSkinTone: userInfo?.avatar?.skinTone,
+          mappedAvatarType: avatarIdentity.type,
+          mappedSkinTone: avatarIdentity.skinTone,
+          culturalProfile: avatarIdentity.culturalProfile,
+          nativeLanguage: avatarIdentity.nativeLanguage,
+          characterName: userInfo?.name || 'child'
+        });
+        
+        // Character consistency debug logging
+        console.log(`🎭 [${requestId}] CHARACTER CONSISTENCY DEBUG:`, {
+          characterSeed: characterData.seed,
+          characterDescription: characterData.characterDescription,
+          characterDescriptionLength: characterData.characterDescription?.length || 0,
+          hasCharacterData: !!characterData.characterDescription
+        });
 
         const enhancementResult = {
           enhancedPrompt,
