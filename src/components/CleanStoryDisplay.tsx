@@ -1068,17 +1068,31 @@ const initializeStory = async () => {
           const cached = StorySessionCache.getCachedStorySession(cacheId);
           if (cached && cached.pages?.length) {
             console.log('♻️ Restoring premium story from cache');
+            
+            // Robust page restoration logic - preserve progress, don't reset to 0
+            const cachedPage = cached.currentPage || 0;
+            const maxValidPage = Math.max(0, cached.pages.length - 1);
+            const restoredPage = Math.min(cachedPage, maxValidPage);
+            
+            console.log('📄 Page restoration details:', {
+              cachedCurrentPage: cachedPage,
+              pagesLength: cached.pages.length,
+              maxValidPage,
+              restoredPage,
+              userType: 'premium'
+            });
+            
             StoryContentLogger.logStoryChange('premium_cache_restore', 'before', cached.pages, {
               cacheId,
               cachedPageCount: cached.pages.length,
-              currentPage: cached.currentPage || 0,
+              currentPage: cachedPage,
               isComplete: !!cached.isComplete
             });
             setStory(cached.pages);
             StoryContentLogger.logStoryChange('premium_cache_restore', 'after', cached.pages, {
-              restoredCurrentPage: Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1))
+              restoredCurrentPage: restoredPage
             });
-            setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
+            setCurrentPage(restoredPage);
             setIsStoryComplete(!!cached.isComplete);
             setStoryTitle(`${userInfo.name}'s Live Adventure`);
             const ctx: LiveGenerationContext = {
@@ -1163,19 +1177,40 @@ const initializeStory = async () => {
           const cached = StorySessionCache.getCachedStorySession('guest', avatarType);
           if (cached && cached.pages?.length) {
             console.log(`♻️ Restoring guest story from cache (avatar: ${avatarType}) - CONTENT LOCKED AFTER RESTORE`);
+            
+            // Robust page restoration logic for free users - handle page 6 scenario specifically
+            const cachedPage = cached.currentPage || 0;
+            const maxValidPage = Math.max(0, cached.pages.length - 1);
+            let restoredPage = Math.min(cachedPage, maxValidPage);
+            
+            // Special handling for free users on page 6 (last page)
+            if (cachedPage === 5 && cached.pages.length >= 6) {
+              restoredPage = 5; // Preserve page 6 progress for free users
+              console.log('📚 Free user page 6 preserved:', { cachedPage, pagesLength: cached.pages.length });
+            }
+            
+            console.log('📄 Free user page restoration details:', {
+              cachedCurrentPage: cachedPage,
+              pagesLength: cached.pages.length,
+              maxValidPage,
+              restoredPage,
+              userType: 'free',
+              isPage6Scenario: cachedPage === 5
+            });
+            
             StoryContentLogger.logStoryChange('guest_cache_restore', 'before', cached.pages, {
               avatarType,
               cachedPageCount: cached.pages.length,
-              currentPage: cached.currentPage || 0,
+              currentPage: cachedPage,
               isContentLocked: true
             });
             setStory(cached.pages);
             StoryContentLogger.logStoryChange('guest_cache_restore', 'after', cached.pages, {
-              restoredCurrentPage: Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)),
+              restoredCurrentPage: restoredPage,
               title: `${userInfo.name}'s Adventure`,
               storySource: 'unknown'
             });
-            setCurrentPage(Math.min(cached.currentPage || 0, Math.max(0, cached.pages.length - 1)));
+            setCurrentPage(restoredPage);
             setStoryTitle(`${userInfo.name}'s Adventure`);
             setIsStoryComplete(true);
             setStorySource('unknown');
