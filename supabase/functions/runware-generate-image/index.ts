@@ -203,8 +203,18 @@ serve(async (req) => {
           'standard'
         );
         
-        // 2. Style Framework Application
-        const storyFramework = styleFrameworks.getFrameworkByAgeGroup(userInfo.gradeLevel || 'K');
+        // 2. Style Framework Application - Map grade level to difficulty
+        const gradeLevelToDifficulty = (grade) => {
+          const gradeStr = String(grade).toLowerCase();
+          if (gradeStr === 'k' || gradeStr === 'kindergarten') return 'beginner';
+          if (['1', '2'].includes(gradeStr)) return 'easy';
+          if (['3', '4'].includes(gradeStr)) return 'medium';
+          if (['5', '6'].includes(gradeStr)) return 'hard';
+          return 'expert'; // 7+
+        };
+        
+        const difficulty = gradeLevelToDifficulty(userInfo.gradeLevel || 'K');
+        const storyFramework = styleFrameworks.getStyleFramework(difficulty);
         
         // 3. Avatar Validation
         const validatedAvatar = validateAvatarConsistency(avatarIdentity, userInfo, sessionId);
@@ -213,65 +223,152 @@ serve(async (req) => {
         const requestId = `IMG-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`🎯 [${requestId}] Starting Runware prompt assembly phase`);
 
-        // PHASE 4: Detailed Runware prompt construction debugging
+        // PHASE 4: Comprehensive Runware prompt construction with proper segment order
         const segments = [];
         
-        // PRIMARY MASTER: Use primaryScene as the comprehensive base
-        if (aiSchema.primaryScene) {
-          segments.push(aiSchema.primaryScene);
-          console.log(`🎯 [${requestId}] Segment 1 - Primary Scene Added:`, {
-            length: aiSchema.primaryScene.length,
-            preview: aiSchema.primaryScene.substring(0, 150) + '...',
-            source: 'AI-enhanced primaryScene (MASTER)'
-          });
-        } else {
-          console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema - this may impact quality`);
-        }
+        console.log(`🎨 [${requestId}] Style Framework Retrieved:`, {
+          difficulty,
+          frameworkName: storyFramework.name,
+          gradeLevel: userInfo.gradeLevel || 'K',
+          hasAllComponents: {
+            artStyle: !!storyFramework.artStyle,
+            colorPalette: !!storyFramework.colorPalette,
+            lighting: !!storyFramework.lighting,
+            texture: !!storyFramework.texture,
+            composition: !!storyFramework.composition,
+            quality: !!storyFramework.quality,
+            brandSuffix: !!storyFramework.brandSuffix,
+            prompt: !!storyFramework.prompt,
+            negativePrompt: !!storyFramework.negativePrompt
+          }
+        });
         
-        // ALWAYS ADD: Character consistency data (no conditional checks)
+        // 1. CHARACTER DESCRIPTION (First - establishes visual identity)
         if (characterData.characterDescription) {
           segments.push(characterData.characterDescription);
-          console.log(`✅ [${requestId}] Segment 2 - Character Consistency Added:`, {
+          console.log(`✅ [${requestId}] Segment 1 - Character Description Added:`, {
             length: characterData.characterDescription.length,
             preview: characterData.characterDescription.substring(0, 100) + '...',
             seed: characterData.seed,
             source: 'CharacterConsistencyService'
           });
         } else {
-          console.warn(`⚠️ [${requestId}] Missing character consistency data`);
+          console.warn(`⚠️ [${requestId}] Missing character description`);
         }
         
-        // ALWAYS ADD: Style framework for quality
-        if (storyFramework.qualitySuffixes) {
-          segments.push(storyFramework.qualitySuffixes);
-          console.log(`🎨 [${requestId}] Segment 3 - Style Framework Added:`, {
-            length: storyFramework.qualitySuffixes.length,
-            content: storyFramework.qualitySuffixes,
-            gradeLevel: userInfo.gradeLevel || 'K',
-            source: 'styleFrameworks'
+        // 2. PRIMARY SCENE (Second - main story context)
+        if (aiSchema.primaryScene) {
+          segments.push(aiSchema.primaryScene);
+          console.log(`🎯 [${requestId}] Segment 2 - Primary Scene Added:`, {
+            length: aiSchema.primaryScene.length,
+            preview: aiSchema.primaryScene.substring(0, 150) + '...',
+            source: 'AI-enhanced primaryScene'
           });
         } else {
-          console.warn(`⚠️ [${requestId}] Missing style framework quality suffixes`);
+          console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema`);
         }
         
-        // Build final prompts - primaryScene is master, everything else enhances it
+        // 3. ART STYLE (Third - establishes visual approach)
+        if (storyFramework.artStyle) {
+          segments.push(storyFramework.artStyle);
+          console.log(`🎨 [${requestId}] Segment 3 - Art Style Added:`, {
+            content: storyFramework.artStyle,
+            source: 'styleFramework.artStyle'
+          });
+        }
+        
+        // 4. COLOR PALETTE (Fourth - color harmony)
+        if (storyFramework.colorPalette) {
+          segments.push(storyFramework.colorPalette);
+          console.log(`🎨 [${requestId}] Segment 4 - Color Palette Added:`, {
+            content: storyFramework.colorPalette,
+            source: 'styleFramework.colorPalette'
+          });
+        }
+        
+        // 5. LIGHTING (Fifth - lighting technique)
+        if (storyFramework.lighting) {
+          segments.push(storyFramework.lighting);
+          console.log(`🎨 [${requestId}] Segment 5 - Lighting Added:`, {
+            content: storyFramework.lighting,
+            source: 'styleFramework.lighting'
+          });
+        }
+        
+        // 6. TEXTURE (Sixth - surface details)
+        if (storyFramework.texture) {
+          segments.push(storyFramework.texture);
+          console.log(`🎨 [${requestId}] Segment 6 - Texture Added:`, {
+            content: storyFramework.texture,
+            source: 'styleFramework.texture'
+          });
+        }
+        
+        // 7. COMPOSITION (Seventh - layout guidelines)
+        if (storyFramework.composition) {
+          segments.push(storyFramework.composition);
+          console.log(`🎨 [${requestId}] Segment 7 - Composition Added:`, {
+            content: storyFramework.composition,
+            source: 'styleFramework.composition'
+          });
+        }
+        
+        // 8. QUALITY STANDARDS (Eighth - rendering quality)
+        if (storyFramework.quality) {
+          segments.push(storyFramework.quality);
+          console.log(`🎨 [${requestId}] Segment 8 - Quality Standards Added:`, {
+            content: storyFramework.quality,
+            source: 'styleFramework.quality'
+          });
+        }
+        
+        // 9. BRAND SUFFIX (Ninth - brand enhancement)
+        if (storyFramework.brandSuffix) {
+          segments.push(storyFramework.brandSuffix);
+          console.log(`🎨 [${requestId}] Segment 9 - Brand Suffix Added:`, {
+            content: storyFramework.brandSuffix,
+            source: 'styleFramework.brandSuffix'
+          });
+        }
+        
+        // 10. FRAMEWORK PROMPT (Tenth - complete framework prompt)
+        if (storyFramework.prompt) {
+          segments.push(storyFramework.prompt);
+          console.log(`🎨 [${requestId}] Segment 10 - Framework Prompt Added:`, {
+            content: storyFramework.prompt,
+            source: 'styleFramework.prompt'
+          });
+        }
+        
+        // Build comprehensive prompts with all framework components
         const enhancedPrompt = segments.filter(s => s && s.trim()).join(', ');
-        const negativePrompt = storyFramework.negativePrompt || 'blurry, low quality';
+        const negativePrompt = storyFramework.negativePrompt || 'blurry, low quality, distorted';
         
         // PHASE 4: Comprehensive prompt assembly logging
         console.log(`🔧 [${requestId}] Runware Prompt Assembly Complete:`, {
           totalSegments: segments.length,
           finalPromptLength: enhancedPrompt.length,
+          difficulty,
+          frameworkName: storyFramework.name,
           segmentBreakdown: segments.map((seg, i) => ({
             segment: i + 1,
             length: seg.length,
             preview: seg.substring(0, 50) + '...'
           })),
-          hasCharacterData: !!characterData.characterDescription,
-          hasAiSchema: !!aiSchema.primaryScene,
-          hasStyleFramework: !!storyFramework.qualitySuffixes,
+          componentStatus: {
+            hasCharacterData: !!characterData.characterDescription,
+            hasAiSchema: !!aiSchema.primaryScene,
+            hasArtStyle: !!storyFramework.artStyle,
+            hasColorPalette: !!storyFramework.colorPalette,
+            hasLighting: !!storyFramework.lighting,
+            hasTexture: !!storyFramework.texture,
+            hasComposition: !!storyFramework.composition,
+            hasQuality: !!storyFramework.quality,
+            hasBrandSuffix: !!storyFramework.brandSuffix,
+            hasFrameworkPrompt: !!storyFramework.prompt
+          },
           negativePromptLength: negativePrompt.length,
-          assemblyMethod: 'comma-separated concatenation'
+          assemblyMethod: 'comma-separated concatenation with comprehensive style framework'
         });
 
         // COMPREHENSIVE DEBUGGING: Full prompt logging (no truncation for debugging)
