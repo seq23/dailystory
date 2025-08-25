@@ -76,8 +76,12 @@ export class RealContextCollector {
     
     // Add character continuity
     if (contextData.characterDescriptions && contextData.characterDescriptions.length > 0) {
-      const characterDesc = contextData.characterDescriptions[0];
-      if (characterDesc) {
+      const characterDetails = contextData.characterDescriptions[0];
+      if (characterDetails && characterDetails.characters && characterDetails.characters.length > 0) {
+        // Extract the character description string from the character object
+        const characterDesc = characterDetails.characters[0].description || 
+                             characterDetails.characters[0].appearance?.description ||
+                             `${characterDetails.characters[0].name} (character)`;
         contextParts.push(`Character consistency: ${characterDesc}`);
       }
     }

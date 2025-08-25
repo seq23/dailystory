@@ -47,10 +47,19 @@ export class MultiStageEnhancementPipeline {
         storyText
       );
       
-      if (characterSeed && characterSeed.description) {
-        characterDescription = characterSeed.description;
+      if (characterSeed && (characterSeed.characterDescription || characterSeed.description)) {
+        characterDescription = characterSeed.characterDescription || characterSeed.description;
         console.log(`✅ Character description: ${characterDescription.substring(0, 100)}...`);
         primarySceneComponents.push(characterDescription);
+        
+        // Update SessionStateManager with character data
+        const { globalSessionManager } = await import('./SessionStateManager.js');
+        globalSessionManager.updateCharacterWithSeed(sessionId, userInfo?.name || 'child', characterSeed.seed, {
+          characterDescription: characterDescription,
+          avatarType: characterSeed.avatarIdentity?.type,
+          skinTone: characterSeed.avatarIdentity?.skinTone,
+          description: characterDescription
+        });
       }
     } catch (characterError) {
       throw new Error(`Tier2.CharacterConsistency failed: ${characterError.message}`);

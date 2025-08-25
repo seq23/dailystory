@@ -96,6 +96,7 @@ export class SessionStateManager {
       characterName,
       seed,
       appearance,
+      characterDescription: appearance?.characterDescription || existing?.characterDescription,
       lastMention: state.pageNumber,
       firstMention: existing?.firstMention || state.pageNumber,
       updatedAt: Date.now()
@@ -418,7 +419,7 @@ export class SessionStateManager {
       .filter(char => char.lastMention >= state.pageNumber - 2)
       .map(char => ({
         name: char.characterName,
-        description: char.appearance?.description || 'character',
+        description: char.appearance?.description || char.characterDescription || 'character',
         seed: char.seed
       }));
     
