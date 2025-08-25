@@ -2008,14 +2008,19 @@ const handleRestartTimer = () => {
 
   // Magic wand functionality - Generate new story
   const handleGenerateNewStory = async (specialRequestOverride?: string, isRewrite: boolean = false) => {
-    console.log('🚀 [DEBUG] handleGenerateNewStory ENTRY:', { 
+    const callId = Math.random().toString(36).substr(2, 9);
+    console.log(`🚀 [STORY DEBUG ${callId}] handleGenerateNewStory ENTRY:`, { 
       specialRequestOverride, 
       isRewrite, 
       isGeneratingNewStory, 
-      isGeneratingRewrite 
+      isGeneratingRewrite,
+      timestamp: new Date().toISOString()
     });
     
-    if (isGeneratingNewStory || isGeneratingRewrite) return;
+    if (isGeneratingNewStory || isGeneratingRewrite) {
+      console.log(`⚠️ [STORY DEBUG ${callId}] BLOCKED - Already generating:`, { isGeneratingNewStory, isGeneratingRewrite });
+      return;
+    }
     
     console.log('🔄 User explicitly requested new story - unlocking content', {
       isRewrite,
@@ -2029,12 +2034,20 @@ const handleRestartTimer = () => {
 
     // Clear caches based on context
     const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
-    console.log('🔄 [DEBUG] handleGenerateNewStory cache clearing:', { 
+    console.log(`🔄 [STORY DEBUG ${callId}] handleGenerateNewStory cache clearing:`, { 
       isRewrite, 
       currentUserId, 
       avatarType,
       userInfoAvatar: userInfo?.avatar 
     });
+    
+    if (isRewrite) {
+      console.log(`📝 [STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnRewrite`);
+      SessionCacheManager.clearOnRewrite(currentUserId, avatarType);
+    } else {
+      console.log(`✨ [STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnNextStory`);
+      SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
+    }
     
     if (isRewrite) {
       // Rewriting current story - preserve character continuity
@@ -2196,10 +2209,12 @@ const handleRestartTimer = () => {
   };
   // Open special request dialog for premium users, or generate immediately for free
   const handleNewStoryClick = () => {
+    console.log('🎯 [STORY DEBUG] handleNewStoryClick called:', { isPremium });
     if (isPremium) {
       setSpecialRequestDraft(userInfo?.specialRequest || "");
       setShowSpecialRequestDialog(true);
     } else {
+      console.log('🆓 [STORY DEBUG] Free user - calling handleGenerateNewStory directly');
       handleGenerateNewStory();
     }
   };
@@ -2993,6 +3008,7 @@ const handleRestartTimer = () => {
                       <Button
                         data-id="magic-wand-free"
                         onClick={() => {
+                          console.log('🪄 [STORY DEBUG] Magic wand clicked - button press');
                           setIsMagicWandAnimating(false); // Stop animation when clicked
                           handleGenerateNewStory();
                         }}

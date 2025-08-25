@@ -123,7 +123,17 @@ const handleFormSubmit = (info: UserInfo) => {
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
   // Clear all caches with new unified cache manager to ensure clean separation
   const avatarType = info.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : info.avatar?.type;
-  try { SessionCacheManager.clearOnNextStory('guest', avatarType); } catch {}
+  console.log('🔥 [GUEST DEBUG] About to clear cache with SessionCacheManager.clearOnNextStory:', { 
+    userId: 'guest', 
+    avatarType,
+    infoAvatar: info.avatar 
+  });
+  try { 
+    SessionCacheManager.clearOnNextStory('guest', avatarType); 
+    console.log('✅ [GUEST DEBUG] SessionCacheManager.clearOnNextStory completed successfully');
+  } catch (error) {
+    console.error('❌ [GUEST DEBUG] SessionCacheManager.clearOnNextStory failed:', error);
+  }
   setCurrentState("reading");
 };
 
