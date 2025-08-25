@@ -465,12 +465,71 @@ export class MultiStageEnhancementPipeline {
     
     const textLower = text.toLowerCase();
     
-    if (textLower.includes('outside') || textLower.includes('park') || textLower.includes('playground')) {
-      return 'outdoor playground scene';
-    } else if (textLower.includes('home') || textLower.includes('house') || textLower.includes('room')) {
+    // Daily Life Contexts
+    if (textLower.includes('morning') || textLower.includes('bedtime') || textLower.includes('breakfast') || 
+        textLower.includes('lunch') || textLower.includes('dinner') || textLower.includes('chores') || 
+        textLower.includes('cleaning')) {
       return 'cozy home indoor scene';
-    } else if (textLower.includes('school') || textLower.includes('classroom')) {
+    }
+    
+    // Healthcare Contexts
+    if (textLower.includes('doctor') || textLower.includes('dentist') || textLower.includes('checkup') || 
+        textLower.includes('medicine') || textLower.includes('bandage') || textLower.includes('clinic') || 
+        textLower.includes('hospital')) {
+      return 'bright medical office scene';
+    }
+    
+    // Cooking/Kitchen Contexts - CRITICAL FIX for "makes yummy apples"
+    if (textLower.includes('cooking') || textLower.includes('kitchen') || textLower.includes('baking') || 
+        textLower.includes('yummy') || textLower.includes('apples') || textLower.includes('recipe') || 
+        textLower.includes('ingredients') || textLower.includes('oven') || textLower.includes('stirring') || 
+        textLower.includes('mixing') || textLower.includes('makes') && (textLower.includes('food') || textLower.includes('yummy'))) {
+      return 'warm kitchen scene';
+    }
+    
+    // Educational Contexts
+    if (textLower.includes('school') || textLower.includes('classroom') || textLower.includes('reading') || 
+        textLower.includes('book') || textLower.includes('learning') || textLower.includes('teacher') || 
+        textLower.includes('homework')) {
       return 'bright school classroom scene';
+    }
+    
+    // Play & Recreation Contexts
+    if (textLower.includes('playground') || textLower.includes('toys') || textLower.includes('games') || 
+        textLower.includes('swimming') || textLower.includes('playing') || textLower.includes('fun') || 
+        textLower.includes('swings') || textLower.includes('slide')) {
+      return 'colorful playground scene';
+    }
+    
+    // Nature & Animals Contexts
+    if (textLower.includes('garden') || textLower.includes('flowers') || textLower.includes('animals') || 
+        textLower.includes('pets') || textLower.includes('farm') || textLower.includes('outside') || 
+        textLower.includes('park') || textLower.includes('trees') || textLower.includes('nature')) {
+      return 'beautiful outdoor nature scene';
+    }
+    
+    // Community Contexts
+    if (textLower.includes('shopping') || textLower.includes('store') || textLower.includes('library') || 
+        textLower.includes('fire station') || textLower.includes('community') || textLower.includes('market')) {
+      return 'bustling community scene';
+    }
+    
+    // Transportation Contexts
+    if (textLower.includes('car') || textLower.includes('bus') || textLower.includes('travel') || 
+        textLower.includes('trip') || textLower.includes('driving') || textLower.includes('vehicle')) {
+      return 'travel scene with vehicles';
+    }
+    
+    // Special Occasions
+    if (textLower.includes('birthday') || textLower.includes('party') || textLower.includes('celebration') || 
+        textLower.includes('holiday') || textLower.includes('cake') || textLower.includes('present')) {
+      return 'festive celebration scene';
+    }
+    
+    // Home/Indoor fallback
+    if (textLower.includes('home') || textLower.includes('house') || textLower.includes('room') || 
+        textLower.includes('inside') || textLower.includes('indoors')) {
+      return 'cozy home indoor scene';
     }
     
     return currentSetting || 'colorful indoor scene';

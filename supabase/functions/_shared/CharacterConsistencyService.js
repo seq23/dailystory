@@ -303,6 +303,10 @@ export class CharacterConsistencyService {
       },
       physicalTraits: seedData.physicalTraits,
       culturalElements: seedData.culturalElements,
+      // CRITICAL FIX: Store consistent physical features in database for persistence
+      consistentEyeColor: seedData.consistentEyeColor,
+      consistentClothingStyle: seedData.consistentClothingStyle,
+      characterName: seedData.characterName,
       generatedAt: Date.now()
     };
     
@@ -317,13 +321,16 @@ export class CharacterConsistencyService {
    * Create new character seed with avatar awareness
    */
   async createNewCharacterSeed(userId, userInfo, avatarIdentity = null) {
-    const avatarSeedInput = avatarIdentity ? 
-      `${userId}-${userInfo.name || 'child'}-${avatarIdentity.skinTone || 'unknown'}` : 
-      `${userId}-${userInfo.name || 'child'}-${userInfo.avatar?.skinTone || 'unknown'}`;
+    // CRITICAL FIX: Create character-specific seed using characterName + userId for consistency
+    const characterName = userInfo.name || 'child';
+    const characterSpecificSeed = `${characterName}-${userId}-${avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium'}`;
     
-    const baseSeed = this.generateStableSeed(avatarSeedInput, userInfo.name || 'child');
+    console.log(`🎯 CHARACTER CONSISTENCY FIX: Creating character-specific seed for ${characterName}`);
+    console.log(`🔑 Seed Input: ${characterSpecificSeed}`);
     
-    // Generate physical traits
+    const baseSeed = this.generateStableSeed(characterSpecificSeed, characterName);
+    
+    // Generate physical traits with character-specific consistency
     const physicalTraits = avatarIdentity ? 
       this.generatePhysicalTraitsFromIdentity(avatarIdentity, baseSeed) :
       this.generatePhysicalTraits(userInfo, baseSeed);
@@ -332,8 +339,23 @@ export class CharacterConsistencyService {
     const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo);
     const culturalElements = this.generateCulturalElements(culturalProfile, userInfo);
     
+    // ENHANCEMENT: Generate consistent physical features using character-specific seed
+    const seededRandom = this.createSeededRandom(baseSeed);
+    
+    // Generate consistent eye color for this character
+    const eyeColors = ['brown', 'dark brown', 'hazel', 'amber', 'green', 'blue', 'gray'];
+    const consistentEyeColor = eyeColors[Math.floor(seededRandom() * eyeColors.length)];
+    
+    // Generate consistent clothing style for this character
+    const clothingStyles = ['casual', 'colorful', 'comfortable', 'neat', 'playful'];
+    const consistentClothingStyle = clothingStyles[Math.floor(seededRandom() * clothingStyles.length)];
+    
     // Log avatar data for debugging
     console.log('🎭 Character seed generation:', {
+      characterName: characterName,
+      baseSeed: baseSeed,
+      consistentEyeColor: consistentEyeColor,
+      consistentClothingStyle: consistentClothingStyle,
       avatarIdentityType: avatarIdentity?.type,
       avatarIdentitySkinTone: avatarIdentity?.skinTone,
       userInfoAvatarType: userInfo.avatar?.type,
@@ -342,11 +364,16 @@ export class CharacterConsistencyService {
 
     return {
       baseSeed,
+      characterName,
       avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'child',
       skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone,
       physicalTraits,
       culturalElements,
-      culturalProfile
+      culturalProfile,
+      // CRITICAL FIX: Store consistent physical features
+      consistentEyeColor,
+      consistentClothingStyle,
+      characterSpecificSeed
     };
   }
 
@@ -722,10 +749,26 @@ export class CharacterConsistencyService {
     // Detect physical features from page text
     const pageTextFeatures = this.detectPageTextPhysicalFeatures(storyContext);
     
-    // Use page text clothing if provided, otherwise use cultural clothing
-    const clothing = pageTextClothing || 
-      cultural.clothing[Math.floor(Math.random() * cultural.clothing.length)];
-    const accessories = cultural.accessories.slice(0, 2).join(' and ');
+    // CRITICAL FIX: Use consistent physical features from database cache if available
+    const consistentEyeColor = seedData.consistentEyeColor;
+    const consistentClothingStyle = seedData.consistentClothingStyle;
+    
+    console.log(`🎯 CONSISTENCY CHECK: Using consistent eye color: ${consistentEyeColor}, clothing style: ${consistentClothingStyle}`);
+    
+    // Use page text clothing if provided, otherwise use cultural clothing with consistent style preference
+    let clothing = pageTextClothing;
+    if (!clothing && cultural?.clothing) {
+      if (consistentClothingStyle && cultural.clothing.length > 0) {
+        // Try to find clothing matching the consistent style, or use consistent selection based on seed
+        const seededRandom = this.createSeededRandom(seedData.baseSeed);
+        const consistentIndex = Math.floor(seededRandom() * cultural.clothing.length);
+        clothing = cultural.clothing[consistentIndex];
+      } else {
+        clothing = cultural.clothing[Math.floor(Math.random() * cultural.clothing.length)];
+      }
+    }
+    
+    const accessories = cultural?.accessories?.slice(0, 2).join(' and ') || '';
     
     // FIXED: Extract age context from seedData (comes from avatarIdentity)
     const ageContext = seedData.age ? `${seedData.age}-year-old ` : (seedData.ageCategory || '');
@@ -740,26 +783,30 @@ export class CharacterConsistencyService {
       
       // Select comprehensive physical features, use page text overrides when available
       const skinTone = cultural.skinTones[Math.floor(random() * cultural.skinTones.length)];
-      const eyeColor = pageTextFeatures.eyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
+      // CRITICAL FIX: Use consistent eye color if available, otherwise use cultural array or page text
+      const eyeColor = pageTextFeatures.eyeColor || consistentEyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
       const facialFeatures = cultural.facialFeatures[Math.floor(random() * cultural.facialFeatures.length)];
       
       // Only include height/build if detected from page text
       const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
       const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
       
+      console.log(`✅ AFRICAN AMERICAN CHARACTER: Using eye color: ${eyeColor}, clothing: ${clothing}`);
+      
       return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
-    // Minimal description for other cultural profiles - FIXED: Include hair color for ALL characters
+    // Minimal description for other cultural profiles - FIXED: Include consistent features
     const hairColor = traits.hairColor || 'brown'; // Fallback to prevent missing hair color
-    const eyeColor = pageTextFeatures.eyeColor || '';
+    // CRITICAL FIX: Use consistent eye color for ALL characters, not just African American
+    const eyeColor = pageTextFeatures.eyeColor || consistentEyeColor || '';
     const eyeDescription = eyeColor ? ` and ${eyeColor}` : '';
     
     // Only include height/build if detected from page text
     const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
     const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
     
-    console.log(`✅ Character Description - Hair Color Fixed: ${hairColor} for ${seedData.avatarType}`);
+    console.log(`✅ CHARACTER CONSISTENCY: Using hair color: ${hairColor}, eye color: ${eyeColor}, clothing: ${clothing} for ${seedData.avatarType}`);
     
     return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${hairColor} hair${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
