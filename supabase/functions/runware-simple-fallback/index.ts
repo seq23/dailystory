@@ -989,6 +989,11 @@ async function serveHttp(req: Request): Promise<Response> {
         resolve(createCorsErrorResponse("Tier 2.5 WebSocket failed", 500));
       };
     });
+  } catch (error) {
+    console.error('Tier 2.5 Edge Function Error:', error);
+    return createCorsErrorResponse(`Tier 2.5 internal error: ${error.message}`, 500);
+  }
+}
 
 // ============= NUCLEAR TIER 2.5: ZERO DEPENDENCY DIFFICULTY MAPPING =============
 /**
@@ -1278,15 +1283,6 @@ const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
   'seasonal appropriate clothing', 'comfortable playtime outfit', 'trendy youth fashion', 
   'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
 ];
-
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Objects & Secondary Characters)
-const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
-};
 
 function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
   if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', pageText, userInfo, avatarIdentity, difficulty || 'medium');
@@ -1611,111 +1607,6 @@ function detectCulturalProfile(userInfo?: any, avatarIdentity?: any): { profile:
   return { profile: 'standard-american', language: language, skinTone: skinTone };
 }
 
-// ============= OBJECT & SECONDARY CHARACTER DETECTION =============
-// Nuclear independence - inline detection for bulletproof operation
-
-function detectObjects(text: string): string[] {
-  if (!text) return [];
-  
-  const objects: string[] = [];
-  const lowerText = text.toLowerCase();
-  
-  // Color + object patterns (e.g., "red shiny ball", "blue toy car")
-  const colorObjectPatterns = [
-    /(\w+)\s+(shiny|sparkly|bright|colorful|beautiful|big|small|tiny|huge|little)\s+(ball|toy|book|doll|car|truck|bike|flower|butterfly|bird)/g,
-    /(red|blue|green|yellow|orange|purple|pink|white|black|brown)\s+(ball|toy|book|doll|car|truck|bike|flower|butterfly|bird)/g,
-    /favorite\s+(ball|toy|book|doll|car|truck|bike|flower|butterfly|bird)/g
-  ];
-  
-  colorObjectPatterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(lowerText)) !== null) {
-      const objectDesc = match[0];
-      if (!objects.includes(objectDesc)) {
-        objects.push(objectDesc);
-      }
-    }
-  });
-  
-  // Simple object detection (toys, items, etc.)
-  const simpleObjects = [
-    'ball', 'toy car', 'doll', 'stuffed animal', 'teddy bear', 'book', 'bicycle', 'bike',
-    'flower', 'butterfly', 'backpack', 'lunchbox', 'crayon', 'pencil', 'notebook'
-  ];
-  
-  simpleObjects.forEach(obj => {
-    if (lowerText.includes(obj) && !objects.some(o => o.includes(obj))) {
-      objects.push(obj);
-    }
-  });
-  
-  console.log(`🔍 OBJECT DETECTION: Found ${objects.length} objects in "${text.substring(0, 100)}..."`);
-  return objects.slice(0, 3); // Limit to 3 objects to avoid prompt overflow
-}
-
-function detectSecondaryCharacters(text: string): string[] {
-  if (!text) return [];
-  
-  const characters: string[] = [];
-  const lowerText = text.toLowerCase();
-  
-  // Named animal patterns (e.g., "doggy named Max", "cat called Whiskers")
-  const namedAnimalPatterns = [
-    /(doggy|dog|puppy|cat|kitten|bunny|rabbit|bird|fish|hamster|guinea pig)\s+(named|called)\s+(\w+)/g,
-    /(pet|animal)\s+(named|called)\s+(\w+)/g
-  ];
-  
-  namedAnimalPatterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(lowerText)) !== null) {
-      const animalType = match[1];
-      const name = match[3];
-      const charDesc = `${name} the ${animalType}`;
-      if (!characters.includes(charDesc)) {
-        characters.push(charDesc);
-      }
-    }
-  });
-  
-  // Named people patterns (e.g., "friend Sarah", "teacher Ms. Johnson", "mom", "dad")
-  const namedPeoplePatterns = [
-    /(friend|buddy|pal)\s+(\w+)/g,
-    /(teacher|miss|mr|mrs|ms)\s+(\w+)/g,
-    /(mom|mother|dad|father|grandma|grandpa|sister|brother)\s+(\w+)?/g
-  ];
-  
-  namedPeoplePatterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(lowerText)) !== null) {
-      const role = match[1];
-      const name = match[2] || '';
-      const charDesc = name ? `${role} ${name}` : role;
-      if (!characters.includes(charDesc) && charDesc !== 'mom' && charDesc !== 'dad') {
-        characters.push(charDesc);
-      }
-    }
-  });
-  
-  console.log(`🔍 CHARACTER DETECTION: Found ${characters.length} secondary characters in "${text.substring(0, 100)}..."`);
-  return characters.slice(0, 2); // Limit to 2 characters to avoid prompt overflow
-}
-
-// Helper functions for nuclear independence
-function getRandomItem(array: string[]): string {
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-function getAgeFromDifficulty(difficulty: string): string {
-  const ageMapping = {
-    'beginner': '5-year-old',
-    'easy': '7-year-old', 
-    'medium': '9-year-old',
-    'hard': '11-year-old',
-    'expert': '13-year-old'
-  };
-  return ageMapping[difficulty] || '7-year-old';
-}
-
 // ============= LEGACY FUNCTIONS REMOVED FOR NUCLEAR SIMPLICITY =============
 // Premium template system replaces the complex detection logic
 
@@ -1882,12 +1773,6 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any, de
     };
     
     return `${baseSetting} ${culturalEnhancements[language] || `with ${language} cultural elements`}`;
-  }
-}
-
-  } catch (error) {
-    console.error('Tier 2.5 Edge Function Error:', error);
-    return createCorsErrorResponse(`Tier 2.5 internal error: ${error.message}`, 500);
   }
 }
 
