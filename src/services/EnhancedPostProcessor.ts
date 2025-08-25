@@ -21,17 +21,20 @@ export class EnhancedPostProcessor {
     
     try {
       const processedPages = pages.map((page, index) => {
-        // Resolve all placeholders in the page content
-        const resolvedPage = resolveAllPlaceholders(page, {
+        // Fix pronouns first based on avatar type
+        const pronounCorrectedPage = this.correctPronouns(page, userInfo.avatar?.type || 'boy');
+        
+        // Then resolve all placeholders in the corrected content
+        const resolvedPage = resolveAllPlaceholders(pronounCorrectedPage, {
           userInfo,
-          pageText: page
+          pageText: pronounCorrectedPage
         });
         
-        // Fix pronouns based on avatar type
-        const pronounCorrectedPage = this.correctPronouns(resolvedPage, userInfo.avatar?.type || 'boy');
+        // Apply grammar fixes to correct verb conjugation
+        const grammarCorrectedPage = this.applyGrammarFixes(resolvedPage);
         
-        console.log(`✅ Processed page ${index + 1}: ${pronounCorrectedPage.substring(0, 50)}...`);
-        return pronounCorrectedPage;
+        console.log(`✅ Processed page ${index + 1}: ${grammarCorrectedPage.substring(0, 50)}...`);
+        return grammarCorrectedPage;
       });
 
       // Store character context if session exists
@@ -209,6 +212,29 @@ export class EnhancedPostProcessor {
       objects: [...new Set(objects)],
       settings: [...new Set(settings)]
     };
+  }
+
+  /**
+   * Apply grammar fixes for Level 0 content (verb conjugation, articles)
+   */
+  static applyGrammarFixes(content: string): string {
+    let corrected = content;
+    
+    // Fix common verb conjugation errors for third person singular
+    corrected = corrected.replace(/\b(he|she|it)\s+have\b/gi, '$1 has');
+    corrected = corrected.replace(/\b(he|she|it)\s+are\b/gi, '$1 is');
+    corrected = corrected.replace(/\b(he|she|it)\s+were\b/gi, '$1 was');
+    corrected = corrected.replace(/\b(he|she|it)\s+do\b/gi, '$1 does');
+    
+    // Fix "The child have" to "The child has"
+    corrected = corrected.replace(/\bThe\s+\w+\s+have\b/gi, (match) => match.replace('have', 'has'));
+    corrected = corrected.replace(/\bThe\s+\w+\s+are\b/gi, (match) => match.replace('are', 'is'));
+    
+    // Fix missing articles (basic patterns)
+    corrected = corrected.replace(/\b(is|has)\s+([aeiou])/gi, '$1 an $2');
+    corrected = corrected.replace(/\b(is|has)\s+([bcdfghjklmnpqrstvwxyz])/gi, '$1 a $2');
+    
+    return corrected;
   }
 
   /**

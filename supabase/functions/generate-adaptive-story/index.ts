@@ -577,9 +577,17 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders, status: 200 })
   }
 
+  // Parse request body only once to avoid "Body already consumed" error
+  let requestBody;
   try {
-    const body = await req.json();
-    const { diagnostic, test } = body;
+    requestBody = await req.json();
+  } catch (parseError) {
+    console.error('Failed to parse request body:', parseError);
+    requestBody = {};
+  }
+
+  try {
+    const { diagnostic, test } = requestBody;
 
     // DIAGNOSTIC MODE - Handle diagnostic requests
     if (diagnostic || test) {
@@ -661,7 +669,8 @@ serve(async (req) => {
         }
       );
     }
-    const requestBody = await req.json()
+    
+    // Use already parsed requestBody (avoid double consumption)
     console.log('🔍 DIAGNOSTIC: Request body parsed', {
       hasBody: !!requestBody,
       readingLevel: requestBody?.readingLevel,
@@ -997,16 +1006,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Story generation error:', error)
     
-    // Parse request body for fallback
-    let fallbackConfig = {};
-    let fallbackReadingLevel = 'easy';
-    try {
-      const requestBody = await req.json();
-      fallbackConfig = requestBody.config || {};
-      fallbackReadingLevel = requestBody.readingLevel || 'easy';
-    } catch (parseError) {
-      console.error('Could not parse request for fallback:', parseError);
-    }
+    // Use already parsed requestBody for fallback (avoid consuming body again)
+    const fallbackConfig = requestBody?.config || {};
+    const fallbackReadingLevel = requestBody?.readingLevel || 'easy';
     
     // Enhanced fallback using simplified template system
     const userName = fallbackConfig?.userName || 'the child';

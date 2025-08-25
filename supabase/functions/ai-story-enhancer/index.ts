@@ -630,7 +630,7 @@ serve(async (req) => {
     'ai-story-enhancer',
     'fallback-chain',
     async () => {
-      // Check for diagnostic mode first
+      // Check for diagnostic mode first - consume body only once
       let requestBody;
       try {
         requestBody = await req.json();
@@ -737,26 +737,25 @@ serve(async (req) => {
           };
         }
 
-        // Parse and log the complete request structure
-        try {
-          requestBody = await req.json();
-          console.log('📥 Incoming Request Structure:', {
-            method: req.method,
-            headers: Object.fromEntries(req.headers.entries()),
-            bodyKeys: Object.keys(requestBody || {}),
-            bodyTypes: Object.fromEntries(Object.entries(requestBody || {}).map(([k, v]) => [k, typeof v])),
-            storyTextLength: requestBody?.storyText?.length || 0,
-            hasUserInfo: !!requestBody?.userInfo,
-            hasSessionId: !!requestBody?.sessionId,
-            pageInfo: `${requestBody?.pageNumber}/${requestBody?.totalPages || 'unlimited'}`
-          });
-        } catch (parseError) {
-          console.error('❌ Request parsing failed:', parseError.message);
+        // Use already parsed requestBody (avoid double consumption)
+        if (!requestBody || Object.keys(requestBody).length === 0) {
+          console.error('❌ Request parsing failed: Body is empty or not parsed');
           throw {
             type: EdgeErrorType.VALIDATION,
-            message: `Request parsing failed: ${parseError.message}`
+            message: 'Request parsing failed: Body already consumed'
           };
         }
+        
+        console.log('📥 Incoming Request Structure:', {
+          method: req.method,
+          headers: Object.fromEntries(req.headers.entries()),
+          bodyKeys: Object.keys(requestBody || {}),
+          bodyTypes: Object.fromEntries(Object.entries(requestBody || {}).map(([k, v]) => [k, typeof v])),
+          storyTextLength: requestBody?.storyText?.length || 0,
+          hasUserInfo: !!requestBody?.userInfo,
+          hasSessionId: !!requestBody?.sessionId,
+          pageInfo: `${requestBody?.pageNumber}/${requestBody?.totalPages || 'unlimited'}`
+        });
 
         // Extract parameters with comprehensive validation and logging
         if (!requestBody) {
