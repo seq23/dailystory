@@ -394,15 +394,36 @@ useEffect(() => {
       return;
     }
     
+    const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+    
     console.log('🖼️ Story stabilized - checking for image generation opportunities', {
       pageCount: story.length,
       currentPage: currentPage,
       sessionId: characterSessionId,
-      contentHash: event.detail?.contentHash
+      contentHash: event.detail?.contentHash,
+      layout: layout,
+      isStoryStable: isStoryStable,
+      hasCurrentImage: !!pageImages[currentPage],
+      isPremium: isPremium,
+      debugMode: isDebug
     });
     
-    // Start with the first page
-    const pageToGenerate = 0;
+    if (isDebug) {
+      console.log('🔍 [DEBUG] Image Generation Status:', {
+        'Current Layout': layout,
+        'Story Stable': isStoryStable,
+        'Current Page': currentPage,
+        'Total Pages': story.length,
+        'Has Image for Current Page': !!pageImages[currentPage],
+        'All Page Images': Object.keys(pageImages).map(k => `Page ${k}: ${!!pageImages[k]}`),
+        'Is Premium': isPremium,
+        'Network Available': isNetworkAvailable,
+        'Auto Generation Enabled': layout !== "classic"
+      });
+    }
+    
+    // 🔧 FIX: Generate image for current page instead of hardcoded page 0
+    const pageToGenerate = currentPage;
     const pageText = story[pageToGenerate];
     
     if (!pageText || typeof pageText !== 'string') {

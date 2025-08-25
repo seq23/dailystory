@@ -70,9 +70,9 @@ export class ImageGenerationTrigger {
       return false;
     }
     
-    // 🔧 FIX: Generate for all guest-visible pages (1-6) + premium pages
-    // Guests see pages 1-6, premium users get all pages
-    if (currentPage <= 6) {
+    // 🔧 FIX: Generate for guest pages 0-5 (6 total) + premium pages
+    // Guests see pages 0-5, premium users get all pages
+    if (currentPage < 6) {
       return true;
     }
     
