@@ -187,7 +187,7 @@ serve(async (req) => {
         
         // Import services for direct assembly
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-        const { styleFrameworks } = await import('../_shared/styleFrameworks.js');
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
         const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
         
         // Initialize character consistency service
@@ -214,7 +214,7 @@ serve(async (req) => {
         };
         
         const difficulty = gradeLevelToDifficulty(userInfo.gradeLevel || 'K');
-        const storyFramework = styleFrameworks.getStyleFramework(difficulty);
+        const storyFramework = getStyleFramework(difficulty);
         
         // 3. Avatar Validation
         const validatedAvatar = validateAvatarConsistency(avatarIdentity, userInfo, sessionId);
