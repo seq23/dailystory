@@ -4,23 +4,23 @@
 // Hardcoded avatar fallback descriptions for all tiers
 export const AVATAR_FALLBACK_DESCRIPTIONS = {
   // PALE SKIN TONE
-  "girl/pale": "{name} is a young child with pale skin, red hair, and green eyes",
-  "boy/pale": "{name} is a young child with pale skin, red hair, and green eyes", 
+  "girl/pale": "{name} is a young girl with pale skin, red hair, and green eyes",
+  "boy/pale": "{name} is a young boy with pale skin, red hair, and green eyes", 
   "child/pale": "{name} is a young child with pale skin, red hair, and green eyes, with no gender specific characteristics",
   
   // LIGHT SKIN TONE  
-  "girl/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
-  "boy/light": "{name} is a young child with light skin, blonde hair, and blue eyes",
+  "girl/light": "{name} is a young girl with light skin, blonde hair, and blue eyes",
+  "boy/light": "{name} is a young boy with light skin, blonde hair, and blue eyes",
   "child/light": "{name} is a young child with light skin, blonde hair, and blue eyes, with no gender specific characteristics",
 
   // MEDIUM SKIN TONE
-  "girl/medium": "{name} is a young child with medium skin, brown hair, and brown eyes", 
-  "boy/medium": "{name} is a young child with medium skin, brown hair, and brown eyes",
+  "girl/medium": "{name} is a young girl with medium skin, brown hair, and brown eyes", 
+  "boy/medium": "{name} is a young boy with medium skin, brown hair, and brown eyes",
   "child/medium": "{name} is a young child with medium skin, brown hair, and brown eyes, with no gender specific characteristics",
 
   // OLIVE SKIN TONE
-  "girl/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes",
-  "boy/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes", 
+  "girl/olive": "{name} is a young girl with olive skin, natural textured hair, and dark eyes",
+  "boy/olive": "{name} is a young boy with olive skin, natural textured hair, and dark eyes", 
   "child/olive": "{name} is a young child with olive skin, natural textured hair, and dark eyes, with no gender specific characteristics",
 
   // DARK SKIN TONE (Enhanced descriptions)
