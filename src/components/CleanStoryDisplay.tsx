@@ -2022,6 +2022,13 @@ const handleRestartTimer = () => {
 
     // Clear caches based on context
     const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
+    console.log('🔄 [DEBUG] handleGenerateNewStory cache clearing:', { 
+      isRewrite, 
+      currentUserId, 
+      avatarType,
+      userInfoAvatar: userInfo?.avatar 
+    });
+    
     if (isRewrite) {
       // Rewriting current story - preserve character continuity
       SessionCacheManager.clearOnRewrite(currentUserId, avatarType);

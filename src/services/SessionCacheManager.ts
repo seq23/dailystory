@@ -301,7 +301,7 @@ export class SessionCacheManager {
    * Clear caches when user ends their reading session
    */
   static clearOnSessionEnd(userId?: string, avatarType?: string): void {
-    console.log('🔚 Clearing caches for session end');
+    console.log('🔚 [DEBUG] clearOnSessionEnd called:', { userId, avatarType });
     this.clearAllSessionCaches({
       userId: userId || 'guest',
       avatarType,
@@ -314,7 +314,7 @@ export class SessionCacheManager {
    * Clear caches when user rewrites current story (regenerate with same characters)
    */
   static clearOnRewrite(userId?: string, avatarType?: string): void {
-    console.log('🔄 Clearing caches for story rewrite');
+    console.log('🔄 [DEBUG] clearOnRewrite called:', { userId, avatarType });
     this.clearAllSessionCaches({
       userId: userId || 'guest',
       avatarType,
@@ -328,7 +328,7 @@ export class SessionCacheManager {
    * Clear caches when user generates next story (completely new story)
    */
   static clearOnNextStory(userId?: string, avatarType?: string): void {
-    console.log('✨ Clearing caches for next story generation');
+    console.log('✨ [DEBUG] clearOnNextStory called:', { userId, avatarType });
     this.clearAllSessionCaches({
       userId: userId || 'guest',
       avatarType,
