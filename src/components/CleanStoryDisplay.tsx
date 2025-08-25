@@ -75,7 +75,6 @@ import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 import { useHashCoordination } from '@/hooks/useHashCoordination';
-import { useStoryNavigation } from '@/hooks/useStoryNavigation';
 
 
 interface CleanStoryDisplayProps {
@@ -367,50 +366,23 @@ useEffect(() => {
   });
 }, [userInfo]);
 
-// Story navigation management with proper URL synchronization
+// Direct URL management for story sessions (more reliable than hook-based approach)
 const navigate = useNavigate();
-
-// Use the dedicated story navigation hook for proper URL management
-const { persistNavigationState } = useStoryNavigation({
-  isInStorySession: story.length > 0,
-  currentPage: currentPage + 1, // Convert 0-based to 1-based for URL
-  totalPages: story.length,
-  storyTitle: storyTitle
-});
-
-// Update URL parameters when story state changes
 useEffect(() => {
-  if (story.length > 0 && isStoryStable) {
-    console.log('📍 [URL DEBUG] Updating story navigation:', { 
-      currentPage: currentPage + 1, 
-      totalPages: story.length,
-      storyTitle,
-      isStoryStable 
-    });
-    
+  if (story.length > 0) {
     const params = new URLSearchParams();
     params.set('session', 'story');
     params.set('page', (currentPage + 1).toString());
     params.set('total', story.length.toString());
-    
+
     if (storyTitle) {
       params.set('title', storyTitle);
     }
 
     const newUrl = `/?${params.toString()}`;
-    // Only update if URL has actually changed to prevent loops
-    if (window.location.pathname + window.location.search !== newUrl) {
-      navigate(newUrl, { replace: true });
-      
-      // Persist navigation state
-      persistNavigationState({
-        page: currentPage + 1,
-        total: story.length,
-        title: storyTitle
-      });
-    }
+    navigate(newUrl, { replace: true });
   }
-}, [story.length, currentPage, storyTitle, navigate, persistNavigationState, isStoryStable]);
+}, [story.length, currentPage, storyTitle, navigate]);
 
 // Handle browser back/forward navigation
 useEffect(() => {
@@ -462,27 +434,15 @@ useEffect(() => {
       });
     }
     
-    // 🔧 FIX: Generate image for current page with bounds checking
+    // 🔧 FIX: Generate image for current page with simple bounds check
     const pageToGenerate = currentPage;
-    
-    // Add defensive bounds checking to prevent accessing non-existent pages
-    if (pageToGenerate < 0 || pageToGenerate >= story.length) {
-      console.warn('🖼️ Page index out of bounds for image generation:', { 
-        pageToGenerate, 
-        storyLength: story.length,
-        currentPage 
-      });
-      return;
-    }
-    
     const pageText = story[pageToGenerate];
     
-    if (!pageText || typeof pageText !== 'string') {
-      console.warn('🖼️ Invalid page text for image generation:', { 
-        pageText, 
+    // Simple bounds check to prevent undefined access
+    if (!pageText || pageToGenerate >= story.length) {
+      console.warn('🖼️ Page index out of bounds for image generation:', { 
         pageToGenerate, 
-        storyLength: story.length,
-        pageType: typeof pageText 
+        storyLength: story.length 
       });
       return;
     }
@@ -2135,10 +2095,6 @@ const handleRestartTimer = () => {
       SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
     }
     
-    // Clear URL parameters immediately when starting generation to prevent stale state
-    console.log('📍 [URL DEBUG] Clearing stale URL parameters before story generation');
-    window.history.replaceState(null, '', '/');
-    
     setIsStoryStable(false);
     
     if (isRewrite) {
@@ -2279,10 +2235,7 @@ const handleRestartTimer = () => {
           currentPage: 0,
           isRewrite: true
         });
-        
-        // Reset page to beginning BEFORE setting story to prevent race conditions
         setCurrentPage(0);
-        console.log('📍 [URL DEBUG] Reset currentPage to 0 for new story');
       }
     } catch (error) {
       console.error('Failed to generate new story:', error);

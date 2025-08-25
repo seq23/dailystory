@@ -119,7 +119,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
             favoriteFood: userInfo.favoriteFood,
             hobbies: userInfo.hobbies,
             maxLength: promptConfig.maxLength || 500, // Default for unlimited stories
-            expectedPages: 10, // Request 8-10 pages to ensure enough content for 6-page cutoff
+            expectedPages: 6, // Generate exactly 6 pages for free users
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
             expertGrade: expertGradeLevel,
