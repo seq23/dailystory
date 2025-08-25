@@ -107,6 +107,7 @@ serve(async (req) => {
       quality = 'high',
       style = 'vivid',
       userInfo,
+      avatarIdentity,
       pageNumber,
       seed,
       sessionId
@@ -140,48 +141,45 @@ serve(async (req) => {
     console.log(`🖼️ Tier 3: OpenAI Simplified - Page ${pageNumber || 'unknown'}`);
     console.log(`📝 Initial prompt: ${positivePrompt.substring(0, 100)}...`);
 
-    // Simple avatar selection
-    const userName = userInfo?.name || 'child';
-    const avatarType = userInfo?.avatar?.type || 'boy';
-    const skinTone = userInfo?.avatar?.skinTone || 'medium';
-    const language = userInfo?.nativeLanguage || 'en';
+    // PRIORITIZED AVATAR SELECTION: avatarIdentity first, then userInfo fallback
+    console.log('🔍 [AVATAR DEBUG] ========== PRIORITIZED AVATAR SELECTION ==========');
+    console.log('🔍 [AVATAR DEBUG] AvatarIdentity received:', JSON.stringify(avatarIdentity, null, 2));
     
-    // 🔍 AVATAR SELECTION DEBUG LOGGING
-    console.log('🔍 [AVATAR DEBUG] ========== AVATAR SELECTION PROCESS ==========');
-    console.log('🔍 [AVATAR DEBUG] Extracted values:');
-    console.log('🔍 [AVATAR DEBUG]   - userName:', userName);
-    console.log('🔍 [AVATAR DEBUG]   - avatarType:', avatarType, '(from userInfo?.avatar?.type ||', userInfo?.avatar?.type, ')');
-    console.log('🔍 [AVATAR DEBUG]   - skinTone:', skinTone, '(from userInfo?.avatar?.skinTone ||', userInfo?.avatar?.skinTone, ')');
-    console.log('🔍 [AVATAR DEBUG]   - language:', language, '(from userInfo?.nativeLanguage ||', userInfo?.nativeLanguage, ')');
+    let selectedAvatarDescription;
     
-    // Build avatar key with language awareness
-    let avatarKey = `${avatarType}/${skinTone}`;
-    console.log('🔍 [AVATAR DEBUG] Initial avatarKey constructed:', avatarKey);
-    
-    if (language !== 'en') {
-      const languageAwareKey = `${avatarType}/${skinTone}/${language}`;
-      console.log('🔍 [AVATAR DEBUG] Non-English language detected, checking languageAwareKey:', languageAwareKey);
-      console.log('🔍 [AVATAR DEBUG] LanguageAwareKey exists in descriptions?', !!AVATAR_FALLBACK_DESCRIPTIONS[languageAwareKey]);
-      if (AVATAR_FALLBACK_DESCRIPTIONS[languageAwareKey]) {
-        avatarKey = languageAwareKey;
-        console.log('🔍 [AVATAR DEBUG] Using language-aware key:', avatarKey);
-      } else {
-        console.log('🔍 [AVATAR DEBUG] Language-aware key not found, sticking with:', avatarKey);
-      }
+    // Priority 1: Use avatarIdentity.visualDescription if available
+    if (avatarIdentity && avatarIdentity.visualDescription) {
+      selectedAvatarDescription = avatarIdentity.visualDescription;
+      console.log('🔍 [AVATAR DEBUG] ✅ Using avatarIdentity.visualDescription:', selectedAvatarDescription);
     } else {
-      console.log('🔍 [AVATAR DEBUG] English language, using standard key:', avatarKey);
+      // Priority 2: Fall back to userInfo avatar selection system
+      console.log('🔍 [AVATAR DEBUG] ⚠️ No avatarIdentity.visualDescription, falling back to userInfo avatar selection');
+      
+      const userName = userInfo?.name || 'child';
+      const avatarType = userInfo?.avatar?.type || 'boy';
+      const skinTone = userInfo?.avatar?.skinTone || 'medium';
+      const language = userInfo?.nativeLanguage || 'en';
+      
+      console.log('🔍 [AVATAR DEBUG] Fallback values:');
+      console.log('🔍 [AVATAR DEBUG]   - avatarType:', avatarType);
+      console.log('🔍 [AVATAR DEBUG]   - skinTone:', skinTone);
+      console.log('🔍 [AVATAR DEBUG]   - language:', language);
+      
+      // Build avatar key with language awareness
+      let avatarKey = `${avatarType}/${skinTone}`;
+      if (language !== 'en') {
+        const languageAwareKey = `${avatarType}/${skinTone}/${language}`;
+        if (AVATAR_FALLBACK_DESCRIPTIONS[languageAwareKey]) {
+          avatarKey = languageAwareKey;
+        }
+      }
+      
+      selectedAvatarDescription = AVATAR_FALLBACK_DESCRIPTIONS[avatarKey] || AVATAR_FALLBACK_DESCRIPTIONS['default'];
+      console.log('🔍 [AVATAR DEBUG] ✅ Using fallback avatar description:', selectedAvatarDescription);
     }
     
-    const selectedAvatarDescription = AVATAR_FALLBACK_DESCRIPTIONS[avatarKey] || AVATAR_FALLBACK_DESCRIPTIONS['default'];
-    
-    console.log('🔍 [AVATAR DEBUG] Final Results:');
-    console.log('🔍 [AVATAR DEBUG]   - Final avatarKey:', avatarKey);
-    console.log('🔍 [AVATAR DEBUG]   - Key exists in descriptions?', !!AVATAR_FALLBACK_DESCRIPTIONS[avatarKey]);
-    console.log('🔍 [AVATAR DEBUG]   - selectedAvatarDescription:', selectedAvatarDescription);
-    console.log('🔍 [AVATAR DEBUG]   - Used fallback default?', selectedAvatarDescription === AVATAR_FALLBACK_DESCRIPTIONS['default']);
     console.log('🔍 [AVATAR DEBUG] =======================================');
-    
-    console.log(`🎭 Selected Avatar: ${avatarKey} -> ${selectedAvatarDescription}`);
+    console.log(`🎭 Selected Avatar Description: ${selectedAvatarDescription}`);
 
     // Build clean prompt: avatar + full page text + style
     const finalPrompt = `${selectedAvatarDescription}, ${positivePrompt}, cheerful and happy, beautiful illustration for children's book, professional quality, soft warm lighting, wholesome, safe`;
