@@ -860,7 +860,7 @@ Deno.serve(async (req: Request) => {
                 
                 resolveOnce(createCorsResponse({
                   success: true,
-                  imageUrl: item.imageURL,
+                  imageURL: item.imageURL,
                   prompt: prompt,
                   difficulty: difficulty,
                   culturalProfile: culturalProfile,

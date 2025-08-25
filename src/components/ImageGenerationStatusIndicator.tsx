@@ -1,6 +1,7 @@
 import { AlertCircle, Loader2, CheckCircle, Wifi, WifiOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import React from "react";
 
 interface ImageGenerationStatusProps {
   isGenerating: boolean;
@@ -23,6 +24,18 @@ export const ImageGenerationStatusIndicator = ({
   layout = "modern",
   showLayoutInfo = false
 }: ImageGenerationStatusProps) => {
+  // Debug status changes for better troubleshooting
+  React.useEffect(() => {
+    console.log('🔍 IMAGE STATUS DEBUG:', { 
+      isGenerating, 
+      isBatchGenerating, 
+      hasImages, 
+      isNetworkAvailable, 
+      lastError: lastError ? lastError.substring(0, 100) : null,
+      layout 
+    });
+  }, [isGenerating, isBatchGenerating, hasImages, isNetworkAvailable, lastError, layout]);
+
   // Don't show anything if everything is working normally
   if (!isGenerating && !isBatchGenerating && hasImages && isNetworkAvailable && !lastError) {
     return null;
