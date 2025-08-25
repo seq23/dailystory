@@ -143,7 +143,7 @@ serve(async (req) => {
     console.log(`🎭 Selected Avatar: ${avatarKey} -> ${selectedAvatarDescription}`);
 
     // Build clean prompt: avatar + full page text + style
-    const finalPrompt = `${selectedAvatarDescription}, ${positivePrompt}, cheerful and happy, 3D Pixar animation style, professional quality, child-friendly`;
+    const finalPrompt = `${selectedAvatarDescription}, ${positivePrompt}, cheerful and happy, beautiful illustration for children's book, professional quality, soft warm lighting, wholesome, safe`;
     
     console.log(`🎨 Final Prompt: ${finalPrompt.substring(0, 200)}...`);
 
