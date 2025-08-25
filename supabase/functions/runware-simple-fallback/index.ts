@@ -160,14 +160,6 @@ serve(async (req) => {
       };
     });
 
-  console.log('🛡️ Nuclear Tier 2.5 generation completed - 100% bulletproof operation');
-  
-} catch (error) {
-  console.error('🚨 Nuclear Tier 2.5 error (still operational):', error);
-  return createCorsErrorResponse(`Tier 2.5 error: ${error.message}`, 500);
-}
-});
-
 // ============= NUCLEAR TIER 2.5: ZERO DEPENDENCY DIFFICULTY MAPPING =============
 /**
  * Nuclear Independent Difficulty Mapping - Zero External Dependencies
