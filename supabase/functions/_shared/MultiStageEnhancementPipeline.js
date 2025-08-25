@@ -119,9 +119,11 @@ export class MultiStageEnhancementPipeline {
     
     try {
       const { getStyleFramework, getOptimizedParameters } = await import('./styleFrameworks.js');
+      const { DifficultyLevelMapper } = await import('./DifficultyLevelMapper.js');
       
-      // Determine difficulty based on user info or default to medium
-      const difficulty = userInfo?.preferredDifficulty || 'medium';
+      // 🔧 FIX: Use proper difficulty mapping instead of defaulting to 'medium'
+      const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+      console.log(`🎯 Mapped difficulty: ${JSON.stringify(userInfo?.readingLevel || userInfo?.difficultyLevel)} → ${difficulty}`);
       styleFramework = getStyleFramework(difficulty);
       
       if (styleFramework) {
@@ -159,14 +161,63 @@ export class MultiStageEnhancementPipeline {
     primarySceneComponents.push(`Setting: ${currentSetting}`);
     primarySceneComponents.push(`Action: ${action}`);
     
-    // ============= Step 8: Build Final Primary Scene =============
+    // ============= Step 8: Build Final Primary Scene (OPTIMIZED ORDER) =============
+    // 🔧 FIX: Reorder for Runware's left-to-right processing
+    // Priority Order: Character Description → Core Action → Base Story → Setting → Secondary Elements → Style Group → Context
+    
     const baseScene = storyText.trim();
+    const action = primarySceneComponents.find(comp => comp.startsWith('Action:')) || '';
+    const setting = primarySceneComponents.find(comp => comp.startsWith('Setting:')) || '';
+    const style = primarySceneComponents.find(comp => comp.startsWith('Style:')) || '';
+    const quality = primarySceneComponents.find(comp => comp.startsWith('Quality:')) || '';
     
-    // Create comprehensive primary scene
-    let primaryScene = `${baseScene}. `;
+    // Filter out components we're explicitly ordering
+    const otherComponents = primarySceneComponents.filter(comp => 
+      !comp.startsWith('Action:') && 
+      !comp.startsWith('Setting:') && 
+      !comp.startsWith('Style:') && 
+      !comp.startsWith('Quality:')
+    );
     
-    if (primarySceneComponents.length > 0) {
-      primaryScene += primarySceneComponents.join('. ') + '.';
+    // Build optimized primary scene with proper component order
+    let primaryScene = '';
+    
+    // 1. Character descriptions come first (from otherComponents)
+    const characterComps = otherComponents.filter(comp => 
+      comp.includes('character') || comp.includes('avatar') || comp.includes('protagonist')
+    );
+    if (characterComps.length > 0) {
+      primaryScene += characterComps.join('. ') + '. ';
+    }
+    
+    // 2. Core action
+    if (action) {
+      primaryScene += action + '. ';
+    }
+    
+    // 3. Base story text
+    primaryScene += `${baseScene}. `;
+    
+    // 4. Setting
+    if (setting) {
+      primaryScene += setting + '. ';
+    }
+    
+    // 5. Secondary elements (remaining components)
+    const secondaryComps = otherComponents.filter(comp => 
+      !comp.includes('character') && !comp.includes('avatar') && !comp.includes('protagonist')
+    );
+    if (secondaryComps.length > 0) {
+      primaryScene += secondaryComps.join('. ') + '. ';
+    }
+    
+    // 6. Style group (grouped together)
+    if (style && quality) {
+      primaryScene += `${style}. ${quality}.`;
+    } else if (style) {
+      primaryScene += style + '.';
+    } else if (quality) {
+      primaryScene += quality + '.';
     }
     
     // Style framework already included in Step 5, no additional hardcoded style needed

@@ -70,13 +70,14 @@ export class ImageGenerationTrigger {
       return false;
     }
     
-    // Generate for first few pages automatically
-    if (currentPage < 3) {
+    // 🔧 FIX: Generate for all guest-visible pages (1-6) + premium pages
+    // Guests see pages 1-6, premium users get all pages
+    if (currentPage <= 6) {
       return true;
     }
     
-    // Generate for every 2nd page after that
-    return currentPage % 2 === 0;
+    // Generate for remaining premium pages
+    return currentPage <= 16;
   }
   
   /**
