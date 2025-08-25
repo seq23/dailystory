@@ -43,8 +43,8 @@ function checkPrimarySceneCriteria(data) {
     return { primaryScene: false, passCount: 0, details: 'missing_or_invalid' };
   }
 
-  // PHASE 3: Detailed validation with regex match examples
-  const lengthTest = scene.length >= 30;
+  // PHASE 3: Detailed validation with regex match examples (RELAXED FOR TIER 1 PREFERENCE)
+  const lengthTest = scene.length >= 15; // RELAXED: Reduced from 30 to 15 characters
   const characterRegex = /\b(child|character|person|they|he|she|avatar)\b/i;
   const actionRegex = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i;
   const settingRegex = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i;
@@ -61,19 +61,20 @@ function checkPrimarySceneCriteria(data) {
   const hasDescriptiveWords = !!descriptiveMatch;
 
   const qualityScore = [lengthTest, hasCharacter, hasAction, hasSetting, hasDescriptiveWords].filter(Boolean).length;
-  const isPrimarySceneValid = qualityScore >= 2; // Require at least 2 of 5 criteria
+  const isPrimarySceneValid = qualityScore >= 1; // RELAXED: Reduced from 2 to 1 criteria (more lenient)
 
-  // PHASE 3: Detailed validation logging with match examples
-  console.log('🔍 VALIDATION DEBUG: Primary Scene Criteria Analysis:', {
+  // PHASE 3: Enhanced validation logging with relaxed thresholds
+  console.log('🔍 TIER 1 VALIDATION DEBUG: Primary Scene Criteria Analysis (RELAXED):', {
     sceneLength: scene.length,
-    lengthTest: `${lengthTest} (>= 120 chars)`,
+    lengthTest: `${lengthTest} (>= 15 chars - RELAXED)`,
     characterTest: `${hasCharacter} ${characterMatch ? `(matched: "${characterMatch[0]}")` : '(no match)'}`,
     actionTest: `${hasAction} ${actionMatch ? `(matched: "${actionMatch[0]}")` : '(no match)'}`,
     settingTest: `${hasSetting} ${settingMatch ? `(matched: "${settingMatch[0]}")` : '(no match)'}`,
     descriptiveTest: `${hasDescriptiveWords} ${descriptiveMatch ? `(matched: "${descriptiveMatch[0]}")` : '(no match)'}`,
     qualityScore: `${qualityScore}/5`,
-    validationResult: isPrimarySceneValid ? 'PASS' : 'TIER 2 TRIGGER',
-    scenePreview: scene.substring(0, 150) + (scene.length > 150 ? '...' : '')
+    validationResult: isPrimarySceneValid ? 'TIER 1 APPROVED - RELAXED VALIDATION' : 'TIER 2 TRIGGER',
+    scenePreview: scene.substring(0, 150) + (scene.length > 150 ? '...' : ''),
+    relaxedThresholds: 'length: 15+ chars, score: 1+ criteria (was 30+ chars, 2+ criteria)'
   });
 
   return {

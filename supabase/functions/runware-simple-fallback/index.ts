@@ -321,7 +321,7 @@ const PREMIUM_PROMPT_TEMPLATES = {
   expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
 };
 
-function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
+function extractSceneWithPremiumTemplate(pageText, userInfo, avatarIdentity, difficulty) {
   if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', pageText, userInfo, avatarIdentity, difficulty || 'medium');
   
   const text = pageText.toLowerCase();
@@ -382,7 +382,7 @@ function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avata
   return fillPremiumTemplate(bestScene, pageText, userInfo, avatarIdentity, difficulty || 'medium', detectedSetting);
 }
 
-function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?: any, avatarIdentity?: any, difficulty?: string, detectedSetting?: string): string {
+function fillPremiumTemplate(scene, originalPageText, userInfo, avatarIdentity, difficulty, detectedSetting) {
   const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
   
   // 🔍 PREMIUM TEMPLATE DEBUG LOGGING
@@ -711,7 +711,7 @@ function getHardcodedStyle(difficulty: string) {
 }
 
 // Unified negative prompt system for Tier 2.5 (independent but consistent with MultiStageEnhancementPipeline)
-function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, originalAvatarType?: string): string {
+function getEnhancedNegativePrompt(userInfo, avatarIdentity, originalAvatarType) {
   console.log('🛡️ Tier 2.5: Building unified negative prompt (independent system)');
   
   const baseNegative = [
@@ -780,7 +780,7 @@ function getEnhancedNegativePrompt(userInfo?: any, avatarIdentity?: any, origina
 }
 
 // Enhanced cultural intelligence for Tier 2.5
-function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any, detectedSetting?: string): string {
+function applyCulturalSettingEnhancement(baseSetting, userInfo, detectedSetting) {
   // Enhanced African American detection for English speakers
   if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
     // Check for African American cultural markers
