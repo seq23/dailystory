@@ -1,9 +1,9 @@
 /**
- * Level 0 Vocabulary Auditor - Ensures ALL content complies with Dolch Pre-Primer standards
+ * Level 0 Vocabulary Auditor - Ensures ALL content complies with Enhanced Level 0 standards (70% compliance)
  * This tool helps identify any remaining vocabulary violations in Level 0 content
  */
 
-import { FREE_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
+import { ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
 import { validateLevel0SentenceByUserType } from '../constants/dolchPrePrimer';
 
 export interface VocabularyAuditResult {
@@ -15,7 +15,7 @@ export interface VocabularyAuditResult {
 
 export class Level0VocabularyAuditor {
   /**
-   * Audit text content for Level 0 vocabulary and grammar compliance
+   * Audit text content for Level 0 vocabulary and grammar compliance (70% threshold)
    */
   static auditText(text: string, context: string = 'unknown', userName?: string): VocabularyAuditResult {
     const sentences = text.split(/[.!?]+/)
@@ -52,8 +52,11 @@ export class Level0VocabularyAuditor {
     const compliantWords = totalWords - totalViolations;
     const compliancePercentage = totalWords > 0 ? Math.round((compliantWords / totalWords) * 100) : 100;
     
+    // Update compliance threshold to 70% for Level 0
+    const isCompliant = compliancePercentage >= 70;
+    
     return {
-      isCompliant: violations.length === 0,
+      isCompliant,
       violations,
       totalViolations,
       compliancePercentage
@@ -77,13 +80,13 @@ export class Level0VocabularyAuditor {
   }
 
   /**
-   * Generate a detailed audit report
+   * Generate a detailed audit report with 70% compliance threshold
    */
-  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Vocabulary & Grammar Audit'): string {
+  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Level 0 Vocabulary & Grammar Audit (70% Compliance)'): string {
     const report = [
       `\n📊 ${title}`,
       `${'='.repeat(50)}`,
-      `✅ Compliant: ${auditResult.isCompliant ? 'YES' : 'NO'}`,
+      `✅ Compliant (≥70%): ${auditResult.isCompliant ? 'YES' : 'NO'}`,
       `📈 Compliance: ${auditResult.compliancePercentage}%`,
       `🚨 Total Violations: ${auditResult.totalViolations}`,
       ''
@@ -95,29 +98,34 @@ export class Level0VocabularyAuditor {
         report.push(`${index + 1}. ${violation}`);
       });
       report.push('');
-      report.push('📚 Reminder: Level 0 should ONLY use these 40 Dolch Pre-Primer words:');
-      report.push(Array.from(LEVEL_0_VOCABULARY).sort().join(', '));
+      report.push('📚 Reminder: Level 0 allows 70% compliance with these 100 Enhanced Level 0 words:');
+      report.push(Array.from(ENHANCED_LEVEL_0_VOCABULARY).sort().join(', '));
+      report.push('');
+      report.push('🎯 30% of words can be story-specific, user inputs, or slightly advanced vocabulary.');
     } else {
-      report.push('🎉 All content complies with vocabulary and grammar standards!');
+      report.push('🎉 All content meets the 70% vocabulary compliance standard!');
     }
 
     return report.join('\n');
   }
 
   /**
-   * Quick validation for single sentences
+   * Quick validation for single sentences with 70% compliance
    */
-  static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; grammarErrors: string[] } {
+  static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; grammarErrors: string[]; compliancePercentage: number } {
     const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
+    const auditResult = this.auditText(sentence, 'single-sentence', userName);
+    
     return {
-      isValid: validation.isValid,
+      isValid: auditResult.compliancePercentage >= 70,
       invalidWords: validation.invalidWords,
-      grammarErrors: validation.grammarErrors || []
+      grammarErrors: validation.grammarErrors || [],
+      compliancePercentage: auditResult.compliancePercentage
     };
   }
 
   /**
-   * Real-time vocabulary checker for content generation
+   * Real-time vocabulary checker with 70% flexibility
    */
   static isWordAllowed(word: string, userName?: string): boolean {
     const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
@@ -128,6 +136,22 @@ export class Level0VocabularyAuditor {
       return true;
     }
 
-    return LEVEL_0_VOCABULARY.has(cleanWord);
+    // With 70% compliance, individual words are more flexible
+    return ENHANCED_LEVEL_0_VOCABULARY.has(cleanWord);
+  }
+
+  /**
+   * Audit vocabulary-compliant templates specifically
+   */
+  static auditVocabularyCompliantTemplates(templates: string[][], userName?: string): VocabularyAuditResult {
+    const result = this.auditTemplates(templates, 'vocabulary-compliant-level0', userName);
+    
+    console.log(`📊 Vocabulary-Compliant Level 0 Templates Audit:`);
+    console.log(`   Templates: ${templates.length}`);
+    console.log(`   Compliance: ${result.compliancePercentage}%`);  
+    console.log(`   Violations: ${result.totalViolations}`);
+    console.log(`   Status: ${result.isCompliant ? '✅ PASSED' : '❌ FAILED'}`);
+    
+    return result;
   }
 }

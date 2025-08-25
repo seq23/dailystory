@@ -256,7 +256,8 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
       // Optional author voice post-processing for fallback pages
       let pagesOut = pages;
       try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+        // Skip author voice for Level 0 (beginner) to maintain simple, age-appropriate language
+        if (difficulty !== 'beginner' && (APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
           const voice = getColorVoiceForUser(userInfo, difficulty);
           const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
           pagesOut = pages.map((p: string, idx: number) => {

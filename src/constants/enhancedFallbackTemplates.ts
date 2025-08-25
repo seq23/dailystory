@@ -19,6 +19,7 @@ export interface EnhancedFallbackTemplate {
 
 // Import all templates from the grade-based system including new Level 0
 import { LEVEL_0_TEMPLATES } from './gradeBased/level0Templates';
+import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES } from './gradeBased/level0VocabularyCompliantTemplates';
 import { LEVEL_0_EXTENSIONS } from './gradeBased/level0ExtensionTemplates';
 import { LEVEL_1_TEMPLATES } from './gradeBased/level1Templates';
 import { LEVEL_1_EXTENSIONS } from './gradeBased/level1ExtensionTemplates';
@@ -35,10 +36,10 @@ import { LEVEL_4_EXTENSIONS } from './gradeBased/level4ExtensionTemplates';
  * Never-ending story hooks create seamless continuation flow
  */
 export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallbackTemplate[]> = {
-  // BEGINNER: Level 0 templates (40) + Level 0 extensions (7) + enhanced (1) = 48 templates
+  // BEGINNER: Vocabulary-compliant Level 0 templates (60) + Level 0 extensions (7) = 67 templates
   beginner: [
-    // Convert Level 0 templates to enhanced format
-    ...LEVEL_0_TEMPLATES.map(template => ({
+    // Convert vocabulary-compliant Level 0 templates to enhanced format
+    ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.map(template => ({
       setup: template.slice(0, 2),
       development: template.slice(2, 3),
       climax: template.slice(3, 4),

@@ -14,14 +14,15 @@ export interface MicroContext {
 }
 
 const FALLBACK_POOLS = {
-  animal: ["puppy", "kitten", "rabbit", "turtle", "bird", "fox", "bear", "panda", "deer", "owl"],
-  food: ["apple", "pancakes", "sandwich", "cookie", "pizza", "noodles"],
-  setting: ["forest", "park", "garden", "classroom", "kitchen", "playground"],
-  object: ["book", "ball", "kite", "backpack", "lantern", "paintbrush"],
-  action: ["play", "explore", "giggle", "dance", "skip", "imagine"],
-  adjective: ["little", "brave", "curious", "gentle", "silly", "bright"],
-  friendName: ["Sam", "Alex", "Riley", "Taylor", "Jordan", "Casey"],
-  color: ["red", "blue", "green", "yellow", "purple", "orange"]
+  // Level 0 vocabulary-compliant fallback pools (using ENHANCED_LEVEL_0_VOCABULARY)
+  animal: ["cat", "dog", "bird", "rabbit", "duck", "pig", "cow", "horse", "fish", "bear"],
+  food: ["cake", "milk", "eat", "apple", "bread", "water"],
+  setting: ["house", "farm", "school", "park", "bed", "home"],
+  object: ["ball", "book", "box", "car", "toy", "tree"],
+  action: ["play", "run", "go", "come", "look", "jump"],
+  adjective: ["big", "little", "good", "funny", "pretty", "new"],
+  friendName: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
+  color: ["red", "blue", "yellow", "black", "brown", "white"]
 } as const;
 
 const KNOWN_ANIMALS = new Set([
@@ -49,6 +50,20 @@ function applyTheyGrammarFixes(text: string): string {
   t = t.replace(/\bthey\s+goes\b/gi, "they go");
   // Drop 3rd person singular -s after they (simple heuristic)
   t = t.replace(/\bthey\s+([a-z]+)s\b/gi, (_m, v: string) => `they ${v}`);
+  return t;
+}
+
+function applyHeShePronounFixes(text: string): string {
+  let t = text;
+  // Fix common subject-verb agreement errors for he/she
+  t = t.replace(/\bhe\s+have\b/gi, "he has");
+  t = t.replace(/\bshe\s+have\b/gi, "she has");
+  t = t.replace(/\bhe\s+are\b/gi, "he is");
+  t = t.replace(/\bshe\s+are\b/gi, "she is");
+  t = t.replace(/\bhe\s+were\b/gi, "he was");
+  t = t.replace(/\bshe\s+were\b/gi, "she was");
+  t = t.replace(/\bhe\s+do\b/gi, "he does");
+  t = t.replace(/\bshe\s+do\b/gi, "she does");
   return t;
 }
 
@@ -169,11 +184,13 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     if (v) out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
   }
 
-  if (
-    mappings.pronoun === "they" &&
-    (APP_CONFIG as any)?.features?.authorVoice?.grammarTweaks?.theyAgreement
-  ) {
-    out = applyTheyGrammarFixes(out);
+  // Apply grammar fixes based on pronoun type
+  if ((APP_CONFIG as any)?.features?.authorVoice?.grammarTweaks?.theyAgreement) {
+    if (mappings.pronoun === "they") {
+      out = applyTheyGrammarFixes(out);
+    } else if (mappings.pronoun === "he" || mappings.pronoun === "she") {
+      out = applyHeShePronounFixes(out);
+    }
   }
 
   return cleanup(out);
