@@ -374,14 +374,8 @@ function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?
   
   let genderType = mapAvatarTypeForPrompt(originalAvatarType);
   
-  const text = scene.toLowerCase();
-  if (text.includes('girl') || text.includes('she')) {
-    character = character === 'child' ? 'girl' : character;
-    if (!originalAvatarType) genderType = 'girl';
-  } else if (text.includes('boy') || text.includes('he')) {
-    character = character === 'child' ? 'boy' : character;
-    if (!originalAvatarType) genderType = 'boy';
-  }
+  // AVATAR DATA ALWAYS WINS - No text-based overrides
+  character = genderType;
 
   const age = getAgeFromDifficulty(difficulty || 'medium');
   const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';

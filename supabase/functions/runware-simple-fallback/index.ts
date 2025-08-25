@@ -408,20 +408,8 @@ function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?
   let genderType = mapAvatarTypeForPrompt(originalAvatarType);
   console.log(`🎯 AVATAR MAPPING - Original: ${originalAvatarType} → Mapped: ${genderType}`);
   
-  const text = scene.toLowerCase();
-  if (text.includes('girl') || text.includes('she')) {
-    character = character === 'child' ? 'girl' : character;
-    // Only override if no explicit avatar selection
-    if (!originalAvatarType) {
-      genderType = 'girl';
-    }
-  } else if (text.includes('boy') || text.includes('he')) {
-    character = character === 'child' ? 'boy' : character;
-    // Only override if no explicit avatar selection  
-    if (!originalAvatarType) {
-      genderType = 'boy';
-    }
-  }
+  // AVATAR DATA ALWAYS WINS - No text-based overrides
+  character = genderType;
 
   // Age determination
   const age = getAgeFromDifficulty(difficulty || 'medium');
