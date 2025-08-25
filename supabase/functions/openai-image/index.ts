@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { MultiStageEnhancementPipeline } from '../_shared/MultiStageEnhancementPipeline.js';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
+import { AVATAR_FALLBACK_DESCRIPTIONS } from '../_shared/avatarConsistency.js';
 
 // Avatar skin tone and cultural context integration
 interface UserInfo {
@@ -98,6 +99,15 @@ serve(async (req) => {
     console.log(`🖼️ Tier 3: OpenAI with Full AI Enhancement - Page ${pageNumber || 'unknown'}`);
     console.log(`📝 Initial prompt: ${positivePrompt.substring(0, 100)}...`);
 
+    // PHASE 1: Build Hardcoded Avatar Description (ALWAYS USED)
+    const userName = userInfo?.name || 'child';
+    const avatarType = userInfo?.avatar?.type || 'child';
+    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    const fallbackKey = `${avatarType}/${skinTone}`;
+    const hardcodedAvatarDescription = (AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"]).replace('{name}', userName);
+    
+    console.log(`🎭 TIER 3 HARDCODED AVATAR: ${fallbackKey} -> ${hardcodedAvatarDescription}`);
+
     // STEP 1: AI Story Enhancement Integration
     let aiEnhancedStoryData = {};
     try {
@@ -111,7 +121,13 @@ serve(async (req) => {
           storyText: positivePrompt,
           userInfo,
           sessionId: sessionId || 'openai-session',
-          pageNumber: pageNumber || 1
+          pageNumber: pageNumber || 1,
+          avatarIdentity: {
+            type: avatarType,
+            skinTone: skinTone,
+            name: userName,
+            visualDescription: hardcodedAvatarDescription
+          }
         })
       });
       
@@ -121,27 +137,55 @@ serve(async (req) => {
         console.log(`🔍 TIER 3 DEBUG - Session: ${sessionId}, Page: ${pageNumber}`);  
         console.log(`🤖 AI Enhancement Output (FULL):`, JSON.stringify(aiEnhancedStoryData, null, 2));
       } else {
-        console.warn('⚠️ AI story enhancer failed, proceeding without AI enhancement');
+        console.warn('⚠️ AI story enhancer failed, will use Tier 2.5 template fallback');
+        aiEnhancedStoryData = null; // Mark as failed for fallback trigger
       }
     } catch (error) {
       console.warn('⚠️ AI story enhancer error:', error.message);
+      aiEnhancedStoryData = null; // Mark as failed for fallback trigger
     }
 
-    // STEP 2: Use Premium Pipeline with AI Enhancement
+    // STEP 2: Build Final Prompt with Hardcoded Avatar + Scene
     const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
     console.log(`🔧 Mapped difficulty: ${mappedDifficulty} for Tier 3 premium processing`);
 
-    const enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
-      positivePrompt,
-      userInfo,
-      sessionId || 'openai-session',
-      sessionId || 'openai-session',
-      pageNumber || 1,
-      undefined, // totalPages - let stories be ongoing
-      aiEnhancedStoryData // Add AI story data
-    );
+    let finalPrompt = '';
+    let enhancementResult = {};
 
-    let finalPrompt = enhancementResult.enhancedPrompt;
+    // PHASE 2 & 3: AI Enhancement or Tier 2.5 Fallback
+    if (aiEnhancedStoryData && aiEnhancedStoryData.primaryScene) {
+      // PHASE 2: Use AI Enhancement + Hardcoded Avatar
+      console.log(`✅ TIER 3: Using AI Enhancement with hardcoded avatar`);
+      
+      enhancementResult = await MultiStageEnhancementPipeline.processTier1HighQuality(
+        positivePrompt,
+        userInfo,
+        sessionId || 'openai-session',
+        sessionId || 'openai-session',
+        pageNumber || 1,
+        undefined, // totalPages - let stories be ongoing
+        aiEnhancedStoryData // Add AI story data
+      );
+
+      // Prepend hardcoded avatar to AI-enhanced scene
+      finalPrompt = `${hardcodedAvatarDescription}, ${enhancementResult.enhancedPrompt}`;
+      
+    } else {
+      // PHASE 3: Use Tier 2.5 Template Fallback + Hardcoded Avatar
+      console.log(`🛡️ TIER 3: AI Enhancement failed, using Tier 2.5 template fallback with hardcoded avatar`);
+      
+      const tier25ScenePrompt = await buildTier25FallbackPrompt(positivePrompt, userInfo, mappedDifficulty);
+      
+      // Prepend hardcoded avatar to template scene
+      finalPrompt = `${hardcodedAvatarDescription}, ${tier25ScenePrompt}`;
+      
+      // Create minimal enhancement result for compatibility
+      enhancementResult = {
+        enhancedPrompt: finalPrompt,
+        culturalProfile: {},
+        framework: {}
+      };
+    }
     
     // Use unified negative prompt system for comprehensive consistency
     const comprehensiveNegativePrompt = MultiStageEnhancementPipeline.buildUnifiedNegativePrompt(
@@ -248,3 +292,175 @@ serve(async (req) => {
     return createCorsErrorResponse(`OpenAI error: ${error.message}`, 500);
   }
 });
+
+// TIER 2.5 TEMPLATE FALLBACK SYSTEM (Nuclear Independence)
+async function buildTier25FallbackPrompt(pageText: string, userInfo?: any, difficulty?: string): Promise<string> {
+  console.log(`🛡️ TIER 2.5 TEMPLATE FALLBACK: Building nuclear independent prompt`);
+  
+  const mappedDifficulty = difficulty || 'medium';
+  const extractedScene = extractSceneWithPremiumTemplate(pageText, userInfo, null, mappedDifficulty);
+  
+  console.log(`🎨 TIER 2.5 FALLBACK RESULT: ${extractedScene}`);
+  return extractedScene;
+}
+
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Imported from Tier 2.5)
+const PREMIUM_PROMPT_TEMPLATES = {
+  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
+};
+
+function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
+  if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', pageText, userInfo, avatarIdentity, difficulty || 'medium');
+  
+  const text = pageText.toLowerCase();
+  const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
+  
+  let bestScene = sentences[0] || pageText;
+  let bestScore = 0;
+  let detectedSetting = 'outdoor';
+  
+  sentences.forEach(sentence => {
+    let score = 0;
+    const lowerSentence = sentence.toLowerCase();
+    
+    if (lowerSentence.includes('wakes up') || lowerSentence.includes('wake up') || 
+        lowerSentence.includes('woke up') || lowerSentence.includes('sleeping') || 
+        lowerSentence.includes('bed') || lowerSentence.includes('bedroom') ||
+        lowerSentence.includes('pillow') || lowerSentence.includes('blanket') ||
+        lowerSentence.includes('dream') || lowerSentence.includes('morning')) {
+      score += 40;
+      detectedSetting = 'bedroom';
+    }
+    
+    if (lowerSentence.includes('room') || lowerSentence.includes('house') || 
+        lowerSentence.includes('kitchen') || lowerSentence.includes('living room') ||
+        lowerSentence.includes('inside') || lowerSentence.includes('home')) {
+      score += 25;
+      if (detectedSetting === 'outdoor') detectedSetting = 'indoor';
+    }
+    
+    if (lowerSentence.includes('color') || lowerSentence.includes('bright') || lowerSentence.includes('beautiful')) score += 20;
+    if (lowerSentence.includes('big') || lowerSentence.includes('small') || lowerSentence.includes('huge')) score += 15;
+    if (lowerSentence.includes('red') || lowerSentence.includes('blue') || lowerSentence.includes('green') || lowerSentence.includes('yellow')) score += 18;
+    if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump') || lowerSentence.includes('run') || lowerSentence.includes('play')) score += 25;
+    if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy') || lowerSentence.includes('excited') || lowerSentence.includes('smiled')) score += 20;
+    if (userInfo?.name && lowerSentence.includes(userInfo.name.toLowerCase())) score += 15;
+    if (lowerSentence.includes('flower') || lowerSentence.includes('tree') || lowerSentence.includes('garden') || lowerSentence.includes('park')) score += 18;
+    if (lowerSentence.includes('"') || lowerSentence.includes('said') || lowerSentence.includes('called') || lowerSentence.includes('asked')) score += 20;
+    
+    if (score > bestScore) {
+      bestScore = score;
+      bestScene = sentence;
+    }
+  });
+  
+  return fillPremiumTemplate(bestScene, pageText, userInfo, avatarIdentity, difficulty || 'medium', detectedSetting);
+}
+
+function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?: any, avatarIdentity?: any, difficulty?: string, detectedSetting?: string): string {
+  const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
+  
+  let character = userInfo?.name || 'child';
+  const originalAvatarType = avatarIdentity?.type || userInfo?.avatar?.type;
+  
+  const mapAvatarTypeForPrompt = (type: string | undefined): string => {
+    if (type === 'prefer-not-to-answer') return 'child';
+    return type || 'child';
+  };
+  
+  let genderType = mapAvatarTypeForPrompt(originalAvatarType);
+  
+  const text = scene.toLowerCase();
+  if (text.includes('girl') || text.includes('she')) {
+    character = character === 'child' ? 'girl' : character;
+    if (!originalAvatarType) genderType = 'girl';
+  } else if (text.includes('boy') || text.includes('he')) {
+    character = character === 'child' ? 'boy' : character;
+    if (!originalAvatarType) genderType = 'boy';
+  }
+
+  const age = getAgeFromDifficulty(difficulty || 'medium');
+  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  
+  // Simplified template filling for nuclear independence
+  return template
+    .replace('{character}', character)
+    .replace('{age}', age)
+    .replace('{skin}', getSkinDescription(skinTone))
+    .replace('{hair}', getHairDescription(skinTone))
+    .replace('{eyes}', getEyeDescription(skinTone))
+    .replace('{features}', getFeaturesDescription())
+    .replace('{clothing}', getClothingDescription())
+    .replace('{scene}', scene)
+    .replace('{setting}', detectedSetting || 'outdoor')
+    .replace('{objects}', '')
+    .replace('{secondary_characters}', '')
+    .replace('{emotion}', 'cheerful and happy')
+    .replace('{quality}', getQualityDescription(difficulty))
+    .replace('{suffix}', getSuffixDescription(difficulty));
+}
+
+function getAgeFromDifficulty(difficulty: string): string {
+  const ageMap = {
+    beginner: '4-5 years old',
+    easy: '5-6 years old', 
+    medium: '6-7 years old',
+    hard: '7-8 years old',
+    expert: '8-9 years old'
+  };
+  return ageMap[difficulty] || '6-7 years old';
+}
+
+function getSkinDescription(skinTone: string): string {
+  const skinMap = {
+    pale: 'pale skin',
+    light: 'light skin',
+    medium: 'medium skin tone',
+    olive: 'olive skin',
+    dark: 'beautiful dark skin'
+  };
+  return skinMap[skinTone] || 'medium skin tone';
+}
+
+function getHairDescription(skinTone: string): string {
+  const hairMap = {
+    pale: 'red hair',
+    light: 'blonde hair',
+    medium: 'brown hair',
+    olive: 'natural textured hair',
+    dark: 'beautiful natural hair'
+  };
+  return hairMap[skinTone] || 'brown hair';
+}
+
+function getEyeDescription(skinTone: string): string {
+  const eyeMap = {
+    pale: 'green eyes',
+    light: 'blue eyes',
+    medium: 'brown eyes',
+    olive: 'dark eyes',
+    dark: 'expressive dark eyes'
+  };
+  return eyeMap[skinTone] || 'brown eyes';
+}
+
+function getFeaturesDescription(): string {
+  return 'smooth rounded features';
+}
+
+function getClothingDescription(): string {
+  return 'comfortable colorful clothes';
+}
+
+function getQualityDescription(difficulty?: string): string {
+  return '3D Pixar animation style, professional quality, child-friendly';
+}
+
+function getSuffixDescription(difficulty?: string): string {
+  if (difficulty === 'beginner' || difficulty === 'easy') return '';
+  return 'warm natural lighting, vibrant colors, joyful atmosphere';
+}
