@@ -112,6 +112,23 @@ serve(async (req) => {
       sessionId
     } = requestData;
     
+    // 🔍 COMPREHENSIVE AVATAR DEBUG LOGGING
+    console.log('🔍 [AVATAR DEBUG] ========== FULL REQUEST ANALYSIS ==========');
+    console.log('🔍 [AVATAR DEBUG] Complete requestData:', JSON.stringify(requestData, null, 2));
+    console.log('🔍 [AVATAR DEBUG] UserInfo extracted:', JSON.stringify(userInfo, null, 2));
+    
+    if (userInfo && userInfo.avatar) {
+      console.log('🔍 [AVATAR DEBUG] Avatar object found:');
+      console.log('🔍 [AVATAR DEBUG]   - type:', userInfo.avatar.type);
+      console.log('🔍 [AVATAR DEBUG]   - skinTone:', userInfo.avatar.skinTone);
+      console.log('🔍 [AVATAR DEBUG]   - raw avatar object:', JSON.stringify(userInfo.avatar, null, 2));
+    } else {
+      console.log('🔍 [AVATAR DEBUG] ⚠️ No avatar object found in userInfo');
+    }
+    
+    console.log('🔍 [AVATAR DEBUG] Available avatar keys:', Object.keys(AVATAR_FALLBACK_DESCRIPTIONS));
+    console.log('🔍 [AVATAR DEBUG] =======================================');
+    
     positivePrompt = requestPrompt;
 
     // Validate required parameters first
@@ -129,16 +146,40 @@ serve(async (req) => {
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
     const language = userInfo?.nativeLanguage || 'en';
     
+    // 🔍 AVATAR SELECTION DEBUG LOGGING
+    console.log('🔍 [AVATAR DEBUG] ========== AVATAR SELECTION PROCESS ==========');
+    console.log('🔍 [AVATAR DEBUG] Extracted values:');
+    console.log('🔍 [AVATAR DEBUG]   - userName:', userName);
+    console.log('🔍 [AVATAR DEBUG]   - avatarType:', avatarType, '(from userInfo?.avatar?.type ||', userInfo?.avatar?.type, ')');
+    console.log('🔍 [AVATAR DEBUG]   - skinTone:', skinTone, '(from userInfo?.avatar?.skinTone ||', userInfo?.avatar?.skinTone, ')');
+    console.log('🔍 [AVATAR DEBUG]   - language:', language, '(from userInfo?.nativeLanguage ||', userInfo?.nativeLanguage, ')');
+    
     // Build avatar key with language awareness
     let avatarKey = `${avatarType}/${skinTone}`;
+    console.log('🔍 [AVATAR DEBUG] Initial avatarKey constructed:', avatarKey);
+    
     if (language !== 'en') {
       const languageAwareKey = `${avatarType}/${skinTone}/${language}`;
+      console.log('🔍 [AVATAR DEBUG] Non-English language detected, checking languageAwareKey:', languageAwareKey);
+      console.log('🔍 [AVATAR DEBUG] LanguageAwareKey exists in descriptions?', !!AVATAR_FALLBACK_DESCRIPTIONS[languageAwareKey]);
       if (AVATAR_FALLBACK_DESCRIPTIONS[languageAwareKey]) {
         avatarKey = languageAwareKey;
+        console.log('🔍 [AVATAR DEBUG] Using language-aware key:', avatarKey);
+      } else {
+        console.log('🔍 [AVATAR DEBUG] Language-aware key not found, sticking with:', avatarKey);
       }
+    } else {
+      console.log('🔍 [AVATAR DEBUG] English language, using standard key:', avatarKey);
     }
     
     const selectedAvatarDescription = AVATAR_FALLBACK_DESCRIPTIONS[avatarKey] || AVATAR_FALLBACK_DESCRIPTIONS['default'];
+    
+    console.log('🔍 [AVATAR DEBUG] Final Results:');
+    console.log('🔍 [AVATAR DEBUG]   - Final avatarKey:', avatarKey);
+    console.log('🔍 [AVATAR DEBUG]   - Key exists in descriptions?', !!AVATAR_FALLBACK_DESCRIPTIONS[avatarKey]);
+    console.log('🔍 [AVATAR DEBUG]   - selectedAvatarDescription:', selectedAvatarDescription);
+    console.log('🔍 [AVATAR DEBUG]   - Used fallback default?', selectedAvatarDescription === AVATAR_FALLBACK_DESCRIPTIONS['default']);
+    console.log('🔍 [AVATAR DEBUG] =======================================');
     
     console.log(`🎭 Selected Avatar: ${avatarKey} -> ${selectedAvatarDescription}`);
 
@@ -154,6 +195,17 @@ serve(async (req) => {
 
     // Use gpt-image-1 quality settings
     const gptImageQuality = quality === 'high' ? 'high' : 'medium';
+
+    // 🔍 FINAL API CALL DEBUG LOGGING
+    console.log('🔍 [API DEBUG] ========== OPENAI API CALL DETAILS ==========');
+    console.log('🔍 [API DEBUG] About to send to OpenAI API:');
+    console.log('🔍 [API DEBUG]   - Full finalPrompt:', finalPrompt);
+    console.log('🔍 [API DEBUG]   - Truncated prompt (4000 chars):', finalPrompt.slice(0, 4000));
+    console.log('🔍 [API DEBUG]   - Contains "blonde hair"?', finalPrompt.includes('blonde hair'));
+    console.log('🔍 [API DEBUG]   - Contains "brown hair"?', finalPrompt.includes('brown hair'));
+    console.log('🔍 [API DEBUG]   - Quality:', gptImageQuality);
+    console.log('🔍 [API DEBUG]   - Size:', size);
+    console.log('🔍 [API DEBUG] =======================================');
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
