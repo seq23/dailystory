@@ -16,9 +16,10 @@ Simplified, consolidated AI story generation system with focused orchestration a
 ### 2. Image Generation Services
 
 #### OpenAI Image Generator (`openai-image/index.ts`)
-- **Model**: gpt-image-1 
-- **Tier**: Premium (Tier 3)
-- **Features**: Full AI enhancement pipeline with cultural integration
+- **Model**: DALL-E 3 (gpt-image-1)
+- **Tier**: Nuclear Fallback (Tier 3)
+- **Features**: Simplified independence - 12 avatar descriptions, full page text, children's book style
+- **Key Simplification**: Removed AI enhancement pipeline, direct DALL-E 3 calls only
 
 #### Runware Image Generator (`runware-generate-image/index.ts`)
 - **Model**: Multiple Flux models

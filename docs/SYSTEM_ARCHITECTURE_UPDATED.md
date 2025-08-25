@@ -14,14 +14,15 @@ Simplified, consolidated approach with enhanced AI capabilities and aggressive c
 ## Service Integration
 
 ### Image Generation Services
-- **OpenAI Image Generator** (Premium Tier 3): Full AI enhancement pipeline
-- **Runware Image Generator** (Balanced Tier 2): Systematic service integration
+- **Runware Image Generator** (Tier 1): Premium AI-enhanced generation with WebSocket optimization
+- **OpenAI Image Generator** (Tier 3): Simplified nuclear fallback with direct DALL-E 3 calls
+- **Tier Progression**: Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4 (all users start at Tier 1)
 
 ### Enhancement Pipeline
-- **Multi-stage Pipeline**: Cultural profiling and enhanced service wrappers
-- **Tier 1**: Premium pipeline with cultural and artistic framework integration
-- **Tier 2**: Comprehensive scene builder with database-backed character consistency
-- **Utilities**: Prompt building and narrative coherence maintenance
+- **Tier 1**: Premium AI-enhanced pipeline with cultural intelligence and WebSocket optimization
+- **Tier 2**: Template-based fallback with structured generation
+- **Tier 3**: Simplified nuclear fallback - 12 culturally-aware avatar descriptions, direct DALL-E 3 calls
+- **Key Change**: Tier 3 now uses "beautiful illustration for children's book" style (not 3D Pixar)
 
 ## Support Services (Updated)
 
@@ -84,10 +85,12 @@ Simplified, consolidated approach with enhanced AI capabilities and aggressive c
 
 ## Data Flow (Updated)
 
-1. **Story Request** → **AI Story Enhancer** → **Multi-Stage Pipeline**
-2. **Character Consistency** ← **Database Cache** (race condition free)
-3. **Context Collection** → **Real Context Collector** (with character name extraction)
-4. **Image Generation** → **Tier 1/2 Processing** → **Style Framework Integration**
-5. **Quality Assurance** → **Error Handling** → **Graceful Degradation**
+1. **Story Request** → **AI Story Enhancer** → **Image Generation Request**
+2. **Tier 1** → **AI-Enhanced Pipeline** (WebSocket optimized, cultural intelligence)
+3. **Tier 2** → **Template-Based Fallback** (structured generation)
+4. **Tier 3** → **Nuclear Fallback** (simplified: 12 avatars + full page text + DALL-E 3)
+5. **Tier 4** → **SVG Placeholder** (100% guaranteed success)
+6. **Character Consistency** ← **Database Cache** (race condition free)
+7. **Quality Assurance** → **Error Handling** → **Graceful Degradation**
 
 This architecture provides a robust, secure, and efficient story generation system with eliminated race conditions and improved performance characteristics.
