@@ -607,30 +607,42 @@ function getAgeFromDifficulty(difficulty: string): string {
 function getHardcodedStyle(difficulty: string): { quality: string, suffix?: string, steps: number, CFGScale: number } {
   const styleMap = {
     'beginner': {
-      quality: 'High quality, Pixar-inspired 3D animation style, bright and colorful',
+      // Concatenated prompt + quality from styleFrameworks.js
+      quality: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers. Professional animation studio quality with depth and dimension',
+      // Added missing suffix from brandSuffix
+      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
       steps: 4,
       CFGScale: 1
     },
     'easy': {
-      quality: 'High quality, Disney-style animation, vibrant colors and cheerful atmosphere',
+      // Concatenated prompt + quality from styleFrameworks.js (identical to beginner)
+      quality: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers. Professional animation studio quality with depth and dimension',
+      // Added missing suffix from brandSuffix
+      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
       steps: 4,
       CFGScale: 1
     },
     'medium': {
-      quality: 'High quality, detailed digital illustration, rich colors and fine details',
-      suffix: 'Professional children\'s book illustration style, warm lighting',
+      // Concatenated prompt + quality from styleFrameworks.js
+      quality: 'Digital painting style with painterly brush strokes, artistic color harmony, cinematic lighting, professional artwork quality. Professional painterly digital art with artistic sophistication. Ultra professional children\'s book illustration standard',
+      // Updated suffix from brandSuffix
+      suffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation, warm natural lighting optimized for all skin tones',
       steps: 4,
       CFGScale: 1
     },
     'hard': {
-      quality: 'Ultra high quality, masterpiece digital art, intricate details and realistic textures',
-      suffix: 'Award-winning children\'s book illustration, perfect composition, dramatic lighting',
+      // Concatenated prompt + quality from styleFrameworks.js
+      quality: 'Professional digital illustration with sophisticated artistic maturity, nuanced color gradients, refined visual storytelling, advanced digital painting techniques. Gallery-worthy professional digital illustration. Sophisticated artistic children\'s book illustration',
+      // Updated suffix from brandSuffix
+      suffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation, warm natural lighting optimized for all skin tones',
       steps: 4,
       CFGScale: 1
     },
     'expert': {
-      quality: 'Ultra high quality, museum-quality digital masterpiece, photorealistic details',
-      suffix: 'Fine art illustration style, perfect anatomy, cinematic lighting, trending on ArtStation',
+      // Concatenated prompt + quality from styleFrameworks.js
+      quality: 'Fine art digital illustration with masterful artistic sophistication, complex color harmonies, cinematic visual narrative, museum-quality artistic techniques. Museum-quality fine art digital illustration. Masterful children\'s book art with diverse representation',
+      // Updated suffix from brandSuffix
+      suffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation, warm natural lighting optimized for all skin tones',
       steps: 4,
       CFGScale: 1
     }
@@ -638,22 +650,40 @@ function getHardcodedStyle(difficulty: string): { quality: string, suffix?: stri
   return styleMap[difficulty] || styleMap.medium;
 }
 
-function getEnhancedNegativePrompt(culturalProfile: string, character: string): string {
-  let base = 'low quality, blurry, distorted, deformed, ugly, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, missing fingers, extra fingers, bad hands, malformed face, cross-eyed, bad eyes, text, watermark, signature, username, logo, jpeg artifacts, noise, grain, pixelated, low resolution, amateur, unprofessional, cartoon violence, weapons, scary content, inappropriate content, adult themes, nudity, sexual content, drugs, alcohol, smoking, violence, blood, gore, dark themes, horror elements, nightmare fuel, creepy, disturbing, offensive, discriminatory, stereotypical, cultural appropriation';
+function getEnhancedNegativePrompt(culturalProfile: string, character: string, pageNumber: number = 1): string {
+  // EXACT unified negative prompt system - word-for-word from MultiStageEnhancementPipeline.js
+  const baseNegative = [
+    'blurry', 'low quality', 'distorted', 'scary', 'inappropriate',
+    'violent', 'dark themes', 'adult content', 'poor composition'
+  ];
   
-  // Cultural sensitivity filters
+  // Add framework-specific negative prompts (for hardcoded styles, we'll add basic ones)
+  baseNegative.push('toy', 'figurine', 'doll', 'plastic', 'simple background', 'flat lighting');
+  
+  // Add enhanced cultural sensitivity filters (unified terminology)
   if (culturalProfile === 'African American') {
-    base += ', whitewashing, colorism, racial stereotypes, inappropriate hair textures, wrong skin tone, cultural insensitivity, offensive representations';
+    baseNegative.push('cultural insensitivity', 'stereotypes', 'offensive representations', 'caricatures');
   }
   
-  // Gender consistency
+  // Add character consistency filters for pageNumber > 1
+  if (pageNumber > 1) {
+    baseNegative.push('inconsistent character design', 'style variations', 'character appearance changes');
+  }
+  
+  // Add technical quality filters (unified system)
+  baseNegative.push('pixelated', 'artifacts', 'noise', 'oversaturated', 'undersaturated', 'malformed features');
+  
+  // Add content safety filters (unified system)
+  baseNegative.push('weapons', 'conflict', 'sadness', 'fear', 'negative emotions');
+  
+  // Gender consistency (adapted to unified structure)
   if (character === 'girl') {
-    base += ', masculine features, boy clothing, male characteristics, gender inconsistency';
+    baseNegative.push('masculine features', 'boy clothing', 'male characteristics', 'gender inconsistency');
   } else {
-    base += ', feminine features, girl clothing, female characteristics, gender inconsistency, makeup, jewelry';
+    baseNegative.push('feminine features', 'girl clothing', 'female characteristics', 'gender inconsistency', 'makeup', 'jewelry');
   }
   
-  return base;
+  return baseNegative.join(', ');
 }
 
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any): string {
@@ -788,7 +818,8 @@ Deno.serve(async (req: Request) => {
     // Detect cultural profile and generate negative prompt
     const culturalProfile = detectCulturalProfile(userInfo);
     const character = (userInfo?.avatar?.gender === 'female' || userInfo?.gender === 'female') ? 'girl' : 'boy';
-    const negativePrompt = getEnhancedNegativePrompt(culturalProfile, character);
+    const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
+    const negativePrompt = getEnhancedNegativePrompt(culturalProfile, character, pageNumber);
     
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
