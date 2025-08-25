@@ -63,10 +63,10 @@ export class NetflixStyleStoryService {
       
       // Sanitize all user inputs before story generation
       const safeName = InputSanitizer.sanitizeUserInfo(userInfo.name);
-      const safeAnimal = InputSanitizer.sanitizeStoryInput(userInfo.favoriteAnimal || 'animals');
-      const safeColor = InputSanitizer.sanitizeStoryInput(userInfo.favoriteColor || 'bright colors');
-      const safeHobbies = InputSanitizer.sanitizeStoryInput(userInfo.hobbies || 'playing');
-      const safeFood = InputSanitizer.sanitizeStoryInput(userInfo.favoriteFood || 'food');
+      const safeAnimal = InputSanitizer.sanitizeStoryInput(userInfo.favoriteAnimal || '');
+      const safeColor = InputSanitizer.sanitizeStoryInput(userInfo.favoriteColor || '');
+      const safeHobbies = InputSanitizer.sanitizeStoryInput(userInfo.hobbies || '');
+      const safeFood = InputSanitizer.sanitizeStoryInput(userInfo.favoriteFood || '');
       const safeRequest = InputSanitizer.sanitizeStoryInput(userInfo.specialRequest || '');
       
       // Use configured prompts from storyPrompts.ts only
