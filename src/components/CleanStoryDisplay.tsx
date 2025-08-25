@@ -1686,7 +1686,8 @@ const initializeStory = async () => {
         }
         return;
       }
-      // Free user completed their story slice - show celebration and Next Story CTA
+      // Free user completed their story slice - record session but don't advance page
+      // This keeps currentPage === 5 so the existing "Next Story" button shows
       const timeSpent = Date.now() - sessionStartTime;
       const totalWordsRead = sessionWordsRead;
       recordReadingSession({
@@ -1696,18 +1697,8 @@ const initializeStory = async () => {
         storyCompleted: true,
         readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
       });
-      // Show manual celebration for story completion (same as premium manual end)
-      setShowManualCelebration(true);
-      try {
-        const audio = new Audio('/audio/celebration.mp3');
-        audio.volume = 0.6;
-        audio.play().catch(() => {});
-      } catch {}
-      // After 5 seconds, hide celebration and show Next Story interface
-      setTimeout(() => {
-        setShowManualCelebration(false);
-        // Don't call onSessionEnded - keep session active for Next Story
-      }, 5000);
+      // Don't increment currentPage - keep it at 5 so existing "Next Story" button shows
+      return;
     }
   };
 
