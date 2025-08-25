@@ -144,6 +144,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
           errorDetails: error.details,
           fallbackReason: 'api_error'
         });
+        console.log(`🎯 Netflix-Style API Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
         return this.generateEnhancedFallbackStory(userInfo, difficulty, 'api_error');
       }
 
@@ -216,7 +217,10 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
         fallbackReason: 'generation_error'
       });
       const wrappedError = ErrorHandler.handleError(error as Error, 'NetflixStyleStoryService.generateCompleteStory');
-      return this.generateEnhancedFallbackStory(userInfo, userInfo.difficultyLevel || 'easy', 'generation_error');
+      // Use same difficulty determination logic as main function
+      const fallbackDifficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
+      console.log(`🎯 Netflix-Style Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name} (from ${userInfo.difficultyLevel ? 'difficultyLevel' : userInfo.readingAbility ? 'readingAbility' : 'default'})`);
+      return this.generateEnhancedFallbackStory(userInfo, fallbackDifficulty, 'generation_error');
     }
   }
 

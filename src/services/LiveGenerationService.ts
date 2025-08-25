@@ -103,6 +103,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
 
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate first page:', error);
+        console.log(`🎯 Live Generation API Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
         return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'api_error');
       }
 
@@ -153,7 +154,10 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
     } catch (error) {
       console.error('🚀 Live Generation: Error generating first page:', error);
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateFirstPage');
-      return this.generateEnhancedFallbackFirstPage(userInfo, userInfo.difficultyLevel || 'easy', 'generation_error');
+      // Use same difficulty determination logic as main function
+      const fallbackDifficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
+      console.log(`🎯 Live Generation Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name} (from ${userInfo.difficultyLevel ? 'difficultyLevel' : userInfo.readingAbility ? 'readingAbility' : 'default'})`);
+      return this.generateEnhancedFallbackFirstPage(userInfo, fallbackDifficulty, 'generation_error');
     }
   }
 
