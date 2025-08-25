@@ -714,16 +714,15 @@ export class CharacterConsistencyService {
       return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
-    // Include hair color for ALL characters, not just African American
-    const hairColor = traits.hairColor || 'brown hair';
+    // Minimal description for other cultural profiles - let Runware decide most features
     const eyeColor = pageTextFeatures.eyeColor || '';
-    const eyeDescription = eyeColor ? ` and ${eyeColor}` : '';
+    const eyeDescription = eyeColor ? ` with ${eyeColor}` : '';
     
     // Only include height/build if detected from page text
     const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
     const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
     
-    return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${hairColor}${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+    return `A ${heightDescription}${agePrefix}${seedData.avatarType}${eyeDescription}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
   }
 
   /**
