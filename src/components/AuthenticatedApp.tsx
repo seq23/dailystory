@@ -227,12 +227,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     // Clear ALL session caches comprehensively before navigation
     try {
       const { SessionCacheManager } = await import('@/services/SessionCacheManager');
-      SessionCacheManager.clearAllSessionCaches({
-        userId: user.id,
-        avatarType: userInfo?.avatar?.type,
-        skinTone: userInfo?.avatar?.skinTone,
-        reason: 'session-end'
-      });
+      SessionCacheManager.clearOnSessionEnd(user.id, userInfo?.avatar?.type);
     } catch (error) {
       console.warn('Failed to clear session caches:', error);
     }

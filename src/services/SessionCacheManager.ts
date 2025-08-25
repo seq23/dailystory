@@ -298,6 +298,46 @@ export class SessionCacheManager {
   }
 
   /**
+   * Clear caches when user ends their reading session
+   */
+  static clearOnSessionEnd(userId?: string, avatarType?: string): void {
+    console.log('🔚 Clearing caches for session end');
+    this.clearAllSessionCaches({
+      userId: userId || 'guest',
+      avatarType,
+      reason: 'session-end',
+      clearVisualState: true
+    });
+  }
+
+  /**
+   * Clear caches when user rewrites current story (regenerate with same characters)
+   */
+  static clearOnRewrite(userId?: string, avatarType?: string): void {
+    console.log('🔄 Clearing caches for story rewrite');
+    this.clearAllSessionCaches({
+      userId: userId || 'guest',
+      avatarType,
+      reason: 'premium-rewrite',
+      clearVisualState: false, // Keep visual continuity for rewrite
+      preserveAvatarIdentity: true
+    });
+  }
+
+  /**
+   * Clear caches when user generates next story (completely new story)
+   */
+  static clearOnNextStory(userId?: string, avatarType?: string): void {
+    console.log('✨ Clearing caches for next story generation');
+    this.clearAllSessionCaches({
+      userId: userId || 'guest',
+      avatarType,
+      reason: 'new-session',
+      clearVisualState: true // Full clear for new story
+    });
+  }
+
+  /**
    * Get cache status and metrics
    */
   static getCacheStatus(): { 

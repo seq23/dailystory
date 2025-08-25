@@ -183,12 +183,7 @@ onSessionEnded={async (stats) => {
   // Clear ALL session caches comprehensively
   try {
     const { SessionCacheManager } = await import('@/services/SessionCacheManager');
-    SessionCacheManager.clearAllSessionCaches({
-      userId: 'guest',
-      avatarType: userInfo?.avatar?.type,
-      skinTone: userInfo?.avatar?.skinTone,
-      reason: 'session-end'
-    });
+    SessionCacheManager.clearOnSessionEnd('guest', userInfo?.avatar?.type);
   } catch (error) {
     console.warn('Failed to clear session caches, using fallback:', error);
     // Fallback clearing

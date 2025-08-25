@@ -68,6 +68,7 @@ import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
 import { supabase } from "@/integrations/supabase/client";
 import { SpecialRequestDialog } from "@/components/SpecialRequestDialog";
 import { StorySessionCache } from "@/services/storySessionCache";
+import { SessionCacheManager } from "@/services/SessionCacheManager";
 import { StoryVisualStateManager } from "@/services/storyVisualState";
 import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
@@ -2013,6 +2014,21 @@ const handleRestartTimer = () => {
       isRewrite,
       specialRequest: !!specialRequestOverride,
     });
+
+    // Get userId for cache clearing
+    const currentUserId = isPremium ? 
+      ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 
+      'guest';
+
+    // Clear caches based on context
+    const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
+    if (isRewrite) {
+      // Rewriting current story - preserve character continuity
+      SessionCacheManager.clearOnRewrite(currentUserId, avatarType);
+    } else {
+      // Getting next story - complete fresh start
+      SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
+    }
     
     setIsStoryStable(false);
     
