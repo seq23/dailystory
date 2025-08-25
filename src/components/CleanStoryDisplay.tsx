@@ -2008,6 +2008,13 @@ const handleRestartTimer = () => {
 
   // Magic wand functionality - Generate new story
   const handleGenerateNewStory = async (specialRequestOverride?: string, isRewrite: boolean = false) => {
+    console.log('🚀 [DEBUG] handleGenerateNewStory ENTRY:', { 
+      specialRequestOverride, 
+      isRewrite, 
+      isGeneratingNewStory, 
+      isGeneratingRewrite 
+    });
+    
     if (isGeneratingNewStory || isGeneratingRewrite) return;
     
     console.log('🔄 User explicitly requested new story - unlocking content', {
