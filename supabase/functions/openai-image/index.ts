@@ -3,7 +3,72 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { MultiStageEnhancementPipeline } from '../_shared/MultiStageEnhancementPipeline.js';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
-import { AVATAR_FALLBACK_DESCRIPTIONS } from '../_shared/avatarConsistency.js';
+// ============= STEP 3: EXPANDED HARDCODED AVATAR DESCRIPTIONS =============
+// Comprehensive language-aware visual descriptions matching orchestrator's umbrella system
+
+const AVATAR_FALLBACK_DESCRIPTIONS = {
+  // ENGLISH SPEAKERS
+  'boy/light': 'A young American boy with blonde hair, bright blue eyes, fair skin, wearing casual comfortable clothes',
+  'boy/medium': 'A young American boy with brown hair, warm brown eyes, medium skin tone, wearing everyday casual attire',
+  'boy/olive': 'A young American boy with dark brown hair, hazel eyes, olive complexion, wearing modern casual wear',
+  'boy/dark': 'A young African American boy with textured dark hair, warm brown eyes, rich brown skin, wearing stylish casual clothing',
+  'girl/light': 'A young American girl with blonde hair, sparkling blue eyes, fair skin, wearing colorful casual clothes',
+  'girl/medium': 'A young American girl with brown hair, bright brown eyes, medium skin tone, wearing comfortable everyday attire',
+  'girl/olive': 'A young American girl with dark brown hair, warm hazel eyes, olive complexion, wearing trendy casual wear',
+  'girl/dark': 'A young African American girl with beautiful natural hair, expressive brown eyes, rich brown skin, wearing vibrant casual clothing',
+  'child/light': 'A young child with light hair, bright eyes, fair skin, wearing neutral comfortable clothing',
+  'child/medium': 'A young child with brown hair, warm eyes, medium skin tone, wearing casual everyday clothes',
+  'child/olive': 'A young child with dark hair, gentle eyes, olive complexion, wearing simple casual attire',
+  'child/dark': 'A young child with textured dark hair, bright eyes, rich brown skin, wearing comfortable casual clothing',
+
+  // SPANISH SPEAKERS (Hispanic/Latino Features)
+  'boy/light/es': 'A young Hispanic boy with dark brown hair, warm brown eyes, light olive skin, wearing colorful casual clothes',
+  'boy/medium/es': 'A young Latino boy with black wavy hair, deep brown eyes, golden tan complexion, wearing vibrant casual attire',
+  'boy/olive/es': 'A young Hispanic boy with straight black hair, amber brown eyes, warm olive skin, wearing festive casual wear',
+  'boy/dark/es': 'A young Afro-Hispanic boy with textured curly hair, rich brown eyes, warm brown complexion, wearing stylish cultural attire',
+  'girl/light/es': 'A young Hispanic girl with long dark hair, expressive brown eyes, light olive skin, wearing bright colorful clothes',
+  'girl/medium/es': 'A young Latina girl with wavy black hair, warm hazel eyes, golden bronze complexion, wearing traditional-inspired modern wear',
+  'girl/olive/es': 'A young Hispanic girl with straight dark hair, beautiful brown eyes, warm olive skin, wearing vibrant casual attire',
+  'girl/dark/es': 'A young Afro-Hispanic girl with curly natural hair, bright brown eyes, rich caramel complexion, wearing culturally-inspired clothing',
+  'child/light/es': 'A young Hispanic child with dark hair, warm eyes, light olive skin, wearing colorful comfortable clothing',
+  'child/medium/es': 'A young Latino child with black hair, gentle brown eyes, golden tan skin, wearing casual vibrant attire',
+  'child/olive/es': 'A young Hispanic child with straight dark hair, kind eyes, warm olive complexion, wearing festive casual wear',
+  'child/dark/es': 'A young child with textured hair, bright eyes, warm brown skin, wearing comfortable cultural attire',
+
+  // CHINESE SPEAKERS (Asian Features)
+  'boy/light/zh': 'A young Chinese boy with straight black hair, dark brown eyes, light golden complexion, wearing neat modern clothes',
+  'boy/medium/zh': 'A young Asian boy with layered black hair, intelligent dark eyes, warm golden skin, wearing contemporary casual attire',
+  'boy/olive/zh': 'A young Chinese boy with classic straight hair, gentle brown eyes, golden beige complexion, wearing clean casual wear',
+  'boy/dark/zh': 'A young Asian boy with neat black hair, expressive dark eyes, warm golden brown skin, wearing modern comfortable clothes',
+  'girl/light/zh': 'A young Chinese girl with straight black hair in neat style, bright dark eyes, light golden skin, wearing elegant casual attire',
+  'girl/medium/zh': 'A young Asian girl with bob-cut black hair, sparkling brown eyes, warm golden complexion, wearing traditional-inspired modern wear',
+  'girl/olive/zh': 'A young Chinese girl with long straight hair, gentle dark eyes, golden beige skin, wearing contemporary casual clothes',
+  'girl/dark/zh': 'A young Asian girl with beautiful black hair, expressive eyes, warm golden brown complexion, wearing stylish modern attire',
+  'child/light/zh': 'A young Chinese child with neat black hair, kind dark eyes, light golden skin, wearing simple modern clothing',
+  'child/medium/zh': 'A young Asian child with straight dark hair, gentle eyes, warm golden complexion, wearing comfortable casual wear',
+  'child/olive/zh': 'A young Chinese child with classic black hair, bright eyes, golden beige skin, wearing neat casual attire',
+  'child/dark/zh': 'A young child with straight dark hair, warm eyes, golden brown complexion, wearing modern comfortable clothes',
+
+  // ARABIC SPEAKERS (Middle Eastern Features)
+  'boy/light/ar': 'A young Middle Eastern boy with dark wavy hair, warm brown eyes, light olive complexion, wearing traditional-inspired modern clothes',
+  'boy/medium/ar': 'A young Arab boy with thick black hair, striking dark eyes, golden olive skin, wearing elegant casual attire',
+  'boy/olive/ar': 'A young Middle Eastern boy with curly dark hair, expressive hazel eyes, warm olive complexion, wearing cultural modern wear',
+  'boy/dark/ar': 'A young Arab boy with wavy black hair, deep brown eyes, rich bronze skin, wearing traditional-modern fusion clothing',
+  'girl/light/ar': 'A young Middle Eastern girl with long dark hair, beautiful brown eyes, light olive skin, wearing modest fashionable attire',
+  'girl/medium/ar': 'A young Arab girl with thick wavy hair, striking dark eyes, golden olive complexion, wearing elegant cultural wear',
+  'girl/olive/ar': 'A young Middle Eastern girl with curly black hair, warm hazel eyes, rich olive skin, wearing traditional-inspired modern clothes',
+  'girl/dark/ar': 'A young Arab girl with beautiful dark hair, expressive brown eyes, warm bronze complexion, wearing cultural elegant attire',
+  'child/light/ar': 'A young Middle Eastern child with dark hair, gentle eyes, light olive skin, wearing comfortable cultural clothing',
+  'child/medium/ar': 'A young Arab child with wavy black hair, kind eyes, golden olive complexion, wearing modest casual wear',
+  'child/olive/ar': 'A young Middle Eastern child with thick dark hair, warm eyes, rich olive skin, wearing traditional-modern attire',
+  'child/dark/ar': 'A young child with curly dark hair, bright eyes, warm bronze complexion, wearing comfortable cultural clothes',
+
+  // DEFAULT FALLBACKS
+  'default': 'A young child with medium skin, brown hair, and brown eyes, with no gender specific characteristics',
+  'boy/unknown': 'A young boy with brown hair, warm eyes, medium complexion, wearing casual comfortable clothing',
+  'girl/unknown': 'A young girl with brown hair, bright eyes, medium skin tone, wearing colorful casual attire',
+  'child/unknown': 'A young child with brown hair, gentle eyes, medium complexion, wearing neutral comfortable clothes'
+};
 
 // Avatar skin tone and cultural context integration
 interface UserInfo {
@@ -99,14 +164,26 @@ serve(async (req) => {
     console.log(`🖼️ Tier 3: OpenAI with Full AI Enhancement - Page ${pageNumber || 'unknown'}`);
     console.log(`📝 Initial prompt: ${positivePrompt.substring(0, 100)}...`);
 
-    // PHASE 1: Build Hardcoded Avatar Description (ALWAYS USED)
+    // ============= STEP 3: ENHANCED HARDCODED AVATAR DESCRIPTION =============
+    // Language-aware avatar descriptions matching orchestrator's comprehensive coverage
+    
     const userName = userInfo?.name || 'child';
     const avatarType = userInfo?.avatar?.type || 'child';
     const skinTone = userInfo?.avatar?.skinTone || 'medium';
-    const fallbackKey = `${avatarType}/${skinTone}`;
+    const language = userInfo?.nativeLanguage || 'en';
+    
+    // Build comprehensive fallback key with language awareness
+    let fallbackKey = `${avatarType}/${skinTone}`;
+    if (language !== 'en') {
+      const languageAwareKey = `${avatarType}/${skinTone}/${language}`;
+      if (AVATAR_FALLBACK_DESCRIPTIONS[languageAwareKey]) {
+        fallbackKey = languageAwareKey;
+      }
+    }
+    
     const hardcodedAvatarDescription = (AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"]).replace('{name}', userName);
     
-    console.log(`🎭 TIER 3 HARDCODED AVATAR: ${fallbackKey} -> ${hardcodedAvatarDescription}`);
+    console.log(`🎭 TIER 3 ENHANCED AVATAR: ${fallbackKey} (${language}+${skinTone}) -> ${hardcodedAvatarDescription.substring(0, 80)}...`);
 
     // STEP 1: AI Story Enhancement Integration
     let aiEnhancedStoryData = {};

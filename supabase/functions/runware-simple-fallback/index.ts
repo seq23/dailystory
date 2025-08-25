@@ -226,7 +226,10 @@ function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): 
 
 // ============= PREMIUM TEMPLATE SYSTEM WITH HARDCODED ARRAYS =============
 
-// HARDCODED AFRICAN AMERICAN ARRAYS (Nuclear Independence)
+// ============= STEP 2: PARALLEL HARDCODED ARRAYS FOR ALL CULTURAL PROFILES =============
+// Nuclear Independence - Comprehensive cultural coverage matching orchestrator's umbrella system
+
+// AFRICAN AMERICAN ARRAYS (Nuclear Independence) - Already exists
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   boys: [
     'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
@@ -263,6 +266,148 @@ const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
     'detailed asymmetrical cut'
   ]
 };
+
+// HISPANIC/LATINO ARRAYS (Spanish + olive/medium skin)
+const HARDCODED_HISPANIC_LATINO_HAIRSTYLES = {
+  boys: [
+    'dark brown wavy hair', 'straight black hair with side part', 'textured curly brown hair',
+    'medium length dark hair', 'classic short brown cut', 'layered dark hair', 'wavy textured cut',
+    'straight black hair with fringe', 'curly dark brown locks', 'smooth dark hair style',
+    'textured brown waves', 'neat dark hair cut', 'casual wavy style', 'classic Latino haircut'
+  ],
+  girls: [
+    'long straight black hair', 'dark brown wavy hair', 'curly black hair in ponytail',
+    'straight dark hair with bangs', 'wavy brown hair in braids', 'long black hair in loose curls',
+    'shoulder-length dark waves', 'straight black hair with layers', 'curly dark brown hair',
+    'braided dark hair style', 'long straight dark hair', 'wavy black hair', 'textured brown curls'
+  ]
+};
+
+const HARDCODED_HISPANIC_LATINO_SKIN_TONES = [
+  'warm olive complexion', 'medium brown skin', 'golden tan complexion', 'warm beige skin',
+  'caramel brown complexion', 'light olive skin', 'bronze complexion', 'honey-toned skin',
+  'warm medium skin', 'golden brown complexion', 'sun-kissed olive skin', 'rich tan complexion'
+];
+
+const HARDCODED_HISPANIC_LATINO_EYE_COLORS = [
+  'warm brown eyes', 'dark chocolate eyes', 'rich brown eyes', 'amber brown eyes',
+  'deep brown eyes', 'golden brown eyes', 'warm hazel eyes', 'coffee brown eyes'
+];
+
+const HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES = [
+  'expressive warm brown eyes', 'bright cheerful smile', 'strong defined features',
+  'warm welcoming expression', 'lively animated eyes', 'gentle kind smile',
+  'beautiful natural features', 'confident friendly demeanor', 'radiant warm smile'
+];
+
+const HARDCODED_HISPANIC_LATINO_CLOTHING = [
+  'colorful casual wear', 'bright patterned shirt', 'festive colorful clothing',
+  'traditional-inspired modern outfit', 'vibrant casual attire', 'warm-toned clothing'
+];
+
+// CHINESE/ASIAN ARRAYS (Chinese language)
+const HARDCODED_CHINESE_ASIAN_HAIRSTYLES = {
+  boys: [
+    'straight black hair with neat cut', 'classic short black hair', 'straight dark hair with fringe',
+    'layered black hair', 'neat straight hair style', 'short black hair with side part',
+    'straight textured black hair', 'classic Asian boy haircut', 'neat dark hair cut'
+  ],
+  girls: [
+    'straight black hair in bob cut', 'long straight black hair', 'straight dark hair with bangs',
+    'neat black hair in ponytail', 'straight black hair with layers', 'classic straight black hair',
+    'long straight dark hair', 'neat black hair style', 'straight hair with side bangs'
+  ]
+};
+
+const HARDCODED_CHINESE_ASIAN_SKIN_TONES = [
+  'light golden complexion', 'warm pale skin', 'golden beige complexion', 'light Asian skin tone',
+  'warm ivory complexion', 'golden light skin', 'soft golden complexion', 'warm light skin'
+];
+
+const HARDCODED_CHINESE_ASIAN_EYE_COLORS = [
+  'dark brown eyes', 'deep black eyes', 'warm dark eyes', 'rich brown eyes'
+];
+
+const HARDCODED_CHINESE_ASIAN_FACIAL_FEATURES = [
+  'almond-shaped dark eyes', 'delicate refined features', 'bright intelligent eyes',
+  'gentle kind expression', 'graceful facial features', 'warm friendly smile',
+  'beautiful natural Asian features', 'expressive dark eyes', 'serene gentle expression'
+];
+
+const HARDCODED_CHINESE_ASIAN_CLOTHING = [
+  'modern casual wear', 'neat school attire', 'traditional-inspired modern clothing',
+  'clean simple outfit', 'contemporary casual style', 'comfortable modern wear'
+];
+
+// MIDDLE EASTERN ARRAYS (Arabic language)
+const HARDCODED_MIDDLE_EASTERN_HAIRSTYLES = {
+  boys: [
+    'dark brown wavy hair', 'black curly hair', 'thick dark hair', 'wavy brown locks',
+    'curly black hair style', 'textured dark brown hair', 'wavy medium-length hair',
+    'thick wavy dark hair', 'curly brown hair cut', 'natural wavy black hair'
+  ],
+  girls: [
+    'long dark brown hair', 'thick black wavy hair', 'curly dark hair', 'long straight black hair',
+    'wavy brown hair in braids', 'thick dark hair in ponytail', 'curly black locks',
+    'long wavy dark hair', 'straight thick black hair', 'natural curly dark hair'
+  ]
+};
+
+const HARDCODED_MIDDLE_EASTERN_SKIN_TONES = [
+  'warm olive complexion', 'golden brown skin', 'medium olive skin', 'bronze complexion',
+  'warm tan complexion', 'rich olive skin', 'golden olive complexion', 'warm medium brown skin'
+];
+
+const HARDCODED_MIDDLE_EASTERN_EYE_COLORS = [
+  'dark brown eyes', 'warm hazel eyes', 'deep brown eyes', 'rich amber eyes',
+  'striking dark eyes', 'warm brown eyes', 'deep hazel eyes', 'beautiful dark eyes'
+];
+
+const HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES = [
+  'striking expressive eyes', 'strong defined features', 'warm welcoming expression',
+  'beautiful olive complexion', 'confident friendly demeanor', 'graceful facial structure',
+  'expressive dark eyes', 'noble dignified features', 'warm genuine smile'
+];
+
+const HARDCODED_MIDDLE_EASTERN_CLOTHING = [
+  'traditional-inspired modern wear', 'elegant casual clothing', 'cultural pattern accents',
+  'modest fashionable attire', 'contemporary cultural style', 'warm-toned clothing'
+];
+
+// STANDARD AMERICAN ARRAYS (English + light/medium/olive skin)
+const HARDCODED_STANDARD_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'blonde hair with neat cut', 'light brown hair style', 'sandy blonde hair', 'medium brown hair',
+    'blonde hair with fringe', 'light brown wavy hair', 'classic blonde cut', 'brown hair with layers',
+    'golden blonde hair', 'chestnut brown hair', 'ash blonde hair', 'caramel brown hair'
+  ],
+  girls: [
+    'blonde hair in ponytail', 'light brown wavy hair', 'golden blonde locks', 'brown hair in braids',
+    'blonde hair with bangs', 'long light brown hair', 'blonde curly hair', 'straight brown hair',
+    'sandy blonde waves', 'chestnut brown hair', 'honey blonde hair', 'auburn brown hair'
+  ]
+};
+
+const HARDCODED_STANDARD_AMERICAN_SKIN_TONES = [
+  'fair light complexion', 'warm light skin', 'peachy fair skin', 'light rosy complexion',
+  'pale golden skin', 'creamy light skin', 'fair pink-toned skin', 'light neutral complexion'
+];
+
+const HARDCODED_STANDARD_AMERICAN_EYE_COLORS = [
+  'bright blue eyes', 'warm green eyes', 'hazel eyes', 'light brown eyes',
+  'sparkling blue eyes', 'emerald green eyes', 'golden hazel eyes', 'deep blue eyes'
+];
+
+const HARDCODED_STANDARD_AMERICAN_FACIAL_FEATURES = [
+  'bright cheerful expression', 'friendly open smile', 'sparkling energetic eyes',
+  'warm welcoming demeanor', 'confident happy expression', 'gentle kind features',
+  'radiant bright smile', 'lively animated expression', 'classic American features'
+];
+
+const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
+  'classic American casual wear', 'comfortable everyday clothes', 'modern casual style',
+  'trendy youth fashion', 'all-American outfit', 'contemporary casual attire'
+];
 
 const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
   'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
@@ -407,62 +552,126 @@ function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?
   const age = getAgeFromDifficulty(difficulty || 'medium');
   
   // Avatar description components
-  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-  const isAfricanAmerican = userInfo?.nativeLanguage === 'en' && skinTone === 'dark';
+  // ============= STEP 2: COMPREHENSIVE CULTURAL PROFILE DETECTION =============
+  // Enhanced cultural detection using language + skin tone matrix (matching orchestrator)
   
-  let skin, hair, eyes, features, clothing;
+  const culturalProfile = detectCulturalProfile(userInfo, avatarIdentity);
+  console.log(`🎭 CULTURAL PROFILE DETECTED: ${culturalProfile.profile} (${culturalProfile.language} + ${culturalProfile.skinTone})`);
   
-  if (isAfricanAmerican) {
-    // Use hardcoded African American arrays
-    skin = getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES);
-    eyes = getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS);
-    features = getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES);
-    clothing = getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING);
+  // ============= STEP 2: COMPREHENSIVE CULTURAL ARRAY SELECTION =============
+  // Use appropriate hardcoded arrays based on detected cultural profile
+  
+  character = avatarIdentity?.type === 'boy' ? 'boy' : 
+              avatarIdentity?.type === 'girl' ? 'girl' : 'child';
+  age = getAgeFromDifficulty(difficulty);
+  
+  if (culturalProfile.profile === 'african-american') {
+    console.log('🎭 USING COMPREHENSIVE AFRICAN AMERICAN ARRAYS');
     
-    const hairstyles = genderType === 'girl' || genderType === 'woman' ? 
+    // Use comprehensive African American arrays
+    const skinIndex = Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length);
+    const eyeIndex = Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length);
+    const featureIndex = Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length);
+    const clothingIndex = Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_CLOTHING.length);
+    
+    skin = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[skinIndex];
+    eyes = HARDCODED_AFRICAN_AMERICAN_EYE_COLORS[eyeIndex];
+    features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[featureIndex];
+    clothing = HARDCODED_AFRICAN_AMERICAN_CLOTHING[clothingIndex];
+    
+    // Hair selection based on gender
+    const hairArray = character === 'girl' ? 
       HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : 
       HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-    hair = getRandomItem(hairstyles);
-
-    // 🔍 AFRICAN AMERICAN ARRAY DEBUG LOGGING
-    console.log(`🎯 AFRICAN AMERICAN ARRAYS SELECTED:`);
-    console.log(`   👤 Gender Type: ${genderType}`);
-    console.log(`   🎨 Skin: ${skin} (from ${HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length} options)`);
-    console.log(`   💇 Hair: ${hair} (from ${hairstyles.length} ${genderType === 'girl' || genderType === 'woman' ? 'girls' : 'boys'} hairstyles)`);
-    console.log(`   👁️ Eyes: ${eyes} (from ${HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length} options)`);
-    console.log(`   😊 Features: ${features} (from ${HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length} options)`);
-    console.log(`   👕 Clothing: ${clothing} (from ${HARDCODED_AFRICAN_AMERICAN_CLOTHING.length} options)`);
+    const hairIndex = Math.floor(Math.random() * hairArray.length);
+    hair = hairArray[hairIndex];
+    
+    console.log(`🎭 AFRICAN AMERICAN ARRAYS: skin(${skinIndex}), hair(${hairIndex}), eyes(${eyeIndex}), features(${featureIndex}), clothing(${clothingIndex})`);
+    
+  } else if (culturalProfile.profile === 'hispanic-latino') {
+    console.log('🎭 USING COMPREHENSIVE HISPANIC/LATINO ARRAYS');
+    
+    const skinIndex = Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length);
+    const eyeIndex = Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_EYE_COLORS.length);
+    const featureIndex = Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length);
+    const clothingIndex = Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_CLOTHING.length);
+    
+    skin = HARDCODED_HISPANIC_LATINO_SKIN_TONES[skinIndex];
+    eyes = HARDCODED_HISPANIC_LATINO_EYE_COLORS[eyeIndex];
+    features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[featureIndex];
+    clothing = HARDCODED_HISPANIC_LATINO_CLOTHING[clothingIndex];
+    
+    const hairArray = character === 'girl' ? 
+      HARDCODED_HISPANIC_LATINO_HAIRSTYLES.girls : 
+      HARDCODED_HISPANIC_LATINO_HAIRSTYLES.boys;
+    const hairIndex = Math.floor(Math.random() * hairArray.length);
+    hair = hairArray[hairIndex];
+    
+    console.log(`🎭 HISPANIC/LATINO ARRAYS: skin(${skinIndex}), hair(${hairIndex}), eyes(${eyeIndex}), features(${featureIndex}), clothing(${clothingIndex})`);
+    
+  } else if (culturalProfile.profile === 'chinese-asian') {
+    console.log('🎭 USING COMPREHENSIVE CHINESE/ASIAN ARRAYS');
+    
+    const skinIndex = Math.floor(Math.random() * HARDCODED_CHINESE_ASIAN_SKIN_TONES.length);
+    const eyeIndex = Math.floor(Math.random() * HARDCODED_CHINESE_ASIAN_EYE_COLORS.length);
+    const featureIndex = Math.floor(Math.random() * HARDCODED_CHINESE_ASIAN_FACIAL_FEATURES.length);
+    const clothingIndex = Math.floor(Math.random() * HARDCODED_CHINESE_ASIAN_CLOTHING.length);
+    
+    skin = HARDCODED_CHINESE_ASIAN_SKIN_TONES[skinIndex];
+    eyes = HARDCODED_CHINESE_ASIAN_EYE_COLORS[eyeIndex];
+    features = HARDCODED_CHINESE_ASIAN_FACIAL_FEATURES[featureIndex];
+    clothing = HARDCODED_CHINESE_ASIAN_CLOTHING[clothingIndex];
+    
+    const hairArray = character === 'girl' ? 
+      HARDCODED_CHINESE_ASIAN_HAIRSTYLES.girls : 
+      HARDCODED_CHINESE_ASIAN_HAIRSTYLES.boys;
+    const hairIndex = Math.floor(Math.random() * hairArray.length);
+    hair = hairArray[hairIndex];
+    
+    console.log(`🎭 CHINESE/ASIAN ARRAYS: skin(${skinIndex}), hair(${hairIndex}), eyes(${eyeIndex}), features(${featureIndex}), clothing(${clothingIndex})`);
+    
+  } else if (culturalProfile.profile === 'middle-eastern') {
+    console.log('🎭 USING COMPREHENSIVE MIDDLE EASTERN ARRAYS');
+    
+    const skinIndex = Math.floor(Math.random() * HARDCODED_MIDDLE_EASTERN_SKIN_TONES.length);
+    const eyeIndex = Math.floor(Math.random() * HARDCODED_MIDDLE_EASTERN_EYE_COLORS.length);
+    const featureIndex = Math.floor(Math.random() * HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES.length);
+    const clothingIndex = Math.floor(Math.random() * HARDCODED_MIDDLE_EASTERN_CLOTHING.length);
+    
+    skin = HARDCODED_MIDDLE_EASTERN_SKIN_TONES[skinIndex];
+    eyes = HARDCODED_MIDDLE_EASTERN_EYE_COLORS[eyeIndex];
+    features = HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES[featureIndex];
+    clothing = HARDCODED_MIDDLE_EASTERN_CLOTHING[clothingIndex];
+    
+    const hairArray = character === 'girl' ? 
+      HARDCODED_MIDDLE_EASTERN_HAIRSTYLES.girls : 
+      HARDCODED_MIDDLE_EASTERN_HAIRSTYLES.boys;
+    const hairIndex = Math.floor(Math.random() * hairArray.length);
+    hair = hairArray[hairIndex];
+    
+    console.log(`🎭 MIDDLE EASTERN ARRAYS: skin(${skinIndex}), hair(${hairIndex}), eyes(${eyeIndex}), features(${featureIndex}), clothing(${clothingIndex})`);
+    
   } else {
-    // Standard descriptions
-    const skinMap = {
-      'pale': 'fair skin',
-      'light': 'light skin', 
-      'medium': 'medium skin',
-      'olive': 'olive skin',
-      'dark': 'dark skin'
-    };
+    // Standard American arrays for English + light/medium/olive skin
+    console.log('🎭 USING COMPREHENSIVE STANDARD AMERICAN ARRAYS');
     
-    const hairMap = {
-      'pale': 'red hair',
-      'light': 'blonde hair',
-      'medium': 'brown hair', 
-      'olive': 'dark brown hair',
-      'dark': 'black hair'
-    };
+    const skinIndex = Math.floor(Math.random() * HARDCODED_STANDARD_AMERICAN_SKIN_TONES.length);
+    const eyeIndex = Math.floor(Math.random() * HARDCODED_STANDARD_AMERICAN_EYE_COLORS.length);
+    const featureIndex = Math.floor(Math.random() * HARDCODED_STANDARD_AMERICAN_FACIAL_FEATURES.length);
+    const clothingIndex = Math.floor(Math.random() * HARDCODED_STANDARD_AMERICAN_CLOTHING.length);
     
-    skin = skinMap[skinTone] || 'medium skin';
-    hair = hairMap[skinTone] || 'brown hair';
-    eyes = 'bright eyes';
-    features = 'friendly face';
-    clothing = 'casual comfortable clothing';
-
-    // 🔍 STANDARD MAPPING DEBUG LOGGING
-    console.log(`📊 STANDARD MAPPINGS SELECTED:`);
-    console.log(`   🎨 Skin: ${skin} (mapped from skinTone: ${skinTone})`);
-    console.log(`   💇 Hair: ${hair} (mapped from skinTone: ${skinTone})`);
-    console.log(`   👁️ Eyes: ${eyes} (standard)`);
-    console.log(`   😊 Features: ${features} (standard)`);
-    console.log(`   👕 Clothing: ${clothing} (standard)`);
+    skin = HARDCODED_STANDARD_AMERICAN_SKIN_TONES[skinIndex];
+    eyes = HARDCODED_STANDARD_AMERICAN_EYE_COLORS[eyeIndex];
+    features = HARDCODED_STANDARD_AMERICAN_FACIAL_FEATURES[featureIndex];
+    clothing = HARDCODED_STANDARD_AMERICAN_CLOTHING[clothingIndex];
+    
+    const hairArray = character === 'girl' ? 
+      HARDCODED_STANDARD_AMERICAN_HAIRSTYLES.girls : 
+      HARDCODED_STANDARD_AMERICAN_HAIRSTYLES.boys;
+    const hairIndex = Math.floor(Math.random() * hairArray.length);
+    hair = hairArray[hairIndex];
+    
+    console.log(`🎭 STANDARD AMERICAN ARRAYS: skin(${skinIndex}), hair(${hairIndex}), eyes(${eyeIndex}), features(${featureIndex}), clothing(${clothingIndex})`);
   }
   
   // Object detection from original page text
@@ -532,6 +741,44 @@ function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?
   console.log(`🎨 PREMIUM TEMPLATE PROCESSING COMPLETE`);
 
   return finalPromptWithPageText;
+}
+
+// ============= STEP 2: COMPREHENSIVE CULTURAL DETECTION FUNCTION =============
+// Nuclear independence - comprehensive cultural profile detection matching orchestrator
+
+function detectCulturalProfile(userInfo?: any, avatarIdentity?: any): { profile: string, language: string, skinTone: string } {
+  const language = userInfo?.nativeLanguage || 'en';
+  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  
+  // Language + skin tone matrix (matching orchestrator's umbrella system)
+  if (language === 'en' || !language) {
+    if (skinTone === 'dark') {
+      return { profile: 'african-american', language: 'en', skinTone: 'dark' };
+    } else {
+      return { profile: 'standard-american', language: 'en', skinTone: skinTone };
+    }
+  } else if (language === 'es') {
+    if (skinTone === 'dark') {
+      return { profile: 'afro-hispanic', language: 'es', skinTone: 'dark' };
+    } else {
+      return { profile: 'hispanic-latino', language: 'es', skinTone: skinTone };
+    }
+  } else if (language === 'zh') {
+    return { profile: 'chinese-asian', language: 'zh', skinTone: skinTone };
+  } else if (language === 'hi') {
+    return { profile: 'indian-south-asian', language: 'hi', skinTone: skinTone };
+  } else if (language === 'ar') {
+    return { profile: 'middle-eastern', language: 'ar', skinTone: skinTone };
+  } else if (language === 'fr') {
+    if (skinTone === 'dark') {
+      return { profile: 'african-french', language: 'fr', skinTone: 'dark' };
+    } else {
+      return { profile: 'french-multicultural', language: 'fr', skinTone: skinTone };
+    }
+  }
+  
+  // Default fallback
+  return { profile: 'standard-american', language: language, skinTone: skinTone };
 }
 
 // ============= OBJECT & SECONDARY CHARACTER DETECTION =============

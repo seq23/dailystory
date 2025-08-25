@@ -367,13 +367,27 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate physical traits from avatar identity - ONLY for African Americans, others get minimal traits
+   * Generate physical traits from avatar identity - ALWAYS use visualDescription as primary source
    */
   generatePhysicalTraitsFromIdentity(avatarIdentity, seed) {
     const skinTone = avatarIdentity.skinTone || 'medium';
     const culturalProfile = avatarIdentity?.culturalProfile;
     
-    // Only generate detailed physical traits for African American characters
+    // STEP 1 FIX: ALWAYS use avatarIdentity.visualDescription as primary source of truth
+    if (avatarIdentity?.visualDescription) {
+      console.log(`🎭 TIER 2 FIX: Using orchestrator's visual description as primary source`);
+      console.log(`📝 Visual Description: ${avatarIdentity.visualDescription.substring(0, 100)}...`);
+      
+      return {
+        skinTone,
+        hairColor: this.getHairColorFromAvatar(avatarIdentity),
+        visualDescription: avatarIdentity.visualDescription,
+        culturalProfile: culturalProfile,
+        hasOrchestratorsDescription: true
+      };
+    }
+    
+    // Fallback to cultural profile logic only if visualDescription is missing
     if (culturalProfile === 'african-american') {
       const hairColor = this.getHairColorFromAvatar(avatarIdentity);
       
@@ -384,7 +398,7 @@ export class CharacterConsistencyService {
       };
     }
     
-    // Minimal traits for non-African American characters - let Runware decide the rest
+    // Minimal traits for other characters when no visual description available
     return {
       skinTone,
       avatarType: avatarIdentity?.type || 'child',
