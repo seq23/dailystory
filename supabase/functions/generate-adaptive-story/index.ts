@@ -784,6 +784,15 @@ serve(async (req) => {
     
     console.log('👤 Character Gender Info:', { avatarType, characterGender, pronouns, userName: config?.userName });
     
+    // Initialize session with avatar data to prevent null fallbacks
+    const { globalSessionManager } = await import('./_shared/SessionStateManager.js');
+    globalSessionManager.initializeSessionWithAvatarData(
+      requestBody.sessionId || 'default', 
+      config?.userInfo,
+      readingLevel === 'never-ending',
+      null
+    );
+    
     // Add context isolation for rewrites to prevent theme carryover
     let contextIsolationPrompt = '';
     let negativePrompt = '';

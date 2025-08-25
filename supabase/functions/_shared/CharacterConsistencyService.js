@@ -332,6 +332,14 @@ export class CharacterConsistencyService {
     const culturalProfile = avatarIdentity?.culturalProfile || this.determineCulturalProfile(userInfo);
     const culturalElements = this.generateCulturalElements(culturalProfile, userInfo);
     
+    // Log avatar data for debugging
+    console.log('🎭 Character seed generation:', {
+      avatarIdentityType: avatarIdentity?.type,
+      avatarIdentitySkinTone: avatarIdentity?.skinTone,
+      userInfoAvatarType: userInfo.avatar?.type,
+      userInfoSkinTone: userInfo.avatar?.skinTone
+    });
+
     return {
       baseSeed,
       avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'child',

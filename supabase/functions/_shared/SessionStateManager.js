@@ -54,6 +54,37 @@ export class SessionStateManager {
   }
 
   /**
+   * Initialize session with avatar data from userInfo
+   */
+  initializeSessionWithAvatarData(sessionId, userInfo, isNeverEnding = false, totalPages = null) {
+    console.log('🎭 Initializing session with avatar data:', {
+      sessionId,
+      avatarType: userInfo?.avatar?.type,
+      skinTone: userInfo?.avatar?.skinTone
+    });
+
+    const state = this.getOrCreateSessionState(sessionId, isNeverEnding, totalPages);
+    
+    // Set avatar data from userInfo
+    if (userInfo?.avatar) {
+      state.avatarType = userInfo.avatar.type;
+      state.skinTone = userInfo.avatar.skinTone;
+      
+      // Initialize core character traits
+      state.coreCharacterTraits.set('avatarType', userInfo.avatar.type);
+      state.coreCharacterTraits.set('skinTone', userInfo.avatar.skinTone);
+      
+      state.lastUpdated = Date.now();
+      
+      console.log(`📋 Session ${sessionId} initialized with avatar data: ${userInfo.avatar.type}/${userInfo.avatar.skinTone}`);
+    } else {
+      console.log(`⚠️ Session ${sessionId} initialized without avatar data`);
+    }
+    
+    return state;
+  }
+
+  /**
    * Update character with seed and appearance
    */
   updateCharacterWithSeed(sessionId, characterName, seed, appearance) {
