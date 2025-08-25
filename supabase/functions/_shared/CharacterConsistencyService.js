@@ -377,13 +377,18 @@ export class CharacterConsistencyService {
     if (avatarIdentity?.visualDescription) {
       console.log(`🎭 TIER 2 FIX: Using orchestrator's visual description as primary source`);
       console.log(`📝 Visual Description: ${avatarIdentity.visualDescription.substring(0, 100)}...`);
+      console.log(`🔍 Cultural Profile: ${culturalProfile}`);
+      
+      const isAfricanAmerican = culturalProfile === 'african-american';
+      console.log(`✅ CRITICAL FIX: Setting isAfricanAmerican = ${isAfricanAmerican} for cultural profile: ${culturalProfile}`);
       
       return {
         skinTone,
         hairColor: this.getHairColorFromAvatar(avatarIdentity),
         visualDescription: avatarIdentity.visualDescription,
         culturalProfile: culturalProfile,
-        hasOrchestratorsDescription: true
+        hasOrchestratorsDescription: true,
+        isAfricanAmerican: isAfricanAmerican // CRITICAL FIX: Add missing flag
       };
     }
     
@@ -727,7 +732,10 @@ export class CharacterConsistencyService {
     const agePrefix = ageContext && !ageContext.includes('-year-old') ? `${ageContext} ` : ageContext;
     
     // Enhanced description for African American characters with comprehensive arrays
+    console.log(`🏛️ Array Application Check: culturalProfile='${seedData.culturalProfile}', isAfricanAmerican=${traits.isAfricanAmerican}`);
     if (seedData.culturalProfile === 'african-american' && traits.isAfricanAmerican) {
+      console.log(`🎨 APPLYING EXPANDED ARRAYS for African American character with cultural profile: ${seedData.culturalProfile}`);
+      console.log(`📊 Available arrays: skinTones=${cultural.skinTones?.length}, eyeColors=${cultural.eyeColors?.length}, facialFeatures=${cultural.facialFeatures?.length}`);
       const random = this.createSeededRandom(seedData.baseSeed);
       
       // Select comprehensive physical features, use page text overrides when available
