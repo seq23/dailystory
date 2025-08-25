@@ -64,6 +64,13 @@ function applyHeShePronounFixes(text: string): string {
   t = t.replace(/\bshe\s+were\b/gi, "she was");
   t = t.replace(/\bhe\s+do\b/gi, "he does");
   t = t.replace(/\bshe\s+do\b/gi, "she does");
+  
+  // Additional comprehensive grammar fixes
+  t = t.replace(/\bhe\s+don't\b/gi, "he doesn't");
+  t = t.replace(/\bshe\s+don't\b/gi, "she doesn't");
+  t = t.replace(/\bhe\s+can't\b/gi, "he can't"); // This is actually correct
+  t = t.replace(/\bshe\s+can't\b/gi, "she can't"); // This is actually correct
+  
   return t;
 }
 
@@ -120,7 +127,7 @@ function scanForAnimalFromText(text?: string): string | undefined {
 
 export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
   const map: Record<string, string | undefined> = {
-    userName: firstName(userInfo.name) || userInfo.name,
+    userName: firstName(userInfo.name) || userInfo.name || "Child",
     favoriteColor: userInfo.favoriteColor,
     favoriteAnimal: userInfo.favoriteAnimal,
     favoriteFood: userInfo.favoriteFood,
@@ -128,9 +135,21 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
     specialRequest: userInfo.specialRequest
   };
 
+  console.log('🔍 [DEBUG] Canonical placeholder resolution:', { 
+    originalName: userInfo.name, 
+    firstName: firstName(userInfo.name),
+    finalUserName: map.userName 
+  });
+
   let out = text;
   for (const [k, v] of Object.entries(map)) {
-    if (v) out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+    if (v) {
+      const before = out;
+      out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+      if (before !== out) {
+        console.log(`🔍 [DEBUG] Replaced {${k}} with "${v}"`);
+      }
+    }
   }
   return cleanup(out);
 }

@@ -73,7 +73,7 @@ export const ENHANCED_FALLBACK_TEMPLATES: Record<DifficultyLevel, EnhancedFallba
       climax: [
         "{userName} helps the {favoriteAnimal}.",
         "They are good friends.",
-        "They have fun."
+        "{userName} has fun."
       ],
       resolution: [
         "{userName} is happy.",

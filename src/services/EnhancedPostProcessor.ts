@@ -21,20 +21,19 @@ export class EnhancedPostProcessor {
     
     try {
       const processedPages = pages.map((page, index) => {
-        // Fix pronouns first based on avatar type
-        const pronounCorrectedPage = this.correctPronouns(page, userInfo.avatar?.type || 'boy');
+        // Step 1: Resolve placeholders first using the new unified system
+        const placeholderResolved = resolveAllPlaceholders(page, { userInfo });
+        console.log(`✅ Placeholder resolved page ${index + 1}: ${placeholderResolved.substring(0, 50)}...`);
         
-        // Then resolve all placeholders in the corrected content
-        const resolvedPage = resolveAllPlaceholders(pronounCorrectedPage, {
-          userInfo,
-          pageText: pronounCorrectedPage
-        });
+        // Step 2: Apply comprehensive grammar fixes 
+        const grammarFixed = this.applyGrammarFixes(placeholderResolved);
+        console.log(`✅ Grammar fixed page ${index + 1}: ${grammarFixed.substring(0, 50)}...`);
         
-        // Apply grammar fixes to correct verb conjugation
-        const grammarCorrectedPage = this.applyGrammarFixes(resolvedPage);
+        // Step 3: Apply pronoun corrections (after grammar fixes)
+        const pronounCorrected = this.correctPronouns(grammarFixed, userInfo.avatar?.type || 'prefer-not-to-answer');
+        console.log(`✅ Final processed page ${index + 1}: ${pronounCorrected.substring(0, 50)}...`);
         
-        console.log(`✅ Processed page ${index + 1}: ${grammarCorrectedPage.substring(0, 50)}...`);
-        return grammarCorrectedPage;
+        return pronounCorrected;
       });
 
       // Store character context if session exists
@@ -215,26 +214,42 @@ export class EnhancedPostProcessor {
   }
 
   /**
-   * Apply grammar fixes for Level 0 content (verb conjugation, articles)
+   * Apply comprehensive grammar fixes for common errors in Level 0 content
    */
   static applyGrammarFixes(content: string): string {
-    let corrected = content;
+    let fixed = content;
     
-    // Fix common verb conjugation errors for third person singular
-    corrected = corrected.replace(/\b(he|she|it)\s+have\b/gi, '$1 has');
-    corrected = corrected.replace(/\b(he|she|it)\s+are\b/gi, '$1 is');
-    corrected = corrected.replace(/\b(he|she|it)\s+were\b/gi, '$1 was');
-    corrected = corrected.replace(/\b(he|she|it)\s+do\b/gi, '$1 does');
+    // Fix basic subject-verb agreement
+    fixed = fixed.replace(/\bI are\b/g, 'I am');
+    fixed = fixed.replace(/\bhe are\b/g, 'he is');
+    fixed = fixed.replace(/\bshe are\b/g, 'she is'); 
+    fixed = fixed.replace(/\bit are\b/g, 'it is');
     
-    // Fix "The child have" to "The child has"
-    corrected = corrected.replace(/\bThe\s+\w+\s+have\b/gi, (match) => match.replace('have', 'has'));
-    corrected = corrected.replace(/\bThe\s+\w+\s+are\b/gi, (match) => match.replace('are', 'is'));
+    // Fix have/has agreement for all pronouns
+    fixed = fixed.replace(/\bhe have\b/g, 'he has');
+    fixed = fixed.replace(/\bshe have\b/g, 'she has');
+    fixed = fixed.replace(/\bit have\b/g, 'it has');
+    fixed = fixed.replace(/\bI has\b/g, 'I have');
+    fixed = fixed.replace(/\byou has\b/g, 'you have');
+    fixed = fixed.replace(/\bwe has\b/g, 'we have');
     
-    // Fix missing articles (basic patterns)
-    corrected = corrected.replace(/\b(is|has)\s+([aeiou])/gi, '$1 an $2');
-    corrected = corrected.replace(/\b(is|has)\s+([bcdfghjklmnpqrstvwxyz])/gi, '$1 a $2');
+    // Fix verb forms with they
+    fixed = fixed.replace(/\bthey is\b/g, 'they are');
+    fixed = fixed.replace(/\bthey was\b/g, 'they were');
+    fixed = fixed.replace(/\bthey has\b/g, 'they have');
     
-    return corrected;
+    // Fix do/does agreement
+    fixed = fixed.replace(/\bhe do\b/g, 'he does');
+    fixed = fixed.replace(/\bshe do\b/g, 'she does');
+    fixed = fixed.replace(/\bit do\b/g, 'it does');
+    
+    // Fix double articles or missing words patterns - CRITICAL FIX
+    fixed = fixed.replace(/\bthe\s+is\b/gi, 'child is'); // "The is happy" -> "child is happy"
+    fixed = fixed.replace(/\bthe\s+are\b/gi, 'they are'); // "The are happy" -> "They are happy"
+    fixed = fixed.replace(/\bthe\s+have\b/gi, 'they have'); // "The have fun" -> "They have fun"
+    fixed = fixed.replace(/\bthe\s+has\b/gi, 'child has'); // "The has fun" -> "child has fun"
+    
+    return fixed;
   }
 
   /**
