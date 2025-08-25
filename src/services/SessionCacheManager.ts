@@ -34,14 +34,15 @@ export class SessionCacheManager {
       preserveAvatarIdentity = false
     } = options;
 
-    console.log('🧹 Clearing session caches:', {
+    console.log('🧹 [CACHE DEBUG] clearAllSessionCaches ENTRY:', {
       userId,
       sessionId,
       avatarType,
       skinTone,
       reason,
       clearVisualState,
-      preserveAvatarIdentity
+      preserveAvatarIdentity,
+      timestamp: new Date().toISOString()
     });
 
     // Handle premium rewrite scenario with selective clearing
@@ -52,38 +53,50 @@ export class SessionCacheManager {
 
     try {
       // 1. Clear Enhanced Image Cache
+      console.log('🔄 [CACHE DEBUG] Step 1: Clearing Enhanced Image Cache...');
       if (sessionId) {
         EnhancedImageCache.clearSession(sessionId);
+        console.log('✅ [CACHE DEBUG] Enhanced Image Cache cleared for session:', sessionId);
       } else {
         // Clear all avatar-specific cached images if no specific session
         EnhancedImageCache.clearAll();
+        console.log('✅ [CACHE DEBUG] Enhanced Image Cache cleared (all sessions)');
       }
 
       // 2. Clear Story Session Cache
+      console.log('🔄 [CACHE DEBUG] Step 2: Clearing Story Session Cache...');
       if (userId) {
         const context = reason === 'premium-rewrite' ? 'rewrite' : 
                       reason === 'new-session' ? 'next-story' : 'session-end';
         StorySessionCache.clearCachedSession(userId, clearVisualState, avatarType, context);
+        console.log('✅ [CACHE DEBUG] Story Session Cache cleared:', { userId, context, avatarType });
       }
 
       // 3. Clear Visual State (character/object tracking)
       if (clearVisualState) {
+        console.log('🔄 [CACHE DEBUG] Step 3: Clearing Visual State Cache...');
         this.clearVisualStateCache(sessionId, userId);
+      } else {
+        console.log('⏭️ [CACHE DEBUG] Step 3: Skipping Visual State Cache (preserving for rewrite)');
       }
 
       // 4. Clear Character State (appearance consistency)
+      console.log('🔄 [CACHE DEBUG] Step 4: Clearing Character State...');
       this.clearCharacterState(userId, sessionId, avatarType);
 
       // 5. Clear Session Storage Caches
+      console.log('🔄 [CACHE DEBUG] Step 5: Clearing Session Storage Caches...');
       this.clearSessionStorageCaches();
 
       // 6. Clear Navigation Caches
+      console.log('🔄 [CACHE DEBUG] Step 6: Clearing Navigation Caches...');
       this.clearNavigationCaches(userId);
 
       // 7. Clear Server-Side Character Cache
+      console.log('🔄 [CACHE DEBUG] Step 7: Clearing Server-Side Character Cache...');
       this.clearServerSideCharacterCache();
 
-      console.log('✅ Session cache clearing completed successfully');
+      console.log('✅ [CACHE DEBUG] All cache clearing steps completed successfully');
 
     } catch (error) {
       console.error('❌ Error during session cache clearing:', error);
@@ -301,40 +314,55 @@ export class SessionCacheManager {
    * Clear caches when user ends their reading session
    */
   static clearOnSessionEnd(userId?: string, avatarType?: string): void {
-    console.log('🔚 [DEBUG] clearOnSessionEnd called:', { userId, avatarType });
-    this.clearAllSessionCaches({
-      userId: userId || 'guest',
-      avatarType,
-      reason: 'session-end',
-      clearVisualState: true
-    });
+    console.log('🔚 [SESSION DEBUG] clearOnSessionEnd ENTRY:', { userId, avatarType, timestamp: new Date().toISOString() });
+    try {
+      this.clearAllSessionCaches({
+        userId: userId || 'guest',
+        avatarType,
+        reason: 'session-end',
+        clearVisualState: true
+      });
+      console.log('✅ [SESSION DEBUG] clearOnSessionEnd COMPLETED successfully');
+    } catch (error) {
+      console.error('❌ [SESSION DEBUG] clearOnSessionEnd FAILED:', error);
+    }
   }
 
   /**
    * Clear caches when user rewrites current story (regenerate with same characters)
    */
   static clearOnRewrite(userId?: string, avatarType?: string): void {
-    console.log('🔄 [DEBUG] clearOnRewrite called:', { userId, avatarType });
-    this.clearAllSessionCaches({
-      userId: userId || 'guest',
-      avatarType,
-      reason: 'premium-rewrite',
-      clearVisualState: false, // Keep visual continuity for rewrite
-      preserveAvatarIdentity: true
-    });
+    console.log('🔄 [REWRITE DEBUG] clearOnRewrite ENTRY:', { userId, avatarType, timestamp: new Date().toISOString() });
+    try {
+      this.clearAllSessionCaches({
+        userId: userId || 'guest',
+        avatarType,
+        reason: 'premium-rewrite',
+        clearVisualState: false, // Keep visual continuity for rewrite
+        preserveAvatarIdentity: true
+      });
+      console.log('✅ [REWRITE DEBUG] clearOnRewrite COMPLETED - avatar identity preserved');
+    } catch (error) {
+      console.error('❌ [REWRITE DEBUG] clearOnRewrite FAILED:', error);
+    }
   }
 
   /**
    * Clear caches when user generates next story (completely new story)
    */
   static clearOnNextStory(userId?: string, avatarType?: string): void {
-    console.log('✨ [DEBUG] clearOnNextStory called:', { userId, avatarType });
-    this.clearAllSessionCaches({
-      userId: userId || 'guest',
-      avatarType,
-      reason: 'new-session',
-      clearVisualState: true // Full clear for new story
-    });
+    console.log('✨ [NEXTSTORY DEBUG] clearOnNextStory ENTRY:', { userId, avatarType, timestamp: new Date().toISOString() });
+    try {
+      this.clearAllSessionCaches({
+        userId: userId || 'guest',
+        avatarType,
+        reason: 'new-session',
+        clearVisualState: true // Full clear for new story
+      });
+      console.log('✅ [NEXTSTORY DEBUG] clearOnNextStory COMPLETED - full cache clear done');
+    } catch (error) {
+      console.error('❌ [NEXTSTORY DEBUG] clearOnNextStory FAILED:', error);
+    }
   }
 
   /**
