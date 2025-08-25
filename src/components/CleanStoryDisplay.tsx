@@ -680,7 +680,7 @@ const [highlightSave, setHighlightSave] = useState(false);
     const timer = setTimeout(() => setHighlightSave(false), 8000);
     return () => clearTimeout(timer);
   }, [highlightSave]);
-  const currentStoryText = displayedStory[currentPage] || "";
+  const currentStoryText = displayedStory[Math.min(currentPage, displayedStory.length - 1)] || "";
   const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
@@ -3036,7 +3036,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
-                {!isPremium && currentPage === 5 && displayedStory.length > 5 && timeRemaining > 0 && (
+                {!isPremium && currentPage === 5 && displayedStory.length >= 5 && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 
