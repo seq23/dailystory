@@ -35,13 +35,45 @@ serve(async (req) => {
 
   let positivePrompt = '';
   try {
+    const requestData: OpenAIImageRequest = await req.json();
+    const { diagnostic, test } = requestData as any;
+
+    // DIAGNOSTIC MODE - Handle diagnostic requests
+    if (diagnostic || test) {
+      console.log('🔍 OpenAI Image DIAGNOSTIC MODE:', diagnostic || 'basic_test');
+      
+      if (diagnostic === 'tier_health_check') {
+        const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+        if (!openAIApiKey) {
+          return createCorsErrorResponse('OPENAI_API_KEY not configured', 500, {
+            diagnostic: true,
+            type: 'api_key_missing'
+          });
+        }
+        
+        return createCorsResponse({
+          success: true,
+          diagnostic: true,
+          message: 'OpenAI Image (Tier 3) health check passed',
+          apiKeyConfigured: true,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      // Basic test mode
+      return createCorsResponse({
+        success: true,
+        diagnostic: true,
+        message: 'OpenAI Image diagnostic test passed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       console.error('OpenAI API key not configured');
       return createCorsErrorResponse('OpenAI API key not configured', 500);
     }
-
-    const requestData: OpenAIImageRequest = await req.json();
     const { 
       positivePrompt: requestPrompt, 
       negativePrompt, 

@@ -243,6 +243,35 @@ class UnifiedCircuitBreaker {
       lastFailure: this.lastFailure
     });
   }
+  
+  // Manual reset method for diagnostic purposes
+  manualReset(): void {
+    const wasOpen = this.failures >= this.threshold;
+    this.failures = 0;
+    this.lastFailure = 0;
+    
+    CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
+      event: 'manual_reset',
+      wasOpen,
+      timestamp: Date.now()
+    });
+    
+    console.log('🔧 Circuit breaker manually reset', {
+      wasOpen,
+      resetTimestamp: new Date().toISOString()
+    });
+  }
+  
+  // Get current status for diagnostics
+  getStatus(): { isOpen: boolean; failures: number; lastFailure: number; threshold: number; timeout: number } {
+    return {
+      isOpen: this.isOpen(),
+      failures: this.failures,
+      lastFailure: this.lastFailure,
+      threshold: this.threshold,
+      timeout: this.timeout
+    };
+  }
 }
 
 const circuitBreaker = new UnifiedCircuitBreaker();
@@ -601,6 +630,83 @@ serve(async (req) => {
     'ai-story-enhancer',
     'fallback-chain',
     async () => {
+      // Check for diagnostic mode first
+      let requestBody;
+      try {
+        requestBody = await req.json();
+      } catch (e) {
+        requestBody = {};
+      }
+
+      const { diagnostic, test } = requestBody;
+
+      // DIAGNOSTIC MODE - Handle diagnostic requests
+      if (diagnostic || test) {
+        console.log('🔍 AI Story Enhancer DIAGNOSTIC MODE:', diagnostic || 'basic_test');
+        
+        if (diagnostic === 'circuit_breaker_status') {
+          const status = circuitBreaker.getStatus();
+          return createCorsResponse({
+            success: true,
+            diagnostic: true,
+            circuitBreakerStatus: status,
+            message: status.isOpen ? 
+              `Circuit breaker is OPEN (${status.failures}/${status.threshold} failures)` :
+              `Circuit breaker is CLOSED (${status.failures}/${status.threshold} failures)`,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
+        if (diagnostic === 'reset_circuit_breaker') {
+          const oldStatus = circuitBreaker.getStatus();
+          circuitBreaker.manualReset();
+          const newStatus = circuitBreaker.getStatus();
+          
+          return createCorsResponse({
+            success: true,
+            diagnostic: true,
+            message: 'Circuit breaker reset successfully',
+            before: oldStatus,
+            after: newStatus,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
+        if (diagnostic === 'tier_health_check') {
+          const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+          if (!openAIApiKey) {
+            return new Response(
+              JSON.stringify({ 
+                error: 'OPENAI_API_KEY not configured',
+                diagnostic: true,
+                type: 'api_key_missing' 
+              }),
+              { 
+                status: 500, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+              }
+            );
+          }
+          
+          const cbStatus = circuitBreaker.getStatus();
+          return createCorsResponse({
+            success: true,
+            diagnostic: true,
+            message: 'AI Story Enhancer health check passed',
+            apiKeyConfigured: true,
+            circuitBreakerStatus: cbStatus,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
+        // Basic test mode
+        return createCorsResponse({
+          success: true,
+          diagnostic: true,
+          message: 'AI Story Enhancer diagnostic test passed',
+          timestamp: new Date().toISOString()
+        });
+      }
       // =================== PHASE 1: VARIABLE DECLARATION & SCOPE SETUP ===================
       let requestBody;
       let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData;

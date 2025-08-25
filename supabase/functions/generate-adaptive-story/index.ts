@@ -578,6 +578,89 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json();
+    const { diagnostic, test } = body;
+
+    // DIAGNOSTIC MODE - Handle diagnostic requests
+    if (diagnostic || test) {
+      console.log('🔍 DIAGNOSTIC MODE ACTIVATED:', diagnostic || 'basic_test');
+      
+      if (diagnostic === 'key_validation') {
+        const keyValidation = validateOpenAIApiKey();
+        if (!keyValidation.isValid) {
+          return new Response(
+            JSON.stringify({ 
+              error: keyValidation.error,
+              diagnostic: true,
+              type: 'api_key_validation_failed' 
+            }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+        
+        // Test actual API connectivity
+        try {
+          const testResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-5-mini-2025-08-07',
+              messages: [{ role: 'user', content: 'Hello' }],
+              max_completion_tokens: 1
+            }),
+          });
+          
+          if (!testResponse.ok) {
+            throw new Error(`OpenAI API test failed: ${testResponse.status} ${testResponse.statusText}`);
+          }
+          
+          return new Response(
+            JSON.stringify({ 
+              success: true,
+              diagnostic: true,
+              message: 'OpenAI API key validated and connectivity confirmed',
+              keyValidation,
+              apiConnectivity: 'healthy'
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (apiError) {
+          return new Response(
+            JSON.stringify({ 
+              error: `API connectivity test failed: ${apiError.message}`,
+              diagnostic: true,
+              type: 'api_connectivity_failed',
+              keyValidation
+            }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+      }
+      
+      // Basic test mode
+      const keyValidation = validateOpenAIApiKey();
+      return new Response(
+        JSON.stringify({ 
+          success: keyValidation.isValid,
+          diagnostic: true,
+          message: keyValidation.isValid ? 'OpenAI API key is configured and valid' : keyValidation.error,
+          keyValidation
+        }),
+        { 
+          status: keyValidation.isValid ? 200 : 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
     const requestBody = await req.json()
     console.log('🔍 DIAGNOSTIC: Request body parsed', {
       hasBody: !!requestBody,
