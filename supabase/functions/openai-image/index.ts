@@ -171,13 +171,14 @@ serve(async (req) => {
       finalPrompt = `${hardcodedAvatarDescription}, ${enhancementResult.enhancedPrompt}`;
       
     } else {
-      // PHASE 3: Use Tier 2.5 Template Fallback + Hardcoded Avatar
-      console.log(`🛡️ TIER 3: AI Enhancement failed, using Tier 2.5 template fallback with hardcoded avatar`);
+      // PHASE 3: Native Tier 3 Fallback (Independent)
+      console.log(`🛡️ TIER 3: AI Enhancement failed, using native Tier 3 fallback`);
       
-      const tier25ScenePrompt = await buildTier25FallbackPrompt(positivePrompt, userInfo, mappedDifficulty);
+      // Extract simple scene description directly from prompt
+      const simpleSceneDescription = extractSimpleScene(positivePrompt, mappedDifficulty);
       
-      // Prepend hardcoded avatar to template scene
-      finalPrompt = `${hardcodedAvatarDescription}, ${tier25ScenePrompt}`;
+      // Build prompt directly: avatar + scene + style
+      finalPrompt = `${hardcodedAvatarDescription}, ${simpleSceneDescription}`;
       
       // Create minimal enhancement result for compatibility
       enhancementResult = {
@@ -293,168 +294,29 @@ serve(async (req) => {
   }
 });
 
-// TIER 2.5 TEMPLATE FALLBACK SYSTEM (Nuclear Independence)
-async function buildTier25FallbackPrompt(pageText: string, userInfo?: any, difficulty?: string): Promise<string> {
-  console.log(`🛡️ TIER 2.5 TEMPLATE FALLBACK: Building nuclear independent prompt`);
+// NATIVE TIER 3 FALLBACK SYSTEM (Independent from Tier 2.5)
+function extractSimpleScene(positivePrompt: string, difficulty: string): string {
+  if (!positivePrompt) return 'in a beautiful outdoor scene. cheerful and happy. 3D Pixar animation style, professional quality, child-friendly';
   
-  const mappedDifficulty = difficulty || 'medium';
-  const extractedScene = extractSceneWithPremiumTemplate(pageText, userInfo, null, mappedDifficulty);
+  // Remove existing style suffixes to get clean scene
+  let cleanScene = positivePrompt
+    .replace(/3D Pixar animation style.*$/i, '')
+    .replace(/professional.*quality.*$/i, '')
+    .replace(/child-friendly.*$/i, '')
+    .replace(/,\s*$/, '')
+    .trim();
   
-  console.log(`🎨 TIER 2.5 FALLBACK RESULT: ${extractedScene}`);
-  return extractedScene;
-}
-
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Imported from Tier 2.5)
-const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
-};
-
-function extractSceneWithPremiumTemplate(pageText: string, userInfo?: any, avatarIdentity?: any, difficulty?: string): string {
-  if (!pageText) return fillPremiumTemplate('a friendly character in a beautiful scene', pageText, userInfo, avatarIdentity, difficulty || 'medium');
+  // Extract the core action/scene from the clean text
+  const sentences = cleanScene.split(/[.!?]+/).filter(s => s.trim());
+  const mainScene = sentences[0] || cleanScene;
   
-  const text = pageText.toLowerCase();
-  const sentences = pageText.split(/[.!?]+/).filter(s => s.trim());
+  // Add appropriate setting context
+  let setting = 'outdoor';
+  const lowerScene = mainScene.toLowerCase();
+  if (lowerScene.includes('bed') || lowerScene.includes('room') || lowerScene.includes('house') || lowerScene.includes('inside')) {
+    setting = 'indoor';
+  }
   
-  let bestScene = sentences[0] || pageText;
-  let bestScore = 0;
-  let detectedSetting = 'outdoor';
-  
-  sentences.forEach(sentence => {
-    let score = 0;
-    const lowerSentence = sentence.toLowerCase();
-    
-    if (lowerSentence.includes('wakes up') || lowerSentence.includes('wake up') || 
-        lowerSentence.includes('woke up') || lowerSentence.includes('sleeping') || 
-        lowerSentence.includes('bed') || lowerSentence.includes('bedroom') ||
-        lowerSentence.includes('pillow') || lowerSentence.includes('blanket') ||
-        lowerSentence.includes('dream') || lowerSentence.includes('morning')) {
-      score += 40;
-      detectedSetting = 'bedroom';
-    }
-    
-    if (lowerSentence.includes('room') || lowerSentence.includes('house') || 
-        lowerSentence.includes('kitchen') || lowerSentence.includes('living room') ||
-        lowerSentence.includes('inside') || lowerSentence.includes('home')) {
-      score += 25;
-      if (detectedSetting === 'outdoor') detectedSetting = 'indoor';
-    }
-    
-    if (lowerSentence.includes('color') || lowerSentence.includes('bright') || lowerSentence.includes('beautiful')) score += 20;
-    if (lowerSentence.includes('big') || lowerSentence.includes('small') || lowerSentence.includes('huge')) score += 15;
-    if (lowerSentence.includes('red') || lowerSentence.includes('blue') || lowerSentence.includes('green') || lowerSentence.includes('yellow')) score += 18;
-    if (lowerSentence.includes('dance') || lowerSentence.includes('twirl') || lowerSentence.includes('jump') || lowerSentence.includes('run') || lowerSentence.includes('play')) score += 25;
-    if (lowerSentence.includes('loved') || lowerSentence.includes('enjoyed') || lowerSentence.includes('happy') || lowerSentence.includes('excited') || lowerSentence.includes('smiled')) score += 20;
-    if (userInfo?.name && lowerSentence.includes(userInfo.name.toLowerCase())) score += 15;
-    if (lowerSentence.includes('flower') || lowerSentence.includes('tree') || lowerSentence.includes('garden') || lowerSentence.includes('park')) score += 18;
-    if (lowerSentence.includes('"') || lowerSentence.includes('said') || lowerSentence.includes('called') || lowerSentence.includes('asked')) score += 20;
-    
-    if (score > bestScore) {
-      bestScore = score;
-      bestScene = sentence;
-    }
-  });
-  
-  return fillPremiumTemplate(bestScene, pageText, userInfo, avatarIdentity, difficulty || 'medium', detectedSetting);
-}
-
-function fillPremiumTemplate(scene: string, originalPageText?: string, userInfo?: any, avatarIdentity?: any, difficulty?: string, detectedSetting?: string): string {
-  const template = PREMIUM_PROMPT_TEMPLATES[difficulty || 'medium'] || PREMIUM_PROMPT_TEMPLATES.medium;
-  
-  let character = userInfo?.name || 'child';
-  const originalAvatarType = avatarIdentity?.type || userInfo?.avatar?.type;
-  
-  const mapAvatarTypeForPrompt = (type: string | undefined): string => {
-    if (type === 'prefer-not-to-answer') return 'child';
-    return type || 'child';
-  };
-  
-  let genderType = mapAvatarTypeForPrompt(originalAvatarType);
-  
-  // AVATAR DATA ALWAYS WINS - No text-based overrides
-  character = genderType;
-
-  const age = getAgeFromDifficulty(difficulty || 'medium');
-  const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-  
-  // Simplified template filling for nuclear independence
-  return template
-    .replace('{character}', character)
-    .replace('{age}', age)
-    .replace('{skin}', getSkinDescription(skinTone))
-    .replace('{hair}', getHairDescription(skinTone))
-    .replace('{eyes}', getEyeDescription(skinTone))
-    .replace('{features}', getFeaturesDescription())
-    .replace('{clothing}', getClothingDescription())
-    .replace('{scene}', scene)
-    .replace('{setting}', detectedSetting || 'outdoor')
-    .replace('{objects}', '')
-    .replace('{secondary_characters}', '')
-    .replace('{emotion}', 'cheerful and happy')
-    .replace('{quality}', getQualityDescription(difficulty))
-    .replace('{suffix}', getSuffixDescription(difficulty));
-}
-
-function getAgeFromDifficulty(difficulty: string): string {
-  const ageMap = {
-    beginner: '4-5 years old',
-    easy: '5-6 years old', 
-    medium: '6-7 years old',
-    hard: '7-8 years old',
-    expert: '8-9 years old'
-  };
-  return ageMap[difficulty] || '6-7 years old';
-}
-
-function getSkinDescription(skinTone: string): string {
-  const skinMap = {
-    pale: 'pale skin',
-    light: 'light skin',
-    medium: 'medium skin tone',
-    olive: 'olive skin',
-    dark: 'beautiful dark skin'
-  };
-  return skinMap[skinTone] || 'medium skin tone';
-}
-
-function getHairDescription(skinTone: string): string {
-  const hairMap = {
-    pale: 'red hair',
-    light: 'blonde hair',
-    medium: 'brown hair',
-    olive: 'natural textured hair',
-    dark: 'beautiful natural hair'
-  };
-  return hairMap[skinTone] || 'brown hair';
-}
-
-function getEyeDescription(skinTone: string): string {
-  const eyeMap = {
-    pale: 'green eyes',
-    light: 'blue eyes',
-    medium: 'brown eyes',
-    olive: 'dark eyes',
-    dark: 'expressive dark eyes'
-  };
-  return eyeMap[skinTone] || 'brown eyes';
-}
-
-function getFeaturesDescription(): string {
-  return 'smooth rounded features';
-}
-
-function getClothingDescription(): string {
-  return 'comfortable colorful clothes';
-}
-
-function getQualityDescription(difficulty?: string): string {
-  return '3D Pixar animation style, professional quality, child-friendly';
-}
-
-function getSuffixDescription(difficulty?: string): string {
-  if (difficulty === 'beginner' || difficulty === 'easy') return '';
-  return 'warm natural lighting, vibrant colors, joyful atmosphere';
+  // Build DALL-E 3 compatible prompt with scene + style
+  return `${mainScene} in ${setting}. cheerful and happy. 3D Pixar animation style, professional quality, child-friendly`;
 }
