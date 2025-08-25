@@ -1622,6 +1622,10 @@ const initializeStory = async () => {
       setCurrentPage(currentPage + 1);
       // Re-stabilize immediately for existing content
       setTimeout(() => setIsStoryStable(true), 100);
+    } else if (!isPremium && currentPage < 5 && displayedStory.length > 5) {
+      // Free user: allow advancement to page 6 (currentPage 5)
+      setCurrentPage(currentPage + 1);
+      setTimeout(() => setIsStoryStable(true), 100);
     } else {
       // Last page reached
       if (isPremium) {
