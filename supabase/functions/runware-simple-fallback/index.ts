@@ -174,7 +174,7 @@ serve(async (req) => {
  * Extracts and maps difficulty levels with multiple fallback strategies
  * Conservative defaults ensure 100% operation even with corrupt/missing data
  */
-function mapDifficultyInline(userInfo, fallbackLevel = 'medium') {
+function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): string {
   try {
     // STRATEGY 1: Direct extraction - no external dependencies
     const rawLevel = userInfo?.readingLevel || userInfo?.difficultyLevel || userInfo?.gradeLevel;
