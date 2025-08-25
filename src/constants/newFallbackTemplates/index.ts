@@ -14,8 +14,7 @@ export * from './level4Templates';
 
 // Grade-based Templates (Grades 6-10)
 export * from './grade6Templates';
-// Future grade templates will be exported here as they are created
-// export * from './grade7Templates';
+export * from './grade7Templates';
 // export * from './grade8Templates';
 // export * from './grade9Templates';
 // export * from './grade10Templates';
