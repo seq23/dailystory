@@ -28,7 +28,6 @@ export interface EnhancedFallbackTemplate {
 
 // ===== PROTECTED LEVEL 0 SYSTEM - DO NOT MODIFY =====
 // Import Level 0 templates - these are preserved exactly as-is
-import { LEVEL_0_TEMPLATES } from './gradeBased/level0Templates';
 import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES } from './gradeBased/level0VocabularyCompliantTemplates';
 import { LEVEL_0_EXTENSIONS } from './gradeBased/level0ExtensionTemplates';
 
