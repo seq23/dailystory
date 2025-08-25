@@ -833,3 +833,9 @@ function detectEmotionFromText(text: string): string {
   
   return 'warm and engaging atmosphere';
 }
+
+  } catch (error) {
+    console.error('Tier 2.5 Edge Function Error:', error);
+    return createCorsErrorResponse(`Tier 2.5 internal error: ${error.message}`, 500);
+  }
+});
