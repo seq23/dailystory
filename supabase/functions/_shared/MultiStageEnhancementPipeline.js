@@ -150,9 +150,24 @@ export class MultiStageEnhancementPipeline {
       if (styleFramework) {
         console.log(`🎨 Style framework: ${styleFramework.name}`);
         primarySceneComponents.push(`Style: ${styleFramework.artStyle}`);
+        if (styleFramework.colorPalette) {
+          primarySceneComponents.push(`Colors: ${styleFramework.colorPalette}`);
+        }
+        if (styleFramework.lighting) {
+          primarySceneComponents.push(`Lighting: ${styleFramework.lighting}`);
+        }
+        if (styleFramework.texture) {
+          primarySceneComponents.push(`Texture: ${styleFramework.texture}`);
+        }
+        if (styleFramework.composition) {
+          primarySceneComponents.push(`Composition: ${styleFramework.composition}`);
+        }
         primarySceneComponents.push(`Quality: ${styleFramework.quality}`);
         if (styleFramework.brandSuffix) {
           primarySceneComponents.push(styleFramework.brandSuffix);
+        }
+        if (styleFramework.prompt) {
+          primarySceneComponents.push(styleFramework.prompt);
         }
       }
     } catch (styleError) {
@@ -430,15 +445,26 @@ export class MultiStageEnhancementPipeline {
       'violent', 'dark themes', 'adult content', 'poor composition'
     ];
     
-    // Add cultural sensitivity filters
-    if (culturalProfile?.culturalElements) {
-      baseNegative.push('cultural insensitivity', 'stereotypes');
+    // Add framework-specific negative prompts
+    if (framework?.negativePrompt) {
+      baseNegative.push(framework.negativePrompt);
     }
     
-    // Add consistency filters
-    if (pageNumber > 1) {
-      baseNegative.push('inconsistent character design', 'style variations');
+    // Add enhanced cultural sensitivity filters
+    if (culturalProfile?.culturalElements) {
+      baseNegative.push('cultural insensitivity', 'stereotypes', 'offensive representations', 'caricatures');
     }
+    
+    // Add character consistency filters
+    if (pageNumber > 1) {
+      baseNegative.push('inconsistent character design', 'style variations', 'character appearance changes');
+    }
+    
+    // Add technical quality filters
+    baseNegative.push('pixelated', 'artifacts', 'noise', 'oversaturated', 'undersaturated', 'malformed features');
+    
+    // Add content safety filters
+    baseNegative.push('weapons', 'conflict', 'sadness', 'fear', 'negative emotions');
     
     return baseNegative.join(', ');
   }

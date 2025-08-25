@@ -575,15 +575,12 @@ export class CharacterConsistencyService {
           'tribal customs', 'African diaspora', 'traditional crafts', 'cultural preservation',
           'community elders', 'traditional music and dance'
         ],
+        skinTones: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_SKIN_TONES,
+        eyeColors: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_EYE_COLORS,
+        facialFeatures: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES,
         hairstyles: {
-          boys: [
-            'traditional African cut', 'ethnic buzz cut', 'cultural fade', 'tribal-inspired style',
-            'African natural hair', 'traditional braided style', 'ethnic hair patterns'
-          ],
-          girls: [
-            'traditional African braids', 'ethnic hair wrapping', 'cultural cornrows', 'tribal hairstyles',
-            'African natural curls', 'traditional headwrap style', 'ethnic protective styles'
-          ]
+          boys: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES.boys,
+          girls: CharacterConsistencyService.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES.girls
         }
       },
       'african-american': {
@@ -774,10 +771,10 @@ export class CharacterConsistencyService {
     const ageContext = seedData.age ? `${seedData.age}-year-old ` : (seedData.ageCategory || '');
     const agePrefix = ageContext && !ageContext.includes('-year-old') ? `${ageContext} ` : ageContext;
     
-    // Enhanced description for African American characters with comprehensive arrays
+    // Enhanced description for African and African American characters with comprehensive arrays
     console.log(`🏛️ Array Application Check: culturalProfile='${seedData.culturalProfile}', isAfricanAmerican=${traits.isAfricanAmerican}`);
-    if (seedData.culturalProfile === 'african-american' && traits.isAfricanAmerican) {
-      console.log(`🎨 APPLYING EXPANDED ARRAYS for African American character with cultural profile: ${seedData.culturalProfile}`);
+    if ((seedData.culturalProfile === 'african-american' || seedData.culturalProfile === 'african') && traits.isAfricanAmerican) {
+      console.log(`🎨 APPLYING EXPANDED ARRAYS for ${seedData.culturalProfile} character with cultural profile: ${seedData.culturalProfile}`);
       console.log(`📊 Available arrays: skinTones=${cultural.skinTones?.length}, eyeColors=${cultural.eyeColors?.length}, facialFeatures=${cultural.facialFeatures?.length}`);
       const random = this.createSeededRandom(seedData.baseSeed);
       
@@ -787,13 +784,17 @@ export class CharacterConsistencyService {
       const eyeColor = pageTextFeatures.eyeColor || consistentEyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
       const facialFeatures = cultural.facialFeatures[Math.floor(random() * cultural.facialFeatures.length)];
       
+      // Build comprehensive hair description with texture details
+      const hairTexture = traits.hairTexture || 'textured';
+      const hairDescription = `${hairTexture} ${traits.hairColor} hair`;
+      
       // Only include height/build if detected from page text
       const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
       const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
       
-      console.log(`✅ AFRICAN AMERICAN CHARACTER: Using eye color: ${eyeColor}, clothing: ${clothing}`);
+      console.log(`✅ ${seedData.culturalProfile.toUpperCase()} CHARACTER: Using eye color: ${eyeColor}, clothing: ${clothing}`);
       
-      return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${traits.hairColor} hair, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+      return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${hairDescription}, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
     // Minimal description for other cultural profiles - FIXED: Include consistent features
