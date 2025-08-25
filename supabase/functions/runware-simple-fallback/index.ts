@@ -92,7 +92,7 @@ serve(async (req) => {
                 height: 1024,
                 numberResults: 1,
                 outputFormat: "WEBP",
-                CFGScale: 4.0,
+                cfgScale: 4.0,
                 scheduler: "FlowMatchEulerDiscreteScheduler",
                 strength: style.strength
               }]));
