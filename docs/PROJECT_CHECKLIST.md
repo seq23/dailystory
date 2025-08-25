@@ -24,6 +24,7 @@ This file tracks system + user prompts and quality tasks.
   - Style Optimization: Changed from "3D Pixar animation" to "beautiful illustration for children's book"
   - Over-engineering Removal: Eliminated MultiStageEnhancementPipeline, buildUnifiedNegativePrompt, extractSimpleScene
   - Clean Prompt Formula: `${avatar}, ${fullPageText}, cheerful and happy, beautiful illustration for children's book, professional quality, soft warm lighting, wholesome, safe`
+  - ✅ Avatar Hair Color Fix: Resolved brown hair vs blonde hair inconsistency for boy/light avatars by fixing data flow in openai-image function to prioritize avatarIdentity.visualDescription from orchestrator
 
 - Next steps
   - Broaden E2E to guest happy-path with network mocks (story generation, TTS)
