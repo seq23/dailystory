@@ -181,8 +181,9 @@ serve(async (req) => {
     console.log('🔍 [AVATAR DEBUG] =======================================');
     console.log(`🎭 Selected Avatar Description: ${selectedAvatarDescription}`);
 
-    // Build clean prompt: avatar + full page text + style
-    const finalPrompt = `${selectedAvatarDescription}, ${positivePrompt}, cheerful and happy, beautiful illustration for children's book, professional quality, soft warm lighting, wholesome, safe`;
+    // Build clean prompt: avatar + full page text + style + negative prompt (for DALL-E)
+    const negativePrompt = 'no text, no words, no letters, no writing, no signatures, watermarks, low quality, blurry, distorted, deformed, extra limbs, missing limbs, bad anatomy, weird proportions, bad hands, malformed hands, extra fingers, missing fingers, crossed eyes, bad facial features, unrealistic skin, plastic appearance, oversaturated, cartoon style, anime style, adult content, inappropriate content';
+    const finalPrompt = `${selectedAvatarDescription}, ${positivePrompt}, cheerful and happy, beautiful illustration for children's book, professional quality, soft warm lighting, wholesome, safe. Avoid: ${negativePrompt}`;
     
     console.log(`🎨 Final Prompt: ${finalPrompt.substring(0, 200)}...`);
 

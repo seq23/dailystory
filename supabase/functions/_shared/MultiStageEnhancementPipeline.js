@@ -441,8 +441,7 @@ export class MultiStageEnhancementPipeline {
   
   static buildUnifiedNegativePrompt(userInfo, culturalProfile, framework, pageNumber) {
     const baseNegative = [
-      'blurry', 'low quality', 'distorted', 'scary', 'inappropriate',
-      'violent', 'dark themes', 'adult content', 'poor composition'
+      'no text, no words, no letters, no writing, no signatures, watermarks, low quality, blurry, distorted, deformed, extra limbs, missing limbs, bad anatomy, weird proportions, bad hands, malformed hands, extra fingers, missing fingers, crossed eyes, bad facial features, unrealistic skin, plastic appearance, oversaturated, cartoon style, anime style, adult content, inappropriate content'
     ];
     
     // Add framework-specific negative prompts
