@@ -634,7 +634,7 @@ export class EnhancedFallbackManager {
    */
   private static getMinimumWordsForDifficulty(difficulty: DifficultyLevel): number {
     switch (difficulty) {
-      case 'beginner': return 15; // Simple sentences
+      case 'beginner': return 2; // Level 0: 1 sentence per page (2-8 words)
       case 'easy': return 25; // Basic paragraphs  
       case 'medium': return 38; // Compound sentences
       case 'hard': return 45; // Complex paragraphs

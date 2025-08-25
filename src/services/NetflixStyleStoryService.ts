@@ -238,13 +238,16 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
     });
     
     try {
-      // Use the sophisticated enhanced fallback system with 187 templates
-      const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
-      const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
-      // Strip page markers from fallback pages as safety net
-      const pages = rawPages.map(page => 
-        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
-      ).filter(page => page.length > 0);
+      // Generate 6 separate pages by calling getFallbackTemplate for each page
+      const pages: string[] = [];
+      for (let pageIndex = 0; pageIndex < 6; pageIndex++) {
+        const pageContent = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, pageIndex);
+        // Strip page markers from fallback pages as safety net
+        const cleanPage = pageContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+        if (cleanPage.length > 0) {
+          pages.push(cleanPage);
+        }
+      }
       try {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
