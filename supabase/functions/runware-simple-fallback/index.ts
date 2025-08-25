@@ -106,38 +106,17 @@ serve(async (req) => {
               console.log(`🎯 Final Prompt Used: ${finalPrompt}`);
               console.log(`💰 Cost: ${item.cost}, Seed: ${item.seed}`);
               
-              // PHASE 1: Store image prompt in SessionStateManager
-              try {
-                const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-                globalSessionManager.storeImagePrompt('tier-2-5-session', {
-                  tier: '2.5',
-                  promptText: finalPrompt,
-                  negativePrompt: negativePrompt,
-                  originalPageText: pageText,
-                  enhancedPrompt: finalPrompt,
-                  pageNumber: 1,
-                  success: true,
-                  imageURL: item.imageURL,
-                  seed: item.seed,
-                  provider: 'runware-simple-fallback',
-                  model: 'runware:100@1',
-                  cost: item.cost || 0.01,
-                  generationTime: 0,
-                  objects: [],
-                  secondaryCharacters: [],
-                  bedroom: false,
-                  metadata: {
-                    objectsDetected: 0,
-                    secondaryCharsDetected: 0,
-                    bedroomSceneDetected: false,
-                    template: 'premium-template',
-                    culturalEnhancement: true
-                  }
-                });
-                console.log(`📸 [TIER-2.5] Stored image prompt for session tier-2-5-session, page 1`);
-              } catch (error) {
-                console.warn('⚠️ Failed to store Tier 2.5 prompt:', error.message);
-              }
+              // TIER 2.5 NUCLEAR INDEPENDENCE: Log prompt data instead of external storage
+              console.log(`📸 [TIER-2.5] NUCLEAR FALLBACK - Image Generation Complete`);
+              console.log(`📸 [TIER-2.5] Tier: 2.5`);
+              console.log(`📸 [TIER-2.5] Prompt: ${finalPrompt}`);
+              console.log(`📸 [TIER-2.5] Negative: ${negativePrompt}`);
+              console.log(`📸 [TIER-2.5] Page Text: ${pageText}`);
+              console.log(`📸 [TIER-2.5] Seed: ${item.seed}`);
+              console.log(`📸 [TIER-2.5] Cost: ${item.cost || 0.01}`);
+              console.log(`📸 [TIER-2.5] Provider: runware-simple-fallback`);
+              console.log(`📸 [TIER-2.5] Model: runware:100@1`);
+              console.log(`📸 [TIER-2.5] SUCCESS - Zero Dependencies Maintained`);
               
               resolve(createCorsResponse({
                 success: true,
