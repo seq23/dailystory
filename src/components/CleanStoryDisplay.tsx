@@ -2240,6 +2240,8 @@ const handleRestartTimer = () => {
     } finally {
       setIsGeneratingNewStory(false);
       setIsGeneratingRewrite(false);
+      setIsStoryStable(true); // CRITICAL FIX: Restore story stability after generation
+      console.log(`✅ [STORY DEBUG ${callId}] Story stability restored after generation`);
     }
   };
   // Open special request dialog for premium users, or generate immediately for free
