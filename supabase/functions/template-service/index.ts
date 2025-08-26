@@ -1248,10 +1248,10 @@ serve(async (req) => {
     // Enhanced difficulty mapping supporting both Level 0 and new template system
     const levelMap: Record<string, string> = {
       'beginner': 'Level0',     // Level 0 System (199+ templates)
-      'easy': 'Level1',         // New System Level 1
-      'medium': 'Level2',       // New System Level 2  
-      'hard': 'Level3',         // New System Level 3
-      'expert': 'Level4',       // New System Level 4
+      'easy': 'level1',         // New System Level 1
+      'medium': 'level2',       // New System Level 2  
+      'hard': 'level3',         // New System Level 3
+      'expert': 'level4',       // New System Level 4
       'grade6': 'grade6',       // New System Grade 6
       'grade7': 'grade7',       // New System Grade 7
       'grade8': 'grade8',       // New System Grade 8
