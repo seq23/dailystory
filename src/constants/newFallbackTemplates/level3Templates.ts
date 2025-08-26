@@ -1,6 +1,6 @@
 /**
  * Level 3 Templates (Ages 9-11) - Complete Fallback Story Library  
- * 5 templates with 7-12 scenes each, 70-100 words per scene
+ * 5 templates with 10 scenes each, 70-100 words per scene
  * Never-ending continuation hooks and 4 attach-anytime endings
  */
 
@@ -109,27 +109,27 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "After solving a series of tricky riddles, they finally faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friend} quickly answered, 'A map!' The {monsterType} grumbled but handed over the treasure.",
+        text: "Back home, {userName} and {friend} started a storytelling club at school where kids could share their favorite books and create new stories together. They used the magical bookmarks to bring some of the library's stories to life for their classmates, inspiring everyone to love reading and use their imagination. The club became so popular that other schools wanted to start their own storytelling groups.",
         pause: true,
-        hook: "What will they wish for with the magical treasure?",
+        hook: "How will their storytelling movement spread to help other children discover the magic of books?",
         microVariants: {
-          text: "They solved riddles and faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friend} answered, 'A map!'",
+          text: "A school storytelling club founded by {userName} and {friend} used magical bookmarks to inspire reading and imagination, spreading to other schools.",
           alternatives: [
-            "The {monsterType} asked riddles. {friend} solved the last one: 'I have cities, but no houses...' The answer was 'A map!'"
+            "The storytelling club with magical elements inspired widespread love of reading and imagination among students across multiple schools."
           ],
-          optionalDetails: ["The riddles were written in ancient languages.", "The {monsterType} had a funny voice.", "The treasure glowed warmly."]
+          optionalDetails: ["Children wrote and illustrated their own story books.", "Teachers noticed improved reading skills and creativity.", "Libraries reported increased book checkouts."]
         }
       },
       {
-        text: "{userName} and {friend} wished for all the children in the world to have access to books and education. Suddenly, books appeared in every school and library, and children everywhere began to read and learn. They returned to their world, knowing they had made a difference.",
+        text: "Years later, {userName} and {friend} became professional storytellers and children's book authors, traveling the world to share the magic of stories with children everywhere. They never forgot their {monsterType} friend in the magical library, and sometimes, late at night when they were creating new stories, they could swear they heard familiar laughter and encouragement coming from their old magical bookmarks, reminding them that the greatest adventures always begin with friendship and imagination.",
         pause: false,
-        hook: "How will they use their newfound knowledge and experiences?",
+        hook: "What new generations of children will discover the magic of storytelling through their work?",
         microVariants: {
-          text: "They wished for books and education for all children. Books appeared everywhere, and children began to read. They returned home, knowing they had helped.",
+          text: "Professional storytellers {userName} and {friend} traveled worldwide sharing story magic, never forgetting their {monsterType} friend and the power of imagination.",
           alternatives: [
-            "Their wish was for every child to have books and learn. Books appeared in schools, and they felt happy to be home."
+            "Their careers as storytellers and authors spread the library's magic globally, with the {monsterType} friend's spirit inspiring their creative work forever."
           ],
-          optionalDetails: ["The treehouse sparkled as they wished.", "Children cheered when the books appeared.", "They felt proud of their adventure."]
+          optionalDetails: ["Their books were translated into dozens of languages.", "Children sent them stories inspired by their storytelling.", "The magical bookmarks still worked after all those years."]
         }
       }
     ],
@@ -228,7 +228,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
       },
       {
         text: "{userName} and {friend} continued to improve CleanBot, adding new features and making it more efficient. They shared their knowledge with other students, helping them build their own robots to solve problems in their community.",
-        pause: false,
+        pause: true,
         hook: "How will they continue to make a difference in their community?",
         microVariants: {
           text: "They improved CleanBot and shared their knowledge, helping others build robots to solve community problems.",
@@ -239,59 +239,59 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "As weeks pass, {userName} and {friend} discover that CleanBot's success has attracted attention from environmental organizations and tech companies. They receive invitations to demonstrate their robot at regional science competitions and environmental conferences. The experience teaches them about presenting complex ideas to diverse audiences and the importance of clear communication in science.",
+        text: "As weeks passed, {userName} and {friend} discovered that CleanBot's success had attracted attention from environmental organizations and tech companies. They received invitations to demonstrate their robot at regional science competitions and environmental conferences. The experience taught them about presenting complex ideas to diverse audiences and the importance of clear communication in science.",
         pause: true,
         hook: "How will presenting to experts help them improve their robot?",
         microVariants: {
-          text: "CleanBot's success brings invitations to present at competitions and conferences, teaching {userName} and {friend} about scientific communication.",
+          text: "CleanBot's success brought invitations to present at competitions and conferences, teaching {userName} and {friend} about scientific communication.",
           alternatives: [
-            "Environmental groups and tech companies want to see CleanBot, giving {userName} and {friend} chances to present to experts."
+            "Environmental groups and tech companies wanted to see CleanBot, giving {userName} and {friend} chances to present to experts."
           ],
-          optionalDetails: ["They practice their presentation every day", "The conferences are held in big cities", "Famous scientists attend these events"]
+          optionalDetails: ["They practiced their presentation every day", "The conferences were held in big cities", "Famous scientists attended these events"]
         }
       },
       {
-        text: "During one presentation, a scientist suggests that CleanBot could be modified to work in different environments like beaches or parks. This sparks {userName} and {friend}'s imagination about creating a whole family of cleaning robots. They begin researching how to adapt their design for different surfaces and weather conditions, learning about engineering principles and environmental science.",
+        text: "During one presentation, a scientist suggested that CleanBot could be modified to work in different environments like beaches or parks. This sparked {userName} and {friend}'s imagination about creating a whole family of cleaning robots. They began researching how to adapt their design for different surfaces and weather conditions, learning about engineering principles and environmental science.",
         pause: true,
         hook: "What new challenges will they face designing robots for different environments?",
         microVariants: {
-          text: "A scientist suggests adapting CleanBot for beaches and parks, inspiring {userName} and {friend} to research environmental engineering.",
+          text: "A scientist suggested adapting CleanBot for beaches and parks, inspiring {userName} and {friend} to research environmental engineering.",
           alternatives: [
-            "Ideas for beach-cleaning and park-cleaning robots inspire {userName} and {friend} to study environmental engineering principles."
+            "Ideas for beach-cleaning and park-cleaning robots inspired {userName} and {friend} to study environmental engineering principles."
           ],
-          optionalDetails: ["They study sand cleaning mechanisms", "Waterproof designs become important", "Different trash types require different approaches"]
+          optionalDetails: ["They studied sand cleaning mechanisms", "Waterproof designs became important", "Different trash types required different approaches"]
         }
       },
       {
-        text: "Their research leads them to collaborate with marine biology students on a robot that can clean plastic from ocean shores. {userName} focuses on the mechanical design while {friend} works on programming the robot to identify and safely collect different types of marine debris. This interdisciplinary project teaches them how science, technology, engineering, and environmental conservation work together.",
+        text: "Their research led them to collaborate with marine biology students on a robot that can clean plastic from ocean shores. {userName} focused on the mechanical design while {friend} worked on programming the robot to identify and safely collect different types of marine debris. This interdisciplinary project taught them how science, technology, engineering, and environmental conservation work together.",
         pause: true,
         hook: "Will their ocean-cleaning robot be successful in protecting marine life?",
         microVariants: {
-          text: "Collaborating with marine biology students, {userName} and {friend} design an ocean shore cleaning robot that identifies marine debris.",
+          text: "Collaborating with marine biology students, {userName} and {friend} designed an ocean shore cleaning robot that identifies marine debris.",
           alternatives: [
-            "Marine biology collaboration helps {userName} and {friend} create a robot that safely removes ocean plastic while protecting sea life."
+            "Marine biology collaboration helped {userName} and {friend} create a robot that safely removes ocean plastic while protecting sea life."
           ],
-          optionalDetails: ["They learn about microplastics and their dangers", "The robot can distinguish trash from natural materials", "Marine biologists test the robot's safety"]
+          optionalDetails: ["They learned about microplastics and their dangers", "The robot can distinguish trash from natural materials", "Marine biologists tested the robot's safety"]
         }
       },
       {
-        text: "Testing their new robot at a local beach, {userName} and {friend} witness firsthand the environmental impact of plastic pollution on marine ecosystems. They document how their robot successfully removes harmful debris while leaving natural materials undisturbed. The experience deepens their commitment to environmental protection and their understanding of how technology can address global challenges.",
+        text: "Testing their new robot at a local beach, {userName} and {friend} witnessed firsthand the environmental impact of plastic pollution on marine ecosystems. They documented how their robot successfully removed harmful debris while leaving natural materials undisturbed. The experience deepened their commitment to environmental protection and their understanding of how technology can address global challenges.",
         pause: true,
         hook: "How will their success inspire others to join environmental protection efforts?",
         microVariants: {
-          text: "Beach testing shows how their robot removes pollution while protecting ecosystems, deepening {userName} and {friend}'s environmental commitment.",
+          text: "Beach testing showed how their robot removes pollution while protecting ecosystems, deepening {userName} and {friend}'s environmental commitment.",
           alternatives: [
-            "Successful beach testing demonstrates their robot's environmental benefits, inspiring {userName} and {friend} to expand their conservation work."
+            "Successful beach testing demonstrated their robot's environmental benefits, inspiring {userName} and {friend} to expand their conservation work."
           ],
-          optionalDetails: ["Local news covers their beach cleanup", "Other students want to help with testing", "Marine life returns to cleaned areas"]
+          optionalDetails: ["Local news covered their beach cleanup", "Other students wanted to help with testing", "Marine life returned to cleaned areas"]
         }
       },
       {
-        text: "Inspired by their success, {userName} and {friend} establish a youth environmental technology club at their school, teaching other students to build simple robots for environmental cleanup projects. They develop curriculum that combines hands-on engineering with environmental science education. Their club grows to include students from other schools, creating a network of young environmental advocates using technology for conservation.",
+        text: "Inspired by their success, {userName} and {friend} established a youth environmental technology club at their school, teaching other students to build simple robots for environmental cleanup projects. They developed curriculum that combined hands-on engineering with environmental science education. Their club grew to include students from other schools, creating a network of young environmental advocates using technology for conservation.",
         pause: false,
         hook: "What global impact will their environmental technology movement achieve?",
         microVariants: {
-          text: "Their success leads to establishing a youth environmental technology club that teaches others and grows into a network of young advocates.",
+          text: "Their success led to establishing a youth environmental technology club that teaches others and grows into a network of young advocates.",
           alternatives: [
             "An environmental technology club founded by {userName} and {friend} spreads to other schools, creating young environmental advocates."
           ],
@@ -394,44 +394,104 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
       },
       {
         text: "{userName} convinces the club members to return Patches to the school, explaining how much everyone misses him. The club agrees, and Patches is welcomed back with a school-wide celebration. {userName} is hailed as a hero.",
-        pause: false,
+        pause: true,
         hook: "What will {userName} investigate next?",
         microVariants: {
           text: "{userName} convinces the club to return Patches, who is welcomed back with a celebration. {userName} is a hero.",
           alternatives: [
-            "Patches returns after {userName} convinces the club. The school celebrates, and {userName} is a hero."
+            "The club agrees to return Patches after {userName} explains how much he's missed. A celebration welcomes him back."
           ],
-          optionalDetails: ["There was a parade for Patches.", "The club members apologized.", "The school newspaper wrote a story about the rescue."]
+          optionalDetails: ["The whole school attended the celebration.", "Patches was given a special medal.", "{userName} was featured in the school newspaper."]
+        }
+      },
+      {
+        text: "Weeks later, {userName} discovers that the club has been secretly helping the school by organizing cleanup days and tutoring younger students. They realize that despite the initial misunderstanding about Patches, the club members have good hearts and want to contribute positively to the school community. This discovery makes {userName} think about how misunderstandings can be resolved through communication and finding common ground.",
+        pause: true,
+        hook: "How will {userName} help bridge the gap between the school and the club?",
+        microVariants: {
+          text: "Weeks later, {userName} learns the club has been helping the school with cleanups and tutoring, realizing they have good intentions despite the Patches incident.",
+          alternatives: [
+            "The club's secret good deeds are discovered by {userName}, showing their positive intentions beyond the Patches misunderstanding."
+          ],
+          optionalDetails: ["They planted flowers in the school garden", "Club members tutored struggling students for free", "They organized a successful recycling program"]
+        }
+      },
+      {
+        text: "Inspired by this revelation, {userName} proposes to the principal that the two schools collaborate on joint projects instead of competing. They suggest that Patches could be a shared mascot for special events, symbolizing cooperation between the schools. The principal is impressed by {userName}'s mature thinking and diplomatic approach to solving conflicts through understanding and compromise.",
+        pause: true,
+        hook: "Will the schools agree to work together instead of competing?",
+        microVariants: {
+          text: "{userName} proposes school collaboration and sharing Patches as a symbol of cooperation, impressing the principal with diplomatic thinking.",
+          alternatives: [
+            "A collaboration proposal from {userName} suggests sharing Patches and working together, showing mature conflict resolution skills."
+          ],
+          optionalDetails: ["Both principals agreed to meet and discuss the idea", "Students from both schools supported the cooperation plan", "Patches seemed to enjoy having friends from both schools"]
+        }
+      },
+      {
+        text: "The collaboration begins with a joint science fair where students from both schools work together on environmental projects. {userName} helps organize teams that include members from both schools, ensuring everyone feels included and valued. Patches becomes the official mascot for all collaborative events, and his story becomes a symbol of how differences can be resolved through understanding and communication.",
+        pause: true,
+        hook: "What other collaborative projects will the schools create together?",
+        microVariants: {
+          text: "A joint science fair launches the collaboration, with {userName} organizing mixed teams and Patches as the official mascot for cooperative events.",
+          alternatives: [
+            "The school collaboration starts with environmental projects, mixed teams organized by {userName}, and Patches as the cooperation mascot."
+          ],
+          optionalDetails: ["The science fair featured projects on recycling and renewable energy", "Students discovered they had more in common than they thought", "Teachers from both schools shared resources and expertise"]
+        }
+      },
+      {
+        text: "As the collaborative programs expand to include art exchanges, music concerts, and athletic tournaments, {userName} takes on a leadership role as student coordinator between the schools. They learn valuable skills in diplomacy, event planning, and conflict resolution while helping to create lasting friendships across school boundaries. The success of these programs attracts attention from other schools in the district.",
+        pause: true,
+        hook: "How will {userName}'s leadership experience influence their future goals?",
+        microVariants: {
+          text: "Expanding programs include arts and sports, with {userName} as student coordinator learning diplomacy and leadership while building inter-school friendships.",
+          alternatives: [
+            "Leadership as student coordinator teaches {userName} diplomacy and planning skills while expanding collaborative arts, music, and sports programs."
+          ],
+          optionalDetails: ["Art students created a mural celebrating friendship", "Music concerts featured combined choirs from both schools", "Athletic tournaments focused on fun and friendship rather than just winning"]
+        }
+      },
+      {
+        text: "By the end of the school year, {userName} realizes that their detective work to find Patches had led to something much more valuable than solving a simple mystery. They had helped create a model for how schools and communities can work together to solve problems and build stronger relationships. The experience teaches them that sometimes the most important discoveries happen when you're looking for something else entirely.",
+        pause: false,
+        hook: "What other communities might benefit from {userName}'s collaboration model?",
+        microVariants: {
+          text: "By year's end, {userName} realizes that finding Patches led to creating a collaboration model that builds stronger community relationships and solves problems.",
+          alternatives: [
+            "The school year ends with {userName} understanding that detective work created something bigger: a community collaboration model for problem-solving."
+          ],
+          optionalDetails: ["Other districts visited to learn about the collaboration program", "The model was featured in educational magazines", "Both schools received awards for innovative community building"]
         }
       }
     ],
     endings: [
       {
         type: 'cozy',
-        text: "{userName} and the rival club become friends, organizing joint events and sharing Patches as a mascot. They learn the importance of communication and cooperation.",
+        text: "{userName} and Patches became best friends, with Patches often visiting {userName}'s classroom to help with school projects and bring joy to students who were having difficult days.",
         microVariants: [
-          "{userName} and the rival club become friends, sharing Patches and learning about communication and cooperation."
+          "Patches and {userName} became best friends, with the mascot helping in the classroom and cheering up students."
         ]
       },
       {
         type: 'silly',
-        text: "Patches becomes a celebrity, starring in commercials and making appearances at local events. He even gets his own fan club, with {userName} as the president.",
+        text: "Patches learned to solve mysteries too and became {userName}'s detective partner, wearing a tiny detective hat and helping to find lost items around the school.",
         microVariants: [
-          "Patches becomes a celebrity, starring in commercials and having {userName} as the president of his fan club."
+          "Patches became a detective partner, wearing a tiny hat and helping {userName} solve school mysteries."
         ]
       },
       {
         type: 'triumphant',
-        text: "{userName} receives an award for their detective work and community service. They inspire other students to become involved in solving problems and making a difference.",
+        text: "{userName} was offered a position as the school's official Student Ambassador, helping to solve conflicts and build bridges between different groups within the school community.",
         microVariants: [
-          "{userName} receives an award for their detective work, inspiring others to solve problems and make a difference."
+          "{userName} became the official Student Ambassador, solving conflicts and building bridges between school groups."
         ]
       },
       {
         type: 'reflective',
-        text: "Looking back on the case, {userName} realizes that even misunderstandings can be resolved with empathy and understanding. They continue to use their skills to help others and make their community a better place.",
+        text: "{userName} learned that the best detectives don't just solve mysteries—they help people understand each other and work together to make their communities stronger and more caring.",
         microVariants: [
-          "{userName} learns that misunderstandings can be resolved with empathy, continuing to help others and improve their community."
+          "{userName} learned that great detectives help people understand each other and build stronger, more caring communities."
         ]
       }
     ],
@@ -500,7 +560,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
       },
       {
         text: "The scientists return to Earth, and {userName} and the crew continue their mission to explore Mars. They discover new forms of life and learn valuable information about the red planet. They return to Earth as heroes.",
-        pause: false,
+        pause: true,
         hook: "What will they discover on their next space adventure?",
         microVariants: {
           text: "The scientists return to Earth, and {userName}'s crew explores Mars, discovering new life and information. They return as heroes.",
@@ -508,6 +568,66 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
             "After the scientists return, {userName}'s crew explores Mars, finds new life, and returns to Earth as heroes."
           ],
           optionalDetails: ["They found underground rivers.", "They discovered ancient ruins.", "They planted a flag on Mars."]
+        }
+      },
+      {
+        text: "Months after returning to Earth, {userName} and the crew receive a transmission from Mars containing detailed scientific data and photographs from the rescued scientists who stayed behind to continue research. The data reveals groundbreaking discoveries about Mars' potential for supporting life and its geological history. This information becomes crucial for planning future Mars colonization missions and advances humanity's understanding of planetary science.",
+        pause: true,
+        hook: "How will these discoveries change future space exploration plans?",
+        microVariants: {
+          text: "A Mars transmission reveals groundbreaking discoveries from the scientists, advancing planetary science and colonization planning.",
+          alternatives: [
+            "The rescued scientists send breakthrough research from Mars, providing crucial data for future colonization and planetary science."
+          ],
+          optionalDetails: ["Underground water sources were mapped comprehensively", "Ancient microbial life forms were discovered in rock samples", "Mineral deposits valuable for construction were located"]
+        }
+      },
+      {
+        text: "Based on the new scientific findings, {userName} leads a team to design the next generation of Mars exploration equipment that can establish permanent research stations. They work with international space agencies to develop sustainable life support systems, advanced communication networks, and efficient resource extraction technologies. The project becomes a global collaboration involving scientists, engineers, and researchers from multiple countries.",
+        pause: true,
+        hook: "What challenges will arise in establishing permanent Mars research stations?",
+        microVariants: {
+          text: "{userName} leads designing next-generation Mars equipment for permanent stations, collaborating internationally on sustainable technologies.",
+          alternatives: [
+            "Leading international collaboration, {userName} develops sustainable Mars technologies for permanent research stations and resource extraction."
+          ],
+          optionalDetails: ["Solar panel efficiency was improved by 300% for Mars conditions", "Atmospheric processors were designed to create breathable air", "Hydroponic systems were adapted for Martian soil conditions"]
+        }
+      },
+      {
+        text: "During equipment testing on Earth, {userName} discovers that the Martian robot they rescued has been upgraded by Earth scientists with artificial intelligence capabilities that could revolutionize space exploration. The robot, now called MARS-1, can independently conduct scientific experiments, navigate treacherous terrain, and communicate complex data back to Earth. This breakthrough makes future unmanned missions more effective and safer.",
+        pause: true,
+        hook: "How will MARS-1's capabilities transform space exploration missions?",
+        microVariants: {
+          text: "The rescued Martian robot, upgraded with AI as MARS-1, can independently conduct experiments and navigate, revolutionizing space exploration.",
+          alternatives: [
+            "MARS-1, the upgraded Martian robot with AI capabilities, transforms space exploration through independent research and navigation abilities."
+          ],
+          optionalDetails: ["The robot could predict weather patterns on Mars accurately", "It developed its own efficient routes through dangerous terrain", "MARS-1 could repair itself using available materials"]
+        }
+      },
+      {
+        text: "As commander of the next Mars mission, {userName} leads a diverse international crew including the scientists they previously rescued, creating a powerful team with both Earth training and Mars experience. The mission's goal is to establish humanity's first permanent research colony on Mars, using all the knowledge and technology developed from their previous adventures. The launch attracts global attention as a historic step toward interplanetary civilization.",
+        pause: true,
+        hook: "Will the permanent Mars colony successfully support human life long-term?",
+        microVariants: {
+          text: "Commander {userName} leads an international crew including rescued scientists to establish Mars' first permanent human research colony.",
+          alternatives: [
+            "Leading a global crew and rescued scientists, {userName} commands the mission to create humanity's first permanent Mars colony."
+          ],
+          optionalDetails: ["The colony could support 50 researchers initially", "Advanced greenhouses provided fresh food and oxygen", "Communication delays with Earth required autonomous decision-making"]
+        }
+      },
+      {
+        text: "The successful establishment of the Mars research colony becomes a turning point in human history, proving that interplanetary colonization is possible and sustainable. {userName} serves as the colony's first director, overseeing scientific research that leads to breakthroughs in medicine, agriculture, and environmental science that benefit both Mars and Earth. The experience teaches humanity valuable lessons about cooperation, sustainability, and the endless possibilities that exist when people work together toward common goals.",
+        pause: false,
+        hook: "What other planets will humanity explore next with the knowledge gained from Mars?",
+        microVariants: {
+          text: "The successful Mars colony proves interplanetary colonization possible, with director {userName} overseeing research benefiting both planets.",
+          alternatives: [
+            "Mars colony success under director {userName} demonstrates sustainable interplanetary living and produces research benefiting all humanity."
+          ],
+          optionalDetails: ["Medical research on Mars helped cure diseases on Earth", "Agricultural techniques from Mars improved Earth farming", "The colony became a model for future space settlements"]
         }
       }
     ],
@@ -548,90 +668,188 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         "spaceshipFeatures": ["solar panels", "robotic arms", "living quarters", "laboratory"]
       },
       weatherVariants: ["sunny", "stormy", "dusty", "clear"],
-      settingVariants: ["spaceship", "Martian surface", "underground base", "laboratory"]
+      settingVariants: ["spaceship", "Mars surface", "underground base", "research station"]
     }
   },
   {
     title: "The Student Council Environmental Initiative",
-    theme: "School & Everyday Life",
+    theme: "Environment & Community",
     level: "Level 3 (Ages 9-11)",
     scenes: [
       {
-        text: "{userName} had been noticing troubling changes around their school for weeks - the playground grass was turning brown despite regular watering, the school garden vegetables weren't growing properly, and even the {favoriteAnimal} that usually visited the courtyard seemed to be avoiding the area. During their favorite {hobbies} time after lunch, {userName} decided to investigate what was causing these environmental problems. They grabbed their notebook and began documenting everything they observed, from the strange {favoriteColor} tint in the water fountain to the unusual smell near the cafeteria dumpsters.",
+        text: "{userName} runs for student council with a platform focused on making their school more environmentally friendly. They notice that the school produces a lot of waste and uses too much energy. During their campaign speech, they propose creating a comprehensive environmental program.",
         pause: true,
-        hook: "What could be causing all these environmental problems at school?",
+        hook: "Will the students vote for {userName}'s environmental platform?",
         microVariants: {
-          text: "{userName} had been noticing troubling changes around their school for weeks - the playground grass was turning brown despite regular watering, the school garden vegetables weren't growing properly, and even the {favoriteAnimal} that usually visited the courtyard seemed to be avoiding the area. During their favorite {hobbies} time after lunch, {userName} decided to investigate what was causing these environmental problems. They grabbed their notebook and began documenting everything they observed, from the strange {favoriteColor} tint in the water fountain to the unusual smell near the cafeteria dumpsters.",
+          text: "{userName} campaigns for student council with environmental plans, noticing the school's waste and energy problems.",
           alternatives: [
-            "{userName} couldn't ignore the concerning environmental changes that had been occurring at their school over the past month - withering plants despite adequate irrigation, failing vegetable crops in the educational garden, and the mysterious absence of the beloved {favoriteAnimal} that typically inhabited the school courtyard. While enjoying their usual {hobbies} activities during the post-lunch break, {userName} resolved to conduct a thorough investigation. Armed with a detailed notebook, they began systematically recording their observations, noting everything from the peculiar {favoriteColor} discoloration in the drinking water to the suspicious odors emanating from the waste management area."
+            "Running for student council, {userName} proposes environmental improvements after observing school waste and energy use."
           ],
-          optionalDetails: ["Other students were starting to notice the changes too.", "The custodial staff seemed worried but hadn't said anything.", "The principal had mentioned 'investigating' during morning announcements."]
+          optionalDetails: ["The cafeteria throws away tons of food daily", "Lights stay on in empty classrooms", "Recycling bins are rarely used properly"]
+        }
+      },
+      {
+        text: "After winning the election, {userName} starts by organizing a school-wide environmental audit with help from science teachers and parent volunteers. They measure energy consumption, waste production, and water usage throughout the school. The results are eye-opening: the school could reduce its environmental impact by 40% with simple changes.",
+        pause: true,
+        hook: "What changes will {userName} implement first?",
+        microVariants: {
+          text: "Winning the election, {userName} organizes an environmental audit revealing the school could reduce its impact by 40% with simple changes.",
+          alternatives: [
+            "As elected representative, {userName} conducts a comprehensive environmental audit showing major improvement potential."
+          ],
+          optionalDetails: ["Energy costs were 60% higher than necessary", "Food waste filled three dumpsters weekly", "Water leaks wasted thousands of gallons monthly"]
+        }
+      },
+      {
+        text: "{userName} launches the \"Green School Challenge\" with different classrooms competing to reduce waste, save energy, and increase recycling. They create colorful charts tracking each class's progress and offer prizes for the most improved environmental practices. The friendly competition motivates students to become more conscious of their environmental choices.",
+        pause: true,
+        hook: "How will the competition change student behavior throughout the school?",
+        microVariants: {
+          text: "The \"Green School Challenge\" creates classroom competition for waste reduction, energy savings, and recycling with tracking charts and prizes.",
+          alternatives: [
+            "Classroom competitions in the Green School Challenge motivate students through progress tracking and environmental improvement prizes."
+          ],
+          optionalDetails: ["Fifth grade reduced waste by 70% in the first month", "Kindergarten students became recycling experts", "Energy savings paid for new playground equipment"]
+        }
+      },
+      {
+        text: "Working with the cafeteria staff, {userName} helps establish a composting program that turns food scraps into nutrient-rich soil for a new school garden. Students learn about the composting process while growing vegetables that are later used in school meals. This creates a complete cycle from waste to food production that demonstrates sustainable living principles.",
+        pause: true,
+        hook: "What will students learn from growing their own food at school?",
+        microVariants: {
+          text: "A composting program with cafeteria staff creates soil for a school garden where students grow vegetables for school meals.",
+          alternatives: [
+            "Food scraps become compost for a student garden that provides vegetables for school meals, creating a sustainable cycle."
+          ],
+          optionalDetails: ["The garden produces enough salad ingredients for 200 students daily", "Compost bins are maintained by rotating student teams", "Cooking classes use fresh garden vegetables in recipes"]
+        }
+      },
+      {
+        text: "{userName} organizes \"Energy Detective\" teams of students who monitor and report on energy waste throughout the school. They check for lights left on, computers not shut down properly, and heating or cooling inefficiencies. These teams become so effective that the school's energy bill decreases by 25% within three months.",
+        pause: true,
+        hook: "How will the energy savings benefit the entire school community?",
+        microVariants: {
+          text: "Energy Detective teams monitor school energy waste, leading to 25% energy bill reduction within three months.",
+          alternatives: [
+            "Student Energy Detective teams effectively reduce the school's energy consumption by 25% through waste monitoring and reporting."
+          ],
+          optionalDetails: ["Saved money funded new library books and science equipment", "Students created energy-saving reminder posters", "The principal praised the teams at monthly assemblies"]
+        }
+      },
+      {
+        text: "The success of the environmental program attracts attention from other schools in the district, and {userName} is invited to present their initiatives at a regional student leadership conference. They share detailed data about their programs' success and provide practical advice for implementing similar initiatives. Their presentation inspires students from dozens of other schools to start their own environmental programs.",
+        pause: true,
+        hook: "How will {userName}'s ideas spread to create district-wide environmental improvements?",
+        microVariants: {
+          text: "Regional conference presentation by {userName} shares program success data and inspires dozens of other schools to start environmental initiatives.",
+          alternatives: [
+            "Success attracts regional attention as {userName} presents to student leaders, inspiring district-wide environmental program adoption."
+          ],
+          optionalDetails: ["Fifteen schools implemented similar programs within six months", "The district created an environmental excellence award", "Local newspapers featured the student-led environmental movement"]
+        }
+      },
+      {
+        text: "As the environmental program expands, {userName} collaborates with local environmental organizations and city officials to connect school initiatives with community-wide sustainability efforts. Students participate in city-wide recycling drives, park cleanup events, and renewable energy awareness campaigns. This partnership helps students understand that environmental responsibility extends beyond school walls.",
+        pause: true,
+        hook: "What lasting impact will these community partnerships create?",
+        microVariants: {  
+          text: "Community partnerships with environmental organizations and city officials connect school programs to city-wide sustainability efforts.",
+          alternatives: [
+            "Collaboration with local groups extends environmental education beyond school through community sustainability partnerships."
+          ],
+          optionalDetails: ["Students helped plant 500 trees in city parks", "The mayor commended the school's environmental leadership", "Community recycling increased 40% with student volunteer help"]
+        }
+      },
+      {
+        text: "By the end of the school year, {userName} helps establish an Environmental Club that will continue the initiatives with future student leaders. They create detailed handbooks and training materials so that incoming students can maintain and expand the programs. The club receives official recognition from the school board and becomes a permanent part of the school's structure.",
+        pause: true,  
+        hook: "How will future students continue building on these environmental achievements?",
+        microVariants: {
+          text: "An Environmental Club with handbooks and training materials ensures program continuity, receiving official school board recognition.",
+          alternatives: [
+            "Program sustainability is secured through an official Environmental Club with training resources and school board recognition."
+          ],
+          optionalDetails: ["The club received annual funding for environmental projects", "New students eagerly join the popular Environmental Club", "The handbook is shared with schools nationwide"]
+        }
+      },
+      {
+        text: "The environmental program's success leads to the school receiving state recognition as a \"Green School of Excellence,\" with {userName} representing the school at the state award ceremony. They realize that student leadership can create meaningful change when combined with dedication, collaboration, and practical problem-solving. The experience teaches them that young people have the power to address serious environmental challenges.",
+        pause: true,
+        hook: "What environmental challenges will {userName} tackle next as a recognized student leader?",
+        microVariants: {
+          text: "State recognition as a 'Green School of Excellence' demonstrates how student leadership creates meaningful environmental change.",
+          alternatives: [
+            "The 'Green School of Excellence' award validates {userName}'s belief that students can effectively address environmental challenges."
+          ],
+          optionalDetails: ["The governor personally congratulated {userName} at the ceremony", "Other state schools requested consulting help", "Environmental organizations offered internships"]
+        }
+      },
+      {
+        text: "Years later, {userName} reflects on how their student council environmental initiative became the foundation for a lifelong commitment to sustainability and environmental advocacy. The skills they developed in project management, community organizing, and environmental science led to a career dedicated to creating positive environmental change. They never forgot that meaningful environmental action often starts with young people who care enough to take the first step.",
+        pause: false,
+        hook: "What global environmental challenges might {userName} help solve in their future career?",
+        microVariants: {
+          text: "The student council initiative becomes the foundation for {userName}'s lifelong environmental advocacy career and commitment to sustainability.",
+          alternatives: [
+            "Environmental advocacy career roots trace back to {userName}'s transformative student council experience with school sustainability programs."
+          ],
+          optionalDetails: ["They became an environmental engineer designing renewable energy systems", "Their consulting firm helps schools worldwide become sustainable", "The original school program still operates successfully after many years"]
         }
       }
     ],
     endings: [
       {
         type: 'cozy',
-        text: "Six months later, {userName} sat in the beautifully restored school garden, watching the {favoriteAnimal} play among the thriving plants while enjoying a healthy snack of {favoriteFood} grown in their own clean soil. The gentle sound of the new water filtration system provided a peaceful backdrop as they reflected on how one person's dedication to environmental stewardship had transformed their entire school community into a model of sustainability and ecological responsibility.",
+        text: "{userName} continues to visit their old school every Earth Day to help new students plant trees and learn about environmental stewardship, watching with pride as each new generation carries forward the tradition of environmental responsibility.",
         microVariants: [
-          "Half a year afterward, {userName} relaxed peacefully in the rejuvenated educational garden, observing the joyful return of the {favoriteAnimal} population as they thrived among the flourishing vegetation while savoring organically grown {favoriteFood} harvested from their own purified earth. The soothing sounds of advanced water purification technology created a tranquil atmosphere for contemplating how individual commitment to environmental protection had evolved their academic institution into an exemplary demonstration of sustainable practices and ecological stewardship."
+          "Annual Earth Day visits to plant trees with new students continue the environmental stewardship tradition {userName} started."
         ]
       },
       {
         type: 'silly',
-        text: "The celebration got wonderfully out of hand when the {favoriteAnimal} discovered they could slide down the new rain collection system like a water slide! \"Wheee! Environmental protection is fun!\" they seemed to say as they splashed into the clean collection pond. Even the vegetables in the garden started doing what looked like a happy dance in the wind, and {userName} was convinced the {favoriteFood} tasted extra delicious because it was grown with such joy and environmental love!",
+        text: "The school's original compost bins become legendary \"historical artifacts\" that new students visit like a monument, with {userName}'s photo displayed proudly as the \"Great Compost Pioneer\" of the school.",
         microVariants: [
-          "The environmental victory party became hilariously chaotic when the local {favoriteAnimal} population realized the new sustainable water management infrastructure doubled as the world's best natural playground! \"Environmental engineering meets extreme fun!\" {userName} laughed as they watched the delighted creatures turn conservation equipment into entertainment systems."
+          "The original compost bins become school monuments with {userName} honored as the legendary 'Great Compost Pioneer'."
         ]
       },
       {
         type: 'triumphant',
-        text: "At the regional Environmental Youth Leadership Awards ceremony, {userName} stood proudly on stage receiving the highest honor for environmental advocacy while their school was officially designated as a National Model for Ecological Stewardship. \"Young environmental heroes like {userName} prove that age is no barrier to creating positive change!\" declared the EPA representative.",
+        text: "{userName} receives a national environmental leadership award and uses their platform to advocate for environmental education in schools across the country, inspiring thousands of students to become environmental leaders.",
         microVariants: [
-          "During the prestigious state-level Environmental Excellence Recognition event, {userName} accepted the supreme environmental leadership distinction while their educational institution received official certification as a Federal Demonstration Site for Sustainable Practices."
+          "National environmental leadership recognition helps {userName} inspire thousands of students nationwide to become environmental advocates."
         ]
       },
       {
         type: 'reflective',
-        text: "Standing quietly in the evening garden, surrounded by the gentle sounds of clean water flowing and healthy wildlife thriving, {userName} understood something profound about their place in the world. \"Every person has the power to protect the environment,\" they realized with quiet confidence. \"When we combine scientific curiosity with community cooperation and personal courage, we can solve even the biggest environmental challenges. The Earth needs each of us to be its advocate.\"",
+        text: "{userName} learns that true leadership means empowering others to continue important work long after you've moved on, and that environmental protection requires sustained commitment from every generation.",
         microVariants: [
-          "In the peaceful twilight hours within their restored ecological sanctuary, listening to the harmonious symphony of purified water systems and flourishing biodiversity, {userName} experienced a deep understanding about their role as an environmental steward."
+          "True leadership means empowering others to continue environmental work, requiring sustained commitment from every generation."
         ]
       }
     ],
     reuse: {
       swappableElements: {
-        "environmental_problems": ["water contamination", "soil pollution", "air quality issues", "waste management", "habitat destruction"],
-        "investigation_tools": ["notebooks", "cameras", "water testing kits", "measuring devices", "observation charts"],
-        "solutions": ["filtration systems", "recycling programs", "garden restoration", "waste reduction", "habitat protection"]
+        "environmentalFocus": ["waste reduction", "energy conservation", "water saving", "sustainable gardening"],
+        "schoolAreas": ["cafeteria", "classrooms", "gymnasium", "library"],
+        "measurementTools": ["energy meters", "waste scales", "water monitors", "recycling trackers"]
       },
-      weatherVariants: ["sunny investigation day", "rainy measurement session", "cloudy observation period", "clear documentation time"],
-      settingVariants: ["school courtyard", "playground area", "garden space", "cafeteria vicinity"]
+      weatherVariants: ["during Earth Week", "in spring semester", "throughout the school year", "during environmental awareness month"],
+      settingVariants: ["elementary school", "middle school", "community school", "charter school"]
     }
-  },
-
-  // Template 2: Friendship & Teamwork - completed above
-  // Template 3: Magic & Fantasy - completed above  
-  // Template 4: Adventure Journeys - completed above
-  // Template 5: Space & Sci-Fi - completed above
+  }
 ];
 
-/**
- * Get a random Level 3 template
- */
 export function getLevel3FallbackTemplate(templateIndex?: number): StoryTemplate | null {
   if (LEVEL_3_FALLBACK_TEMPLATES.length === 0) return null;
   
-  const index = templateIndex !== undefined 
-    ? Math.min(templateIndex, LEVEL_3_FALLBACK_TEMPLATES.length - 1)
-    : Math.floor(Math.random() * LEVEL_3_FALLBACK_TEMPLATES.length);
+  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_FALLBACK_TEMPLATES.length) {
+    return LEVEL_3_FALLBACK_TEMPLATES[templateIndex];
+  }
   
-  return LEVEL_3_FALLBACK_TEMPLATES[index];
+  const randomIndex = Math.floor(Math.random() * LEVEL_3_FALLBACK_TEMPLATES.length);
+  return LEVEL_3_FALLBACK_TEMPLATES[randomIndex];
 }
 
-/**
- * Get the count of Level 3 templates
- */
 export function getLevel3FallbackTemplateCount(): number {
   return LEVEL_3_FALLBACK_TEMPLATES.length;
 }

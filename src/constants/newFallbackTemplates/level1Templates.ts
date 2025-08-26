@@ -59,6 +59,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
           alternatives: ["The fairy gifts {userName} a magical seed before they leave.", "With a promise to return, {userName} receives a special growing gift."],
           optionalDetails: ["the seed glows with inner light", "it feels warm and tingly in their hand"]
         }
+      },
+      {
+        text: "At home, {userName} carefully plants the magical seed in a special spot in their garden. They water it every day and tell it stories about their fairy friend. One morning, a tiny {favoriteColor} sprout appears, and {userName} knows their magical adventures are just beginning.",
+        pause: false,
+        hook: "What wonderful plant will grow from this magical seed?",
+        microVariants: {
+          text: "At home, {userName} carefully plants the magical seed in a special spot in their garden. They water it every day and tell it stories about their fairy friend. One morning, a tiny {favoriteColor} sprout appears, and {userName} knows their magical adventures are just beginning.",
+          alternatives: ["The magical seed finds a perfect home in {userName}'s garden, where daily care and stories help it begin to grow.", "With gentle care and fairy stories, {userName} watches as the magical seed starts its amazing transformation."],
+          optionalDetails: ["the sprout sparkles in the morning sunlight", "butterflies are drawn to the growing plant", "the soil around the seed glows softly"]
+        }
       }
     ],
     endings: [
@@ -136,6 +146,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
           text: "In the morning, {userName} waves goodbye to their new animal friend. They pack up camp and promise to return next summer.",
           alternatives: ["The camping adventure ends with new friendships and happy memories.", "Saying goodbye is hard, but {userName} knows they'll be back."],
           optionalDetails: ["the sunrise paints the sky in beautiful colors", "birds sing a cheerful morning song"]
+        }
+      },
+      {
+        text: "When {userName} gets home, they create a special camping journal with pictures and stories from their adventure. They plan their next camping trip and promise to teach other kids about respecting nature and making friends with animals.",
+        pause: false,
+        hook: "What new camping adventures will {userName} discover?",
+        microVariants: {
+          text: "When {userName} gets home, they create a special camping journal with pictures and stories from their adventure. They plan their next camping trip and promise to teach other kids about respecting nature and making friends with animals.",
+          alternatives: ["The camping memories become a treasured journal that inspires {userName} to plan more outdoor adventures.", "Home again, {userName} documents their camping story and dreams of sharing nature's wonders with friends."],
+          optionalDetails: ["the journal has pressed leaves and flowers", "they draw maps of their camping spots", "family members love hearing the adventure stories"]
         }
       }
     ],
@@ -215,6 +235,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
           alternatives: ["A simple act of kindness grew into a wonderful friendship.", "Helping others brought {userName} their very best friend."],
           optionalDetails: ["they sit together at lunch every day", "they plan fun activities together"]
         }
+      },
+      {
+        text: "Every day at school, {userName} and Sarah sit together at lunch and plan fun activities. They help other kids solve playground problems and share their snacks with anyone who feels sad or lonely.",
+        pause: false,
+        hook: "What other friends will join their kindness club?",
+        microVariants: {
+          text: "Every day at school, {userName} and Sarah sit together at lunch and plan fun activities. They help other kids solve playground problems and share their snacks with anyone who feels sad or lonely.",
+          alternatives: ["Daily lunch meetings between {userName} and Sarah become planning sessions for spreading kindness throughout the school.", "The best friends create a tradition of lunch-time kindness planning and snack sharing with lonely classmates."],
+          optionalDetails: ["they make friendship bracelets for new kids", "their kindness activities include playground games", "teachers notice how much happier the playground becomes"]
+        }
       }
     ],
     endings: [
@@ -293,6 +323,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
           alternatives: ["Daily visits create a special friendship with the bird family.", "The rescued bird becomes {userName}'s special feathered friend."],
           optionalDetails: ["the bird recognizes {userName}'s voice", "sometimes the bird brings small gifts like pretty leaves"]
         }
+      },
+      {
+        text: "Each week, {userName} brings special treats for their bird friends and spends time watching them play and learn to fly better. Other kids from the neighborhood start joining {userName} to watch the birds and learn about helping animals.",
+        pause: false,
+        hook: "How many more animals might {userName} help in their neighborhood?",
+        microVariants: {
+          text: "Each week, {userName} brings special treats for their bird friends and spends time watching them play and learn to fly better. Other kids from the neighborhood start joining {userName} to watch the birds and learn about helping animals.",
+          alternatives: ["Weekly bird visits become neighborhood learning sessions as other children join {userName} in animal care education.", "The bird friendship grows into a community activity where kids learn about wildlife care from {userName}'s example."],
+          optionalDetails: ["the birds perform special flight shows for the children", "kids bring their own healthy bird treats", "a teacher joins to help identify different bird species"]
+        }
       }
     ],
     endings: [
@@ -370,6 +410,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
           text: "When it's time to go home, {userName} promises to visit again soon. They blast off and land safely in their backyard.",
           alternatives: ["The space adventure ends with promises of return visits.", "Landing safely, {userName} carries space memories in their heart."],
           optionalDetails: ["the aliens give them a small moon rock", "they plan tomorrow's space mission"]
+        }
+      },
+      {
+        text: "At the end of their space adventure, {userName} promises the alien children they will return someday. They wave goodbye as Earth appears in their spaceship window, knowing they will always remember their cosmic friends and the wonders of space exploration.",
+        pause: false,
+        hook: "What other planets might {userName} explore in the future?",
+        microVariants: {
+          text: "At the end of their space adventure, {userName} promises the alien children they will return someday. They wave goodbye as Earth appears in their spaceship window, knowing they will always remember their cosmic friends and the wonders of space exploration.",
+          alternatives: ["The space adventure concludes with promises of return visits as {userName} waves goodbye to their alien friends.", "Heading home to Earth, {userName} carries memories of cosmic friendship and dreams of future space exploration."],
+          optionalDetails: ["the alien children wave from their planet's surface", "Earth looks beautiful and {favoriteColor} from space", "the spaceship plays gentle music for the journey home"]
         }
       }
     ],
