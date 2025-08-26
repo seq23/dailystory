@@ -2,50 +2,65 @@
 // 4-5 sentences per page (80-100 words per scene)  
 // For ages 11+, 7th-12th grade reading level
 
-export const LEVEL_4_TEMPLATES: string[][] = [
-  [
-    "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team. Dr. Martinez, the lead archaeologist, explains that such discoveries could rewrite our understanding of ancient civilizations and their technological capabilities.",
-    "Determined to decode the artifact's secrets, {userName} begins intensive research using the museum's extensive library and digital archives. They study comparative linguistics, ancient writing systems, and archaeological methodology while collaborating with university professors via video conferences. The complexity of the symbols suggests a sophisticated civilization with advanced mathematical and astronomical knowledge that challenges current historical timelines.",
-    "After weeks of painstaking analysis, {userName} makes a breakthrough by recognizing mathematical patterns hidden within the symbolic arrangements. The tablet appears to contain astronomical calculations that accurately predict celestial events, indicating the ancient civilization possessed remarkable scientific understanding. This discovery attracts attention from international archaeologists and linguists who want to collaborate on further research.",
-    "The research team decides to organize an expedition to the site where the artifact was originally discovered decades ago. {userName} joins the team as a junior researcher, learning proper excavation techniques, documentation methods, and site preservation protocols. They uncover additional artifacts that support their theory about the advanced nature of this lost civilization.",
-    "{userName} presents their findings at a national archaeology conference, inspiring other young people to pursue careers in historical research and scientific discovery. The experience teaches them that patience, methodical thinking, and collaborative effort are essential for making meaningful contributions to human knowledge. They decide to major in archaeology and continue unraveling the mysteries of ancient civilizations."
-  ],
-  [
-    "{userName} creates an innovative app designed to help students with learning disabilities access educational content more effectively through personalized learning algorithms. The project begins as a computer science class assignment but evolves into something much more significant when {userName} realizes the potential impact on millions of students worldwide. They spend countless hours researching accessibility technologies, cognitive science, and educational psychology to ensure their solution addresses real needs.",
-    "Working with special education teachers and learning disability specialists, {userName} refines the app's features to include text-to-speech functionality, visual learning aids, and adaptive testing mechanisms. The app learns from each user's interaction patterns, automatically adjusting difficulty levels and presentation styles to match individual learning preferences. Beta testing with local students provides valuable feedback that helps improve the user experience and educational effectiveness.",
-    "The app gains recognition when {userName} enters it in a statewide technology competition, where it wins first place in the social impact category. Venture capitalists and educational technology companies express interest in licensing or purchasing the app, but {userName} insists on maintaining its accessibility and affordability for students who need it most. They learn about business ethics, intellectual property, and the responsibility that comes with creating technology that affects people's lives.",
-    "Major universities offer {userName} early admission and scholarships based on their innovative work in educational technology and demonstrated commitment to social impact. Technology blogs and educational publications feature articles about the app, inspiring other young developers to create solutions for underserved communities. The recognition brings opportunities to speak at conferences and mentor other student entrepreneurs.",
-    "{userName} decides to continue developing the app while pursuing a degree in computer science and education, with plans to establish a nonprofit organization focused on accessible educational technology. They understand that technology should serve humanity's greatest needs and that young people have the power to create positive change through innovation and determination. The experience shapes their career goals and commitment to using technology for social good."
-  ],
-  [
-    "{userName} organizes a community-wide initiative to address food insecurity in their town after discovering that many classmates rely on free school meals as their primary source of nutrition. Through research and interviews with local social workers, they learn about the complex factors contributing to hunger in their community, including unemployment, inadequate transportation, and limited access to affordable healthy food. This knowledge motivates them to develop a comprehensive solution that addresses multiple aspects of the problem.",
-    "The initiative involves establishing community gardens in vacant lots, partnering with local restaurants to redistribute excess food, and creating a network of volunteers who can deliver meals to elderly and disabled residents. {userName} coordinates with city officials, business owners, and nonprofit organizations to secure permits, funding, and ongoing support for the program. They learn about project management, public speaking, and the importance of building coalitions to achieve lasting social change.",
-    "As the program expands, {userName} implements a food education component that teaches families about nutrition, budgeting, and cooking skills using affordable ingredients. They organize cooking classes in community centers, create multilingual educational materials, and establish mentorship programs where experienced cooks share knowledge with newcomers. The holistic approach addresses not just immediate hunger but also the underlying issues that contribute to food insecurity.",
-    "The success of the program attracts attention from state legislators and national anti-hunger organizations who want to replicate the model in other communities. {userName} testifies before the state legislature about youth leadership in addressing social issues and receives invitations to speak at national conferences about community organizing and food justice. Their work demonstrates how young people can effectively tackle complex social problems through systematic thinking and collaborative action.",
-    "{userName} receives numerous awards and scholarship opportunities, but more importantly, they see the tangible impact of their work in improved health outcomes and stronger community connections. The experience teaches them about social justice, systemic inequality, and the power of grassroots organizing to create meaningful change. They plan to study public policy and community development in college, with goals of working on poverty reduction and social equity at national and international levels."
-  ],
-  [
-    "{userName} develops a groundbreaking environmental monitoring system using sensors and data analysis to track air and water quality in their city. The project begins when they notice unusual patterns in local wildlife behavior and suspect environmental contamination might be affecting their community's health. Using Arduino microcontrollers, water testing kits, and air quality sensors, they create a network of monitoring stations that collect real-time environmental data.",
-    "The data reveals concerning levels of pollutants near industrial areas and highlights environmental justice issues affecting low-income neighborhoods disproportionately. {userName} collaborates with environmental scientists at the nearby university to validate their findings and develop more sophisticated analytical methods. They learn about environmental chemistry, statistical analysis, and the regulatory processes that govern environmental protection and public health.",
-    "Armed with scientific evidence, {userName} presents their findings to city council meetings, environmental protection agencies, and community groups affected by the pollution. They organize public forums where residents can learn about environmental health risks and advocate for stricter enforcement of pollution regulations. The work requires learning about environmental law, public policy, and effective advocacy strategies that can influence decision-makers.",
-    "The monitoring system gains national attention when environmental organizations use {userName}'s model to establish similar programs in other cities facing industrial pollution challenges. Major environmental groups offer internships and mentorship opportunities, while universities recruit {userName} for their environmental science programs. The recognition validates the importance of citizen science and youth activism in environmental protection efforts.",
-    "{userName} establishes a nonprofit organization dedicated to environmental monitoring and community empowerment, training other young people to use technology for environmental advocacy. They understand that environmental protection requires ongoing vigilance, scientific literacy, and community engagement to hold polluters accountable and protect public health. Their work inspires a career in environmental engineering focused on developing sustainable technologies that can address climate change and environmental degradation."
-  ],
-  [
-    "{userName} creates a documentary film exploring the stories of refugee families in their community, aiming to counter negative stereotypes and promote understanding across cultural divides. The project begins when they befriend a classmate who recently immigrated and realize how little their community understands about the refugee experience. Through careful research and sensitive interviewing, they document the challenges, resilience, and contributions of refugee families while respecting their privacy and dignity.",
-    "The filmmaking process teaches {userName} about documentary ethics, storytelling techniques, and the responsibility that comes with representing marginalized communities. They work with local refugee resettlement organizations to ensure their approach is culturally sensitive and beneficial to the families they feature. The project involves learning about immigration policy, international conflicts, and the global factors that force people to leave their homes.",
-    "The completed documentary premieres at local theaters and community centers, sparking important conversations about immigration, cultural diversity, and community responsibility. {userName} organizes panel discussions with featured families, immigration lawyers, and social workers to provide context and answer audience questions. The film's impact extends beyond entertainment to become a tool for education and advocacy that challenges prejudice and promotes empathy.",
-    "Film festivals and human rights organizations recognize the documentary's power to humanize complex political issues and promote social understanding. {userName} receives invitations to screen the film at universities, high schools, and community organizations across the region. The experience demonstrates how storytelling can be a powerful tool for social change and cross-cultural understanding.",
-    "{userName} uses the success of the documentary to launch a media literacy program that teaches other young people to create their own social impact films. They understand that media representation matters and that young filmmakers have unique perspectives that can challenge dominant narratives and promote justice. The experience shapes their decision to study journalism and documentary filmmaking with goals of continuing to tell stories that matter and promote social understanding."
-  ]
+import { StoryTemplate } from '../storyTemplateTypes';
+
+export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
+  {
+    title: "The Ancient Artifact Mystery",
+    theme: "Archaeology & Discovery",
+    level: "Level 4", 
+    scenes: [
+      {
+        text: "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team. Dr. Martinez, the lead archaeologist, explains that such discoveries could rewrite our understanding of ancient civilizations and their technological capabilities.",
+        pause: true,
+        hook: "What secrets might this ancient artifact reveal?",
+        microVariants: {
+          text: "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team. Dr. Martinez, the lead archaeologist, explains that such discoveries could rewrite our understanding of ancient civilizations and their technological capabilities.",
+          alternatives: ["An mysterious artifact catches {userName}'s attention at the museum.", "While cataloging artifacts, {userName} finds something extraordinary."],
+          optionalDetails: ["the tablet feels surprisingly warm to the touch", "strange symbols seem to shimmer in certain lighting"]
+        }
+      },
+      {
+        text: "Determined to decode the artifact's secrets, {userName} begins intensive research using the museum's extensive library and digital archives. They study comparative linguistics, ancient writing systems, and archaeological methodology while collaborating with university professors via video conferences. The complexity of the symbols suggests a sophisticated civilization with advanced mathematical and astronomical knowledge that challenges current historical timelines.",
+        pause: true,
+        hook: "What breakthrough will {userName} make in their research?",
+        microVariants: {
+          text: "Determined to decode the artifact's secrets, {userName} begins intensive research using the museum's extensive library and digital archives. They study comparative linguistics, ancient writing systems, and archaeological methodology while collaborating with university professors via video conferences. The complexity of the symbols suggests a sophisticated civilization with advanced mathematical and astronomical knowledge that challenges current historical timelines.",
+          alternatives: ["Deep research reveals the artifact's incredible complexity.", "{userName} works tirelessly to unlock the tablet's mysteries."],
+          optionalDetails: ["professors from around the world join the investigation", "each symbol represents multiple concepts simultaneously"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} presents their findings at a national archaeology conference, inspiring other young people to pursue careers in historical research and scientific discovery.",
+        microVariants: ["The discovery changes how we understand ancient civilizations.", "{userName} becomes the youngest researcher to present at the conference."]
+      },
+      {
+        type: 'reflective', 
+        text: "{userName} realizes that some mysteries are meant to be explored gradually, with patience and respect for ancient cultures.",
+        microVariants: ["The journey of discovery proves more valuable than quick answers.", "Each clue leads to deeper questions about human history."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "artifact": ["manuscript", "tool", "sculpture", "map", "vessel"],
+        "Dr. Martinez": ["Dr. Chen", "Professor Williams", "Dr. Patel", "Dr. Johnson"],
+        "museum": ["university", "research center", "archaeological site", "library"]
+      },
+      weatherVariants: ["during summer break", "on a stormy weekend", "during winter holidays", "in the early morning"],
+      settingVariants: ["natural history museum", "university museum", "archaeological institute", "cultural center"]
+    }
+  }
 ];
 
-export function getLevel4Template(templateIndex?: number): string[] {
+export function getLevel4Template(templateIndex?: number): StoryTemplate {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_4_TEMPLATES.length) {
-    return [...LEVEL_4_TEMPLATES[templateIndex]];
+    return LEVEL_4_TEMPLATES[templateIndex];
   }
   const randomIndex = Math.floor(Math.random() * LEVEL_4_TEMPLATES.length);
-  return [...LEVEL_4_TEMPLATES[randomIndex]];
+  return LEVEL_4_TEMPLATES[randomIndex];
 }
 
 export function getLevel4TemplateCount(): number {
