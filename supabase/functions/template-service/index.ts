@@ -7,6 +7,117 @@ const corsHeaders = {
 };
 
 // ============================================================================
+// NEW TEMPLATE SYSTEM INTEGRATION
+// ============================================================================
+
+// Note: In edge functions, we need to inline the new template system types and data
+// since we can't import from src/ directories
+
+interface SceneMicroVariants {
+  text: string;
+  alternatives: string[];
+  optionalDetails: string[];
+}
+
+interface StoryScene {
+  text: string;
+  pause: boolean;
+  hook: string;
+  microVariants: SceneMicroVariants;
+}
+
+interface AttachableEnding {
+  type: 'cozy' | 'silly' | 'triumphant' | 'reflective';
+  text: string;
+  microVariants: string[];
+}
+
+interface StoryTemplate {
+  title: string;
+  theme: string;
+  level: string;
+  scenes: StoryScene[];
+  endings: AttachableEnding[];
+  reuse: {
+    swappableElements: Record<string, string[]>;
+    weatherVariants: string[];
+    settingVariants: string[];
+    randomSeed?: number;
+  };
+}
+
+// Basic new template system templates (Level 1-4 samples)
+// Note: In production, these would be fully populated from the new template system
+const NEW_TEMPLATE_SYSTEM: Record<string, StoryTemplate[]> = {
+  level1: [
+    {
+      title: "The Garden Adventure",
+      theme: "nature exploration",
+      level: "level1",
+      scenes: [
+        {
+          text: "{userName} walks into the magical garden. The {favoriteColor} flowers sparkle in the sunlight.",
+          pause: true,
+          hook: "What will {userName} discover?",
+          microVariants: {
+            text: "{userName} walks into the magical garden. The {favoriteColor} flowers sparkle in the sunlight.",
+            alternatives: [
+              "{userName} steps into the wonderful garden where {favoriteColor} flowers bloom.",
+              "{userName} enters the enchanted garden filled with {favoriteColor} blooms."
+            ],
+            optionalDetails: ["Birds sing sweet songs.", "Butterflies dance nearby.", "A gentle breeze blows."]
+          }
+        },
+        {
+          text: "A friendly {favoriteAnimal} appears and wants to play. {userName} kneels down to say hello.",
+          pause: true,
+          hook: "Will they become friends?",
+          microVariants: {
+            text: "A friendly {favoriteAnimal} appears and wants to play. {userName} kneels down to say hello.",
+            alternatives: [
+              "A cute {favoriteAnimal} runs up to {userName} with a happy smile.",
+              "A playful {favoriteAnimal} bounces over to greet {userName}."
+            ],
+            optionalDetails: ["The animal wags its tail.", "It makes a happy sound.", "Its eyes sparkle with joy."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "{userName} and the {favoriteAnimal} become best friends and promise to meet again tomorrow.",
+          microVariants: [
+            "{userName} gives the {favoriteAnimal} a gentle hug goodbye.",
+            "{userName} waves as the {favoriteAnimal} runs home happily."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          settings: ["garden", "park", "forest", "meadow"],
+          actions: ["play", "explore", "discover", "adventure"]
+        },
+        weatherVariants: ["sunny", "cloudy", "breezy"],
+        settingVariants: ["morning", "afternoon", "evening"]
+      }
+    }
+  ],
+  level2: [],
+  level3: [],
+  level4: [],
+  grade6: [],
+  grade7: [],
+  grade8: [],
+  grade9: [],
+  grade10: []
+};
+
+// Convert StoryTemplate to string array for compatibility
+function templateToStringArray(template: StoryTemplate): string[] {
+  return template.scenes.map(scene => scene.text);
+}
+
+// ============================================================================
 // COMPLETE PLACEHOLDER RESOLUTION SYSTEM
 // ============================================================================
 
@@ -320,26 +431,54 @@ function validateAndFixGrammar(text: string): string {
 // ============================================================================
 
 function getFallbackTemplate(level: string, templateIndex?: number): string[] | null {
-  let templates: string[][];
+  console.log('🎯 Getting template for level:', level);
   
-  // Level 0 selection logic - prioritize vocabulary compliant templates
+  // Level 0 - Use existing comprehensive Level 0 system (199+ templates)
   if (level === 'Level0' || level === 'beginner') {
-    templates = ALL_LEVEL_0_TEMPLATES;
-  } else if (level === 'Level1' || level === 'easy') {
-    // Use Level 1 fallback when no Level 1 templates available
-    templates = LEVEL_0_TEMPLATES; // Fallback to Level 0
-  } else {
-    // For higher levels, fallback to Level 0
-    templates = LEVEL_0_TEMPLATES;
+    const templates = ALL_LEVEL_0_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
+    }
+    return templates[Math.floor(Math.random() * templates.length)];
   }
   
-  if (!templates || templates.length === 0) return null;
+  // New Template System - Levels 1-4 and Grades 6-10
+  const newSystemMapping: Record<string, string> = {
+    'Level1': 'level1',
+    'easy': 'level1',
+    'Level2': 'level2', 
+    'medium': 'level2',
+    'Level3': 'level3',
+    'hard': 'level3',
+    'Level4': 'level4',
+    'expert': 'level4',
+    'grade6': 'grade6',
+    'grade7': 'grade7',
+    'grade8': 'grade8',
+    'grade9': 'grade9',
+    'grade10': 'grade10'
+  };
   
-  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
-    return templates[templateIndex];
+  const newSystemLevel = newSystemMapping[level];
+  if (newSystemLevel && NEW_TEMPLATE_SYSTEM[newSystemLevel]?.length > 0) {
+    console.log('📚 Using new template system for:', newSystemLevel);
+    const newTemplates = NEW_TEMPLATE_SYSTEM[newSystemLevel];
+    let selectedTemplate: StoryTemplate;
+    
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < newTemplates.length) {
+      selectedTemplate = newTemplates[templateIndex];
+    } else {
+      selectedTemplate = newTemplates[Math.floor(Math.random() * newTemplates.length)];
+    }
+    
+    // Convert StoryTemplate to string array for compatibility
+    return templateToStringArray(selectedTemplate);
   }
   
-  return templates[Math.floor(Math.random() * templates.length)];
+  // Fallback to Level 0 if no templates available for requested level
+  console.log('⚠️ Falling back to Level 0 templates for:', level);
+  const fallbackTemplates = ALL_LEVEL_0_TEMPLATES;
+  return fallbackTemplates[Math.floor(Math.random() * fallbackTemplates.length)];
 }
 
 function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount: number = 5): string[] {
@@ -384,13 +523,18 @@ serve(async (req) => {
       userInfo: userInfo ? 'provided' : 'missing'
     });
 
-    // Map difficulty to template level with proper Level 0 handling
+    // Enhanced difficulty mapping supporting both Level 0 and new template system
     const levelMap: Record<string, string> = {
-      'beginner': 'Level0',  // Primary Level 0 target
-      'easy': 'Level1',
-      'medium': 'Level2', 
-      'hard': 'Level3',
-      'expert': 'Level4'
+      'beginner': 'Level0',     // Level 0 System (199+ templates)
+      'easy': 'Level1',         // New System Level 1
+      'medium': 'Level2',       // New System Level 2  
+      'hard': 'Level3',         // New System Level 3
+      'expert': 'Level4',       // New System Level 4
+      'grade6': 'grade6',       // New System Grade 6
+      'grade7': 'grade7',       // New System Grade 7
+      'grade8': 'grade8',       // New System Grade 8
+      'grade9': 'grade9',       // New System Grade 9
+      'grade10': 'grade10'      // New System Grade 10
     };
 
     const templateLevel = levelMap[difficulty] || 'Level0'; // Default to Level 0
@@ -413,18 +557,26 @@ serve(async (req) => {
     // Process template with complete placeholder resolution and grammar fixes
     const processedPages = processStoryTemplate(template, userInfo || {}, pageCount);
 
+    // Determine template source for logging
+    const isLevel0 = difficulty === 'beginner' || templateLevel === 'Level0';
+    const isNewSystem = ['Level1', 'Level2', 'Level3', 'Level4', 'grade6', 'grade7', 'grade8', 'grade9', 'grade10'].includes(templateLevel);
+    const source = isLevel0 ? 'Level0-System' : isNewSystem ? 'New-Template-System' : 'Fallback';
+    
     console.log('✅ Template processing complete:', { 
       pagesGenerated: processedPages.length,
+      templateLevel,
+      source,
       totalLevel0Templates: ALL_LEVEL_0_TEMPLATES.length,
-      source: difficulty === 'beginner' ? 'Level0-System' : 'Fallback'
+      newSystemLevels: Object.keys(NEW_TEMPLATE_SYSTEM).length
     });
 
     return new Response(JSON.stringify({
       source: 'template-service',
+      templateSystem: source,
       pages: processedPages,
       difficulty,
       title: `${userInfo?.name || 'Child'}'s Story`,
-      templateCount: ALL_LEVEL_0_TEMPLATES.length,
+      templateCount: isLevel0 ? ALL_LEVEL_0_TEMPLATES.length : 'varies',
       level: templateLevel,
       isComplete: true
     }), {
