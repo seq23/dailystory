@@ -16,6 +16,7 @@ import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import PromptTesting from "./pages/PromptTesting";
+import TemplateTestingPage from "./pages/TemplateTestingPage";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
@@ -55,6 +56,7 @@ const App = () => {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/prompt-testing" element={<PromptTesting />} />
+              <Route path="/template-testing" element={<TemplateTestingPage />} />
               <Route path="/prompt-studio" element={<PromptStudio />} />
               <Route path="/session-ended" element={<SessionEnded />} />
               <Route path="*" element={<NotFound />} />
