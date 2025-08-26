@@ -28,6 +28,46 @@ export const GRADE_8_FALLBACK_TEMPLATES: StoryTemplate[] = [
             `Statistical Reality ${Math.floor(Math.random() * 100)}: Digital homework was assigned 4 days per week across grade levels.`
           ]
         }
+      },
+      {
+        text: "Chapter 2: Research and Coalition Building\n\nRecognizing that individual tutoring couldn't address systemic digital inequality, {userName} began researching successful digital equity initiatives in other communities while building relationships with local organizations, schools, and community leaders who shared concerns about technology access barriers affecting educational and economic opportunities.",
+        pause: true,
+        hook: "What collaborative strategies will {userName} develop to address digital equity comprehensively?",
+        microVariants: {
+          text: "Chapter 2: Research and Coalition Building\n\nRecognizing individual tutoring couldn't address systemic inequality, {userName} researched successful digital equity initiatives while building coalitions with local organizations and leaders.",
+          alternatives: ["Understanding the need for systemic solutions, {userName} investigated digital equity models while establishing partnerships with community organizations and educational leaders."],
+          optionalDetails: [`Research identified ${Math.floor(Math.random() * 20) + 10} successful community technology programs nationwide.`]
+        }
+      },
+      {
+        text: "Chapter 3: Program Development and Implementation\n\nWorking with coalition partners, {userName} helped establish comprehensive digital equity programming that included device lending libraries, internet access advocacy, digital literacy training, and technical support services designed to eliminate barriers preventing community members from accessing online educational, employment, and civic participation opportunities.",
+        pause: true,
+        hook: "How will comprehensive programming address multiple aspects of digital inequality?",
+        microVariants: {
+          text: "Chapter 3: Program Development\n\nWith coalition partners, {userName} established comprehensive digital equity programming including device lending, internet advocacy, and digital literacy training.",
+          alternatives: ["Through collaborative partnerships, {userName} developed multifaceted digital equity services addressing device access, connectivity, skills training, and technical support."],
+          optionalDetails: [`Programs served ${Math.floor(Math.random() * 300) + 200} families in the first year of operation.`]
+        }
+      },
+      {
+        text: "Chapter 4: Policy Impact and Systemic Change\n\n{userName}'s digital equity work influenced municipal broadband policy, school district technology planning, and corporate community investment priorities, demonstrating how student-led organizing could create systemic changes that addressed root causes of digital inequality rather than providing temporary individual solutions.",
+        pause: true,
+        hook: "What long-term policy changes will ensure sustainable digital equity for all community members?",
+        microVariants: {
+          text: "Chapter 4: Policy Impact\n\n{userName}'s digital equity work influenced municipal broadband policy, school technology planning, and corporate investment priorities.",
+          alternatives: ["Digital equity advocacy resulted in policy changes affecting municipal broadband access, educational technology funding, and community investment strategies."],
+          optionalDetails: [`Policy changes expanded broadband access to ${Math.floor(Math.random() * 5000) + 2000} additional households.`]
+        }
+      },
+      {
+        text: "Chapter 5: Regional Recognition and Replication\n\nThe success of {userName}'s digital equity model attracted regional attention, leading to replication in other communities and recognition from technology companies, educational organizations, and policy makers who acknowledged that community-led digital equity initiatives were more effective than top-down technology distribution programs.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 5: Regional Recognition\n\nThe digital equity model's success attracted regional attention, leading to replication and recognition from technology companies and policy makers.",
+          alternatives: ["Regional recognition of the community digital equity model led to widespread replication and acknowledgment of community-led technology programming effectiveness."],
+          optionalDetails: [`The model was replicated in ${Math.floor(Math.random() * 15) + 10} communities across three states.`]
+        }
       }
     ],
     endings: [

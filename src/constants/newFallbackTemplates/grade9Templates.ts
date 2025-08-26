@@ -28,6 +28,46 @@ export const GRADE_9_FALLBACK_TEMPLATES: StoryTemplate[] = [
             `Resource Gap ${Math.floor(Math.random() * 100)}: Nearest community development financial institution was 35 miles away.`
           ]
         }
+      },
+      {
+        text: "Chapter 2: Research and Community Analysis\n\nDetermined to understand the root causes of local economic challenges, {userName} conducted extensive research into cooperative economics, interviewed successful community development practitioners, and organized focus groups with neighbors to identify specific economic needs and assets that could serve as foundations for community-controlled economic development initiatives.",
+        pause: true,
+        hook: "What community assets will {userName} identify as foundations for economic development?",
+        microVariants: {
+          text: "Chapter 2: Research and Analysis\n\n{userName} conducted extensive research into cooperative economics and organized community focus groups to identify local economic needs and assets.",
+          alternatives: ["Through systematic research and community engagement, {userName} analyzed local economic challenges while identifying community assets for cooperative development."],
+          optionalDetails: [`Research revealed ${Math.floor(Math.random() * 50) + 30} potential community assets for economic development.`]
+        }
+      },
+      {
+        text: "Chapter 3: Cooperative Development and Implementation\n\nWorking with community development organizations and cooperative business networks, {userName} helped facilitate the establishment of community-owned enterprises including a grocery cooperative, credit union, and worker-owned businesses that kept profits within the neighborhood while providing quality goods, services, and employment opportunities for local residents.",
+        pause: true,
+        hook: "How will community-owned enterprises transform local economic relationships?",
+        microVariants: {
+          text: "Chapter 3: Cooperative Development\n\nWith development organizations, {userName} facilitated community-owned enterprises including cooperatives and worker-owned businesses.",
+          alternatives: ["Through partnerships with cooperative networks, {userName} helped establish community-controlled businesses that maintained local ownership and provided neighborhood employment."],
+          optionalDetails: [`Cooperative enterprises created ${Math.floor(Math.random() * 100) + 50} living-wage jobs for community members.`]
+        }
+      },
+      {
+        text: "Chapter 4: Policy Advocacy and Economic Justice\n\n{userName}'s community economic development work influenced municipal policy regarding small business support, cooperative development incentives, and community land ownership, demonstrating how student leadership could create systemic changes that addressed structural causes of economic inequality rather than providing temporary individual assistance.",
+        pause: true,
+        hook: "What policy changes will support sustainable community economic development?",
+        microVariants: {
+          text: "Chapter 4: Policy and Economic Justice\n\n{userName}'s economic development work influenced municipal policy on small business support and cooperative development incentives.",
+          alternatives: ["Economic development advocacy resulted in policy changes supporting cooperative businesses, community ownership, and local economic democracy."],
+          optionalDetails: [`Policy changes supported ${Math.floor(Math.random() * 20) + 10} new cooperative enterprises throughout the region.`]
+        }
+      },
+      {
+        text: "Chapter 5: Regional Impact and Model Replication\n\nThe success of {userName}'s community economic development model attracted attention from cooperatives, community development corporations, and policy researchers who recognized that youth-led economic organizing could create more sustainable and equitable approaches to community wealth building than traditional economic development strategies.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 5: Regional Impact\n\nThe community economic model's success attracted attention from cooperatives and policy researchers who recognized youth-led organizing effectiveness.",
+          alternatives: ["Regional recognition of the community economic development model led to replication and acknowledgment of youth leadership in cooperative economic organizing."],
+          optionalDetails: [`The model influenced economic development policy in ${Math.floor(Math.random() * 10) + 5} municipalities across the region.`]
+        }
       }
     ],
     endings: [

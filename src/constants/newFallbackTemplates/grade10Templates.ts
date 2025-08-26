@@ -28,6 +28,46 @@ export const GRADE_10_FALLBACK_TEMPLATES: StoryTemplate[] = [
             `Representation Issue ${Math.floor(Math.random() * 100)}: City council demographics did not reflect the community's {favoriteColor} diversity statistics.`
           ]
         }
+      },
+      {
+        text: "Chapter 2: Participatory Democracy Research\n\nDetermined to understand how democratic systems could be more responsive to community needs, {userName} researched participatory budgeting, citizen assemblies, and other democratic innovations while conducting interviews with community members about their experiences with local government and their ideas for improving civic engagement and accountability.",
+        pause: true,
+        hook: "What democratic innovations will {userName} discover that could transform local governance?",
+        microVariants: {
+          text: "Chapter 2: Democratic Innovation Research\n\n{userName} researched participatory budgeting and citizen assemblies while interviewing community members about local government experiences.",
+          alternatives: ["Through systematic research into democratic innovations, {userName} explored participatory governance models while gathering community input on civic engagement needs."],
+          optionalDetails: [`Research identified ${Math.floor(Math.random() * 25) + 15} communities with successful participatory democracy initiatives.`]
+        }
+      },
+      {
+        text: "Chapter 3: Community Organizing and Pilot Programs\n\nWorking with community organizations, civic groups, and local government officials, {userName} helped organize pilot programs in participatory democracy including neighborhood assemblies, youth policy councils, and collaborative budgeting processes that gave community members direct involvement in decisions affecting their daily lives and neighborhood development priorities.",
+        pause: true,
+        hook: "How will pilot programs demonstrate the effectiveness of participatory democracy?",
+        microVariants: {
+          text: "Chapter 3: Organizing and Pilots\n\nWith community organizations, {userName} organized participatory democracy pilots including neighborhood assemblies and collaborative budgeting processes.",
+          alternatives: ["Through partnerships with civic groups, {userName} facilitated pilot programs in participatory governance that provided direct community involvement in local decision-making."],
+          optionalDetails: [`Pilot programs engaged ${Math.floor(Math.random() * 400) + 300} community members in participatory decision-making processes.`]
+        }
+      },
+      {
+        text: "Chapter 4: Policy Implementation and Institutional Change\n\n{userName}'s participatory democracy work influenced municipal governance reforms, school district decision-making processes, and regional planning initiatives, demonstrating how student civic leadership could create systemic changes that made democratic institutions more responsive to community priorities and more inclusive of diverse voices and perspectives.",
+        pause: true,
+        hook: "What institutional changes will ensure lasting democratic reform and community empowerment?",
+        microVariants: {
+          text: "Chapter 4: Policy and Institutional Change\n\n{userName}'s participatory democracy work influenced municipal governance reforms and regional planning initiatives.",
+          alternatives: ["Democratic organizing resulted in institutional reforms affecting municipal governance, educational decision-making, and regional planning processes."],
+          optionalDetails: [`Reforms expanded participatory decision-making to ${Math.floor(Math.random() * 50) + 30}% of municipal budget allocations.`]
+        }
+      },
+      {
+        text: "Chapter 5: National Recognition and Democratic Leadership\n\nThe success of {userName}'s participatory democracy initiatives attracted attention from political scientists, democracy organizations, and civic engagement researchers who recognized that youth-led democratic innovation could revitalize American democracy by creating more inclusive, responsive, and effective approaches to community governance and citizen participation.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 5: National Recognition\n\nThe participatory democracy initiatives' success attracted attention from political scientists and democracy organizations.",
+          alternatives: ["National recognition of the democratic innovation model led to widespread interest in youth-led approaches to civic engagement and community governance."],
+          optionalDetails: [`The model influenced democratic reform initiatives in ${Math.floor(Math.random() * 25) + 20} municipalities nationwide.`]
+        }
       }
     ],
     endings: [
