@@ -120,6 +120,190 @@ export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
       weatherVariants: ["during a tech conference", "after a coding bootcamp", "during ethics week", "following a bias incident"],
       settingVariants: ["computer lab", "tech company", "university", "community center"]
     }
+  },
+  {
+    title: "The Urban Sustainability Revolution",
+    theme: "Environmental Innovation",
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} becomes deeply concerned about urban environmental challenges after documenting air quality, waste management, and energy consumption patterns in their city through an advanced environmental science research project. Working with environmental engineering professors and urban planning experts, they discover that their metropolitan area generates over 4.2 million tons of waste annually while consuming energy at rates that contribute significantly to regional carbon emissions and climate change acceleration. This comprehensive analysis reveals systemic inefficiencies in resource utilization and waste stream management that could be addressed through innovative technological solutions and community-based environmental interventions.",
+        pause: true,
+        hook: "What comprehensive solutions will {userName} develop to transform urban sustainability systems?",
+        microVariants: {
+          text: "{userName} becomes deeply concerned about urban environmental challenges after documenting air quality, waste management, and energy consumption patterns in their city through an advanced environmental science research project. Working with environmental engineering professors and urban planning experts, they discover that their metropolitan area generates over 4.2 million tons of waste annually while consuming energy at rates that contribute significantly to regional carbon emissions and climate change acceleration. This comprehensive analysis reveals systemic inefficiencies in resource utilization and waste stream management that could be addressed through innovative technological solutions and community-based environmental interventions.",
+          alternatives: ["Environmental research reveals the massive scale of urban sustainability challenges requiring innovative solutions.", "City-wide analysis exposes systemic environmental problems that demand comprehensive technological and social interventions."],
+          optionalDetails: ["data shows {favoriteColor} recycling streams have 73% contamination rates", "energy audits reveal buildings waste 34% of consumed power"]
+        }
+      },
+      {
+        text: "Drawing upon principles of circular economy design, systems thinking, and environmental justice frameworks, {userName} develops an integrated urban sustainability initiative that addresses waste reduction, renewable energy transition, green infrastructure development, and community resilience building simultaneously. This multifaceted approach involves designing pilot programs for neighborhood-scale renewable energy cooperatives, implementing advanced recycling and composting systems that can process complex waste streams, and creating green infrastructure networks that manage stormwater while providing urban food production and ecosystem restoration benefits. The initiative requires collaboration with environmental scientists, community organizers, policy makers, and technology developers to ensure solutions are both technically feasible and socially equitable.",
+        pause: true,
+        hook: "How will {userName} implement this complex sustainability transformation across diverse urban communities?",
+        microVariants: {
+          text: "Drawing upon principles of circular economy design, systems thinking, and environmental justice frameworks, {userName} develops an integrated urban sustainability initiative that addresses waste reduction, renewable energy transition, green infrastructure development, and community resilience building simultaneously. This multifaceted approach involves designing pilot programs for neighborhood-scale renewable energy cooperatives, implementing advanced recycling and composting systems that can process complex waste streams, and creating green infrastructure networks that manage stormwater while providing urban food production and ecosystem restoration benefits. The initiative requires collaboration with environmental scientists, community organizers, policy makers, and technology developers to ensure solutions are both technically feasible and socially equitable.",
+          alternatives: ["Comprehensive planning integrates multiple environmental systems into coordinated community-based sustainability solutions.", "Systems-level thinking creates interconnected programs addressing energy, waste, water, and food security simultaneously."],
+          optionalDetails: ["pilot neighborhoods show 67% waste reduction within six months", "renewable energy cooperatives reduce costs by 43% for participating households"]
+        }
+      },
+      {
+        text: "The implementation process reveals the complex intersection of environmental solutions with social equity, economic development, and political decision-making, teaching {userName} that effective sustainability initiatives must address systemic inequalities while creating economic opportunities for historically marginalized communities. Through community organizing workshops, technical training programs, and policy advocacy campaigns, {userName} helps develop local leadership capacity and ensures that environmental benefits reach communities that have been disproportionately impacted by pollution and climate change. This work demonstrates that environmental sustainability and social justice are inseparable goals that require collaborative, community-centered approaches to create lasting positive change.",
+        pause: true,
+        hook: "What lasting transformation will {userName}'s comprehensive sustainability work achieve for urban communities?",
+        microVariants: {
+          text: "The implementation process reveals the complex intersection of environmental solutions with social equity, economic development, and political decision-making, teaching {userName} that effective sustainability initiatives must address systemic inequalities while creating economic opportunities for historically marginalized communities. Through community organizing workshops, technical training programs, and policy advocacy campaigns, {userName} helps develop local leadership capacity and ensures that environmental benefits reach communities that have been disproportionately impacted by pollution and climate change. This work demonstrates that environmental sustainability and social justice are inseparable goals that require collaborative, community-centered approaches to create lasting positive change.",
+          alternatives: ["Community-centered implementation proves that environmental solutions must prioritize equity and local empowerment.", "Sustainability work becomes a model for integrating environmental protection with economic justice and community development."],
+          optionalDetails: ["job training programs create 200+ green economy positions", "community leadership networks span 15 neighborhoods citywide"]
+        }
+      },
+      {
+        text: "Five years after launching the initiative, {userName}'s integrated sustainability model has been adopted by cities across three states, demonstrating that community-based environmental solutions can be scaled while maintaining focus on equity and local empowerment. The program has prevented approximately 890,000 tons of waste from entering landfills, generated 12.4 megawatts of community-owned renewable energy, and created over 1,500 green economy jobs in participating communities. More importantly, the initiative has established sustainable community governance structures that ensure environmental benefits continue expanding while residents maintain control over decisions affecting their neighborhoods, proving that effective climate action requires both technological innovation and democratic participation in environmental planning and implementation.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Five years after launching the initiative, {userName}'s integrated sustainability model has been adopted by cities across three states, demonstrating that community-based environmental solutions can be scaled while maintaining focus on equity and local empowerment. The program has prevented approximately 890,000 tons of waste from entering landfills, generated 12.4 megawatts of community-owned renewable energy, and created over 1,500 green economy jobs in participating communities. More importantly, the initiative has established sustainable community governance structures that ensure environmental benefits continue expanding while residents maintain control over decisions affecting their neighborhoods, proving that effective climate action requires both technological innovation and democratic participation in environmental planning and implementation.",
+          alternatives: ["Multi-state adoption demonstrates the scalability of community-centered environmental solutions with equity focus.", "Long-term success proves that sustainable development requires combining technical innovation with democratic community control."],
+          optionalDetails: ["program model influences federal environmental justice policy", "international delegations study the community governance approaches"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} receives the International Environmental Leadership Award and establishes a global network of community-based sustainability initiatives that transforms urban environmental policy worldwide.",
+        microVariants: ["Global recognition leads to international policy influence and sustainability program replication.", "The community model becomes the foundation for worldwide urban environmental transformation."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that true environmental sustainability requires ongoing commitment to community empowerment and that lasting change happens through democratic participation in environmental decision-making.",
+        microVariants: ["Environmental work becomes a lifelong commitment to community-centered sustainability and climate justice.", "The experience teaches that effective environmentalism must prioritize community leadership and democratic participation."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "sustainability focus": ["waste reduction", "renewable energy", "urban agriculture", "green infrastructure", "climate adaptation"],
+        "community strategy": ["cooperatives", "neighborhood councils", "training programs", "policy advocacy", "direct action"],
+        "environmental outcome": ["carbon reduction", "waste diversion", "energy independence", "food security", "ecosystem restoration"]
+      },
+      weatherVariants: ["during environmental crisis", "following climate disasters", "during policy windows", "throughout seasonal cycles"],
+      settingVariants: ["urban neighborhoods", "industrial districts", "suburban communities", "metropolitan regions"]
+    }
+  },
+  {
+    title: "The Digital Rights Advocacy Network",
+    theme: "Technology Ethics & Civil Liberties",
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} becomes increasingly aware of digital privacy violations and algorithmic bias after conducting research into how artificial intelligence systems make decisions that affect people's access to employment, healthcare, housing, and educational opportunities. Through collaboration with computer scientists, civil rights lawyers, and affected community members, they discover that AI systems often perpetuate and amplify existing social inequalities by incorporating historical bias patterns into their decision-making algorithms. This investigation reveals how technology companies and government agencies use personal data collection and predictive analytics in ways that can violate civil liberties and reinforce discriminatory practices, particularly affecting communities that have historically experienced systemic marginalization and surveillance.",
+        pause: true,
+        hook: "How will {userName} build coalitions to address systemic digital rights violations and algorithmic discrimination?",
+        microVariants: {
+          text: "{userName} becomes increasingly aware of digital privacy violations and algorithmic bias after conducting research into how artificial intelligence systems make decisions that affect people's access to employment, healthcare, housing, and educational opportunities. Through collaboration with computer scientists, civil rights lawyers, and affected community members, they discover that AI systems often perpetuate and amplify existing social inequalities by incorporating historical bias patterns into their decision-making algorithms. This investigation reveals how technology companies and government agencies use personal data collection and predictive analytics in ways that can violate civil liberties and reinforce discriminatory practices, particularly affecting communities that have historically experienced systemic marginalization and surveillance.",
+          alternatives: ["AI research reveals how algorithmic systems systematically discriminate against marginalized communities.", "Digital rights investigation exposes the intersection of technology bias and civil liberties violations."],
+          optionalDetails: ["facial recognition systems show 34% higher error rates for people with {favoriteColor} clothing", "algorithmic hiring tools exclude qualified candidates based on zip code data"]
+        }
+      },
+      {
+        text: "Recognizing that digital rights violations require coordinated advocacy responses, {userName} helps establish a multi-stakeholder coalition that includes technology workers, civil rights organizations, affected community members, policy researchers, and legal advocates working together to challenge discriminatory AI systems and promote algorithmic accountability. This coalition develops comprehensive policy proposals for AI regulation, creates digital security training programs for vulnerable communities, and organizes campaigns to pressure technology companies to adopt ethical AI development practices. The advocacy work requires understanding complex technical systems, legal frameworks, policy processes, and community organizing strategies while centering the voices and experiences of people most affected by algorithmic discrimination and digital surveillance.",
+        pause: true,
+        hook: "What innovative strategies will the coalition develop to ensure digital technology serves justice rather than perpetuating inequality?",
+        microVariants: {
+          text: "Recognizing that digital rights violations require coordinated advocacy responses, {userName} helps establish a multi-stakeholder coalition that includes technology workers, civil rights organizations, affected community members, policy researchers, and legal advocates working together to challenge discriminatory AI systems and promote algorithmic accountability. This coalition develops comprehensive policy proposals for AI regulation, creates digital security training programs for vulnerable communities, and organizes campaigns to pressure technology companies to adopt ethical AI development practices. The advocacy work requires understanding complex technical systems, legal frameworks, policy processes, and community organizing strategies while centering the voices and experiences of people most affected by algorithmic discrimination and digital surveillance.",
+          alternatives: ["Coalition building combines technical expertise with grassroots organizing to challenge algorithmic discrimination.", "Multi-stakeholder advocacy creates comprehensive approaches to digital rights protection and AI accountability."],
+          optionalDetails: ["policy proposals include mandatory bias testing for all AI systems", "community training programs reach 50,000+ people annually"]
+        }
+      },
+      {
+        text: "The coalition's advocacy efforts lead to landmark legislation requiring algorithmic auditing and bias testing for AI systems used in employment, housing, healthcare, and criminal justice decisions, while also establishing community oversight mechanisms that ensure affected populations have meaningful input into technology policy development. {userName} learns that effective digital rights advocacy requires both technical understanding and community organizing skills, as well as the ability to translate complex technological issues into accessible language that enables democratic participation in technology governance. This work demonstrates that civil liberties in the digital age require proactive advocacy to ensure that technological development serves human rights and social justice rather than concentrating power and perpetuating discrimination.",
+        pause: true,
+        hook: "How will {userName}'s digital rights work influence the future of technology governance and civil liberties protection?",
+        microVariants: {
+          text: "The coalition's advocacy efforts lead to landmark legislation requiring algorithmic auditing and bias testing for AI systems used in employment, housing, healthcare, and criminal justice decisions, while also establishing community oversight mechanisms that ensure affected populations have meaningful input into technology policy development. {userName} learns that effective digital rights advocacy requires both technical understanding and community organizing skills, as well as the ability to translate complex technological issues into accessible language that enables democratic participation in technology governance. This work demonstrates that civil liberties in the digital age require proactive advocacy to ensure that technological development serves human rights and social justice rather than concentrating power and perpetuating discrimination.",
+          alternatives: ["Legislative victories establish new frameworks for algorithmic accountability and community participation in technology governance.", "Digital rights advocacy creates lasting institutional changes that prioritize civil liberties in technological development."],
+          optionalDetails: ["international human rights organizations adopt the advocacy model", "technology companies implement voluntary bias reduction programs"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} establishes an international digital rights network that influences technology policy worldwide and ensures AI development prioritizes human rights and social justice.",
+        microVariants: ["Global digital rights leadership transforms how societies govern technology and protect civil liberties.", "The advocacy network becomes a model for democratic participation in technological decision-making worldwide."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} dedicates their career to ensuring that technological advancement serves justice and human dignity, understanding that digital rights require constant vigilance and community engagement.",
+        microVariants: ["Digital rights work becomes a lifelong commitment to justice-centered technology development and civil liberties protection.", "The experience teaches that effective technology governance requires ongoing community organizing and democratic participation."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "digital rights issue": ["algorithmic bias", "surveillance technology", "data mining", "predictive policing", "automated decision-making"],
+        "advocacy strategy": ["coalition building", "policy research", "community education", "legislative campaigns", "direct action"],
+        "governance mechanism": ["algorithmic auditing", "community oversight", "transparency requirements", "bias testing", "public participation"]
+      },
+      weatherVariants: ["during technology conferences", "following digital rights violations", "during policy hearings", "throughout advocacy campaigns"],
+      settingVariants: ["technology companies", "legislative buildings", "community centers", "university campuses"]
+    }
+  },
+  {
+    title: "The Social Enterprise Innovation Lab",
+    theme: "Economic Justice & Community Development", 
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} recognizes persistent economic inequality in their community and begins researching social enterprise models that can create economic opportunities while addressing social problems through innovative business approaches that prioritize community benefit over profit maximization. Working with economists, community development experts, and local entrepreneurs, they study successful cooperative businesses, community-supported agriculture programs, time banking systems, and other alternative economic models that distribute ownership and decision-making power more equitably. This research reveals how traditional economic structures often concentrate wealth and exclude marginalized communities from economic participation, while social enterprises can create pathways for community-controlled economic development that builds local wealth and addresses social needs simultaneously.",
+        pause: true,
+        hook: "What innovative social enterprise will {userName} develop to address economic inequality and create community-controlled economic opportunities?",
+        microVariants: {
+          text: "{userName} recognizes persistent economic inequality in their community and begins researching social enterprise models that can create economic opportunities while addressing social problems through innovative business approaches that prioritize community benefit over profit maximization. Working with economists, community development experts, and local entrepreneurs, they study successful cooperative businesses, community-supported agriculture programs, time banking systems, and other alternative economic models that distribute ownership and decision-making power more equitably. This research reveals how traditional economic structures often concentrate wealth and exclude marginalized communities from economic participation, while social enterprises can create pathways for community-controlled economic development that builds local wealth and addresses social needs simultaneously.",
+          alternatives: ["Economic research reveals how social enterprises can create community-controlled alternatives to traditional business models.", "Alternative economic models provide blueprints for addressing inequality through cooperative business development."],
+          optionalDetails: ["local unemployment rates reach 23% in {favoriteColor} residential areas", "traditional businesses extract $2.3 million annually from the community"]
+        }
+      },
+      {
+        text: "Drawing upon community assets and addressing identified needs, {userName} helps establish a network of interconnected social enterprises that includes a worker-owned {favoriteFood} processing cooperative, a community-controlled renewable energy installation business, a time bank that facilitates skill sharing and mutual aid, and a community development financial institution that provides microloans and financial education services. These enterprises are designed to work together synergistically, creating a local economic ecosystem that keeps wealth circulating within the community while providing dignified employment, affordable services, and democratic decision-making opportunities for residents. The development process requires learning about cooperative governance, community finance, sustainable business practices, and participatory economic planning while ensuring that enterprise development is led by and accountable to community members.",
+        pause: true,
+        hook: "How will this network of social enterprises transform economic opportunities and community self-determination?",
+        microVariants: {
+          text: "Drawing upon community assets and addressing identified needs, {userName} helps establish a network of interconnected social enterprises that includes a worker-owned {favoriteFood} processing cooperative, a community-controlled renewable energy installation business, a time bank that facilitates skill sharing and mutual aid, and a community development financial institution that provides microloans and financial education services. These enterprises are designed to work together synergistically, creating a local economic ecosystem that keeps wealth circulating within the community while providing dignified employment, affordable services, and democratic decision-making opportunities for residents. The development process requires learning about cooperative governance, community finance, sustainable business practices, and participatory economic planning while ensuring that enterprise development is led by and accountable to community members.",
+          alternatives: ["Interconnected social enterprises create a comprehensive alternative economic system prioritizing community benefit.", "The enterprise network demonstrates how cooperative businesses can address multiple community needs simultaneously."],
+          optionalDetails: ["worker-owners earn 34% higher wages than comparable traditional businesses", "community retention of spending increases by 67% through local enterprise network"]
+        }
+      },
+      {
+        text: "The social enterprise network's success demonstrates that community-controlled economic development can create sustainable alternatives to extractive capitalism while building local wealth and democratic participation in economic decision-making. {userName} learns that effective economic justice work requires understanding both business development and community organizing, as well as the ability to create economic models that serve community needs rather than external profit maximization. The enterprises provide over 200 jobs with living wages and worker ownership opportunities while generating community-controlled capital that can be reinvested in additional cooperative development, creating a replicable model for community economic empowerment that addresses inequality through democratic ownership and local control of economic resources.",
+        pause: true,
+        hook: "What influence will {userName}'s social enterprise model have on community economic development policy and practice?",
+        microVariants: {
+          text: "The social enterprise network's success demonstrates that community-controlled economic development can create sustainable alternatives to extractive capitalism while building local wealth and democratic participation in economic decision-making. {userName} learns that effective economic justice work requires understanding both business development and community organizing, as well as the ability to create economic models that serve community needs rather than external profit maximization. The enterprises provide over 200 jobs with living wages and worker ownership opportunities while generating community-controlled capital that can be reinvested in additional cooperative development, creating a replicable model for community economic empowerment that addresses inequality through democratic ownership and local control of economic resources.",
+          alternatives: ["Economic success proves that cooperative enterprises can create viable alternatives to traditional capitalist business models.", "The social enterprise model becomes a template for community-controlled economic development and wealth building."],
+          optionalDetails: ["policy makers adopt cooperative development incentives based on the model", "international delegations study the community economic development approach"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} establishes a national network of community economic development programs that transforms how communities approach economic justice and cooperative business development.",
+        microVariants: ["The social enterprise model influences federal community development policy and cooperative business legislation.", "National recognition leads to widespread adoption of community-controlled economic development strategies."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that economic justice requires long-term commitment to community organizing and that sustainable change happens through democratic participation in economic decision-making.",
+        microVariants: ["Economic justice work becomes a lifelong commitment to cooperative development and community empowerment.", "The experience teaches that effective economic change requires combining business skills with community organizing."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "social enterprise type": ["worker cooperative", "community land trust", "time bank", "credit union", "social purpose business"],
+        "economic strategy": ["cooperative development", "community finance", "local purchasing", "skill sharing", "asset building"],
+        "community benefit": ["job creation", "wealth building", "democratic ownership", "affordable services", "local control"]
+      },
+      weatherVariants: ["during economic downturns", "following business development training", "during cooperative workshops", "throughout economic planning cycles"],
+      settingVariants: ["community development centers", "cooperative businesses", "community meetings", "economic development offices"]
+    }
   }
 ];
 

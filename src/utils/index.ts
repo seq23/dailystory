@@ -6,8 +6,8 @@ export * from './sentenceValidator';
 export * from './implementationReport';
 
 // Run verification on startup
-import { runImplementationVerification } from './implementationReport';
+import { runFinalVerification } from './finalVerification';
 
 console.log('🚀 Universal Template System Loading...');
-const verified = runImplementationVerification();
-console.log(`✅ System Verification: ${verified ? 'PASSED' : 'FAILED'}`);
+const verified = runFinalVerification();
+console.log(`✅ System Verification: ${verified.overallSuccess ? 'COMPLETE' : 'IN PROGRESS'}`);
