@@ -2,6 +2,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { EXTENDED_LEVEL1_TEMPLATES } from "../_shared/extendedLevel1Templates.ts";
 import { EXTENDED_LEVEL2_TEMPLATES } from "../_shared/extendedLevel2Templates.ts";
+import { EXTENDED_LEVEL3_TEMPLATES } from "../_shared/extendedLevel3Templates.ts";
+import { EXTENDED_LEVEL4_TEMPLATES } from "../_shared/extendedLevel4Templates.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
