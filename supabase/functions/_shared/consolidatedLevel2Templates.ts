@@ -514,7 +514,7 @@ export const CONSOLIDATED_LEVEL_2_TEMPLATES: StoryTemplate[] = [
       weatherVariants: ["cozy baking morning", "perfect cooking weather", "warm kitchen afternoon", "family dinner evening"],
       settingVariants: ["grandmother's kitchen", "family dining room", "cozy breakfast nook", "festive holiday table"]
     }
-  }
+  },
 
   // Template 5: Animal Shelter Helper (from extensions)
   {
