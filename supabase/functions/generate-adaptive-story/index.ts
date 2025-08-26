@@ -249,27 +249,89 @@ serve(async (req) => {
     const data = await response.json();
     const storyText = data.choices[0].message.content;
     
-    // Enhanced page parsing for Level 0
+    // Enhanced logging for debugging
+    console.log('🔍 Raw OpenAI Response:', {
+      hasContent: !!storyText,
+      contentLength: storyText?.length || 0,
+      contentPreview: storyText?.substring(0, 100) + '...',
+      level: normalizedReadingLevel,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Enhanced page parsing for Level 0 with multi-tier fallbacks
     let pages: string[] = [];
     if (normalizedReadingLevel === 'beginner') {
-      // Level 0: Split by "Page X:" markers and clean up
-      pages = storyText.split(/Page \d+:?\s*/i)
-        .filter(p => p.trim())
-        .map(p => p.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' '))
-        .slice(0, 8);
+      console.log('🎯 Processing Level 0 (beginner) content...');
       
-      // Validate Level 0 pages - each should be exactly one sentence
-      pages = pages.map(page => {
-        const sentences = page.split(/[.!?]+/).filter(s => s.trim());
-        if (sentences.length > 1) {
-          // Take only the first sentence for Level 0
-          return sentences[0].trim() + '.';
+      // Tier 1: Try "Page X:" marker splitting (current method)
+      let initialPages = storyText.split(/Page \d+:?\s*/i)
+        .filter(p => p.trim())
+        .map(p => p.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' '));
+      
+      console.log('📄 Tier 1 (Page markers):', { found: initialPages.length, hasContent: initialPages.some(p => p.length > 0) });
+      
+      // Tier 2: Fallback to sentence-based splitting if no "Page X:" markers found
+      if (initialPages.length === 0 || !initialPages.some(p => p.length > 0)) {
+        console.log('🔄 Tier 2: Using sentence-based splitting fallback...');
+        initialPages = storyText.split(/[.!?]+/)
+          .filter(s => s.trim())
+          .map(s => s.trim() + '.')
+          .slice(0, 8);
+        console.log('📝 Tier 2 (Sentences):', { found: initialPages.length });
+      }
+      
+      // Tier 3: Word-count based splitting if sentences are too long
+      if (initialPages.some(page => page.split(' ').length > 8)) {
+        console.log('🔄 Tier 3: Using word-count based splitting...');
+        const words = storyText.replace(/[.!?]+/g, '').split(/\s+/).filter(w => w.trim());
+        initialPages = [];
+        for (let i = 0; i < Math.min(words.length, 40); i += 5) {
+          const pageWords = words.slice(i, i + 5);
+          if (pageWords.length > 0) {
+            initialPages.push(pageWords.join(' ') + '.');
+          }
         }
-        return page;
+        console.log('📊 Tier 3 (Word-count):', { found: initialPages.length });
+      }
+      
+      // Final validation and processing for Level 0
+      pages = initialPages
+        .slice(0, 8)
+        .map(page => {
+          // Ensure each page is exactly one sentence
+          const sentences = page.split(/[.!?]+/).filter(s => s.trim());
+          if (sentences.length > 1) {
+            return sentences[0].trim() + '.';
+          }
+          // Ensure it ends with punctuation
+          const cleanPage = page.trim();
+          if (!cleanPage.match(/[.!?]$/)) {
+            return cleanPage + '.';
+          }
+          return cleanPage;
+        })
+        .filter(page => {
+          // Validate: 4-8 words for Level 0
+          const wordCount = page.split(' ').length;
+          return wordCount >= 2 && wordCount <= 8 && page.length > 3;
+        });
+      
+      console.log('✅ Final Level 0 pages:', { 
+        count: pages.length, 
+        avgWordCount: pages.reduce((acc, p) => acc + p.split(' ').length, 0) / pages.length,
+        samples: pages.slice(0, 2)
       });
+      
     } else {
-      // Other levels: use paragraph splitting
+      // Other levels: use paragraph splitting (unchanged)
       pages = storyText.split(/\n\n+/).filter(p => p.trim()).slice(0, 8);
+      console.log('📖 Other level processing:', { level: normalizedReadingLevel, pagesFound: pages.length });
+    }
+    
+    // Content validation before returning
+    if (pages.length === 0) {
+      console.error('❌ No pages generated from AI response - will trigger fallback');
+      throw new Error('AI generated empty content');
     }
     
     console.log('EDGE SOURCE=ai', { readingLevel: normalizedReadingLevel, pagesCount: pages.length });
