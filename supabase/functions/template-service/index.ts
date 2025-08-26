@@ -376,7 +376,18 @@ const NEW_TEMPLATE_SYSTEM: Record<string, StoryTemplate[]> = {
         settingVariants: ["at school", "in class", "with friends", "in the circle", "during sharing"]
       }
     }
-  ],
+];
+
+// NEW TEMPLATE SYSTEM MAPPING - Complete Integration
+const NEW_TEMPLATE_SYSTEM: Record<string, StoryTemplate[]> = {
+  level1: CONSOLIDATED_LEVEL_1_TEMPLATES,
+  level2: CONSOLIDATED_LEVEL_2_TEMPLATES, 
+  level3: CONSOLIDATED_LEVEL_3_TEMPLATES,
+  level4: CONSOLIDATED_LEVEL_4_TEMPLATES
+};
+
+// Fallback to old system for debugging
+const FALLBACK_SYSTEM: Record<string, any> = {
   level2: [
     // Level 2 Template 1: Space & Sci-Fi Theme
     {

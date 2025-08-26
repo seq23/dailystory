@@ -28,6 +28,36 @@ export const GRADE_7_FALLBACK_TEMPLATES: StoryTemplate[] = [
             `Random Motivation Element ${Math.floor(Math.random() * 100)}: Their family's well water had become contaminated.`
           ]
         }
+      },
+      {
+        text: "Chapter 2: Research and Action\n\n{userName} dove deeper into environmental research, connecting with local university scientists and environmental organizations to understand the scope of agricultural pollution affecting their watershed. Their investigation revealed systemic issues requiring both policy changes and community organizing to address effectively.",
+        pause: true,
+        hook: "What strategies will {userName} develop to mobilize community environmental action?",
+        microVariants: {
+          text: "Chapter 2: Research and Action\n\n{userName} dove deeper into environmental research, connecting with scientists and organizations to understand agricultural pollution affecting their watershed.",
+          alternatives: ["Expanding their investigation, {userName} collaborated with university researchers and environmental groups to document systematic pollution patterns."],
+          optionalDetails: [`Research showed ${Math.floor(Math.random() * 50) + 20}% increase in contamination levels.`]
+        }
+      },
+      {
+        text: "Chapter 3: Building the Movement\n\nWith scientific evidence in hand, {userName} organized community meetings, created educational presentations, and built coalitions with farmers, residents, and local officials to develop comprehensive solutions addressing both environmental protection and economic sustainability.",
+        pause: true,
+        hook: "How will the community respond to {userName}'s environmental leadership?",
+        microVariants: {
+          text: "Chapter 3: Building the Movement\n\nWith evidence gathered, {userName} organized community meetings and built coalitions to develop comprehensive environmental solutions.",
+          alternatives: ["Armed with scientific data, {userName} facilitated community organizing efforts to address environmental challenges through collaborative action."],
+          optionalDetails: [`Coalition included ${Math.floor(Math.random() * 20) + 10} local organizations and businesses.`]
+        }
+      },
+      {
+        text: "Chapter 4: Policy and Implementation\n\n{userName}'s environmental advocacy led to municipal policy changes, sustainable farming incentives, and ongoing community monitoring programs that protected the watershed while supporting local economic development and demonstrating youth leadership in environmental justice.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 4: Policy and Implementation\n\n{userName}'s advocacy led to policy changes, farming incentives, and monitoring programs protecting the watershed while supporting economic development.",
+          alternatives: ["Environmental leadership resulted in policy reform, sustainable agriculture support, and community programs balancing ecological protection with economic sustainability."],
+          optionalDetails: [`Programs prevented an estimated ${Math.floor(Math.random() * 500) + 100} tons of agricultural runoff annually.`]
+        }
       }
     ],
     endings: [

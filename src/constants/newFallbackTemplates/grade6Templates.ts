@@ -28,6 +28,54 @@ export const GRADE_6_FALLBACK_TEMPLATES: StoryTemplate[] = [
             `Random Element ${Math.floor(Math.random() * 100)}: The algae seemed to pulse with bioluminescent properties.`
           ]
         }
+      },
+      {
+        text: "Chapter 2: The Investigation Deepens\n\nAs {userName} collected water samples and documented the unusual algae behavior with careful photographs and detailed observations, they began to notice patterns that suggested the microorganisms were responding to environmental changes in coordinated ways that resembled communication networks. Working with their science teacher and a graduate student from the local university, they learned to use microscopes and water chemistry testing equipment to analyze the algae's cellular structure and environmental conditions. The results were puzzling: the algae appeared to be producing chemical signals that influenced the behavior of other algae colonies throughout the watershed, creating a biological communication system that had never been documented in this type of freshwater ecosystem.",
+        pause: true,
+        hook: "What will {userName} discover about this mysterious algae communication system?",
+        microVariants: {
+          text: "Chapter 2: The Investigation Deepens\n\nAs {userName} collected water samples and documented the unusual algae behavior with careful photographs and detailed observations, they began to notice patterns suggesting coordinated environmental responses resembling communication networks.",
+          alternatives: [
+            "Chapter 2: Scientific Analysis\n\nThrough systematic sampling procedures and comprehensive documentation utilizing photographic evidence and meticulous observation protocols, {userName} identified behavioral patterns indicating coordinated environmental responses that resembled biological communication systems."
+          ],
+          optionalDetails: [
+            `Research Finding ${Math.floor(Math.random() * 100)}: Chemical analysis revealed unusual protein concentrations.`,
+            `Scientific Discovery ${Math.floor(Math.random() * 100)}: Microscopic examination showed unprecedented cellular structures.`,
+            `Environmental Factor ${Math.floor(Math.random() * 100)}: Water pH levels correlated with algae communication patterns.`
+          ]
+        }
+      },
+      {
+        text: "Chapter 3: Collaboration and Breakthrough\n\nRecognizing that their discovery might have significant scientific implications, {userName} presented their preliminary findings to the university research team, leading to a formal collaboration where they worked alongside graduate students and professors to design controlled experiments testing the algae's communication capabilities. Through months of careful experimentation, they discovered that the algae were indeed engaging in a form of chemical communication that allowed colonies to coordinate responses to environmental stressors like temperature changes, nutrient availability, and pollution levels. This finding challenged existing understanding of microbial intelligence and suggested that freshwater ecosystems might be far more sophisticated and interconnected than previously recognized by the scientific community.",
+        pause: true,
+        hook: "How will this discovery change scientific understanding of ecosystem intelligence?",
+        microVariants: {
+          text: "Chapter 3: Collaboration and Breakthrough\n\nRecognizing their discovery's potential scientific significance, {userName} presented preliminary findings to university researchers, leading to formal collaboration with graduate students and professors.",
+          alternatives: [
+            "Chapter 3: Academic Partnership\n\nAcknowledging the potential scientific importance of their research, {userName} shared initial discoveries with university faculty, establishing collaborative relationships with graduate researchers and academic professionals."
+          ],
+          optionalDetails: [
+            `Collaboration Result ${Math.floor(Math.random() * 100)}: Joint research papers were submitted to peer-reviewed journals.`,
+            `Scientific Impact ${Math.floor(Math.random() * 100)}: The discovery influenced international microbiology research priorities.`,
+            `Academic Recognition ${Math.floor(Math.random() * 100)}: {userName} was invited to present at scientific conferences.`
+          ]
+        }
+      },
+      {
+        text: "Chapter 4: Recognition and Future Impact\n\nThe publication of {userName}'s research in a respected scientific journal brought international attention to their groundbreaking discovery about algae communication systems, leading to research grants that funded further investigation into microbial intelligence and ecosystem coordination. Their work inspired a new field of study examining how microorganisms contribute to ecosystem resilience and environmental adaptation, while also demonstrating that young scientists could make significant contributions to advancing human understanding of the natural world. As {userName} prepared for high school, they reflected on how their curiosity about unusual algae patterns had evolved into a sophisticated understanding of scientific methodology, community collaboration, and the interconnected nature of all living systems, setting the foundation for a lifetime of environmental research and discovery.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 4: Recognition and Future Impact\n\nThe publication of {userName}'s research in a scientific journal brought international attention to their groundbreaking discovery, leading to research grants and inspiring new fields of study.",
+          alternatives: [
+            "Chapter 4: Scientific Legacy\n\nInternational publication of {userName}'s research generated worldwide recognition for their algae communication discovery, securing funding for expanded investigation and establishing new research directions."
+          ],
+          optionalDetails: [
+            `Career Impact ${Math.floor(Math.random() * 100)}: {userName} received early admission offers from top universities.`,
+            `Research Legacy ${Math.floor(Math.random() * 100)}: The algae communication model influenced climate change research.`,
+            `Educational Influence ${Math.floor(Math.random() * 100)}: Science curricula incorporated {userName}'s research methods.`
+          ]
+        }
       }
     ],
     endings: [
