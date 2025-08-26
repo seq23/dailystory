@@ -35,11 +35,11 @@ function createCorsOptionsResponse(): Response {
 
 // PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Objects & Secondary Characters)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
+  beginner: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  easy: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  medium: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  hard: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  expert: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence)
@@ -288,7 +288,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'fair light complexion',
     hair: 'blonde hair with neat cut',
-    eyes: 'bright blue eyes',
     features: 'bright sparkling eyes and cheerful friendly smile',
     clothing: 'casual t-shirt and jeans'
   },
@@ -297,7 +296,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'warm light skin',
     hair: 'light brown hair style', 
-    eyes: 'warm green eyes',
     features: 'expressive animated eyes and warm genuine smile',
     clothing: 'hoodie and sneakers'
   },
@@ -306,7 +304,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old', 
     skin: 'golden tan complexion',
     hair: 'medium brown hair',
-    eyes: 'warm brown eyes',
     features: 'expressive warm brown eyes and bright cheerful smile',
     clothing: 'colorful casual wear'
   },
@@ -315,12 +312,11 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'warm olive complexion', 
     hair: 'dark brown wavy hair',
-    eyes: 'deep brown eyes',
     features: 'striking expressive eyes and warm welcoming expression',
     clothing: 'traditional-inspired modern wear'
   },
   'boy-dark': {
-    character: 'boy',
+    character: 'African American boy',
     age: '6-year-old',
     skin: 'rich dark chocolate complexion',
     hair: 'dark realistic textured short hair with individual strand detail',
@@ -335,7 +331,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'fair light complexion',
     hair: 'blonde hair in ponytail',
-    eyes: 'bright blue eyes',
     features: 'bright sparkling eyes and cheerful friendly smile',
     clothing: 'sundress and sandals'
   },
@@ -344,7 +339,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old', 
     skin: 'warm light skin',
     hair: 'light brown wavy hair',
-    eyes: 'sparkling blue eyes',
     features: 'lively enthusiastic expression and kind gentle demeanor', 
     clothing: 'blouse and skirt'
   },
@@ -353,7 +347,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'golden tan complexion', 
     hair: 'dark brown wavy hair',
-    eyes: 'amber brown eyes',
     features: 'warm welcoming expression and lively animated eyes',
     clothing: 'colorful casual wear'
   },
@@ -362,12 +355,11 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'warm olive complexion',
     hair: 'long dark brown hair',
-    eyes: 'warm hazel eyes',
     features: 'beautiful olive complexion and confident friendly demeanor',
     clothing: 'elegant casual clothing'
   },
   'girl-dark': {
-    character: 'girl',
+    character: 'African American girl',
     age: '6-year-old',
     skin: 'rich dark chocolate complexion',
     hair: 'dark realistic textured long hair with individual strand detail', 
@@ -382,7 +374,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'fair light complexion', 
     hair: 'short light hair',
-    eyes: 'bright eyes',
     features: 'friendly welcoming expression and gentle smile',
     clothing: 'comfortable casual wear'
   },
@@ -391,7 +382,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'warm light skin',
     hair: 'neat brown hair',
-    eyes: 'warm eyes', 
     features: 'kind gentle expression and bright smile',
     clothing: 'simple comfortable outfit'
   },
@@ -400,7 +390,6 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'golden tan complexion',
     hair: 'medium brown hair',
-    eyes: 'warm brown eyes',
     features: 'cheerful friendly expression and welcoming smile', 
     clothing: 'casual everyday wear'
   },
@@ -409,12 +398,11 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     age: '6-year-old',
     skin: 'warm olive complexion',
     hair: 'dark brown hair',
-    eyes: 'deep brown eyes',
     features: 'warm welcoming expression and gentle demeanor',
     clothing: 'comfortable modern clothing'
   },
   'neutral-dark': {
-    character: 'child',
+    character: 'African American child',
     age: '6-year-old', 
     skin: 'rich dark complexion',
     hair: 'dark short coily curly fro with individual strand detail',
@@ -753,13 +741,12 @@ function fillPremiumTemplate(
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
     
-    // Fill template with nuclear mappings
+    // Fill template with nuclear mappings (eyes only for African Americans)
     let filledTemplate = template
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
       .replace('{skin}', finalMapping.skin)
       .replace('{hair}', finalMapping.hair)
-      .replace('{eyes}', finalMapping.eyes)
       .replace('{features}', finalMapping.features)
       .replace('{clothing}', finalMapping.clothing)
       .replace('{scene}', scene)
