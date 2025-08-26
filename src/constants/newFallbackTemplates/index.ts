@@ -21,14 +21,14 @@ export * from './grade10Templates';
 
 import { StoryTemplate, PersonalizationPlaceholders, DEFAULT_PLACEHOLDERS } from '../storyTemplateTypes';
 import { 
-  LEVEL_1_FALLBACK_TEMPLATES,
-  getLevel1FallbackTemplate,
-  getLevel1FallbackTemplateCount
+  LEVEL_1_TEMPLATES,
+  getLevel1Template,
+  getLevel1TemplateCount
 } from './level1Templates';
 import { 
-  LEVEL_2_FALLBACK_TEMPLATES,
-  getLevel2FallbackTemplate,
-  getLevel2FallbackTemplateCount
+  LEVEL_2_TEMPLATES,
+  getLevel2Template,  
+  getLevel2TemplateCount
 } from './level2Templates';
 import { 
   LEVEL_3_FALLBACK_TEMPLATES,
@@ -36,9 +36,9 @@ import {
   getLevel3FallbackTemplateCount
 } from './level3Templates';
 import { 
-  LEVEL_4_FALLBACK_TEMPLATES,
-  getLevel4FallbackTemplate,
-  getLevel4FallbackTemplateCount
+  LEVEL_4_TEMPLATES,
+  getLevel4Template,
+  getLevel4TemplateCount
 } from './level4Templates';
 import {
   GRADE_6_FALLBACK_TEMPLATES,
@@ -72,10 +72,10 @@ export type FallbackLevel = 'level1' | 'level2' | 'level3' | 'level4' | 'grade6'
  * Complete Fallback Template Collections
  */
 export const ALL_FALLBACK_TEMPLATES: Record<FallbackLevel, StoryTemplate[]> = {
-  level1: LEVEL_1_FALLBACK_TEMPLATES,
-  level2: LEVEL_2_FALLBACK_TEMPLATES,
+  level1: LEVEL_1_TEMPLATES,
+  level2: LEVEL_2_TEMPLATES, 
   level3: LEVEL_3_FALLBACK_TEMPLATES,
-  level4: LEVEL_4_FALLBACK_TEMPLATES,
+  level4: LEVEL_4_TEMPLATES,
   grade6: GRADE_6_FALLBACK_TEMPLATES,
   grade7: GRADE_7_FALLBACK_TEMPLATES,
   grade8: GRADE_8_FALLBACK_TEMPLATES,
@@ -89,13 +89,13 @@ export const ALL_FALLBACK_TEMPLATES: Record<FallbackLevel, StoryTemplate[]> = {
 export function getFallbackTemplate(level: FallbackLevel, templateIndex?: number): StoryTemplate | null {
   switch (level) {
     case 'level1':
-      return getLevel1FallbackTemplate(templateIndex);
+      return getLevel1Template(templateIndex);
     case 'level2':
-      return getLevel2FallbackTemplate(templateIndex);
+      return getLevel2Template(templateIndex);
     case 'level3':
       return getLevel3FallbackTemplate(templateIndex);
     case 'level4':
-      return getLevel4FallbackTemplate(templateIndex);
+      return getLevel4Template(templateIndex);
     case 'grade6':
       return getGrade6FallbackTemplate(templateIndex);
     case 'grade7':
@@ -117,13 +117,13 @@ export function getFallbackTemplate(level: FallbackLevel, templateIndex?: number
 export function getFallbackTemplateCount(level: FallbackLevel): number {
   switch (level) {
     case 'level1':
-      return getLevel1FallbackTemplateCount();
+      return getLevel1TemplateCount();
     case 'level2':
-      return getLevel2FallbackTemplateCount();
+      return getLevel2TemplateCount();
     case 'level3':
       return getLevel3FallbackTemplateCount();
     case 'level4':
-      return getLevel4FallbackTemplateCount();
+      return getLevel4TemplateCount();
     case 'grade6':
       return getGrade6FallbackTemplateCount();
     case 'grade7':
@@ -186,10 +186,10 @@ export function getTotalFallbackPages(): number {
   let totalPages = 0;
   
   // Level templates (each scene = 1 page)
-  LEVEL_1_FALLBACK_TEMPLATES.forEach(template => totalPages += template.scenes.length);
-  LEVEL_2_FALLBACK_TEMPLATES.forEach(template => totalPages += template.scenes.length);
+  LEVEL_1_TEMPLATES.forEach(template => totalPages += template.scenes.length);
+  LEVEL_2_TEMPLATES.forEach(template => totalPages += template.scenes.length);
   LEVEL_3_FALLBACK_TEMPLATES.forEach(template => totalPages += template.scenes.length);
-  LEVEL_4_FALLBACK_TEMPLATES.forEach(template => totalPages += template.scenes.length);
+  LEVEL_4_TEMPLATES.forEach(template => totalPages += template.scenes.length);
   
   // Grade templates (designed as chapters, count as multiple pages)
   GRADE_6_FALLBACK_TEMPLATES.forEach(template => totalPages += 12); // ~12 pages per grade 6 template
