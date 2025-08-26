@@ -46,6 +46,7 @@ export function TemplateExplorer() {
     try {
       const { data, error: functionError } = await supabase.functions.invoke('template-service', {
         body: {
+          difficulty: level, // Send difficulty as top-level parameter
           userInfo: {
             name: 'Explorer',
             age: 8,
@@ -58,7 +59,7 @@ export function TemplateExplorer() {
             hobbies: 'exploration',
             favoriteFood: 'pizza',
             specialRequest: 'exploration mode',
-            difficultyLevel: level,
+            difficultyLevel: level, // Keep as backup
           },
           explore: true, // Special flag for exploration mode
         }

@@ -1237,12 +1237,15 @@ serve(async (req) => {
   try {
     const { difficulty, userInfo, pageCount = 5, templateIndex, explore = false } = await req.json();
     
+    // Handle difficulty parameter - check top-level first, then userInfo fallback
+    const effectiveDifficulty = difficulty || userInfo?.difficultyLevel;
+    
     console.log('🎯 Template service request:', { 
-      difficulty, 
+      difficulty: effectiveDifficulty, 
       pageCount, 
-      templateIndex,
-      userInfo: userInfo ? 'provided' : 'missing',
-      explore
+      templateIndex, 
+      userInfo: userInfo ? 'provided' : 'missing', 
+      explore 
     });
 
     // Enhanced difficulty mapping supporting both Level 0 and new template system
@@ -1259,13 +1262,13 @@ serve(async (req) => {
       'grade10': 'grade10'      // New System Grade 10
     };
 
-    const templateLevel = levelMap[difficulty] || 'Level0'; // Default to Level 0
+    const templateLevel = levelMap[effectiveDifficulty] || 'Level0'; // Default to Level 0
     
     console.log('📚 Selecting template for level:', templateLevel);
     
     // Handle exploration mode - return template metadata instead of generated stories
     if (explore) {
-      return handleExploration(templateLevel, difficulty);
+      return handleExploration(templateLevel, effectiveDifficulty);
     }
     
     // Get template with Level 0 priority system
@@ -1285,7 +1288,7 @@ serve(async (req) => {
     const processedPages = processStoryTemplate(template, userInfo || {}, pageCount);
 
     // Determine template source for logging
-    const isLevel0 = difficulty === 'beginner' || templateLevel === 'Level0';
+    const isLevel0 = effectiveDifficulty === 'beginner' || templateLevel === 'Level0';
     const isNewSystem = ['Level1', 'Level2', 'Level3', 'Level4', 'grade6', 'grade7', 'grade8', 'grade9', 'grade10'].includes(templateLevel);
     const source = isLevel0 ? 'Level0-System' : isNewSystem ? 'New-Template-System' : 'Fallback';
     
