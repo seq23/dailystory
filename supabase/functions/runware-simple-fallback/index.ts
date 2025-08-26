@@ -280,6 +280,212 @@ const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
 
 // ============= NUCLEAR INDEPENDENT CORE FUNCTIONS =============
 
+// NUCLEAR HARDCODED AVATAR MAPPINGS (15 combinations: 3 types × 5 skin tones)
+const NUCLEAR_AVATAR_MAPPINGS = {
+  // BOY MAPPINGS
+  'boy-pale': {
+    character: 'boy',
+    age: '6-year-old',
+    skin: 'fair light complexion',
+    hair: 'blonde hair with neat cut',
+    eyes: 'bright blue eyes',
+    features: 'bright sparkling eyes and cheerful friendly smile',
+    clothing: 'casual t-shirt and jeans'
+  },
+  'boy-light': {
+    character: 'boy', 
+    age: '6-year-old',
+    skin: 'warm light skin',
+    hair: 'light brown hair style', 
+    eyes: 'warm green eyes',
+    features: 'expressive animated eyes and warm genuine smile',
+    clothing: 'hoodie and sneakers'
+  },
+  'boy-medium': {
+    character: 'boy',
+    age: '6-year-old', 
+    skin: 'golden tan complexion',
+    hair: 'medium brown hair',
+    eyes: 'warm brown eyes',
+    features: 'expressive warm brown eyes and bright cheerful smile',
+    clothing: 'colorful casual wear'
+  },
+  'boy-olive': {
+    character: 'boy',
+    age: '6-year-old',
+    skin: 'warm olive complexion', 
+    hair: 'dark brown wavy hair',
+    eyes: 'deep brown eyes',
+    features: 'striking expressive eyes and warm welcoming expression',
+    clothing: 'traditional-inspired modern wear'
+  },
+  'boy-dark': {
+    character: 'boy',
+    age: '6-year-old',
+    skin: 'rich dark chocolate complexion',
+    hair: 'textured buzz cut',
+    eyes: 'warm dark chocolate eyes', 
+    features: 'beautiful expressive dark eyes and warm genuine smile',
+    clothing: 'vibrant colorful casual wear'
+  },
+
+  // GIRL MAPPINGS  
+  'girl-pale': {
+    character: 'girl',
+    age: '6-year-old',
+    skin: 'fair light complexion',
+    hair: 'blonde hair in ponytail',
+    eyes: 'bright blue eyes',
+    features: 'bright sparkling eyes and cheerful friendly smile',
+    clothing: 'sundress and sandals'
+  },
+  'girl-light': {
+    character: 'girl',
+    age: '6-year-old', 
+    skin: 'warm light skin',
+    hair: 'light brown wavy hair',
+    eyes: 'sparkling blue eyes',
+    features: 'lively enthusiastic expression and kind gentle demeanor', 
+    clothing: 'blouse and skirt'
+  },
+  'girl-medium': {
+    character: 'girl',
+    age: '6-year-old',
+    skin: 'golden tan complexion', 
+    hair: 'dark brown wavy hair',
+    eyes: 'amber brown eyes',
+    features: 'warm welcoming expression and lively animated eyes',
+    clothing: 'colorful casual wear'
+  },
+  'girl-olive': {
+    character: 'girl', 
+    age: '6-year-old',
+    skin: 'warm olive complexion',
+    hair: 'long dark brown hair',
+    eyes: 'warm hazel eyes',
+    features: 'beautiful olive complexion and confident friendly demeanor',
+    clothing: 'elegant casual clothing'
+  },
+  'girl-dark': {
+    character: 'girl',
+    age: '6-year-old',
+    skin: 'rich dark chocolate complexion',
+    hair: 'textured medium natural hair', 
+    eyes: 'warm dark chocolate eyes',
+    features: 'beautiful expressive dark eyes and warm genuine smile',
+    clothing: 'vibrant colorful casual wear'
+  },
+
+  // GENDER-NEUTRAL MAPPINGS (for prefer-not-to-answer)
+  'neutral-pale': {
+    character: 'child',
+    age: '6-year-old',
+    skin: 'fair light complexion', 
+    hair: 'short light hair',
+    eyes: 'bright eyes',
+    features: 'friendly welcoming expression and gentle smile',
+    clothing: 'comfortable casual wear'
+  },
+  'neutral-light': {
+    character: 'child',
+    age: '6-year-old',
+    skin: 'warm light skin',
+    hair: 'neat brown hair',
+    eyes: 'warm eyes', 
+    features: 'kind gentle expression and bright smile',
+    clothing: 'simple comfortable outfit'
+  },
+  'neutral-medium': {
+    character: 'child',
+    age: '6-year-old',
+    skin: 'golden tan complexion',
+    hair: 'medium brown hair',
+    eyes: 'warm brown eyes',
+    features: 'cheerful friendly expression and welcoming smile', 
+    clothing: 'casual everyday wear'
+  },
+  'neutral-olive': {
+    character: 'child', 
+    age: '6-year-old',
+    skin: 'warm olive complexion',
+    hair: 'dark brown hair',
+    eyes: 'deep brown eyes',
+    features: 'warm welcoming expression and gentle demeanor',
+    clothing: 'comfortable modern clothing'
+  },
+  'neutral-dark': {
+    character: 'child',
+    age: '6-year-old', 
+    skin: 'rich dark complexion',
+    hair: 'textured dark hair',
+    eyes: 'warm dark eyes',
+    features: 'beautiful expressive eyes and genuine smile',
+    clothing: 'colorful comfortable wear'
+  }
+};
+
+// NUCLEAR AVATAR MAPPING FUNCTION
+function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
+  try {
+    console.log('🛡️ Tier 2.5: Nuclear avatar mapping started');
+    
+    // Get avatar type - fix the critical bug here
+    let avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+    const avatarSkinTone = userInfo?.avatar?.skinTone || 'light';
+    
+    console.log(`🛡️ Tier 2.5: Avatar data - Type: ${avatarType}, SkinTone: ${avatarSkinTone}`);
+    
+    // Handle missing avatar data - default to gender-neutral
+    if (!userInfo?.avatar?.type) {
+      console.log('🛡️ Tier 2.5: No avatar type found, defaulting to gender-neutral');
+      avatarType = 'prefer-not-to-answer';
+    }
+    
+    // Map avatar type to character prefix
+    let characterPrefix;
+    if (avatarType === 'prefer-not-to-answer') {
+      characterPrefix = 'neutral';
+    } else {
+      characterPrefix = avatarType; // 'boy' or 'girl'  
+    }
+    
+    // Create mapping key
+    const mappingKey = `${characterPrefix}-${avatarSkinTone}`;
+    console.log(`🛡️ Tier 2.5: Nuclear mapping key: ${mappingKey}`);
+    
+    // Get the nuclear mapping
+    const avatarMapping = NUCLEAR_AVATAR_MAPPINGS[mappingKey];
+    
+    if (!avatarMapping) {
+      console.warn(`⚠️ Tier 2.5: No mapping found for ${mappingKey}, using fallback`);
+      // Ultimate fallback - boy-light
+      return NUCLEAR_AVATAR_MAPPINGS['boy-light'];
+    }
+    
+    // Adjust age based on difficulty
+    const ageMapping = {
+      'beginner': '3-year-old',
+      'easy': '5-year-old', 
+      'medium': '7-year-old',
+      'hard': '9-year-old',
+      'expert': '11-year-old'
+    };
+    
+    const finalMapping = {
+      ...avatarMapping,
+      age: ageMapping[difficulty] || avatarMapping.age
+    };
+    
+    console.log(`✅ Tier 2.5: Nuclear mapping successful for ${mappingKey}`);
+    return finalMapping;
+    
+  } catch (error) {
+    console.error('❌ Tier 2.5: Nuclear avatar mapping error:', error);
+    // Ultimate failsafe
+    return NUCLEAR_AVATAR_MAPPINGS['boy-light'];
+  }
+}
+
 function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): string {
   try {
     const rawLevel = userInfo?.readingLevel || userInfo?.difficultyLevel || userInfo?.gradeLevel;
@@ -511,47 +717,34 @@ function fillPremiumTemplate(
     
     const template = PREMIUM_PROMPT_TEMPLATES[difficulty] || PREMIUM_PROMPT_TEMPLATES.medium;
     
-    // Detect cultural profile
-    const culturalProfile = detectCulturalProfile(userInfo);
-    console.log(`🛡️ Tier 2.5: Cultural profile detected: ${culturalProfile}`);
+    // NUCLEAR AVATAR MAPPING - Replace complex cultural profile system
+    const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
+    console.log(`🛡️ Tier 2.5: Nuclear avatar mapping applied: ${avatarMapping.character}`);
     
-    // Map avatar info to character attributes
-    const character = (userInfo?.avatar?.gender === 'female' || userInfo?.gender === 'female') ? 'girl' : 'boy';
-    const age = getAgeFromDifficulty(difficulty);
+    // Special case: Keep African American arrays for English + dark skin (cultural preservation)
+    const language = userInfo?.language || 'en';
+    const isEnglishDarkSkin = language === 'en' && userInfo?.avatar?.skinTone === 'dark';
     
-    let skin, hair, eyes, features, clothing;
+    let finalMapping = avatarMapping;
     
-    if (culturalProfile === 'African American') {
-      skin = getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES);
-      hair = getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[character === 'boy' ? 'boys' : 'girls']);
-      eyes = getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS);
-      features = getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES);
-      clothing = getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING);
-    } else if (culturalProfile === 'Hispanic/Latino') {
-      skin = getRandomItem(HARDCODED_HISPANIC_LATINO_SKIN_TONES);
-      hair = getRandomItem(HARDCODED_HISPANIC_LATINO_HAIRSTYLES[character === 'boy' ? 'boys' : 'girls']);
-      eyes = getRandomItem(HARDCODED_HISPANIC_LATINO_EYE_COLORS);
-      features = getRandomItem(HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES);
-      clothing = getRandomItem(HARDCODED_HISPANIC_LATINO_CLOTHING);
-    } else if (culturalProfile === 'Chinese/Asian') {
-      skin = getRandomItem(HARDCODED_CHINESE_ASIAN_SKIN_TONES);
-      hair = getRandomItem(HARDCODED_CHINESE_ASIAN_HAIRSTYLES[character === 'boy' ? 'boys' : 'girls']);
-      eyes = getRandomItem(HARDCODED_CHINESE_ASIAN_EYE_COLORS);
-      features = getRandomItem(HARDCODED_CHINESE_ASIAN_FACIAL_FEATURES);
-      clothing = getRandomItem(HARDCODED_CHINESE_ASIAN_CLOTHING);
-    } else if (culturalProfile === 'Middle Eastern') {
-      skin = getRandomItem(HARDCODED_MIDDLE_EASTERN_SKIN_TONES);
-      hair = getRandomItem(HARDCODED_MIDDLE_EASTERN_HAIRSTYLES[character === 'boy' ? 'boys' : 'girls']);
-      eyes = getRandomItem(HARDCODED_MIDDLE_EASTERN_EYE_COLORS);
-      features = getRandomItem(HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES);
-      clothing = getRandomItem(HARDCODED_MIDDLE_EASTERN_CLOTHING);
-    } else {
-      // Standard American
-      skin = getRandomItem(HARDCODED_STANDARD_AMERICAN_SKIN_TONES);
-      hair = getRandomItem(HARDCODED_STANDARD_AMERICAN_HAIRSTYLES[character === 'boy' ? 'boys' : 'girls']);
-      eyes = getRandomItem(HARDCODED_STANDARD_AMERICAN_EYE_COLORS);
-      features = getRandomItem(HARDCODED_STANDARD_AMERICAN_FACIAL_FEATURES);
-      clothing = getRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING);
+    if (isEnglishDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for English + dark skin');
+      
+      // Use African American arrays for cultural authenticity
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character; // Default neutral to boy for array access
+      const genderKey = character === 'boy' ? 'boys' : 'girls';
+      
+      // Deterministic selection based on user name (no randomization)
+      const nameHash = (userInfo?.name || 'default').length % 10;
+      
+      finalMapping = {
+        ...avatarMapping,
+        skin: HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[nameHash % HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length],
+        hair: HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey][nameHash % HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey].length],
+        eyes: HARDCODED_AFRICAN_AMERICAN_EYE_COLORS[nameHash % HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length],
+        features: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[nameHash % HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length],
+        clothing: HARDCODED_AFRICAN_AMERICAN_CLOTHING[nameHash % HARDCODED_AFRICAN_AMERICAN_CLOTHING.length]
+      };
     }
     
     // Apply cultural setting enhancement
@@ -560,15 +753,15 @@ function fillPremiumTemplate(
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
     
-    // Fill template
+    // Fill template with nuclear mappings
     let filledTemplate = template
-      .replace('{character}', character)
-      .replace('{age}', age)
-      .replace('{skin}', skin)
-      .replace('{hair}', hair)
-      .replace('{eyes}', eyes)
-      .replace('{features}', features)
-      .replace('{clothing}', clothing)
+      .replace('{character}', finalMapping.character)
+      .replace('{age}', finalMapping.age)
+      .replace('{skin}', finalMapping.skin)
+      .replace('{hair}', finalMapping.hair)
+      .replace('{eyes}', finalMapping.eyes)
+      .replace('{features}', finalMapping.features)
+      .replace('{clothing}', finalMapping.clothing)
       .replace('{scene}', scene)
       .replace('{setting}', enhancedSetting)
       .replace('{objects}', objects)
@@ -577,12 +770,14 @@ function fillPremiumTemplate(
       .replace('{quality}', style.quality)
       .replace('{suffix}', style.suffix || '');
     
-    console.log(`🛡️ Tier 2.5: Template filled successfully`);
+    console.log(`🛡️ Tier 2.5: Template filled successfully with nuclear mapping`);
     return filledTemplate;
     
   } catch (error) {
     console.error('❌ Tier 2.5: Template filling error:', error);
-    return `A happy ${userInfo?.avatar?.gender === 'female' ? 'girl' : 'boy'} reading and learning in a bright classroom. High quality, detailed illustration.`;
+    // Fix the avatar type bug in the fallback too
+    const fallbackCharacter = userInfo?.avatar?.type === 'girl' ? 'girl' : userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'child' : 'boy';
+    return `A happy ${fallbackCharacter} reading and learning in a bright classroom. High quality, detailed illustration.`;
   }
 }
 
@@ -816,11 +1011,11 @@ Deno.serve(async (req: Request) => {
     // Fill premium template with all placeholders
     const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion);
     
-    // Detect cultural profile and generate negative prompt
-    const culturalProfile = detectCulturalProfile(userInfo);
-    const character = (userInfo?.avatar?.gender === 'female' || userInfo?.gender === 'female') ? 'girl' : 'boy';
+    // Generate negative prompt with fixed avatar mapping
+    const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
+    const character = avatarMapping.character;
     const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
-    const negativePrompt = getEnhancedNegativePrompt(culturalProfile, character, pageNumber);
+    const negativePrompt = getEnhancedNegativePrompt('Standard American', character, pageNumber);
     
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
