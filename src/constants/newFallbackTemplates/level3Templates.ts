@@ -13,13 +13,13 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
     level: "Level 3 (Ages 9-11)",
     scenes: [
       {
-        text: "{userName} and their best friend {friendName} stumbled upon an ancient-looking treehouse deep in the {forestType} forest. As they climbed inside, they discovered a dusty old book with strange symbols. Suddenly, the treehouse began to shake, and they realized it was lifting off the ground!",
+        text: "{userName} and their best friend {friend} stumbled upon an ancient-looking treehouse deep in the {forestType} forest. As they climbed inside, they discovered a dusty old book with strange symbols. Suddenly, the treehouse began to shake, and they realized it was lifting off the ground!",
         pause: true,
         hook: "Where will the magical treehouse take them?",
         microVariants: {
-          text: "{userName} and {friendName}, while exploring the {forestType} forest, found a hidden treehouse. Inside, a mysterious book with glowing symbols caused the treehouse to magically float into the sky!",
+          text: "{userName} and {friend}, while exploring the {forestType} forest, found a hidden treehouse. Inside, a mysterious book with glowing symbols caused the treehouse to magically float into the sky!",
           alternatives: [
-            "{userName} and {friendName} were playing in the {forestType} woods when they discovered a secret treehouse. A magical book inside made the treehouse fly!"
+            "{userName} and {friend} were playing in the {forestType} woods when they discovered a secret treehouse. A magical book inside made the treehouse fly!"
           ],
           optionalDetails: ["The book whispered secrets.", "Strange lights flickered around them.", "The air crackled with energy."]
         }
@@ -37,7 +37,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "In the Land of Talking Animals, they met a {animalType} who told them about a hidden treasure that could grant any wish. The {animalType} warned them that the treasure was guarded by a grumpy {monsterType} who loved riddles. {userName} and {friendName} accepted the challenge and set off to find the treasure.",
+        text: "In the Land of Talking Animals, they met a {animalType} who told them about a hidden treasure that could grant any wish. The {animalType} warned them that the treasure was guarded by a grumpy {monsterType} who loved riddles. {userName} and {friend} accepted the challenge and set off to find the treasure.",
         pause: true,
         hook: "Can they outsmart the grumpy monster and get the treasure?",
         microVariants: {
@@ -49,13 +49,13 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "Following the map through enchanted forests and across rainbow bridges, {userName} and {friendName} encountered three magical creatures who each offered helpful gifts. A wise owl gave them a compass that always points toward truth, a friendly dragon shared a protective shield made of {favoriteColor} scales, and a magical butterfly whispered the secret to understanding any language. Armed with these gifts, they felt ready to face the riddle-loving monster and solve whatever challenges awaited them at the treasure's location.",
+        text: "Following the map through enchanted forests and across rainbow bridges, {userName} and {friend} encountered three magical creatures who each offered helpful gifts. A wise owl gave them a compass that always points toward truth, a friendly dragon shared a protective shield made of {favoriteColor} scales, and a magical butterfly whispered the secret to understanding any language. Armed with these gifts, they felt ready to face the riddle-loving monster and solve whatever challenges awaited them at the treasure's location.",
         pause: true,
         hook: "What riddles will the monster ask, and how will their gifts help?",
         microVariants: {
           text: "Three magical creatures offered gifts: a truth compass from an owl, a {favoriteColor} shield from a dragon, and language understanding from a butterfly.",
           alternatives: [
-            "An owl, dragon, and butterfly each gave {userName} and {friendName} magical gifts to help with their treasure quest."
+            "An owl, dragon, and butterfly each gave {userName} and {friend} magical gifts to help with their treasure quest."
           ],
           optionalDetails: ["The compass glowed when pointing to truth.", "The shield felt warm and protective.", "The butterfly's gift let them understand any creature."]
         }
@@ -73,7 +73,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "The treasure turned out to be something even more valuable than gold or jewels: a magical library containing every story ever told and every story yet to be written. The {monsterType} explained that the real treasure was the knowledge and imagination contained in these infinite stories. {userName} and {friendName} realized they could make any wish come true by reading and learning from these tales, and they invited their new monster friend to join them in exploring the endless adventures contained within the magical books.",
+        text: "The treasure turned out to be something even more valuable than gold or jewels: a magical library containing every story ever told and every story yet to be written. The {monsterType} explained that the real treasure was the knowledge and imagination contained in these infinite stories. {userName} and {friend} realized they could make any wish come true by reading and learning from these tales, and they invited their new monster friend to join them in exploring the endless adventures contained within the magical books.",
         pause: true,
         hook: "What amazing stories will they discover in the magical library?",
         microVariants: {
@@ -97,11 +97,11 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "When it was time to return to the treehouse, {userName} and {friendName} realized they could visit the magical library anytime through their friendship with the {monsterType}, who gave them each a special bookmark that would transport them back whenever they wanted to share a new story. The treehouse gently carried them home, but now their adventures felt infinite because they had discovered that friendship, imagination, and shared stories could take them anywhere they wanted to go, creating new magical experiences every single day.",
+        text: "When it was time to return to the treehouse, {userName} and {friend} realized they could visit the magical library anytime through their friendship with the {monsterType}, who gave them each a special bookmark that would transport them back whenever they wanted to share a new story. The treehouse gently carried them home, but now their adventures felt infinite because they had discovered that friendship, imagination, and shared stories could take them anywhere they wanted to go, creating new magical experiences every single day.",
         pause: true,
         hook: "Where will their next storytelling adventure take them?",
         microVariants: {
-          text: "With special bookmarks from their {monsterType} friend, {userName} and {friendName} could return to the magical library anytime to share new story adventures.",
+          text: "With special bookmarks from their {monsterType} friend, {userName} and {friend} could return to the magical library anytime to share new story adventures.",
           alternatives: [
             "The treehouse brought them home, but the {monsterType} friend and magical bookmarks meant their story adventures could continue forever."
           ],
@@ -109,19 +109,19 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "After solving a series of tricky riddles, they finally faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friendName} quickly answered, 'A map!' The {monsterType} grumbled but handed over the treasure.",
+        text: "After solving a series of tricky riddles, they finally faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friend} quickly answered, 'A map!' The {monsterType} grumbled but handed over the treasure.",
         pause: true,
         hook: "What will they wish for with the magical treasure?",
         microVariants: {
-          text: "They solved riddles and faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friendName} answered, 'A map!'",
+          text: "They solved riddles and faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friend} answered, 'A map!'",
           alternatives: [
-            "The {monsterType} asked riddles. {friendName} solved the last one: 'I have cities, but no houses...' The answer was 'A map!'"
+            "The {monsterType} asked riddles. {friend} solved the last one: 'I have cities, but no houses...' The answer was 'A map!'"
           ],
           optionalDetails: ["The riddles were written in ancient languages.", "The {monsterType} had a funny voice.", "The treasure glowed warmly."]
         }
       },
       {
-        text: "{userName} and {friendName} wished for all the children in the world to have access to books and education. Suddenly, books appeared in every school and library, and children everywhere began to read and learn. They returned to their world, knowing they had made a difference.",
+        text: "{userName} and {friend} wished for all the children in the world to have access to books and education. Suddenly, books appeared in every school and library, and children everywhere began to read and learn. They returned to their world, knowing they had made a difference.",
         pause: false,
         hook: "How will they use their newfound knowledge and experiences?",
         microVariants: {
@@ -136,7 +136,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
     endings: [
       {
         type: 'cozy',
-        text: "Back in their own backyard, {userName} and {friendName} built a small library for their neighborhood, filled with books from their adventure. They often read stories to the younger children, sharing the magic of reading and the importance of education.",
+        text: "Back in their own backyard, {userName} and {friend} built a small library for their neighborhood, filled with books from their adventure. They often read stories to the younger children, sharing the magic of reading and the importance of education.",
         microVariants: [
           "They built a neighborhood library with books from their adventure, sharing stories and the importance of education with younger children."
         ]
@@ -150,14 +150,14 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
       },
       {
         type: 'triumphant',
-        text: "{userName} and {friendName} started a global campaign for education, inspiring people around the world to donate books and support schools. They received awards and recognition, but their greatest reward was seeing children everywhere learning and growing.",
+        text: "{userName} and {friend} started a global campaign for education, inspiring people around the world to donate books and support schools. They received awards and recognition, but their greatest reward was seeing children everywhere learning and growing.",
         microVariants: [
           "They started a global education campaign, inspiring people to donate books and support schools. Their reward was seeing children learning and growing."
         ]
       },
       {
         type: 'reflective',
-        text: "Looking back on their adventure, {userName} and {friendName} realized that the greatest magic wasn't in the treehouse or the treasure, but in the power of knowledge and the ability to make a positive impact on the world. They continued to explore, learn, and share their discoveries with others.",
+        text: "Looking back on their adventure, {userName} and {friend} realized that the greatest magic wasn't in the treehouse or the treasure, but in the power of knowledge and the ability to make a positive impact on the world. They continued to explore, learn, and share their discoveries with others.",
         microVariants: [
           "They realized the greatest magic was in knowledge and making a positive impact. They continued to explore, learn, and share their discoveries."
         ]
@@ -179,25 +179,25 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
     level: "Level 3 (Ages 9-11)",
     scenes: [
       {
-        text: "{userName} was excited about the upcoming science fair. They wanted to create an experiment that would amaze everyone. After brainstorming with their friend {friendName}, they decided to build a robot that could clean up the school playground.",
+        text: "{userName} was excited about the upcoming science fair. They wanted to create an experiment that would amaze everyone. After brainstorming with their friend {friend}, they decided to build a robot that could clean up the school playground.",
         pause: true,
         hook: "Will their robot be a success at the science fair?",
         microVariants: {
-          text: "{userName} and {friendName} decided to build a robot for the science fair that could clean the school playground.",
+          text: "{userName} and {friend} decided to build a robot for the science fair that could clean the school playground.",
           alternatives: [
-            "{userName} wanted to impress at the science fair and, with {friendName}'s help, planned to build a robot to clean the playground."
+            "{userName} wanted to impress at the science fair and, with {friend}'s help, planned to build a robot to clean the playground."
           ],
           optionalDetails: ["They spent weeks planning.", "Their teacher was very supportive.", "They gathered recycled materials."]
         }
       },
       {
-        text: "They gathered recycled materials like cardboard boxes, plastic bottles, and old wires. {userName} focused on the robot's design, while {friendName} worked on the programming. They faced many challenges, but they never gave up.",
+        text: "They gathered recycled materials like cardboard boxes, plastic bottles, and old wires. {userName} focused on the robot's design, while {friend} worked on the programming. They faced many challenges, but they never gave up.",
         pause: true,
         hook: "What challenges will they face while building the robot?",
         microVariants: {
-          text: "Using recycled materials, {userName} designed the robot, and {friendName} programmed it. They faced challenges but persevered.",
+          text: "Using recycled materials, {userName} designed the robot, and {friend} programmed it. They faced challenges but persevered.",
           alternatives: [
-            "They collected cardboard, bottles, and wires. {userName} designed, {friendName} programmed, and they kept going despite problems."
+            "They collected cardboard, bottles, and wires. {userName} designed, {friend} programmed, and they kept going despite problems."
           ],
           optionalDetails: ["The wires kept getting tangled.", "The robot kept falling apart.", "They learned a lot about teamwork."]
         }
@@ -215,7 +215,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "The judges were impressed by CleanBot's functionality and creativity. They awarded {userName} and {friendName} first place in the science fair. Their project inspired other students to think about ways to help the environment.",
+        text: "The judges were impressed by CleanBot's functionality and creativity. They awarded {userName} and {friend} first place in the science fair. Their project inspired other students to think about ways to help the environment.",
         pause: true,
         hook: "What will they do with their science fair success?",
         microVariants: {
@@ -227,7 +227,7 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
-        text: "{userName} and {friendName} continued to improve CleanBot, adding new features and making it more efficient. They shared their knowledge with other students, helping them build their own robots to solve problems in their community.",
+        text: "{userName} and {friend} continued to improve CleanBot, adding new features and making it more efficient. They shared their knowledge with other students, helping them build their own robots to solve problems in their community.",
         pause: false,
         hook: "How will they continue to make a difference in their community?",
         microVariants: {
@@ -237,12 +237,72 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
           ],
           optionalDetails: ["They started a robotics club.", "They organized a community cleanup day.", "They felt proud of their accomplishments."]
         }
+      },
+      {
+        text: "As weeks pass, {userName} and {friend} discover that CleanBot's success has attracted attention from environmental organizations and tech companies. They receive invitations to demonstrate their robot at regional science competitions and environmental conferences. The experience teaches them about presenting complex ideas to diverse audiences and the importance of clear communication in science.",
+        pause: true,
+        hook: "How will presenting to experts help them improve their robot?",
+        microVariants: {
+          text: "CleanBot's success brings invitations to present at competitions and conferences, teaching {userName} and {friend} about scientific communication.",
+          alternatives: [
+            "Environmental groups and tech companies want to see CleanBot, giving {userName} and {friend} chances to present to experts."
+          ],
+          optionalDetails: ["They practice their presentation every day", "The conferences are held in big cities", "Famous scientists attend these events"]
+        }
+      },
+      {
+        text: "During one presentation, a scientist suggests that CleanBot could be modified to work in different environments like beaches or parks. This sparks {userName} and {friend}'s imagination about creating a whole family of cleaning robots. They begin researching how to adapt their design for different surfaces and weather conditions, learning about engineering principles and environmental science.",
+        pause: true,
+        hook: "What new challenges will they face designing robots for different environments?",
+        microVariants: {
+          text: "A scientist suggests adapting CleanBot for beaches and parks, inspiring {userName} and {friend} to research environmental engineering.",
+          alternatives: [
+            "Ideas for beach-cleaning and park-cleaning robots inspire {userName} and {friend} to study environmental engineering principles."
+          ],
+          optionalDetails: ["They study sand cleaning mechanisms", "Waterproof designs become important", "Different trash types require different approaches"]
+        }
+      },
+      {
+        text: "Their research leads them to collaborate with marine biology students on a robot that can clean plastic from ocean shores. {userName} focuses on the mechanical design while {friend} works on programming the robot to identify and safely collect different types of marine debris. This interdisciplinary project teaches them how science, technology, engineering, and environmental conservation work together.",
+        pause: true,
+        hook: "Will their ocean-cleaning robot be successful in protecting marine life?",
+        microVariants: {
+          text: "Collaborating with marine biology students, {userName} and {friend} design an ocean shore cleaning robot that identifies marine debris.",
+          alternatives: [
+            "Marine biology collaboration helps {userName} and {friend} create a robot that safely removes ocean plastic while protecting sea life."
+          ],
+          optionalDetails: ["They learn about microplastics and their dangers", "The robot can distinguish trash from natural materials", "Marine biologists test the robot's safety"]
+        }
+      },
+      {
+        text: "Testing their new robot at a local beach, {userName} and {friend} witness firsthand the environmental impact of plastic pollution on marine ecosystems. They document how their robot successfully removes harmful debris while leaving natural materials undisturbed. The experience deepens their commitment to environmental protection and their understanding of how technology can address global challenges.",
+        pause: true,
+        hook: "How will their success inspire others to join environmental protection efforts?",
+        microVariants: {
+          text: "Beach testing shows how their robot removes pollution while protecting ecosystems, deepening {userName} and {friend}'s environmental commitment.",
+          alternatives: [
+            "Successful beach testing demonstrates their robot's environmental benefits, inspiring {userName} and {friend} to expand their conservation work."
+          ],
+          optionalDetails: ["Local news covers their beach cleanup", "Other students want to help with testing", "Marine life returns to cleaned areas"]
+        }
+      },
+      {
+        text: "Inspired by their success, {userName} and {friend} establish a youth environmental technology club at their school, teaching other students to build simple robots for environmental cleanup projects. They develop curriculum that combines hands-on engineering with environmental science education. Their club grows to include students from other schools, creating a network of young environmental advocates using technology for conservation.",
+        pause: false,
+        hook: "What global impact will their environmental technology movement achieve?",
+        microVariants: {
+          text: "Their success leads to establishing a youth environmental technology club that teaches others and grows into a network of young advocates.",
+          alternatives: [
+            "An environmental technology club founded by {userName} and {friend} spreads to other schools, creating young environmental advocates."
+          ],
+          optionalDetails: ["The club builds robots for local parks", "They organize community cleanup events", "Other cities request help starting similar clubs"]
+        }
       }
     ],
     endings: [
       {
         type: 'cozy',
-        text: "Years later, {userName} and {friendName} became engineers, designing sustainable solutions for communities around the world. They never forgot their first science fair project and the importance of teamwork and creativity.",
+        text: "Years later, {userName} and {friend} became engineers, designing sustainable solutions for communities around the world. They never forgot their first science fair project and the importance of teamwork and creativity.",
         microVariants: [
           "They became engineers, designing sustainable solutions, remembering their science fair project and the value of teamwork."
         ]
@@ -256,14 +316,14 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
       },
       {
         type: 'triumphant',
-        text: "{userName} and {friendName} received a national award for their contributions to environmental science. They used their platform to advocate for STEM education and inspire young people to pursue their dreams.",
+        text: "{userName} and {friend} received a national award for their contributions to environmental science. They used their platform to advocate for STEM education and inspire young people to pursue their dreams.",
         microVariants: [
           "They received an award for their contributions to environmental science, advocating for STEM education and inspiring young people."
         ]
       },
       {
         type: 'reflective',
-        text: "Looking back on their science fair project, {userName} and {friendName} realized that even small actions can make a big difference. They continued to use their skills and knowledge to create a better world for future generations.",
+        text: "Looking back on their science fair project, {userName} and {friend} realized that even small actions can make a big difference. They continued to use their skills and knowledge to create a better world for future generations.",
         microVariants: [
           "They realized small actions can make a big difference, continuing to use their skills to create a better world."
         ]

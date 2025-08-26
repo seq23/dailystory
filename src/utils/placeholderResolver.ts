@@ -21,8 +21,7 @@ const FALLBACK_POOLS = {
   object: ["ball", "book", "box", "car", "toy", "tree"],
   action: ["play", "run", "go", "come", "look", "jump"],
   adjective: ["big", "little", "good", "funny", "pretty", "new"],
-  friendName: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
-  friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
+    friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
   color: ["red", "blue", "yellow", "black", "brown", "white"],
   // Legacy and edge case placeholders
   forestType: ["magic", "deep", "green", "quiet", "old", "big"],
@@ -202,8 +201,6 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     adjectiveFallback: pick(FALLBACK_POOLS.adjective),
     color: seed?.color || userInfo?.favoriteColor || pick(FALLBACK_POOLS.color),
     friend: seed?.friend || pick(FALLBACK_POOLS.friend),
-    // Legacy placeholder support
-    friendName: seed?.friendName || pick(FALLBACK_POOLS.friendName),
     forestType: seed?.forestType || pick(FALLBACK_POOLS.forestType),
     weatherType: seed?.weatherType || pick(FALLBACK_POOLS.weatherType),
     placeType: seed?.placeType || pick(FALLBACK_POOLS.placeType)
@@ -224,8 +221,6 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     adjective: adjective,
     color: candidate.color,
     friend: candidate.friend,
-    // Legacy placeholder mappings
-    friendName: candidate.friendName,
     forestType: candidate.forestType,
     weatherType: candidate.weatherType,
     placeType: candidate.placeType
