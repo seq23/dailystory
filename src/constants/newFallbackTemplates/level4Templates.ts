@@ -49,6 +49,76 @@ export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
           alternatives: ["Global recognition brings new responsibilities and deeper understanding of archaeological ethics.", "The discovery opens doors to international collaboration and cultural preservation efforts."],
           optionalDetails: ["indigenous elders share oral traditions that support the findings", "the artifact becomes a symbol of ancient scientific achievement"]
         }
+      },
+      {
+        text: "{userName} establishes protocols for ethical artifact research that respect indigenous cultural rights and community ownership while advancing scientific understanding. Working with tribal historians and cultural preservation experts, they develop methods for collaborative archaeology that ensure indigenous communities lead decisions about their cultural heritage. The research reveals connections between the artifact and living cultural traditions that enhance understanding of both ancient and contemporary indigenous knowledge systems.",
+        pause: true,
+        hook: "How will {userName} bridge ancient discoveries with modern cultural preservation?",
+        microVariants: {
+          text: "{userName} establishes protocols for ethical artifact research that respect indigenous cultural rights and community ownership while advancing scientific understanding. Working with tribal historians and cultural preservation experts, they develop methods for collaborative archaeology that ensure indigenous communities lead decisions about their cultural heritage. The research reveals connections between the artifact and living cultural traditions that enhance understanding of both ancient and contemporary indigenous knowledge systems.",
+          alternatives: ["Collaborative protocols ensure community leadership in cultural heritage research.", "Ancient knowledge connects with living traditions through respectful partnership."],
+          optionalDetails: ["community elders validate interpretations through oral history", "research protocols become models for ethical archaeology worldwide"]
+        }
+      },
+      {
+        text: "Advanced dating and analysis techniques confirm that the artifact predates known civilizations by thousands of years, challenging existing archaeological timelines and theories about human technological development. {userName} works with international research teams to verify results using multiple independent methods while ensuring that indigenous perspectives and traditional knowledge inform all interpretations. The discovery suggests that ancient civilizations achieved mathematical and astronomical understanding that modern science is only beginning to appreciate.",
+        pause: true,
+        hook: "What revolutionary insights about ancient knowledge will {userName}'s research reveal?",
+        microVariants: {
+          text: "Advanced dating and analysis techniques confirm that the artifact predates known civilizations by thousands of years, challenging existing archaeological timelines and theories about human technological development. {userName} works with international research teams to verify results using multiple independent methods while ensuring that indigenous perspectives and traditional knowledge inform all interpretations. The discovery suggests that ancient civilizations achieved mathematical and astronomical understanding that modern science is only beginning to appreciate.",
+          alternatives: ["Revolutionary dating results reshape understanding of ancient technological capabilities.", "International collaboration validates discoveries that challenge historical timelines."],
+          optionalDetails: ["carbon dating shows ages 8,000 years older than expected", "mathematical concepts match advanced modern theoretical frameworks"]
+        }
+      },
+      {
+        text: "As {userName}'s research gains international recognition, they navigate the complex responsibilities of being a young scholar whose discoveries could reshape archaeological understanding. They learn to communicate complex scientific findings to diverse audiences while advocating for research practices that honor indigenous knowledge and community rights. The experience teaches them that groundbreaking discoveries require not just scientific expertise, but also cultural humility, ethical leadership, and commitment to justice.",
+        pause: true,
+        hook: "How will {userName} use their platform to advance both science and social justice?",
+        microVariants: {
+          text: "As {userName}'s research gains international recognition, they navigate the complex responsibilities of being a young scholar whose discoveries could reshape archaeological understanding. They learn to communicate complex scientific findings to diverse audiences while advocating for research practices that honor indigenous knowledge and community rights. The experience teaches them that groundbreaking discoveries require not just scientific expertise, but also cultural humility, ethical leadership, and commitment to justice.",
+          alternatives: ["International recognition brings opportunities to advocate for ethical research practices.", "Young scholarship demonstrates the importance of cultural humility in scientific discovery."],
+          optionalDetails: ["conferences in 12 countries adopt new ethical research protocols", "indigenous knowledge systems inform university archaeological curricula"]
+        }
+      },
+      {
+        text: "The artifact research leads to the establishment of community-controlled cultural preservation programs that protect indigenous heritage sites while supporting ongoing archaeological research. {userName} helps develop funding models that ensure communities benefit economically from research while maintaining control over their cultural resources. This work demonstrates how archaeological discovery can serve community empowerment and cultural preservation rather than extraction and appropriation.",
+        pause: true,
+        hook: "What lasting impact will {userName}'s ethical archaeology model have?",
+        microVariants: {
+          text: "The artifact research leads to the establishment of community-controlled cultural preservation programs that protect indigenous heritage sites while supporting ongoing archaeological research. {userName} helps develop funding models that ensure communities benefit economically from research while maintaining control over their cultural resources. This work demonstrates how archaeological discovery can serve community empowerment and cultural preservation rather than extraction and appropriation.",
+          alternatives: ["Community-controlled programs demonstrate sustainable archaeology that benefits indigenous communities.", "Ethical research models show how discovery can support rather than exploit cultural heritage."],
+          optionalDetails: ["preservation programs create 200+ community jobs annually", "research revenue funds indigenous language revitalization programs"]
+        }
+      },
+      {
+        text: "Years later, {userName} reflects on how a single artifact discovery transformed their understanding of archaeology, ethics, and community responsibility. The research has contributed to a fundamental shift in how archaeological work is conducted, prioritizing community partnership, indigenous knowledge, and cultural sovereignty alongside scientific inquiry. Their work has inspired a new generation of archaeologists to approach discovery with humility, respect, and commitment to justice.",
+        pause: true,
+        hook: "What legacy will {userName}'s revolutionary approach to archaeology create?",
+        microVariants: {
+          text: "Years later, {userName} reflects on how a single artifact discovery transformed their understanding of archaeology, ethics, and community responsibility. The research has contributed to a fundamental shift in how archaeological work is conducted, prioritizing community partnership, indigenous knowledge, and cultural sovereignty alongside scientific inquiry. Their work has inspired a new generation of archaeologists to approach discovery with humility, respect, and commitment to justice.",
+          alternatives: ["Ethical archaeology becomes the standard through {userName}'s pioneering research model.", "Community partnership approaches transform archaeological practice worldwide."],
+          optionalDetails: ["archaeological programs in 47 universities adopt community-partnership models", "indigenous communities lead archaeological research in 23 countries globally"]
+        }
+      },
+      {
+        text: "The final phase of research involves returning the artifact to the community for permanent cultural preservation while ensuring that the scientific knowledge gained continues to inform both archaeological understanding and indigenous cultural revitalization efforts. {userName} has learned that the most important discoveries are not objects or data, but the relationships and understanding that develop through respectful collaboration between scientific and indigenous knowledge systems.",
+        pause: true,
+        hook: "How has {userName}'s journey changed both archaeology and cultural preservation?",
+        microVariants: {
+          text: "The final phase of research involves returning the artifact to the community for permanent cultural preservation while ensuring that the scientific knowledge gained continues to inform both archaeological understanding and indigenous cultural revitalization efforts. {userName} has learned that the most important discoveries are not objects or data, but the relationships and understanding that develop through respectful collaboration between scientific and indigenous knowledge systems.",
+          alternatives: ["Community stewardship ensures cultural artifacts serve ongoing indigenous knowledge systems.", "Collaborative relationships prove more valuable than any single archaeological discovery."],
+          optionalDetails: ["cultural centers display artifacts within traditional knowledge contexts", "research relationships support indigenous graduate students in archaeology programs"]
+        }
+      },
+      {
+        text: "As {userName} prepares to begin doctoral studies in collaborative archaeology, they carry forward lessons about the inseparable connection between scientific discovery and social responsibility. Their research model has demonstrated that archaeology can serve indigenous communities while advancing human knowledge, creating a foundation for more just and ethical approaches to understanding the past. The ancient artifact that started their journey has become a symbol of how respectful research can bridge different knowledge traditions while honoring the communities whose ancestors created the technologies and wisdom we seek to understand.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "As {userName} prepares to begin doctoral studies in collaborative archaeology, they carry forward lessons about the inseparable connection between scientific discovery and social responsibility. Their research model has demonstrated that archaeology can serve indigenous communities while advancing human knowledge, creating a foundation for more just and ethical approaches to understanding the past. The ancient artifact that started their journey has become a symbol of how respectful research can bridge different knowledge traditions while honoring the communities whose ancestors created the technologies and wisdom we seek to understand.",
+          alternatives: ["Doctoral studies will expand collaborative archaeology methods to global applications.", "Ethical research principles guide future generations of archaeologists and community partnerships."],
+          optionalDetails: ["PhD program includes mandatory training in indigenous research ethics", "community partnerships inform all stages of archaeological doctoral education"]
+        }
       }
     ],
     endings: [
@@ -61,6 +131,16 @@ export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
         type: 'reflective', 
         text: "{userName} realizes that some mysteries are meant to be explored gradually, with patience and respect for ancient cultures.",
         microVariants: ["The journey of discovery proves more valuable than quick answers.", "Each clue leads to deeper questions about human history."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} sits peacefully in their community archaeological center, surrounded by artifacts that tell stories of human ingenuity while serving the cultural preservation needs of indigenous communities who maintain living connections to these ancient traditions.",
+        microVariants: ["The research center becomes a bridge between ancient wisdom and modern understanding.", "Community elders and young researchers work together in the quiet study spaces."]
+      },
+      {
+        type: 'silly',
+        text: "During the international archaeology conference, {userName}'s ancient artifact suddenly starts glowing {favoriteColor} when they mention eating {favoriteFood}, leading to the unexpected discovery that the mysterious symbols were actually an ancient recipe collection!",
+        microVariants: ["The conference erupts in laughter as archaeologists realize they've been studying prehistoric cooking instructions.", "Ancient civilizations apparently had very strong opinions about proper {favoriteFood} preparation techniques."]
       }
     ],
     reuse: {
@@ -97,6 +177,66 @@ export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
           alternatives: ["Research into AI ethics reveals the complexity of creating truly fair algorithms.", "Collaboration with diverse experts provides insights into algorithmic justice."],
           optionalDetails: ["community feedback sessions inform the redesign process", "ethical frameworks guide every development decision"]
         }
+      },
+      {
+        text: "{userName} develops innovative bias detection algorithms that can identify discrimination patterns in AI training data before models are deployed, working with computer scientists and social justice advocates to create technical solutions for ethical AI development. They establish testing protocols that evaluate AI systems for fairness across different demographic groups while ensuring that bias mitigation doesn't reduce accuracy for anyone. This technical work requires {userName} to master advanced machine learning concepts while maintaining focus on social impact and community needs.",
+        pause: true,
+        hook: "How will {userName}'s bias detection technology transform AI development practices?",
+        microVariants: {
+          text: "{userName} develops innovative bias detection algorithms that can identify discrimination patterns in AI training data before models are deployed, working with computer scientists and social justice advocates to create technical solutions for ethical AI development. They establish testing protocols that evaluate AI systems for fairness across different demographic groups while ensuring that bias mitigation doesn't reduce accuracy for anyone. This technical work requires {userName} to master advanced machine learning concepts while maintaining focus on social impact and community needs.",
+          alternatives: ["Technical innovation creates tools for proactive bias prevention in AI systems.", "Algorithmic fairness becomes measurable through {userName}'s detection methods."],
+          optionalDetails: ["bias detection tools identify discrimination in 87% of tested AI systems", "fairness protocols reduce algorithmic bias by average of 73% across demographic groups"]
+        }
+      },
+      {
+        text: "Working with technology companies and policy makers, {userName} helps establish industry standards for ethical AI development that require bias testing, community input, and ongoing monitoring of deployed systems. They advocate for transparency in AI decision-making processes while educating developers about the social implications of algorithmic choices. This advocacy work teaches {userName} about the intersection of technology policy, corporate responsibility, and social justice organizing.",
+        pause: true,
+        hook: "What policy changes will {userName} promote to ensure responsible AI development?",
+        microVariants: {
+          text: "Working with technology companies and policy makers, {userName} helps establish industry standards for ethical AI development that require bias testing, community input, and ongoing monitoring of deployed systems. They advocate for transparency in AI decision-making processes while educating developers about the social implications of algorithmic choices. This advocacy work teaches {userName} about the intersection of technology policy, corporate responsibility, and social justice organizing.",
+          alternatives: ["Industry collaboration creates enforceable standards for ethical AI development.", "Policy advocacy ensures community voices influence technology development decisions."],
+          optionalDetails: ["technology companies adopt ethical AI standards affecting 2.3 million users daily", "policy frameworks influence AI regulation in 15 countries internationally"]
+        }
+      },
+      {
+        text: "{userName} establishes an AI ethics research institute that brings together technologists, ethicists, and community advocates to continuously study the social impacts of artificial intelligence while developing solutions for algorithmic justice. The institute conducts research on emerging AI technologies, provides training for developers on ethical practices, and serves as a resource for communities affected by algorithmic bias. Through this work, {userName} learns about the importance of ongoing vigilance and community engagement in technology development.",
+        pause: true,
+        hook: "How will the AI ethics institute influence future technology development?",
+        microVariants: {
+          text: "{userName} establishes an AI ethics research institute that brings together technologists, ethicists, and community advocates to continuously study the social impacts of artificial intelligence while developing solutions for algorithmic justice. The institute conducts research on emerging AI technologies, provides training for developers on ethical practices, and serves as a resource for communities affected by algorithmic bias. Through this work, {userName} learns about the importance of ongoing vigilance and community engagement in technology development.",
+          alternatives: ["Research institute becomes a model for community-centered technology development.", "Interdisciplinary collaboration creates sustainable approaches to algorithmic justice."],
+          optionalDetails: ["institute trains over 5,000 developers annually in ethical AI practices", "community advisory board ensures research priorities address real-world impacts"]
+        }
+      },
+      {
+        text: "As artificial intelligence becomes increasingly powerful and pervasive, {userName}'s ethical frameworks and bias detection tools become essential components of responsible technology development worldwide. They work with international organizations to establish global standards for AI ethics while ensuring that diverse communities have input into the technologies that affect their lives. The work demonstrates how technical innovation and social justice advocacy can combine to create more equitable technological futures.",
+        pause: true,
+        hook: "What global impact will {userName}'s ethical AI work have on future technology?",
+        microVariants: {
+          text: "As artificial intelligence becomes increasingly powerful and pervasive, {userName}'s ethical frameworks and bias detection tools become essential components of responsible technology development worldwide. They work with international organizations to establish global standards for AI ethics while ensuring that diverse communities have input into the technologies that affect their lives. The work demonstrates how technical innovation and social justice advocacy can combine to create more equitable technological futures.",
+          alternatives: ["Global standards incorporate {userName}'s ethical AI frameworks across international technology development.", "Community-centered approaches become standard practice in AI development worldwide."],
+          optionalDetails: ["ethical AI frameworks influence technology policy in 34 countries globally", "bias detection tools prevent discrimination affecting millions of users worldwide"]
+        }
+      },
+      {
+        text: "{userName} reflects on how their initial discovery of algorithmic bias led to a career dedicated to ensuring technology serves justice and human dignity rather than perpetuating inequality. Their work has helped establish a new field of algorithmic justice that combines technical expertise with social justice advocacy, creating pathways for more equitable technology development. The ethical AI tools and frameworks they developed continue to protect communities from discriminatory algorithms while enabling beneficial uses of artificial intelligence.",
+        pause: true,
+        hook: "How has {userName}'s work transformed the relationship between technology and justice?",
+        microVariants: {
+          text: "{userName} reflects on how their initial discovery of algorithmic bias led to a career dedicated to ensuring technology serves justice and human dignity rather than perpetuating inequality. Their work has helped establish a new field of algorithmic justice that combines technical expertise with social justice advocacy, creating pathways for more equitable technology development. The ethical AI tools and frameworks they developed continue to protect communities from discriminatory algorithms while enabling beneficial uses of artificial intelligence.",
+          alternatives: ["Algorithmic justice becomes an established field through {userName}'s pioneering advocacy and research.", "Technology development integrates social justice principles as standard practice."],
+          optionalDetails: ["algorithmic justice courses are taught in 150+ universities globally", "ethical AI principles influence technology development affecting billions of users"]
+        }
+      },
+      {
+        text: "Years later, as {userName} addresses a global conference on technology and human rights, they emphasize how the earliest stages of AI development set the foundation for either perpetuating or challenging existing inequalities. Their life's work demonstrates that technologists have both the opportunity and responsibility to ensure that artificial intelligence amplifies human potential and dignity rather than existing patterns of discrimination and exclusion.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Years later, as {userName} addresses a global conference on technology and human rights, they emphasize how the earliest stages of AI development set the foundation for either perpetuating or challenging existing inequalities. Their life's work demonstrates that technologists have both the opportunity and responsibility to ensure that artificial intelligence amplifies human potential and dignity rather than existing patterns of discrimination and exclusion.",
+          alternatives: ["Global technology leadership recognizes {userName}'s contributions to human rights and algorithmic justice.", "Ethical AI development becomes inseparable from human rights advocacy through {userName}'s influence."],
+          optionalDetails: ["conference includes representatives from 67 countries committed to ethical AI development", "technology and human rights framework influences international law and policy"]
+        }
       }
     ],
     endings: [
@@ -109,6 +249,16 @@ export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
         type: 'reflective',
         text: "{userName} dedicates their career to ensuring technology serves justice and human dignity rather than perpetuating inequality.",
         microVariants: ["Every algorithm {userName} creates prioritizes fairness and social responsibility.", "Technology becomes a tool for justice rather than discrimination."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} works peacefully in their AI ethics research center, where diverse teams of technologists and community advocates collaborate daily to ensure artificial intelligence amplifies human dignity and justice rather than existing inequalities.",
+        microVariants: ["The research center buzzes with quiet collaboration between programmers and social justice advocates.", "Community members and developers work together in the comfortable meeting spaces."]
+      },
+      {
+        type: 'silly',
+        text: "During {userName}'s presentation on AI ethics, their bias-detection algorithm suddenly decides that the {favoriteColor} slides are clearly the most ethical presentation format and begins enthusiastically recommending that all future conferences use {favoriteAnimal}-themed graphics while serving {favoriteFood} at every session!",
+        microVariants: ["The algorithm develops strong opinions about conference snack equity and proper color accessibility.", "AI bias detection apparently includes very specific views about optimal presentation aesthetics and refreshment justice."]
       }
     ],
     reuse: {
@@ -307,18 +457,28 @@ export const LEVEL_4_TEMPLATES: StoryTemplate[] = [
   }
 ];
 
+/**
+ * Get a random Level 4 template or specific template by index
+ */
 export function getLevel4Template(templateIndex?: number): StoryTemplate {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_4_TEMPLATES.length) {
     return LEVEL_4_TEMPLATES[templateIndex];
   }
+  
   const randomIndex = Math.floor(Math.random() * LEVEL_4_TEMPLATES.length);
   return LEVEL_4_TEMPLATES[randomIndex];
 }
 
+/**
+ * Get the count of available Level 4 templates
+ */
 export function getLevel4TemplateCount(): number {
   return LEVEL_4_TEMPLATES.length;
 }
 
+/**
+ * Get total pages for Level 4 templates (assuming 12 scenes = 12 pages each)
+ */
 export function getLevel4TotalPages(): number {
-  return LEVEL_4_TEMPLATES.length * 5;
+  return LEVEL_4_TEMPLATES.length * 12;
 }
