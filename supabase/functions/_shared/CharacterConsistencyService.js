@@ -343,7 +343,7 @@ export class CharacterConsistencyService {
     const seededRandom = this.createSeededRandom(baseSeed);
     
     // Generate consistent eye color for this character
-    const eyeColors = ['brown', 'dark brown', 'hazel', 'amber', 'green', 'blue', 'gray'];
+    const eyeColors = ['brown eyes', 'dark brown eyes', 'hazel eyes', 'amber eyes', 'green eyes', 'blue eyes', 'gray eyes'];
     const consistentEyeColor = eyeColors[Math.floor(seededRandom() * eyeColors.length)];
     
     // Generate consistent clothing style for this character
@@ -781,20 +781,37 @@ export class CharacterConsistencyService {
       // Select comprehensive physical features, use page text overrides when available
       const skinTone = cultural.skinTones[Math.floor(random() * cultural.skinTones.length)];
       // CRITICAL FIX: Use consistent eye color if available, otherwise use cultural array or page text
-      const eyeColor = pageTextFeatures.eyeColor || consistentEyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
-      const facialFeatures = cultural.facialFeatures[Math.floor(random() * cultural.facialFeatures.length)];
+      const eyeColor = pageTextFeatures.eyeColor || (consistentEyeColor && consistentEyeColor.includes('eyes') ? consistentEyeColor : `${consistentEyeColor} eyes`) || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
       
-      // Build comprehensive hair description with texture details
+      // COMPREHENSIVE FEATURE SELECTION: Select one from each facial feature category
+      const eyeFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(0, 10); // Eyes (lines 157-166)
+      const lipFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(11, 20); // Lips (lines 169-178) 
+      const noseFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(21, 30); // Nose (lines 181-190)
+      
+      const selectedEyeFeature = eyeFeatures[Math.floor(random() * eyeFeatures.length)];
+      const selectedLipFeature = lipFeatures[Math.floor(random() * lipFeatures.length)];
+      const selectedNoseFeature = noseFeatures[Math.floor(random() * noseFeatures.length)];
+      
+      // HAIRSTYLE SELECTION: Use gender-specific hairstyles from expanded arrays
+      const gender = seedData.avatarType === 'girl' ? 'girls' : 'boys';
+      const hairstyles = this.EXPANDED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || [];
+      const selectedHairstyle = hairstyles.length > 0 ? hairstyles[Math.floor(random() * hairstyles.length)] : null;
+      
+      const comprehensiveFeatures = `${selectedEyeFeature}, ${selectedLipFeature}, ${selectedNoseFeature}`;
+      console.log(`🎨 COMPREHENSIVE FEATURES: Eyes: ${selectedEyeFeature}, Lips: ${selectedLipFeature}, Nose: ${selectedNoseFeature}, Hairstyle: ${selectedHairstyle}`);
+      
+      // Build comprehensive hair description with hairstyle details
       const hairTexture = traits.hairTexture || 'textured';
-      const hairDescription = `${hairTexture} ${traits.hairColor} hair`;
+      const baseHairDescription = `${hairTexture} ${traits.hairColor} hair`;
+      const hairDescription = selectedHairstyle ? `${baseHairDescription} styled in ${selectedHairstyle}` : baseHairDescription;
       
       // Only include height/build if detected from page text
       const heightDescription = pageTextFeatures.height ? `${pageTextFeatures.height} ` : '';
       const buildDescription = pageTextFeatures.build ? ` ${pageTextFeatures.build} build.` : '.';
       
-      console.log(`✅ ${seedData.culturalProfile.toUpperCase()} CHARACTER: Using eye color: ${eyeColor}, clothing: ${clothing}`);
+      console.log(`✅ ${seedData.culturalProfile.toUpperCase()} CHARACTER: Using eye color: ${eyeColor}, hairstyle: ${selectedHairstyle}, clothing: ${clothing}`);
       
-      return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${hairDescription}, and ${eyeColor}. ${facialFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
+      return `A ${heightDescription}${agePrefix}${seedData.avatarType} with ${skinTone}, ${hairDescription}, and ${eyeColor}. ${comprehensiveFeatures}${buildDescription} Wearing ${clothing}${accessories ? ` with ${accessories}` : ''}.`;
     }
     
     // Minimal description for other cultural profiles - FIXED: Include consistent features
