@@ -662,6 +662,8 @@ function getEnhancedNegativePrompt(culturalProfile: string, character: string, p
   // Add enhanced cultural sensitivity filters (unified terminology)
   if (culturalProfile === 'African American') {
     baseNegative.push('cultural insensitivity', 'stereotypes', 'offensive representations', 'caricatures');
+    // Add African American anti-whitewashing protection
+    baseNegative.push('lightened skin', 'whitewashed', 'caucasian features', 'stereotypical', 'altered ethnicity', 'artificial skin lightening', 'european features imposed', 'generic appearance');
   }
   
   // Add character consistency filters for pageNumber > 1

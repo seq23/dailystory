@@ -13,7 +13,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Professional animation studio quality with depth and dimension',
     
     // Prompt components
-    prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers',
+    prompt: '3D Pixar inspired animation style with clean polished 3D rendering, soft warm natural lighting, professional portrait photography, crisp focus, high-resolution professional quality with rich detail, soft rounded features, friendly appealing aesthetics, Sharp, crisp edges and clean geometry, Smooth surfaces with realistic lighting, Perfect detail without being overly realistic, distinctive "animated but believable" quality, award winning illustration, contemporary children\'s Book Illustration known for diverse representation',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',
@@ -42,7 +42,7 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     quality: 'Professional animation studio quality with depth and dimension',
     
     // Prompt components
-    prompt: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers',
+    prompt: '3D Pixar inspired animation style with clean polished 3D rendering, soft warm natural lighting, professional portrait photography, crisp focus, high-resolution professional quality with rich detail, soft rounded features, friendly appealing aesthetics, Sharp, crisp edges and clean geometry, Smooth surfaces with realistic lighting, Perfect detail without being overly realistic, distinctive "animated but believable" quality, award winning illustration, contemporary children\'s Book Illustration known for diverse representation',
     complexity: 'standard',
     colorPaletteKey: 'bright_vibrant',
     detailLevel: 'high',

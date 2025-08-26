@@ -454,6 +454,11 @@ export class MultiStageEnhancementPipeline {
       baseNegative.push('cultural insensitivity', 'stereotypes', 'offensive representations', 'caricatures');
     }
     
+    // Add African American anti-whitewashing protection
+    if (culturalProfile && (culturalProfile.includes('African') || culturalProfile.includes('Black'))) {
+      baseNegative.push('lightened skin', 'whitewashed', 'caucasian features', 'stereotypical', 'altered ethnicity', 'artificial skin lightening', 'european features imposed', 'generic appearance');
+    }
+    
     // Add character consistency filters
     if (pageNumber > 1) {
       baseNegative.push('inconsistent character design', 'style variations', 'character appearance changes');

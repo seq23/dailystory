@@ -780,13 +780,13 @@ export class CharacterConsistencyService {
       
       // Select comprehensive physical features, use page text overrides when available
       const skinTone = cultural.skinTones[Math.floor(random() * cultural.skinTones.length)];
-      // CRITICAL FIX: Use consistent eye color if available, otherwise use cultural array or page text
-      const eyeColor = pageTextFeatures.eyeColor || (consistentEyeColor && consistentEyeColor.includes('eyes') ? consistentEyeColor : `${consistentEyeColor} eyes`) || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
+      // CRITICAL FIX: Use African American eye colors directly from cultural array
+      const eyeColor = pageTextFeatures.eyeColor || cultural.eyeColors[Math.floor(random() * cultural.eyeColors.length)];
       
       // COMPREHENSIVE FEATURE SELECTION: Select one from each facial feature category
       const eyeFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(0, 10); // Eyes (lines 157-166)
-      const lipFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(11, 20); // Lips (lines 169-178) 
-      const noseFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(21, 30); // Nose (lines 181-190)
+      const lipFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(10, 18); // Lips (lines 169-178) 
+      const noseFeatures = this.EXPANDED_AFRICAN_AMERICAN_FACIAL_FEATURES.slice(18, 28); // Nose (lines 181-190)
       
       const selectedEyeFeature = eyeFeatures[Math.floor(random() * eyeFeatures.length)];
       const selectedLipFeature = lipFeatures[Math.floor(random() * lipFeatures.length)];
