@@ -33,13 +33,13 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Objects & Secondary Characters)
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Objects & Secondary Characters)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  hard: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  expert: "{character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
+  beginner: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  easy: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  medium: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  hard: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
+  expert: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence)
@@ -370,7 +370,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
 
   // GENDER-NEUTRAL MAPPINGS (for prefer-not-to-answer)
   'neutral-pale': {
-    character: 'child',
+    character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'fair light complexion', 
     hair: 'short light hair',
@@ -378,7 +378,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     clothing: 'comfortable casual wear'
   },
   'neutral-light': {
-    character: 'child',
+    character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'warm light skin',
     hair: 'neat brown hair',
@@ -386,7 +386,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     clothing: 'simple comfortable outfit'
   },
   'neutral-medium': {
-    character: 'child',
+    character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'golden tan complexion',
     hair: 'medium brown hair',
@@ -394,7 +394,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     clothing: 'casual everyday wear'
   },
   'neutral-olive': {
-    character: 'child', 
+    character: 'child with gender neutral characteristics', 
     age: '6-year-old',
     skin: 'warm olive complexion',
     hair: 'dark brown hair',
@@ -402,7 +402,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     clothing: 'comfortable modern clothing'
   },
   'neutral-dark': {
-    character: 'African American child',
+    character: 'African American child with gender neutral characteristics',
     age: '6-year-old', 
     skin: 'rich dark complexion',
     hair: 'dark short coily curly fro with individual strand detail',
@@ -698,7 +698,8 @@ function fillPremiumTemplate(
   setting: string,
   objects: string,
   secondary_characters: string,
-  emotion: string
+  emotion: string,
+  pageText: string
 ): string {
   try {
     console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${difficulty}`);
@@ -741,8 +742,9 @@ function fillPremiumTemplate(
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
     
-    // Fill template with nuclear mappings (eyes only for African Americans)
+    // Fill template with nuclear mappings (eyes only for African Americans) + page text
     let filledTemplate = template
+      .replace('{pageText}', pageText || 'A story about learning and discovery')
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
       .replace('{skin}', finalMapping.skin)
@@ -832,38 +834,57 @@ function getHardcodedStyle(difficulty: string): { quality: string, suffix?: stri
   return styleMap[difficulty] || styleMap.medium;
 }
 
-function getEnhancedNegativePrompt(culturalProfile: string, character: string, pageNumber: number = 1): string {
-  // EXACT unified negative prompt system - word-for-word from MultiStageEnhancementPipeline.js
+function getEnhancedNegativePrompt(culturalProfile: string, avatarType: string, difficulty: string, pageNumber: number = 1): string {
+  // HARDCODED COMPLETE NEGATIVE PROMPT SYSTEM - All components from MultiStageEnhancementPipeline.js
+  
+  // Base Negative Components (from MultiStageEnhancementPipeline.js)
   const baseNegative = [
     'no text, no words, no letters, no writing, no signatures, watermarks, low quality, blurry, distorted, deformed, extra limbs, missing limbs, bad anatomy, weird proportions, bad hands, malformed hands, extra fingers, missing fingers, crossed eyes, bad facial features, unrealistic skin, plastic appearance, oversaturated, cartoon style, anime style, adult content, inappropriate content'
   ];
   
-  // Add framework-specific negative prompts (for hardcoded styles, we'll add basic ones)
-  baseNegative.push('toy', 'figurine', 'doll', 'plastic', 'simple background', 'flat lighting');
+  // Framework-Specific Negative Prompts (from styleFrameworks.js)
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    // Level 0-1 (Pixar anti-toy) - MUST be first for Level 0-1
+    baseNegative.push('toy, figurine, doll, plastic, simple background, flat lighting, multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words');
+  }
   
-  // Add enhanced cultural sensitivity filters (unified terminology)
+  // Additional Level 1 negatives
+  baseNegative.push('multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content');
+  
+  // Cultural Sensitivity Filters
+  baseNegative.push('cultural insensitivity, stereotypes, offensive representations, caricatures');
+  
+  // African American Protection (enhanced from MultiStageEnhancementPipeline.js)
   if (culturalProfile === 'African American') {
-    baseNegative.push('cultural insensitivity', 'stereotypes', 'offensive representations', 'caricatures');
-    // Add African American anti-whitewashing protection
-    baseNegative.push('lightened skin', 'whitewashed', 'caucasian features', 'stereotypical', 'altered ethnicity', 'artificial skin lightening', 'european features imposed', 'generic appearance');
+    baseNegative.push('lightened skin, whitewashed, caucasian features, stereotypical, altered ethnicity, artificial skin lightening, european features imposed, generic appearance');
   }
   
-  // Add character consistency filters for pageNumber > 1
+  // Technical Quality Filters
+  baseNegative.push('pixelated, artifacts, noise, oversaturated, undersaturated, malformed features');
+  
+  // Content Safety Filters
+  baseNegative.push('weapons, conflict, sadness, fear, negative emotions');
+  
+  // Character Consistency Filters (Page > 1)
   if (pageNumber > 1) {
-    baseNegative.push('inconsistent character design', 'style variations', 'character appearance changes');
+    baseNegative.push('inconsistent character design, style variations, character appearance changes');
   }
   
-  // Add technical quality filters (unified system)
-  baseNegative.push('pixelated', 'artifacts', 'noise', 'oversaturated', 'undersaturated', 'malformed features');
-  
-  // Add content safety filters (unified system)
-  baseNegative.push('weapons', 'conflict', 'sadness', 'fear', 'negative emotions');
-  
-  // Gender consistency (adapted to unified structure)
-  if (character === 'girl') {
-    baseNegative.push('masculine features', 'boy clothing', 'male characteristics', 'gender inconsistency');
-  } else {
-    baseNegative.push('feminine features', 'girl clothing', 'female characteristics', 'gender inconsistency', 'makeup', 'jewelry');
+  // Gender-Specific Negative Prompts (Enhanced)
+  if (avatarType === 'boy' || (avatarType.includes && avatarType.includes('boy'))) {
+    // For boy characters - exclude feminine features
+    baseNegative.push('feminine features, long eyelashes, makeup, lipstick, feminine clothing, dresses, feminine hairstyles, feminine jewelry, girl character, female character');
+  } else if (avatarType === 'girl' || (avatarType.includes && avatarType.includes('girl'))) {
+    // For girl characters - exclude masculine features  
+    baseNegative.push('masculine features, facial hair, beard, mustache, masculine clothing, masculine build, broad shoulders, masculine jawline, boy character, male character');
+  } else if (avatarType === 'prefer-not-to-answer' || avatarType.includes('child') || avatarType.includes('neutral')) {
+    // For neutral characters - exclude BOTH masculine AND feminine features
+    if (culturalProfile === 'African American') {
+      // Enhanced neutral negatives for African American characters
+      baseNegative.push('masculine features, facial hair, beard, mustache, masculine clothing, masculine build, broad shoulders, masculine jawline, boy character, male character, feminine features, long eyelashes, makeup, lipstick, feminine clothing, dresses, feminine hairstyles, feminine jewelry, girl character, female character, gendered characteristics, gender-specific features');
+    } else {
+      baseNegative.push('masculine features, feminine features, gendered characteristics, gender-specific features');
+    }
   }
   
   return baseNegative.join(', ');
@@ -995,14 +1016,15 @@ Deno.serve(async (req: Request) => {
     // Detect emotion
     const emotion = detectEmotionFromText(pageText);
     
-    // Fill premium template with all placeholders
-    const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion);
+    // Fill premium template with all placeholders including page text
+    const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText);
     
-    // Generate negative prompt with fixed avatar mapping
+    // Generate negative prompt with fixed avatar mapping and cultural detection
     const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
-    const character = avatarMapping.character;
+    const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
     const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
-    const negativePrompt = getEnhancedNegativePrompt('Standard American', character, pageNumber);
+    const culturalProfile = detectCulturalProfile(userInfo);
+    const negativePrompt = getEnhancedNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
     
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
@@ -1076,6 +1098,7 @@ Deno.serve(async (req: Request) => {
                   success: true,
                   imageURL: item.imageURL,
                   prompt: prompt,
+                  negativePrompt: negativePrompt,
                   difficulty: difficulty,
                   culturalProfile: culturalProfile,
                   tier: '2.5 Nuclear Independence',
