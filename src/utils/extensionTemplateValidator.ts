@@ -117,25 +117,25 @@ export class ExtensionTemplateValidator {
   private static getExtensionTemplates(gradeLevel: GradeLevel, userType: 'free' | 'premium' = 'premium'): string[] {
     switch (gradeLevel) {
       case 0:
-        // Universal access - all users get same templates
-        const { getAllLevel0Extensions } = require('@/constants/gradeBased/level0ExtensionTemplates');
-        return getAllLevel0Extensions().flatMap((template: string[]) => template);
+        // Universal access - use consolidated Level 0 extensions
+        const { LEVEL_0_EXTENSIONS } = require('@/constants/newFallbackTemplates/level0Extensions');
+        return LEVEL_0_EXTENSIONS.flatMap((template: string[]) => template);
       case 1:
-        // Universal access - all users get same templates
-        const { getAllLevel1Extensions } = require('@/constants/gradeBased/level1ExtensionTemplates');
-        return getAllLevel1Extensions().flatMap((template: string[]) => template);
+        // Universal access - use Level 1 template scenes
+        const { LEVEL_1_TEMPLATES } = require('@/constants/newFallbackTemplates/level1Templates');
+        return LEVEL_1_TEMPLATES.flatMap((template: any) => template.scenes.map(scene => scene.text));
       case 2:
-        // Universal access - all users get same templates
-        const { getAllLevel2Extensions } = require('@/constants/gradeBased/level2ExtensionTemplates');
-        return getAllLevel2Extensions().flatMap((template: string[]) => template);
+        // Universal access - use Level 2 template scenes
+        const { LEVEL_2_TEMPLATES } = require('@/constants/newFallbackTemplates/level2Templates');
+        return LEVEL_2_TEMPLATES.flatMap((template: any) => template.scenes.map(scene => scene.text));
       case 3:
-        // Universal access - all users get same templates
-        const { getAllLevel3Extensions } = require('@/constants/gradeBased/level3ExtensionTemplates');
-        return getAllLevel3Extensions().flatMap((template: string[]) => template);
+        // Universal access - use Level 3 template scenes
+        const { LEVEL_3_FALLBACK_TEMPLATES } = require('@/constants/newFallbackTemplates/level3Templates');
+        return LEVEL_3_FALLBACK_TEMPLATES.flatMap((template: any) => template.scenes.map(scene => scene.text));
       case 4:
-        // Universal access - all users get same templates
-        const { getAllLevel4Extensions } = require('@/constants/gradeBased/level4ExtensionTemplates');
-        return getAllLevel4Extensions().flatMap((template: string[]) => template);
+        // Universal access - use Level 4 template scenes
+        const { LEVEL_4_TEMPLATES } = require('@/constants/newFallbackTemplates/level4Templates');
+        return LEVEL_4_TEMPLATES.flatMap((template: any) => template.scenes.map(scene => scene.text));
       default:
         return ["{userName} is happy."];
     }

@@ -20,12 +20,15 @@ export function runFinalExtensionValidation(): {
   let filesExist = true;
   
   try {
-    const level1 = require('@/constants/gradeBased/level1ExtensionTemplates');
-    const level2 = require('@/constants/gradeBased/level2ExtensionTemplates');
-    const level3 = require('@/constants/gradeBased/level3ExtensionTemplates');
-    const level4 = require('@/constants/gradeBased/level4ExtensionTemplates');
+    const level1 = require('@/constants/newFallbackTemplates/level1Templates');
+    const level2 = require('@/constants/newFallbackTemplates/level2Templates');
+    const level3 = require('@/constants/newFallbackTemplates/level3Templates');
+    const level4 = require('@/constants/newFallbackTemplates/level4Templates');
     
-    console.log(`✅ Level 1: ${level1.LEVEL_1_EXTENSIONS?.length || 0} extension templates`);
+    console.log(`✅ Level 1: ${level1.LEVEL_1_TEMPLATES?.length || 0} templates`);
+    console.log(`✅ Level 2: ${level2.LEVEL_2_TEMPLATES?.length || 0} templates`);
+    console.log(`✅ Level 3: ${level3.LEVEL_3_FALLBACK_TEMPLATES?.length || 0} templates`);
+    console.log(`✅ Level 4: ${level4.LEVEL_4_TEMPLATES?.length || 0} templates`);
     console.log(`✅ Level 2: ${level2.LEVEL_2_EXTENSIONS?.length || 0} extension templates`);
     console.log(`✅ Level 3: ${level3.LEVEL_3_EXTENSIONS?.length || 0} extension templates`);
     console.log(`✅ Level 4: ${level4.LEVEL_4_EXTENSIONS?.length || 0} extension templates`);

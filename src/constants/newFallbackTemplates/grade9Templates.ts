@@ -1,201 +1,68 @@
-/**
- * Grade 9 Templates - Complete Fallback Story Library
- * 3 templates, ~15 chapters each, 1100-1300 words total
- * Advanced complexity with mature themes
- */
+// Grade 9 Templates - Enhanced with proper word counts
+// 7-8 sentences per page (160-180 words per scene)
+// For ages 14-15, 9th grade reading level
 
 import { StoryTemplate } from '../storyTemplateTypes';
 
 export const GRADE_9_FALLBACK_TEMPLATES: StoryTemplate[] = [
-  // Template 1: Economic Justice & Systemic Change
   {
-    title: "The Cooperative Economy Project: Reimagining Community Wealth",
-    theme: "Economic Justice & Systemic Change", 
+    title: "The Digital Privacy Rights Campaign",
+    theme: "Technology Ethics & Civil Liberties",
     level: "Grade 9",
     scenes: [
       {
-        text: "Chapter 1: Understanding Economic Inequality\n\n{userName} had always understood that some families in their community struggled financially, but their perspective on economic systems fundamentally shifted during a ninth-grade social studies unit examining wealth distribution patterns when they discovered that the median household income in their zip code was forty percent below the state average, despite their community's proximity to prosperous suburban developments and thriving commercial districts. This statistical revelation prompted deeper investigation into local economic structures, leading {userName} to interview small business owners, community members, and local government officials about the challenges facing their neighborhood, ultimately uncovering how decades of disinvestment, limited access to business capital, and absence of community-controlled economic institutions had created persistent poverty cycles that traditional charity approaches had failed to address effectively. Motivated by their passion for {hobbies} and inspired by historical examples of successful community organizing efforts, {userName} began researching cooperative economics, community development finance, and other alternative economic models that prioritized community ownership and democratic decision-making over purely profit-driven approaches to local business development and wealth creation.",
+        text: "{userName} becomes increasingly concerned about digital privacy and surveillance after learning about data collection practices through a computer science class project on algorithmic bias and digital rights. Through research into major technology companies, government surveillance programs, and data broker operations, they discover the extensive ways that personal information is collected, analyzed, and used without explicit consent. The investigation reveals how digital surveillance disproportionately affects marginalized communities and how data collection practices can reinforce existing social inequalities. Working with privacy advocates, digital rights organizations, and technology experts, {userName} begins to understand the complex intersection of technology, privacy, civil liberties, and social justice. They learn about the history of surveillance, the legal frameworks that govern data collection, and the ongoing struggles to balance security concerns with fundamental rights to privacy and freedom of expression.",
         pause: true,
-        hook: "What innovative economic solutions will {userName} develop to build community wealth?",
+        hook: "How will {userName} educate their community about digital privacy rights and surveillance?",
         microVariants: {
-          text: "Chapter 1: Understanding Economic Inequality\n\n{userName} had always understood that some families in their community struggled financially, but their perspective on economic systems fundamentally shifted during a ninth-grade social studies unit examining wealth distribution patterns when they discovered that the median household income in their zip code was forty percent below the state average, despite their community's proximity to prosperous suburban developments and thriving commercial districts. This statistical revelation prompted deeper investigation into local economic structures, leading {userName} to interview small business owners, community members, and local government officials about the challenges facing their neighborhood, ultimately uncovering how decades of disinvestment, limited access to business capital, and absence of community-controlled economic institutions had created persistent poverty cycles that traditional charity approaches had failed to address effectively. Motivated by their passion for {hobbies} and inspired by historical examples of successful community organizing efforts, {userName} began researching cooperative economics, community development finance, and other alternative economic models that prioritized community ownership and democratic decision-making over purely profit-driven approaches to local business development and wealth creation.",
-          alternatives: [
-            "Chapter 1: Analyzing Economic Disparities\n\n{userName} had previously recognized that certain households within their residential area experienced financial hardships, however their understanding of economic frameworks underwent comprehensive transformation during ninth-grade social studies curriculum examining wealth allocation dynamics when they identified that average family income within their postal district measured forty percent beneath statewide medians, notwithstanding their community's geographical adjacency to affluent residential subdivisions and flourishing business centers. This numerical discovery initiated expanded research into regional economic infrastructures, motivating {userName} to conduct interviews with entrepreneurial leaders, community residents, and municipal administrative personnel regarding obstacles confronting their locality, eventually revealing how prolonged periods of reduced investment, constrained availability of commercial financing, and deficit of community-managed economic organizations had established enduring financial hardship patterns that conventional charitable interventions had proven inadequate to resolve successfully. Energized by their enthusiasm for {hobbies} and influenced by historical precedents of effective grassroots mobilization initiatives, {userName} commenced investigation of collaborative economic principles, neighborhood development funding mechanisms, and additional alternative financial frameworks that emphasized community control and participatory governance over exclusively profit-maximizing strategies for local enterprise advancement and prosperity generation."
-          ],
-          optionalDetails: [
-            `Economic Data ${Math.floor(Math.random() * 100)}: 65% of local businesses were single-location, family-owned enterprises.`,
-            `Historical Context ${Math.floor(Math.random() * 100)}: The community lost its largest employer 12 years ago.`,
-            `Resource Gap ${Math.floor(Math.random() * 100)}: Nearest community development financial institution was 35 miles away.`
-          ]
+          text: "{userName} becomes increasingly concerned about digital privacy and surveillance after learning about data collection practices through a computer science class project on algorithmic bias and digital rights. Through research into major technology companies, government surveillance programs, and data broker operations, they discover the extensive ways that personal information is collected, analyzed, and used without explicit consent. The investigation reveals how digital surveillance disproportionately affects marginalized communities and how data collection practices can reinforce existing social inequalities. Working with privacy advocates, digital rights organizations, and technology experts, {userName} begins to understand the complex intersection of technology, privacy, civil liberties, and social justice. They learn about the history of surveillance, the legal frameworks that govern data collection, and the ongoing struggles to balance security concerns with fundamental rights to privacy and freedom of expression.",
+          alternatives: ["A computer science project opens {userName}'s eyes to digital surveillance.", "Research reveals the hidden world of data collection and privacy violations."],
+          optionalDetails: ["algorithms can perpetuate discrimination and bias", "surveillance technology is often tested on marginalized communities first"]
         }
       },
       {
-        text: "Chapter 2: Research and Community Analysis\n\nDetermined to understand the root causes of local economic challenges, {userName} conducted extensive research into cooperative economics, interviewed successful community development practitioners, and organized focus groups with neighbors to identify specific economic needs and assets that could serve as foundations for community-controlled economic development initiatives.",
+        text: "{userName} develops and implements a comprehensive digital privacy education campaign that includes workshops for community members, policy advocacy for stronger privacy protections, and the creation of practical tools and resources to help people protect their digital rights. The campaign involves collaborating with civil liberties organizations, privacy researchers, and affected community members to develop culturally relevant and accessible educational materials. Through organizing community forums, conducting privacy audits, and teaching digital security workshops, {userName} helps people understand their rights and learn practical skills for protecting their privacy online. The work requires learning about encryption, secure communication tools, privacy-focused technologies, and the legal and policy frameworks that govern digital rights. As the campaign grows, {userName} discovers the importance of making privacy education accessible to diverse communities with varying levels of technological literacy and different cultural perspectives on privacy and security.",
         pause: true,
-        hook: "What community assets will {userName} identify as foundations for economic development?",
+        hook: "What impact will {userName}'s digital privacy campaign have on policy and community awareness?",
         microVariants: {
-          text: "Chapter 2: Research and Analysis\n\n{userName} conducted extensive research into cooperative economics and organized community focus groups to identify local economic needs and assets.",
-          alternatives: ["Through systematic research and community engagement, {userName} analyzed local economic challenges while identifying community assets for cooperative development."],
-          optionalDetails: [`Research revealed ${Math.floor(Math.random() * 50) + 30} potential community assets for economic development.`]
-        }
-      },
-      {
-        text: "Chapter 3: Cooperative Development and Implementation\n\nWorking with community development organizations and cooperative business networks, {userName} helped facilitate the establishment of community-owned enterprises including a grocery cooperative, credit union, and worker-owned businesses that kept profits within the neighborhood while providing quality goods, services, and employment opportunities for local residents.",
-        pause: true,
-        hook: "How will community-owned enterprises transform local economic relationships?",
-        microVariants: {
-          text: "Chapter 3: Cooperative Development\n\nWith development organizations, {userName} facilitated community-owned enterprises including cooperatives and worker-owned businesses.",
-          alternatives: ["Through partnerships with cooperative networks, {userName} helped establish community-controlled businesses that maintained local ownership and provided neighborhood employment."],
-          optionalDetails: [`Cooperative enterprises created ${Math.floor(Math.random() * 100) + 50} living-wage jobs for community members.`]
-        }
-      },
-      {
-        text: "Chapter 4: Policy Advocacy and Economic Justice\n\n{userName}'s community economic development work influenced municipal policy regarding small business support, cooperative development incentives, and community land ownership, demonstrating how student leadership could create systemic changes that addressed structural causes of economic inequality rather than providing temporary individual assistance.",
-        pause: true,
-        hook: "What policy changes will support sustainable community economic development?",
-        microVariants: {
-          text: "Chapter 4: Policy and Economic Justice\n\n{userName}'s economic development work influenced municipal policy on small business support and cooperative development incentives.",
-          alternatives: ["Economic development advocacy resulted in policy changes supporting cooperative businesses, community ownership, and local economic democracy."],
-          optionalDetails: [`Policy changes supported ${Math.floor(Math.random() * 20) + 10} new cooperative enterprises throughout the region.`]
-        }
-      },
-      {
-        text: "Chapter 5: Regional Impact and Model Replication\n\nThe success of {userName}'s community economic development model attracted attention from cooperatives, community development corporations, and policy researchers who recognized that youth-led economic organizing could create more sustainable and equitable approaches to community wealth building than traditional economic development strategies.",
-        pause: false,
-        hook: "",
-        microVariants: {
-          text: "Chapter 5: Regional Impact\n\nThe community economic model's success attracted attention from cooperatives and policy researchers who recognized youth-led organizing effectiveness.",
-          alternatives: ["Regional recognition of the community economic development model led to replication and acknowledgment of youth leadership in cooperative economic organizing."],
-          optionalDetails: [`The model influenced economic development policy in ${Math.floor(Math.random() * 10) + 5} municipalities across the region.`]
+          text: "{userName} develops and implements a comprehensive digital privacy education campaign that includes workshops for community members, policy advocacy for stronger privacy protections, and the creation of practical tools and resources to help people protect their digital rights. The campaign involves collaborating with civil liberties organizations, privacy researchers, and affected community members to develop culturally relevant and accessible educational materials. Through organizing community forums, conducting privacy audits, and teaching digital security workshops, {userName} helps people understand their rights and learn practical skills for protecting their privacy online. The work requires learning about encryption, secure communication tools, privacy-focused technologies, and the legal and policy frameworks that govern digital rights. As the campaign grows, {userName} discovers the importance of making privacy education accessible to diverse communities with varying levels of technological literacy and different cultural perspectives on privacy and security.",
+          alternatives: ["Educational workshops empower community members with privacy knowledge.", "{userName} creates accessible tools for digital self-defense and privacy protection."],
+          optionalDetails: ["workshops are offered in multiple languages", "practical demonstrations help people understand abstract privacy concepts"]
         }
       }
     ],
     endings: [
       {
         type: 'triumphant',
-        text: "Final Chapter: The Regional Cooperative Network\n\nFive years after beginning their research into community economics, {userName} had successfully facilitated the establishment of a thriving network of worker and community-owned cooperatives spanning eight neighborhoods, creating over 150 living-wage jobs while keeping an estimated $2.3 million annually in community wealth through locally-controlled enterprises including a credit union, grocery cooperative, renewable energy installation company, and community land trust that provided affordable housing options for working families. Their model had attracted national attention from community development organizations and policy researchers, leading to speaking opportunities at cooperative economy conferences and consultation requests from communities seeking to replicate their success in building democratic, sustainable local economies. As {userName} prepared to begin college studies in community economic development, they reflected on how their initial investigation of neighborhood income statistics had evolved into a comprehensive understanding of how communities could create economic systems that prioritized human needs and community well-being over profit extraction, demonstrating that alternative economic models weren't just theoretical concepts but practical tools for building more equitable and sustainable communities.",
-        microVariants: [
-          "Their cooperative network had prevented displacement of 85 families through community land ownership, while creating pathways for 40+ community members to develop business ownership skills through cooperative development training programs."
-        ]
-      }
-    ],
-    reuse: {
-      swappableElements: {
-        "cooperative economics": ["community development", "social enterprise", "participatory budgeting", "community ownership"],
-        "credit union": ["community bank", "microloan fund", "investment cooperative", "development fund"]
+        text: "{userName}'s campaign influences local privacy legislation and inspires a network of digital rights advocates who continue expanding privacy education and policy advocacy.",
+        microVariants: ["The campaign achieves concrete policy victories and builds lasting advocacy infrastructure.", "Other communities adopt {userName}'s educational model for digital privacy awareness."]
       },
-      weatherVariants: ["systematically", "comprehensively", "strategically", "methodically"],
-      settingVariants: ["throughout their community", "across neighborhoods", "within their region", "among local networks"],
-      randomSeed: Math.floor(Math.random() * 10000)
-    }
-  },
-
-  // Template 2: Global Citizenship & Cultural Exchange  
-  {
-    title: "The Cultural Bridge Initiative: Connecting Communities Across Borders",
-    theme: "Global Citizenship & Cultural Exchange",
-    level: "Grade 9", 
-    scenes: [
-      {
-        text: "Chapter 1: The International Perspective\n\n{userName} had participated in their school's annual cultural diversity celebration for three consecutive years, appreciating the opportunity to learn about different traditions and sample various international cuisines, but their understanding of global interconnectedness deepened significantly when their ninth-grade world history teacher introduced them to a partner school in rural Guatemala through a sister cities program that emphasized authentic cultural exchange rather than surface-level cultural tourism. Through weekly video conferences with students their age who spoke limited English while {userName} possessed only basic Spanish language skills, they began to understand how educational opportunities, economic circumstances, and environmental challenges varied dramatically across different global contexts, despite their shared interests in {hobbies}, similar concerns about climate change, and comparable aspirations for their future educational and career goals. These meaningful cross-cultural conversations revealed not only fascinating differences in daily life experiences but also surprising similarities in teenage concerns about family expectations, academic pressures, and social justice issues, inspiring {userName} to develop more sophisticated approaches to international friendship building that moved beyond simple pen pal relationships toward collaborative problem-solving and mutual learning partnerships.",
-        pause: true,
-        hook: "How will {userName} create lasting partnerships that bridge cultural and economic divides?",
-        microVariants: {
-          text: "Chapter 1: The International Perspective\n\n{userName} had participated in their school's annual cultural diversity celebration for three consecutive years, appreciating the opportunity to learn about different traditions and sample various international cuisines, but their understanding of global interconnectedness deepened significantly when their ninth-grade world history teacher introduced them to a partner school in rural Guatemala through a sister cities program that emphasized authentic cultural exchange rather than surface-level cultural tourism. Through weekly video conferences with students their age who spoke limited English while {userName} possessed only basic Spanish language skills, they began to understand how educational opportunities, economic circumstances, and environmental challenges varied dramatically across different global contexts, despite their shared interests in {hobbies}, similar concerns about climate change, and comparable aspirations for their future educational and career goals. These meaningful cross-cultural conversations revealed not only fascinating differences in daily life experiences but also surprising similarities in teenage concerns about family expectations, academic pressures, and social justice issues, inspiring {userName} to develop more sophisticated approaches to international friendship building that moved beyond simple pen pal relationships toward collaborative problem-solving and mutual learning partnerships.",
-          alternatives: [
-            "Chapter 1: Expanding Global Awareness\n\n{userName} had engaged in their educational institution's annual multicultural appreciation events for three consecutive academic years, valuing opportunities to explore diverse cultural practices and experience various international culinary traditions, however their comprehension of worldwide interconnection expanded substantially when their ninth-grade global studies instructor connected them with a collaborative educational facility in remote Guatemalan regions through municipal partnership programs emphasizing genuine cultural collaboration rather than superficial cultural observation activities. Through weekly digital conferences with age-matched students possessing limited English proficiency while {userName} maintained only fundamental Spanish communication abilities, they developed understanding regarding how educational access, financial circumstances, and ecological obstacles differed substantially across various international environments, despite their mutual engagement in {hobbies}, comparable environmental preservation concerns, and similar expectations regarding future academic and professional objectives. These substantive intercultural dialogues illuminated not merely intriguing variations in routine lifestyle experiences but additionally unexpected commonalities in adolescent anxieties regarding familial expectations, scholastic demands, and social equity concerns, motivating {userName} to formulate more sophisticated methodologies for international relationship development that progressed beyond basic correspondence connections toward cooperative problem resolution and reciprocal educational collaborations."
-          ],
-          optionalDetails: [
-            `Cultural Exchange Detail ${Math.floor(Math.random() * 100)}: Partner students attended school only 4 days per week due to resource constraints.`,
-            `Communication Challenge ${Math.floor(Math.random() * 100)}: Internet connectivity issues limited video calls to 20 minutes weekly.`,
-            `Shared Interest ${Math.floor(Math.random() * 100)}: Both groups expressed passion for {favoriteColor} art and creative expression.`
-          ]
-        }
-      }
-    ],
-    endings: [
       {
         type: 'reflective',
-        text: "Final Chapter: The Global Student Network\n\nFour years of dedicated cross-cultural relationship building had transformed {userName} from a curious cultural observer into a bridge-builder who had facilitated meaningful partnerships between student groups in seven different countries, creating collaborative projects that addressed shared challenges like educational resource access, environmental conservation, and youth leadership development while celebrating the rich diversity of perspectives and approaches that emerged from different cultural contexts. Their international network had produced tangible outcomes including student exchange programs, collaborative research projects on global issues, joint fundraising efforts for community development initiatives, and a digital platform that connected young activists worldwide to share strategies and support each other's local organizing efforts. As {userName} reflected on their global citizenship journey while preparing applications for international development studies programs, they recognized how their initial sister school partnership had evolved into a deep appreciation for both cultural diversity and universal human experiences, demonstrating that authentic international relationships require sustained commitment to understanding different perspectives while working together toward common goals of justice, sustainability, and mutual respect across cultural and national boundaries.",
-        microVariants: [
-          "Their global network had facilitated student exchanges for 25+ participants, collaborative environmental projects in five countries, and establishment of a sister school partnership fund that provided educational resources to underserved communities worldwide."
-        ]
+        text: "{userName} recognizes that protecting digital privacy requires ongoing vigilance and that technology policy must center human rights and social justice principles.",
+        microVariants: ["The experience teaches {userName} about the long-term nature of civil rights advocacy.", "Digital privacy becomes {userName}'s focus for future academic and career pursuits."]
       }
     ],
     reuse: {
       swappableElements: {
-        "Guatemala": ["Philippines", "Kenya", "Peru", "Bangladesh"],
-        "cultural diversity": ["international cooperation", "global citizenship", "cross-cultural learning", "multicultural understanding"]
+        "privacy concern": ["data mining", "facial recognition", "location tracking", "behavioral profiling", "algorithmic discrimination"],
+        "education method": ["workshop", "seminar", "forum", "training session", "community meeting"],
+        "privacy tool": ["encrypted messaging", "VPN services", "secure browsers", "privacy-focused apps", "digital security practices"]
       },
-      weatherVariants: ["significantly", "substantially", "meaningfully", "profoundly"],
-      settingVariants: ["across borders", "between countries", "throughout global networks", "among international communities"],
-      randomSeed: Math.floor(Math.random() * 10000)
-    }
-  },
-
-  // Template 3: Innovation & Technology Ethics
-  {
-    title: "The Digital Privacy Initiative: Protecting Rights in the Digital Age",
-    theme: "Innovation & Technology Ethics",
-    level: "Grade 9",
-    scenes: [
-      {
-        text: "Chapter 1: The Privacy Paradox Discovery\n\n{userName} had always accepted that using social media platforms, shopping websites, and educational technology required sharing personal information, assuming that privacy policies and terms of service agreements provided adequate protection for user data, until a ninth-grade computer science project investigating data collection practices revealed the extensive scope of personal information that technology companies systematically gathered, analyzed, and monetized without meaningful user understanding or consent. Through careful analysis of their own digital footprint across multiple platforms and devices, {userName} discovered that their online activities, location patterns, communication networks, and behavioral preferences had been compiled into detailed psychological profiles that were sold to advertisers, political organizations, and data brokers, creating a surveillance economy that profited from personal information while potentially exposing users to manipulation, discrimination, and security risks. This unsettling recognition coincided with their growing interest in {hobbies} and technology design, inspiring {userName} to research digital rights frameworks, privacy-preserving technologies, and ethical approaches to innovation that prioritized user agency and community benefit over corporate data extraction and profit maximization.",
-        pause: true,
-        hook: "What strategies will {userName} develop to protect digital privacy while promoting technological innovation?",
-        microVariants: {
-          text: "Chapter 1: The Privacy Paradox Discovery\n\n{userName} had always accepted that using social media platforms, shopping websites, and educational technology required sharing personal information, assuming that privacy policies and terms of service agreements provided adequate protection for user data, until a ninth-grade computer science project investigating data collection practices revealed the extensive scope of personal information that technology companies systematically gathered, analyzed, and monetized without meaningful user understanding or consent. Through careful analysis of their own digital footprint across multiple platforms and devices, {userName} discovered that their online activities, location patterns, communication networks, and behavioral preferences had been compiled into detailed psychological profiles that were sold to advertisers, political organizations, and data brokers, creating a surveillance economy that profited from personal information while potentially exposing users to manipulation, discrimination, and security risks. This unsettling recognition coincided with their growing interest in {hobbies} and technology design, inspiring {userName} to research digital rights frameworks, privacy-preserving technologies, and ethical approaches to innovation that prioritized user agency and community benefit over corporate data extraction and profit maximization.",
-          alternatives: [
-            "Chapter 1: Understanding Digital Surveillance\n\n{userName} had previously accommodated requirements that utilizing social networking services, commercial websites, and educational technological tools necessitated providing personal details, presuming that privacy documentation and service agreements offered sufficient safeguards for user information, until ninth-grade computer studies coursework examining information collection methodologies exposed the comprehensive range of personal data that technology corporations systematically accumulated, processed, and commercialized without substantive user comprehension or authorization. Through methodical examination of their individual digital presence across numerous platforms and devices, {userName} identified that their internet behaviors, geographical movement patterns, social connection networks, and preference indicators had been assembled into comprehensive psychological assessments that were distributed to marketing organizations, political entities, and information intermediaries, establishing surveillance-based economic systems that generated revenue from personal details while potentially subjecting users to influence campaigns, discriminatory practices, and security vulnerabilities. This concerning realization aligned with their expanding engagement in {hobbies} and technological innovation, motivating {userName} to investigate digital civil liberties structures, privacy-protecting technologies, and ethical innovation approaches that emphasized user autonomy and community advancement over corporate information harvesting and revenue optimization."
-          ],
-          optionalDetails: [
-            `Data Discovery ${Math.floor(Math.random() * 100)}: Their personal profile contained over 5,000 data points from 12 different sources.`,
-            `Privacy Violation ${Math.floor(Math.random() * 100)}: Location data revealed their {favoriteColor} route to school was tracked 247 times.`,
-            `Commercial Impact ${Math.floor(Math.random() * 100)}: Their data profile was estimated to be worth $47 annually to marketing companies.`
-          ]
-        }
-      }
-    ],
-    endings: [
-      {
-        type: 'triumphant',
-        text: "Final Chapter: The Privacy Rights Network\n\nThree years after discovering the extent of digital surveillance in their daily life, {userName} had successfully co-founded a youth-led organization that had advocated for comprehensive digital privacy legislation in their state while developing educational resources that helped thousands of teenagers understand and protect their digital rights through practical privacy tools, secure communication practices, and critical evaluation of technology platforms before sharing personal information. Their advocacy work had contributed to passage of student digital privacy protections in their school district, establishment of youth representation on municipal technology policy committees, and creation of peer education programs that empowered young people to make informed decisions about their digital lives while maintaining access to beneficial technologies for learning, creativity, and social connection. As {userName} prepared to study technology ethics and policy in college, they reflected on how their initial shock at discovering their digital surveillance had evolved into sophisticated understanding of how technology systems could be designed to respect human dignity and democratic values, demonstrating that young people could effectively advocate for digital rights while contributing to innovations that served community needs rather than corporate surveillance objectives.",
-        microVariants: [
-          "Their privacy advocacy had resulted in policy changes protecting student data in 15 school districts, development of privacy-focused educational technology, and establishment of a youth digital rights network serving as a national model for peer privacy education."
-        ]
-      }
-    ],
-    reuse: {
-      swappableElements: {
-        "social media": ["educational apps", "gaming platforms", "communication tools", "shopping sites"],
-        "data brokers": ["advertising networks", "analytics companies", "marketing firms", "surveillance corporations"]
-      },
-      weatherVariants: ["systematically", "comprehensively", "extensively", "methodically"],
-      settingVariants: ["across digital platforms", "throughout online spaces", "within technological systems", "among digital communities"],
-      randomSeed: Math.floor(Math.random() * 10000)
+      weatherVariants: ["during Digital Privacy Week", "following a major data breach", "after new surveillance policies are announced", "during a technology conference"],
+      settingVariants: ["community center", "library", "high school", "online platform", "civic organization"]
     }
   }
 ];
 
-/**
- * Get a random Grade 9 template or specific template by index
- */
-export function getGrade9FallbackTemplate(templateIndex?: number): StoryTemplate | null {
+export function getGrade9FallbackTemplate(templateIndex?: number): StoryTemplate {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < GRADE_9_FALLBACK_TEMPLATES.length) {
     return GRADE_9_FALLBACK_TEMPLATES[templateIndex];
   }
-  
-  if (GRADE_9_FALLBACK_TEMPLATES.length === 0) {
-    return null;
-  }
-  
   const randomIndex = Math.floor(Math.random() * GRADE_9_FALLBACK_TEMPLATES.length);
   return GRADE_9_FALLBACK_TEMPLATES[randomIndex];
 }
 
-/**
- * Get the count of available Grade 9 templates
- */
 export function getGrade9FallbackTemplateCount(): number {
   return GRADE_9_FALLBACK_TEMPLATES.length;
 }
