@@ -191,7 +191,7 @@ export const CONSOLIDATED_LEVEL_4_TEMPLATES: StoryTemplate[] = [
       weatherVariants: ["investigation morning", "archive research afternoon", "security planning session", "community presentation evening"],
       settingVariants: ["library archives", "hidden passages", "security office", "community exhibition hall"]
     }
-  }
+  },
 
   // Template 3: Environmental Science & Innovation
   {
