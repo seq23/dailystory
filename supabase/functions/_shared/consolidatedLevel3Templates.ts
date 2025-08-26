@@ -872,6 +872,4 @@ export const CONSOLIDATED_LEVEL_3_TEMPLATES: StoryTemplate[] = [
       settingVariants: ["community garden", "neighborhood meetings", "city hall", "educational workshops"]
     }
   }
-
-  // Continue with remaining 4 templates...
 ];
