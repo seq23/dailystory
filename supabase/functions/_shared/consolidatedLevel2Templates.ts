@@ -516,5 +516,483 @@ export const CONSOLIDATED_LEVEL_2_TEMPLATES: StoryTemplate[] = [
     }
   }
 
-  // I'll continue with the remaining 4 templates in the next part to complete the 8 required templates
+  // Template 5: Animal Shelter Helper (from extensions)
+  {
+    title: "The Animal Shelter Adventure",
+    theme: "Helping & Compassion",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "It all started when {userName} wanted to help {favoriteAnimal} at the local shelter and decided to volunteer every Saturday morning.",
+        pause: true,
+        hook: "How will {userName} help the animals?",
+        microVariants: {
+          text: "It all started when {userName} wanted to help {favoriteAnimal} at the local shelter and decided to volunteer every Saturday morning.",
+          alternatives: ["The volunteer work began when {userName} felt called to assist {favoriteAnimal} at the community shelter, committing to Saturday morning service."],
+          optionalDetails: ["The shelter was busy with many animals needing care.", "Volunteers wore special {favoriteColor} aprons.", "The staff welcomed young helpers with enthusiasm."]
+        }
+      },
+      {
+        text: "Day by day, feeding {favoriteFood} and giving attention became important work that made a real difference in the animals' lives.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Day by day, feeding {favoriteFood} and giving attention became important work that made a real difference in the animals' lives.",
+          alternatives: ["Each day brought meaningful responsibilities as {userName} provided {favoriteFood} and affection, significantly improving the animals' well-being."],
+          optionalDetails: ["Animals recognized {userName} and got excited when they arrived.", "The {favoriteFood} was specially chosen for each animal's needs.", "Some animals were shy at first but gradually warmed up."]
+        }
+      },
+      {
+        text: "Little by little, playing with puppies and brushing cats gently brought joy to both {userName} and the grateful animals.",
+        pause: true,
+        hook: "Which animals will {userName} help most?",
+        microVariants: {
+          text: "Little by little, playing with puppies and brushing cats gently brought joy to both {userName} and the grateful animals.",
+          alternatives: ["Gradually, gentle play with puppies and careful cat grooming created happiness for both {userName} and the appreciative shelter animals."],
+          optionalDetails: ["The brushes were soft and {favoriteColor}.", "Puppies wagged their tails and played fetch games.", "Cats purred contentedly during grooming sessions."]
+        }
+      },
+      {
+        text: "Step by step, one shy {favoriteAnimal} became friendly after {userName}'s patient care and consistent daily visits to the shelter.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Step by step, one shy {favoriteAnimal} became friendly after {userName}'s patient care and consistent daily visits to the shelter.",
+          alternatives: ["Through gradual progress, a timid {favoriteAnimal} developed trust and friendship following {userName}'s persistent kindness and regular shelter visits."],
+          optionalDetails: ["The {favoriteAnimal} had been at the shelter for months.", "It slowly learned to trust humans again.", "Other volunteers noticed the remarkable transformation."]
+        }
+      },
+      {
+        text: "The shelter staff praised {userName}'s dedication and asked them to help train new young volunteers in proper animal care techniques.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "The shelter staff praised {userName}'s dedication and asked them to help train new young volunteers in proper animal care techniques.",
+          alternatives: ["Impressed by {userName}'s commitment, the shelter team requested their assistance in teaching proper animal care methods to incoming young volunteers."],
+          optionalDetails: ["The training program was starting next month.", "{userName} would get a special volunteer leader badge.", "New volunteers needed to learn safety rules and animal behavior."]
+        }
+      },
+      {
+        text: "Teaching others about gentle animal handling and responsible pet care became {userName}'s favorite part of volunteering at the busy shelter.",
+        pause: true,
+        hook: "How will the animals benefit from more helpers?",
+        microVariants: {
+          text: "Teaching others about gentle animal handling and responsible pet care became {userName}'s favorite part of volunteering at the busy shelter.",
+          alternatives: ["Educating fellow volunteers about compassionate animal care and responsible pet ownership evolved into {userName}'s most rewarding shelter activity."],
+          optionalDetails: ["The lessons covered feeding schedules, exercise needs, and socialization.", "New volunteers learned to read animal body language.", "Everyone practiced the proper way to approach nervous animals."]
+        }
+      },
+      {
+        text: "More volunteers meant more animals could receive individual attention and have better chances of finding loving forever homes.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "More volunteers meant more animals could receive individual attention and have better chances of finding loving forever homes.",
+          alternatives: ["The increased volunteer team enabled individual animal care and significantly improved each animal's prospects for permanent, loving adoption."],
+          optionalDetails: ["Adoption rates increased as animals became more socialized.", "Families visited more often to meet well-cared-for pets.", "The shelter became known for having happy, healthy animals."]
+        }
+      },
+      {
+        text: "In the end, {userName} felt happy knowing the animals were loved and cared for while learning that helping others brings the greatest satisfaction.",
+        pause: true,
+        hook: "Which animal will need help next?",
+        microVariants: {
+          text: "In the end, {userName} felt happy knowing the animals were loved and cared for while learning that helping others brings the greatest satisfaction.",
+          alternatives: ["Ultimately, {userName} experienced deep contentment from ensuring animal welfare while discovering that serving others provides life's most meaningful fulfillment."],
+          optionalDetails: ["Many animals found homes thanks to {userName}'s care.", "The shelter recognized {userName} as volunteer of the month.", "Friends and family were proud of the compassionate work."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "Every Saturday morning, {userName} arrives at the shelter with {favoriteFood} treats and a heart full of love. The animals recognize their footsteps and gather eagerly, knowing that someone special cares deeply about their well-being and happiness.",
+        microVariants: ["Each Saturday, {userName} brings {favoriteFood} treats to the shelter, where animals eagerly await their caring presence and loving attention."]
+      },
+      {
+        type: 'silly',
+        text: "The animals love {userName} so much that they start following them home! Soon {userName}'s house becomes a funny parade of dogs, cats, and even a {favoriteAnimal} who all want to live with their favorite volunteer. What a wonderfully chaotic situation!",
+        microVariants: ["The shelter animals adore {userName} so much they follow them home, creating a hilarious parade of pets including a persistent {favoriteAnimal} wanting to move in!"]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName} starts a youth volunteer program that spreads to shelters throughout the city. Their leadership helps hundreds of animals find homes while inspiring other young people to dedicate themselves to animal welfare and community service.",
+        microVariants: ["{userName} establishes a city-wide youth volunteer program, helping hundreds of animals find homes while inspiring young people toward animal welfare service."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that caring for animals teaches us about unconditional love, patience, and responsibility. When we help creatures who cannot speak for themselves, we discover the most important parts of our own humanity and compassion.",
+        microVariants: ["{userName} discovers that animal care teaches unconditional love and responsibility, revealing our most important human qualities of compassion and empathy."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "care_activities": ["feeding", "grooming", "exercising", "socializing", "training"],
+        "shelter_areas": ["kennels", "play yards", "grooming stations", "adoption rooms", "medical areas"],
+        "volunteer_tasks": ["cleaning", "walking", "playing", "training", "organizing"]
+      },
+      weatherVariants: ["perfect volunteer morning", "busy shelter day", "quiet afternoon", "adoption event weekend"],
+      settingVariants: ["animal shelter", "outdoor exercise area", "adoption center", "veterinary clinic"]
+    }
+  },
+
+  // Template 6: Art Club Project (from extensions)
+  {
+    title: "The Creative Art Club",
+    theme: "Creativity & Self-Expression",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "When {userName} joined the art club, creating {favoriteColor} paintings became a passion that filled their afternoons with creativity and joy.",
+        pause: true,
+        hook: "What amazing art will {userName} create?",
+        microVariants: {
+          text: "When {userName} joined the art club, creating {favoriteColor} paintings became a passion that filled their afternoons with creativity and joy.",
+          alternatives: ["Upon joining the art club, {userName} discovered that painting with {favoriteColor} became a passionate pursuit that brought afternoon hours of creative fulfillment."],
+          optionalDetails: ["The art room smelled like paint and creativity.", "Brushes and canvases were organized on {favoriteColor} shelves.", "Other students were working on amazing projects."]
+        }
+      },
+      {
+        text: "Every week, they learned new techniques for drawing {favoriteAnimal} realistically while developing their artistic skills and confidence with each lesson.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Every week, they learned new techniques for drawing {favoriteAnimal} realistically while developing their artistic skills and confidence with each lesson.",
+          alternatives: ["Weekly sessions introduced new methods for realistic {favoriteAnimal} illustration while steadily building {userName}'s artistic abilities and self-assurance."],
+          optionalDetails: ["The art teacher demonstrated shading and proportion techniques.", "Each {favoriteAnimal} drawing looked more lifelike than the last.", "Practice sketches filled an entire {favoriteColor} notebook."]
+        }
+      },
+      {
+        text: "The art teacher showed how mixing colors creates beautiful {favoriteColor} shades while explaining the science behind pigments and paint composition.",
+        pause: true,
+        hook: "What masterpiece will emerge from the color mixing?",
+        microVariants: {
+          text: "The art teacher showed how mixing colors creates beautiful {favoriteColor} shades while explaining the science behind pigments and paint composition.",
+          alternatives: ["The instructor demonstrated color mixing techniques that produced gorgeous {favoriteColor} hues while teaching the scientific principles of pigments and paint chemistry."],
+          optionalDetails: ["Color wheels helped understand primary and secondary colors.", "Each mixture created surprising and beautiful new shades.", "The palette became a rainbow of possibilities."]
+        }
+      },
+      {
+        text: "At the art show, {userName}'s painting of a {favoriteAnimal} won first prize while family and friends admired the incredible artistic achievement.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "At the art show, {userName}'s painting of a {favoriteAnimal} won first prize while family and friends admired the incredible artistic achievement.",
+          alternatives: ["During the art exhibition, {userName}'s {favoriteAnimal} painting earned first place recognition as family and friends marveled at the outstanding artistic accomplishment."],
+          optionalDetails: ["The painting was displayed in the center of the gallery.", "A {favoriteColor} ribbon marked the first-place winner.", "People stopped to admire the lifelike details."]
+        }
+      },
+      {
+        text: "Everyone admired {userName}'s creativity and dedication to improving their skills through consistent practice and willingness to try new artistic techniques.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Everyone admired {userName}'s creativity and dedication to improving their skills through consistent practice and willingness to try new artistic techniques.",
+          alternatives: ["Observers praised {userName}'s creative vision and commitment to skill development through regular practice and openness to experimenting with diverse artistic methods."],
+          optionalDetails: ["The art teacher displayed the painting for other students to study.", "Younger students asked for painting advice and tips.", "The school newsletter featured {userName}'s artistic success."]
+        }
+      },
+      {
+        text: "The success inspired {userName} to start teaching basic art skills to younger students during lunch periods and after school sessions.",
+        pause: true,
+        hook: "How will teaching art help others discover creativity?",
+        microVariants: {
+          text: "The success inspired {userName} to start teaching basic art skills to younger students during lunch periods and after school sessions.",
+          alternatives: ["The achievement motivated {userName} to begin instructing fundamental art techniques to younger students through lunchtime and after-school educational sessions."],
+          optionalDetails: ["The lessons covered basic drawing, color theory, and painting techniques.", "Younger students were eager to learn from a peer.", "The art room became busy with enthusiastic beginning artists."]
+        }
+      },
+      {
+        text: "Creating a supportive environment where other children could explore their artistic abilities became {userName}'s favorite way to share their passion for art.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Creating a supportive environment where other children could explore their artistic abilities became {userName}'s favorite way to share their passion for art.",
+          alternatives: ["Establishing an encouraging atmosphere for other children's artistic exploration evolved into {userName}'s preferred method of sharing their deep love for creative expression."],
+          optionalDetails: ["Each student worked on projects featuring their own favorite animals.", "The room buzzed with creative energy and excitement.", "Everyone celebrated each other's artistic progress and achievements."]
+        }
+      },
+      {
+        text: "The art club grew larger as more students discovered their creative talents while learning that art is a wonderful way to express feelings and ideas.",
+        pause: true,
+        hook: "What masterpiece will they create next?",
+        microVariants: {
+          text: "The art club grew larger as more students discovered their creative talents while learning that art is a wonderful way to express feelings and ideas.",
+          alternatives: ["The expanding art club welcomed more students who uncovered their creative abilities while understanding that artistic expression beautifully communicates emotions and concepts."],
+          optionalDetails: ["New members brought fresh ideas and different artistic styles.", "The club planned a community art exhibition.", "Everyone felt proud to be part of the creative community."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "Every afternoon, {userName} sits in the quiet art room with {favoriteColor} paints, creating peaceful landscapes while soft music plays. The gentle brush strokes and creative flow bring a sense of calm happiness that lasts long after the painting session ends.",
+        microVariants: ["Each afternoon, {userName} enjoys peaceful painting sessions in the quiet art room, creating {favoriteColor} landscapes with gentle brush strokes and calm happiness."]
+      },
+      {
+        type: 'silly',
+        text: "The {favoriteAnimal} paintings become so lifelike that real {favoriteAnimal}s start visiting the art room! Soon the space is filled with models posing for portraits while eating {favoriteFood}. What a delightfully chaotic art studio!",
+        microVariants: ["The realistic {favoriteAnimal} paintings attract real animals who visit the art room, creating a wonderfully chaotic studio with models posing while eating {favoriteFood}!"]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName}'s art program expands throughout the school district, bringing creative education to hundreds of students. Their leadership in arts education earns recognition from the state education department and inspires new funding for school art programs.",
+        microVariants: ["{userName}'s art program spreads district-wide, bringing creative education to hundreds and earning state recognition that inspires new school art funding."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that art is more than creating beautiful pictures - it's about expressing our inner thoughts, connecting with others through shared creativity, and finding beauty in the world around us. Every brushstroke is a way of sharing our unique perspective.",
+        microVariants: ["{userName} learns that art expresses inner thoughts and connects people through creativity, with every brushstroke sharing our unique perspective on life's beauty."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "art_materials": ["paints", "brushes", "canvases", "pencils", "pastels"],
+        "art_techniques": ["painting", "drawing", "sketching", "shading", "blending"],
+        "art_subjects": ["animals", "landscapes", "portraits", "still life", "abstract"]
+      },
+      weatherVariants: ["creative afternoon", "inspiring morning", "peaceful evening", "artistic moment"],
+      settingVariants: ["art classroom", "outdoor easel", "gallery space", "home studio"]
+    }
+  },
+
+  // Template 7: New Neighborhood Club Template
+  {
+    title: "The Neighborhood Adventure Club",
+    theme: "Community & Leadership",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "{userName} decided to start a neighborhood club for kids who love {hobbies} and wanted to bring children together for fun activities.",
+        pause: true,
+        hook: "Who will join the new club?",
+        microVariants: {
+          text: "{userName} decided to start a neighborhood club for kids who love {hobbies} and wanted to bring children together for fun activities.",
+          alternatives: ["{userName} chose to establish a community club for children interested in {hobbies}, hoping to unite neighborhood kids through engaging group activities."],
+          optionalDetails: ["The idea came during a lonely afternoon.", "Many kids in the area didn't know each other well.", "Parents were supportive of the community-building idea."]
+        }
+      },
+      {
+        text: "They created colorful {favoriteColor} posters and invited everyone to join the fun activities while explaining the club's mission and weekly schedule.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "They created colorful {favoriteColor} posters and invited everyone to join the fun activities while explaining the club's mission and weekly schedule.",
+          alternatives: ["{userName} designed vibrant {favoriteColor} advertisements and welcomed all children to participate in enjoyable activities while outlining the organization's purpose and regular meetings."],
+          optionalDetails: ["The posters featured drawings of {favoriteAnimal} and fun activities.", "Mom helped with poster design and placement around the neighborhood.", "The meeting time was perfect for after-school participation."]
+        }
+      },
+      {
+        text: "The first meeting was at the park, where they shared {favoriteFood} and told stories about their favorite {favoriteAnimal} while getting to know each other.",
+        pause: true,
+        hook: "Will the club members become good friends?",
+        microVariants: {
+          text: "The first meeting was at the park, where they shared {favoriteFood} and told stories about their favorite {favoriteAnimal} while getting to know each other.",
+          alternatives: ["The inaugural gathering occurred at the local park, featuring {favoriteFood} sharing and {favoriteAnimal} storytelling as members introduced themselves and built connections."],
+          optionalDetails: ["Everyone brought different types of {favoriteFood} to share.", "The stories were funny and heartwarming.", "Shy children gradually opened up and joined conversations."]
+        }
+      },
+      {
+        text: "Soon, twelve children joined the club and they planned weekly adventures together while learning about teamwork and friendship through shared experiences.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Soon, twelve children joined the club and they planned weekly adventures together while learning about teamwork and friendship through shared experiences.",
+          alternatives: ["Before long, twelve neighborhood children became club members and organized weekly adventures while discovering teamwork principles and friendship development through collective activities."],
+          optionalDetails: ["The group included children of different ages and interests.", "Everyone contributed ideas for club activities and adventures.", "Weekly planning meetings became as fun as the actual events."]
+        }
+      },
+      {
+        text: "Each adventure taught the club members something new about cooperation, problem-solving, and working together to achieve common goals and dreams.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Each adventure taught the club members something new about cooperation, problem-solving, and working together to achieve common goals and dreams.",
+          alternatives: ["Every expedition provided club members with fresh lessons in collaboration, creative problem-solving, and collective effort toward shared objectives and aspirations."],
+          optionalDetails: ["Some adventures involved treasure hunts requiring teamwork.", "Problem-solving challenges helped develop critical thinking skills.", "Group projects taught the value of different talents and perspectives."]
+        }
+      },
+      {
+        text: "The club organized community service projects like park cleanups and {favoriteAnimal} habitat restoration while making a positive impact on their neighborhood environment.",
+        pause: true,
+        hook: "How will the community respond to their good work?",
+        microVariants: {
+          text: "The club organized community service projects like park cleanups and {favoriteAnimal} habitat restoration while making a positive impact on their neighborhood environment.",
+          alternatives: ["The organization coordinated community service initiatives including park maintenance and {favoriteAnimal} habitat conservation while creating beneficial environmental improvements in their local area."],
+          optionalDetails: ["Adult volunteers helped supervise the environmental projects.", "The work made visible improvements to local green spaces.", "Other community groups began collaborating with the club."]
+        }
+      },
+      {
+        text: "Local families and community leaders praised the young people's initiative and offered support for future projects and club expansion efforts.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Local families and community leaders praised the young people's initiative and offered support for future projects and club expansion efforts.",
+          alternatives: ["Neighborhood families and municipal leaders commended the youth organization's leadership while providing assistance for upcoming initiatives and organizational growth plans."],
+          optionalDetails: ["The mayor visited to recognize their community service.", "Local businesses donated supplies for club activities.", "Parents volunteered to help with transportation and supervision."]
+        }
+      },
+      {
+        text: "The {favoriteAnimal} club became the most popular group in the neighborhood, bringing friends together through shared interests and community service.",
+        pause: true,
+        hook: "What adventure will they plan next?",
+        microVariants: {
+          text: "The {favoriteAnimal} club became the most popular group in the neighborhood, bringing friends together through shared interests and community service.",
+          alternatives: ["The {favoriteAnimal}-themed organization evolved into the area's most beloved youth group, uniting friends through common interests and volunteer service activities."],
+          optionalDetails: ["Other neighborhoods asked for help starting similar clubs.", "The waiting list for membership grew longer each month.", "Annual club events became neighborhood celebrations."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "Every evening after club meetings, {userName} sits in their room planning the next adventure while feeling grateful for all the wonderful friendships that grew from a simple idea. The club notebook filled with memories sits nearby, documenting a community brought together through kindness.",
+        microVariants: ["Each evening, {userName} plans future adventures while treasuring the friendships that grew from their simple idea, with a memory-filled notebook documenting their united community."]
+      },
+      {
+        type: 'silly',
+        text: "The club becomes so popular that even the neighborhood {favoriteAnimal}s want to join! Soon the meetings include four-legged members who participate in activities and contribute their own unique ideas. What a wonderfully wild and inclusive club!",
+        microVariants: ["The club attracts neighborhood {favoriteAnimal}s who want to join meetings and activities, creating a wonderfully wild and inclusive organization with four-legged members!"]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName}'s club model spreads to communities across the region, with dozens of youth-led organizations following their example. Their leadership training program helps other young people start their own successful community groups.",
+        microVariants: ["{userName}'s club model spreads regionally with dozens of youth organizations following their example, while their leadership program helps others start successful community groups."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that bringing people together requires courage to take the first step, but the rewards of friendship and community connection make every effort worthwhile. Small acts of leadership can create lasting positive change in the world around us.",
+        microVariants: ["{userName} discovers that community building requires initial courage, but friendship and connection rewards make every effort worthwhile, with small leadership acts creating lasting positive change."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "club_activities": ["games", "crafts", "sports", "reading", "exploring"],
+        "community_projects": ["cleanups", "gardening", "fundraising", "helping", "organizing"],
+        "leadership_skills": ["planning", "organizing", "communicating", "problem-solving", "inspiring"]
+      },
+      weatherVariants: ["perfect meeting day", "outdoor adventure weather", "cozy indoor gathering", "community event afternoon"],
+      settingVariants: ["neighborhood park", "community center", "backyard meeting", "school playground"]
+    }
+  },
+
+  // Template 8: Environmental Park Project (combining themes)
+  {
+    title: "The Park Restoration Project",
+    theme: "Environment & Community Action",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "{userName} noticed that the local park needed help with environmental cleanup and wildlife protection while walking through the neglected green space.",
+        pause: true,
+        hook: "How can {userName} help restore the park?",
+        microVariants: {
+          text: "{userName} noticed that the local park needed help with environmental cleanup and wildlife protection while walking through the neglected green space.",
+          alternatives: ["During a walk through the overlooked green area, {userName} observed that the neighborhood park required environmental restoration and wildlife conservation assistance."],
+          optionalDetails: ["Litter was scattered across the walking paths.", "The {favoriteAnimal} habitat looked damaged and overgrown.", "Once-beautiful areas had become unattractive and unwelcoming."]
+        }
+      },
+      {
+        text: "They researched different ways to make the park more friendly for {favoriteAnimal}s and other creatures while learning about local ecosystem needs.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "They researched different ways to make the park more friendly for {favoriteAnimal}s and other creatures while learning about local ecosystem needs.",
+          alternatives: ["{userName} investigated various methods for creating a more hospitable environment for {favoriteAnimal}s and other wildlife while studying local ecosystem requirements."],
+          optionalDetails: ["The library had books about native plants and animal habitats.", "Online resources provided information about pollution prevention.", "Local environmental groups offered helpful advice and guidance."]
+        }
+      },
+      {
+        text: "Working with neighbors, {userName} organized weekend volunteer sessions to plant {favoriteColor} flowers and remove litter while building community cooperation.",
+        pause: true,
+        hook: "Will the community support the restoration efforts?",
+        microVariants: {
+          text: "Working with neighbors, {userName} organized weekend volunteer sessions to plant {favoriteColor} flowers and remove litter while building community cooperation.",
+          alternatives: ["Through neighborhood collaboration, {userName} coordinated weekend volunteer activities for planting {favoriteColor} flowers and debris removal while fostering community partnership."],
+          optionalDetails: ["Families brought gardening tools and work gloves.", "Children and adults worked together on different restoration tasks.", "The work was hard but rewarding and fun."]
+        }
+      },
+      {
+        text: "The project attracted attention from the city council, who provided supplies and recognized their environmental leadership while promising ongoing support.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "The project attracted attention from the city council, who provided supplies and recognized their environmental leadership while promising ongoing support.",
+          alternatives: ["The initiative gained city council notice, resulting in supply donations and environmental leadership recognition along with commitments for continued assistance."],
+          optionalDetails: ["The mayor visited to see the progress firsthand.", "Free mulch and plants were delivered to the park.", "Local news covered the community restoration story."]
+        }
+      },
+      {
+        text: "Each weekend brought more volunteers as word spread about the positive changes happening in the once-neglected neighborhood green space.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Each weekend brought more volunteers as word spread about the positive changes happening in the once-neglected neighborhood green space.",
+          alternatives: ["Weekly volunteer numbers increased as community members learned about the positive transformations occurring in the previously overlooked neighborhood park."],
+          optionalDetails: ["High school students earned community service hours.", "Families made the restoration work a weekly tradition.", "Even businesses began contributing materials and refreshments."]
+        }
+      },
+      {
+        text: "Wildlife began returning to the restored areas as native plants provided food and shelter for birds, butterflies, and small mammals including {favoriteAnimal}s.",
+        pause: true,
+        hook: "What other improvements will the park see?",
+        microVariants: {
+          text: "Wildlife began returning to the restored areas as native plants provided food and shelter for birds, butterflies, and small mammals including {favoriteAnimal}s.",
+          alternatives: ["Animals started returning to the rehabilitated spaces where indigenous plants offered nourishment and protection for birds, butterflies, and small creatures like {favoriteAnimal}s."],
+          optionalDetails: ["Bird songs filled the air during morning hours.", "Butterflies visited the new {favoriteColor} flower gardens.", "Children delighted in spotting returning wildlife."]
+        }
+      },
+      {
+        text: "The restoration success inspired other neighborhood parks to request similar environmental improvement projects and community volunteer coordination.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "The restoration success inspired other neighborhood parks to request similar environmental improvement projects and community volunteer coordination.",
+          alternatives: ["The rehabilitation achievement motivated other local parks to seek comparable environmental enhancement initiatives and community volunteer organization."],
+          optionalDetails: ["Parks across the city wanted to replicate the success.", "{userName} was invited to speak at environmental conferences.", "The model became a template for community-led conservation."]
+        }
+      },
+      {
+        text: "After six months of hard work, the park became a beautiful habitat where {favoriteAnimal}s and families could enjoy nature together in harmony.",
+        pause: true,
+        hook: "What environmental project will they tackle next?",
+        microVariants: {
+          text: "After six months of hard work, the park became a beautiful habitat where {favoriteAnimal}s and families could enjoy nature together in harmony.",
+          alternatives: ["Following six months of dedicated effort, the park transformed into a gorgeous natural habitat where {favoriteAnimal}s and families could peacefully enjoy nature together."],
+          optionalDetails: ["The transformation was visible from the street.", "Property values in the area began to increase.", "The park became a model for sustainable community development."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "Every morning, {userName} walks through the restored park, watching {favoriteAnimal}s play among the {favoriteColor} flowers while families enjoy picnics on the clean grass. The peaceful sounds of nature and children's laughter create a perfect harmony of community and environment.",
+        microVariants: ["Each morning, {userName} strolls through their restored park, watching {favoriteAnimal}s among {favoriteColor} flowers while families picnic, creating perfect harmony of community and nature."]
+      },
+      {
+        type: 'silly',
+        text: "The park becomes so beautiful that {favoriteAnimal}s from all over the city move in! Soon there's a housing shortage for all the new animal residents, and {userName} has to organize a wild animal real estate committee. What a wonderfully chaotic conservation success!",
+        microVariants: ["The restored park attracts so many {favoriteAnimal}s that {userName} needs to organize an animal real estate committee for the new residents - a wonderfully chaotic conservation success!"]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName}'s environmental leadership leads to a city-wide youth conservation program. Their restoration model is adopted by schools across the state, and they receive recognition from the governor for outstanding environmental stewardship.",
+        microVariants: ["{userName}'s environmental leadership creates a city-wide youth conservation program, with their restoration model adopted statewide and earning gubernatorial recognition."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that caring for the environment means caring for all living things - plants, animals, and people alike. When we work together to heal the earth, we create healthier, happier communities for everyone to enjoy for generations to come.",
+        microVariants: ["{userName} learns that environmental care means caring for all life, and working together to heal the earth creates healthier communities for future generations."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "environmental_actions": ["planting", "cleaning", "restoring", "protecting", "conserving"],
+        "wildlife_benefits": ["habitat", "food sources", "shelter", "nesting areas", "water access"],
+        "community_outcomes": ["cooperation", "pride", "stewardship", "education", "inspiration"]
+      },
+      weatherVariants: ["perfect volunteer morning", "restoration work day", "community celebration", "wildlife observation afternoon"],
+      settingVariants: ["neighborhood park", "community garden", "nature preserve", "urban green space"]
+    }
+  }
 ];

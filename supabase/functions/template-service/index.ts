@@ -2,8 +2,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { CONSOLIDATED_LEVEL_1_TEMPLATES } from "../_shared/consolidatedLevel1Templates.ts";
 import { CONSOLIDATED_LEVEL_2_TEMPLATES } from "../_shared/consolidatedLevel2Templates.ts";
-import { EXTENDED_LEVEL3_TEMPLATES } from "../_shared/extendedLevel3Templates.ts";
-import { EXTENDED_LEVEL4_TEMPLATES } from "../_shared/extendedLevel4Templates.ts";
+import { CONSOLIDATED_LEVEL_3_TEMPLATES } from "../_shared/consolidatedLevel3Templates.ts";
+import { CONSOLIDATED_LEVEL_4_TEMPLATES } from "../_shared/consolidatedLevel4Templates.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
