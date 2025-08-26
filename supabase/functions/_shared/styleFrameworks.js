@@ -23,8 +23,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 7.0,
-      steps: 15,
+      cfgScale: 8,
+      steps: 25,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.75,
       outputFormat: 'WEBP'
@@ -53,8 +53,8 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
     
     // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 7.0,
-      steps: 15,
+      cfgScale: 8,
+      steps: 25,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.75,
       outputFormat: 'WEBP'
