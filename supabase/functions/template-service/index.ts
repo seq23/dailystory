@@ -1,5 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { EXTENDED_LEVEL1_TEMPLATES } from "../_shared/extendedLevel1Templates.ts";
+import { EXTENDED_LEVEL2_TEMPLATES } from "../_shared/extendedLevel2Templates.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -219,6 +221,58 @@ const NEW_TEMPLATE_SYSTEM: Record<string, StoryTemplate[]> = {
               "Near the {favoriteAnimal}, they planted a seed. Magic happened - a {favoriteColor} flower bloomed!"
             ],
             optionalDetails: ["The flower smelled like {favoriteFood}.", "The {favoriteAnimal} smiled.", "Sparkles danced around them."]
+          }
+        },
+        {
+          text: "The second seed made a magic tree! It grew {favoriteFood} for everyone.",
+          pause: true,
+          hook: "What amazing thing will the third seed do?",
+          microVariants: {
+            text: "The second seed made a magic tree! It grew {favoriteFood} for everyone.",
+            alternatives: [
+              "Seed two became a wonderful tree with lots of {favoriteFood}!",
+              "The magic tree had {favoriteFood} hanging like ornaments!"
+            ],
+            optionalDetails: ["The tree sparkled.", "Birds came to visit.", "Sweet smells filled the air."]
+          }
+        },
+        {
+          text: "The third seed created a {favoriteColor} rainbow! It touched the sky.",
+          pause: true,
+          hook: "Where will the rainbow lead them?",
+          microVariants: {
+            text: "The third seed created a {favoriteColor} rainbow! It touched the sky.",
+            alternatives: [
+              "Up went a beautiful {favoriteColor} rainbow from the last seed!",
+              "The final seed painted a {favoriteColor} rainbow across the sky!"
+            ],
+            optionalDetails: ["Colors danced everywhere.", "The rainbow hummed softly.", "Magic filled the world."]
+          }
+        },
+        {
+          text: "{userName} and {favoriteAnimal} walked on the rainbow bridge. What adventure awaited?",
+          pause: true,
+          hook: "What magical place will they discover?",
+          microVariants: {
+            text: "{userName} and {favoriteAnimal} walked on the rainbow bridge. What adventure awaited?",
+            alternatives: [
+              "Step by step, they climbed the rainbow path to adventure!",
+              "The rainbow became a bridge to somewhere magical!"
+            ],
+            optionalDetails: ["Clouds felt soft.", "Stars winked at them.", "Wonder filled their hearts."]
+          }
+        },
+        {
+          text: "They found a cloud castle with {favoriteColor} towers. A fairy welcomed them!",
+          pause: false,
+          hook: "What gifts will the fairy share with them?",
+          microVariants: {
+            text: "They found a cloud castle with {favoriteColor} towers. A fairy welcomed them!",
+            alternatives: [
+              "A magical castle made of clouds had {favoriteColor} flags flying!",
+              "In the sky, a castle waited with a kind fairy friend!"
+            ],
+            optionalDetails: ["The fairy sparkled.", "Castle bells rang sweetly.", "Dreams came true here."]
           }
         }
       ],
@@ -686,16 +740,7 @@ const NEW_TEMPLATE_SYSTEM: Record<string, StoryTemplate[]> = {
         settingVariants: ["school auditorium", "classroom spaces", "community venues", "government buildings"]
       }
     }
-  ],
-  // Levels 2-4 and Grades 6-10 - Placeholder templates for now, will be populated from main system
-  level2: [],
-  level3: [],
-  level4: [], 
-  grade6: [],
-  grade7: [],
-  grade8: [],
-  grade9: [],
-  grade10: []
+  ]
 };
 
 // Convert StoryTemplate to string array for compatibility
