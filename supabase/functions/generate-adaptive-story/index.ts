@@ -1,6 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
+
+// Initialize Supabase client for service-to-service communication
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -201,13 +208,8 @@ serve(async (req) => {
     const userName = fallbackConfig?.userName || 'the child';
     
     // Get fallback pages using template-service edge function
-    const fallbackResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/template-service`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
-      },
-      body: JSON.stringify({
+    const { data: templateResult, error: templateError } = await supabase.functions.invoke('template-service', {
+      body: {
         difficulty: fallbackReadingLevel,
         userInfo: {
           name: userName,
@@ -219,16 +221,16 @@ serve(async (req) => {
           specialRequest: fallbackConfig?.specialRequest
         },
         pageCount: 5
-      })
+      }
     });
 
     let rawFallbackPages: string[] = [];
-    if (fallbackResponse.ok) {
-      const templateResult = await fallbackResponse.json();
+    if (templateResult && !templateError) {
       rawFallbackPages = templateResult.pages || [];
       console.log('✅ Template service provided fallback pages:', rawFallbackPages.length);
     } else {
-      console.warn('⚠️ Template service failed, using emergency fallback');
+      console.warn('⚠️ Template service failed:', templateError);
+      console.log('🚨 Using emergency fallback');
       rawFallbackPages = [
         `${userName} loves adventures and making new friends.`,
         "Every day brings wonderful discoveries and surprises.",

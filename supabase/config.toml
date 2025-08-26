@@ -1,6 +1,8 @@
 project_id = "cpzeuogomaixamrtnnmj"
 
 # Add function configurations
+[functions.template-service]
+verify_jwt = false
 [functions.ai-story-enhancer]
 verify_jwt = false
 [functions.elevenlabs-tts]
