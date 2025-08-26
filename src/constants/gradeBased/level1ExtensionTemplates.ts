@@ -37,20 +37,6 @@ export const LEVEL_1_EXTENSIONS: string[][] = [
     "{userName} gives the {favoriteAnimal} some {favoriteFood} and water.",
     "They put up signs to find the {favoriteAnimal}'s home.",
     "The owner comes and thanks {userName} for being kind. Who else needs help?"
-  ],
-  [
-    "{userName} discovers a {favoriteColor} butterfly in the garden.",
-    "The butterfly lands right on {userName}'s hand.",
-    "{userName} follows it to a field of flowers.",
-    "Many butterflies dance around {userName} happily.",
-    "{userName} learns about nature's beauty. What other creatures will visit?"
-  ],
-  [
-    "{userName} bakes {favoriteFood} with Grandma today.",
-    "They mix and stir the ingredients together.",
-    "The kitchen smells wonderful while it bakes.",
-    "When it's ready, they share with the neighbors.",
-    "{userName} feels proud of helping others. What will they cook next?"
   ]
 ];
 

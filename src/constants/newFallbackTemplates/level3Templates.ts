@@ -49,6 +49,66 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
         }
       },
       {
+        text: "Following the map through enchanted forests and across rainbow bridges, {userName} and {friendName} encountered three magical creatures who each offered helpful gifts. A wise owl gave them a compass that always points toward truth, a friendly dragon shared a protective shield made of {favoriteColor} scales, and a magical butterfly whispered the secret to understanding any language. Armed with these gifts, they felt ready to face the riddle-loving monster and solve whatever challenges awaited them at the treasure's location.",
+        pause: true,
+        hook: "What riddles will the monster ask, and how will their gifts help?",
+        microVariants: {
+          text: "Three magical creatures offered gifts: a truth compass from an owl, a {favoriteColor} shield from a dragon, and language understanding from a butterfly.",
+          alternatives: [
+            "An owl, dragon, and butterfly each gave {userName} and {friendName} magical gifts to help with their treasure quest."
+          ],
+          optionalDetails: ["The compass glowed when pointing to truth.", "The shield felt warm and protective.", "The butterfly's gift let them understand any creature."]
+        }
+      },
+      {
+        text: "At the treasure cave, they met the grumpy {monsterType} who wasn't actually mean, just lonely and bored. The monster explained that guarding treasure was tedious work, and the riddles were their only entertainment. {userName} had a brilliant idea: instead of just answering riddles, they proposed a riddle exchange where everyone could share their favorite brain teasers. The {monsterType} became so excited about this new game that they decided to become friends rather than guardians and obstacles.",
+        pause: true,
+        hook: "What happens when the monster becomes their friend instead of their challenge?",
+        microVariants: {
+          text: "The {monsterType} was just lonely and bored, so {userName} suggested a riddle exchange game instead of a challenge, making them friends.",
+          alternatives: [
+            "The monster wasn't mean, just lonely. {userName}'s idea to share riddles instead of solve them created an unexpected friendship."
+          ],
+          optionalDetails: ["The monster had been alone for centuries.", "They knew thousands of riddles from different lands.", "The cave was full of books and puzzle games."]
+        }
+      },
+      {
+        text: "The treasure turned out to be something even more valuable than gold or jewels: a magical library containing every story ever told and every story yet to be written. The {monsterType} explained that the real treasure was the knowledge and imagination contained in these infinite stories. {userName} and {friendName} realized they could make any wish come true by reading and learning from these tales, and they invited their new monster friend to join them in exploring the endless adventures contained within the magical books.",
+        pause: true,
+        hook: "What amazing stories will they discover in the magical library?",
+        microVariants: {
+          text: "The treasure was a magical library with every story ever told and yet to be written, offering infinite adventures and knowledge to explore.",
+          alternatives: [
+            "Instead of gold, they found a library of infinite stories that could fulfill any wish through imagination and learning."
+          ],
+          optionalDetails: ["Books floated and glowed on the shelves.", "Some stories came alive as they read them.", "The library was bigger inside than the cave."]
+        }
+      },
+      {
+        text: "Together, the three friends spent days exploring the magical library, reading stories about distant planets, underwater kingdoms, and lands where music had colors and mathematics could dance. Each story they read together became more vivid and exciting because they could share their reactions and ideas. The {monsterType} turned out to be an excellent storyteller, adding dramatic voices and sound effects that made every tale come alive. {userName} discovered that the best treasures aren't things you can hold, but experiences you can share with friends.",
+        pause: true,
+        hook: "What new story adventure will they choose to experience together?",
+        microVariants: {
+          text: "The three friends explored magical stories together, with the {monsterType} providing dramatic storytelling that made every tale come alive with shared excitement.",
+          alternatives: [
+            "Reading together in the magical library, they discovered that shared stories and friendship were the greatest treasures of all."
+          ],
+          optionalDetails: ["Stories projected images in the air as they read.", "The {monsterType} did amazing character voices.", "Some books let them step inside the stories."]
+        }
+      },
+      {
+        text: "When it was time to return to the treehouse, {userName} and {friendName} realized they could visit the magical library anytime through their friendship with the {monsterType}, who gave them each a special bookmark that would transport them back whenever they wanted to share a new story. The treehouse gently carried them home, but now their adventures felt infinite because they had discovered that friendship, imagination, and shared stories could take them anywhere they wanted to go, creating new magical experiences every single day.",
+        pause: true,
+        hook: "Where will their next storytelling adventure take them?",
+        microVariants: {
+          text: "With special bookmarks from their {monsterType} friend, {userName} and {friendName} could return to the magical library anytime to share new story adventures.",
+          alternatives: [
+            "The treehouse brought them home, but the {monsterType} friend and magical bookmarks meant their story adventures could continue forever."
+          ],
+          optionalDetails: ["The bookmarks shimmered with the same magic as the library.", "Each bookmark could hold one favorite story.", "The {monsterType} promised to find new stories while they were away."]
+        }
+      },
+      {
         text: "After solving a series of tricky riddles, they finally faced the {monsterType}. The final riddle was: 'I have cities, but no houses, forests, but no trees, and water, but no fish. What am I?' {friendName} quickly answered, 'A map!' The {monsterType} grumbled but handed over the treasure.",
         pause: true,
         hook: "What will they wish for with the magical treasure?",

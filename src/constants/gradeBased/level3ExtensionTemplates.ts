@@ -47,15 +47,6 @@ export const LEVEL_3_EXTENSIONS: string[][] = [
     "Sometimes the best things happen when you witness unforgettable meteor shower spectacles while eating {favoriteFood}.",
     "That's when {userName} realized the telescope reveals countless invisible stars above their {hobbies} dreams.",
     "And {userName} knew everything would be okay - dreams of space exploration grow one star at a time. What cosmic mystery will they explore next?"
-  ],
-  
-  // Extension 6: Environmental Science Project
-  [
-    "When {userName} decided to study how {favoriteColor} pollution affects {favoriteAnimal} habitats...",
-    "The research revealed that protecting wildlife requires understanding complex environmental systems.",
-    "Through careful observation and data collection about {favoriteAnimal} behavior patterns...",
-    "Their findings about {favoriteFood} waste impact on ecosystems impressed the science fair judges.",
-    "This experience taught {userName} that environmental protection starts with individual responsibility. What conservation project will they lead next?"
   ]
 ];
 
