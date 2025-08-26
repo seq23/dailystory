@@ -323,7 +323,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy',
     age: '6-year-old',
     skin: 'rich dark chocolate complexion',
-    hair: 'textured buzz cut',
+    hair: 'dark realistic textured short hair with individual strand detail',
     eyes: 'warm dark chocolate eyes', 
     features: 'beautiful expressive dark eyes and warm genuine smile',
     clothing: 'vibrant colorful casual wear'
@@ -370,7 +370,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl',
     age: '6-year-old',
     skin: 'rich dark chocolate complexion',
-    hair: 'textured medium natural hair', 
+    hair: 'dark realistic textured long hair with individual strand detail', 
     eyes: 'warm dark chocolate eyes',
     features: 'beautiful expressive dark eyes and warm genuine smile',
     clothing: 'vibrant colorful casual wear'
@@ -417,7 +417,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child',
     age: '6-year-old', 
     skin: 'rich dark complexion',
-    hair: 'textured dark hair',
+    hair: 'dark short coily curly fro with individual strand detail',
     eyes: 'warm dark eyes',
     features: 'beautiful expressive eyes and genuine smile',
     clothing: 'colorful comfortable wear'
