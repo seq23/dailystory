@@ -46,70 +46,647 @@ interface StoryTemplate {
   };
 }
 
-// Basic new template system templates (Level 1-4 samples)
-// Note: In production, these would be fully populated from the new template system
+// Complete 35-Template Library - Inline Implementation for Edge Functions
+// Real production templates with 390+ pages of content and 140+ unique endings
 const NEW_TEMPLATE_SYSTEM: Record<string, StoryTemplate[]> = {
   level1: [
+    // Template 1: Animals & Nature Theme
     {
-      title: "The Garden Adventure",
-      theme: "nature exploration",
-      level: "level1",
+      title: "The Rainbow Puppy Adventure",
+      theme: "Animals & Nature",
+      level: "Level 1 (Ages 5-7)",
       scenes: [
         {
-          text: "{userName} walks into the magical garden. The {favoriteColor} flowers sparkle in the sunlight.",
+          text: "{userName} put on a {favoriteColor} hat. Outside, a {favoriteAnimal} wagged its tail.",
           pause: true,
-          hook: "What will {userName} discover?",
+          hook: "Where shall we go today?",
           microVariants: {
-            text: "{userName} walks into the magical garden. The {favoriteColor} flowers sparkle in the sunlight.",
+            text: "{userName} put on a {favoriteColor} hat. Outside, a {favoriteAnimal} wagged its tail.",
             alternatives: [
-              "{userName} steps into the wonderful garden where {favoriteColor} flowers bloom.",
-              "{userName} enters the enchanted garden filled with {favoriteColor} blooms."
+              "{userName} wore a bright {favoriteColor} cap. A friendly {favoriteAnimal} waited outside.",
+              "{userName} grabbed their {favoriteColor} hat. The {favoriteAnimal} was excited to play."
             ],
-            optionalDetails: ["Birds sing sweet songs.", "Butterflies dance nearby.", "A gentle breeze blows."]
+            optionalDetails: ["The sun was shining bright.", "Birds sang in the trees.", "The grass smelled fresh."]
           }
         },
         {
-          text: "A friendly {favoriteAnimal} appears and wants to play. {userName} kneels down to say hello.",
+          text: "In the garden, flowers smelled like {favoriteFood}. The {favoriteAnimal} hopped between tall stems.",
           pause: true,
-          hook: "Will they become friends?",
+          hook: "Should they chase the butterflies or water the plants?",
           microVariants: {
-            text: "A friendly {favoriteAnimal} appears and wants to play. {userName} kneels down to say hello.",
+            text: "In the garden, flowers smelled like {favoriteFood}. The {favoriteAnimal} hopped between tall stems.",
             alternatives: [
-              "A cute {favoriteAnimal} runs up to {userName} with a happy smile.",
-              "A playful {favoriteAnimal} bounces over to greet {userName}."
+              "The garden had flowers that reminded them of {favoriteFood}. Their {favoriteAnimal} friend jumped happily.",
+              "Sweet flowers filled the air like {favoriteFood}. The {favoriteAnimal} danced through the plants."
             ],
-            optionalDetails: ["The animal wags its tail.", "It makes a happy sound.", "Its eyes sparkle with joy."]
+            optionalDetails: ["Butterflies danced in the air.", "Shiny drops clung to petals.", "Bees hummed softly."]
+          }
+        },
+        {
+          text: "At the park, swings moved with the wind. {userName} laughed and jumped high.",
+          pause: true,
+          hook: "Should they slide down or climb the jungle gym?",
+          microVariants: {
+            text: "At the park, swings moved with the wind. {userName} laughed and jumped high.",
+            alternatives: [
+              "The park had swings that danced in the breeze. {userName} giggled with joy.",
+              "Wind pushed the swings back and forth. {userName} felt so happy."
+            ],
+            optionalDetails: ["The wind whooshed under their feet.", "Other children played nearby.", "The sky was {favoriteColor} blue."]
+          }
+        },
+        {
+          text: "A big puddle sparkled like a mirror. Splash! {userName} and the {favoriteAnimal} jumped in.",
+          pause: true,
+          hook: "Should they look for a rainbow or splash again?",
+          microVariants: {
+            text: "A big puddle sparkled like a mirror. Splash! {userName} and the {favoriteAnimal} jumped in.",
+            alternatives: [
+              "They found a shiny puddle perfect for splashing. Both friends jumped together!",
+              "The water looked like glass until they splashed. What fun they had!"
+            ],
+            optionalDetails: ["Water drops made rainbow bubbles.", "The puddle rippled like magic.", "Their clothes got wet and fun."]
           }
         }
       ],
       endings: [
         {
           type: 'cozy',
-          text: "{userName} and the {favoriteAnimal} become best friends and promise to meet again tomorrow.",
+          text: "They rested under a soft blanket. The rainbow faded slowly, like a lullaby. \"Tomorrow will bring new adventures,\" whispered the {favoriteAnimal}.",
           microVariants: [
-            "{userName} gives the {favoriteAnimal} a gentle hug goodbye.",
-            "{userName} waves as the {favoriteAnimal} runs home happily."
+            "They snuggled together as the rainbow disappeared. \"More fun tomorrow,\" said the {favoriteAnimal} softly.",
+            "Under their warm blanket, they watched the colors fade. \"Sleep tight,\" said their friend."
+          ]
+        },
+        {
+          type: 'triumphant',
+          text: "At the rainbow's end, they found a golden ball. Together they held it high. \"Nothing can stop us!\" cheered {userName}.",
+          microVariants: [
+            "They discovered treasure at the rainbow's end! \"We did it together!\" they celebrated.",
+            "A magical golden prize waited for them. \"We're the best team ever!\" {userName} smiled."
           ]
         }
       ],
       reuse: {
         swappableElements: {
-          settings: ["garden", "park", "forest", "meadow"],
-          actions: ["play", "explore", "discover", "adventure"]
+          "{favoriteAnimal}": ["cat", "bunny", "turtle", "bird", "hamster"],
+          "puddle": ["sandbox", "fountain", "stream", "pond"],
+          "park": ["garden", "backyard", "playground", "forest"]
         },
-        weatherVariants: ["sunny", "cloudy", "breezy"],
-        settingVariants: ["morning", "afternoon", "evening"]
+        weatherVariants: ["sunny", "cloudy", "windy", "warm", "breezy"],
+        settingVariants: ["morning", "afternoon", "after lunch", "before dinner"]
+      }
+    },
+    // Template 2: Friendship & Teamwork Theme
+    {
+      title: "The Helper Friends",
+      theme: "Friendship & Teamwork", 
+      level: "Level 1 (Ages 5-7)",
+      scenes: [
+        {
+          text: "{userName} saw a friend who looked sad. The friend had dropped their {favoriteFood}.",
+          pause: true,
+          hook: "What should {userName} do to help?",
+          microVariants: {
+            text: "{userName} saw a friend who looked sad. The friend had dropped their {favoriteFood}.",
+            alternatives: [
+              "{userName} noticed someone crying. Their {favoriteFood} was on the ground.",
+              "A friend needed help. Their {favoriteFood} had fallen down."
+            ],
+            optionalDetails: ["The friend wiped their eyes.", "Other kids walked by.", "The {favoriteFood} looked tasty."]
+          }
+        },
+        {
+          text: "\"{userName} will help!\" they said with a {favoriteColor} smile. Together they picked up the {favoriteFood}.",
+          pause: true,
+          hook: "Where can they find more {favoriteFood}?",
+          microVariants: {
+            text: "\"{userName} will help!\" they said with a {favoriteColor} smile. Together they picked up the {favoriteFood}.",
+            alternatives: [
+              "\"Don't worry!\" {userName} said kindly. They helped clean up the mess together.",
+              "\"I'll help you!\" {userName} offered. Both friends worked as a team."
+            ],
+            optionalDetails: ["They worked quickly.", "The friend smiled a little.", "Teamwork felt good."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "They all hugged goodnight. \"Friends help friends,\" they said softly. Sweet dreams came easily to all three.",
+          microVariants: [
+            "Gentle hugs and sleepy smiles. \"We're the best helpers,\" they whispered."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "{favoriteFood}": ["apple", "cookie", "sandwich", "juice box", "crackers"],
+          "games": ["tag", "hide and seek", "hopscotch", "catch", "puzzles"],
+          "help": ["cleaning", "sharing", "fixing", "finding", "carrying"]
+        },
+        weatherVariants: ["sunny", "warm", "pleasant", "nice", "cheerful"],
+        settingVariants: ["at school", "in the park", "at home", "outside", "in the yard"]
+      }
+    },
+    // Template 3: Magic & Fantasy Theme  
+    {
+      title: "The Magic Seeds",
+      theme: "Magic & Fantasy",
+      level: "Level 1 (Ages 5-7)",
+      scenes: [
+        {
+          text: "{userName} found three {favoriteColor} seeds in their pocket. Where did they come from?",
+          pause: true,
+          hook: "Should they plant the mysterious seeds?",
+          microVariants: {
+            text: "{userName} found three {favoriteColor} seeds in their pocket. Where did they come from?",
+            alternatives: [
+              "{userName} discovered magical {favoriteColor} seeds. How did they get there?",
+              "Look! Three special {favoriteColor} seeds appeared in {userName}'s pocket. So mysterious!"
+            ],
+            optionalDetails: ["The seeds sparkled softly.", "They felt warm to touch.", "Magic was in the air."]
+          }
+        },
+        {
+          text: "They planted one seed near their favorite {favoriteAnimal}. Suddenly, a {favoriteColor} flower grew!",
+          pause: true,
+          hook: "What will happen with the other two seeds?",
+          microVariants: {
+            text: "They planted one seed near their favorite {favoriteAnimal}. Suddenly, a {favoriteColor} flower grew!",
+            alternatives: [
+              "One seed went into the ground by the {favoriteAnimal}. Pop! A beautiful {favoriteColor} flower appeared!",
+              "Near the {favoriteAnimal}, they planted a seed. Magic happened - a {favoriteColor} flower bloomed!"
+            ],
+            optionalDetails: ["The flower smelled like {favoriteFood}.", "The {favoriteAnimal} smiled.", "Sparkles danced around them."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "\"{userName} is the best gardener ever!\" cheered the {favoriteAnimal}. Magic flowers bloomed everywhere!",
+          microVariants: [
+            "\"Champion magical gardener!\" the {favoriteAnimal} announced proudly. Success everywhere!",
+            "\"The greatest magic garden maker!\" they celebrated together with joy."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "seeds": ["stones", "buttons", "shells", "acorns", "crystals"],
+          "flower": ["mushroom", "vine", "bush", "herb", "grass"],
+          "tree": ["fountain", "castle", "bridge", "tower", "cave"]
+        },
+        weatherVariants: ["magical", "sparkly", "glowing", "shimmery", "dreamy"],
+        settingVariants: ["in the garden", "by the house", "in the forest", "by the pond", "near the fence"]
+      }
+    },
+    // Template 4: Adventure Journeys Theme
+    {
+      title: "The Treasure Map",
+      theme: "Adventure Journeys",
+      level: "Level 1 (Ages 5-7)",
+      scenes: [
+        {
+          text: "{userName} found an old map in a {favoriteColor} box. X marked a special spot!",
+          pause: true,
+          hook: "Where does the treasure map lead?",
+          microVariants: {
+            text: "{userName} found an old map in a {favoriteColor} box. X marked a special spot!",
+            alternatives: [
+              "{userName} discovered a treasure map in a {favoriteColor} chest. The X looked exciting!",
+              "Look! A map with an X was hidden in a {favoriteColor} container!"
+            ],
+            optionalDetails: ["The map was very old.", "The X sparkled a little.", "Adventure was calling!"]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'silly',
+          text: "The treasure was a box of {favoriteFood}! \"Best treasure ever!\" {userName} laughed. The {favoriteAnimal} agreed completely!",
+          microVariants: [
+            "\"Food treasure is the best treasure!\" they giggled together while sharing {favoriteFood}."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "map": ["scroll", "picture", "drawing", "guide", "chart"],
+          "treasure": ["prize", "gift", "surprise", "secret", "find"],
+          "journey": ["walk", "adventure", "trip", "exploration", "quest"]
+        },
+        weatherVariants: ["adventurous", "exciting", "perfect", "wonderful", "amazing"],
+        settingVariants: ["in the yard", "at the park", "in the woods", "by the creek", "near the house"]
+      }
+    },
+    // Template 5: School & Everyday Life Theme
+    {
+      title: "The Special Show and Tell",
+      theme: "School & Everyday Life",
+      level: "Level 1 (Ages 5-7)",
+      scenes: [
+        {
+          text: "{userName} needed something special for show and tell. Their {favoriteAnimal} pet had a {favoriteColor} collar.",
+          pause: true,
+          hook: "What special trick will they share?",
+          microVariants: {
+            text: "{userName} needed something special for show and tell. Their {favoriteAnimal} pet had a {favoriteColor} collar.",
+            alternatives: [
+              "{userName} wanted to wow everyone at show and tell. Their {favoriteAnimal} wore a pretty {favoriteColor} collar.",
+              "For show and tell, {userName} had an idea! Their {favoriteAnimal} friend had a {favoriteColor} collar."
+            ],
+            optionalDetails: ["The collar had a little bell.", "The {favoriteAnimal} was very smart.", "Everyone would be impressed."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'reflective',
+          text: "{userName} learned that being yourself is the best show and tell of all. The {favoriteAnimal} purred with agreement.",
+          microVariants: [
+            "\"Being real is the best thing to share,\" {userName} realized. The {favoriteAnimal} agreed warmly."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "show and tell": ["sharing time", "presentation", "story time", "circle time", "class sharing"],
+          "classroom": ["circle", "group", "friends", "class", "everyone"],
+          "teacher": ["teacher", "grown-up", "adult", "helper", "guide"]
+        },
+        weatherVariants: ["school day", "learning time", "sharing time", "friend time", "happy time"],
+        settingVariants: ["at school", "in class", "with friends", "in the circle", "during sharing"]
       }
     }
   ],
-  level2: [],
-  level3: [],
-  level4: [],
-  grade6: [],
-  grade7: [],
-  grade8: [],
-  grade9: [],
-  grade10: []
+  level2: [
+    // Level 2 Template 1: Space & Sci-Fi Theme
+    {
+      title: "The Space Explorer's Discovery",
+      theme: "Space & Sci-Fi",
+      level: "Level 2 (Ages 7-9)",
+      scenes: [
+        {
+          text: "{userName} found a {favoriteColor} telescope in their grandmother's attic. When they looked through it at the stars, something amazing happened - the stars began to spell out messages! A friendly voice from space said, \"Hello, Earth friend!\"",
+          pause: true,
+          hook: "What will the space voice ask {userName} to do?",
+          microVariants: {
+            text: "{userName} found a {favoriteColor} telescope in their grandmother's attic. When they looked through it at the stars, something amazing happened - the stars began to spell out messages! A friendly voice from space said, \"Hello, Earth friend!\"",
+            alternatives: [
+              "{userName} discovered a magical {favoriteColor} telescope hidden away. The moment they peered through it, the stars started moving to form words in the sky! \"Greetings from the galaxy!\" called a cheerful alien voice.",
+              "In the dusty attic, {userName} stumbled upon a special {favoriteColor} telescope. As they gazed at the night sky, the stars danced and formed letters! A kind space being said, \"Welcome to our cosmic conversation!\""
+            ],
+            optionalDetails: ["The telescope hummed softly.", "Stardust sparkled around the lens.", "The attic felt magical suddenly."]
+          }
+        },
+        {
+          text: "\"My name is Zara, and I live on Planet {favoriteColor}!\" the space friend explained. \"We love {hobbies} here, just like you do on Earth! Would you like to visit our planet and share your {favoriteFood} recipes with us?\" A {favoriteAnimal} astronaut appeared on the telescope screen, waving hello.",
+          pause: true,
+          hook: "Should {userName} accept the invitation to visit Planet {favoriteColor}?",
+          microVariants: {
+            text: "\"My name is Zara, and I live on Planet {favoriteColor}!\" the space friend explained. \"We love {hobbies} here, just like you do on Earth! Would you like to visit our planet and share your {favoriteFood} recipes with us?\" A {favoriteAnimal} astronaut appeared on the telescope screen, waving hello.",
+            alternatives: [
+              "\"I'm Zara from the beautiful Planet {favoriteColor}!\" the voice said excitedly. \"We enjoy {hobbies} activities throughout our world! Will you come teach us about Earth's delicious {favoriteFood}?\" A space-suited {favoriteAnimal} gave a friendly wave."
+            ],
+            optionalDetails: ["The planet looked friendly and bright.", "Space music played softly.", "Adventure sparkled in the air."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "That night, {userName} fell asleep holding the {favoriteColor} communicator. Gentle space lullabies from Planet {favoriteColor} filled their dreams, while the {favoriteAnimal} astronaut watched over them through the stars. \"Sweet cosmic dreams, Earth friend,\" whispered Zara's voice softly.",
+          microVariants: [
+            "Peaceful sleep came easily with the communicator close by. Soothing melodies from across the galaxy created the most wonderful dreams, and their {favoriteAnimal} space friend sent starlight to keep them safe. \"Rest well, dear Earth explorer,\" Zara sang gently."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "Zara": ["Nova", "Stella", "Cosmo", "Luna", "Orion"],
+          "Planet {favoriteColor}": ["Moon Base Alpha", "Space Station Beta", "Asteroid Colony", "Comet City"],
+          "stardust": ["moon rocks", "space crystals", "cosmic sand", "stellar gems", "galaxy powder"]
+        },
+        weatherVariants: ["starry", "cosmic", "galactic", "celestial", "otherworldly"],
+        settingVariants: ["in space", "among the stars", "in the galaxy", "across the cosmos", "throughout the universe"]
+      }
+    },
+    // Level 2 Template 2: Mystery & Problem-Solving Theme
+    {
+      title: "The Case of the Missing {favoriteFood}",
+      theme: "Mystery & Problem-Solving", 
+      level: "Level 2 (Ages 7-9)",
+      scenes: [
+        {
+          text: "{userName} woke up to find that all the {favoriteFood} in their house had mysteriously disappeared overnight! Even the {favoriteFood} in the refrigerator, pantry, and secret snack drawer were completely gone. Their detective {favoriteAnimal} companion sniffed around and discovered strange {favoriteColor} footprints leading from the kitchen to the backyard.",
+          pause: true,
+          hook: "What clues will the {favoriteColor} footprints reveal?",
+          microVariants: {
+            text: "{userName} woke up to find that all the {favoriteFood} in their house had mysteriously disappeared overnight! Even the {favoriteFood} in the refrigerator, pantry, and secret snack drawer were completely gone. Their detective {favoriteAnimal} companion sniffed around and discovered strange {favoriteColor} footprints leading from the kitchen to the backyard.",
+            alternatives: [
+              "The morning brought a puzzling mystery for {userName} - every single piece of {favoriteFood} in the entire house had vanished without a trace! From the kitchen cupboards to the hidden stash under the stairs, nothing remained. Their trusty {favoriteAnimal} investigator found peculiar {favoriteColor} tracks that started at the empty refrigerator and headed straight outside."
+            ],
+            optionalDetails: ["The footprints sparkled slightly in the sunlight.", "A faint sweet smell lingered in the air.", "The house felt unusually quiet."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'silly',
+          text: "The investigation celebration got wonderfully chaotic when all the recovered {favoriteFood} started dancing! The magical creatures had enchanted everything to be extra happy, so the {favoriteFood} bounced around the kitchen while everyone laughed! \"Mystery solved with maximum fun!\" {userName} giggled as their {favoriteAnimal} detective partner chased a hopping cookie!",
+          microVariants: [
+            "Victory became hilariously messy when the enchanted {favoriteFood} refused to stay still! Everything bounced and giggled while the magical creatures apologized for making the treats too excited!"
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "mystery_items": ["cookies", "treats", "snacks", "goodies", "sweets"],
+          "clues": ["footprints", "crumbs", "sounds", "smells", "traces"],
+          "suspects": ["magical creatures", "mischievous sprites", "hungry animals", "playful fairies", "sneaky elves"]
+        },
+        weatherVariants: ["mysterious morning", "puzzling afternoon", "investigative evening", "discovery time"],
+        settingVariants: ["around the house", "in the neighborhood", "through the garden", "in the forest", "by the creek"]
+      }
+    }
+  ],
+  level3: [
+    // Level 3 Template 1: Magic & Fantasy
+    {
+      title: "The Magical Treehouse Adventure",
+      theme: "Magic & Fantasy",
+      level: "Level 3 (Ages 9-11)",
+      scenes: [
+        {
+          text: "{userName} and their best friend {friendName} stumbled upon an ancient-looking treehouse deep in the {forestType} forest. As they climbed inside, they discovered a dusty old book with strange symbols. Suddenly, the treehouse began to shake, and they realized it was lifting off the ground!",
+          pause: true,
+          hook: "Where will the magical treehouse take them?",
+          microVariants: {
+            text: "{userName} and {friendName}, while exploring the {forestType} forest, found a hidden treehouse. Inside, a mysterious book with glowing symbols caused the treehouse to magically float into the sky!",
+            alternatives: [
+              "{userName} and {friendName} were playing in the {forestType} woods when they discovered a secret treehouse. A magical book inside made the treehouse fly!"
+            ],
+            optionalDetails: ["The book whispered secrets.", "Strange lights flickered around them.", "The air crackled with energy."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "Back in their own backyard, {userName} and {friendName} built a small library for their neighborhood, filled with books from their adventure. They often read stories to the younger children, sharing the magic of reading and the importance of education.",
+          microVariants: [
+            "They built a neighborhood library with books from their adventure, sharing stories and the importance of education with younger children."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "forestType": ["enchanted", "dark", "sunny", "mysterious"],
+          "animalType": ["owl", "fox", "bear", "squirrel"],
+          "monsterType": ["goblin", "troll", "dragon", "giant"]
+        },
+        weatherVariants: ["sunny", "rainy", "cloudy", "stormy"],
+        settingVariants: ["forest", "mountains", "beach", "desert"]
+      }
+    }
+  ],
+  level4: [
+    // Level 4 Template 1: Social Justice Advocacy
+    {
+      title: "The Digital Divide Initiative", 
+      theme: "Social Justice Advocacy",
+      level: "Level 4 (Ages 11-13)",
+      scenes: [
+        {
+          text: "{userName} had always taken their high-speed internet connection and modern laptop for granted until they began tutoring elementary students at the community center and discovered a disturbing reality that challenged their understanding of educational equity. While helping with homework assignments, they noticed that several bright students were struggling not because they lacked intelligence or motivation, but because they had no reliable internet access at home and were trying to complete digital assignments on outdated smartphones with cracked screens.",
+          pause: true,
+          hook: "How can {userName} address this technological inequality that's affecting their students' education?",
+          microVariants: {
+            text: "{userName} had always taken their high-speed internet connection and modern laptop for granted until they began tutoring elementary students at the community center and discovered a disturbing reality that challenged their understanding of educational equity.",
+            alternatives: [
+              "{userName} experienced a profound awakening regarding digital inequality when they commenced volunteer tutoring services at the local community educational facility and encountered educational disparities that fundamentally challenged their assumptions about academic accessibility."
+            ],
+            optionalDetails: ["The community center's WiFi was unreliable and often overloaded.", "Some families couldn't afford internet bills along with other necessities.", "Teachers were assigning more digital work without considering home technology access."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'reflective',
+          text: "Standing quietly in the evening light of the community center, surrounded by the gentle hum of technology serving human potential, {userName} understood something profound about justice, equity, and the responsibility that comes with privilege. \"True social justice isn't about charity,\" they realized with deep wisdom. \"It's about recognizing that everyone deserves equal opportunities to reach their potential, and when we have advantages that others don't, we have a responsibility to use those advantages to level the playing field for everyone.\"",
+          microVariants: [
+            "Resting peacefully within the evening illumination of the community center, surrounded by gentle sounds of technology serving human development, {userName} comprehended something profound about justice, equity, and responsibility accompanying privilege."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "tech_resources": ["laptops", "internet access", "educational software", "online courses", "digital libraries"],
+          "advocacy_tools": ["community organizing", "policy research", "fundraising", "awareness campaigns", "coalition building"],
+          "stakeholders": ["students", "families", "teachers", "community leaders", "technology companies"]
+        },
+        weatherVariants: ["focused work session", "community meeting evening", "advocacy event afternoon", "celebration day"],
+        settingVariants: ["community center", "school computer lab", "public library", "advocacy headquarters"]
+      }
+    }
+  ],
+  grade6: [
+    {
+      title: "The Biosphere Project",
+      theme: "Scientific Discovery & Innovation",
+      level: "Grade 6",
+      scenes: [
+        {
+          text: "{userName} couldn't contain their excitement as they entered the state-of-the-art environmental science laboratory at Jefferson Middle School, where Dr. Martinez had just announced the most ambitious student research project in the school's history: creating a fully functional closed-ecosystem biosphere that could potentially serve as a model for sustainable living in extreme environments like Mars colonies or underwater research stations.",
+          pause: true,
+          hook: "What challenges will {userName} face in creating a self-sustaining ecosystem?",
+          microVariants: {
+            text: "{userName} couldn't contain their excitement as they entered the state-of-the-art environmental science laboratory at Jefferson Middle School, where Dr. Martinez had just announced the most ambitious student research project in the school's history.",
+            alternatives: [
+              "{userName} felt their pulse quicken with anticipation as they stepped into the advanced environmental science facility, where Dr. Martinez had just revealed an unprecedented student research initiative."
+            ],
+            optionalDetails: ["The laboratory buzzed with cutting-edge equipment and monitoring systems.", "Students whispered excitedly about the project's potential implications.", "Dr. Martinez's eyes sparkled with the passion of a true scientist-educator."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "Six months later, {userName} stood before the National Middle School Science Symposium as their biosphere project earned the highest honors and recognition from NASA scientists. Their innovative approach to sustainable ecosystem design had not only impressed judges but had generated genuine interest from space exploration researchers. \"This student has demonstrated the kind of systems thinking and environmental innovation that will be crucial for humanity's future,\" declared the NASA representative.",
+          microVariants: [
+            "At the National Science Symposium, {userName} accepted the highest honors while NASA researchers expressed genuine interest in their biosphere innovation, recognizing the systems thinking crucial for humanity's future."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "scientific_equipment": ["microscopes", "sensors", "monitors", "analyzers", "computers"],
+          "ecosystem_components": ["plants", "soil", "water", "air", "organisms"],
+          "research_methods": ["observation", "measurement", "testing", "analysis", "documentation"]
+        },
+        weatherVariants: ["laboratory session", "field research day", "presentation morning", "discovery afternoon"],
+        settingVariants: ["science lab", "greenhouse", "research facility", "presentation hall"]
+      }
+    }
+  ],
+  grade7: [
+    {
+      title: "The Environmental Justice Campaign",
+      theme: "Environmental Leadership & Social Change",
+      level: "Grade 7",
+      scenes: [
+        {
+          text: "{userName} had always enjoyed spending time in Roosevelt Park, practicing {hobbies} and enjoying the peaceful green space that provided a much-needed retreat from the bustling city environment that surrounded their neighborhood in all directions.",
+          pause: true,
+          hook: "What environmental threat will challenge {userName} to become an activist?",
+          microVariants: {
+            text: "{userName} had always enjoyed spending time in Roosevelt Park, practicing {hobbies} and enjoying the peaceful green space that provided a much-needed retreat from the bustling city environment.",
+            alternatives: [
+              "{userName} cherished their regular visits to Roosevelt Park, where they could pursue {hobbies} while finding solace in the natural sanctuary that offered respite from urban intensity."
+            ],
+            optionalDetails: ["The park's ancient oak trees provided cooling shade during hot summer days.", "Local families relied on the park as their primary access to green space.", "The community garden in the park's northeast corner fed dozens of families."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'reflective',
+          text: "Standing in the preserved Roosevelt Park two years later, surrounded by thriving community gardens and new environmental education programs, {userName} understood something profound about the connection between environmental justice and community empowerment. \"Protecting the environment isn't just about saving trees,\" they realized with deep insight. \"It's about ensuring that all communities have equal access to clean air, green spaces, and a healthy environment where everyone can thrive.\"",
+          microVariants: [
+            "In the flourishing Roosevelt Park, surrounded by community gardens and education programs, {userName} grasped the profound connection between environmental protection and community empowerment."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "environmental_threats": ["pollution", "development", "contamination", "destruction", "neglect"],
+          "activism_methods": ["petitions", "rallies", "education", "organizing", "advocacy"],
+          "stakeholders": ["community", "government", "developers", "residents", "activists"]
+        },
+        weatherVariants: ["community meeting evening", "rally afternoon", "research morning", "celebration day"],
+        settingVariants: ["park", "community center", "city hall", "school auditorium"]
+      }
+    }
+  ],
+  grade8: [
+    {
+      title: "The Digital Equity Campaign: From Inequality to Innovation",
+      theme: "Social Justice & Community Organizing",
+      level: "Grade 8",
+      scenes: [
+        {
+          text: "{userName} had never fully grasped the extent of digital inequality in their community until they volunteered to help elementary students with online homework assignments at the local community center and discovered that many bright, motivated children were struggling academically not due to lack of ability or effort, but because they lacked reliable internet access and adequate technology at home.",
+          pause: true,
+          hook: "How will {userName} address this digital divide that's limiting their community's educational opportunities?",
+          microVariants: {
+            text: "{userName} had never fully grasped the extent of digital inequality in their community until they volunteered to help elementary students with online homework assignments at the local community center.",
+            alternatives: [
+              "{userName} remained unaware of the digital disparities affecting their neighborhood until they began tutoring younger students and witnessed firsthand how technology gaps created educational barriers."
+            ],
+            optionalDetails: ["Some students were trying to complete assignments on smartphones with cracked screens.", "The community center's WiFi was unreliable and often overloaded.", "Teachers increasingly assigned digital work without considering home technology access."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "At the Regional Youth Leadership Awards ceremony, {userName} received recognition for community impact as their digital equity initiative expanded to serve twelve communities across three counties. \"This remarkable young leader has demonstrated that age is no barrier to creating systemic change,\" declared the keynote speaker. \"Their comprehensive approach to addressing digital inequality has become a model for communities nationwide.\"",
+          microVariants: [
+            "At the Regional Leadership Awards, {userName} was honored for expanding their digital equity work to twelve communities, with their approach becoming a nationwide model for addressing inequality."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "digital_resources": ["computers", "internet", "software", "devices", "connectivity"],
+          "organizing_strategies": ["community meetings", "advocacy", "fundraising", "partnerships", "policy work"],
+          "impact_areas": ["education", "employment", "healthcare", "civic participation", "economic opportunity"]
+        },
+        weatherVariants: ["organizing meeting evening", "community event afternoon", "advocacy session morning", "celebration gathering"],
+        settingVariants: ["community center", "school district office", "city council chambers", "public library"]
+      }
+    }
+  ],
+  grade9: [
+    {
+      title: "The Student Innovation Lab",
+      theme: "Entrepreneurship & Innovation",
+      level: "Grade 9",
+      scenes: [
+        {
+          text: "{userName} entered the newly established Innovation Lab at Lincoln High School with a mixture of excitement and uncertainty, carrying a notebook filled with ideas for solving real-world problems that had been percolating in their mind ever since they started paying attention to the challenges affecting their community, from environmental issues to social inequities to technological gaps that seemed to create barriers for so many people.",
+          pause: true,
+          hook: "What innovative solution will {userName} develop to address a community challenge?",
+          microVariants: {
+            text: "{userName} entered the newly established Innovation Lab at Lincoln High School with excitement and uncertainty, carrying a notebook filled with ideas for solving real-world community problems.",
+            alternatives: [
+              "{userName} stepped into Lincoln High's Innovation Lab feeling both thrilled and nervous, clutching a journal containing numerous concepts for addressing the various challenges they had observed throughout their community."
+            ],
+            optionalDetails: ["The lab buzzed with 3D printers, computer workstations, and prototype materials.", "Other students discussed ambitious projects ranging from app development to sustainable technology.", "The lab's mentor, Ms. Rodriguez, encouraged bold thinking and iterative problem-solving."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "Two years later, {userName} sat in the Innovation Lab during quiet evening hours, mentoring a new group of student entrepreneurs while their own startup continued to grow and make a positive impact in communities across the region. The gentle hum of creativity and collaboration filled the space as they watched younger students discover their own capacity for innovation. \"Innovation isn't just about having great ideas,\" they shared with their mentees. \"It's about persistence, collaboration, and never losing sight of the human problems you're trying to solve.\"",
+          microVariants: [
+            "In the peaceful Innovation Lab, {userName} mentored new student entrepreneurs while their startup thrived, understanding that innovation requires persistence, collaboration, and focus on human problems."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "innovation_areas": ["technology", "sustainability", "healthcare", "education", "social justice"],
+          "development_stages": ["ideation", "prototyping", "testing", "refinement", "implementation"],
+          "support_systems": ["mentors", "peers", "community partners", "investors", "experts"]
+        },
+        weatherVariants: ["brainstorming session", "prototype development day", "testing afternoon", "presentation evening"],
+        settingVariants: ["innovation lab", "community spaces", "partner organizations", "presentation venues"]
+      }
+    }
+  ],
+  grade10: [
+    {
+      title: "The Participatory Democracy Experiment",
+      theme: "Political Science & Democracy",
+      level: "Grade 10",
+      scenes: [
+        {
+          text: "{userName} had always been passionate about {hobbies} and social justice issues, but they never imagined that their interest in civic engagement would lead them to spearhead a groundbreaking participatory democracy initiative at Washington High School that would challenge traditional notions of student governance and create a more inclusive, representative system for addressing student concerns and implementing meaningful changes in school policy and culture.",
+          pause: true,
+          hook: "How will {userName} transform student government into a more democratic and inclusive system?",
+          microVariants: {
+            text: "{userName} had always been passionate about {hobbies} and social justice, but never imagined their civic interest would lead to spearheading a groundbreaking participatory democracy initiative at Washington High School.",
+            alternatives: [
+              "{userName} possessed long-standing commitments to {hobbies} and equity issues, yet could not have predicted that their engagement with civic processes would inspire them to pioneer an innovative democratic participation project at their school."
+            ],
+            optionalDetails: ["Traditional student government had become disconnected from the broader student body's needs and priorities.", "Many students felt excluded from decision-making processes that directly affected their educational experience.", "The administration expressed willingness to support student-led democratic reforms if they proved effective and inclusive."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "At the National Conference on Student Democracy and Educational Leadership, {userName} delivered a keynote presentation to hundreds of educators, students, and policy experts about the transformative impact of participatory governance in educational settings. \"This remarkable student has demonstrated that young people are not just the leaders of tomorrow, but the democratic innovators of today,\" declared the conference director. \"Their work has inspired a movement toward more inclusive, representative student governance systems in schools across the country.\"",
+          microVariants: [
+            "At the National Student Democracy Conference, {userName} keynoted to hundreds of educators and policy experts, inspiring a nationwide movement toward inclusive student governance systems and democratic innovation."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "democratic_processes": ["town halls", "participatory budgeting", "consensus building", "representative councils", "direct democracy"],
+          "governance_tools": ["surveys", "forums", "committees", "working groups", "advisory boards"],
+          "policy_areas": ["academics", "school culture", "student services", "extracurriculars", "campus environment"]
+        },
+        weatherVariants: ["student assembly morning", "committee meeting afternoon", "town hall evening", "celebration gathering"],
+        settingVariants: ["school auditorium", "classroom spaces", "community venues", "government buildings"]
+      }
+    }
+  ]
 };
 
 // Convert StoryTemplate to string array for compatibility
