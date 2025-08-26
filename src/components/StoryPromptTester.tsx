@@ -174,8 +174,27 @@ export function StoryPromptTester() {
   const [currentTest, setCurrentTest] = useState('');
   const [progress, setProgress] = useState(0);
 
-  const checkPageConcatenation = (pages: string[]): boolean => {
-    // Check if any page contains multiple sentences that should be separate pages
+  const checkPageConcatenation = (pages: string[], level: string): boolean => {
+    // Level 0 (beginner) should have exactly 1 sentence per page, max 8 words
+    if (level === 'beginner') {
+      for (const page of pages) {
+        const sentences = page.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        const wordCount = page.split(/\s+/).filter(w => w.trim()).length;
+        
+        // Level 0 concatenation: more than 1 sentence OR more than 8 words
+        if (sentences.length > 1 || wordCount > 8) {
+          console.log(`🔍 Level 0 concatenation detected:`, { 
+            page: page.substring(0, 50), 
+            sentences: sentences.length, 
+            words: wordCount 
+          });
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    // Other levels: check if any page contains multiple sentences that should be separate pages
     for (const page of pages) {
       const sentences = page.split(/[.!?]+/).filter(s => s.trim().length > 0);
       if (sentences.length > 2) { // Allow for one main sentence plus short continuation
@@ -190,9 +209,27 @@ export function StoryPromptTester() {
     wordCount: number; 
     hasPageConcatenation: boolean; 
   } => {
-    const pages = content.split(/(?:^|\n)(?:Page \d+:?\s*)/i).filter(p => p.trim());
-    const wordCount = content.split(/\s+/).filter(word => word.trim().length > 0).length;
-    const hasPageConcatenation = level === 'beginner' ? checkPageConcatenation(pages) : false;
+    // Handle both array of pages and string content
+    let pages: string[] = [];
+    if (Array.isArray(content)) {
+      pages = content.filter(p => p && p.trim());
+    } else if (typeof content === 'string') {
+      // Try to split by Page markers first, then by paragraphs
+      pages = content.split(/(?:^|\n)(?:Page \d+:?\s*)/i).filter(p => p.trim());
+      if (pages.length <= 1) {
+        pages = content.split(/\n\n+/).filter(p => p.trim());
+      }
+    }
+    
+    const wordCount = pages.join(' ').split(/\s+/).filter(word => word.trim().length > 0).length;
+    const hasPageConcatenation = checkPageConcatenation(pages, level);
+
+    console.log(`🔍 Story analysis for ${level}:`, { 
+      pagesCount: pages.length, 
+      wordCount, 
+      hasPageConcatenation,
+      firstPage: pages[0]?.substring(0, 50) 
+    });
 
     return { pages: pages.length, wordCount, hasPageConcatenation };
   };

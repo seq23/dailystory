@@ -3,6 +3,48 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 
+// Level 0 vocabulary for AI generation constraints
+const ENHANCED_LEVEL_0_VOCABULARY = new Set([
+  // Dolch Pre-Primer (40 words)
+  'a', 'and', 'away', 'big', 'blue', 'can', 'come', 'down', 'find', 'for',
+  'funny', 'go', 'help', 'here', 'I', 'in', 'is', 'it', 'jump', 'little',
+  'look', 'make', 'me', 'my', 'not', 'one', 'play', 'red', 'run', 'said',
+  'see', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you',
+  // Dolch Primer (52 words)
+  'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came',
+  'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like',
+  'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran',
+  'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this',
+  'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will',
+  'with', 'yes',
+  // Additional 8 Fry words for total 100
+  'of', 'his', 'her', 'has', 'had', 'him', 'been', 'water'
+]);
+
+// Level 0 Story Prompts
+const LEVEL_0_SYSTEM_PROMPT = `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
+
+CRITICAL RULES:
+- Generate ONLY one sentence per page (the current page content)
+- Use "Page X:" markers to separate each page of content
+- Use subject-verb OR subject-verb-object as sentence structure
+- Use a mix of 2-, 3-, and 4- letter words
+- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
+- Use Simple present tense
+- Always allow {userName}, user inputs
+- Story continues infinitely unless user requests ending
+- Try to incorporate a narrative with a natural hook for continuation
+
+Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
+
+Maximum 200 tokens total. One sentence per page for Level 0.
+
+USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
+
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.`;
+
+const LEVEL_0_USER_PROMPT = 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence.';
+
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -159,9 +201,30 @@ serve(async (req) => {
     const userName = NameFormatter.capitalize(config?.userName || 'the child');
     const normalizedReadingLevel = DifficultyLevelMapper.normalizeLevel(readingLevel || 'easy');
     
-    const basePrompt = `Create a personalized children's story for ${userName} at ${normalizedReadingLevel} reading level.`;
+    let systemPrompt = 'You are a children\'s story writer. Create age-appropriate, positive stories.';
+    let userPrompt = `Create a personalized children's story for ${userName} at ${normalizedReadingLevel} reading level.`;
+    let maxTokens = 800;
     
-    console.log('📝 Generating story with OpenAI...');
+    // Use Level 0 specific prompts for beginner difficulty
+    if (normalizedReadingLevel === 'beginner') {
+      systemPrompt = LEVEL_0_SYSTEM_PROMPT
+        .replace('{userName}', userName)
+        .replace('{favoriteColor}', config?.favoriteColor || 'blue')
+        .replace('{favoriteAnimal}', config?.favoriteAnimal || 'cat')
+        .replace('{favoriteFood}', config?.favoriteFood || 'apple')
+        .replace('{hobbies}', config?.hobbies || 'playing');
+      
+      userPrompt = LEVEL_0_USER_PROMPT
+        .replace('{userName}', userName);
+      
+      maxTokens = 200; // Much shorter for Level 0
+    }
+    
+    console.log('📝 Generating story with OpenAI...', { 
+      level: normalizedReadingLevel, 
+      isLevel0: normalizedReadingLevel === 'beginner',
+      maxTokens 
+    });
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -172,10 +235,10 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-5-mini-2025-08-07',
         messages: [
-          { role: 'system', content: 'You are a children\'s story writer. Create age-appropriate, positive stories.' },
-          { role: 'user', content: basePrompt }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: 800
+        max_completion_tokens: maxTokens
       }),
     });
 
@@ -186,8 +249,28 @@ serve(async (req) => {
     const data = await response.json();
     const storyText = data.choices[0].message.content;
     
-    // Simple page parsing
-    const pages = storyText.split(/\n\n+/).filter(p => p.trim()).slice(0, 8);
+    // Enhanced page parsing for Level 0
+    let pages: string[] = [];
+    if (normalizedReadingLevel === 'beginner') {
+      // Level 0: Split by "Page X:" markers and clean up
+      pages = storyText.split(/Page \d+:?\s*/i)
+        .filter(p => p.trim())
+        .map(p => p.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' '))
+        .slice(0, 8);
+      
+      // Validate Level 0 pages - each should be exactly one sentence
+      pages = pages.map(page => {
+        const sentences = page.split(/[.!?]+/).filter(s => s.trim());
+        if (sentences.length > 1) {
+          // Take only the first sentence for Level 0
+          return sentences[0].trim() + '.';
+        }
+        return page;
+      });
+    } else {
+      // Other levels: use paragraph splitting
+      pages = storyText.split(/\n\n+/).filter(p => p.trim()).slice(0, 8);
+    }
     
     console.log('EDGE SOURCE=ai', { readingLevel: normalizedReadingLevel, pagesCount: pages.length });
     return new Response(JSON.stringify({
