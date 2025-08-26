@@ -1081,6 +1081,72 @@ function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount:
 }
 
 // ============================================================================
+// TEMPLATE EXPLORATION FUNCTIONS
+// ============================================================================
+
+function handleExploration(templateLevel: string, difficulty: string) {
+  console.log('🔍 Exploration mode for level:', templateLevel);
+  
+  // Count Level 0 templates
+  if (templateLevel === 'Level0') {
+    const templateCount = ALL_LEVEL_0_TEMPLATES.length;
+    
+    return new Response(JSON.stringify({
+      success: true,
+      level: templateLevel,
+      templateCount,
+      templates: [{
+        title: "Level 0 Vocabulary Templates",
+        theme: "Basic Vocabulary & Simple Sentences",
+        scenes: templateCount, // Each template is essentially one scene
+        endings: 1 // Simple templates have single endings
+      }]
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  // Handle new template system levels
+  const templates = NEW_TEMPLATE_SYSTEM[templateLevel] || [];
+  
+  if (templates.length === 0) {
+    // Return empty but valid response for missing levels
+    return new Response(JSON.stringify({
+      success: true,
+      level: templateLevel,
+      templateCount: 0,
+      templates: []
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  // Extract template metadata
+  const templateInfo = templates.map(template => ({
+    title: template.title,
+    theme: template.theme,
+    scenes: template.scenes.length,
+    endings: template.endings.length
+  }));
+  
+  console.log('📊 Template exploration results:', {
+    level: templateLevel,
+    count: templates.length,
+    totalScenes: templateInfo.reduce((sum, t) => sum + t.scenes, 0),
+    totalEndings: templateInfo.reduce((sum, t) => sum + t.endings, 0)
+  });
+  
+  return new Response(JSON.stringify({
+    success: true,
+    level: templateLevel,
+    templateCount: templates.length,
+    templates: templateInfo
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// ============================================================================
 // MAIN SERVICE HANDLER
 // ============================================================================
 
@@ -1091,13 +1157,14 @@ serve(async (req) => {
   }
 
   try {
-    const { difficulty, userInfo, pageCount = 5, templateIndex } = await req.json();
+    const { difficulty, userInfo, pageCount = 5, templateIndex, explore = false } = await req.json();
     
     console.log('🎯 Template service request:', { 
       difficulty, 
       pageCount, 
       templateIndex,
-      userInfo: userInfo ? 'provided' : 'missing'
+      userInfo: userInfo ? 'provided' : 'missing',
+      explore
     });
 
     // Enhanced difficulty mapping supporting both Level 0 and new template system
@@ -1117,6 +1184,11 @@ serve(async (req) => {
     const templateLevel = levelMap[difficulty] || 'Level0'; // Default to Level 0
     
     console.log('📚 Selecting template for level:', templateLevel);
+    
+    // Handle exploration mode - return template metadata instead of generated stories
+    if (explore) {
+      return handleExploration(templateLevel, difficulty);
+    }
     
     // Get template with Level 0 priority system
     const template = getFallbackTemplate(templateLevel, templateIndex);
