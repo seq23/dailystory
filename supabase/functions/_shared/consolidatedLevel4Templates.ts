@@ -671,5 +671,165 @@ export const CONSOLIDATED_LEVEL_4_TEMPLATES: StoryTemplate[] = [
       weatherVariants: ["productive workshop morning", "community training afternoon", "policy advocacy evening", "collaborative planning session"],
       settingVariants: ["digital equity lab", "community technology center", "device repair workshop", "policy advocacy meeting"]
     }
+  },
+
+  // Template 6: Health & Wellness Leadership  
+  {
+    title: "The Community Wellness Initiative",
+    theme: "Health & Wellness Leadership",
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} had always been interested in health and fitness through their enjoyment of {hobbies}, but they became concerned about community wellness when they noticed that many of their neighbors lacked access to healthy food options, safe places to exercise, and basic health education. Their awareness grew when they learned that their zip code had significantly higher rates of diabetes, heart disease, and other preventable health conditions compared to wealthier areas nearby.",
+        pause: true,
+        hook: "What comprehensive wellness strategies will {userName} develop to address health inequities?",
+        microVariants: {
+          text: "{userName} had always been interested in health and fitness through {hobbies}, but became concerned about community wellness when they noticed neighbors lacked access to healthy options.",
+          alternatives: ["Health awareness from {hobbies} led {userName} to recognize community wellness disparities affecting their neighbors.", "Combining fitness interests with {hobbies}, {userName} discovered significant health inequities in their community."],
+          optionalDetails: ["The nearest grocery store with fresh produce was 3 miles away.", "Local parks had broken equipment and poor lighting.", "Many families couldn't afford gym memberships or healthy food."]
+        }
+      },
+      {
+        text: "Research revealed that health disparities weren't just about individual choices but resulted from systemic barriers including food deserts, lack of safe recreational spaces, and insufficient healthcare access. {userName} learned that addressing community health required combining direct service with policy advocacy to create environments where healthy choices were accessible and affordable for everyone.",
+        pause: true,
+        hook: "How will {userName} address both immediate needs and systemic health barriers?",
+        microVariants: {
+          text: "Research revealed health disparities resulted from systemic barriers including food deserts, unsafe recreational spaces, and insufficient healthcare access.",
+          alternatives: ["Investigation showed that community health challenges stemmed from environmental factors rather than individual choices alone.", "Analysis revealed that health inequities reflected systemic barriers to healthy living options."],
+          optionalDetails: ["Healthy food cost 40% more in their neighborhood than in suburban areas.", "Public transportation to healthcare facilities was limited.", "Community centers lacked wellness programming."]
+        }
+      },
+      {
+        text: "Working with community health organizations, local clinics, and school nutrition programs, {userName} helped establish a comprehensive wellness initiative that included community gardens, walking groups, health education workshops, and advocacy for policy changes that would improve food access and recreational opportunities throughout their neighborhood.",
+        pause: true,
+        hook: "What impact will community-led wellness programming have on neighborhood health?",
+        microVariants: {
+          text: "Working with health organizations and clinics, {userName} helped establish comprehensive wellness programming including gardens, walking groups, and health education.",
+          alternatives: ["Partnership with health providers created multifaceted wellness initiatives combining direct services with educational programming.", "Collaboration with medical professionals developed community health programs addressing multiple wellness factors."],
+          optionalDetails: ["Community gardens provided fresh vegetables for 50+ families.", "Walking groups met in three different neighborhood locations.", "Health screenings were offered in multiple languages."]
+        }
+      },
+      {
+        text: "The community wellness initiative attracted volunteer health professionals who provided free screenings, nutrition counseling, and fitness classes in neighborhood locations that were accessible and culturally appropriate. {userName} helped coordinate programming that respected community traditions while introducing evidence-based health practices that could prevent chronic diseases and improve quality of life.",
+        pause: true,
+        hook: "How will professional partnerships expand community health services?",
+        microVariants: {
+          text: "Volunteer health professionals provided free screenings, nutrition counseling, and fitness classes in accessible neighborhood locations.",
+          alternatives: ["Healthcare partnerships brought professional services directly to community members in culturally appropriate settings.", "Medical volunteers offered comprehensive health services within familiar neighborhood environments."],
+          optionalDetails: ["Diabetes prevention programs reduced risk factors by 30% among participants.", "Nutrition workshops incorporated traditional foods and cooking methods.", "Exercise programs accommodated different fitness levels and physical abilities."]
+        }
+      },
+      {
+        text: "Community members who participated in wellness programs began serving as peer health educators and advocates, creating sustainable leadership that could continue addressing health needs even as specific programs evolved. {userName} documented how community-controlled health programming could be more effective than external interventions because it built on existing social networks and cultural strengths.",
+        pause: true,
+        hook: "What leadership development will emerge from community wellness programming?",
+        microVariants: {
+          text: "Program participants became peer health educators and advocates, creating sustainable community leadership for ongoing wellness work.",
+          alternatives: ["Wellness participants developed into community health leaders, ensuring program sustainability through peer education and advocacy.", "Community members gained health leadership skills, creating ongoing capacity for neighborhood wellness initiatives."],
+          optionalDetails: ["Peer educators conducted home visits for elderly neighbors.", "Community advocates testified at city council meetings about health policy needs.", "Local residents became certified in CPR and first aid through the program."]
+        }
+      },
+      {
+        text: "School district officials recognized that community wellness programming was supporting student academic success by addressing health factors that affected learning, leading to partnerships that integrated community health resources with school-based wellness education and family engagement initiatives.",
+        pause: true,
+        hook: "How will school partnerships expand health education and family wellness?",
+        microVariants: {
+          text: "School partnerships integrated community health resources with educational wellness programming and family engagement initiatives.",
+          alternatives: ["Educational collaboration connected community wellness with school health programming, supporting both student learning and family wellness.", "School district partnerships expanded health education by incorporating community wellness resources and family programming."],
+          optionalDetails: ["Student academic performance improved in areas with active wellness programming.", "Family wellness nights were held monthly at neighborhood schools.", "School gardens connected to community food access initiatives."]
+        }
+      },
+      {
+        text: "Healthcare systems began partnering with {userName}'s community wellness network to provide preventive care and chronic disease management in neighborhood settings, recognizing that community-based health programming could reduce emergency room visits and improve health outcomes more effectively than clinic-only approaches.",
+        pause: true,
+        hook: "How will healthcare system partnerships transform community health delivery?",
+        microVariants: {
+          text: "Healthcare systems partnered with community wellness networks to provide preventive care and chronic disease management in neighborhood settings.",
+          alternatives: ["Medical system partnerships brought preventive healthcare directly to community locations, improving health outcomes through neighborhood-based services.", "Healthcare collaboration provided comprehensive medical services within community wellness programming, reducing barriers to care access."],
+          optionalDetails: ["Emergency room visits decreased 25% in areas with community health programming.", "Chronic disease management improved significantly with neighborhood-based support.", "Preventive care utilization increased among previously underserved populations."]
+        }
+      },
+      {
+        text: "Municipal officials invited {userName} to serve on a community health advisory board developing policy recommendations for addressing health disparities through environmental and social determinants approaches rather than relying solely on individual behavior change interventions.",
+        pause: true,
+        hook: "How will policy influence address structural barriers to community health?",
+        microVariants: {
+          text: "Municipal officials invited {userName} to serve on a health advisory board developing policy recommendations for addressing health disparities through environmental approaches.",
+          alternatives: ["Policy influence expanded as {userName} helped develop municipal strategies for addressing health disparities through structural and environmental changes.", "Community health advisory board participation allowed {userName} to influence policy addressing social determinants of health."],
+          optionalDetails: ["Zoning policies were changed to increase healthy food access.", "Parks and recreation funding prioritized underserved neighborhoods.", "Public transportation routes were improved to connect residents with healthcare facilities."]
+        }
+      },
+      {
+        text: "Regional health organizations featured {userName}'s community model in conferences and publications, demonstrating how young people could lead effective health equity initiatives that combined direct service with policy advocacy and community organizing to address root causes of health disparities rather than treating symptoms alone.",
+        pause: true,
+        hook: "What regional influence will this model have on health equity approaches?",
+        microVariants: {
+          text: "Regional health organizations featured {userName}'s community model, demonstrating youth leadership in health equity initiatives combining service with policy advocacy.",
+          alternatives: ["Regional recognition established {userName}'s model as a template for comprehensive community health programming addressing health disparities.", "Health conferences showcased how student leadership could address health inequities through community organizing and policy advocacy."],
+          optionalDetails: ["The model was replicated in 12 different communities across the region.", "Health equity research incorporated community organizing metrics.", "Foundation funding prioritized community-led health initiatives."]
+        }
+      },
+      {
+        text: "National public health organizations invited {userName} to consult on community wellness projects addressing health disparities in communities nationwide, recognizing that their model had proven that sustainable health improvement required community ownership, peer leadership, and policy changes that addressed social determinants of health rather than individual behavior modification alone.",
+        pause: true,
+        hook: "How will this approach influence national health equity development?",
+        microVariants: {
+          text: "National public health organizations invited {userName} to consult on community wellness projects addressing health disparities nationwide.",
+          alternatives: ["National recognition led to opportunities to develop community-controlled health programming addressing health disparities in different contexts.", "Public health networks adopted {userName}'s model for creating sustainable community wellness programs addressing social determinants of health."],
+          optionalDetails: ["The approach was adapted for communities in 18 different states.", "CDC community health guidelines incorporated peer leadership principles.", "National health organizations used {userName}'s model for program development training."]
+        }
+      },
+      {
+        text: "Medical schools began partnering with {userName}'s community network to provide clinical training experiences that emphasized community health and health equity alongside traditional medical education, creating a pipeline of healthcare professionals who understood that effective healthcare must address social and environmental factors affecting community wellness.",
+        pause: true,
+        hook: "How will this reshape the preparation of future healthcare professionals?",
+        microVariants: {
+          text: "Medical schools partnered with {userName}'s community network to provide clinical training emphasizing community health and health equity alongside traditional medical education.",
+          alternatives: ["Academic medical partnerships transformed healthcare education to include community health and social determinants training.", "Medical education collaborations created new models for training healthcare professionals in community-responsive health approaches."],
+          optionalDetails: ["Medical students completed community health internships in neighborhood settings.", "Healthcare training emphasized cultural responsiveness and health equity.", "Graduate programs in community health leadership were established at several medical schools."]
+        }
+      },
+      {
+        text: "And {userName} learned that health is not just about individual medical care but about creating communities where everyone has access to the resources they need to live healthy lives, including nutritious food, safe places to be active, healthcare services, and social connections that support wellness. Through their leadership, they discovered that the most effective health programming combines direct service with community organizing and policy advocacy to address the root causes of health disparities, proving that sustainable wellness requires both individual support and systemic change to ensure that healthy choices are accessible and affordable for all community members regardless of their economic background or zip code.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "And {userName} learned that health is about creating communities where everyone has access to resources for healthy living, not just individual medical care.",
+          alternatives: ["Health became about community environments supporting wellness for all residents, combining individual support with systemic change.", "Effectively wellness programming required both personal health services and policy changes addressing social determinants of health equity."],
+          optionalDetails: ["Their model influenced public health policy for decades to come.", "Community members gained health leadership skills and improved health outcomes through program participation.", "The approach demonstrated that health equity and community organizing were mutually reinforcing."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "Every morning, {userName} walks through their neighborhood, seeing community gardens thriving, neighbors walking together for exercise, and children playing safely in well-maintained parks. The peaceful knowledge that their community has the resources for healthy living brings daily satisfaction and hope for continued wellness.",
+        microVariants: ["Daily walks reveal the success of community wellness programming, with thriving gardens, active neighbors, and safe recreational spaces supporting community health and well-being."]
+      },
+      {
+        type: 'silly',
+        text: "The community gardens became so healthy that vegetables started doing their own exercise routines! Soon the walking groups had to make room for jogging tomatoes, stretching carrots, and yoga-practicing broccoli. What wonderfully fit and active community produce!",
+        microVariants: ["Community wellness became so successful that even the garden vegetables began exercising, with produce joining walking groups and practicing healthy lifestyle habits!"]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName}'s community wellness work leads to a career in public health policy, eventually directing a national initiative that ensures health equity for all communities. Their neighborhood model becomes standard practice for community-based health programming, eliminating health disparities nationwide.",
+        microVariants: ["{userName}'s wellness advocacy creates national impact through public health policy, establishing community-led health programming as standard practice for health equity."]
+      },
+      {
+        type: 'reflective',
+        text: "Standing in the community wellness center surrounded by neighbors of all ages supporting each other's health journeys, {userName} understands that true wellness is about community environments that support healthy living for everyone. They learned that the most effective health work combines individual care with community organizing to ensure that everyone has access to the resources they need to thrive.",
+        microVariants: ["Reflecting in the community wellness center, {userName} understands that health equity requires supportive community environments and systemic changes ensuring wellness resources for all residents."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "health_disparities": ["wellness gaps", "health inequities", "medical access barriers", "nutrition challenges"],
+        "community_gardens": ["fitness programs", "wellness centers", "health clinics", "nutrition programs"],
+        "policy_advocacy": ["community organizing", "health education", "system change", "equity initiatives"]
+      },
+      weatherVariants: ["community health fair morning", "wellness workshop afternoon", "policy advocacy evening", "neighborhood exercise session"],
+      settingVariants: ["community wellness center", "neighborhood park", "health clinic", "policy meeting"]
+    }
   }
 ];
