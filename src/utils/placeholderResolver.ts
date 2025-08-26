@@ -22,7 +22,12 @@ const FALLBACK_POOLS = {
   action: ["play", "run", "go", "come", "look", "jump"],
   adjective: ["big", "little", "good", "funny", "pretty", "new"],
   friendName: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
-  color: ["red", "blue", "yellow", "black", "brown", "white"]
+  friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
+  color: ["red", "blue", "yellow", "black", "brown", "white"],
+  // Legacy and edge case placeholders
+  forestType: ["magic", "deep", "green", "quiet", "old", "big"],
+  weatherType: ["sunny", "rainy", "cloudy", "windy", "clear", "nice"],
+  placeType: ["park", "forest", "garden", "field", "yard", "beach"]
 } as const;
 
 const KNOWN_ANIMALS = new Set([
@@ -34,11 +39,30 @@ function pick<T>(arr: readonly T[]): T {
 }
 
 function cleanup(text: string): string {
-  return text
+  const originalText = text;
+  
+  // Enhanced cleanup - more aggressive placeholder removal
+  let cleaned = text
     .replace(/\{[^}]+\}/g, "") // strip unresolved tokens
-    .replace(/\s{2,}/g, " ")
-    .replace(/\s+([,.!?:;])/g, "$1")
+    .replace(/\s{2,}/g, " ") // collapse multiple spaces
+    .replace(/\s+([,.!?:;])/g, "$1") // remove space before punctuation
+    .replace(/\s+$/, "") // trim trailing spaces
+    .replace(/^\s+/, "") // trim leading spaces
+    .replace(/\.\s*\./g, ".") // remove double periods
+    .replace(/,\s*,/g, ",") // remove double commas
     .trim();
+
+  // Log if we cleaned up any placeholders for monitoring
+  const hadPlaceholders = /\{[^}]+\}/.test(originalText);
+  const stillHasPlaceholders = /\{[^}]+\}/.test(cleaned);
+  
+  if (hadPlaceholders && !stillHasPlaceholders) {
+    console.log('🧹 [CLEANUP] Removed unresolved placeholders from text');
+  } else if (stillHasPlaceholders) {
+    console.warn('⚠️ [CLEANUP] Text still contains unresolved placeholders after cleanup:', cleaned.match(/\{[^}]+\}/g));
+  }
+  
+  return cleaned;
 }
 
 function applyTheyGrammarFixes(text: string): string {
@@ -177,7 +201,12 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     action: seed?.action || pick(FALLBACK_POOLS.action),
     adjectiveFallback: pick(FALLBACK_POOLS.adjective),
     color: seed?.color || userInfo?.favoriteColor || pick(FALLBACK_POOLS.color),
-    friend: seed?.friend || pick(FALLBACK_POOLS.friendName)
+    friend: seed?.friend || pick(FALLBACK_POOLS.friend),
+    // Legacy placeholder support
+    friendName: seed?.friendName || pick(FALLBACK_POOLS.friendName),
+    forestType: seed?.forestType || pick(FALLBACK_POOLS.forestType),
+    weatherType: seed?.weatherType || pick(FALLBACK_POOLS.weatherType),
+    placeType: seed?.placeType || pick(FALLBACK_POOLS.placeType)
   };
 
   // prefer explicit adjective, else fallback
@@ -194,7 +223,12 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     action: candidate.action,
     adjective: adjective,
     color: candidate.color,
-    friend: candidate.friend
+    friend: candidate.friend,
+    // Legacy placeholder mappings
+    friendName: candidate.friendName,
+    forestType: candidate.forestType,
+    weatherType: candidate.weatherType,
+    placeType: candidate.placeType
   };
 
   console.log(`🔍 [DEBUG] Final simplified mappings:`, mappings);

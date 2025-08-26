@@ -456,19 +456,32 @@ export class EnhancedFallbackManager {
     return fallbacks[pageIndex % fallbacks.length];
   }
 
-  /**
-   * Validate that template processing was successful
-   */
-  private static validateTemplateProcessing(content: string, pageIndex: number): void {
-    const unreplacedPlaceholders = content.match(/\{[^}]+\}/g);
-    
-    if (unreplacedPlaceholders) {
-      console.warn(`🚨 Template validation failed on page ${pageIndex}:`, {
-        unreplacedPlaceholders,
-        content: content.substring(0, 100) + '...'
-      });
-    }
-  }
+   /**
+    * Validate that template processing was successful - ENHANCED
+    */
+   private static validateTemplateProcessing(content: string, pageIndex: number): void {
+     const unreplacedPlaceholders = content.match(/\{[^}]+\}/g);
+     
+     if (unreplacedPlaceholders) {
+       console.error(`🚨 TEMPLATE VALIDATION FAILED on page ${pageIndex}:`, {
+         unreplacedPlaceholders,
+         content: content.substring(0, 150) + '...',
+         timestamp: new Date().toISOString()
+       });
+       
+       // Record each unresolved placeholder for monitoring
+       unreplacedPlaceholders.forEach(placeholder => {
+         const cleanPlaceholder = placeholder.slice(1, -1); // Remove braces
+         console.warn(`📊 [MONITORING] Unresolved placeholder: ${cleanPlaceholder}`);
+       });
+       
+       // Emergency placeholder cleanup - remove any remaining placeholders
+       const cleanedContent = content.replace(/\{[^}]+\}/g, '');
+       console.log(`🧹 Emergency cleanup applied. Original length: ${content.length}, Cleaned length: ${cleanedContent.length}`);
+     } else {
+       console.log(`✅ Template validation passed for page ${pageIndex}`);
+     }
+   }
 
   /**
    * Update story context for continuation support

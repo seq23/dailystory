@@ -6,6 +6,7 @@ import { QuickTemplateTest } from '@/components/template-testing/QuickTemplateTe
 import { AdvancedTemplateTest } from '@/components/template-testing/AdvancedTemplateTest';
 import { BatchTemplateTest } from '@/components/template-testing/BatchTemplateTest';
 import { TemplateExplorer } from '@/components/template-testing/TemplateExplorer';
+import { TemplateSystemMonitor } from '@/components/template-testing/TemplateSystemMonitor';
 
 export default function TemplateTestingPage() {
   return (
@@ -30,11 +31,12 @@ export default function TemplateTestingPage() {
         </div>
 
         <Tabs defaultValue="quick" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="quick">Quick Test</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
             <TabsTrigger value="batch">Batch Test</TabsTrigger>
             <TabsTrigger value="explorer">Explorer</TabsTrigger>
+            <TabsTrigger value="monitor">System Monitor</TabsTrigger>
           </TabsList>
 
           <TabsContent value="quick" className="mt-6">
@@ -51,6 +53,10 @@ export default function TemplateTestingPage() {
 
           <TabsContent value="explorer" className="mt-6">
             <TemplateExplorer />
+          </TabsContent>
+
+          <TabsContent value="monitor" className="mt-6">
+            <TemplateSystemMonitor />
           </TabsContent>
         </Tabs>
       </div>
