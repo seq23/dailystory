@@ -1148,6 +1148,7 @@ serve(async (req) => {
     });
 
     return new Response(JSON.stringify({
+      success: true,
       source: 'template-service',
       templateSystem: source,
       pages: processedPages,
@@ -1172,6 +1173,7 @@ serve(async (req) => {
     ];
 
     return new Response(JSON.stringify({
+      success: false,
       source: 'emergency-fallback',
       pages: emergencyPages,
       difficulty: 'beginner',

@@ -41,12 +41,16 @@ export function useTemplateService() {
 
       console.log('Template service response:', data);
 
-      if (!data.success) {
-        throw new Error(data.error || 'Template generation failed');
+      // Check for successful response based on actual template service format
+      if (!data.pages || data.pages.length === 0) {
+        throw new Error(data.error || 'Template generation failed - no pages generated');
       }
 
-      setResult(data);
-      return data;
+      // Add success property for consistency with interface
+      const formattedData = { ...data, success: true };
+
+      setResult(formattedData);
+      return formattedData;
     } catch (err) {
       console.error('Template service error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate story';
