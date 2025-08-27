@@ -45,111 +45,63 @@ interface TemplateModule {
   getGrade10FallbackTemplateCount?: () => number;
 }
 
-// Map template levels to their frontend file paths and export names
-// Using relative paths from edge function to frontend source files
+import { TemplateLibraryService } from './TemplateLibraryService.js';
+
+// Map template levels to their TemplateLibraryService methods
 const TEMPLATE_MAP = {
   level1: {
-    path: '../../../src/constants/newFallbackTemplates/level1Templates.ts',
-    arrayName: 'LEVEL_1_TEMPLATES',
     getterName: 'getLevel1Template',
     countName: 'getLevel1TemplateCount'
   },
   level2: {
-    path: '../../../src/constants/newFallbackTemplates/level2Templates.ts',
-    arrayName: 'LEVEL_2_TEMPLATES',
-    getterName: 'getLevel2Template',
+    getterName: 'getLevel2Template', 
     countName: 'getLevel2TemplateCount'
   },
   level3: {
-    path: '../../../src/constants/newFallbackTemplates/level3Templates.ts',
-    arrayName: 'LEVEL_3_FALLBACK_TEMPLATES',
     getterName: 'getLevel3FallbackTemplate',
     countName: 'getLevel3FallbackTemplateCount'
   },
   level4: {
-    path: '../../../src/constants/newFallbackTemplates/level4Templates.ts',
-    arrayName: 'LEVEL_4_TEMPLATES',
     getterName: 'getLevel4Template',
     countName: 'getLevel4TemplateCount'
   },
   grade6: {
-    path: '../../../src/constants/newFallbackTemplates/grade6Templates.ts',
-    arrayName: 'GRADE_6_FALLBACK_TEMPLATES',
     getterName: 'getGrade6FallbackTemplate',
     countName: 'getGrade6FallbackTemplateCount'
   },
   grade7: {
-    path: '../../../src/constants/newFallbackTemplates/grade7Templates.ts',
-    arrayName: 'GRADE_7_FALLBACK_TEMPLATES',
     getterName: 'getGrade7FallbackTemplate',
     countName: 'getGrade7FallbackTemplateCount'
   },
   grade8: {
-    path: '../../../src/constants/newFallbackTemplates/grade8Templates.ts',
-    arrayName: 'GRADE_8_FALLBACK_TEMPLATES',
     getterName: 'getGrade8FallbackTemplate',
     countName: 'getGrade8FallbackTemplateCount'
   },
   grade9: {
-    path: '../../../src/constants/newFallbackTemplates/grade9Templates.ts',
-    arrayName: 'GRADE_9_FALLBACK_TEMPLATES',
     getterName: 'getGrade9FallbackTemplate',
     countName: 'getGrade9FallbackTemplateCount'
   },
   grade10: {
-    path: '../../../src/constants/newFallbackTemplates/grade10Templates.ts',
-    arrayName: 'GRADE_10_FALLBACK_TEMPLATES',
     getterName: 'getGrade10FallbackTemplate',
     countName: 'getGrade10FallbackTemplateCount'
   }
 };
 
 /**
- * Dynamically import templates for a given level
- */
-async function importTemplateModule(level: string): Promise<TemplateModule | null> {
-  const config = TEMPLATE_MAP[level as keyof typeof TEMPLATE_MAP];
-  if (!config) {
-    console.log(`❌ No template configuration for level: ${level}`);
-    return null;
-  }
-
-  try {
-    console.log(`🔄 Importing templates from: ${config.path}`);
-    const module = await import(config.path);
-    
-    if (!module[config.arrayName]) {
-      console.log(`❌ Template array ${config.arrayName} not found in module`);
-      return null;
-    }
-    
-    console.log(`✅ Successfully imported ${config.arrayName} from ${config.path}`);
-    return module;
-  } catch (error) {
-    console.error(`❌ Failed to import templates for ${level}:`, error);
-    return null;
-  }
-}
-
-/**
  * Get template count for a given level (for exploration mode)
  */
 export async function getTemplateCount(level: string): Promise<number> {
   try {
-    const module = await importTemplateModule(level);
-    if (!module) return 0;
-    
     const config = TEMPLATE_MAP[level as keyof typeof TEMPLATE_MAP];
+    if (!config) return 0;
     
-    // Try count function first
-    if (config.countName && module[config.countName as keyof TemplateModule]) {
-      const countFn = module[config.countName as keyof TemplateModule] as () => number;
-      return countFn();
+    // Use TemplateLibraryService to get count
+    const countFn = TemplateLibraryService[config.countName as keyof typeof TemplateLibraryService];
+    if (typeof countFn === 'function') {
+      return (countFn as () => number)();
     }
     
-    // Fallback to array length
-    const templateArray = module[config.arrayName as keyof TemplateModule] as StoryTemplate[];
-    return templateArray?.length || 0;
+    return 0;
   } catch (error) {
     console.error(`❌ Error getting template count for ${level}:`, error);
     return 0;
@@ -168,30 +120,17 @@ export async function getTemplate(
   try {
     console.log(`📚 Getting template for ${level}, index: ${templateIndex}`);
     
-    const module = await importTemplateModule(level);
-    if (!module) {
-      throw new Error(`Failed to load templates for ${level}`);
+    const config = TEMPLATE_MAP[level as keyof typeof TEMPLATE_MAP];
+    if (!config) {
+      throw new Error(`No template configuration for level: ${level}`);
     }
     
-    const config = TEMPLATE_MAP[level as keyof typeof TEMPLATE_MAP];
     let storyTemplate: StoryTemplate | null = null;
     
-    // Try getter function first (e.g., getLevel1Template)
-    if (config.getterName && module[config.getterName as keyof TemplateModule]) {
-      const getterFn = module[config.getterName as keyof TemplateModule] as (index?: number) => StoryTemplate;
-      storyTemplate = getterFn(templateIndex);
-    } else {
-      // Fallback to array access
-      const templateArray = module[config.arrayName as keyof TemplateModule] as StoryTemplate[];
-      if (templateArray && templateArray.length > 0) {
-        if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templateArray.length) {
-          storyTemplate = templateArray[templateIndex];
-        } else {
-          // Random selection
-          const randomIndex = Math.floor(Math.random() * templateArray.length);
-          storyTemplate = templateArray[randomIndex];
-        }
-      }
+    // Use TemplateLibraryService to get template
+    const getterFn = TemplateLibraryService[config.getterName as keyof typeof TemplateLibraryService];
+    if (typeof getterFn === 'function') {
+      storyTemplate = (getterFn as (index?: number) => StoryTemplate).call(TemplateLibraryService, templateIndex);
     }
     
     if (!storyTemplate) {

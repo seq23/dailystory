@@ -199,25 +199,500 @@ export class TemplateLibraryService {
     return templates ? templates.length : 0;
   }
   
-  // Create basic template as fallback
-  static createBasicTemplate(level, fallbackLevel) {
-    const basicTemplates = {
-      grade6: [
-        "{userName} discovers an interesting scientific phenomenon during their {hobbies} activities.",
-        "Through careful observation and research, they begin to understand the underlying principles.",
-        "Their curiosity leads them to conduct experiments and gather data about their discovery.",
-        "With dedication and scientific thinking, {userName} develops new insights about the natural world.",
-        "Their findings contribute to a better understanding of science and inspire others to explore."
+  // Level 1 Templates (extracted from src/constants/newFallbackTemplates/level1Templates.ts)
+  static LEVEL_1_TEMPLATES = [
+    {
+      title: "The Magical Treehouse Adventure",
+      theme: "Magic & Nature",
+      level: "Level 1",
+      scenes: [
+        {
+          text: "{userName} finds a magical treehouse hidden in the {forestType} forest. Inside, they discover a book that glows with {favoriteColor} light. When they open it, the treehouse starts to float up into the sky!",
+          pause: true,
+          hook: "Where will the magical treehouse take them?",
+          microVariants: {
+            text: "{userName} discovers a magical treehouse with a glowing book that makes it fly!",
+            alternatives: [
+              "{userName} found a secret treehouse that could fly when they opened a magical book."
+            ],
+            optionalDetails: ["The book whispered secrets.", "The treehouse sparkled with magic."]
+          }
+        }
       ],
-      grade7: [
-        "{userName} encounters a complex social situation that challenges their understanding of fairness and justice.",
-        "As they investigate different perspectives, they learn about the importance of empathy and critical thinking.",
-        "Through thoughtful discussion and research, they develop a deeper appreciation for diverse viewpoints.",
-        "Their growing awareness helps them navigate difficult conversations and build stronger relationships.",
-        "By applying their newfound wisdom, {userName} contributes to positive change in their community."
-      ]
+      endings: [
+        {
+          type: 'cozy',
+          text: "The treehouse gently brings {userName} back home. They keep the magical book safe and visit the treehouse whenever they want a new adventure.",
+          microVariants: ["The magical treehouse becomes {userName}'s secret place for adventures."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "forestType": ["enchanted", "dark", "sunny", "mysterious"]
+        },
+        weatherVariants: ["sunny", "cloudy"],
+        settingVariants: ["forest", "sky"]
+      }
+    }
+  ];
+
+  static getLevel1Template(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_1_TEMPLATES.length) {
+      return this.LEVEL_1_TEMPLATES[templateIndex];
+    }
+    // Return random template
+    const randomIndex = Math.floor(Math.random() * this.LEVEL_1_TEMPLATES.length);
+    return this.LEVEL_1_TEMPLATES[randomIndex];
+  }
+
+  static getLevel1TemplateCount() {
+    return this.LEVEL_1_TEMPLATES.length;
+  }
+
+  // Level 2 Templates (extracted from src/constants/newFallbackTemplates/level2Templates.ts)  
+  static LEVEL_2_TEMPLATES = [
+    {
+      title: "The Secret Garden Discovery",
+      theme: "Nature & Growth",
+      level: "Level 2 (Ages 7-9)",
+      scenes: [
+        {
+          text: "{userName} discovers a hidden door behind the old {favoriteColor} fence at school. Behind it lies a secret garden that hasn't been tended in years, full of wild plants and friendly {favoriteAnimal}s. They decide to bring the garden back to life.",
+          pause: true,
+          hook: "What will they find as they explore the secret garden?",
+          microVariants: {
+            text: "{userName} finds a secret garden behind an old fence and decides to restore it to its former beauty.",
+            alternatives: [
+              "A hidden garden waits behind the school fence for {userName} to discover and care for it."
+            ],
+            optionalDetails: ["Butterflies dance among the flowers.", "Old tools wait to be used again."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "The secret garden blooms beautifully under {userName}'s care. It becomes a peaceful place where students can learn about nature and help things grow.",
+          microVariants: ["The restored garden becomes a special learning place for everyone at school."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "gardenType": ["flower", "vegetable", "herb", "butterfly"]
+        },
+        weatherVariants: ["sunny", "rainy", "cloudy"],
+        settingVariants: ["school", "backyard", "park"]
+      }
+    }
+  ];
+
+  static getLevel2Template(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_2_TEMPLATES.length) {
+      return this.LEVEL_2_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.LEVEL_2_TEMPLATES.length);
+    return this.LEVEL_2_TEMPLATES[randomIndex];
+  }
+
+  static getLevel2TemplateCount() {
+    return this.LEVEL_2_TEMPLATES.length;
+  }
+
+  // Level 3 Templates (extracted from src/constants/newFallbackTemplates/level3Templates.ts)
+  static LEVEL_3_FALLBACK_TEMPLATES = [
+    {
+      title: "The Magical Treehouse Adventure",
+      theme: "Magic & Fantasy", 
+      level: "Level 3 (Ages 9-11)",
+      scenes: [
+        {
+          text: "{userName} and their best friend stumbled upon an ancient-looking treehouse deep in the {forestType} forest. As they climbed inside, they discovered a dusty old book with strange symbols. Suddenly, the treehouse began to shake, and they realized it was lifting off the ground!",
+          pause: true,
+          hook: "Where will the magical treehouse take them?",
+          microVariants: {
+            text: "{userName} and their friend found a hidden treehouse. Inside, a mysterious book with glowing symbols caused the treehouse to magically float into the sky!",
+            alternatives: [
+              "{userName} and their friend were playing in the woods when they discovered a secret treehouse. A magical book inside made the treehouse fly!"
+            ],
+            optionalDetails: ["The book whispered secrets.", "Strange lights flickered around them.", "The air crackled with energy."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "Back in their own backyard, {userName} and their friend built a small library for their neighborhood, filled with books from their adventure. They often read stories to the younger children, sharing the magic of reading and the importance of education.",
+          microVariants: [
+            "They built a neighborhood library with books from their adventure, sharing stories and the importance of education with younger children."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "forestType": ["enchanted", "dark", "sunny", "mysterious"],
+          "animalType": ["owl", "fox", "bear", "squirrel"]
+        },
+        weatherVariants: ["sunny", "rainy", "cloudy", "stormy"],
+        settingVariants: ["forest", "mountains", "beach", "desert"]
+      }
+    }
+  ];
+
+  static getLevel3FallbackTemplate(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_3_FALLBACK_TEMPLATES.length) {
+      return this.LEVEL_3_FALLBACK_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.LEVEL_3_FALLBACK_TEMPLATES.length);
+    return this.LEVEL_3_FALLBACK_TEMPLATES[randomIndex];
+  }
+
+  static getLevel3FallbackTemplateCount() {
+    return this.LEVEL_3_FALLBACK_TEMPLATES.length;
+  }
+
+  // Level 4 Templates (extracted from src/constants/newFallbackTemplates/level4Templates.ts)
+  static LEVEL_4_TEMPLATES = [
+    {
+      title: "The Ancient Artifact Mystery",
+      theme: "Archaeology & Discovery",
+      level: "Level 4",
+      scenes: [
+        {
+          text: "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team. Dr. Martinez, the lead archaeologist, explains that such discoveries could rewrite our understanding of ancient civilizations and their technological capabilities.",
+          pause: true,
+          hook: "What secrets might this ancient artifact reveal?",
+          microVariants: {
+            text: "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team.",
+            alternatives: ["An mysterious artifact catches {userName}'s attention at the museum.", "While cataloging artifacts, {userName} finds something extraordinary."],
+            optionalDetails: ["the tablet feels surprisingly warm to the touch", "strange symbols seem to shimmer in certain lighting"]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "{userName} presents their findings at a national archaeology conference, inspiring other young people to pursue careers in historical research and scientific discovery.",
+          microVariants: ["The discovery changes how we understand ancient civilizations.", "{userName} becomes the youngest researcher to present at the conference."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "artifactType": ["tablet", "scroll", "tool", "ornament"],
+          "civilizationType": ["ancient", "lost", "forgotten", "mysterious"]
+        },
+        weatherVariants: ["clear", "overcast", "sunny"],
+        settingVariants: ["museum", "excavation site", "laboratory"]
+      }
+    }
+  ];
+
+  static getLevel4Template(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_4_TEMPLATES.length) {
+      return this.LEVEL_4_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.LEVEL_4_TEMPLATES.length);
+    return this.LEVEL_4_TEMPLATES[randomIndex];
+  }
+
+  static getLevel4TemplateCount() {
+    return this.LEVEL_4_TEMPLATES.length;
+  }
+
+  // Grade 6 Templates (extracted from src/constants/newFallbackTemplates/grade6Templates.ts)
+  static GRADE_6_FALLBACK_TEMPLATES = [
+    {
+      title: "The Biosphere Project: Discovering Life's Hidden Connections",
+      theme: "Science & Environmental Discovery",
+      level: "Grade 6",
+      scenes: [
+        {
+          text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by the intricate relationships that existed within natural ecosystems, but their passion for {hobbies} had never prepared them for the extraordinary discovery they were about to make during their sixth-grade environmental science project. While investigating the biodiversity of their local watershed for a presentation on ecological interconnections, they noticed something that made their scientific curiosity intensify dramatically. The {favoriteColor} algae formations in the stream weren't behaving according to any patterns they had studied in their textbooks or observed in previous field research.",
+          pause: true,
+          hook: "What could be causing these algae to behave so unusually, and what might this discovery reveal about the hidden connections in nature?",
+          microVariants: {
+            text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by natural ecosystems, but nothing prepared them for the extraordinary discovery during their sixth-grade environmental science project.",
+            alternatives: [
+              "Chapter 1: The Unexpected Observation\n\n{userName} possessed an inherent fascination with the complex interdependencies that characterized natural ecological systems."
+            ],
+            optionalDetails: [
+              "The water temperature fluctuated in unusual patterns.",
+              "Nearby industrial activity had recently changed.", 
+              "The algae seemed to pulse with bioluminescent properties."
+            ]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'cozy',
+          text: "Final Chapter: The Living Laboratory\n\nTen years later, Dr. {userName} sat peacefully in their research laboratory, now recognized as one of the world's leading experts in microbial communication systems. The discovery they had made as a sixth-grader had evolved into groundbreaking research that was helping scientists understand how ecosystems adapt to climate change.",
+          microVariants: [
+            "Final Chapter: The Legacy of Discovery\n\nA decade afterward, Professor {userName} found tranquil satisfaction within their advanced research facility, having achieved international recognition as a pioneering authority in microbial ecosystem communication research."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "scientific_equipment": ["microscopes", "water testing kits", "data loggers", "sample containers"],
+          "research_findings": ["communication patterns", "chemical signals", "behavioral adaptations", "environmental responses"]
+        },
+        weatherVariants: ["clear research day", "overcast field work", "sunny data collection", "misty morning observations"],
+        settingVariants: ["stream ecosystem", "university laboratory", "research field station", "environmental preserve"],
+        randomSeed: Math.floor(Math.random() * 10000)
+      }
+    }
+  ];
+
+  static getGrade6FallbackTemplate(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_6_FALLBACK_TEMPLATES.length) {
+      return this.GRADE_6_FALLBACK_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.GRADE_6_FALLBACK_TEMPLATES.length);
+    return this.GRADE_6_FALLBACK_TEMPLATES[randomIndex];
+  }
+
+  static getGrade6FallbackTemplateCount() {
+    return this.GRADE_6_FALLBACK_TEMPLATES.length;
+  }
+
+  // Grade 7 Templates (extracted from src/constants/newFallbackTemplates/grade7Templates.ts)
+  static GRADE_7_FALLBACK_TEMPLATES = [
+    {
+      title: "The Climate Action Revolution: A Student's Journey to Global Impact",
+      theme: "Environmental Leadership & Social Change",
+      level: "Grade 7",
+      scenes: [
+        {
+          text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious—they recycled, turned off lights, and enjoyed {hobbies}—but their perspective on climate action fundamentally shifted during a particularly eye-opening seventh-grade environmental science unit that would ultimately change the trajectory of their entire academic and personal life. While researching the impact of industrial agriculture on local ecosystems for what they initially thought would be a routine class presentation about environmental issues affecting their immediate community, {userName} discovered that the {favoriteColor} algae blooms appearing in their regional watershed weren't just a natural phenomenon, but rather a direct consequence of agricultural runoff that was systematically disrupting the ecological balance their community had maintained for generations.",
+          pause: true,
+          hook: "What specific environmental crisis will motivate {userName} to transform from student observer to activist leader?",
+          microVariants: {
+            text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious, but their perspective on climate action fundamentally shifted during seventh-grade environmental science.",
+            alternatives: [
+              "Chapter 1: The Environmental Awakening\n\n{userName} had previously maintained adequate environmental awareness, however their understanding of climate activism underwent a profound transformation."
+            ],
+            optionalDetails: [
+              "Local water quality had declined 40% in five years.",
+              "Three species of local fish had disappeared recently.",
+              "Their family's well water had become contaminated."
+            ]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "Final Chapter: The Global Student Climate Summit\n\nFive years after their initial environmental awakening, {userName} stood before the United Nations Youth Climate Summit as the youngest keynote speaker in the organization's history, representing a global network of student environmental activists they had helped establish across six continents.",
+          microVariants: [
+            "Their climate action network had prevented the equivalent of 10 million tons of CO2 emissions through student-led initiatives spanning renewable energy projects, sustainable agriculture programs, and community environmental education campaigns."
+          ]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "environmental_issues": ["water pollution", "air quality", "soil degradation", "habitat loss"],
+          "climate_solutions": ["renewable energy", "sustainable agriculture", "green infrastructure", "conservation"]
+        },
+        weatherVariants: ["sunny organizing day", "rainy protest march", "clear policy hearing", "stormy community meeting"],
+        settingVariants: ["school auditorium", "city hall", "community center", "environmental preserve"],
+        randomSeed: Math.floor(Math.random() * 10000)
+      }
+    }
+  ];
+
+  static getGrade7FallbackTemplate(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_7_FALLBACK_TEMPLATES.length) {
+      return this.GRADE_7_FALLBACK_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.GRADE_7_FALLBACK_TEMPLATES.length);
+    return this.GRADE_7_FALLBACK_TEMPLATES[randomIndex];
+  }
+
+  static getGrade7FallbackTemplateCount() {
+    return this.GRADE_7_FALLBACK_TEMPLATES.length;
+  }
+
+  // Grade 8 Templates (extracted from src/constants/newFallbackTemplates/grade8Templates.ts)
+  static GRADE_8_FALLBACK_TEMPLATES = [
+    {
+      title: "The Environmental Justice Investigation",
+      theme: "Environmental Activism & Social Responsibility",
+      level: "Grade 8",
+      scenes: [
+        {
+          text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities. During a school environmental science project, they discover concerning data about air and water quality near industrial facilities that reveals systemic patterns of environmental injustice. Working with community members and environmental scientists, {userName} learns about the complex intersection of environmental health, social equity, and economic inequality. They realize that environmental protection is not just about preserving nature, but about ensuring that all communities have access to clean air, water, and safe living conditions.",
+          pause: true,
+          hook: "What evidence will {userName} uncover about environmental injustice in their community?",
+          microVariants: {
+            text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities.",
+            alternatives: ["Environmental data reveals troubling patterns in {userName}'s community.", "A school project opens {userName}'s eyes to environmental injustice."],
+            optionalDetails: ["pollution levels are significantly higher in certain neighborhoods", "community health statistics show alarming disparities"]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "Standing before a congressional hearing on environmental justice, {userName} presents evidence that leads to new federal regulations protecting vulnerable communities from environmental hazards, demonstrating how youth activism can create lasting policy change.",
+          microVariants: ["Congressional testimony results in federal environmental justice protections.", "{userName}'s research influences national environmental policy."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "environmental_hazards": ["air pollution", "water contamination", "toxic waste", "industrial emissions"],
+          "community_impacts": ["health disparities", "property values", "quality of life", "economic opportunities"]
+        },
+        weatherVariants: ["clear research day", "smoggy data collection", "rainy community meeting", "sunny protest march"],
+        settingVariants: ["industrial zone", "community center", "school laboratory", "government building"],
+        randomSeed: Math.floor(Math.random() * 10000)
+      }
+    }
+  ];
+
+  static getGrade8FallbackTemplate(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_8_FALLBACK_TEMPLATES.length) {
+      return this.GRADE_8_FALLBACK_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.GRADE_8_FALLBACK_TEMPLATES.length);
+    return this.GRADE_8_FALLBACK_TEMPLATES[randomIndex];
+  }
+
+  static getGrade8FallbackTemplateCount() {
+    return this.GRADE_8_FALLBACK_TEMPLATES.length;
+  }
+
+  // Grade 9 Templates (extracted from src/constants/newFallbackTemplates/grade9Templates.ts)
+  static GRADE_9_FALLBACK_TEMPLATES = [
+    {
+      title: "The Mental Health Advocacy Campaign",
+      theme: "Mental Health Awareness & Support",
+      level: "Grade 9",
+      scenes: [
+        {
+          text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma, lack of resources, and systemic barriers prevent students and families from accessing mental health support. Through research into mental health statistics, conversations with counselors and mental health professionals, and collaboration with peer support groups, they discover the extent to which untreated mental health conditions affect academic performance, social relationships, and overall wellbeing while also contributing to broader social problems including substance abuse, social isolation, and academic failure.",
+          pause: true,
+          hook: "What comprehensive mental health advocacy strategy will {userName} develop to reduce stigma while increasing access to mental health resources and support systems?",
+          microVariants: {
+            text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma and barriers prevent access to support.",
+            alternatives: ["Mental health research exposes systemic barriers that prevent students and families from accessing critical mental health support.", "Investigation reveals how stigma and lack of resources create mental health crises that affect entire communities."],
+            optionalDetails: ["local suicide rates among teens increased 34% over two years", "73% of students report needing mental health support but only 23% receive adequate care"]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "Final Chapter: The National Mental Health Conference\n\nAddressing the National Mental Health Policy Summit as the youngest featured speaker, {userName} presents research showing how peer support programs reduce crisis interventions by 67% while improving academic outcomes, leading to federal funding for youth mental health initiatives nationwide.",
+          microVariants: ["Federal policy adopts {userName}'s peer support model for national implementation.", "Youth mental health advocacy influences comprehensive policy reform at the national level."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "mental_health_issues": ["anxiety disorders", "depression", "trauma responses", "social isolation"],
+          "support_strategies": ["peer counseling", "group therapy", "mindfulness programs", "crisis intervention"]
+        },
+        weatherVariants: ["supportive sunny day", "reflective rainy session", "clear advocacy meeting", "calming cloudy afternoon"],
+        settingVariants: ["school counseling center", "community mental health facility", "peer support group room", "legislative hearing room"],
+        randomSeed: Math.floor(Math.random() * 10000)
+      }
+    }
+  ];
+
+  static getGrade9FallbackTemplate(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_9_FALLBACK_TEMPLATES.length) {
+      return this.GRADE_9_FALLBACK_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.GRADE_9_FALLBACK_TEMPLATES.length);
+    return this.GRADE_9_FALLBACK_TEMPLATES[randomIndex];
+  }
+
+  static getGrade9FallbackTemplateCount() {
+    return this.GRADE_9_FALLBACK_TEMPLATES.length;
+  }
+
+  // Grade 10 Templates (extracted from src/constants/newFallbackTemplates/grade10Templates.ts)
+  static GRADE_10_FALLBACK_TEMPLATES = [
+    {
+      title: "The Climate Justice Leadership Initiative",
+      theme: "Climate Change & Intergenerational Responsibility",
+      level: "Grade 10",
+      scenes: [
+        {
+          text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns in their community. Through extensive research into climate science, environmental policy, and social justice frameworks, they discover how climate change disproportionately affects marginalized communities and how effective climate solutions must address these intersecting injustices. The initiative involves building coalitions with environmental organizations, social justice groups, youth activists, and community leaders to develop comprehensive policy proposals that prioritize both environmental protection and social equity.",
+          pause: true,
+          hook: "How will {userName} build a movement that addresses both climate change and social justice?",
+          microVariants: {
+            text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns.",
+            alternatives: ["Climate research reveals the intersection of environmental and social justice issues.", "{userName} discovers that effective climate action must address systemic inequalities."],
+            optionalDetails: ["vulnerable communities face the greatest climate risks with the least resources for adaptation", "climate solutions must include economic justice and community empowerment components"]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "Final Chapter: The International Climate Justice Summit\n\nAs the youngest delegate to the International Climate Justice Summit, {userName} presents the community-based climate justice model they developed, which is adopted by 47 countries as a framework for equitable climate action that prioritizes community empowerment and environmental justice.",
+          microVariants: ["Their climate justice framework becomes an international model for equitable environmental policy.", "Global climate policy incorporates {userName}'s community empowerment approach to environmental justice."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "climate_impacts": ["sea level rise", "extreme weather", "drought patterns", "ecosystem disruption"],
+          "justice_solutions": ["community energy cooperatives", "green job training", "environmental remediation", "participatory planning"]
+        },
+        weatherVariants: ["urgent action day", "coalition building session", "policy advocacy meeting", "community organizing event"],
+        settingVariants: ["community center", "city council chambers", "environmental justice organization", "university research facility"],
+        randomSeed: Math.floor(Math.random() * 10000)
+      }
+    }
+  ];
+
+  static getGrade10FallbackTemplate(templateIndex) {
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_10_FALLBACK_TEMPLATES.length) {
+      return this.GRADE_10_FALLBACK_TEMPLATES[templateIndex];
+    }
+    const randomIndex = Math.floor(Math.random() * this.GRADE_10_FALLBACK_TEMPLATES.length);
+    return this.GRADE_10_FALLBACK_TEMPLATES[randomIndex];
+  }
+
+  static getGrade10FallbackTemplateCount() {
+    return this.GRADE_10_FALLBACK_TEMPLATES.length;
+  }
+
+  // Create basic template for any missing levels
+  static createBasicTemplate(level, fallbackLevel = 'Level 2') {
+    const basicTemplate = {
+      title: `A Special Adventure for ${level}`,
+      theme: "Adventure & Discovery",
+      level: level,
+      scenes: [
+        {
+          text: `{userName} embarks on an exciting adventure that will challenge their mind and spark their imagination. They discover that learning and growing can be the greatest adventure of all.`,
+          pause: true,
+          hook: "What will they discover next?",
+          microVariants: {
+            text: "An exciting adventure awaits {userName} as they explore new possibilities.",
+            alternatives: ["A journey of discovery begins for {userName}."],
+            optionalDetails: ["The adventure teaches valuable lessons."]
+          }
+        }
+      ],
+      endings: [
+        {
+          type: 'triumphant',
+          text: "{userName} returns home with new knowledge and confidence.",
+          microVariants: ["The adventure ends with personal growth and wisdom."]
+        }
+      ],
+      reuse: {
+        swappableElements: {
+          "adventure": ["journey", "quest", "exploration", "discovery"]
+        },
+        weatherVariants: ["sunny", "cloudy", "clear"],
+        settingVariants: ["forest", "city", "countryside"]
+      }
     };
     
-    return basicTemplates[fallbackLevel] || null;
+    return basicTemplate;
   }
 }
