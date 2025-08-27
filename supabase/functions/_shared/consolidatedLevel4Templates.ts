@@ -5,40 +5,10 @@
  */
 
 import { StoryTemplate } from './templates/storyTemplateTypes.ts';
+import { LEVEL_4_TEMPLATES } from '../../../src/constants/newFallbackTemplates/level4Templates.ts';
 
 // All 5 comprehensive Level 4 templates with full scenes
-export const LEVEL_4_CONSOLIDATED_TEMPLATES: StoryTemplate[] = [
-  // Placeholder - will be populated with all 5 comprehensive templates from frontend  
-  {
-    title: "Comprehensive Level 4 Templates",
-    theme: "All Themes",
-    level: "Level 4",
-    scenes: [
-      {
-        text: "Comprehensive templates imported from frontend with all scenes and endings.",
-        pause: true,
-        hook: "Templates ready for import",
-        microVariants: {
-          text: "All 5 Level 4 templates ready",
-          alternatives: ["Templates prepared"],
-          optionalDetails: ["Full scenes included"]
-        }
-      }
-    ],
-    endings: [
-      {
-        type: 'triumphant',
-        text: "Templates successfully imported.",
-        microVariants: ["Import complete"]
-      }
-    ],
-    reuse: {
-      swappableElements: {},
-      weatherVariants: [],
-      settingVariants: []
-    }
-  }
-];
+export const LEVEL_4_CONSOLIDATED_TEMPLATES: StoryTemplate[] = LEVEL_4_TEMPLATES;
 
 export function getLevel4Template(templateIndex?: number): StoryTemplate | null {
   if (templateIndex !== undefined) {
