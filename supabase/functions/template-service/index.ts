@@ -114,6 +114,15 @@ serve(async (req) => {
       let templateCount = 0;
       if (templateLevel === 'Level0') {
         templateCount = VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.length + LEVEL_0_TEMPLATES.length + LEVEL_0_EXTENSIONS.length;
+      } else {
+        // For higher levels, use dynamic import to get template count
+        try {
+          const { getTemplateCountByLevel } = await import('../_shared/templateLibraryAug26.ts');
+          templateCount = getTemplateCountByLevel(templateLevel);
+        } catch (error) {
+          console.error('❌ Failed to get template count for level:', templateLevel, error);
+          templateCount = 0;
+        }
       }
       
       return new Response(JSON.stringify({
@@ -131,13 +140,13 @@ serve(async (req) => {
       });
     }
 
-    // Get template using new system
-    console.log('📚 Getting template from new system for level:', templateLevel);
+    // Get template using new dynamic system
+    console.log('📚 Getting template from dynamic system for level:', templateLevel);
     
     let template: string[] | null = null;
     
     if (templateLevel === 'Level0') {
-      // Combine all Level 0 templates for selection
+      // Combine all Level 0 templates for selection (static imports)
       const allLevel0Templates = [
         ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, // Primary: 100 templates
         ...LEVEL_0_TEMPLATES,                      // Secondary: 43 templates  
@@ -150,8 +159,22 @@ serve(async (req) => {
         template = allLevel0Templates[Math.floor(Math.random() * allLevel0Templates.length)];
       }
     } else {
-      // For higher levels, return null since we're only migrating Level 0
-      template = null;
+      // For higher levels, use dynamic imports from templateLibraryAug26
+      console.log('🔄 Dynamic import for level:', templateLevel);
+      
+      try {
+        const { getTemplatesByLevel } = await import('../_shared/templateLibraryAug26.ts');
+        template = getTemplatesByLevel(templateLevel, templateIndex);
+        
+        if (template) {
+          console.log('✅ Dynamic template loaded successfully for', templateLevel, 'with', template.length, 'pages');
+        } else {
+          console.log('⚠️  No template found for level:', templateLevel);
+        }
+      } catch (error) {
+        console.error('❌ Dynamic import failed for level:', templateLevel, error);
+        template = null;
+      }
     }
 
     if (!template) {
