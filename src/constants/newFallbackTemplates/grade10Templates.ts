@@ -211,6 +211,19 @@ export const GRADE_10_FALLBACK_TEMPLATES: StoryTemplate[] = [
     ],
     endings: [
       {
+        type: 'cozy',
+        text: "Final Chapter: The Community Health Sanctuary\n\n{userName} sits in the warm community health center they helped establish, surrounded by soft {favoriteColor} walls and gentle natural lighting, reflecting on how healthcare justice advocacy had taught them that healing happened best in communities where everyone had access to care without fear or shame. The center's welcoming atmosphere reminded them that healthcare was ultimately about creating spaces where people's dignity and wellbeing were prioritized over profit and judgment.",
+        microVariants: [
+          "The community health center had become a sanctuary where healthcare happened with compassion and everyone received care based on need rather than ability to pay.",
+          "Quiet moments in the healing garden reminded {userName} that healthcare justice was ultimately about ensuring everyone had access to care that honored their humanity and dignity."
+        ]
+      },
+      {
+        type: 'silly',
+        text: "During the big healthcare access presentation, {userName} discovers that their demonstration of holistic care involving therapy {favoriteAnimal}s has somehow resulted in a mobile healthcare unit staffed entirely by costumed pets providing preventive care throughout the community, making it the most adorably effective healthcare program ever!",
+        microVariants: ["The therapeutic {favoriteAnimal} healthcare team becomes the community's most beloved medical professionals.", "Who knew that {favoriteAnimal}s could be such effective healthcare advocates?"]
+      },
+      {
         type: 'triumphant',
         text: "{userName}'s healthcare justice work contributes to landmark legislation establishing universal healthcare coverage and eliminating medical debt as a barrier to care.",
         microVariants: ["Healthcare advocacy achieves comprehensive policy victories that establish healthcare access as a guaranteed human right.", "The campaign model influences national healthcare policy reform and universal coverage initiatives."]
@@ -258,6 +271,19 @@ export const GRADE_10_FALLBACK_TEMPLATES: StoryTemplate[] = [
       }
     ],
     endings: [
+      {
+        type: 'cozy',
+        text: "Final Chapter: The Democracy Circle\n\n{userName} sits in the peaceful community democracy center on a soft {favoriteColor} evening, surrounded by voting booths that look like cozy reading nooks, reflecting on how democracy protection work had taught them that true representation happened when everyone's voice was heard and valued equally. The center's inclusive atmosphere reminded them that democracy was ultimately about creating spaces where all people could participate meaningfully in decisions that affected their lives.",
+        microVariants: [
+          "The democracy center had become a gathering place where civic engagement happened naturally and every community member felt empowered to participate in democratic processes.",
+          "Quiet moments in the civic garden reminded {userName} that democracy was ultimately about ensuring everyone had equal opportunities to shape their community's future."
+        ]
+      },
+      {
+        type: 'silly',
+        text: "During the big democracy protection rally, {userName} discovers that their voter education demonstration featuring civic-minded {favoriteAnimal}s has somehow created the most adorable get-out-the-vote campaign ever, with costumed pets encouraging civic participation throughout the community!",
+        microVariants: ["The civic-minded {favoriteAnimal} voting campaign becomes the community's most successful voter engagement program.", "Who knew that {favoriteAnimal}s could be such effective democracy advocates?"]
+      },
       {
         type: 'triumphant',
         text: "{userName}'s democracy protection work contributes to significant voting rights legislation and electoral reforms that expand access while reducing the influence of money in politics.",
