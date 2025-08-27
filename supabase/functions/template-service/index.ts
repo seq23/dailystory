@@ -3,10 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Import the single source of truth for templates
-// Import new template system files from shared directory
-import { LEVEL_0_TEMPLATES, getLevel0Template, getLevel0TemplateCount } from '../_shared/level0Templates.ts';
-import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, getVocabularyCompliantLevel0Template, getVocabularyCompliantLevel0TemplateCount } from '../_shared/level0VocabCompliant.ts';
-import { LEVEL_0_EXTENSIONS, getLevel0Extension, getLevel0ExtensionCount } from '../_shared/level0Extensions.ts';
+import { TemplateLibraryService } from '../_shared/TemplateLibraryService.js';
 
 // Simple user info interface
 interface UserInfo {
@@ -111,19 +108,7 @@ serve(async (req) => {
     if (explore) {
       console.log('🔍 Exploration mode for level:', templateLevel);
       
-      let templateCount = 0;
-      if (templateLevel === 'Level0') {
-        templateCount = VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.length + LEVEL_0_TEMPLATES.length + LEVEL_0_EXTENSIONS.length;
-      } else {
-        // For higher levels, use dynamic import to get template count
-        try {
-          const { getTemplateCountByLevel } = await import('../_shared/templateLibraryAug26.ts');
-          templateCount = getTemplateCountByLevel(templateLevel);
-        } catch (error) {
-          console.error('❌ Failed to get template count for level:', templateLevel, error);
-          templateCount = 0;
-        }
-      }
+      const templateCount = TemplateLibraryService.getTemplateCount(templateLevel);
       
       return new Response(JSON.stringify({
         success: true,
@@ -140,41 +125,15 @@ serve(async (req) => {
       });
     }
 
-    // Get template using new dynamic system
-    console.log('📚 Getting template from dynamic system for level:', templateLevel);
+    // Get template from single source
+    console.log('📚 Getting template from TemplateLibraryService for level:', templateLevel);
     
     let template: string[] | null = null;
     
     if (templateLevel === 'Level0') {
-      // Combine all Level 0 templates for selection (static imports)
-      const allLevel0Templates = [
-        ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, // Primary: 100 templates
-        ...LEVEL_0_TEMPLATES,                      // Secondary: 43 templates  
-        ...LEVEL_0_EXTENSIONS                      // Extensions: 7 templates
-      ];
-      
-      if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < allLevel0Templates.length) {
-        template = allLevel0Templates[templateIndex];
-      } else {
-        template = allLevel0Templates[Math.floor(Math.random() * allLevel0Templates.length)];
-      }
+      template = TemplateLibraryService.getLevel0Template(templateIndex);
     } else {
-      // For higher levels, use dynamic imports from templateLibraryAug26
-      console.log('🔄 Dynamic import for level:', templateLevel);
-      
-      try {
-        const { getTemplatesByLevel } = await import('../_shared/templateLibraryAug26.ts');
-        template = getTemplatesByLevel(templateLevel, templateIndex);
-        
-        if (template) {
-          console.log('✅ Dynamic template loaded successfully for', templateLevel, 'with', template.length, 'pages');
-        } else {
-          console.log('⚠️  No template found for level:', templateLevel);
-        }
-      } catch (error) {
-        console.error('❌ Dynamic import failed for level:', templateLevel, error);
-        template = null;
-      }
+      template = TemplateLibraryService.getFallbackTemplate(templateLevel, templateIndex);
     }
 
     if (!template) {

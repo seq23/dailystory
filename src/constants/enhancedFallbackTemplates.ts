@@ -7,8 +7,7 @@ import { UserInfo, DifficultyLevel } from "@/types";
 import { NameFormatter } from "@/utils/nameFormatter";
 import { ensureColorName } from "@/utils/colorConverter";
 
-// NEW TEMPLATE SYSTEM IMPORTS - Updated for templateLibraryAug26
-// Note: Frontend uses complex StoryTemplate objects, edge function uses simple string arrays
+// NEW TEMPLATE SYSTEM IMPORTS
 import { 
   getFallbackTemplate, 
   resolveStoryPlaceholders, 

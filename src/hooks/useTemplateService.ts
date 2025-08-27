@@ -35,43 +35,19 @@ export function useTemplateService() {
         body: { userInfo }
       });
 
-      console.log('Template service response:', data, 'error:', functionError);
-
-      // Handle expected "no templates available" responses gracefully
-      if (functionError && functionError.message.includes('Edge Function returned a non-2xx status code')) {
-        // This might be a 404 with template unavailability info
-        if (data && data.error && data.level) {
-          const result = {
-            success: false,
-            level: data.level,
-            pages: [],
-            error: data.error,
-            metadata: {
-              sourceSystem: 'template-service',
-              templateLevel: data.level,
-              processingTime: 0
-            }
-          };
-          setResult(result);
-          return result;
-        }
-      }
-
       if (functionError) {
         throw new Error(functionError.message);
       }
 
+      console.log('Template service response:', data);
+
       // Check for successful response based on actual template service format
-      if (!data.pages && !data.story) {
-        throw new Error(data.error || 'Template generation failed - no content generated');
+      if (!data.pages || data.pages.length === 0) {
+        throw new Error(data.error || 'Template generation failed - no pages generated');
       }
 
       // Add success property for consistency with interface
-      const formattedData = { 
-        ...data, 
-        success: true,
-        pages: data.story || data.pages || [] // Handle both story and pages formats
-      };
+      const formattedData = { ...data, success: true };
 
       setResult(formattedData);
       return formattedData;
