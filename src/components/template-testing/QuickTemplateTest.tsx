@@ -5,10 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { StoryResultDisplay } from './StoryResultDisplay';
 import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { DifficultyLevel } from '@/types';
 
 const DIFFICULTY_OPTIONS: { value: DifficultyLevel; label: string; description: string }[] = [
@@ -30,7 +31,7 @@ const GRADE_OPTIONS = [
 export function QuickTemplateTest() {
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [testingMode, setTestingMode] = useState<'testing' | 'real-user'>('testing');
-  const { generateStory, isLoading, result, error } = useTemplateService();
+  const { generateStory, isLoading, result, error, retryCount, isMaxRetriesReached, resetRetryState } = useTemplateService();
 
   const handleTest = async () => {
     if (!selectedLevel) return;
@@ -50,7 +51,16 @@ export function QuickTemplateTest() {
       difficultyLevel: selectedLevel as DifficultyLevel,
     };
 
-    await generateStory(testUserInfo, testingMode);
+    try {
+      await generateStory(testUserInfo, testingMode);
+    } catch (err) {
+      // Error handling is now managed by the hook
+    }
+  };
+
+  const handleRetry = () => {
+    resetRetryState();
+    handleTest();
   };
 
   const allOptions = [...DIFFICULTY_OPTIONS, ...GRADE_OPTIONS];
@@ -162,10 +172,56 @@ export function QuickTemplateTest() {
       {error && (
         <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-destructive">Error</CardTitle>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <CardTitle className="text-destructive">
+                {isMaxRetriesReached ? 'Maximum Attempts Reached' : 'Template Generation Failed'}
+              </CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <p className="text-sm">{error}</p>
+            
+            {!isMaxRetriesReached && retryCount > 0 && (
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">Retry Attempt {retryCount}/3</p>
+                  <p className="text-xs text-muted-foreground">
+                    Templates can occasionally fail. Let's try again.
+                  </p>
+                </div>
+                <Button onClick={handleRetry} variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
+              </div>
+            )}
+
+            {isMaxRetriesReached && (
+              <div className="space-y-3 p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <p className="text-sm font-medium">Service Temporarily Unavailable</p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Our template service is experiencing issues. Please try again in a few minutes, 
+                  or report this issue if it persists.
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={handleRetry} variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Try Again Later
+                  </Button>
+                  <Button 
+                    onClick={() => window.open('mailto:support@example.com?subject=Template Service Issue', '_blank')} 
+                    variant="secondary" 
+                    size="sm"
+                  >
+                    Report Issue
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -187,27 +243,49 @@ export function QuickTemplateTest() {
                     selectedLevel as DifficultyLevel, 
                     result.metadata?.targetWordDensity === 'Template-optimized' ? 'template' : 'ai'
                   );
+
+                  const placeholderValidation = validatePlaceholders(result.pages);
+                  const placeholderIssues = checkForPlaceholderIssues(result.pages);
                   
                   return (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={validationResult.isValid ? 'default' : 'destructive'}>
-                          {validationResult.isValid ? 'Valid' : 'Invalid'}
-                        </Badge>
-                        <span className="text-sm">
-                          {validationResult.actualTokens} / {validationResult.maxAllowed} tokens
-                          {validationResult.templateMode && ' (Template mode)'}
-                        </span>
-                      </div>
-                      
-                      {validationResult.warnings.length > 0 && (
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">Warnings:</p>
-                          {validationResult.warnings.map((warning, index) => (
-                            <p key={index} className="text-sm text-muted-foreground">• {warning}</p>
-                          ))}
+                    <div className="space-y-4">
+                      {/* Token Validation */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={validationResult.isValid ? 'default' : 'destructive'}>
+                            {validationResult.isValid ? 'Valid' : 'Invalid'}
+                          </Badge>
+                          <span className="text-sm">
+                            {validationResult.actualTokens} / {validationResult.maxAllowed} tokens
+                            {validationResult.templateMode && ' (Template mode)'}
+                          </span>
                         </div>
-                      )}
+                        
+                        {validationResult.warnings.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">Token Warnings:</p>
+                            {validationResult.warnings.map((warning, index) => (
+                              <p key={index} className="text-sm text-muted-foreground">• {warning}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Placeholder Validation */}
+                      <div className="space-y-2 p-3 bg-muted rounded-lg">
+                        <p className="text-sm font-medium">Placeholder Resolution</p>
+                        <p className="text-sm text-muted-foreground">
+                          {getPlaceholderValidationMessage(placeholderValidation)}
+                        </p>
+                        {placeholderIssues.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-destructive">Content Issues:</p>
+                            {placeholderIssues.map((issue, index) => (
+                              <p key={index} className="text-xs text-muted-foreground">• {issue}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
