@@ -1,6 +1,6 @@
-import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
 import type { UserInfo } from '@/types';
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Enhanced Post-Processing Service for Story and Image Generation
@@ -20,21 +20,24 @@ export class EnhancedPostProcessor {
     console.log('📝 Post-processing story content for placeholder resolution and pronoun correction');
     
     try {
-      const processedPages = pages.map((page, index) => {
-        // Step 1: Resolve placeholders first using the new unified system
-        const placeholderResolved = resolveAllPlaceholders(page, { userInfo });
-        console.log(`✅ Placeholder resolved page ${index + 1}: ${placeholderResolved.substring(0, 50)}...`);
-        
-        // Step 2: Apply comprehensive grammar fixes 
-        const grammarFixed = this.applyGrammarFixes(placeholderResolved);
-        console.log(`✅ Grammar fixed page ${index + 1}: ${grammarFixed.substring(0, 50)}...`);
-        
-        // Step 3: Apply pronoun corrections (after grammar fixes)
-        const pronounCorrected = this.correctPronouns(grammarFixed, userInfo.avatar?.type || 'prefer-not-to-answer');
-        console.log(`✅ Final processed page ${index + 1}: ${pronounCorrected.substring(0, 50)}...`);
-        
-        return pronounCorrected;
-      });
+    // Use template service for placeholder resolution
+    const processedPages = await Promise.all(pages.map(async (page) => {
+      try {
+        const { data } = await supabase.functions.invoke('template-service', {
+          body: { 
+            userInfo, 
+            pageCount: 1, 
+            difficulty: 'easy',
+            templateIndex: 0,
+            customTemplate: [page] // Pass single page for processing
+          }
+        });
+        return data?.pages?.[0] || page;
+      } catch (error) {
+        console.warn('Fallback to original page due to processing error:', error);
+        return page;
+      }
+    }));
 
       // Store character context if session exists
       if (sessionId && userInfo) {

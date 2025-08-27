@@ -3,12 +3,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DiagnosticTool } from '@/utils/diagnostics';
-import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 
@@ -48,18 +46,15 @@ export class NetflixStyleStoryService {
       const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
       console.log(`🎯 Netflix-Style: Using user-selected difficulty ${difficulty} for ${userInfo.name}`);
       
-      // Expert: use provided grade when available; default to 6th for free users
+      // Simple prompts for free users - no complex configuration
       let expertGradeLevel: ExpertGradeLevel | undefined;
-      let promptConfig: any;
       
       if (difficulty === 'expert') {
         expertGradeLevel = (userInfo.expertGradeLevel || '6th') as ExpertGradeLevel;
-        promptConfig = getExpertStoryPrompt(expertGradeLevel);
         console.log(`📚 Netflix-Style: Using expert grade ${expertGradeLevel} for ${userInfo.name}`);
-      } else {
-        promptConfig = getStoryPrompt(difficulty);
       }
-      const systemPrompt = promptConfig.systemPrompt;
+      
+      const systemPrompt = `Generate a complete ${difficulty} level story with 6 pages. Keep it age-appropriate and engaging.`;
       
       // Sanitize all user inputs before story generation
       const safeName = InputSanitizer.sanitizeUserInfo(userInfo.name);
@@ -69,26 +64,8 @@ export class NetflixStyleStoryService {
       const safeFood = InputSanitizer.sanitizeStoryInput(userInfo.favoriteFood || '');
       const safeRequest = InputSanitizer.sanitizeStoryInput(userInfo.specialRequest || '');
       
-      // Use configured prompts from storyPrompts.ts only
-let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
-        ...userInfo,
-        name: safeName,
-        favoriteAnimal: safeAnimal,
-        favoriteColor: safeColor,
-        hobbies: safeHobbies,
-        favoriteFood: safeFood,
-        specialRequest: safeRequest
-      });
-
-      // Append author voice preferred themes as a gentle hint
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(userInfo, difficulty);
-          if (voice?.preferredThemes?.length) {
-            userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
-          }
-        }
-      } catch {}
+      // Simple user prompt
+      const userPrompt = `Create a story for ${safeName} who likes ${safeAnimal || 'animals'} and the color ${safeColor || 'blue'}. ${safeRequest || 'Make it fun!'}`;
       
       console.log('🎬 Calling OpenAI with simple prompts...');
       console.log('🔍 DIAGNOSTIC: About to call supabase.functions.invoke', {
@@ -118,7 +95,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
             favoriteAnimal: userInfo.favoriteAnimal,
             favoriteFood: userInfo.favoriteFood,
             hobbies: userInfo.hobbies,
-            maxLength: promptConfig.maxLength || 500, // Default for unlimited stories
+            maxLength: 500, // Default for unlimited stories
             expectedPages: 6, // Generate exactly 6 pages for free users
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
@@ -174,20 +151,8 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
           } catch {}
           console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: cleanPages.length, difficulty: data.difficulty || difficulty });
 
-          // Optional author voice post-processing
+          // Simple processing - no author voice
           let pagesOut = cleanPages;
-          try {
-            if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-              const voice = getColorVoiceForUser(userInfo, difficulty);
-              const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-              pagesOut = cleanPages.map((p: string, idx: number) => {
-                const isFirst = idx === 0;
-                const isLast = idx === cleanPages.length - 1;
-                const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
-                return applyAuthorVoice(p, voice, position, userInfo, difficulty);
-              });
-            }
-          } catch {}
 
           return {
             pages: pagesOut,
@@ -257,21 +222,8 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, {
       } catch {}
       console.log('🧭 STORY_SOURCE', { source: (globalThis as any).__LAST_STORY_SOURCE__, service: 'Netflix', pagesCount: pages.length, difficulty });
 
-      // Optional author voice post-processing for fallback pages
+      // Simple processing - no author voice  
       let pagesOut = pages;
-      try {
-        // Skip author voice for Level 0 (beginner) to maintain simple, age-appropriate language
-        if (difficulty !== 'beginner' && (APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(userInfo, difficulty);
-          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-          pagesOut = pages.map((p: string, idx: number) => {
-            const isFirst = idx === 0;
-            const isLast = idx === pages.length - 1;
-            const position = isFirst ? applyOn.first : isLast ? applyOn.last : applyOn.middle;
-            return applyAuthorVoice(p, voice, position, userInfo, difficulty);
-          });
-        }
-      } catch {}
 
       return {
         pages: pagesOut,
