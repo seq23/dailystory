@@ -850,6 +850,14 @@ export function getLevel3FallbackTemplate(templateIndex?: number): StoryTemplate
   return LEVEL_3_FALLBACK_TEMPLATES[randomIndex];
 }
 
-export function getLevel3FallbackTemplateCount(): number {
+export function getLevel3Template(templateIndex?: number): StoryTemplate | null {
+  if (templateIndex !== undefined) {
+    return LEVEL_3_FALLBACK_TEMPLATES[templateIndex] || null;
+  }
+  const randomIndex = Math.floor(Math.random() * LEVEL_3_FALLBACK_TEMPLATES.length);
+  return LEVEL_3_FALLBACK_TEMPLATES[randomIndex];
+}
+
+export function getLevel3TemplateCount(): number {
   return LEVEL_3_FALLBACK_TEMPLATES.length;
 }

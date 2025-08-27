@@ -254,7 +254,7 @@ export const GRADE_6_FALLBACK_TEMPLATES: StoryTemplate[] = [
 /**
  * Get a random Grade 6 template
  */
-export function getGrade6FallbackTemplate(templateIndex?: number): StoryTemplate | null {
+export function getGrade6Template(templateIndex?: number): StoryTemplate | null {
   if (GRADE_6_FALLBACK_TEMPLATES.length === 0) return null;
   
   const index = templateIndex !== undefined 
@@ -264,9 +264,6 @@ export function getGrade6FallbackTemplate(templateIndex?: number): StoryTemplate
   return GRADE_6_FALLBACK_TEMPLATES[index];
 }
 
-/**
- * Get the count of Grade 6 templates
- */
-export function getGrade6FallbackTemplateCount(): number {
+export function getGrade6TemplateCount(): number {
   return GRADE_6_FALLBACK_TEMPLATES.length;
 }
