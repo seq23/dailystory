@@ -3,6 +3,10 @@
  * Converts StoryTemplate objects to string[] arrays with full placeholder resolution
  */
 
+// Import sophisticated placeholder resolver and grammar validation from shared services
+import { resolveAllPlaceholders, MicroContext } from './placeholderResolver.ts';
+import { validateAndEnhanceGrammar } from './grammarValidator.ts';
+
 // Types matching the frontend
 interface MicroVariants {
   text: string;
@@ -96,32 +100,61 @@ function derivePronoun(userInfo?: UserInfo): string {
   }
 }
 
-// Apply grammar fixes based on pronoun
-function applyGrammarFixes(text: string, pronoun: string): string {
-  let t = text;
+// Process swappable elements for random variation (Grades 6-10 feature)
+function processSwappableElements(template: StoryTemplate, userInfo: UserInfo): Record<string, string> {
+  const swappedElements: Record<string, string> = {};
   
-  if (pronoun === "they") {
-    t = t.replace(/\bthey\s+is\b/gi, "they are");
-    t = t.replace(/\bthey\s+was\b/gi, "they were");
-    t = t.replace(/\bthey\s+has\b/gi, "they have");
-    t = t.replace(/\bthey\s+does\b/gi, "they do");
-    t = t.replace(/\bthey\s+goes\b/gi, "they go");
-  } else if (pronoun === "he" || pronoun === "she") {
-    t = t.replace(new RegExp(`\\b${pronoun}\\s+have\\b`, 'gi'), `${pronoun} has`);
-    t = t.replace(new RegExp(`\\b${pronoun}\\s+are\\b`, 'gi'), `${pronoun} is`);
-    t = t.replace(new RegExp(`\\b${pronoun}\\s+were\\b`, 'gi'), `${pronoun} was`);
-    t = t.replace(new RegExp(`\\b${pronoun}\\s+do\\b`, 'gi'), `${pronoun} does`);
+  if (template.reuse && template.reuse.swappableElements) {
+    for (const [key, options] of Object.entries(template.reuse.swappableElements)) {
+      if (options && options.length > 0) {
+        // Randomly swap elements each time (as requested)
+        const randomIndex = Math.floor(Math.random() * options.length);
+        swappedElements[key] = options[randomIndex];
+      }
+    }
   }
   
-  return t;
+  return swappedElements;
 }
 
-// Import sophisticated placeholder resolver from shared service
-import { resolveAllPlaceholders, MicroContext } from './placeholderResolver.ts';
-import { validateAndEnhanceGrammar } from './grammarValidator.ts';
+// Apply random seed selection for consistent but varied stories (Grades 6-10)
+function applyRandomSeedSelection(template: StoryTemplate, userInfo: UserInfo): Record<string, any> {
+  const seedData: Record<string, any> = {};
+  
+  if (template.reuse && template.reuse.randomSeed !== undefined) {
+    // Seeded random selection for consistent but varied stories
+    const seed = template.reuse.randomSeed;
+    
+    // Create deterministic but varied selections based on seed and user info
+    const userSeed = userInfo.name ? userInfo.name.length : 1;
+    const combinedSeed = (seed + userSeed) % 10000;
+    
+    // Use combined seed for consistent randomization
+    Math.seedrandom = function(seed: number) {
+      let x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
+    const seededRandom = Math.seedrandom(combinedSeed);
+    
+    // Apply seeded randomization to weather and setting variants
+    if (template.reuse.weatherVariants && template.reuse.weatherVariants.length > 0) {
+      const weatherIndex = Math.floor(seededRandom * template.reuse.weatherVariants.length);
+      seedData.weather = template.reuse.weatherVariants[weatherIndex];
+    }
+    
+    if (template.reuse.settingVariants && template.reuse.settingVariants.length > 0) {
+      const settingIndex = Math.floor(seededRandom * template.reuse.settingVariants.length);
+      seedData.setting = template.reuse.settingVariants[settingIndex];
+    }
+  }
+  
+  return seedData;
+}
 
-// Process scene with microVariants
-function processScene(scene: StoryScene, userInfo: UserInfo): string {
+
+// Process scene with microVariants and sophisticated placeholder resolution
+function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemplate): string {
   const shouldUseAlternative = Math.random() < 0.3; // 30% chance for variety
   const shouldAddDetail = Math.random() < 0.4; // 40% chance for detail
   
@@ -138,15 +171,31 @@ function processScene(scene: StoryScene, userInfo: UserInfo): string {
       : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
   }
   
-  // Apply placeholder resolution
-  text = resolveCanonicalPlaceholders(text, userInfo);
-  text = resolveMicroPlaceholders(text, userInfo);
+  // Process swappable elements and seed data for Grades 6-10
+  const swappedElements = processSwappableElements(template, userInfo);
+  const seedData = applyRandomSeedSelection(template, userInfo);
   
-  return cleanup(text);
+  // Create enhanced MicroContext with swapped elements and seed data
+  const microContext: MicroContext = {
+    userInfo: userInfo,
+    pageText: text,
+    seed: { ...seedData, ...swappedElements }
+  };
+  
+  // Apply sophisticated placeholder resolution
+  text = resolveAllPlaceholders(text, microContext);
+  
+  // Get pronoun for grammar validation
+  const pronoun = derivePronoun(userInfo);
+  
+  // Apply sophisticated grammar validation
+  text = validateAndEnhanceGrammar(text, pronoun);
+  
+  return text;
 }
 
-// Process ending
-function processEnding(endings: AttachableEnding[], userInfo: UserInfo): string {
+// Process ending with sophisticated grammar validation (PHASE 4)
+function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate): string {
   if (endings.length === 0) return "And they lived happily ever after.";
   
   const ending = pick(endings);
@@ -154,15 +203,31 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo): string 
   
   let text = shouldUseVariant ? pick(ending.microVariants) : ending.text;
   
-  // Apply placeholder resolution
-  text = resolveCanonicalPlaceholders(text, userInfo);
-  text = resolveMicroPlaceholders(text, userInfo);
+  // Process swappable elements and seed data for consistent ending
+  const swappedElements = processSwappableElements(template, userInfo);
+  const seedData = applyRandomSeedSelection(template, userInfo);
   
-  return cleanup(text);
+  // Create enhanced MicroContext for ending
+  const microContext: MicroContext = {
+    userInfo: userInfo,
+    pageText: text,
+    seed: { ...seedData, ...swappedElements }
+  };
+  
+  // Apply sophisticated placeholder resolution
+  text = resolveAllPlaceholders(text, microContext);
+  
+  // Get pronoun for grammar validation
+  const pronoun = derivePronoun(userInfo);
+  
+  // Apply sophisticated grammar validation to ending (PHASE 4 enhancement)
+  text = validateAndEnhanceGrammar(text, pronoun);
+  
+  return text;
 }
 
 /**
- * Convert a StoryTemplate to a string array
+ * Convert a StoryTemplate to a string array with sophisticated processing
  */
 export function convertStoryTemplateToStringArray(
   template: StoryTemplate, 
@@ -177,12 +242,12 @@ export function convertStoryTemplateToStringArray(
   const scenesToUse = Math.min(pageCount - 1, template.scenes.length);
   
   for (let i = 0; i < scenesToUse; i++) {
-    const processedScene = processScene(template.scenes[i], userInfo);
+    const processedScene = processScene(template.scenes[i], userInfo, template);
     pages.push(processedScene);
   }
   
-  // Add ending
-  const ending = processEnding(template.endings, userInfo);
+  // Add ending with sophisticated processing (PHASE 4)
+  const ending = processEnding(template.endings, userInfo, template);
   pages.push(ending);
   
   console.log(`✅ Template converted to ${pages.length} pages`);

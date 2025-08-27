@@ -73,7 +73,7 @@ const TEMPLATE_MAP = {
   level3: {
     path: '../../../src/constants/newFallbackTemplates/level3Templates.ts',
     arrayName: 'LEVEL_3_FALLBACK_TEMPLATES',
-    getterName: 'getLevel3Template', // FIXED: Remove "Fallback" suffix for consistency
+    getterName: 'getLevel3Template',
     countName: 'getLevel3TemplateCount'
   },
   level4: {
@@ -85,31 +85,31 @@ const TEMPLATE_MAP = {
   grade6: {
     path: '../../../src/constants/newFallbackTemplates/grade6Templates.ts',
     arrayName: 'GRADE_6_FALLBACK_TEMPLATES',
-    getterName: 'getGrade6Template', // FIXED: Remove "Fallback" suffix for consistency
+    getterName: 'getGrade6Template',
     countName: 'getGrade6TemplateCount'
   },
   grade7: {
     path: '../../../src/constants/newFallbackTemplates/grade7Templates.ts',
     arrayName: 'GRADE_7_FALLBACK_TEMPLATES',
-    getterName: 'getGrade7Template', // FIXED: Remove "Fallback" suffix for consistency
+    getterName: 'getGrade7Template',
     countName: 'getGrade7TemplateCount'
   },
   grade8: {
     path: '../../../src/constants/newFallbackTemplates/grade8Templates.ts',
     arrayName: 'GRADE_8_FALLBACK_TEMPLATES',
-    getterName: 'getGrade8Template', // FIXED: Remove "Fallback" suffix for consistency
+    getterName: 'getGrade8Template',
     countName: 'getGrade8TemplateCount'
   },
   grade9: {
     path: '../../../src/constants/newFallbackTemplates/grade9Templates.ts',
     arrayName: 'GRADE_9_FALLBACK_TEMPLATES',
-    getterName: 'getGrade9Template', // FIXED: Remove "Fallback" suffix for consistency
+    getterName: 'getGrade9Template',
     countName: 'getGrade9TemplateCount'
   },
   grade10: {
     path: '../../../src/constants/newFallbackTemplates/grade10Templates.ts',
     arrayName: 'GRADE_10_FALLBACK_TEMPLATES',
-    getterName: 'getGrade10Template', // FIXED: Remove "Fallback" suffix for consistency
+    getterName: 'getGrade10Template',
     countName: 'getGrade10TemplateCount'
   }
 };
