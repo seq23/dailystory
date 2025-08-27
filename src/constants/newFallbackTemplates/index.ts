@@ -12,12 +12,12 @@ export * from './level2Templates';
 export * from './level3Templates';
 export * from './level4Templates';
 
-// Grade-based Templates (Grades 6-10)
-export * from './grade6Templates';
-export * from './grade7Templates';
-export * from './grade8Templates';
-export * from './grade9Templates';
-export * from './grade10Templates';
+// Grade-based Templates (Grades 6-10) - DEPRECATED
+export * from './grade6Templates'; // ❌ DEPRECATED - Use backend service
+export * from './grade7Templates'; // ❌ DEPRECATED - Use backend service
+export * from './grade8Templates'; // ❌ DEPRECATED - Use backend service
+export * from './grade9Templates'; // ❌ DEPRECATED - Use backend service
+export * from './grade10Templates'; // ❌ DEPRECATED - Use backend service
 
 import { StoryTemplate, PersonalizationPlaceholders, DEFAULT_PLACEHOLDERS } from '../storyTemplateTypes';
 import { 

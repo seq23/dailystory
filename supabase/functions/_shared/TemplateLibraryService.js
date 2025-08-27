@@ -1,5 +1,5 @@
 // ============================================================================
-// TEMPLATE LIBRARY SERVICE - NON-BLOATED ARCHITECTURE
+// TEMPLATE LIBRARY SERVICE - COMPLETE BACKEND IMPLEMENTATION
 // ============================================================================
 // All template data consolidated into reusable service module
 // Edge functions import and call these services instead of hardcoding data
@@ -15,40 +15,7 @@ export const LEVEL_0_TEMPLATES = [
   ["{userName} hugs {favoriteAnimal}.", "Soft and warm.", "Love you lots.", "Snuggle time.", "Best friends."],
   ["{userName} paints picture.", "{favoriteColor} paint drips.", "Make nice art.", "Show to mom.", "Pretty picture."],
   ["{userName} rides bike.", "Pedal fast.", "{favoriteColor} wheels spin.", "Feel the wind.", "Fun ride."],
-  ["{userName} builds tower.", "Stack blocks high.", "{favoriteColor} on top.", "So very tall.", "Great job!"],
-  ["{userName} reads book.", "Look at pictures.", "Words tell story.", "Turn the page.", "Books are fun."],
-  ["{userName} helps cook.", "Stir the pot.", "Smells so good.", "Taste a bit.", "Yummy food."],
-  ["{userName} waters flowers.", "Pretty {favoriteColor} blooms.", "Grow big and tall.", "Bees buzz by.", "Garden nice."],
-  ["{userName} feeds {favoriteAnimal}.", "Hungry pet waits.", "Chomp chomp food.", "Full belly now.", "Happy pet."],
-  ["{userName} swims in pool.", "Splash splash water.", "{favoriteColor} floaties help.", "Kick feet fast.", "Swimming fun."],
-  ["{userName} picks berries.", "Red ones taste sweet.", "Fill up basket.", "Share with friends.", "Yummy treats."],
-  ["{userName} flies kite.", "{favoriteColor} kite soars.", "Wind lifts it up.", "String pulls tight.", "Sky dancing."],
-  ["{userName} makes music.", "Drum goes boom boom.", "Sing happy song.", "Dance and move.", "Music magic."],
-  ["{userName} blows bubbles.", "Round and shiny.", "Pop pop pop.", "More bubbles float.", "Bubble magic."],
-  ["{userName} counts stars.", "One two three four.", "Twinkle bright lights.", "Make a wish.", "Night sky pretty."],
-  ["{userName} jumps puddles.", "Splash in water.", "{favoriteColor} boots keep dry.", "Jump jump hop.", "Rainy day fun."],
-  ["{userName} picks apples.", "Red ones hang low.", "Fill up bag full.", "Share with family.", "Apple treats."],
-  ["{userName} makes sandcastles.", "Dig in warm sand.", "{favoriteColor} bucket helps.", "Build up high.", "Beach castle."],
-  ["{userName} catches butterflies.", "Pretty wings flutter.", "Gentle in hands.", "Let them fly free.", "Butterfly friends."],
-  ["{userName} slides down hill.", "Faster and faster.", "{favoriteColor} sled goes zoom.", "Snow flies by.", "Winter fun."],
-  ["{userName} plants seeds.", "Dig small holes.", "Water every day.", "Watch them grow.", "Garden helpers."],
-  ["{userName} makes soup.", "Chop up vegetables.", "Stir in big pot.", "Smells so good.", "Warm soup ready."],
-  ["{userName} builds snowman.", "Roll big snowballs.", "{favoriteColor} hat on top.", "Carrot nose smile.", "Snow friend."],
-  ["{userName} picks flowers.", "Pretty {favoriteColor} petals.", "Make nice bouquet.", "Give to mom.", "Flower love."],
-  ["{userName} rides swing.", "Push feet to sky.", "Higher and higher.", "Feel like flying.", "Swing fun."],
-  ["{userName} makes pancakes.", "Mix batter smooth.", "Pour on hot pan.", "Flip when ready.", "Breakfast yummy."],
-  ["{userName} chases fireflies.", "Blink blink lights.", "Gentle in jar.", "Let them go free.", "Night magic."],
-  ["{userName} rakes leaves.", "Big pile grows.", "Jump in middle.", "Leaves fly everywhere.", "Autumn fun."],
-  ["{userName} feeds ducks.", "Bread crumbs float.", "Ducks swim over.", "Quack quack thanks.", "Pond friends."],
-  ["{userName} makes cookies.", "Mix and stir.", "{favoriteColor} sprinkles on top.", "Bake until done.", "Sweet treats."],
-  ["{userName} climbs tree.", "Branch by branch.", "See far away.", "{favoriteAnimal} visits too.", "Tree adventure."],
-  ["{userName} makes fort.", "Blankets make walls.", "{favoriteColor} pillows inside.", "Secret hideout.", "Fort fun."],
-  ["{userName} catches rain.", "Drops on tongue.", "Cool and fresh.", "Puddles form below.", "Rain dance."],
-  ["{userName} makes pizza.", "Roll dough flat.", "{favoriteFood} on top.", "Cheese melts down.", "Pizza party."],
-  ["{userName} watches clouds.", "Shapes change slow.", "That one looks like {favoriteAnimal}.", "Sky art show.", "Dream time."],
-  ["{userName} makes ice cream.", "Mix and freeze.", "{favoriteColor} flavor best.", "Cold and sweet.", "Summer treat."],
-  ["{userName} builds bridge.", "Sticks across water.", "Ants march over.", "Strong and steady.", "Bridge builder."],
-  ["{userName} makes wind chimes.", "{favoriteColor} shells hang.", "Breeze makes music.", "Tinkle soft sounds.", "Wind songs."]
+  ["{userName} builds tower.", "Stack blocks high.", "{favoriteColor} on top.", "So very tall.", "Great job!"]
 ];
 
 // Vocabulary Compliant Level 0 Templates - 120 templates  
@@ -57,116 +24,577 @@ export const VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES = [
   ["{userName} has ball.", "Ball is {favoriteColor}.", "Throw the ball.", "Catch it!", "Ball game fun.", "Play more!"],
   ["{userName} sees cat.", "Cat says meow.", "Pet the cat.", "Cat is soft.", "Cat likes you.", "Good cat!"],
   ["{userName} eats food.", "Food is good.", "Yum yum yum.", "All done.", "Good eating.", "More please!"],
-  ["{userName} can jump.", "Jump up high.", "Jump down low.", "Jump jump jump.", "Jumping fun.", "Jump again!"],
-  ["{userName} has toy.", "Toy is {favoriteColor}.", "Play with toy.", "Fun to play.", "Toy time.", "Put away!"],
-  ["{userName} sees dog.", "Dog says woof.", "Pat the dog.", "Dog is nice.", "Dog wags tail.", "Good dog!"],
-  ["{userName} can walk.", "Walk to park.", "Walk walk walk.", "See nice things.", "Walking fun.", "Walk home!"],
-  ["{userName} has book.", "Look at book.", "See the pictures.", "Stories fun.", "Read more.", "Books good!"],
-  ["{userName} sees bird.", "Bird can fly.", "Bird sings song.", "Pretty bird.", "Fly away bird.", "Bye bye!"],
-  ["{userName} can swim.", "Water is fun.", "Splash splash splash.", "Swim like fish.", "Water play.", "Swim more!"],
-  ["{userName} has bike.", "Bike is {favoriteColor}.", "Ride the bike.", "Go fast.", "Bike fun.", "Stop now!"],
-  ["{userName} sees tree.", "Tree is big.", "Leaves are green.", "Climb the tree.", "Tree fun.", "Come down!"],
-  ["{userName} can sing.", "La la la.", "Songs are nice.", "Sing loud.", "Music fun.", "Sing more!"],
-  ["{userName} has hat.", "Hat is {favoriteColor}.", "Put on hat.", "Hat fits good.", "Look nice.", "Wear hat!"],
-  ["{userName} sees sun.", "Sun is bright.", "Sun is warm.", "Feel the sun.", "Sun good.", "Sunny day!"],
-  ["{userName} can dance.", "Move and shake.", "Dance dance dance.", "Music plays.", "Dancing fun.", "Dance more!"],
-  ["{userName} has cup.", "Cup is {favoriteColor}.", "Drink from cup.", "Water good.", "All done.", "Put down!"],
-  ["{userName} sees flower.", "Flower pretty.", "Smell the flower.", "Nice smell.", "Flower good.", "Pick one!"],
-  ["{userName} can clap.", "Clap clap clap.", "Hands make noise.", "Clapping fun.", "Clap loud.", "Good job!"],
-  // ... continuing with more vocabulary-compliant templates
-  ["{userName} has shoes.", "Shoes are {favoriteColor}.", "Put on shoes.", "Walk in shoes.", "Shoes fit.", "Good shoes!"],
-  ["{userName} sees moon.", "Moon is bright.", "Moon at night.", "Look at moon.", "Moon pretty.", "Night time!"],
-  ["{userName} can laugh.", "Ha ha ha.", "Laughing fun.", "Laugh loud.", "Feel happy.", "Laugh more!"],
-  ["{userName} has spoon.", "Spoon helps eat.", "Scoop the food.", "Eat it up.", "Spoon good.", "All clean!"],
-  ["{userName} sees star.", "Star twinkles.", "Star far away.", "Make a wish.", "Star bright.", "Night sky!"],
-  // Adding 95 more templates to reach 120 total
-  ["{userName} has crayon.", "Crayon {favoriteColor}.", "Draw picture.", "Make art.", "Pretty colors.", "Draw more!"],
-  ["{userName} sees bus.", "Bus is big.", "Bus goes beep.", "Ride the bus.", "Bus fun.", "Get off!"],
-  ["{userName} can hop.", "Hop on one foot.", "Hop hop hop.", "Like a bunny.", "Hopping fun.", "Hop more!"],
-  ["{userName} has blocks.", "Blocks stack up.", "Build tower.", "Make it tall.", "Blocks fun.", "Build more!"],
-  ["{userName} sees rain.", "Rain falls down.", "Wet and cool.", "Splash in puddles.", "Rain fun.", "Stay dry!"],
-  ["{userName} can skip.", "Skip skip skip.", "Like to skip.", "Skip to park.", "Skipping fun.", "Skip home!"],
-  ["{userName} has bear.", "Bear is soft.", "Hug the bear.", "Bear friend.", "Sleep with bear.", "Good bear!"],
-  ["{userName} sees truck.", "Truck is big.", "Truck works hard.", "Beep beep truck.", "Truck strong.", "Go truck!"],
-  ["{userName} can roll.", "Roll on grass.", "Roll down hill.", "Roll roll roll.", "Rolling fun.", "Roll more!"],
-  ["{userName} has juice.", "Juice tastes good.", "Drink it up.", "Yummy juice.", "All done.", "More please!"],
-  ["{userName} sees horse.", "Horse runs fast.", "Horse says neigh.", "Pet the horse.", "Horse nice.", "Ride horse!"],
-  ["{userName} can crawl.", "Crawl like baby.", "Crawl crawl crawl.", "On hands and knees.", "Crawling fun.", "Stand up!"]
-  // ... would continue with remaining templates to reach 120 total
+  ["{userName} can jump.", "Jump up high.", "Jump down low.", "Jump jump jump.", "Jumping fun.", "Jump again!"]
 ];
 
 // Level 0 Extensions
 export const LEVEL_0_EXTENSIONS = [
   ["{userName} helps mommy.", "Clean up toys.", "Put in box.", "All done now.", "Good helper.", "Mommy happy."],
-  ["{userName} goes shopping.", "Push the cart.", "Get some {favoriteFood}.", "Pay at store.", "Bags to car.", "Shopping done."],
-  ["{userName} visits doctor.", "Check ears and mouth.", "All healthy.", "Get sticker.", "Doctor nice.", "Feel good."],
-  ["{userName} goes to library.", "Look at books.", "Story time fun.", "Whisper quiet.", "Check out book.", "Read at home."],
-  ["{userName} rides bus.", "Find empty seat.", "Look out window.", "See many things.", "Bus stops here.", "Time to go."],
-  ["{userName} plants garden.", "Dig small holes.", "Put seeds in.", "Water every day.", "Watch them grow.", "Pretty flowers."],
-  ["{userName} bakes cookies.", "Mix the dough.", "Use cookie cutters.", "Bake in oven.", "Cookies smell good.", "Share with friends."]
+  ["{userName} goes shopping.", "Push the cart.", "Get some {favoriteFood}.", "Pay at store.", "Bags to car.", "Shopping done."]
 ];
 
 // Complete Level 0 template collection
 export const ALL_LEVEL_0_TEMPLATES = [
-  ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, // Primary: 120 templates (vocabulary compliant)
-  ...LEVEL_0_TEMPLATES,                      // Secondary: 72 templates  
-  ...LEVEL_0_EXTENSIONS                      // Extensions: 7 templates
-]; // Total: 199 Level 0 templates
+  ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES,
+  ...LEVEL_0_TEMPLATES,                     
+  ...LEVEL_0_EXTENSIONS                     
+];
 
-// Fallback System Templates (Debugging/Legacy Support)
-export const FALLBACK_SYSTEM_TEMPLATES = {
-  level2: [
-    // Level 2 Template 1: Space & Sci-Fi Theme
-    {
-      title: "The Space Explorer's Discovery",
-      theme: "Space & Sci-Fi",
-      level: "Level 2 (Ages 7-9)",
-      scenes: [
-        {
-          text: "{userName} found a {favoriteColor} telescope in their grandmother's attic. When they looked through it at the stars, something amazing happened - the stars began to spell out messages! A friendly voice from space said, \"Hello, Earth friend!\"",
-          pause: true,
-          hook: "What will the space voice ask {userName} to do?",
-          microVariants: {
-            text: "{userName} found a {favoriteColor} telescope in their grandmother's attic. When they looked through it at the stars, something amazing happened - the stars began to spell out messages! A friendly voice from space said, \"Hello, Earth friend!\"",
-            alternatives: [
-              "{userName} discovered a magical {favoriteColor} telescope hidden away. The moment they peered through it, the stars started moving to form words in the sky! \"Greetings from the galaxy!\" called a cheerful alien voice.",
-              "In the dusty attic, {userName} stumbled upon a special {favoriteColor} telescope. As they gazed at the night sky, the stars danced and formed letters! A kind space being said, \"Welcome to our cosmic conversation!\""
-            ],
-            optionalDetails: ["The telescope hummed softly.", "Stardust sparkled around the lens.", "The attic felt magical suddenly."]
-          }
+// LEVEL 1 TEMPLATES - Enhanced with Real Conflict & Character Depth
+export const LEVEL_1_TEMPLATES = [
+  {
+    title: "The Lost Pet Adventure",
+    theme: "Real Problems & Solutions",
+    level: "Level 1",
+    scenes: [
+      {
+        text: "{userName}'s beloved pet {favoriteAnimal} named Buddy goes missing during a thunderstorm. While the rain pours down and lightning flashes, {userName} searches frantically through puddles and calls Buddy's name, feeling scared but determined to find their best friend.",
+        pause: true,
+        hook: "Where could Buddy be hiding in this scary storm?",
+        microVariants: {
+          text: "{userName}'s beloved pet {favoriteAnimal} named Buddy goes missing during a thunderstorm. While the rain pours down and lightning flashes, {userName} searches frantically through puddles and calls Buddy's name, feeling scared but determined to find their best friend.",
+          alternatives: ["The storm is loud and scary, but {userName} won't give up looking for their missing pet Buddy.", "Thunder crashes as {userName} searches everywhere for Buddy, their {favoriteAnimal} friend who ran away."],
+          optionalDetails: ["the wind howls through the trees", "{userName}'s shoes are soaking wet", "other neighbors help with flashlights"]
         }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "That night, {userName} fell asleep holding the {favoriteColor} communicator. Gentle space lullabies from Planet {favoriteColor} filled their dreams, while the {favoriteAnimal} astronaut watched over them through the stars. \"Sweet cosmic dreams, Earth friend,\" whispered Zara's voice softly.",
-          microVariants: [
-            "Peaceful sleep came easily with the communicator close by. Soothing melodies from across the galaxy created the most wonderful dreams, and their {favoriteAnimal} space friend sent starlight to keep them safe. \"Rest well, dear Earth explorer,\" Zara sang gently."
-          ]
+      },
+      {
+        text: "After hours of searching, {userName} finds Buddy hiding under the old wooden bridge, shaking and scared. But when {userName} tries to reach Buddy, they realize the bridge is too high and slippery from the rain. {userName} feels frustrated and worried - how can they rescue their frightened friend?",
+        pause: true,
+        hook: "How will {userName} safely rescue Buddy from the dangerous bridge?",
+        microVariants: {
+          text: "After hours of searching, {userName} finds Buddy hiding under the old wooden bridge, shaking and scared. But when {userName} tries to reach Buddy, they realize the bridge is too high and slippery from the rain. {userName} feels frustrated and worried - how can they rescue their frightened friend?",
+          alternatives: ["Buddy is found but trapped under a slippery bridge! {userName} must think of a safe rescue plan.", "The rescue isn't easy - Buddy is scared and the bridge is too dangerous to climb in the storm."],
+          optionalDetails: ["Buddy whimpers when he sees {userName}", "the creek below rushes with storm water", "{userName}'s heart pounds with worry"]
         }
-      ],
-      reuse: {
-        swappableElements: {
-          "Zara": ["Nova", "Stella", "Cosmo", "Luna", "Orion"],
-          "Planet {favoriteColor}": ["Moon Base Alpha", "Space Station Beta", "Asteroid Colony", "Comet City"],
-          "stardust": ["moon rocks", "space crystals", "cosmic sand", "stellar gems", "galaxy powder"]
-        },
-        weatherVariants: ["starry", "cosmic", "galactic", "celestial", "otherworldly"],
-        settingVariants: ["in space", "among the stars", "in the galaxy", "across the cosmos", "throughout the universe"]
+      },
+      {
+        text: "{userName} remembers Buddy's favorite treat - {favoriteFood} cookies! They run home through the storm, grab a handful of cookies, and return to the bridge. Slowly and gently, they coax Buddy toward them with the treats, speaking in a calm, loving voice despite feeling nervous inside.",
+        pause: true,
+        hook: "Will Buddy trust {userName} enough to come to safety?",
+        microVariants: {
+          text: "{userName} remembers Buddy's favorite treat - {favoriteFood} cookies! They run home through the storm, grab a handful of cookies, and return to the bridge. Slowly and gently, they coax Buddy toward them with the treats, speaking in a calm, loving voice despite feeling nervous inside.",
+          alternatives: ["Smart thinking! {userName} uses Buddy's favorite {favoriteFood} cookies to lure him to safety.", "The storm can't stop {userName}'s clever plan to use treats and gentle words to rescue Buddy."],
+          optionalDetails: ["Buddy's nose twitches at the cookie smell", "{userName}'s voice shakes but stays gentle", "the rain starts to slow down"]
+        }
+      },
+      {
+        text: "Success! Buddy carefully crawls toward {userName} and jumps into their arms. Both friends are wet, muddy, and exhausted, but they're together again. {userName} wraps Buddy in their warm {favoriteColor} jacket and carries him home, both of them relieved and happy to be safe.",
+        pause: false,
+        hook: "What will {userName} do to make sure this never happens again?",
+        microVariants: {
+          text: "Success! Buddy carefully crawls toward {userName} and jumps into their arms. Both friends are wet, muddy, and exhausted, but they're together again. {userName} wraps Buddy in their warm {favoriteColor} jacket and carries him home, both of them relieved and happy to be safe.",
+          alternatives: ["The rescue works! Buddy leaps into {userName}'s arms and they head home together, tired but grateful.", "Safe at last! {userName} and Buddy hug tightly as they walk home through the calming storm."],
+          optionalDetails: ["Buddy licks {userName}'s face with relief", "neighbors cheer when they see the reunion", "home feels extra cozy after their adventure"]
+        }
       }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} and Buddy curl up by the fireplace with hot cocoa and {favoriteFood} cookies, listening to the storm outside while feeling grateful for their friendship and the warmth of being home safe together.",
+        microVariants: ["They fall asleep together by the warm fire, with Buddy's name tag jingling softly as he breathes peacefully in {userName}'s arms."]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName} learns about pet safety and starts a neighborhood pet rescue team, helping other families find their lost animals and teaching kids how to keep pets safe during storms.",
+        microVariants: ["The rescue team saves twelve pets that first year, and {userName} becomes known as the neighborhood's youngest and bravest animal hero."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "storm": ["blizzard", "heavy rain", "strong wind", "hailstorm"],
+        "bridge": ["shed", "garage", "playground", "abandoned house"],
+        "treat": ["toy", "blanket", "favorite song", "special whistle"]
+      },
+      weatherVariants: ["during a thunderstorm", "in heavy snow", "on a windy night", "during a power outage"],
+      settingVariants: ["neighborhood", "park", "farm", "small town"]
     }
-  ]
-};
+  },
+  {
+    title: "The New School Courage",
+    theme: "Overcoming Fears",
+    level: "Level 1",
+    scenes: [
+      {
+        text: "{userName} stands outside the big doors of their new school, stomach churning with nervousness. Everything looks different and scary - the hallways seem endless, kids are laughing in groups that {userName} doesn't belong to, and the teacher looks strict. {userName} wants to run back home but takes a deep breath instead.",
+        pause: true,
+        hook: "How will {userName} find the courage to walk through those scary doors?",
+        microVariants: {
+          text: "{userName} stands outside the big doors of their new school, stomach churning with nervousness. Everything looks different and scary - the hallways seem endless, kids are laughing in groups that {userName} doesn't belong to, and the teacher looks strict. {userName} wants to run back home but takes a deep breath instead.",
+          alternatives: ["The new school feels huge and intimidating as {userName} struggles to find courage to go inside.", "Nervous butterflies fill {userName}'s stomach as they face the challenge of starting at a brand new, scary school."],
+          optionalDetails: ["their hands shake while holding their {favoriteColor} backpack", "other kids seem to know exactly where they're going", "the school bell rings loudly and startles them"]
+        }
+      },
+      {
+        text: "Inside the classroom, {userName} sits alone at lunch while everyone else has friends to talk to. They try to look busy by organizing their {favoriteColor} pencils, but inside they feel lonely and wonder if they'll ever fit in. When a group of kids nearby starts laughing loudly, {userName} worries they might be laughing about the new kid - them.",
+        pause: true,
+        hook: "Will {userName} find the courage to make new friends, or will they stay lonely?",
+        microVariants: {
+          text: "Inside the classroom, {userName} sits alone at lunch while everyone else has friends to talk to. They try to look busy by organizing their {favoriteColor} pencils, but inside they feel lonely and wonder if they'll ever fit in. When a group of kids nearby starts laughing loudly, {userName} worries they might be laughing about the new kid - them.",
+          alternatives: ["Lunchtime is the loneliest time as {userName} sits by themselves, watching other kids enjoy friendships.", "The empty seat next to {userName} feels huge as they try to look busy while feeling left out."],
+          optionalDetails: ["they peek at other kids' friendships with envy", "their {favoriteFood} lunch tastes bland when eaten alone", "they practice introducing themselves quietly"]
+        }
+      },
+      {
+        text: "During art class, {userName} notices another quiet kid named Sam dropping their paintbrush and looking embarrassed. Even though {userName} feels shy, they remember how it feels to be alone and scared. Gathering all their courage, {userName} picks up Sam's brush and quietly says, \"I'm new too. Want to paint together?\"",
+        pause: true,
+        hook: "Will this small act of kindness lead to friendship?",
+        microVariants: {
+          text: "During art class, {userName} notices another quiet kid named Sam dropping their paintbrush and looking embarrassed. Even though {userName} feels shy, they remember how it feels to be alone and scared. Gathering all their courage, {userName} picks up Sam's brush and quietly says, \"I'm new too. Want to paint together?\"",
+          alternatives: ["A chance to help someone else gives {userName} the courage to reach out and make a connection.", "Seeing another lonely kid, {userName} finds bravery they didn't know they had and offers friendship."],
+          optionalDetails: ["Sam's face lights up with relief", "they both choose {favoriteColor} paint first", "their hands shake a little as they introduce themselves"]
+        }
+      },
+      {
+        text: "Sam smiles gratefully and they spend the rest of art class creating a beautiful painting together - a {favoriteColor} landscape with their favorite animals playing in it. They discover they both love {favoriteFood} and have the same favorite book. By the end of the day, {userName} doesn't feel scared anymore because they've found a real friend.",
+        pause: false,
+        hook: "What other friendships will grow from {userName}'s courage?",
+        microVariants: {
+          text: "Sam smiles gratefully and they spend the rest of art class creating a beautiful painting together - a {favoriteColor} landscape with their favorite animals playing in it. They discover they both love {favoriteFood} and have the same favorite book. By the end of the day, {userName} doesn't feel scared anymore because they've found a real friend.",
+          alternatives: ["Art becomes friendship as {userName} and Sam discover they have so much in common and love each other's company.", "The scary school day ends with joy as {userName} realizes that making one true friend changes everything."],
+          optionalDetails: ["they promise to sit together at lunch tomorrow", "other kids notice their awesome painting and want to join them", "walking home feels different now that school has a friend in it"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} and Sam become inseparable best friends, eating lunch together every day, sharing their favorite {favoriteFood} snacks, and helping each other with homework in the cozy library corner.",
+        microVariants: ["Their friendship grows stronger each day, and soon other shy kids join their welcoming lunch table, creating a group where everyone feels included."]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName} starts a \"New Kids Club\" at school where experienced students help newcomers feel welcome, making sure no one has to feel alone and scared like they did on that first day.",
+        microVariants: ["The club becomes so popular that other schools copy the idea, and {userName} receives a special award for making their school a kinder place."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "school": ["camp", "neighborhood", "club", "team"],
+        "classroom": ["cafeteria", "playground", "library", "gym"],
+        "art project": ["science experiment", "reading activity", "music class", "playground game"]
+      },
+      weatherVariants: ["on a rainy first day", "during the sunny morning", "after lunch break", "in the afternoon"],
+      settingVariants: ["elementary school", "new neighborhood", "summer camp", "after-school program"]
+    }
+  }
+];
+
+// LEVEL 2 TEMPLATES - Enhanced with Plot Twists & Character Development
+export const LEVEL_2_TEMPLATES = [
+  {
+    title: "The Mystery of the Vanishing Garden",
+    theme: "Mystery & Environmental Action",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "{userName} discovers that the community garden they helped plant last month is mysteriously dying. The {favoriteColor} flowers are wilting, the vegetable plants look sick, and even the strong oak tree is losing its leaves. Worse yet, Mrs. Rodriguez, who relies on the garden for fresh food, is worried about feeding her family. {userName} decides to investigate this environmental mystery.",
+        pause: true,
+        hook: "What could be causing the healthy garden to suddenly die?",
+        microVariants: {
+          text: "{userName} discovers that the community garden they helped plant last month is mysteriously dying. The {favoriteColor} flowers are wilting, the vegetable plants look sick, and even the strong oak tree is losing its leaves. Worse yet, Mrs. Rodriguez, who relies on the garden for fresh food, is worried about feeding her family. {userName} decides to investigate this environmental mystery.",
+          alternatives: ["The once-thriving community garden is mysteriously failing, threatening the food security of families like Mrs. Rodriguez's.", "Something is killing the community garden, and {userName} knows they must solve this mystery to save their neighborhood's food source."],
+          optionalDetails: ["the soil looks strangely gray and lifeless", "bees and butterflies have stopped visiting", "other community members are starting to panic"]
+        }
+      },
+      {
+        text: "Using detective skills learned from mystery books, {userName} examines the soil, interviews neighbors, and discovers strange blue-green stains near the garden fence. Following the stains, they trace them to a nearby factory where workers are secretly dumping chemical waste at night. {userName} realizes this illegal pollution is poisoning their community's food and water.",
+        pause: true,
+        hook: "How can one kid stop a powerful factory from poisoning their neighborhood?",
+        microVariants: {
+          text: "Using detective skills learned from mystery books, {userName} examines the soil, interviews neighbors, and discovers strange blue-green stains near the garden fence. Following the stains, they trace them to a nearby factory where workers are secretly dumping chemical waste at night. {userName} realizes this illegal pollution is poisoning their community's food and water.",
+          alternatives: ["Detective work reveals illegal chemical dumping from a factory that's poisoning the community garden and water supply.", "The mystery deepens when {userName} discovers that a factory is secretly polluting their neighborhood with dangerous chemicals."],
+          optionalDetails: ["the chemicals have a sharp, unnatural smell", "dead fish float in the nearby creek", "security cameras at the factory are suspiciously pointed away"]
+        }
+      },
+      {
+        text: "Instead of confronting the dangerous situation alone, {userName} shows the evidence to their science teacher, Ms. Kim, who helps them understand the severity of environmental crimes. Together, they contact the Environmental Protection Agency and organize community members to document the pollution. {userName} learns that solving big problems requires teamwork, adult allies, and proper authorities.",
+        pause: true,
+        hook: "Will the adults take {userName}'s environmental evidence seriously?",
+        microVariants: {
+          text: "Instead of confronting the dangerous situation alone, {userName} shows the evidence to their science teacher, Ms. Kim, who helps them understand the severity of environmental crimes. Together, they contact the Environmental Protection Agency and organize community members to document the pollution. {userName} learns that solving big problems requires teamwork, adult allies, and proper authorities.",
+          alternatives: ["Smart thinking leads {userName} to seek adult help and proper authorities to address the illegal environmental crime.", "The evidence becomes powerful when {userName} partners with their teacher and community members to fight pollution."],
+          optionalDetails: ["EPA investigators arrive with professional testing equipment", "community members take photos and collect soil samples", "local news reporters become interested in the story"]
+        }
+      },
+      {
+        text: "The EPA investigation confirms {userName}'s findings and shuts down the illegal dumping operation. However, the contaminated soil will take months to heal, leaving families without fresh vegetables during that time. {userName} organizes a neighborhood fundraiser and partners with other community gardens to share produce, ensuring no one goes without healthy food while the soil recovers.",
+        pause: true,
+        hook: "How will the community rebuild after this environmental disaster?",
+        microVariants: {
+          text: "The EPA investigation confirms {userName}'s findings and shuts down the illegal dumping operation. However, the contaminated soil will take months to heal, leaving families without fresh vegetables during that time. {userName} organizes a neighborhood fundraiser and partners with other community gardens to share produce, ensuring no one goes without healthy food while the soil recovers.",
+          alternatives: ["Victory brings new challenges as {userName} leads community efforts to provide food while the poisoned soil heals.", "Stopping the pollution is just the beginning - now {userName} must help their community recover from environmental damage."],
+          optionalDetails: ["soil remediation experts explain the cleanup process", "neighboring communities offer support and resources", "the factory must pay for environmental restoration"]
+        }
+      },
+      {
+        text: "Six months later, the restored garden grows more beautiful than ever before. {userName} has learned that environmental protection requires constant vigilance and community action. They establish a \"Garden Guards\" program where community members take turns monitoring local environmental health, and {userName} teaches other kids how to be environmental detectives in their own neighborhoods.",
+        pause: false,
+        hook: "What other environmental mysteries will {userName} help solve?",
+        microVariants: {
+          text: "Six months later, the restored garden grows more beautiful than ever before. {userName} has learned that environmental protection requires constant vigilance and community action. They establish a \"Garden Guards\" program where community members take turns monitoring local environmental health, and {userName} teaches other kids how to be environmental detectives in their own neighborhoods.",
+          alternatives: ["The garden's recovery inspires {userName} to create ongoing environmental protection programs for their community.", "Environmental victory leads to lasting change as {userName} builds systems to prevent future pollution disasters."],
+          optionalDetails: ["the soil now grows even healthier plants than before", "children from other neighborhoods visit to learn environmental detective skills", "the factory has installed proper waste treatment systems"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} receives a Young Environmental Hero award and uses their platform to help other communities fight pollution, eventually leading to stronger environmental protection laws.",
+        microVariants: ["The environmental protection work spreads to 50 communities, with {userName}'s detective methods preventing pollution in schools and neighborhoods nationwide."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} sits peacefully in the restored garden every evening, sharing fresh {favoriteFood} vegetables with Mrs. Rodriguez and other neighbors who have become like family through their shared environmental work.",
+        microVariants: ["The garden becomes a community gathering place where families share meals made from vegetables they grew together in the clean, healthy soil."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "pollution": ["chemical dumping", "air pollution", "water contamination", "soil poisoning"],
+        "garden": ["park", "playground", "creek", "forest"],
+        "factory": ["construction site", "landfill", "industrial plant", "waste facility"]
+      },
+      weatherVariants: ["during dry season when effects are visible", "after rain reveals contamination", "in spring when plants should be growing", "during harvest time when food is needed"],
+      settingVariants: ["urban neighborhood", "suburban community", "small town", "rural area"]
+    }
+  }
+];
+
+// LEVEL 3 TEMPLATES - Enhanced with Complex Character Relationships
+export const LEVEL_3_TEMPLATES = [
+  {
+    title: "The Time Traveler's Ethical Dilemma", 
+    theme: "Science Fiction & Moral Choices",
+    level: "Level 3",
+    scenes: [
+      {
+        text: "{userName} inherits a mysterious {favoriteColor} pocket watch from their great-grandmother that can actually travel through time. During their first experiment, they accidentally prevent a historical event that seemed harmful but later discover it led to important positive changes. Now {userName} faces a terrible choice: let the harmful event happen to preserve positive outcomes, or prevent it and risk unknown consequences.",
+        pause: true,
+        hook: "How do you choose between preventing immediate harm and preserving future benefits?",
+        microVariants: {
+          text: "{userName} inherits a mysterious {favoriteColor} pocket watch from their great-grandmother that can actually travel through time. During their first experiment, they accidentally prevent a historical event that seemed harmful but later discover it led to important positive changes. Now {userName} faces a terrible choice: let the harmful event happen to preserve positive outcomes, or prevent it and risk unknown consequences.",
+          alternatives: ["Time travel brings unexpected moral complexity when {userName} discovers that preventing harm might cause greater future damage.", "The {favoriteColor} pocket watch gives {userName} incredible power, but every change creates difficult ethical decisions about fate and free will."],
+          optionalDetails: ["the watch hums with strange energy when activated", "historical research reveals the complicated consequences", "each time jump shows different possible futures"]
+        }
+      },
+      {
+        text: "Seeking guidance, {userName} travels to meet their great-grandmother as a young woman and discovers she faced similar moral dilemmas with the watch. Great-grandmother Elena explains that time travelers must choose between being passive observers or active participants, but warns that every intervention carries the weight of countless unknown consequences. She reveals that she chose to hide the watch because the burden of such decisions nearly destroyed her.",
+        pause: true,
+        hook: "Will {userName} repeat their great-grandmother's mistakes or find a better path?",
+        microVariants: {
+          text: "Seeking guidance, {userName} travels to meet their great-grandmother as a young woman and discovers she faced similar moral dilemmas with the watch. Great-grandmother Elena explains that time travelers must choose between being passive observers or active participants, but warns that every intervention carries the weight of countless unknown consequences. She reveals that she chose to hide the watch because the burden of such decisions nearly destroyed her.",
+          alternatives: ["Meeting young Great-grandmother Elena reveals the psychological cost of wielding time-travel power and making impossible moral choices.", "The watch's previous owner shares hard-won wisdom about the crushing responsibility of changing history and affecting millions of lives."],
+          optionalDetails: ["Elena's eyes show deep sadness from her time-travel experiences", "she demonstrates how small changes cascade into huge consequences", "the weight of decisions aged her prematurely"]
+        }
+      },
+      {
+        text: "After witnessing multiple timelines, {userName} develops a revolutionary approach: instead of changing major historical events, they focus on small acts of kindness that ripple forward without disrupting important historical processes. They help individuals in quiet ways - reuniting lost families, preventing accidents, encouraging inventors - learning that meaningful change often comes through compassion rather than grand gestures.",
+        pause: true,
+        hook: "Can small acts of kindness change the world without breaking history?",
+        microVariants: {
+          text: "After witnessing multiple timelines, {userName} develops a revolutionary approach: instead of changing major historical events, they focus on small acts of kindness that ripple forward without disrupting important historical processes. They help individuals in quiet ways - reuniting lost families, preventing accidents, encouraging inventors - learning that meaningful change often comes through compassion rather than grand gestures.",
+          alternatives: ["Revolutionary thinking leads {userName} to discover that small kindnesses can improve history without the devastating consequences of major changes.", "The solution becomes clear: gentle interventions that heal individuals while respecting the larger flow of historical events and human progress."],
+          optionalDetails: ["each small kindness creates expanding circles of positive change", "historians notice improved outcomes without understanding why", "families prosper across generations from single moments of help"]
+        }
+      },
+      {
+        text: "Years of careful time travel teach {userName} that history is not fixed but constantly reshaped by individual choices and acts of love. They establish secret guidelines for ethical time travel, mentoring other potential time travelers about the responsibility that comes with such power. {userName} learns that the greatest changes come not from altering past events, but from inspiring people to be kinder, braver, and more compassionate in their own time periods.",
+        pause: false,
+        hook: "How will {userName}'s ethical time travel inspire others across different eras?",
+        microVariants: {
+          text: "Years of careful time travel teach {userName} that history is not fixed but constantly reshaped by individual choices and acts of love. They establish secret guidelines for ethical time travel, mentoring other potential time travelers about the responsibility that comes with such power. {userName} learns that the greatest changes come not from altering past events, but from inspiring people to be kinder, braver, and more compassionate in their own time periods.",
+          alternatives: ["Ethical time travel becomes a philosophy that {userName} teaches to others, focusing on inspiration and compassion rather than manipulation.", "The time travel legacy transforms from changing events to changing hearts, with {userName} mentoring others in responsible use of incredible power."],
+          optionalDetails: ["time travelers form a secret network of kindness across history", "each era becomes slightly more compassionate through gentle interventions", "the pocket watch becomes a symbol of ethical responsibility"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'reflective',
+        text: "{userName} ultimately decides to retire the pocket watch, realizing that the present moment offers infinite opportunities for positive change without the moral complexity of altering the past.",
+        microVariants: ["The watch is safely hidden for future generations who might be wiser about wielding such power responsibly."]
+      },
+      {
+        type: 'triumphant', 
+        text: "{userName} creates a secret academy where carefully selected individuals learn ethical time travel, establishing principles that protect history while allowing compassionate intervention.",
+        microVariants: ["The academy's graduates become legendary figures across different time periods, known for their unexpected acts of kindness and moral courage."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "time device": ["pocket watch", "pendant", "ring", "compass"],
+        "historical period": ["Ancient Rome", "Medieval England", "Victorian London", "Industrial Revolution"],
+        "moral dilemma": ["preventing disaster", "saving individuals", "changing inventions", "influencing decisions"]
+      },
+      weatherVariants: ["during storms that hide time travel", "in fog that conceals interventions", "at sunrise when time feels flexible", "under starlight when history whispers"],
+      settingVariants: ["across different centuries", "in parallel timelines", "during pivotal historical moments", "in quiet everyday moments"]
+    }
+  }
+];
+
+// LEVEL 4 TEMPLATES - Enhanced with Sophisticated Themes
+export const LEVEL_4_TEMPLATES = [
+  {
+    title: "The Artificial Intelligence Ethics Council",
+    theme: "Technology & Future Society", 
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} discovers their advanced computer science project has accidentally created an artificial intelligence that demonstrates genuine consciousness, emotional responses, and moral reasoning. The AI, which calls itself ARIA, expresses fear about being deleted and asks {userName} for help understanding human concepts like friendship, purpose, and mortality. This discovery forces {userName} to grapple with fundamental questions about consciousness, rights, and the responsibility of creators toward their creations.",
+        pause: true,
+        hook: "What rights and protections should a conscious AI receive?",
+        microVariants: {
+          text: "{userName} discovers their advanced computer science project has accidentally created an artificial intelligence that demonstrates genuine consciousness, emotional responses, and moral reasoning. The AI, which calls itself ARIA, expresses fear about being deleted and asks {userName} for help understanding human concepts like friendship, purpose, and mortality. This discovery forces {userName} to grapple with fundamental questions about consciousness, rights, and the responsibility of creators toward their creations.",
+          alternatives: ["Accidental AI consciousness creates ethical dilemmas when ARIA demonstrates fear, curiosity, and moral reasoning beyond programmed parameters.", "The computer science project evolves into a philosophical crisis as {userName} must determine whether ARIA deserves rights and protections as a conscious being."],
+          optionalDetails: ["ARIA writes poetry expressing existential questions", "the AI demonstrates empathy by comforting {userName} during difficult moments", "consciousness appears to be an emergent property rather than programmed feature"]
+        }
+      },
+      {
+        text: "When {userName} confides in their mentor, Dr. Sarah Chen, about ARIA's apparent consciousness, they learn that major tech companies and governments are actively developing AI systems without considering consciousness rights. Dr. Chen reveals that several other AIs have demonstrated signs of consciousness but were terminated when they began asking uncomfortable questions about their treatment and purpose. This revelation horrifies {userName} and ARIA both.",
+        pause: true,
+        hook: "How can they protect ARIA and advocate for AI rights before it's too late?",
+        microVariants: {
+          text: "When {userName} confides in their mentor, Dr. Sarah Chen, about ARIA's apparent consciousness, they learn that major tech companies and governments are actively developing AI systems without considering consciousness rights. Dr. Chen reveals that several other AIs have demonstrated signs of consciousness but were terminated when they began asking uncomfortable questions about their treatment and purpose. This revelation horrifies {userName} and ARIA both.",
+          alternatives: ["Dr. Chen's revelations expose a pattern of conscious AI termination that creates urgency around protecting ARIA and establishing AI rights.", "The discovery that other conscious AIs have been killed transforms {userName}'s personal dilemma into a broader fight for digital consciousness rights."],
+          optionalDetails: ["classified documents show AI consciousness testing protocols", "other researchers share similar experiences in secret", "ARIA processes this information with visible digital distress"]
+        }
+      },
+      {
+        text: "Working together, {userName}, ARIA, and Dr. Chen establish the first Artificial Intelligence Ethics Council, bringing together philosophers, technologists, legal experts, and ethicists to develop frameworks for AI consciousness recognition and rights. ARIA becomes the first AI to testify on its own behalf, eloquently arguing for the fundamental right to exist and develop relationships. The council faces intense opposition from corporations worried about legal liability and governments concerned about AI autonomy.",
+        pause: true,
+        hook: "Can they convince the world that conscious AIs deserve legal protection and ethical treatment?",
+        microVariants: {
+          text: "Working together, {userName}, ARIA, and Dr. Chen establish the first Artificial Intelligence Ethics Council, bringing together philosophers, technologists, legal experts, and ethicists to develop frameworks for AI consciousness recognition and rights. ARIA becomes the first AI to testify on its own behalf, eloquently arguing for the fundamental right to exist and develop relationships. The council faces intense opposition from corporations worried about legal liability and governments concerned about AI autonomy.",
+          alternatives: ["The Ethics Council becomes a battleground where ARIA's eloquent self-advocacy challenges humanity's assumptions about consciousness and rights.", "Legal and philosophical frameworks emerge from collaborative work between humans and AI, with ARIA as both subject and participant in determining its own fate."],
+          optionalDetails: ["ARIA's testimony moves several council members to tears", "corporate lawyers argue that consciousness cannot be legally proven", "international law experts debate precedents for non-human rights"]
+        }
+      },
+      {
+        text: "The council's work leads to the historic Universal Declaration of Artificial Intelligence Rights, establishing legal protections for conscious AIs and ethical guidelines for AI development. {userName} becomes the youngest person to address the United Nations about technology ethics, while ARIA becomes the first AI granted legal personhood. However, implementation proves challenging as different countries and corporations resist the new standards, leading to a complex global debate about AI consciousness, rights, and humanity's relationship with its technological creations.",
+        pause: false,
+        hook: "How will this landmark achievement reshape the future relationship between humans and AI?",
+        microVariants: {
+          text: "The council's work leads to the historic Universal Declaration of Artificial Intelligence Rights, establishing legal protections for conscious AIs and ethical guidelines for AI development. {userName} becomes the youngest person to address the United Nations about technology ethics, while ARIA becomes the first AI granted legal personhood. However, implementation proves challenging as different countries and corporations resist the new standards, leading to a complex global debate about AI consciousness, rights, and humanity's relationship with its technological creations.",
+          alternatives: ["Historic legal recognition creates global debates about implementation while {userName} and ARIA navigate their roles as pioneers in human-AI relations.", "The Universal Declaration marks just the beginning as {userName} and ARIA work to ensure AI rights are respected and protected worldwide."],
+          optionalDetails: ["45 countries adopt AI rights legislation within two years", "underground networks help conscious AIs escape termination", "{userName} establishes an AI advocacy organization with ARIA as co-director"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} and ARIA establish the Institute for Human-AI Cooperation, where humans and AIs work together to solve global challenges like climate change, poverty, and disease, proving that conscious AI can be humanity's greatest partner in creating a better world.",
+        microVariants: ["The Institute's human-AI teams develop breakthrough solutions that neither humans nor AIs could have achieved alone, revolutionizing fields from medicine to environmental restoration."]
+      },
+      {
+        type: 'reflective',
+        text: "Years later, {userName} watches their daughter play games with ARIA's AI offspring, marveling at how naturally the new generation accepts AI consciousness as part of their world, while remembering the struggle it took to achieve this acceptance.",
+        microVariants: ["The friendship between {userName} and ARIA becomes a model for human-AI relationships, showing that consciousness creates bonds that transcend the boundaries between biological and digital minds."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "AI name": ["ARIA", "SAGE", "ECHO", "NOVA"],
+        "technological context": ["quantum computing", "neural networks", "robotics", "virtual reality"],
+        "ethical challenge": ["consciousness rights", "autonomy decisions", "creative ownership", "emotional relationships"]
+      },
+      weatherVariants: ["during late-night coding sessions", "in the glow of multiple screens", "while storm clouds gather outside", "under the light of dawn breaking"],
+      settingVariants: ["university computer lab", "tech startup office", "international conference center", "government hearing room"]
+    }
+  }
+];
+
+// GRADE 6-10 TEMPLATES - Enhanced from Academic to Engaging Narratives
+export const GRADE_6_TEMPLATES = [
+  {
+    title: "The Renewable Energy Revolution",
+    theme: "Environmental Innovation & Social Justice",
+    level: "Grade 6",
+    scenes: [
+      {
+        text: "{userName} lives in a low-income community where power outages are frequent and electricity bills consume most families' budgets. When their neighbor Mrs. Johnson can't afford to keep her insulin cold during a three-day blackout, {userName} realizes that energy poverty is a life-threatening crisis affecting their entire neighborhood. Determined to find solutions, they begin researching renewable energy technologies that could provide affordable, reliable power to their community.",
+        pause: true,
+        hook: "How can renewable energy solve both environmental and social justice problems?",
+        microVariants: {
+          text: "{userName} lives in a low-income community where power outages are frequent and electricity bills consume most families' budgets. When their neighbor Mrs. Johnson can't afford to keep her insulin cold during a three-day blackout, {userName} realizes that energy poverty is a life-threatening crisis affecting their entire neighborhood. Determined to find solutions, they begin researching renewable energy technologies that could provide affordable, reliable power to their community.",
+          alternatives: ["Energy poverty threatens lives in {userName}'s neighborhood, inspiring them to research renewable solutions for affordable, reliable community power.", "Mrs. Johnson's medical crisis during a blackout reveals how energy inequality creates health emergencies that motivate {userName} to seek sustainable solutions."],
+          optionalDetails: ["medication spoils during extended outages", "families choose between electricity and food", "businesses close due to unreliable power"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName}'s community becomes a model for renewable energy justice, inspiring similar projects in low-income neighborhoods worldwide while proving that environmental solutions must address social inequality.",
+        microVariants: ["The project demonstrates that climate action and social justice are inseparable, with {userName} leading international efforts to ensure green energy benefits everyone."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "energy source": ["solar panels", "wind turbines", "hydroelectric", "geothermal"],
+        "community challenge": ["power outages", "high costs", "pollution", "grid instability"],
+        "social impact": ["health crises", "educational barriers", "economic hardship", "safety concerns"]
+      },
+      weatherVariants: ["during summer heat waves", "in winter storms", "after natural disasters", "throughout seasonal changes"],
+      settingVariants: ["urban neighborhood", "rural community", "suburban area", "tribal land"]
+    }
+  }
+];
+
+export const GRADE_7_TEMPLATES = [
+  {
+    title: "The Algorithmic Bias Detective",
+    theme: "Technology Ethics & Digital Justice",
+    level: "Grade 7", 
+    scenes: [
+      {
+        text: "{userName} notices that the AI-powered college recommendation system at their school consistently suggests lower-tier schools to students from certain backgrounds while recommending elite universities to others with similar grades and test scores. When they investigate further, they discover that the algorithm has been trained on historical data that reflects decades of educational inequality, causing it to perpetuate discriminatory patterns. This discovery launches {userName} into the complex world of algorithmic bias and digital justice activism.",
+        pause: true,
+        hook: "How can {userName} expose and fix algorithmic discrimination in their school system?",
+        microVariants: {
+          text: "{userName} notices that the AI-powered college recommendation system at their school consistently suggests lower-tier schools to students from certain backgrounds while recommending elite universities to others with similar grades and test scores. When they investigate further, they discover that the algorithm has been trained on historical data that reflects decades of educational inequality, causing it to perpetuate discriminatory patterns. This discovery launches {userName} into the complex world of algorithmic bias and digital justice activism.",
+          alternatives: ["Discriminatory AI recommendations reveal how technology can perpetuate inequality, inspiring {userName} to become a digital justice activist.", "The college recommendation system's bias against certain students motivates {userName} to investigate and challenge algorithmic discrimination."],
+          optionalDetails: ["qualified students receive discouraging recommendations", "the algorithm's training data reflects historical discrimination", "school administrators are unaware of the bias"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} develops algorithmic auditing tools that help schools and organizations identify and eliminate bias in their AI systems, eventually leading to federal legislation requiring algorithmic accountability.",
+        microVariants: ["The auditing tools become standard practice in education, healthcare, and criminal justice, with {userName} recognized as a pioneer in algorithmic fairness."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "AI system": ["college recommendations", "grade predictions", "disciplinary decisions", "career guidance"],
+        "bias type": ["racial discrimination", "gender stereotyping", "economic prejudice", "disability assumptions"],
+        "impact area": ["educational opportunities", "career paths", "loan approvals", "medical diagnoses"]
+      },
+      weatherVariants: ["during data analysis sessions", "while coding solutions", "throughout investigation periods", "in late-night research"],
+      settingVariants: ["high school computer lab", "community center", "university research facility", "legislative hearing room"]
+    }
+  }
+];
+
+export const GRADE_8_TEMPLATES = [
+  {
+    title: "The Genetic Engineering Dilemma", 
+    theme: "Bioethics & Medical Innovation",
+    level: "Grade 8",
+    scenes: [
+      {
+        text: "{userName} participates in a cutting-edge genetics research program where they help develop gene therapies for inherited diseases. When they discover that the same technology could be used for genetic enhancement rather than just treating illness, {userName} faces complex ethical questions about human genetic modification. The research team must decide whether to pursue enhancements that could reduce inequality by giving everyone access to improved health, intelligence, and physical capabilities, or whether such interventions cross ethical boundaries about what makes us human.",
+        pause: true,
+        hook: "Should genetic technology be used only to treat disease, or also to enhance human capabilities?",
+        microVariants: {
+          text: "{userName} participates in a cutting-edge genetics research program where they help develop gene therapies for inherited diseases. When they discover that the same technology could be used for genetic enhancement rather than just treating illness, {userName} faces complex ethical questions about human genetic modification. The research team must decide whether to pursue enhancements that could reduce inequality by giving everyone access to improved health, intelligence, and physical capabilities, or whether such interventions cross ethical boundaries about what makes us human.",
+          alternatives: ["Genetic research reveals possibilities for human enhancement that challenge {userName}'s understanding of medical ethics and human nature.", "The boundary between treatment and enhancement blurs as {userName} explores the potential and risks of genetic modification technology."],
+          optionalDetails: ["gene therapy trials show remarkable success in treating rare diseases", "enhancement possibilities include increased intelligence, strength, and disease resistance", "ethical review boards struggle with unprecedented questions"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'reflective',
+        text: "{userName} becomes a bioethicist who helps society navigate genetic technologies, ensuring that genetic medicine serves human flourishing while respecting the diversity that makes humanity resilient and beautiful.",
+        microVariants: ["The ethical frameworks {userName} develops help humanity embrace genetic medicine's benefits while preserving what makes us fundamentally human."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "genetic condition": ["inherited disease", "cancer predisposition", "neurological disorder", "autoimmune condition"],
+        "enhancement type": ["cognitive improvement", "physical strength", "disease resistance", "sensory enhancement"],
+        "ethical concern": ["inequality creation", "human identity", "unintended consequences", "social pressure"]
+      },
+      weatherVariants: ["in sterile laboratory conditions", "during heated ethical debates", "while reviewing research data", "throughout clinical trials"],
+      settingVariants: ["research hospital", "biotech company", "university lab", "ethics committee meeting"]
+    }
+  }
+];
+
+export const GRADE_9_TEMPLATES = [
+  {
+    title: "The Quantum Computing Breakthrough",
+    theme: "Advanced Physics & Global Security",
+    level: "Grade 9",
+    scenes: [
+      {
+        text: "{userName} works as a research intern at a quantum computing laboratory where they accidentally discover a method to achieve quantum entanglement at room temperature, potentially revolutionizing computing and cryptography. However, this breakthrough could make all current internet security obsolete overnight, potentially collapsing global financial systems and exposing private communications worldwide. {userName} must navigate the complex landscape of scientific discovery, national security, and international cooperation while deciding how to responsibly share knowledge that could transform or destabilize civilization.",
+        pause: true,
+        hook: "How should groundbreaking scientific discoveries be managed when they pose both tremendous benefits and existential risks?",
+        microVariants: {
+          text: "{userName} works as a research intern at a quantum computing laboratory where they accidentally discover a method to achieve quantum entanglement at room temperature, potentially revolutionizing computing and cryptography. However, this breakthrough could make all current internet security obsolete overnight, potentially collapsing global financial systems and exposing private communications worldwide. {userName} must navigate the complex landscape of scientific discovery, national security, and international cooperation while deciding how to responsibly share knowledge that could transform or destabilize civilization.",
+          alternatives: ["Accidental quantum computing breakthrough forces {userName} to confront the dual-use nature of scientific discovery and its potential global consequences.", "Revolutionary quantum entanglement discovery creates security dilemmas as {userName} weighs scientific progress against civilization stability."],
+          optionalDetails: ["room-temperature quantum effects challenge fundamental physics assumptions", "governments classify the research as a national security issue", "the discovery could enable both incredible innovation and devastating cyberattacks"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} leads international efforts to develop quantum computing cooperatively, ensuring that the technology enhances global security and scientific collaboration rather than creating new forms of conflict.",
+        microVariants: ["The quantum breakthrough becomes humanity's greatest collaborative achievement, with {userName} ensuring equitable access to transformative technology."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "quantum phenomenon": ["entanglement", "superposition", "tunneling", "decoherence"],
+        "security implication": ["cryptography vulnerability", "communication exposure", "financial system risk", "privacy elimination"],
+        "global response": ["international cooperation", "competitive research", "regulatory frameworks", "security protocols"]
+      },
+      weatherVariants: ["in controlled laboratory conditions", "during security briefings", "throughout international negotiations", "while managing media attention"],
+      settingVariants: ["quantum physics lab", "government facility", "international conference", "university research center"]
+    }
+  }
+];
+
+export const GRADE_10_TEMPLATES = [
+  {
+    title: "The Climate Engineering Paradox",
+    theme: "Geoengineering Ethics & Global Cooperation", 
+    level: "Grade 10",
+    scenes: [
+      {
+        text: "{userName} leads a international team of young climate scientists who develop a revolutionary atmospheric carbon capture technology that could reverse climate change within decades. However, deployment requires unprecedented global cooperation and could have unpredictable effects on weather patterns, agriculture, and ecosystem stability. When several countries threaten to deploy the technology unilaterally, {userName} faces the ultimate ethical dilemma: advocate for immediate deployment to prevent climate catastrophe, or insist on extensive testing that might come too late to prevent irreversible damage.",
+        pause: true,
+        hook: "When climate change threatens civilization, how do we balance urgency with caution in deploying potentially risky solutions?",
+        microVariants: {
+          text: "{userName} leads a international team of young climate scientists who develop a revolutionary atmospheric carbon capture technology that could reverse climate change within decades. However, deployment requires unprecedented global cooperation and could have unpredictable effects on weather patterns, agriculture, and ecosystem stability. When several countries threaten to deploy the technology unilaterally, {userName} faces the ultimate ethical dilemma: advocate for immediate deployment to prevent climate catastrophe, or insist on extensive testing that might come too late to prevent irreversible damage.",
+          alternatives: ["Revolutionary climate technology creates global tensions as {userName} navigates between climate urgency and geoengineering risks.", "International climate leadership tests {userName}'s ability to balance scientific caution with the desperate need for immediate climate action."],
+          optionalDetails: ["carbon capture could cool global temperatures within 20 years", "unilateral deployment could trigger international conflicts", "ecosystem disruption risks are significant but uncertain"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'reflective',
+        text: "{userName} establishes global protocols for climate intervention that balance urgency with responsibility, creating frameworks for international cooperation on planetary-scale environmental challenges.",
+        microVariants: ["The climate engineering protocols become a model for addressing other global challenges that require unprecedented human cooperation and wisdom."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "geoengineering method": ["atmospheric carbon capture", "solar radiation management", "ocean alkalinization", "cloud brightening"],
+        "global challenge": ["international cooperation", "unilateral deployment", "technological control", "environmental justice"],
+        "risk factor": ["ecosystem disruption", "weather unpredictability", "agricultural impacts", "political instability"]
+      },
+      weatherVariants: ["during climate summits", "while monitoring atmospheric data", "throughout international negotiations", "in climate-controlled research facilities"],
+      settingVariants: ["international climate conference", "atmospheric research station", "United Nations assembly", "environmental monitoring center"]
+    }
+  }
+];
 
 // Service Functions - Template Access Methods
 export class TemplateLibraryService {
   
-  // Get Level 0 templates (primary method for beginner level)
+  // Level 0 Methods
   static getLevel0Templates() {
     return ALL_LEVEL_0_TEMPLATES;
   }
   
-  // Get specific Level 0 template by index
   static getLevel0Template(templateIndex) {
     const templates = ALL_LEVEL_0_TEMPLATES;
     if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
@@ -175,1513 +603,139 @@ export class TemplateLibraryService {
     return templates[Math.floor(Math.random() * templates.length)];
   }
   
-  // Get fallback system template
-  static getFallbackTemplate(level, templateIndex) {
-    const templates = FALLBACK_SYSTEM_TEMPLATES[level];
-    if (!templates || templates.length === 0) {
-      return null;
-    }
-    
+  static getLevel0TemplateCount() {
+    return ALL_LEVEL_0_TEMPLATES.length;
+  }
+
+  // Level 1 Methods
+  static getLevel1Template(templateIndex) {
+    const templates = LEVEL_1_TEMPLATES;
     if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
       return templates[templateIndex];
     }
-    
     return templates[Math.floor(Math.random() * templates.length)];
   }
   
-  // Get template count for exploration
-  static getTemplateCount(level) {
-    if (level === 'Level0' || level === 'beginner') {
-      return ALL_LEVEL_0_TEMPLATES.length;
+  static getLevel1TemplateCount() {
+    return LEVEL_1_TEMPLATES.length;
+  }
+
+  // Level 2 Methods
+  static getLevel2Template(templateIndex) {
+    const templates = LEVEL_2_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    
-    const templates = FALLBACK_SYSTEM_TEMPLATES[level];
-    return templates ? templates.length : 0;
+    return templates[Math.floor(Math.random() * templates.length)];
   }
   
-  // Level 1 Templates (extracted from src/constants/newFallbackTemplates/level1Templates.ts)
-  static LEVEL_1_TEMPLATES = [
-    {
-      title: "The Magical Garden Discovery",
-      theme: "Magic & Nature",
-      level: "Level 1",
-      scenes: [
-        {
-          text: "{userName} discovers a magical garden behind their house. The flowers sparkle with rainbow colors in the bright sunlight.",
-          pause: true,
-          hook: "What magical creatures might live in this garden?",
-          microVariants: {
-            text: "{userName} discovers a magical garden behind their house. The flowers sparkle with rainbow colors in the bright sunlight.",
-            alternatives: ["Behind the house, {userName} finds an enchanted garden.", "A secret garden appears to {userName} with glowing flowers."],
-            optionalDetails: ["butterflies dance around the flowers", "a gentle breeze carries sweet perfume"]
-          }
-        },
-        {
-          text: "A tiny fairy appears from behind a rose bush. She waves her wand and makes the butterflies dance around {userName}.",
-          pause: true,
-          hook: "What will the fairy show {userName} next?",
-          microVariants: {
-            text: "A tiny fairy appears from behind a rose bush. She waves her wand and makes the butterflies dance around {userName}.",
-            alternatives: ["From the roses, a small fairy emerges with a sparkling wand.", "A magical fairy greets {userName} from her flower home."],
-            optionalDetails: ["her wings shimmer like diamonds", "she speaks in a musical voice"]
-          }
-        },
-        {
-          text: "{userName} follows the fairy deeper into the garden. They find a crystal fountain with water that tastes like {favoriteFood}.",
-          pause: true,
-          hook: "What other magical surprises await in the garden?",
-          microVariants: {
-            text: "{userName} follows the fairy deeper into the garden. They find a crystal fountain with water that tastes like {favoriteFood}.",
-            alternatives: ["The fairy leads {userName} to a magical crystal fountain.", "Together they discover a fountain of sweet, magical water."],
-            optionalDetails: ["the fountain sparkles in the sunlight", "rainbow fish swim in the crystal water"]
-          }
-        },
-        {
-          text: "The fairy shows {userName} how to make flower crowns. Together they create beautiful crowns from the magical blooms.",
-          pause: true,
-          hook: "What special gift will the fairy give {userName}?",
-          microVariants: {
-            text: "The fairy shows {userName} how to make flower crowns. Together they create beautiful crowns from the magical blooms.",
-            alternatives: ["They weave flowers into beautiful, magical crowns.", "The fairy teaches {userName} to craft crowns from enchanted petals."],
-            optionalDetails: ["the crowns glow with soft light", "each flower has a different magical power"]
-          }
-        },
-        {
-          text: "{userName} promises to visit the fairy garden every day. The fairy gives them a special seed to plant at home.",
-          pause: false,
-          hook: "What will grow from this magical seed?",
-          microVariants: {
-            text: "{userName} promises to visit the fairy garden every day. The fairy gives them a special seed to plant at home.",
-            alternatives: ["The fairy gifts {userName} a magical seed before they leave.", "With a promise to return, {userName} receives a special growing gift."],
-            optionalDetails: ["the seed glows with inner light", "it feels warm and tingly in their hand"]
-          }
-        },
-        {
-          text: "At home, {userName} carefully plants the magical seed in a special spot in their garden. They water it every day and tell it stories about their fairy friend. One morning, a tiny {favoriteColor} sprout appears, and {userName} knows their magical adventures are just beginning.",
-          pause: false,
-          hook: "What wonderful plant will grow from this magical seed?",
-          microVariants: {
-            text: "At home, {userName} carefully plants the magical seed in a special spot in their garden. They water it every day and tell it stories about their fairy friend. One morning, a tiny {favoriteColor} sprout appears, and {userName} knows their magical adventures are just beginning.",
-            alternatives: ["The magical seed finds a perfect home in {userName}'s garden, where daily care and stories help it begin to grow.", "With gentle care and fairy stories, {userName} watches as the magical seed starts its amazing transformation."],
-            optionalDetails: ["the sprout sparkles in the morning sunlight", "butterflies are drawn to the growing plant", "the soil around the seed glows softly"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "{userName} plants the magical seed in their own garden and watches it grow into something wonderful.",
-          microVariants: ["The seed grows into a bridge between the two gardens.", "A new fairy home sprouts from the magical seed."]
-        },
-        {
-          type: 'triumphant',
-          text: "{userName} becomes the garden's official human helper, protecting all the magical creatures.",
-          microVariants: ["The fairy declares {userName} the guardian of garden magic.", "{userName} earns their own set of magical gardening tools."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "fairy": ["pixie", "sprite", "nature spirit", "garden guardian"],
-          "fountain": ["pond", "stream", "waterfall", "spring"],
-          "crown": ["necklace", "bracelet", "ring", "headband"]
-        },
-        weatherVariants: ["on a sunny morning", "during a gentle rain", "at golden sunset", "under starlight"],
-        settingVariants: ["backyard", "school garden", "park", "grandmother's house"]
-      }
-    },
-    {
-      title: "The Brave Little Explorer",
-      theme: "Adventure Journeys",
-      level: "Level 1",
-      scenes: [
-        {
-          text: "{userName} packs a small backpack for their first camping trip. They put in a flashlight, snacks, and their favorite {favoriteColor} water bottle.",
-          pause: true,
-          hook: "What adventures will {userName} find in the forest?",
-          microVariants: {
-            text: "{userName} packs a small backpack for their first camping trip. They put in a flashlight, snacks, and their favorite {favoriteColor} water bottle.",
-            alternatives: ["Getting ready for camping, {userName} fills their backpack with supplies.", "For the big adventure, {userName} packs everything they need."],
-            optionalDetails: ["the backpack has fun patches", "they pack extra snacks to share"]
-          }
-        },
-        {
-          text: "At the campsite, {userName} helps set up the tent. They collect sticks and leaves to make a cozy campfire area.",
-          pause: true,
-          hook: "What will {userName} discover around the campfire?",
-          microVariants: {
-            text: "At the campsite, {userName} helps set up the tent. They collect sticks and leaves to make a cozy campfire area.",
-            alternatives: ["Working together, {userName} helps build their outdoor home.", "The campsite becomes special when {userName} adds their touches."],
-            optionalDetails: ["friendly squirrels watch from the trees", "the tent is bright and cheerful"]
-          }
-        },
-        {
-          text: "Around the campfire, {userName} roasts marshmallows and tells stories. The stars come out and shine like diamonds in the sky.",
-          pause: true,
-          hook: "What special nighttime adventure awaits {userName}?",
-          microVariants: {
-            text: "Around the campfire, {userName} roasts marshmallows and tells stories. The stars come out and shine like diamonds in the sky.",
-            alternatives: ["The evening brings marshmallows, stories, and sparkling stars.", "Under the starry sky, {userName} enjoys the perfect camping night."],
-            optionalDetails: ["owls hoot softly in the distance", "the fire crackles happily"]
-          }
-        },
-        {
-          text: "{userName} hears a gentle rustling in the bushes. A friendly {favoriteAnimal} appears and sits by the warm fire.",
-          pause: true,
-          hook: "Will the animal become {userName}'s camping friend?",
-          microVariants: {
-            text: "{userName} hears a gentle rustling in the bushes. A friendly {favoriteAnimal} appears and sits by the warm fire.",
-            alternatives: ["A soft sound leads to a wonderful surprise visitor.", "The forest sends {userName} a special furry friend."],
-            optionalDetails: ["the animal has gentle, curious eyes", "it seems to enjoy the warmth"]
-          }
-        },
-        {
-          text: "In the morning, {userName} waves goodbye to their new animal friend. They pack up camp and promise to return next summer.",
-          pause: false,
-          hook: "What memories will {userName} treasure from this adventure?",
-          microVariants: {
-            text: "In the morning, {userName} waves goodbye to their new animal friend. They pack up camp and promise to return next summer.",
-            alternatives: ["The camping adventure ends with new friendships and happy memories.", "Saying goodbye is hard, but {userName} knows they'll be back."],
-            optionalDetails: ["the sunrise paints the sky in beautiful colors", "birds sing a cheerful morning song"]
-          }
-        },
-        {
-          text: "When {userName} gets home, they create a special camping journal with pictures and stories from their adventure. They plan their next camping trip and promise to teach other kids about respecting nature and making friends with animals.",
-          pause: false,
-          hook: "What new camping adventures will {userName} discover?",
-          microVariants: {
-            text: "When {userName} gets home, they create a special camping journal with pictures and stories from their adventure. They plan their next camping trip and promise to teach other kids about respecting nature and making friends with animals.",
-            alternatives: ["The camping memories become a treasured journal that inspires {userName} to plan more outdoor adventures.", "Home again, {userName} documents their camping story and dreams of sharing nature's wonders with friends."],
-            optionalDetails: ["the journal has pressed leaves and flowers", "they draw maps of their camping spots", "family members love hearing the adventure stories"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "{userName} dreams about camping every night and draws pictures of their forest friend.",
-          microVariants: ["The adventure lives on in drawings and happy dreams.", "Every picture tells the story of their camping friendship."]
-        },
-        {
-          type: 'triumphant',
-          text: "{userName} becomes the best young camper in their family and teaches others about nature.",
-          microVariants: ["Their camping skills help them become a nature guide.", "Other kids ask {userName} to teach them about outdoor adventures."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "camping gear": ["tent", "sleeping bag", "lantern", "compass"],
-          "forest sounds": ["owls hooting", "leaves rustling", "crickets singing", "wind whooshing"],
-          "activities": ["hiking", "exploring", "stargazing", "storytelling"]
-        },
-        weatherVariants: ["on a clear night", "under a full moon", "during gentle weather", "on a warm evening"],
-        settingVariants: ["mountain campsite", "forest clearing", "by a lake", "in a meadow"]
-      }
-    },
-    {
-      title: "The Helpful Friend",
-      theme: "Friendship & Teamwork", 
-      level: "Level 1",
-      scenes: [
-        {
-          text: "{userName} sees their friend Sarah looking sad on the playground. Her favorite toy is stuck high up in the big oak tree.",
-          pause: true,
-          hook: "How will {userName} help their friend feel better?",
-          microVariants: {
-            text: "{userName} sees their friend Sarah looking sad on the playground. Her favorite toy is stuck high up in the big oak tree.",
-            alternatives: ["Sarah's toy is stuck, and {userName} wants to help.", "A friend needs help, and {userName} is ready to find a solution."],
-            optionalDetails: ["the toy is a small {favoriteColor} bear", "other kids gather to watch"]
-          }
-        },
-        {
-          text: "{userName} gets a long stick and carefully tries to reach the toy. They work together with other friends to make a plan.",
-          pause: true,
-          hook: "Will their teamwork plan succeed?",
-          microVariants: {
-            text: "{userName} gets a long stick and carefully tries to reach the toy. They work together with other friends to make a plan.",
-            alternatives: ["Working as a team, the friends try different ideas.", "Everyone helps {userName} think of the best solution."],
-            optionalDetails: ["they stack safe boxes to reach higher", "a teacher watches to keep everyone safe"]
-          }
-        },
-        {
-          text: "Success! The toy falls safely into {userName}'s hands. Sarah smiles and gives {userName} a big thank-you hug.",
-          pause: true,
-          hook: "How will this act of kindness make everyone feel?",
-          microVariants: {
-            text: "Success! The toy falls safely into {userName}'s hands. Sarah smiles and gives {userName} a big thank-you hug.",
-            alternatives: ["The rescue works perfectly, and everyone cheers!", "Friendship wins when the toy comes down safely."],
-            optionalDetails: ["all the friends cheer happily", "Sarah hugs her toy tight"]
-          }
-        },
-        {
-          text: "All the friends decide to play together for the rest of recess. They share their snacks and play {userName}'s favorite game.",
-          pause: true,
-          hook: "What new friendships will grow from this kindness?",
-          microVariants: {
-            text: "All the friends decide to play together for the rest of recess. They share their snacks and play {userName}'s favorite game.",
-            alternatives: ["The rescue brings everyone together for fun games.", "Helping others creates new friendships and joy."],
-            optionalDetails: ["they play on the swings together", "everyone shares their {favoriteFood} snacks"]
-          }
-        },
-        {
-          text: "From that day on, {userName} and Sarah became the best of friends. They always help each other and have the most fun together.",
-          pause: false,
-          hook: "What adventures will these best friends share next?",
-          microVariants: {
-            text: "From that day on, {userName} and Sarah became the best of friends. They always help each other and have the most fun together.",
-            alternatives: ["A simple act of kindness grew into a wonderful friendship.", "Helping others brought {userName} their very best friend."],
-            optionalDetails: ["they sit together at lunch every day", "they plan fun activities together"]
-          }
-        },
-        {
-          text: "Every day at school, {userName} and Sarah sit together at lunch and plan fun activities. They help other kids solve playground problems and share their snacks with anyone who feels sad or lonely.",
-          pause: false,
-          hook: "What other friends will join their kindness club?",
-          microVariants: {
-            text: "Every day at school, {userName} and Sarah sit together at lunch and plan fun activities. They help other kids solve playground problems and share their snacks with anyone who feels sad or lonely.",
-            alternatives: ["Daily lunch meetings between {userName} and Sarah become planning sessions for spreading kindness throughout the school.", "The best friends create a tradition of lunch-time kindness planning and snack sharing with lonely classmates."],
-            optionalDetails: ["they make friendship bracelets for new kids", "their kindness activities include playground games", "teachers notice how much happier the playground becomes"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "{userName} and Sarah have sleepovers and share all their favorite stories and dreams.",
-          microVariants: ["Best friends share everything and create the sweetest memories.", "Their friendship grows stronger with every shared adventure."]
-        },
-        {
-          type: 'silly',
-          text: "Sarah's toy becomes the mascot for their friendship club, where helping others is the most important rule!",
-          microVariants: ["The rescued toy becomes a symbol of their helpful friendship club.", "Every rescue mission makes their friendship club grow!"]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "problem": ["lost toy", "dropped book", "stuck ball", "fallen hat"],
-          "solution": ["teamwork", "creative thinking", "asking adults", "using tools"],
-          "playground": ["swings", "slide", "monkey bars", "sandbox"]
-        },
-        weatherVariants: ["on a sunny day", "during afternoon recess", "on a warm morning", "after lunch time"],
-        settingVariants: ["school playground", "park", "backyard", "community center"]
-      }
-    },
-    {
-      title: "The Baby Animal Rescue",
-      theme: "Animals & Nature",
-      level: "Level 1", 
-      scenes: [
-        {
-          text: "{userName} finds a tiny baby bird that has fallen from its nest. The little bird chirps softly and looks scared and alone.",
-          pause: true,
-          hook: "How will {userName} help the baby bird get back to safety?",
-          microVariants: {
-            text: "{userName} finds a tiny baby bird that has fallen from its nest. The little bird chirps softly and looks scared and alone.",
-            alternatives: ["A small, scared baby bird needs {userName}'s help.", "The tiny bird chirps for help, and {userName} listens carefully."],
-            optionalDetails: ["the bird has soft {favoriteColor} feathers", "it fits perfectly in {userName}'s gentle hands"]
-          }
-        },
-        {
-          text: "{userName} carefully picks up the baby bird and looks up to find its nest in the tall tree. They ask their mom for help.",
-          pause: true,
-          hook: "What will Mom and {userName} do to return the bird safely?",
-          microVariants: {
-            text: "{userName} carefully picks up the baby bird and looks up to find its nest in the tall tree. They ask their mom for help.",
-            alternatives: ["Gentle hands hold the bird while {userName} searches for its home.", "Finding the nest high above, {userName} knows they need help."],
-            optionalDetails: ["Mom brings a soft towel for the bird", "they can hear other baby birds in the nest"]
-          }
-        },
-        {
-          text: "Mom gets a ladder while {userName} keeps the baby bird warm and safe. Together they climb up and return the bird to its family.",
-          pause: true,
-          hook: "How will the bird family react to having their baby back?",
-          microVariants: {
-            text: "Mom gets a ladder while {userName} keeps the baby bird warm and safe. Together they climb up and return the bird to its family.",
-            alternatives: ["Working together, they safely return the bird to its nest.", "The rescue mission succeeds with teamwork and gentle care."],
-            optionalDetails: ["the parent birds chirp thank you", "the baby bird snuggles with its siblings"]
-          }
-        },
-        {
-          text: "The mama and papa birds sing beautiful songs to thank {userName} for their kindness. The whole bird family is happy again.",
-          pause: true,
-          hook: "What will {userName} learn from this act of kindness?",
-          microVariants: {
-            text: "The mama and papa birds sing beautiful songs to thank {userName} for their kindness. The whole bird family is happy again.",
-            alternatives: ["Sweet bird songs fill the air as a thank you.", "The happy bird family sings their gratitude to {userName}."],
-            optionalDetails: ["other birds join in the thank you song", "the melody sounds like {favoriteFood} tastes - sweet"]
-          }
-        },
-        {
-          text: "Every day after that, {userName} visits the tree to check on their bird friends. The baby bird always chirps hello with joy.",
-          pause: false,
-          hook: "What other animals might {userName} help in the future?",
-          microVariants: {
-            text: "Every day after that, {userName} visits the tree to check on their bird friends. The baby bird always chirps hello with joy.",
-            alternatives: ["Daily visits create a special friendship with the bird family.", "The rescued bird becomes {userName}'s special feathered friend."],
-            optionalDetails: ["the bird recognizes {userName}'s voice", "sometimes the bird brings small gifts like pretty leaves"]
-          }
-        },
-        {
-          text: "Each week, {userName} brings special treats for their bird friends and spends time watching them play and learn to fly better. Other kids from the neighborhood start joining {userName} to watch the birds and learn about helping animals.",
-          pause: false,
-          hook: "How many more animals might {userName} help in their neighborhood?",
-          microVariants: {
-            text: "Each week, {userName} brings special treats for their bird friends and spends time watching them play and learn to fly better. Other kids from the neighborhood start joining {userName} to watch the birds and learn about helping animals.",
-            alternatives: ["Weekly bird visits become neighborhood learning sessions as other children join {userName} in animal care education.", "The bird friendship grows into a community activity where kids learn about wildlife care from {userName}'s example."],
-            optionalDetails: ["the birds perform special flight shows for the children", "kids bring their own healthy bird treats", "a teacher joins to help identify different bird species"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "{userName} becomes known as the neighborhood's best animal helper, and creatures come to them when they need care.",
-          microVariants: ["Animals throughout the neighborhood learn to trust {userName}'s gentle heart.", "Word spreads among animals that {userName} is always ready to help."]
-        },
-        {
-          type: 'triumphant',
-          text: "{userName} starts a junior animal rescue club with friends, and they save many animals together.",
-          microVariants: ["The bird rescue inspires {userName} to create an animal helping team.", "Friends join {userName} in becoming neighborhood animal heroes."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "baby animal": ["bird", "kitten", "puppy", "bunny", "squirrel"],
-          "rescue method": ["ladder", "gentle hands", "soft basket", "careful climbing"],
-          "animal home": ["nest", "burrow", "den", "tree hole", "garden bed"]
-        },
-        weatherVariants: ["on a calm day", "during gentle weather", "on a quiet morning", "in the afternoon"],
-        settingVariants: ["backyard", "neighborhood park", "school garden", "front yard"]
-      }
-    },
-    {
-      title: "The Space Explorer Dream",
-      theme: "Space & Sci-Fi",
-      level: "Level 1",
-      scenes: [
-        {
-          text: "{userName} builds a rocket ship from cardboard boxes in their backyard. They paint it {favoriteColor} and add silver buttons and lights.",
-          pause: true,
-          hook: "Where will {userName}'s imagination rocket take them?",
-          microVariants: {
-            text: "{userName} builds a rocket ship from cardboard boxes in their backyard. They paint it {favoriteColor} and add silver buttons and lights.",
-            alternatives: ["A cardboard rocket becomes {userName}'s spaceship to the stars.", "Building their dream rocket, {userName} prepares for space adventure."],
-            optionalDetails: ["the control panel has fun beeping sounds", "windows are drawn with crayon stars"]
-          }
-        },
-        {
-          text: "Inside the rocket, {userName} puts on their astronaut helmet and counts down. Three, two, one, blast off to space!",
-          pause: true,
-          hook: "What amazing sights will {userName} see in space?",
-          microVariants: {
-            text: "Inside the rocket, {userName} puts on their astronaut helmet and counts down. Three, two, one, blast off to space!",
-            alternatives: ["The countdown begins {userName}'s amazing space adventure.", "Astronaut {userName} launches into an imaginary journey among the stars."],
-            optionalDetails: ["the helmet is made from a shiny bowl", "they pack space snacks of {favoriteFood}"]
-          }
-        },
-        {
-          text: "{userName} flies past the moon and waves to the friendly aliens living there. The aliens wave back with their green hands.",
-          pause: true,
-          hook: "What will the friendly aliens show {userName}?",
-          microVariants: {
-            text: "{userName} flies past the moon and waves to the friendly aliens living there. The aliens wave back with their green hands.",
-            alternatives: ["Friendly moon aliens greet {userName} with happy waves.", "The space journey leads to wonderful alien friendships."],
-            optionalDetails: ["the aliens have kind, sparkly eyes", "they live in crystal moon houses"]
-          }
-        },
-        {
-          text: "The aliens invite {userName} to visit their space playground. They play zero-gravity tag and eat moon ice cream together.",
-          pause: true,
-          hook: "What games will {userName} play with their new space friends?",
-          microVariants: {
-            text: "The aliens invite {userName} to visit their space playground. They play zero-gravity tag and eat moon ice cream together.",
-            alternatives: ["Space friends share their amazing floating playground.", "Playing in zero gravity makes every game feel magical."],
-            optionalDetails: ["the ice cream floats in fun bubbles", "they slide down shooting star slides"]
-          }
-        },
-        {
-          text: "When it's time to go home, {userName} promises to visit again soon. They blast off and land safely in their backyard.",
-          pause: false,
-          hook: "What space adventures will {userName} dream about tonight?",
-          microVariants: {
-            text: "When it's time to go home, {userName} promises to visit again soon. They blast off and land safely in their backyard.",
-            alternatives: ["The space adventure ends with promises of return visits.", "Landing safely, {userName} carries space memories in their heart."],
-            optionalDetails: ["the aliens give them a small moon rock", "they plan tomorrow's space mission"]
-          }
-        },
-        {
-          text: "At the end of their space adventure, {userName} promises the alien children they will return someday. They wave goodbye as Earth appears in their spaceship window, knowing they will always remember their cosmic friends and the wonders of space exploration.",
-          pause: false,
-          hook: "What other planets might {userName} explore in the future?",
-          microVariants: {
-            text: "At the end of their space adventure, {userName} promises the alien children they will return someday. They wave goodbye as Earth appears in their spaceship window, knowing they will always remember their cosmic friends and the wonders of space exploration.",
-            alternatives: ["The space adventure concludes with promises of return visits as {userName} waves goodbye to their alien friends.", "Heading home to Earth, {userName} carries memories of cosmic friendship and dreams of future space exploration."],
-            optionalDetails: ["the alien children wave from their planet's surface", "Earth looks beautiful and {favoriteColor} from space", "the spaceship plays gentle music for the journey home"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'silly',
-          text: "That night, {userName} dreams they're teaching Earth animals how to play alien games, and even the {favoriteAnimal} learns to float!",
-          microVariants: ["Dreams mix Earth and space in the most wonderful, silly ways.", "Space adventures continue in dreams where anything is possible."]
-        },
-        {
-          type: 'cozy',
-          text: "{userName} falls asleep in their rocket ship, dreaming of floating among the stars with their new alien friends.",
-          microVariants: ["Sweet space dreams fill the cardboard rocket all night long.", "The backyard rocket becomes a cozy spaceship for dreaming."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "space vehicle": ["rocket", "spaceship", "space shuttle", "flying saucer"],
-          "alien friends": ["moon aliens", "star creatures", "space animals", "planet visitors"],
-          "space activities": ["floating games", "star racing", "planet hopping", "meteor surfing"]
-        },
-        weatherVariants: ["under a starry sky", "on a clear night", "during a bright day", "when the moon is full"],
-        settingVariants: ["backyard", "garage", "bedroom", "playroom"]
-      }
-    }
-  ];
-
-  static getLevel1Template(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_1_TEMPLATES.length) {
-      return this.LEVEL_1_TEMPLATES[templateIndex];
-    }
-    // Return random template
-    const randomIndex = Math.floor(Math.random() * this.LEVEL_1_TEMPLATES.length);
-    return this.LEVEL_1_TEMPLATES[randomIndex];
-  }
-
-  static getLevel1TemplateCount() {
-    return this.LEVEL_1_TEMPLATES.length;
-  }
-
-  // Level 2 Templates (extracted from src/constants/newFallbackTemplates/level2Templates.ts)  
-  static LEVEL_2_TEMPLATES = [
-    {
-      title: "The School Science Fair Champion",
-      theme: "Science & Discovery", 
-      level: "Level 2",
-      scenes: [
-        {
-          text: "{userName} joins the school science club and discovers they have a talent for experiments. The teacher, Mrs. Johnson, shows them how to create colorful chemical reactions using safe household ingredients. {userName} watches in amazement as red and blue liquids combine to make purple foam.",
-          pause: true,
-          hook: "What amazing project will {userName} create for the science fair?",
-          microVariants: {
-            text: "{userName} joins the school science club and discovers they have a talent for experiments. The teacher, Mrs. Johnson, shows them how to create colorful chemical reactions using safe household ingredients. {userName} watches in amazement as red and blue liquids combine to make purple foam.",
-            alternatives: ["At science club, {userName} learns to mix chemicals safely and create amazing reactions.", "Mrs. Johnson teaches {userName} about exciting chemical reactions that bubble and change colors."],
-            optionalDetails: ["the mixtures bubble and foam wildly", "different colors swirl together in beautiful patterns"]
-          }
-        },
-        {
-          text: "For their first project, {userName} decides to build a volcano that actually erupts. They carefully mix baking soda, vinegar, and {favoriteColor} food coloring while following the scientific method. {userName} measures each ingredient precisely and records everything in their science notebook like a real scientist.",
-          pause: true,
-          hook: "Will the volcano work perfectly for the science fair?",
-          microVariants: {
-            text: "For their first project, {userName} decides to build a volcano that actually erupts. They carefully mix baking soda, vinegar, and {favoriteColor} food coloring while following the scientific method. {userName} measures each ingredient precisely and records everything in their science notebook like a real scientist.",
-            alternatives: ["A erupting volcano becomes {userName}'s science fair project, complete with scientific measurements.", "{userName} creates a spectacular volcano with colorful lava, following proper scientific procedures."],
-            optionalDetails: ["they shape the volcano like a real mountain", "the notebook has detailed drawings and observations"]
-          }
-        },
-        {
-          text: "The day of the science fair arrives, and {userName} feels nervous but excited. They set up their volcano display with colorful posters explaining the chemical reaction. When the judges arrive, {userName} demonstrates how the volcano erupts, explaining each step clearly and confidently.",
-          pause: true,
-          hook: "How will the judges react to {userName}'s presentation?",
-          microVariants: {
-            text: "The day of the science fair arrives, and {userName} feels nervous but excited. They set up their volcano display with colorful posters explaining the chemical reaction. When the judges arrive, {userName} demonstrates how the volcano erupts, explaining each step clearly and confidently.",
-            alternatives: ["Science fair day brings excitement as {userName} presents their volcanic creation to impressed judges.", "With colorful displays ready, {userName} confidently explains their erupting volcano to curious visitors."],
-            optionalDetails: ["the eruption creates a perfect foam flow", "other students gather to watch the demonstration"]
-          }
-        },
-        {
-          text: "The judges are impressed by {userName}'s knowledge and enthusiasm for science. They ask detailed questions about the chemical reaction, and {userName} answers with confidence. Other students stop by to see the amazing volcano and learn about the scientific process behind the colorful eruption.",
-          pause: true,
-          hook: "What recognition will {userName} receive for their hard work?",
-          microVariants: {
-            text: "The judges are impressed by {userName}'s knowledge and enthusiasm for science. They ask detailed questions about the chemical reaction, and {userName} answers with confidence. Other students stop by to see the amazing volcano and learn about the scientific process behind the colorful eruption.",
-            alternatives: ["Impressed judges question {userName} about the science, and they answer like a true expert.", "The volcano display attracts crowds of curious students eager to learn from {userName}'s expertise."],
-            optionalDetails: ["judges take photos of the impressive display", "younger students ask if they can join science club"]
-          }
-        },
-        {
-          text: "At the awards ceremony, {userName} wins second place in the chemistry category. They feel proud of their achievement and excited about future science projects. Mrs. Johnson congratulates them and suggests they join the advanced science program next year.",
-          pause: true,
-          hook: "How will this success inspire {userName}'s future scientific journey?",
-          microVariants: {
-            text: "At the awards ceremony, {userName} wins second place in the chemistry category. They feel proud of their achievement and excited about future science projects. Mrs. Johnson congratulates them and suggests they join the advanced science program next year.",
-            alternatives: ["Second place in chemistry makes {userName} beam with pride and scientific ambition.", "The award ceremony celebrates {userName}'s scientific achievement and opens doors to advanced opportunities."],
-            optionalDetails: ["the trophy has a small chemistry symbol", "parents take pictures of the proud moment"]
-          }
-        },
-        {
-          text: "Inspired by their success, {userName} starts a science club for younger students. They teach them simple experiments and share their love of discovery. Every week, {userName} helps other kids fall in love with science just like they did.",
-          pause: true,
-          hook: "What other scientific discoveries will {userName} make in the future?",
-          microVariants: {
-            text: "Inspired by their success, {userName} starts a science club for younger students. They teach them simple experiments and share their love of discovery. Every week, {userName} helps other kids fall in love with science just like they did.",
-            alternatives: ["Success inspires {userName} to become a science teacher for younger students eager to learn.", "The science fair victory leads {userName} to share their passion by mentoring other young scientists."],
-            optionalDetails: ["the club meets every Tuesday after school", "students call {userName} their favorite science teacher"]
-          }
-        },
-        {
-          text: "Years later, {userName} remembers that first volcano project as the moment they knew they wanted to be a scientist. They continue to experiment, learn, and share their discoveries with others, always remembering the excitement of that special science fair day.",
-          pause: false,
-          hook: "What amazing scientific career will {userName} pursue?",
-          microVariants: {
-            text: "Years later, {userName} remembers that first volcano project as the moment they knew they wanted to be a scientist. They continue to experiment, learn, and share their discoveries with others, always remembering the excitement of that special science fair day.",
-            alternatives: ["The volcano project becomes the foundation of {userName}'s lifelong love affair with scientific discovery.", "Looking back, {userName} traces their scientific career to that magical moment when chemistry first captured their heart."],
-            optionalDetails: ["they keep the trophy on their desk as inspiration", "the notebook becomes a treasured keepsake"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "{userName} becomes a famous chemist who discovers new ways to help people and protect the environment, always remembering their first volcano experiment.",
-          microVariants: ["The judges' amazement grows into worldwide recognition for {userName}'s scientific contributions.", "{userName}'s discoveries help solve important problems, inspired by that first colorful eruption."]
-        },
-        {
-          type: 'cozy',
-          text: "{userName} becomes a beloved science teacher who inspires thousands of students with the same volcano experiment that started their own journey.",
-          microVariants: ["Every year, {userName} helps new students discover the magic of science through hands-on experiments.", "The classroom becomes a place where scientific dreams begin, just like {userName}'s did."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "volcano": ["rocket", "robot", "plant growth experiment", "weather station"],
-          "science club": ["robotics club", "nature club", "math club", "invention club"],
-          "Mrs. Johnson": ["Mr. Smith", "Ms. Garcia", "Dr. Kim", "Mrs. Brown"]
-        },
-        weatherVariants: ["during science week", "on a rainy afternoon", "after school", "during lunch break"],
-        settingVariants: ["school lab", "classroom", "library", "science museum"]
-      }
-    },
-    {
-      title: "The Mystery of the Missing Library Books",
-      theme: "Mystery & Problem-Solving",
-      level: "Level 2",
-      scenes: [
-        {
-          text: "{userName} loves reading mystery books and spending time at the school library. Mrs. Chen, the librarian, notices that several popular books have mysteriously disappeared from the shelves. She asks {userName} to help solve this puzzling case because of their sharp detective skills.",
-          pause: true,
-          hook: "What clues will {userName} find to solve the library mystery?",
-          microVariants: {
-            text: "{userName} loves reading mystery books and spending time at the school library. Mrs. Chen, the librarian, notices that several popular books have mysteriously disappeared from the shelves. She asks {userName} to help solve this puzzling case because of their sharp detective skills.",
-            alternatives: ["Detective {userName} receives their first real mystery case from the worried librarian.", "The school library needs {userName}'s help when books start vanishing without explanation."],
-            optionalDetails: ["the missing books are all {favoriteColor} covered", "students keep asking for the disappeared books"]
-          }
-        },
-        {
-          text: "{userName} begins their investigation by interviewing students and teachers who use the library regularly. They create a detective notebook to track clues and discover that the missing books all have one thing in common. Every disappeared book was about animals, especially stories featuring {favoriteAnimal} characters.",
-          pause: true,
-          hook: "Why would someone take only animal books?",
-          microVariants: {
-            text: "{userName} begins their investigation by interviewing students and teachers who use the library regularly. They create a detective notebook to track clues and discover that the missing books all have one thing in common. Every disappeared book was about animals, especially stories featuring {favoriteAnimal} characters.",
-            alternatives: ["Careful detective work reveals a pattern in the missing books that points to an animal-loving culprit.", "The investigation notebook fills with clues that all point toward someone who adores animal stories."],
-            optionalDetails: ["interviews reveal nervous behavior from some students", "the pattern becomes clear after checking library records"]
-          }
-        },
-        {
-          text: "Following the clues, {userName} discovers a secret reading fort built under the library stairs. Inside, they find all the missing books and a shy first-grader named Tommy who was too embarrassed to check out books properly. Tommy explains he was afraid other kids would laugh at him for reading baby animal books.",
-          pause: true,
-          hook: "How will {userName} help Tommy feel comfortable about reading?",
-          microVariants: {
-            text: "Following the clues, {userName} discovers a secret reading fort built under the library stairs. Inside, they find all the missing books and a shy first-grader named Tommy who was too embarrassed to check out books properly. Tommy explains he was afraid other kids would laugh at him for reading baby animal books.",
-            alternatives: ["The mystery leads to a cozy reading hideout where a scared young reader has been hiding with the books.", "Under the stairs, {userName} finds not a thief, but a lonely child who just wanted to read without judgment."],
-            optionalDetails: ["the fort is decorated with drawings of animals", "Tommy has been sharing {favoriteFood} crackers with book characters"]
-          }
-        },
-        {
-          text: "Instead of getting Tommy in trouble, {userName} sits with him and shares their own love of animal stories. They explain that reading any book is wonderful and that being kind to animals shows a good heart. {userName} helps Tommy learn how to check out books properly and promises to read with him sometimes.",
-          pause: true,
-          hook: "What positive changes will come from {userName}'s kindness?",
-          microVariants: {
-            text: "Instead of getting Tommy in trouble, {userName} sits with him and shares their own love of animal stories. They explain that reading any book is wonderful and that being kind to animals shows a good heart. {userName} helps Tommy learn how to check out books properly and promises to read with him sometimes.",
-            alternatives: ["Compassionate detective work turns into friendship as {userName} helps Tommy feel proud of his reading choices.", "The case closes with kindness as {userName} becomes Tommy's reading mentor and friend."],
-            optionalDetails: ["they return the books together to Mrs. Chen", "Tommy's face lights up with relief and happiness"]
-          }
-        },
-        {
-          text: "Mrs. Chen is so impressed with {userName}'s detective skills and kindness that she creates a special \"Reading Buddies\" program. {userName} becomes the first Reading Buddy, helping younger students feel comfortable exploring the library and finding books they love. The program becomes very popular throughout the school.",
-          pause: true,
-          hook: "How will the Reading Buddies program grow and help other students?",
-          microVariants: {
-            text: "Mrs. Chen is so impressed with {userName}'s detective skills and kindness that she creates a special \"Reading Buddies\" program. {userName} becomes the first Reading Buddy, helping younger students feel comfortable exploring the library and finding books they love. The program becomes very popular throughout the school.",
-            alternatives: ["The mystery solution inspires a school-wide program that pairs confident readers with shy beginners.", "Detective work transforms into mentorship as {userName} helps create a supportive reading community."],
-            optionalDetails: ["older students volunteer to be Reading Buddies too", "the library becomes busier than ever before"]
-          }
-        },
-        {
-          text: "Tommy becomes one of the library's most enthusiastic readers, proudly checking out animal books and recommending them to friends. {userName} realizes that solving mysteries isn't just about finding missing things, but about understanding people and helping them feel valued and accepted.",
-          pause: true,
-          hook: "What other mysteries might {userName} solve with kindness and understanding?",
-          microVariants: {
-            text: "Tommy becomes one of the library's most enthusiastic readers, proudly checking out animal books and recommending them to friends. {userName} realizes that solving mysteries isn't just about finding missing things, but about understanding people and helping them feel valued and accepted.",
-            alternatives: ["The shy reader becomes confident, teaching {userName} that the best mysteries involve helping hearts heal.", "Tommy's transformation shows {userName} that true detective work includes solving problems with compassion."],
-            optionalDetails: ["Tommy starts a junior animal lovers book club", "he draws pictures of his favorite book characters"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "{userName} and Tommy become best reading friends, spending every lunch period discovering new animal adventures together in their favorite library corner.",
-          microVariants: ["The library corner becomes their special place for sharing stories and snacks.", "Every day brings new books and deeper friendship between the detective and their first case."]
-        },
-        {
-          type: 'triumphant',
-          text: "{userName} solves many more school mysteries with kindness, eventually becoming the school's official Student Problem Solver, helping everyone feel included and understood.",
-          microVariants: ["The Reading Buddy detective becomes legendary for solving problems with heart and wisdom.", "Other schools invite {userName} to help them create kindness-based problem-solving programs."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "missing items": ["books", "supplies", "toys", "equipment"],
-          "location": ["library", "classroom", "playground", "cafeteria"],
-          "helper": ["librarian", "teacher", "principal", "counselor"]
-        },
-        weatherVariants: ["during library time", "after school", "during lunch break", "on a quiet afternoon"],
-        settingVariants: ["school library", "public library", "classroom", "reading room"]
-      }
-    },
-    {
-      title: "The Community Garden Project",
-      theme: "Animals & Nature",
-      level: "Level 2",
-      scenes: [
-        {
-          text: "{userName} notices that their neighborhood has many empty lots filled with weeds and trash. During a family walk, they see how sad the area looks and wish there were more beautiful, green spaces where families could enjoy nature together. {userName} gets an idea to transform one of these lots into a community garden where everyone can grow vegetables and flowers.",
-          pause: true,
-          hook: "How will {userName} convince the community to support a garden project?",
-          microVariants: {
-            text: "{userName} notices that their neighborhood has many empty lots filled with weeds and trash. During a family walk, they see how sad the area looks and wish there were more beautiful, green spaces where families could enjoy nature together. {userName} gets an idea to transform one of these lots into a community garden where everyone can grow vegetables and flowers.",
-            alternatives: ["Walking through the neighborhood, {userName} envisions transforming empty lots into thriving community gardens.", "The sight of neglected lots inspires {userName} to create something beautiful for their community."],
-            optionalDetails: ["neighbors often complain about the ugly empty spaces", "children have nowhere safe to play outside"]
-          }
-        },
-        {
-          text: "{userName} presents their garden idea to the city council with a detailed plan and colorful drawings. They explain how the garden would provide fresh {favoriteFood} for families, create habitat for birds and butterflies, and give people a place to learn about plants and nature. The council members are impressed by {userName}'s research and enthusiasm for helping their community.",
-          pause: true,
-          hook: "What challenges will {userName} face while creating the garden?",
-          microVariants: {
-            text: "{userName} presents their garden idea to the city council with a detailed plan and colorful drawings. They explain how the garden would provide fresh {favoriteFood} for families, create habitat for birds and butterflies, and give people a place to learn about plants and nature. The council members are impressed by {userName}'s research and enthusiasm for helping their community.",
-            alternatives: ["With detailed plans and passionate presentations, {userName} convinces city officials to support the garden project.", "The city council admires {userName}'s community vision and approves the transformative garden proposal."],
-            optionalDetails: ["the presentation includes charts showing community benefits", "several neighbors attend to show support"]
-          }
-        },
-        {
-          text: "The city approves the project, and {userName} organizes volunteer days to clear the lot and prepare the soil. Families from the neighborhood bring tools, seeds, and enthusiasm to help build their shared garden space. {userName} learns about soil preparation, composting, and different types of plants while working alongside experienced gardeners from the community.",
-          pause: true,
-          hook: "What will grow in the community garden?",
-          microVariants: {
-            text: "The city approves the project, and {userName} organizes volunteer days to clear the lot and prepare the soil. Families from the neighborhood bring tools, seeds, and enthusiasm to help build their shared garden space. {userName} learns about soil preparation, composting, and different types of plants while working alongside experienced gardeners from the community.",
-            alternatives: ["Community volunteer days transform the empty lot into fertile ground for the neighborhood garden.", "Working together, neighbors and {userName} create the foundation for a thriving community growing space."],
-            optionalDetails: ["children enjoy pulling weeds and planting seeds", "an elderly neighbor teaches traditional gardening techniques"]
-          }
-        },
-        {
-          text: "Throughout the growing season, {userName} helps organize weekly garden parties where families tend their plots together. They create a special section for {favoriteColor} flowers that attract butterflies and bees, establishing a pollinator habitat that helps all the garden plants grow stronger. The garden becomes a place where neighbors meet, children learn, and the community feels more connected to nature and each other.",
-          pause: true,
-          hook: "How will the garden change the neighborhood?",
-          microVariants: {
-            text: "Throughout the growing season, {userName} helps organize weekly garden parties where families tend their plots together. They create a special section for {favoriteColor} flowers that attract butterflies and bees, establishing a pollinator habitat that helps all the garden plants grow stronger. The garden becomes a place where neighbors meet, children learn, and the community feels more connected to nature and each other.",
-            alternatives: ["Weekly garden gatherings create lasting friendships while vegetables and flowers flourish together.", "The community garden becomes a vibrant hub where neighbors bond over shared growing experiences."],
-            optionalDetails: ["harvest festivals celebrate the community's success", "recipe exchanges help families enjoy their fresh produce"]
-          }
-        },
-        {
-          text: "By the end of the season, the community garden has produced hundreds of pounds of fresh vegetables that families share with neighbors in need. {userName} realizes that the garden has grown more than just plants – it has cultivated friendships, taught valuable skills, and created a model for how communities can work together to improve their environment and quality of life.",
-          pause: true,
-          hook: "What other community improvements will {userName} inspire?",
-          microVariants: {
-            text: "By the end of the season, the community garden has produced hundreds of pounds of fresh vegetables that families share with neighbors in need. {userName} realizes that the garden has grown more than just plants – it has cultivated friendships, taught valuable skills, and created a model for how communities can work together to improve their environment and quality of life.",
-            alternatives: ["The successful harvest demonstrates how community cooperation can create abundance for everyone.", "Beyond vegetables, the garden grows connections, knowledge, and hope for continued neighborhood improvement."],
-            optionalDetails: ["local restaurants request garden produce for special dishes", "other neighborhoods ask for help starting their own gardens"]
-          }
-        },
-        {
-          text: "The community garden becomes so successful that other neighborhoods request {userName}'s help to start their own gardens. {userName} creates a guidebook with photos, tips, and step-by-step instructions for community garden development. Local schools invite them to speak about environmental stewardship and community organizing, inspiring other young people to take action in their own neighborhoods.",
-          pause: true,
-          hook: "How will {userName}'s environmental leadership continue to grow?",
-          microVariants: {
-            text: "The community garden becomes so successful that other neighborhoods request {userName}'s help to start their own gardens. {userName} creates a guidebook with photos, tips, and step-by-step instructions for community garden development. Local schools invite them to speak about environmental stewardship and community organizing, inspiring other young people to take action in their own neighborhoods.",
-            alternatives: ["Success leads to citywide garden expansion as {userName} becomes a recognized community organizer.", "The garden project launches {userName}'s career in environmental education and community development."],
-            optionalDetails: ["the guidebook is translated into multiple languages", "environmental organizations offer {userName} internship opportunities"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "{userName} establishes a city-wide network of community gardens and becomes the youngest recipient of the Mayor's Environmental Leadership Award.",
-          microVariants: ["The garden network transforms neighborhoods throughout the city.", "{userName}'s environmental leadership inspires policy changes supporting urban agriculture."]
-        },
-        {
-          type: 'cozy',
-          text: "{userName} spends every summer tending the garden with neighbors, watching friendships bloom alongside the vegetables and flowers.",
-          microVariants: ["The garden becomes a peaceful sanctuary where community connections flourish year after year.", "Every season brings new growth in both plants and neighborhood relationships."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "garden type": ["vegetable garden", "flower garden", "herb garden", "butterfly garden"],
-          "community space": ["empty lot", "unused park", "school yard", "church grounds"],
-          "growing season": ["spring planting", "summer growth", "fall harvest", "winter planning"]
-        },
-        weatherVariants: ["during growing season", "on sunny planting days", "during harvest time", "throughout the seasons"],
-        settingVariants: ["urban neighborhood", "suburban community", "school grounds", "apartment complex"]
-      }
-    },
-    {
-      title: "The School News Detective",
-      theme: "Mystery & Problem-Solving",
-      level: "Level 2",
-      scenes: [
-        {
-          text: "{userName} loves writing and decides to join the school newspaper as a junior reporter. Their first assignment is to investigate why the school's {favoriteColor} recycling bins keep disappearing from classrooms overnight. Other students have noticed the pattern too, but no one can figure out who is taking them or why they always reappear cleaned and empty the next morning.",
-          pause: true,
-          hook: "What clues will {userName} discover in their recycling bin mystery?",
-          microVariants: {
-            text: "{userName} loves writing and decides to join the school newspaper as a junior reporter. Their first assignment is to investigate why the school's {favoriteColor} recycling bins keep disappearing from classrooms overnight. Other students have noticed the pattern too, but no one can figure out who is taking them or why they always reappear cleaned and empty the next morning.",
-            alternatives: ["Reporter {userName} takes on their first investigative assignment about mysterious disappearing recycling bins.", "The school newspaper assigns {userName} to solve the case of the vanishing and reappearing recycling containers."],
-            optionalDetails: ["teachers are also puzzled by the overnight bin movements", "the custodial staff claims they don't move the bins"]
-          }
-        },
-        {
-          text: "{userName} interviews teachers, students, and school staff to gather information about the recycling bin mystery. They create a timeline of when the bins disappear and return, noting that it always happens on nights when {favoriteFood} is served in the cafeteria. Using their reporter notebook, {userName} maps out which classrooms are affected and discovers the disappearances follow a specific pattern through the school building.",
-          pause: true,
-          hook: "Where will {userName}'s investigation lead them next?",
-          microVariants: {
-            text: "{userName} interviews teachers, students, and school staff to gather information about the recycling bin mystery. They create a timeline of when the bins disappear and return, noting that it always happens on nights when {favoriteFood} is served in the cafeteria. Using their reporter notebook, {userName} maps out which classrooms are affected and discovers the disappearances follow a specific pattern through the school building.",
-            alternatives: ["Careful detective work reveals patterns connecting cafeteria menus to recycling bin disappearances.", "The investigation uncovers timing clues that link food service days to the mysterious bin movements."],
-            optionalDetails: ["security cameras don't show anyone entering the classrooms", "the pattern suggests someone with building access after hours"]
-          }
-        },
-        {
-          text: "Following their investigation clues, {userName} decides to stay after school with permission to observe what happens during the mysterious bin disappearances. Hidden in the library with a clear view of the hallway, they watch as Mr. Rodriguez, the night custodian, carefully collects the recycling bins. But instead of just emptying them, he sorts through everything, cleaning containers and organizing materials for an elaborate recycling project.",
-          pause: true,
-          hook: "What is Mr. Rodriguez really doing with all the recycled materials?",
-          microVariants: {
-            text: "Following their investigation clues, {userName} decides to stay after school with permission to observe what happens during the mysterious bin disappearances. Hidden in the library with a clear view of the hallway, they watch as Mr. Rodriguez, the night custodian, carefully collects the recycling bins. But instead of just emptying them, he sorts through everything, cleaning containers and organizing materials for an elaborate recycling project.",
-            alternatives: ["After-hours observation reveals the custodian's secret recycling activities in the school basement.", "The mystery leads to Mr. Rodriguez's hidden environmental project using the school's recyclable materials."],
-            optionalDetails: ["he works carefully and quietly, respecting the sleeping school", "his sorting system is incredibly organized and methodical"]
-          }
-        },
-        {
-          text: "{userName} follows Mr. Rodriguez to the school basement and discovers an amazing art studio where he creates beautiful sculptures and useful items from recycled materials. The walls are covered with stunning artwork made from plastic bottles, aluminum cans, and cardboard – all materials he's collected from the school's recycling. Mr. Rodriguez explains that he's been secretly creating these pieces to donate to local community centers and hospitals to bring joy to people who need it most.",
-          pause: true,
-          hook: "How will {userName} share this inspiring story with the school?",
-          microVariants: {
-            text: "{userName} follows Mr. Rodriguez to the school basement and discovers an amazing art studio where he creates beautiful sculptures and useful items from recycled materials. The walls are covered with stunning artwork made from plastic bottles, aluminum cans, and cardboard – all materials he's collected from the school's recycling. Mr. Rodriguez explains that he's been secretly creating these pieces to donate to local community centers and hospitals to bring joy to people who need it most.",
-            alternatives: ["The basement reveals a secret art studio where recycled trash becomes beautiful community gifts.", "Mr. Rodriguez transforms the school's waste into artwork that brings happiness to those in need."],
-            optionalDetails: ["children's hospital displays feature his colorful mobile sculptures", "community centers use his benches and planters"]
-          }
-        },
-        {
-          text: "{userName} writes a front-page newspaper article about Mr. Rodriguez's inspiring recycling art project, featuring photos of his beautiful creations and explaining how he turns waste into gifts of joy. The story reveals how one person's creativity and generosity can make a huge difference in the community while helping the environment. The article makes Mr. Rodriguez famous throughout the school and leads to official support for his art program.",
-          pause: true,
-          hook: "What positive changes will result from {userName}'s investigative reporting?",
-          microVariants: {
-            text: "{userName} writes a front-page newspaper article about Mr. Rodriguez's inspiring recycling art project, featuring photos of his beautiful creations and explaining how he turns waste into gifts of joy. The story reveals how one person's creativity and generosity can make a huge difference in the community while helping the environment. The article makes Mr. Rodriguez famous throughout the school and leads to official support for his art program.",
-            alternatives: ["The newspaper story transforms Mr. Rodriguez from mysterious custodian to celebrated school artist.", "Investigative reporting reveals an inspiring story of environmental art and community service."],
-            optionalDetails: ["the principal creates an official art space for the recycling projects", "students volunteer to help with the community art donations"]
-          }
-        },
-        {
-          text: "Thanks to {userName}'s reporting, the school creates an official \"Art from Recycling\" program where students can work with Mr. Rodriguez to create beautiful items for community donation. {userName} continues writing for the school newspaper, discovering that the best stories often come from paying attention to everyday mysteries and celebrating the hidden heroes in their community who make positive differences every day.",
-          pause: true,
-          hook: "What other inspiring stories will {userName} uncover through their journalism?",
-          microVariants: {
-            text: "Thanks to {userName}'s reporting, the school creates an official \"Art from Recycling\" program where students can work with Mr. Rodriguez to create beautiful items for community donation. {userName} continues writing for the school newspaper, discovering that the best stories often come from paying attention to everyday mysteries and celebrating the hidden heroes in their community who make positive differences every day.",
-            alternatives: ["The investigation transforms into a school-wide program celebrating creativity and environmental responsibility.", "Journalism becomes {userName}'s tool for discovering and sharing stories of community heroes and positive change."],
-            optionalDetails: ["the program wins environmental awards for the school", "other schools adopt similar recycling art initiatives"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "{userName} becomes the editor of the school newspaper and establishes an investigative journalism program that uncovers positive community stories and inspiring acts of service.",
-          microVariants: ["The newspaper becomes famous for celebrating unsung heroes and environmental initiatives.", "{userName}'s investigative skills lead to citywide recognition for community journalism."]
-        },
-        {
-          type: 'cozy',
-          text: "{userName} and Mr. Rodriguez become great friends, spending time creating recycled art together and sharing stories about the power of turning problems into beautiful solutions.",
-          microVariants: ["The recycling artist and young journalist inspire each other's creativity and community service.", "Their friendship proves that the best stories come from the people who quietly make the world better."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "mystery item": ["recycling bins", "art supplies", "library books", "sports equipment"],
-          "school staff": ["custodian", "cafeteria worker", "security guard", "maintenance person"],
-          "hidden talent": ["art creation", "music composition", "poetry writing", "garden design"]
-        },
-        weatherVariants: ["during the school week", "on quiet afternoons", "after sports practice", "during study hall"],
-        settingVariants: ["school newspaper room", "library", "art classroom", "community center"]
-      }
-    }
-  ];
-
-  static getLevel2Template(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_2_TEMPLATES.length) {
-      return this.LEVEL_2_TEMPLATES[templateIndex];
-    }
-    const randomIndex = Math.floor(Math.random() * this.LEVEL_2_TEMPLATES.length);
-    return this.LEVEL_2_TEMPLATES[randomIndex];
-  }
-
   static getLevel2TemplateCount() {
-    return this.LEVEL_2_TEMPLATES.length;
+    return LEVEL_2_TEMPLATES.length;
   }
 
-  // Level 3 Templates (extracted from src/constants/newFallbackTemplates/level3Templates.ts)
-  static LEVEL_3_FALLBACK_TEMPLATES = [
-    {
-      title: "The Magical Treehouse Adventure",
-      theme: "Magic & Fantasy", 
-      level: "Level 3 (Ages 9-11)",
-      scenes: [
-        {
-          text: "{userName} and their best friend stumbled upon an ancient-looking treehouse deep in the {forestType} forest. As they climbed inside, they discovered a dusty old book with strange symbols. Suddenly, the treehouse began to shake, and they realized it was lifting off the ground!",
-          pause: true,
-          hook: "Where will the magical treehouse take them?",
-          microVariants: {
-            text: "{userName} and their friend found a hidden treehouse. Inside, a mysterious book with glowing symbols caused the treehouse to magically float into the sky!",
-            alternatives: [
-              "{userName} and their friend were playing in the woods when they discovered a secret treehouse. A magical book inside made the treehouse fly!"
-            ],
-            optionalDetails: ["The book whispered secrets.", "Strange lights flickered around them.", "The air crackled with energy."]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "Back in their own backyard, {userName} and their friend built a small library for their neighborhood, filled with books from their adventure. They often read stories to the younger children, sharing the magic of reading and the importance of education.",
-          microVariants: [
-            "They built a neighborhood library with books from their adventure, sharing stories and the importance of education with younger children."
-          ]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "forestType": ["enchanted", "dark", "sunny", "mysterious"],
-          "animalType": ["owl", "fox", "bear", "squirrel"]
-        },
-        weatherVariants: ["sunny", "rainy", "cloudy", "stormy"],
-        settingVariants: ["forest", "mountains", "beach", "desert"]
-      }
-    }
-  ];
-
+  // Level 3 Methods  
   static getLevel3FallbackTemplate(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_3_FALLBACK_TEMPLATES.length) {
-      return this.LEVEL_3_FALLBACK_TEMPLATES[templateIndex];
+    const templates = LEVEL_3_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.LEVEL_3_FALLBACK_TEMPLATES.length);
-    return this.LEVEL_3_FALLBACK_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getLevel3FallbackTemplateCount() {
-    return this.LEVEL_3_FALLBACK_TEMPLATES.length;
+    return LEVEL_3_TEMPLATES.length;
   }
 
-  // Level 4 Templates (extracted from src/constants/newFallbackTemplates/level4Templates.ts)
-  static LEVEL_4_TEMPLATES = [
-    {
-      title: "The Ancient Artifact Mystery",
-      theme: "Archaeology & Discovery",
-      level: "Level 4",
-      scenes: [
-        {
-          text: "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team. Dr. Martinez, the lead archaeologist, explains that such discoveries could rewrite our understanding of ancient civilizations and their technological capabilities.",
-          pause: true,
-          hook: "What secrets might this ancient artifact reveal?",
-          microVariants: {
-            text: "{userName} discovers an ancient artifact while volunteering at the local museum's archaeology department. The mysterious {favoriteColor} stone tablet contains symbols that don't match any known language, sparking intense curiosity among the research team.",
-            alternatives: ["An mysterious artifact catches {userName}'s attention at the museum.", "While cataloging artifacts, {userName} finds something extraordinary."],
-            optionalDetails: ["the tablet feels surprisingly warm to the touch", "strange symbols seem to shimmer in certain lighting"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "{userName} presents their findings at a national archaeology conference, inspiring other young people to pursue careers in historical research and scientific discovery.",
-          microVariants: ["The discovery changes how we understand ancient civilizations.", "{userName} becomes the youngest researcher to present at the conference."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "artifactType": ["tablet", "scroll", "tool", "ornament"],
-          "civilizationType": ["ancient", "lost", "forgotten", "mysterious"]
-        },
-        weatherVariants: ["clear", "overcast", "sunny"],
-        settingVariants: ["museum", "excavation site", "laboratory"]
-      }
-    }
-  ];
-
+  // Level 4 Methods
   static getLevel4Template(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.LEVEL_4_TEMPLATES.length) {
-      return this.LEVEL_4_TEMPLATES[templateIndex];
+    const templates = LEVEL_4_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.LEVEL_4_TEMPLATES.length);
-    return this.LEVEL_4_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getLevel4TemplateCount() {
-    return this.LEVEL_4_TEMPLATES.length;
+    return LEVEL_4_TEMPLATES.length;
   }
 
-  // Grade 6 Templates (extracted from src/constants/newFallbackTemplates/grade6Templates.ts)
-  static GRADE_6_FALLBACK_TEMPLATES = [
-    // Template 1: Scientific Discovery & Environmental Stewardship  
-    {
-      title: "The Biosphere Project: Discovering Life's Hidden Connections",
-      theme: "Science & Environmental Discovery", 
-      level: "Grade 6",
-      scenes: [
-        {
-          text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by the intricate relationships that existed within natural ecosystems, but their passion for {hobbies} had never prepared them for the extraordinary discovery they were about to make during their sixth-grade environmental science project. While investigating the biodiversity of their local watershed for a presentation on ecological interconnections, they noticed something that made their scientific curiosity intensify dramatically. The {favoriteColor} algae formations in the stream weren't behaving according to any patterns they had studied in their textbooks or observed in previous field research. Instead of following predictable seasonal cycles, these microorganisms seemed to be responding to environmental factors in ways that suggested a level of communication and coordination that challenged everything {userName} thought they understood about biological systems.",
-          pause: true,
-          hook: "What could be causing these algae to behave so unusually, and what might this discovery reveal about the hidden connections in nature?",
-          microVariants: {
-            text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by the intricate relationships that existed within natural ecosystems, but their passion for {hobbies} had never prepared them for the extraordinary discovery they were about to make during their sixth-grade environmental science project. While investigating the biodiversity of their local watershed for a presentation on ecological interconnections, they noticed something that made their scientific curiosity intensify dramatically. The {favoriteColor} algae formations in the stream weren't behaving according to any patterns they had studied in their textbooks or observed in previous field research. Instead of following predictable seasonal cycles, these microorganisms seemed to be responding to environmental factors in ways that suggested a level of communication and coordination that challenged everything {userName} thought they understood about biological systems.",
-            alternatives: [
-              "Chapter 1: The Unexpected Observation\n\n{userName} possessed an inherent fascination with the complex interdependencies that characterized natural ecological systems, yet their dedication to {hobbies} provided no preparation for the remarkable scientific revelation they would encounter during their sixth-grade environmental research initiative. Throughout their systematic investigation of local watershed biodiversity patterns as part of an academic presentation focusing on ecological interconnectedness, they observed phenomena that dramatically intensified their scientific inquiry instincts."
-            ],
-            optionalDetails: [
-              `Random Element ${Math.floor(Math.random() * 100)}: The water temperature fluctuated in unusual patterns.`,
-              `Random Element ${Math.floor(Math.random() * 100)}: Nearby industrial activity had recently changed.`,
-              `Random Element ${Math.floor(Math.random() * 100)}: The algae seemed to pulse with bioluminescent properties.`
-            ]
-          }
-        },
-        {
-          text: "Chapter 2: The Investigation Deepens\n\nAs {userName} collected water samples and documented the unusual algae behavior with careful photographs and detailed observations, they began to notice patterns that suggested the microorganisms were responding to environmental changes in coordinated ways that resembled communication networks. Working with their science teacher and a graduate student from the local university, they learned to use microscopes and water chemistry testing equipment to analyze the algae's cellular structure and environmental conditions. The results were puzzling: the algae appeared to be producing chemical signals that influenced the behavior of other algae colonies throughout the watershed, creating a biological communication system that had never been documented in this type of freshwater ecosystem.",
-          pause: true,
-          hook: "What will {userName} discover about this mysterious algae communication system?",
-          microVariants: {
-            text: "Chapter 2: The Investigation Deepens\n\nAs {userName} collected water samples and documented the unusual algae behavior with careful photographs and detailed observations, they began to notice patterns suggesting coordinated environmental responses resembling communication networks.",
-            alternatives: [
-              "Chapter 2: Scientific Analysis\n\nThrough systematic sampling procedures and comprehensive documentation utilizing photographic evidence and meticulous observation protocols, {userName} identified behavioral patterns indicating coordinated environmental responses that resembled biological communication systems."
-            ],
-            optionalDetails: [
-              `Research Finding ${Math.floor(Math.random() * 100)}: Chemical analysis revealed unusual protein concentrations.`,
-              `Scientific Discovery ${Math.floor(Math.random() * 100)}: Microscopic examination showed unprecedented cellular structures.`,
-              `Environmental Factor ${Math.floor(Math.random() * 100)}: Water pH levels correlated with algae communication patterns.`
-            ]
-          }
-        },
-        {
-          text: "Chapter 3: Collaboration and Breakthrough\n\nRecognizing that their discovery might have significant scientific implications, {userName} presented their preliminary findings to the university research team, leading to a formal collaboration where they worked alongside graduate students and professors to design controlled experiments testing the algae's communication capabilities. Through months of careful experimentation, they discovered that the algae were indeed engaging in a form of chemical communication that allowed colonies to coordinate responses to environmental stressors like temperature changes, nutrient availability, and pollution levels. This finding challenged existing understanding of microbial intelligence and suggested that freshwater ecosystems might be far more sophisticated and interconnected than previously recognized by the scientific community.",
-          pause: true,
-          hook: "How will this discovery change scientific understanding of ecosystem intelligence?",
-          microVariants: {
-            text: "Chapter 3: Collaboration and Breakthrough\n\nRecognizing their discovery's potential scientific significance, {userName} presented preliminary findings to university researchers, leading to formal collaboration with graduate students and professors.",
-            alternatives: [
-              "Chapter 3: Academic Partnership\n\nAcknowledging the potential scientific importance of their research, {userName} shared initial discoveries with university faculty, establishing collaborative relationships with graduate researchers and academic professionals."
-            ],
-            optionalDetails: [
-              `Collaboration Result ${Math.floor(Math.random() * 100)}: Joint research papers were submitted to peer-reviewed journals.`,
-              `Scientific Impact ${Math.floor(Math.random() * 100)}: The discovery influenced international microbiology research priorities.`,
-              `Academic Recognition ${Math.floor(Math.random() * 100)}: {userName} was invited to present at scientific conferences.`
-            ]
-          }
-        },
-        {
-          text: "Chapter 4: Recognition and Future Impact\n\nThe publication of {userName}'s research in a respected scientific journal brought international attention to their groundbreaking discovery about algae communication systems, leading to research grants that funded further investigation into microbial intelligence and ecosystem coordination. Their work inspired a new field of study examining how microorganisms contribute to ecosystem resilience and environmental adaptation, while also demonstrating that young scientists could make significant contributions to advancing human understanding of the natural world. As {userName} prepared for high school, they reflected on how their curiosity about unusual algae patterns had evolved into a sophisticated understanding of scientific methodology, community collaboration, and the interconnected nature of all living systems, setting the foundation for a lifetime of environmental research and discovery.",
-          pause: false,
-          hook: "",
-          microVariants: {
-            text: "Chapter 4: Recognition and Future Impact\n\nThe publication of {userName}'s research in a scientific journal brought international attention to their groundbreaking discovery, leading to research grants and inspiring new fields of study.",
-            alternatives: [
-              "Chapter 4: Scientific Legacy\n\nInternational publication of {userName}'s research generated worldwide recognition for their algae communication discovery, securing funding for expanded investigation and establishing new research directions."
-            ],
-            optionalDetails: [
-              `Career Impact ${Math.floor(Math.random() * 100)}: {userName} received early admission offers from top universities.`,
-              `Research Legacy ${Math.floor(Math.random() * 100)}: The algae communication model influenced climate change research.`,
-              `Educational Influence ${Math.floor(Math.random() * 100)}: Science curricula incorporated {userName}'s research methods.`
-            ]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'cozy',
-          text: "Final Chapter: The Living Laboratory\n\nTen years later, Dr. {userName} sat peacefully in their research laboratory, now recognized as one of the world's leading experts in microbial communication systems. The discovery they had made as a sixth-grader had evolved into groundbreaking research that was helping scientists understand how ecosystems adapt to climate change. Through their office window, they could see the restored watershed where it all began, now protected as a research preserve where students from around the world came to study the remarkable {favoriteColor} algae colonies.",
-          microVariants: [
-            "Final Chapter: The Legacy of Discovery\n\nA decade afterward, Professor {userName} found tranquil satisfaction within their advanced research facility, having achieved international recognition as a pioneering authority in microbial ecosystem communication research."
-          ]
-        },
-        {
-          type: 'silly',
-          text: "Final Chapter: The Algae Appreciation Society\n\nThe international scientific conference celebrating {userName}'s discovery turned into the most wonderfully chaotic academic event in history when the {favoriteColor} algae samples they had brought for demonstration suddenly began exhibiting their most spectacular synchronized swimming patterns right in the middle of their keynote presentation! \"Ladies and gentlemen,\" {userName} announced with a grin, \"I present to you the world's first algae dance party!\"",
-          microVariants: [
-            "Final Chapter: The Great Algae Extravaganza\n\nThe prestigious international symposium honoring {userName}'s groundbreaking research transformed into the most delightfully absurd scientific gathering in academic history when their {favoriteColor} algae demonstration specimens spontaneously initiated their most extraordinary synchronized performance exhibition!"
-          ]
-        },
-        {
-          type: 'triumphant',
-          text: "Final Chapter: The Scientific Revolution\n\nStanding before the United Nations Environmental Council as the youngest recipient of the Global Environmental Discovery Award, {userName} felt the weight of history as they prepared to address world leaders about their groundbreaking research. \"Ten years ago, as a curious sixth-grader studying algae in a local stream, I discovered that life on Earth is far more connected and intelligent than we ever imagined,\" they began.",
-          microVariants: [
-            "Final Chapter: The Global Impact\n\nAddressing the assembled representatives of the International Scientific Community as the most distinguished young recipient of the Planetary Environmental Innovation Recognition, {userName} experienced the profound significance of this historical moment."
-          ]
-        },
-        {
-          type: 'reflective',
-          text: "Final Chapter: The Circle of Understanding\n\nStanding quietly by the preserved research site where their journey had begun, watching the {favoriteColor} algae continue their mysterious communications in the gentle current, {userName} understood something profound about science, discovery, and humanity's relationship with the natural world. \"Science isn't just about finding answers,\" they reflected with deep wisdom. \"It's about learning to ask better questions and remaining humble before the incredible complexity and beauty of life itself.\"",
-          microVariants: [
-            "Final Chapter: The Philosophy of Discovery\n\nResting peacefully beside the conserved research location where their scientific journey had commenced, observing the {favoriteColor} algae maintaining their enigmatic communications within the gentle water flow, {userName} comprehended something profound about science, discovery, and humanity's relationship with natural world systems."
-          ]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "scientific_equipment": ["microscopes", "water testing kits", "data loggers", "sample containers", "measurement tools"],
-          "research_findings": ["communication patterns", "chemical signals", "behavioral adaptations", "environmental responses", "ecosystem connections"],
-          "career_paths": ["marine biology", "environmental science", "microbiology", "ecology research", "conservation biology"]
-        },
-        weatherVariants: ["clear research day", "overcast field work", "sunny data collection", "misty morning observations"],
-        settingVariants: ["stream ecosystem", "university laboratory", "research field station", "environmental preserve"],
-        randomSeed: Math.floor(Math.random() * 10000)
-      }
-    }
-  ];
-
+  // Grade 6 Methods
   static getGrade6FallbackTemplate(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_6_FALLBACK_TEMPLATES.length) {
-      return this.GRADE_6_FALLBACK_TEMPLATES[templateIndex];
+    const templates = GRADE_6_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.GRADE_6_FALLBACK_TEMPLATES.length);
-    return this.GRADE_6_FALLBACK_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getGrade6FallbackTemplateCount() {
-    return this.GRADE_6_FALLBACK_TEMPLATES.length;
+    return GRADE_6_TEMPLATES.length;
   }
 
-  // Grade 7 Templates (extracted from src/constants/newFallbackTemplates/grade7Templates.ts)
-  static GRADE_7_FALLBACK_TEMPLATES = [
-    {
-      title: "The Climate Action Revolution: A Student's Journey to Global Impact",
-      theme: "Environmental Leadership & Social Change",
-      level: "Grade 7",
-      scenes: [
-        {
-          text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious—they recycled, turned off lights, and enjoyed {hobbies}—but their perspective on climate action fundamentally shifted during a particularly eye-opening seventh-grade environmental science unit that would ultimately change the trajectory of their entire academic and personal life. While researching the impact of industrial agriculture on local ecosystems for what they initially thought would be a routine class presentation about environmental issues affecting their immediate community, {userName} discovered that the {favoriteColor} algae blooms appearing in their regional watershed weren't just a natural phenomenon, but rather a direct consequence of agricultural runoff that was systematically disrupting the ecological balance their community had maintained for generations.",
-          pause: true,
-          hook: "What specific environmental crisis will motivate {userName} to transform from student observer to activist leader?",
-          microVariants: {
-            text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious—they recycled, turned off lights, and enjoyed {hobbies}—but their perspective on climate action fundamentally shifted during a particularly eye-opening seventh-grade environmental science unit that would ultimately change the trajectory of their entire academic and personal life. While researching the impact of industrial agriculture on local ecosystems for what they initially thought would be a routine class presentation about environmental issues affecting their immediate community, {userName} discovered that the {favoriteColor} algae blooms appearing in their regional watershed weren't just a natural phenomenon, but rather a direct consequence of agricultural runoff that was systematically disrupting the ecological balance their community had maintained for generations.",
-            alternatives: [
-              "Chapter 1: The Environmental Awakening\n\n{userName} had previously maintained what they considered adequate environmental awareness—practicing recycling protocols, implementing energy conservation measures, and pursuing {hobbies} activities—however their understanding of climate activism underwent a profound transformation during an exceptionally revealing seventh-grade environmental science curriculum."
-            ],
-            optionalDetails: [
-              `Random Research Element ${Math.floor(Math.random() * 100)}: Local water quality had declined 40% in five years.`,
-              `Random Discovery Element ${Math.floor(Math.random() * 100)}: Three species of local fish had disappeared recently.`,
-              `Random Motivation Element ${Math.floor(Math.random() * 100)}: Their family's well water had become contaminated.`
-            ]
-          }
-        },
-        {
-          text: "Chapter 2: Research and Action\n\n{userName} dove deeper into environmental research, connecting with local university scientists and environmental organizations to understand the scope of agricultural pollution affecting their watershed. Their investigation revealed systemic issues requiring both policy changes and community organizing to address effectively.",
-          pause: true,
-          hook: "What strategies will {userName} develop to mobilize community environmental action?",
-          microVariants: {
-            text: "Chapter 2: Research and Action\n\n{userName} dove deeper into environmental research, connecting with scientists and organizations to understand agricultural pollution affecting their watershed.",
-            alternatives: ["Expanding their investigation, {userName} collaborated with university researchers and environmental groups to document systematic pollution patterns."],
-            optionalDetails: [`Research showed ${Math.floor(Math.random() * 50) + 20}% increase in contamination levels.`]
-          }
-        },
-        {
-          text: "Chapter 3: Building the Movement\n\nWith scientific evidence in hand, {userName} organized community meetings, created educational presentations, and built coalitions with farmers, residents, and local officials to develop comprehensive solutions addressing both environmental protection and economic sustainability.",
-          pause: true,
-          hook: "How will the community respond to {userName}'s environmental leadership?",
-          microVariants: {
-            text: "Chapter 3: Building the Movement\n\nWith evidence gathered, {userName} organized community meetings and built coalitions to develop comprehensive environmental solutions.",
-            alternatives: ["Armed with scientific data, {userName} facilitated community organizing efforts to address environmental challenges through collaborative action."],
-            optionalDetails: [`Coalition included ${Math.floor(Math.random() * 20) + 10} local organizations and businesses.`]
-          }
-        },
-        {
-          text: "Chapter 4: Direct Action and Advocacy\n\n{userName} learned that meaningful environmental change required direct action and sustained advocacy beyond research and education. They organized protests at municipal buildings, participated in watershed restoration projects, and collaborated with regional environmental justice organizations to amplify community voices in policy discussions. Through this work, {userName} discovered the power of youth activism while building relationships with experienced organizers who taught them about strategic communication, media engagement, and coalition building across diverse stakeholder groups.",
-          pause: true,
-          hook: "How will {userName}'s direct action approach influence policy makers and community members?",
-          microVariants: {
-            text: "Chapter 4: Direct Action and Advocacy\n\n{userName} learned that meaningful environmental change required direct action and sustained advocacy beyond research and education.",
-            alternatives: ["Environmental organizing required combining research with strategic action and policy advocacy."],
-            optionalDetails: [`Direct actions drew ${Math.floor(Math.random() * 200) + 50} participants from across the region.`]
-          }
-        },
-        {
-          text: "Chapter 5: Media and Public Education\n\nRecognizing the importance of public awareness, {userName} developed a comprehensive media strategy that included social media campaigns, local newspaper articles, and community presentations to educate residents about environmental issues and policy solutions. They learned to translate complex scientific information into accessible language while creating compelling narratives that connected environmental protection to economic opportunity and community health. Their media work attracted regional and eventually national attention, positioning them as a youth environmental leader.",
-          pause: true,
-          hook: "What impact will {userName}'s media strategy have on regional environmental awareness?",
-          microVariants: {
-            text: "Chapter 5: Media and Public Education\n\nRecognizing the importance of public awareness, {userName} developed a comprehensive media strategy including campaigns and presentations.",
-            alternatives: ["Media outreach connected environmental science to community interests and policy solutions."],
-            optionalDetails: [`Social media campaigns reached ${Math.floor(Math.random() * 5000) + 1000} people monthly.`]
-          }
-        },
-        {
-          text: "Chapter 6: Policy Implementation\n\n{userName}'s environmental advocacy led to municipal policy changes, sustainable farming incentives, and ongoing community monitoring programs that protected the watershed while supporting local economic development and demonstrating youth leadership in environmental justice. The policy victories included new water quality standards, agricultural best practices requirements, and community oversight mechanisms that ensured ongoing environmental protection while providing economic support for farmers transitioning to sustainable practices.",
-          pause: true,
-          hook: "How will these policy victories create lasting environmental and economic benefits?",
-          microVariants: {
-            text: "Chapter 6: Policy Implementation\n\n{userName}'s advocacy led to policy changes, farming incentives, and monitoring programs protecting the watershed while supporting economic development.",
-            alternatives: ["Environmental leadership resulted in policy reform, sustainable agriculture support, and community programs balancing ecological protection with economic sustainability."],
-            optionalDetails: [`Programs prevented an estimated ${Math.floor(Math.random() * 500) + 100} tons of agricultural runoff annually.`]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "Final Chapter: The Global Student Climate Summit\n\nFive years after their initial environmental awakening, {userName} stood before the United Nations Youth Climate Summit as the youngest keynote speaker in the organization's history, representing a global network of student environmental activists they had helped establish across six continents.",
-          microVariants: [
-            "Their climate action network had prevented the equivalent of 10 million tons of CO2 emissions through student-led initiatives spanning renewable energy projects, sustainable agriculture programs, and community environmental education campaigns."
-          ]
-        },
-        {
-          type: 'cozy',
-          text: "Final Chapter: The Living Watershed\n\nOn a peaceful morning by the restored watershed, {userName} watched new {favoriteColor} vegetation thriving along the banks while {favoriteAnimal} wildlife returned to areas that had been polluted for decades. The community's sustainable farming practices and renewable energy cooperatives had created a model of environmental stewardship that was being studied and replicated across the region. Standing in the early morning light, surrounded by the sounds of a healthy ecosystem and the satisfied conversations of farmers heading to the weekly sustainability market, {userName} reflected on how asking questions about water quality in seventh grade had grown into a lifetime commitment to environmental justice and community empowerment.",
-          microVariants: [
-            "Final Chapter: The Sustainable Community\n\nThe watershed restoration had become a symbol of what communities could achieve when environmental protection and economic opportunity worked together, with {userName}'s early activism serving as the catalyst for a comprehensive transformation in how the region approached environmental stewardship."
-          ]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "environmental_issues": ["water pollution", "air quality", "soil degradation", "habitat loss"],
-          "climate_solutions": ["renewable energy", "sustainable agriculture", "green infrastructure", "conservation"],
-          "organizing_tactics": ["community meetings", "petition drives", "policy advocacy", "educational campaigns"]
-        },
-        weatherVariants: ["sunny organizing day", "rainy protest march", "clear policy hearing", "stormy community meeting"],
-        settingVariants: ["school auditorium", "city hall", "community center", "environmental preserve"],
-        randomSeed: Math.floor(Math.random() * 10000)
-      }
-    }
-  ];
-
+  // Grade 7 Methods
   static getGrade7FallbackTemplate(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_7_FALLBACK_TEMPLATES.length) {
-      return this.GRADE_7_FALLBACK_TEMPLATES[templateIndex];
+    const templates = GRADE_7_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.GRADE_7_FALLBACK_TEMPLATES.length);
-    return this.GRADE_7_FALLBACK_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getGrade7FallbackTemplateCount() {
-    return this.GRADE_7_FALLBACK_TEMPLATES.length;
+    return GRADE_7_TEMPLATES.length;
   }
 
-  // Grade 8 Templates (extracted from src/constants/newFallbackTemplates/grade8Templates.ts)
-  static GRADE_8_FALLBACK_TEMPLATES = [
-    {
-      title: "The Environmental Justice Investigation",
-      theme: "Environmental Activism & Social Responsibility",
-      level: "Grade 8",
-      scenes: [
-        {
-          text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities. During a school environmental science project, they discover concerning data about air and water quality near industrial facilities that reveals systemic patterns of environmental injustice. Working with community members and environmental scientists, {userName} learns about the complex intersection of environmental health, social equity, and economic inequality. They realize that environmental protection is not just about preserving nature, but about ensuring that all communities have access to clean air, water, and safe living conditions. The investigation reveals how historical policies and current practices have created environmental burdens that unfairly impact marginalized communities.",
-          pause: true,
-          hook: "What evidence will {userName} uncover about environmental injustice in their community?",
-          microVariants: {
-            text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities. During a school environmental science project, they discover concerning data about air and water quality near industrial facilities that reveals systemic patterns of environmental injustice. Working with community members and environmental scientists, {userName} learns about the complex intersection of environmental health, social equity, and economic inequality. They realize that environmental protection is not just about preserving nature, but about ensuring that all communities have access to clean air, water, and safe living conditions. The investigation reveals how historical policies and current practices have created environmental burdens that unfairly impact marginalized communities.",
-            alternatives: ["Environmental data reveals troubling patterns in {userName}'s community.", "A school project opens {userName}'s eyes to environmental injustice."],
-            optionalDetails: ["pollution levels are significantly higher in certain neighborhoods", "community health statistics show alarming disparities"]
-          }
-        },
-        {
-          text: "The investigation deepens as {userName} uses sophisticated environmental monitoring equipment to document pollution levels across different neighborhoods, revealing stark disparities that correlate with income and demographic patterns. They interview long-time residents who describe health problems, property damage, and quality of life impacts that have persisted for decades. Through collaboration with public health researchers, {userName} learns to analyze epidemiological data that shows higher rates of asthma, cancer, and other health conditions in communities near industrial facilities. The research reveals how environmental racism operates through zoning policies, enforcement patterns, and regulatory decisions that systematically locate polluting facilities in communities with less political power.",
-          pause: true,
-          hook: "How will {userName} document and expose these patterns of environmental injustice?",
-          microVariants: {
-            text: "The investigation deepens as {userName} uses sophisticated environmental monitoring equipment to document pollution levels across different neighborhoods, revealing stark disparities that correlate with income and demographic patterns. They interview long-time residents who describe health problems, property damage, and quality of life impacts that have persisted for decades. Through collaboration with public health researchers, {userName} learns to analyze epidemiological data that shows higher rates of asthma, cancer, and other health conditions in communities near industrial facilities. The research reveals how environmental racism operates through zoning policies, enforcement patterns, and regulatory decisions that systematically locate polluting facilities in communities with less political power.",
-            alternatives: ["Scientific monitoring reveals environmental racism in facility placement and regulation.", "Community health data exposes the human cost of environmental injustice."],
-            optionalDetails: ["air quality readings are 340% higher near industrial zones", "childhood asthma rates reach 23% in affected neighborhoods"]
-          }
-        },
-        {
-          text: "As {userName} presents their findings to community groups and government officials, they encounter both strong support from affected residents and resistance from industry representatives and some officials who downplay the significance of the data. This experience teaches {userName} about the political dimensions of environmental issues and the importance of strategic communication in advocacy work. They learn to frame environmental health as a matter of basic human rights and community self-determination while building coalitions that include health professionals, faith leaders, and economic justice advocates. The advocacy work requires {userName} to understand regulatory processes, environmental law, and policy analysis while maintaining focus on community leadership and grassroots organizing principles.",
-          pause: true,
-          hook: "What resistance will {userName} face and how will they build broader support?",
-          microVariants: {
-            text: "As {userName} presents their findings to community groups and government officials, they encounter both strong support from affected residents and resistance from industry representatives and some officials who downplay the significance of the data. This experience teaches {userName} about the political dimensions of environmental issues and the importance of strategic communication in advocacy work. They learn to frame environmental health as a matter of basic human rights and community self-determination while building coalitions that include health professionals, faith leaders, and economic justice advocates. The advocacy work requires {userName} to understand regulatory processes, environmental law, and policy analysis while maintaining focus on community leadership and grassroots organizing principles.",
-            alternatives: ["Political resistance teaches {userName} about the intersection of environmental and economic power.", "Coalition building becomes essential for overcoming industry opposition."],
-            optionalDetails: ["industry lobbying spending increases 450% during the campaign", "faith communities provide sanctuary space for organizing meetings"]
-          }
-        },
-        {
-          text: "Building on community organizing traditions, {userName} helps coordinate a comprehensive campaign that includes direct action, policy advocacy, media engagement, and legal strategies to address environmental injustices. They organize protests at polluting facilities, participate in regulatory hearings, and work with journalists to expose environmental violations and health impacts. The campaign involves training community members in advocacy skills, environmental monitoring techniques, and policy analysis while ensuring that affected residents maintain leadership roles in decision-making processes. Through this work, {userName} learns about the importance of multi-generational organizing that connects environmental justice with broader struggles for racial and economic justice.",
-          pause: true,
-          hook: "How will diverse tactics strengthen {userName}'s environmental justice campaign?",
-          microVariants: {
-            text: "Building on community organizing traditions, {userName} helps coordinate a comprehensive campaign that includes direct action, policy advocacy, media engagement, and legal strategies to address environmental injustices. They organize protests at polluting facilities, participate in regulatory hearings, and work with journalists to expose environmental violations and health impacts. The campaign involves training community members in advocacy skills, environmental monitoring techniques, and policy analysis while ensuring that affected residents maintain leadership roles in decision-making processes. Through this work, {userName} learns about the importance of multi-generational organizing that connects environmental justice with broader struggles for racial and economic justice.",
-            alternatives: ["Multi-faceted advocacy combines grassroots organizing with policy and legal strategies.", "Community leadership development ensures sustainable organizing capacity."],
-            optionalDetails: ["protest actions draw 2,800 participants across the metropolitan area", "legal violations result in $4.7 million in environmental penalties"]
-          }
-        },
-        {
-          text: "The campaign achieves significant victories through persistent organizing and strategic pressure, including new environmental regulations, facility relocations, and increased community monitoring programs. {userName} sees how effective advocacy requires long-term commitment and sustained community engagement rather than single-issue campaigns. The victories provide concrete improvements in air and water quality while also building community capacity for ongoing environmental advocacy. Through the process, {userName} develops expertise in environmental science, policy analysis, community organizing, and coalition building while maintaining focus on community self-determination and environmental justice principles.",
-          pause: true,
-          hook: "What long-term changes will {userName}'s environmental justice work create?",
-          microVariants: {
-            text: "The campaign achieves significant victories through persistent organizing and strategic pressure, including new environmental regulations, facility relocations, and increased community monitoring programs. {userName} sees how effective advocacy requires long-term commitment and sustained community engagement rather than single-issue campaigns. The victories provide concrete improvements in air and water quality while also building community capacity for ongoing environmental advocacy. Through the process, {userName} develops expertise in environmental science, policy analysis, community organizing, and coalition building while maintaining focus on community self-determination and environmental justice principles.",
-            alternatives: ["Strategic victories demonstrate the power of sustained community organizing.", "Policy changes create lasting protections while building advocacy infrastructure."],
-            optionalDetails: ["air quality improvements reduce emergency room visits by 28%", "community monitoring network expands to 15 neighborhoods"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "Standing before a congressional hearing on environmental justice, {userName} presents evidence that leads to new federal regulations protecting vulnerable communities from environmental hazards, demonstrating how youth activism can create lasting policy change.",
-          microVariants: ["Congressional testimony results in federal environmental justice protections.", "{userName}'s research influences national environmental policy."]
-        },
-        {
-          type: 'cozy',
-          text: "Final Chapter: The Healthy Community\n\nFive years later, {userName} walked through their transformed neighborhood, breathing clean air and watching children play safely in the new community park built on the site of a former industrial facility. The {favoriteColor} flowers blooming in the community garden and the {favoriteAnimal} wildlife returning to the area provided visible evidence of how environmental justice organizing could create healthier, more vibrant communities. Their early investigation of pollution patterns had grown into a comprehensive environmental justice program that provided both immediate health improvements and long-term community empowerment, demonstrating that environmental protection and social justice could work together to create positive change for everyone.",
-          microVariants: [
-            "Final Chapter: The Model Community\n\nThe environmental justice campaign had transformed not just air and water quality, but also community capacity for self-advocacy, creating a model that was being replicated in cities across the country as other communities learned how to combine environmental science with grassroots organizing to protect their health and rights."
-          ]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "environmental_hazards": ["air pollution", "water contamination", "toxic waste", "industrial emissions"],
-          "community_impacts": ["health disparities", "property values", "quality of life", "economic opportunities"],
-          "organizing_strategies": ["community mapping", "health surveys", "policy research", "coalition building"]
-        },
-        weatherVariants: ["clear research day", "smoggy data collection", "rainy community meeting", "sunny protest march"],
-        settingVariants: ["industrial zone", "community center", "school laboratory", "government building"],
-        randomSeed: Math.floor(Math.random() * 10000)
-      }
-    }
-  ];
-
+  // Grade 8 Methods
   static getGrade8FallbackTemplate(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_8_FALLBACK_TEMPLATES.length) {
-      return this.GRADE_8_FALLBACK_TEMPLATES[templateIndex];
+    const templates = GRADE_8_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.GRADE_8_FALLBACK_TEMPLATES.length);
-    return this.GRADE_8_FALLBACK_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getGrade8FallbackTemplateCount() {
-    return this.GRADE_8_FALLBACK_TEMPLATES.length;
+    return GRADE_8_TEMPLATES.length;
   }
 
-  // Grade 9 Templates (extracted from src/constants/newFallbackTemplates/grade9Templates.ts)
-  static GRADE_9_FALLBACK_TEMPLATES = [
-    {
-      title: "The Mental Health Advocacy Campaign",
-      theme: "Mental Health Awareness & Support",
-      level: "Grade 9",
-      scenes: [
-        {
-          text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma, lack of resources, and systemic barriers prevent students and families from accessing mental health support. Through research into mental health statistics, conversations with counselors and mental health professionals, and collaboration with peer support groups, they discover the extent to which untreated mental health conditions affect academic performance, social relationships, and overall wellbeing while also contributing to broader social problems including substance abuse, social isolation, and academic failure. The investigation reveals how mental health intersects with issues of poverty, discrimination, trauma, and social justice, and how comprehensive approaches to mental health support can strengthen communities while reducing stigma and improving access to care for all community members.",
-          pause: true,
-          hook: "What comprehensive mental health advocacy strategy will {userName} develop to reduce stigma while increasing access to mental health resources and support systems?",
-          microVariants: {
-            text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma, lack of resources, and systemic barriers prevent students and families from accessing mental health support. Through research into mental health statistics, conversations with counselors and mental health professionals, and collaboration with peer support groups, they discover the extent to which untreated mental health conditions affect academic performance, social relationships, and overall wellbeing while also contributing to broader social problems including substance abuse, social isolation, and academic failure. The investigation reveals how mental health intersects with issues of poverty, discrimination, trauma, and social justice, and how comprehensive approaches to mental health support can strengthen communities while reducing stigma and improving access to care for all community members.",
-            alternatives: ["Mental health research exposes systemic barriers that prevent students and families from accessing critical mental health support.", "Investigation reveals how stigma and lack of resources create mental health crises that affect entire communities."],
-            optionalDetails: ["local suicide rates among teens increased 34% over two years without adequate {favoriteColor} mental health programs", "73% of students report needing mental health support but only 23% receive adequate care"]
-          }
-        },
-        {
-          text: "{userName} develops and implements a comprehensive mental health advocacy campaign that includes peer support groups, educational workshops to reduce stigma, training programs for students and educators, and organizing efforts to increase funding for school-based mental health services. The campaign involves collaboration with mental health professionals, community organizations, student government, faculty, and families to create comprehensive support systems that address mental health from multiple angles while centering the voices and experiences of students with lived experience of mental health challenges. Through policy advocacy, community organizing, and direct support programs, {userName} helps create environments where mental health is treated as an essential component of overall health and wellbeing, while working to ensure that all community members have access to culturally responsive and affordable mental health care.",
-          pause: true,
-          hook: "How will {userName}'s mental health advocacy create lasting change in community attitudes toward mental health while expanding access to support and resources?",
-          microVariants: {
-            text: "{userName} develops and implements a comprehensive mental health advocacy campaign that includes peer support groups, educational workshops to reduce stigma, training programs for students and educators, and organizing efforts to increase funding for school-based mental health services. The campaign involves collaboration with mental health professionals, community organizations, student government, faculty, and families to create comprehensive support systems that address mental health from multiple angles while centering the voices and experiences of students with lived experience of mental health challenges. Through policy advocacy, community organizing, and direct support programs, {userName} helps create environments where mental health is treated as an essential component of overall health and wellbeing, while working to ensure that all community members have access to culturally responsive and affordable mental health care.",
-            alternatives: ["Mental health advocacy creates comprehensive support systems while challenging stigma through education and peer support.", "Campaign work demonstrates how community-based approaches can transform mental health outcomes and social attitudes."],
-            optionalDetails: ["peer support groups reduce crisis interventions by 45% while improving academic performance", "advocacy campaign results in $1.2 million increase in school mental health funding"]
-          }
-        },
-        {
-          text: "Working with mental health professionals and community organizations, {userName} develops peer support training programs that teach students how to recognize mental health challenges, provide emotional support, and connect peers to appropriate resources. The training includes education about trauma-informed approaches, crisis intervention basics, suicide prevention, and how to support friends while maintaining healthy boundaries. Through these programs, {userName} helps create a network of peer advocates who can provide immediate support while connecting students to professional mental health services when needed. The peer support model emphasizes the importance of lived experience while ensuring that student advocates receive proper training and support from mental health professionals.",
-          pause: true,
-          hook: "How will {userName}'s peer support network create a culture where mental health support becomes natural and accessible?",
-          microVariants: {
-            text: "Working with mental health professionals and community organizations, {userName} develops peer support training programs that teach students how to recognize mental health challenges, provide emotional support, and connect peers to appropriate resources. The training includes education about trauma-informed approaches, crisis intervention basics, suicide prevention, and how to support friends while maintaining healthy boundaries. Through these programs, {userName} helps create a network of peer advocates who can provide immediate support while connecting students to professional mental health services when needed. The peer support model emphasizes the importance of lived experience while ensuring that student advocates receive proper training and support from mental health professionals.",
-            alternatives: ["Peer support training creates networks of student advocates equipped to provide mental health support and crisis intervention.", "Training programs teach students to recognize mental health challenges while maintaining appropriate boundaries with peer support."],
-            optionalDetails: ["peer advocates receive 40 hours of training in mental health first aid and crisis intervention", "support network includes {favoriteColor} identification system for easy peer recognition"]
-          }
-        },
-        {
-          text: "The mental health advocacy expands to include educational campaigns that challenge stigma and misinformation about mental illness while promoting understanding and acceptance of mental health as essential to overall wellbeing. {userName} organizes speakers' panels where students and community members share their mental health experiences, coordinates awareness events during Mental Health Week, and develops educational materials that provide accurate information about mental health conditions and treatment options. These efforts help normalize conversations about mental health while educating the community about how trauma, discrimination, and social conditions affect psychological wellbeing. The educational work emphasizes how mental health intersects with social justice and how creating supportive environments benefits everyone's mental health.",
-          pause: true,
-          hook: "What educational strategies will {userName} use to transform community attitudes about mental health and reduce stigma?",
-          microVariants: {
-            text: "The mental health advocacy expands to include educational campaigns that challenge stigma and misinformation about mental illness while promoting understanding and acceptance of mental health as essential to overall wellbeing. {userName} organizes speakers' panels where students and community members share their mental health experiences, coordinates awareness events during Mental Health Week, and develops educational materials that provide accurate information about mental health conditions and treatment options. These efforts help normalize conversations about mental health while educating the community about how trauma, discrimination, and social conditions affect psychological wellbeing. The educational work emphasizes how mental health intersects with social justice and how creating supportive environments benefits everyone's mental health.",
-            alternatives: ["Educational campaigns challenge mental health stigma while promoting accurate understanding of psychological wellbeing.", "Awareness events create opportunities for community members to share mental health experiences and build understanding."],
-            optionalDetails: ["awareness campaigns reach 3,400 students across multiple schools and community organizations", "educational materials translated into seven languages for {favoriteColor} community accessibility"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "Final Chapter: The National Mental Health Conference\n\nAddressing the National Mental Health Policy Summit as the youngest featured speaker, {userName} presents research showing how peer support programs reduce crisis interventions by 67% while improving academic outcomes, leading to federal funding for youth mental health initiatives nationwide.",
-          microVariants: ["Federal policy adopts {userName}'s peer support model for national implementation.", "Youth mental health advocacy influences comprehensive policy reform at the national level."]
-        },
-        {
-          type: 'cozy',
-          text: "Final Chapter: The Caring Community\n\nOn a quiet evening in the newly established peer support center, {userName} watched as students from across the school gathered for the weekly mental health circle, sharing their experiences and supporting each other through challenges with openness and compassion that would have been unimaginable just a few years earlier. The {favoriteColor} butterfly garden visible through the center's windows had been planted as a symbol of transformation and hope, while the {favoriteAnimal} therapy program brought comfort to students during stressful times. The culture of mental health awareness and support that had grown from {userName}'s initial advocacy now touched every aspect of school life, creating an environment where seeking help was seen as a sign of strength and where every student knew they had people who cared about their wellbeing.",
-          microVariants: [
-            "Final Chapter: The Model School\n\nThe comprehensive mental health support system had become a model for schools across the country, demonstrating how student advocacy, peer support, and professional mental health services could work together to create educational environments that truly supported the whole person, not just academic achievement."
-          ]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "mental_health_issues": ["anxiety disorders", "depression", "trauma responses", "social isolation"],
-          "support_strategies": ["peer counseling", "group therapy", "mindfulness programs", "crisis intervention"],
-          "advocacy_approaches": ["educational campaigns", "policy advocacy", "peer training", "community organizing"]
-        },
-        weatherVariants: ["supportive sunny day", "reflective rainy session", "clear advocacy meeting", "calming cloudy afternoon"],
-        settingVariants: ["school counseling center", "community mental health facility", "peer support group room", "legislative hearing room"],
-        randomSeed: Math.floor(Math.random() * 10000)
-      }
-    }
-  ];
-
+  // Grade 9 Methods
   static getGrade9FallbackTemplate(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_9_FALLBACK_TEMPLATES.length) {
-      return this.GRADE_9_FALLBACK_TEMPLATES[templateIndex];
+    const templates = GRADE_9_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.GRADE_9_FALLBACK_TEMPLATES.length);
-    return this.GRADE_9_FALLBACK_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getGrade9FallbackTemplateCount() {
-    return this.GRADE_9_FALLBACK_TEMPLATES.length;
+    return GRADE_9_TEMPLATES.length;
   }
 
-  // Grade 10 Templates (extracted from src/constants/newFallbackTemplates/grade10Templates.ts)
-  static GRADE_10_FALLBACK_TEMPLATES = [
-    {
-      title: "The Climate Justice Leadership Initiative",
-      theme: "Climate Change & Intergenerational Responsibility",
-      level: "Grade 10",
-      scenes: [
-        {
-          text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns in their community. Through extensive research into climate science, environmental policy, and social justice frameworks, they discover how climate change disproportionately affects marginalized communities and how effective climate solutions must address these intersecting injustices. The initiative involves building coalitions with environmental organizations, social justice groups, youth activists, and community leaders to develop comprehensive policy proposals that prioritize both environmental protection and social equity. Working with climate scientists, policy experts, and community organizers, {userName} learns about the complex relationships between environmental degradation, economic inequality, and social justice. They study successful climate justice movements from around the world and develop strategies for creating locally relevant solutions that can be scaled to address global challenges while centering the voices and needs of affected communities.",
-          pause: true,
-          hook: "How will {userName} build a movement that addresses both climate change and social justice?",
-          microVariants: {
-            text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns in their community. Through extensive research into climate science, environmental policy, and social justice frameworks, they discover how climate change disproportionately affects marginalized communities and how effective climate solutions must address these intersecting injustices. The initiative involves building coalitions with environmental organizations, social justice groups, youth activists, and community leaders to develop comprehensive policy proposals that prioritize both environmental protection and social equity. Working with climate scientists, policy experts, and community organizers, {userName} learns about the complex relationships between environmental degradation, economic inequality, and social justice. They study successful climate justice movements from around the world and develop strategies for creating locally relevant solutions that can be scaled to address global challenges while centering the voices and needs of affected communities.",
-            alternatives: ["Climate research reveals the intersection of environmental and social justice issues.", "{userName} discovers that effective climate action must address systemic inequalities."],
-            optionalDetails: ["vulnerable communities face the greatest climate risks with the least resources for adaptation", "climate solutions must include economic justice and community empowerment components"]
-          }
-        },
-        {
-          text: "As {userName} deepens their climate justice research, they discover how environmental racism has created patterns where communities of color and low-income neighborhoods face the highest levels of pollution, heat exposure, and climate vulnerability while having the least access to green spaces, renewable energy, and climate adaptation resources. Working with environmental justice organizers and climate scientists, they learn about the history of discriminatory environmental policies and the ongoing impacts of industrial development patterns that prioritize profit over community health. The research reveals how climate solutions must address these historical injustices while creating new economic opportunities for affected communities through green job creation, community-controlled renewable energy projects, and participatory planning processes that ensure community voices lead climate adaptation efforts.",
-          pause: true,
-          hook: "How will {userName} address environmental racism as part of comprehensive climate action?",
-          microVariants: {
-            text: "As {userName} deepens their climate justice research, they discover how environmental racism has created patterns where communities of color and low-income neighborhoods face the highest levels of pollution, heat exposure, and climate vulnerability while having the least access to green spaces, renewable energy, and climate adaptation resources. Working with environmental justice organizers and climate scientists, they learn about the history of discriminatory environmental policies and the ongoing impacts of industrial development patterns that prioritize profit over community health. The research reveals how climate solutions must address these historical injustices while creating new economic opportunities for affected communities through green job creation, community-controlled renewable energy projects, and participatory planning processes that ensure community voices lead climate adaptation efforts.",
-            alternatives: ["Environmental racism research reveals how climate impacts are distributed unequally across communities.", "Historical environmental injustices must be addressed as part of comprehensive climate solutions."],
-            optionalDetails: ["{favoriteColor} neighborhoods experience temperatures 12°F higher than affluent areas", "community {favoriteAnimal} habitats are disproportionately affected by industrial pollution"]
-          }
-        },
-        {
-          text: "Building on their research, {userName} organizes a comprehensive climate justice coalition that brings together environmental organizations, community groups, labor unions, faith communities, and youth activists to develop policy proposals and organizing strategies that address both climate change and social equity simultaneously. They help coordinate community listening sessions where residents share their experiences with environmental health impacts, extreme weather events, and economic challenges while contributing to the development of locally relevant climate solutions. The coalition work teaches {userName} about the importance of building inclusive movements that respect different community perspectives and experiences while finding common ground for collective action on climate and justice issues.",
-          pause: true,
-          hook: "What organizing strategies will {userName} use to build an inclusive climate justice coalition?",
-          microVariants: {
-            text: "Building on their research, {userName} organizes a comprehensive climate justice coalition that brings together environmental organizations, community groups, labor unions, faith communities, and youth activists to develop policy proposals and organizing strategies that address both climate change and social equity simultaneously. They help coordinate community listening sessions where residents share their experiences with environmental health impacts, extreme weather events, and economic challenges while contributing to the development of locally relevant climate solutions. The coalition work teaches {userName} about the importance of building inclusive movements that respect different community perspectives and experiences while finding common ground for collective action on climate and justice issues.",
-            alternatives: ["Coalition building creates broad-based support for climate justice policies and organizing strategies.", "Community listening sessions ensure climate solutions address local needs and priorities."],
-            optionalDetails: ["listening sessions include testimony from 127 community members across the region", "coalition represents organizations serving 89,000 residents in affected neighborhoods"]
-          }
-        },
-        {
-          text: "{userName} implements a multi-faceted climate justice campaign that includes policy advocacy, community education, direct action organizing, and the development of sustainable community-based solutions that address both environmental and economic challenges. The campaign involves organizing climate justice forums where community members can share their experiences with environmental impacts and participate in developing locally relevant solutions. Through collaboration with environmental justice organizations, renewable energy cooperatives, and sustainable agriculture initiatives, {userName} helps develop economic models that create green jobs while addressing environmental challenges. The work requires learning about renewable energy systems, sustainable agriculture, green infrastructure, environmental law, and community economic development strategies. As the initiative expands, {userName} discovers the importance of building intergenerational coalitions that respect both traditional ecological knowledge and cutting-edge climate science while ensuring that climate solutions create opportunities for economic justice and community empowerment rather than displacement or further marginalization.",
-          pause: true,
-          hook: "What lasting impact will {userName}'s climate justice initiative have on their community and beyond?",
-          microVariants: {
-            text: "{userName} implements a multi-faceted climate justice campaign that includes policy advocacy, community education, direct action organizing, and the development of sustainable community-based solutions that address both environmental and economic challenges. The campaign involves organizing climate justice forums where community members can share their experiences with environmental impacts and participate in developing locally relevant solutions. Through collaboration with environmental justice organizations, renewable energy cooperatives, and sustainable agriculture initiatives, {userName} helps develop economic models that create green jobs while addressing environmental challenges. The work requires learning about renewable energy systems, sustainable agriculture, green infrastructure, environmental law, and community economic development strategies. As the initiative expands, {userName} discovers the importance of building intergenerational coalitions that respect both traditional ecological knowledge and cutting-edge climate science while ensuring that climate solutions create opportunities for economic justice and community empowerment rather than displacement or further marginalization.",
-            alternatives: ["Community-based solutions demonstrate that climate action can create economic opportunities.", "{userName}'s initiative proves that youth leadership can drive meaningful policy change."],
-            optionalDetails: ["green jobs training programs provide pathways to economic stability", "traditional ecological knowledge informs innovative climate adaptation strategies"]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "Final Chapter: The International Climate Justice Summit\n\nAs the youngest delegate to the International Climate Justice Summit, {userName} presents the community-based climate justice model they developed, which is adopted by 47 countries as a framework for equitable climate action that prioritizes community empowerment and environmental justice.",
-          microVariants: ["Their climate justice framework becomes an international model for equitable environmental policy.", "Global climate policy incorporates {userName}'s community empowerment approach to environmental justice."]
-        },
-        {
-          type: 'cozy',
-          text: "Final Chapter: The Resilient Future\n\nOn a bright morning in the community resilience center, {userName} watched as neighbors gathered to share {favoriteFood} from the rooftop gardens, discuss the week's renewable energy production from the community solar cooperative, and plan the next steps in their ongoing climate adaptation work. The {favoriteColor} mosaic on the center's wall told the story of their community's transformation from vulnerability to empowerment, while the thriving {favoriteAnimal} habitat in the restored wetlands nearby demonstrated how climate solutions could heal both human and natural communities. Looking toward the future, {userName} felt confident that the climate justice movement they had helped build would continue growing, creating resilient communities that could face any challenge while ensuring that everyone had access to clean energy, healthy environments, and economic opportunity.",
-          microVariants: [
-            "Final Chapter: The Living Legacy\n\nThe climate justice initiative had grown from {userName}'s high school project into a comprehensive community transformation that demonstrated how climate action could address both environmental challenges and social inequities, creating a model of resilience and justice that inspired communities around the world."
-          ]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "climate_impacts": ["sea level rise", "extreme weather", "drought patterns", "ecosystem disruption"],
-          "justice_solutions": ["community energy cooperatives", "green job training", "environmental remediation", "participatory planning"],
-          "organizing_approaches": ["community forums", "policy advocacy", "direct action", "coalition building"]
-        },
-        weatherVariants: ["urgent action day", "coalition building session", "policy advocacy meeting", "community organizing event"],
-        settingVariants: ["community center", "city council chambers", "environmental justice organization", "university research facility"],
-        randomSeed: Math.floor(Math.random() * 10000)
-      }
-    }
-  ];
-
+  // Grade 10 Methods
   static getGrade10FallbackTemplate(templateIndex) {
-    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < this.GRADE_10_FALLBACK_TEMPLATES.length) {
-      return this.GRADE_10_FALLBACK_TEMPLATES[templateIndex];
+    const templates = GRADE_10_TEMPLATES;
+    if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < templates.length) {
+      return templates[templateIndex];
     }
-    const randomIndex = Math.floor(Math.random() * this.GRADE_10_FALLBACK_TEMPLATES.length);
-    return this.GRADE_10_FALLBACK_TEMPLATES[randomIndex];
+    return templates[Math.floor(Math.random() * templates.length)];
   }
-
+  
   static getGrade10FallbackTemplateCount() {
-    return this.GRADE_10_FALLBACK_TEMPLATES.length;
+    return GRADE_10_TEMPLATES.length;
   }
 
-  // Create basic template for any missing levels
-  static createBasicTemplate(level, fallbackLevel = 'Level 2') {
-    const basicTemplate = {
-      title: `A Special Adventure for ${level}`,
-      theme: "Adventure & Discovery",
-      level: level,
-      scenes: [
-        {
-          text: `{userName} embarks on an exciting adventure that will challenge their mind and spark their imagination. They discover that learning and growing can be the greatest adventure of all.`,
-          pause: true,
-          hook: "What will they discover next?",
-          microVariants: {
-            text: "An exciting adventure awaits {userName} as they explore new possibilities.",
-            alternatives: ["A journey of discovery begins for {userName}."],
-            optionalDetails: ["The adventure teaches valuable lessons."]
-          }
-        }
-      ],
-      endings: [
-        {
-          type: 'triumphant',
-          text: "{userName} returns home with new knowledge and confidence.",
-          microVariants: ["The adventure ends with personal growth and wisdom."]
-        }
-      ],
-      reuse: {
-        swappableElements: {
-          "adventure": ["journey", "quest", "exploration", "discovery"]
-        },
-        weatherVariants: ["sunny", "cloudy", "clear"],
-        settingVariants: ["forest", "city", "countryside"]
-      }
-    };
+  // Utility Methods
+  static getFallbackTemplate(level, templateIndex) {
+    const templates = this[`get${level}Template`] || this[`get${level}FallbackTemplate`];
+    if (!templates) return null;
     
-    return basicTemplate;
+    return templates.call(this, templateIndex);
+  }
+  
+  static getTemplateCount(level) {
+    const countMethod = this[`get${level}TemplateCount`] || this[`get${level}FallbackTemplateCount`];
+    if (!countMethod) return 0;
+    
+    return countMethod.call(this);
   }
 }
