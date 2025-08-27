@@ -58,8 +58,8 @@ const TEMPLATE_MAP = {
     countName: 'getLevel2TemplateCount'
   },
   level3: {
-    getterName: 'getLevel3FallbackTemplate',
-    countName: 'getLevel3FallbackTemplateCount'
+    getterName: 'getLevel3Template',
+    countName: 'getLevel3TemplateCount'
   },
   level4: {
     getterName: 'getLevel4Template',

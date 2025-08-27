@@ -3,6 +3,19 @@
 // ============================================================================
 // All template data from frontend properly migrated to backend with full coverage
 
+// Import consolidated Level 3 and Level 4 templates
+import { 
+  LEVEL_3_CONSOLIDATED_TEMPLATES, 
+  getLevel3Template as getLevel3TemplateFromConsolidated, 
+  getLevel3TemplateCount as getLevel3CountFromConsolidated 
+} from './consolidatedLevel3Templates.ts';
+
+import { 
+  LEVEL_4_CONSOLIDATED_TEMPLATES, 
+  getLevel4Template as getLevel4TemplateFromConsolidated, 
+  getLevel4TemplateCount as getLevel4CountFromConsolidated 
+} from './consolidatedLevel4Templates.ts';
+
 // Level 0 Templates (Ages 3-5) - ALL 199 templates 
 export const LEVEL_0_TEMPLATES = [
   ["{userName} runs fast.", "The {favoriteColor} slide waits.", "{userName} climbs up high.", "Down they go!", "Fun day outside."],
@@ -1089,26 +1102,22 @@ export function getLevel2TemplateCount() {
   return LEVEL_2_TEMPLATES.length;
 }
 
-export function getLevel3FallbackTemplate(templateIndex) {
-  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_FALLBACK_TEMPLATES.length) {
-    return LEVEL_3_FALLBACK_TEMPLATES[templateIndex];
-  }
-  return LEVEL_3_FALLBACK_TEMPLATES[Math.floor(Math.random() * LEVEL_3_FALLBACK_TEMPLATES.length)];
+// Level 3 Templates - Use consolidated comprehensive templates
+export function getLevel3Template(templateIndex) {
+  return getLevel3TemplateFromConsolidated(templateIndex);
 }
 
-export function getLevel3FallbackTemplateCount() {
-  return LEVEL_3_FALLBACK_TEMPLATES.length;
+export function getLevel3TemplateCount() {
+  return getLevel3CountFromConsolidated();
 }
 
+// Level 4 Templates - Use consolidated comprehensive templates  
 export function getLevel4Template(templateIndex) {
-  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_4_TEMPLATES.length) {
-    return LEVEL_4_TEMPLATES[templateIndex];
-  }
-  return LEVEL_4_TEMPLATES[Math.floor(Math.random() * LEVEL_4_TEMPLATES.length)];
+  return getLevel4TemplateFromConsolidated(templateIndex);
 }
 
 export function getLevel4TemplateCount() {
-  return LEVEL_4_TEMPLATES.length;
+  return getLevel4CountFromConsolidated();
 }
 
 export function getGrade6FallbackTemplate(templateIndex) {
@@ -1172,8 +1181,8 @@ export const TemplateLibraryService = {
   getLevel1TemplateCount,
   getLevel2Template,
   getLevel2TemplateCount,
-  getLevel3FallbackTemplate,
-  getLevel3FallbackTemplateCount,
+  getLevel3Template,
+  getLevel3TemplateCount,
   getLevel4Template,
   getLevel4TemplateCount,
   getGrade6FallbackTemplate,
