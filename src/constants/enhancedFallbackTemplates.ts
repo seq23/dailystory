@@ -32,12 +32,12 @@ import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES } from './newFallbackTemplates/l
 import { LEVEL_0_EXTENSIONS } from './newFallbackTemplates/level0Extensions';
 
 // ===== NEW TEMPLATE SYSTEM INTEGRATION =====
-// Map DifficultyLevel to FallbackLevel for new template system integration
+// Map DifficultyLevel to FallbackLevel for new template system integration  
 const DIFFICULTY_TO_FALLBACK_MAP: Record<Exclude<DifficultyLevel, 'beginner'>, FallbackLevel> = {
   easy: 'level1',      // Ages 6-7
   medium: 'level2',    // Ages 8-9  
-  hard: 'level3',      // Ages 10-11
-  expert: 'level4'     // Ages 12-13
+  hard: 'grade6',      // Ages 10-11 - Use Grade 6 templates (backend service)
+  expert: 'grade7'     // Ages 12-13 - Use Grade 7 templates (backend service)
 };
 
 /**

@@ -1,16 +1,14 @@
 /**
- * Complete Fallback Story Template Library Index
- * Exports all template collections for the new modular story system
+ * Complete Fallback Story Template Library Index  
+ * Exports remaining template collections - Level 3 & 4 moved to backend
  */
 
 // Template Types
 export * from '../storyTemplateTypes';
 
-// Level-based Templates (Ages 5-13)
+// Level-based Templates (Ages 5-9) - Levels 3&4 now in backend TemplateLibraryService.js
 export * from './level1Templates';
-export * from './level2Templates'; 
-export * from './level3Templates';
-export * from './level4Templates';
+export * from './level2Templates';
 
 // Grade-based Templates (Grades 6-10) - DEPRECATED
 export * from './grade6Templates'; // ❌ DEPRECATED - Use backend service
@@ -30,16 +28,7 @@ import {
   getLevel2Template,  
   getLevel2TemplateCount
 } from './level2Templates';
-import { 
-  LEVEL_3_FALLBACK_TEMPLATES,
-  getLevel3Template, // FIXED: Remove "Fallback" suffix for consistency
-  getLevel3TemplateCount
-} from './level3Templates';
-import { 
-  LEVEL_4_TEMPLATES,
-  getLevel4Template,
-  getLevel4TemplateCount
-} from './level4Templates';
+// Level 3 & 4 moved to backend TemplateLibraryService.js
 import {
   GRADE_6_FALLBACK_TEMPLATES,
   getGrade6Template, // FIXED: Remove "Fallback" suffix for consistency
@@ -66,16 +55,14 @@ import {
   getGrade10TemplateCount
 } from './grade10Templates';
 
-export type FallbackLevel = 'level1' | 'level2' | 'level3' | 'level4' | 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grade10';
+export type FallbackLevel = 'level1' | 'level2' | 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grade10';
 
 /**
- * Complete Fallback Template Collections
+ * Complete Fallback Template Collections - Levels 3&4 now in backend
  */
 export const ALL_FALLBACK_TEMPLATES: Record<FallbackLevel, StoryTemplate[]> = {
   level1: LEVEL_1_TEMPLATES,
-  level2: LEVEL_2_TEMPLATES, 
-  level3: LEVEL_3_FALLBACK_TEMPLATES,
-  level4: LEVEL_4_TEMPLATES,
+  level2: LEVEL_2_TEMPLATES,
   grade6: GRADE_6_FALLBACK_TEMPLATES,
   grade7: GRADE_7_FALLBACK_TEMPLATES,
   grade8: GRADE_8_FALLBACK_TEMPLATES,
@@ -84,7 +71,7 @@ export const ALL_FALLBACK_TEMPLATES: Record<FallbackLevel, StoryTemplate[]> = {
 };
 
 /**
- * Get a random template for the specified level
+ * Get a random template for the specified level - Levels 3&4 handled by backend
  */
 export function getFallbackTemplate(level: FallbackLevel, templateIndex?: number): StoryTemplate | null {
   switch (level) {
@@ -92,10 +79,6 @@ export function getFallbackTemplate(level: FallbackLevel, templateIndex?: number
       return getLevel1Template(templateIndex);
     case 'level2':
       return getLevel2Template(templateIndex);
-    case 'level3':
-      return getLevel3Template(templateIndex); // FIXED: Remove "Fallback" suffix
-    case 'level4':
-      return getLevel4Template(templateIndex);
     case 'grade6':
       return getGrade6Template(templateIndex); // FIXED: Remove "Fallback" suffix
     case 'grade7':
@@ -112,7 +95,7 @@ export function getFallbackTemplate(level: FallbackLevel, templateIndex?: number
 }
 
 /**
- * Get the count of available templates for a level
+ * Get the count of available templates for a level - Levels 3&4 handled by backend
  */
 export function getFallbackTemplateCount(level: FallbackLevel): number {
   switch (level) {
@@ -120,10 +103,6 @@ export function getFallbackTemplateCount(level: FallbackLevel): number {
       return getLevel1TemplateCount();
     case 'level2':
       return getLevel2TemplateCount();
-    case 'level3':
-      return getLevel3TemplateCount(); // FIXED: Remove "Fallback" suffix
-    case 'level4':
-      return getLevel4TemplateCount();
     case 'grade6':
       return getGrade6TemplateCount(); // FIXED: Remove "Fallback" suffix
     case 'grade7':
@@ -185,11 +164,9 @@ export function getRandomEnding(template: StoryTemplate, type?: 'cozy' | 'silly'
 export function getTotalFallbackPages(): number {
   let totalPages = 0;
   
-  // Level templates (each scene = 1 page)
+  // Level templates (each scene = 1 page) - Levels 3&4 now in backend
   LEVEL_1_TEMPLATES.forEach(template => totalPages += template.scenes.length);
   LEVEL_2_TEMPLATES.forEach(template => totalPages += template.scenes.length);
-  LEVEL_3_FALLBACK_TEMPLATES.forEach(template => totalPages += template.scenes.length);
-  LEVEL_4_TEMPLATES.forEach(template => totalPages += template.scenes.length);
   
   // Grade templates (designed as chapters, count as multiple pages)
   GRADE_6_FALLBACK_TEMPLATES.forEach(template => totalPages += 12); // ~12 pages per grade 6 template

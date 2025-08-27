@@ -59,12 +59,11 @@ export class UniversalTemplateValidator {
       summary['Level 0'] = { total: 0, compliant: 0, coverage: 0 };
     }
     
-    // Test Levels 1-4 and Grades 6-10
+    // Test Levels 1-2 and Grades 6-10 (Levels 3&4 now in backend)
     const levelMappings = {
       'Level 1': { templates: ALL_FALLBACK_TEMPLATES.level1, gradeLevel: 1 as GradeLevel },
       'Level 2': { templates: ALL_FALLBACK_TEMPLATES.level2, gradeLevel: 2 as GradeLevel },
-      'Level 3': { templates: ALL_FALLBACK_TEMPLATES.level3, gradeLevel: 3 as GradeLevel },
-      'Level 4': { templates: ALL_FALLBACK_TEMPLATES.level4, gradeLevel: 4 as GradeLevel },
+      // Level 3 & 4 moved to backend TemplateLibraryService.js
       'Grade 6': { templates: ALL_FALLBACK_TEMPLATES.grade6, gradeLevel: 4 as GradeLevel },
       'Grade 7': { templates: ALL_FALLBACK_TEMPLATES.grade7, gradeLevel: 4 as GradeLevel },
       'Grade 8': { templates: ALL_FALLBACK_TEMPLATES.grade8, gradeLevel: 4 as GradeLevel },
