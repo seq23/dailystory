@@ -32,8 +32,8 @@ import {
 } from './level2Templates';
 import { 
   LEVEL_3_FALLBACK_TEMPLATES,
-  getLevel3FallbackTemplate,
-  getLevel3FallbackTemplateCount
+  getLevel3Template, // FIXED: Remove "Fallback" suffix for consistency
+  getLevel3TemplateCount
 } from './level3Templates';
 import { 
   LEVEL_4_TEMPLATES,
@@ -42,28 +42,28 @@ import {
 } from './level4Templates';
 import {
   GRADE_6_FALLBACK_TEMPLATES,
-  getGrade6FallbackTemplate,
-  getGrade6FallbackTemplateCount
+  getGrade6Template, // FIXED: Remove "Fallback" suffix for consistency
+  getGrade6TemplateCount
 } from './grade6Templates';
 import {
   GRADE_7_FALLBACK_TEMPLATES,
-  getGrade7FallbackTemplate,
-  getGrade7FallbackTemplateCount
+  getGrade7Template, // FIXED: Remove "Fallback" suffix for consistency  
+  getGrade7TemplateCount
 } from './grade7Templates';
 import {
   GRADE_8_FALLBACK_TEMPLATES,
-  getGrade8FallbackTemplate,
-  getGrade8FallbackTemplateCount
+  getGrade8Template, // FIXED: Remove "Fallback" suffix for consistency
+  getGrade8TemplateCount
 } from './grade8Templates';
 import {
   GRADE_9_FALLBACK_TEMPLATES,
-  getGrade9FallbackTemplate,
-  getGrade9FallbackTemplateCount
+  getGrade9Template, // FIXED: Remove "Fallback" suffix for consistency
+  getGrade9TemplateCount
 } from './grade9Templates';
 import {
   GRADE_10_FALLBACK_TEMPLATES,
-  getGrade10FallbackTemplate,
-  getGrade10FallbackTemplateCount
+  getGrade10Template, // FIXED: Remove "Fallback" suffix for consistency
+  getGrade10TemplateCount
 } from './grade10Templates';
 
 export type FallbackLevel = 'level1' | 'level2' | 'level3' | 'level4' | 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grade10';
@@ -93,19 +93,19 @@ export function getFallbackTemplate(level: FallbackLevel, templateIndex?: number
     case 'level2':
       return getLevel2Template(templateIndex);
     case 'level3':
-      return getLevel3FallbackTemplate(templateIndex);
+      return getLevel3Template(templateIndex); // FIXED: Remove "Fallback" suffix
     case 'level4':
       return getLevel4Template(templateIndex);
     case 'grade6':
-      return getGrade6FallbackTemplate(templateIndex);
+      return getGrade6Template(templateIndex); // FIXED: Remove "Fallback" suffix
     case 'grade7':
-      return getGrade7FallbackTemplate(templateIndex);
+      return getGrade7Template(templateIndex); // FIXED: Remove "Fallback" suffix
     case 'grade8':
-      return getGrade8FallbackTemplate(templateIndex);
+      return getGrade8Template(templateIndex); // FIXED: Remove "Fallback" suffix
     case 'grade9':
-      return getGrade9FallbackTemplate(templateIndex);
+      return getGrade9Template(templateIndex); // FIXED: Remove "Fallback" suffix
     case 'grade10':
-      return getGrade10FallbackTemplate(templateIndex);
+      return getGrade10Template(templateIndex); // FIXED: Remove "Fallback" suffix
     default:
       return null;
   }
@@ -121,19 +121,19 @@ export function getFallbackTemplateCount(level: FallbackLevel): number {
     case 'level2':
       return getLevel2TemplateCount();
     case 'level3':
-      return getLevel3FallbackTemplateCount();
+      return getLevel3TemplateCount(); // FIXED: Remove "Fallback" suffix
     case 'level4':
       return getLevel4TemplateCount();
     case 'grade6':
-      return getGrade6FallbackTemplateCount();
+      return getGrade6TemplateCount(); // FIXED: Remove "Fallback" suffix
     case 'grade7':
-      return getGrade7FallbackTemplateCount();
+      return getGrade7TemplateCount(); // FIXED: Remove "Fallback" suffix
     case 'grade8':
-      return getGrade8FallbackTemplateCount();
+      return getGrade8TemplateCount(); // FIXED: Remove "Fallback" suffix
     case 'grade9':
-      return getGrade9FallbackTemplateCount();
+      return getGrade9TemplateCount(); // FIXED: Remove "Fallback" suffix
     case 'grade10':
-      return getGrade10FallbackTemplateCount();
+      return getGrade10TemplateCount(); // FIXED: Remove "Fallback" suffix
     default:
       return 0;
   }

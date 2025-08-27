@@ -572,7 +572,7 @@ export const GRADE_7_FALLBACK_TEMPLATES: StoryTemplate[] = [
 /**
  * Get a random Grade 7 template or specific template by index
  */
-export function getGrade7FallbackTemplate(templateIndex?: number): StoryTemplate | null {
+export function getGrade7Template(templateIndex?: number): StoryTemplate | null {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < GRADE_7_FALLBACK_TEMPLATES.length) {
     return GRADE_7_FALLBACK_TEMPLATES[templateIndex];
   }
@@ -585,9 +585,6 @@ export function getGrade7FallbackTemplate(templateIndex?: number): StoryTemplate
   return GRADE_7_FALLBACK_TEMPLATES[randomIndex];
 }
 
-/**
- * Get the count of available Grade 7 templates
- */
-export function getGrade7FallbackTemplateCount(): number {
+export function getGrade7TemplateCount(): number {
   return GRADE_7_FALLBACK_TEMPLATES.length;
 }
