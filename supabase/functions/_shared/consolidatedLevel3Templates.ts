@@ -4,14 +4,7 @@
  * Never-ending continuation hooks and 4 attach-anytime endings
  */
 
-import { StoryTemplate } from './templates/storyTemplateTypes';
-
-/**
- * Level 3 Templates (Ages 9-11) - Complete Fallback Story Library  
- * 5 comprehensive templates imported directly from frontend
- */
-
-import { StoryTemplate } from './templates/storyTemplateTypes';
+import { StoryTemplate } from './templates/storyTemplateTypes.ts';
 
 // All 5 comprehensive Level 3 templates with full 10+ scenes each
 export const LEVEL_3_CONSOLIDATED_TEMPLATES: StoryTemplate[] = [

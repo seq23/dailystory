@@ -4,14 +4,7 @@
  * For ages 11+, 7th-12th grade reading level
  */
 
-import { StoryTemplate } from './templates/storyTemplateTypes';
-
-/**
- * Level 4 Templates - Enhanced with proper word counts
- * 5 comprehensive templates imported directly from frontend
- */
-
-import { StoryTemplate } from './templates/storyTemplateTypes';
+import { StoryTemplate } from './templates/storyTemplateTypes.ts';
 
 // All 5 comprehensive Level 4 templates with full scenes
 export const LEVEL_4_CONSOLIDATED_TEMPLATES: StoryTemplate[] = [
