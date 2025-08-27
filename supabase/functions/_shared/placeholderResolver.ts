@@ -53,6 +53,9 @@ function cleanup(text: string): string {
     .replace(/^\s+/, "") // trim leading spaces
     .replace(/\.\s*\./g, ".") // remove double periods
     .replace(/,\s*,/g, ",") // remove double commas
+    .replace(/\ba\s+a\s+/gi, "a ") // fix "a a" duplication bug
+    .replace(/\ban\s+an\s+/gi, "an ") // fix "an an" duplication bug
+    .replace(/\bthe\s+the\s+/gi, "the ") // fix "the the" duplication bug
     .trim();
 }
 
