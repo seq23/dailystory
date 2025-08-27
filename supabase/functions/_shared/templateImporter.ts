@@ -4,17 +4,7 @@
  */
 
 import { convertStoryTemplateToStringArray } from './templateConverter.ts';
-
-interface UserInfo {
-  name?: string;
-  avatar?: any;
-  favoriteColor?: string;
-  favoriteAnimal?: string;
-  favoriteFood?: string;
-  hobbies?: string;
-  specialRequest?: string;
-  difficultyLevel?: string;
-}
+import { UserInfo } from './placeholderResolver.ts';
 
 interface StoryTemplate {
   title: string;
@@ -73,8 +63,8 @@ const TEMPLATE_MAP = {
   level3: {
     path: '../../../src/constants/newFallbackTemplates/level3Templates.ts',
     arrayName: 'LEVEL_3_FALLBACK_TEMPLATES',
-    getterName: 'getLevel3Template',
-    countName: 'getLevel3TemplateCount'
+    getterName: 'getLevel3FallbackTemplate',
+    countName: 'getLevel3FallbackTemplateCount'
   },
   level4: {
     path: '../../../src/constants/newFallbackTemplates/level4Templates.ts',
@@ -85,32 +75,32 @@ const TEMPLATE_MAP = {
   grade6: {
     path: '../../../src/constants/newFallbackTemplates/grade6Templates.ts',
     arrayName: 'GRADE_6_FALLBACK_TEMPLATES',
-    getterName: 'getGrade6Template',
-    countName: 'getGrade6TemplateCount'
+    getterName: 'getGrade6FallbackTemplate',
+    countName: 'getGrade6FallbackTemplateCount'
   },
   grade7: {
     path: '../../../src/constants/newFallbackTemplates/grade7Templates.ts',
     arrayName: 'GRADE_7_FALLBACK_TEMPLATES',
-    getterName: 'getGrade7Template',
-    countName: 'getGrade7TemplateCount'
+    getterName: 'getGrade7FallbackTemplate',
+    countName: 'getGrade7FallbackTemplateCount'
   },
   grade8: {
     path: '../../../src/constants/newFallbackTemplates/grade8Templates.ts',
     arrayName: 'GRADE_8_FALLBACK_TEMPLATES',
-    getterName: 'getGrade8Template',
-    countName: 'getGrade8TemplateCount'
+    getterName: 'getGrade8FallbackTemplate',
+    countName: 'getGrade8FallbackTemplateCount'
   },
   grade9: {
     path: '../../../src/constants/newFallbackTemplates/grade9Templates.ts',
     arrayName: 'GRADE_9_FALLBACK_TEMPLATES',
-    getterName: 'getGrade9Template',
-    countName: 'getGrade9TemplateCount'
+    getterName: 'getGrade9FallbackTemplate',
+    countName: 'getGrade9FallbackTemplateCount'
   },
   grade10: {
     path: '../../../src/constants/newFallbackTemplates/grade10Templates.ts',
     arrayName: 'GRADE_10_FALLBACK_TEMPLATES',
-    getterName: 'getGrade10Template',
-    countName: 'getGrade10TemplateCount'
+    getterName: 'getGrade10FallbackTemplate',
+    countName: 'getGrade10FallbackTemplateCount'
   }
 };
 

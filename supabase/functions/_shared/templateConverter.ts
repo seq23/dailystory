@@ -4,7 +4,7 @@
  */
 
 // Import sophisticated placeholder resolver and grammar validation from shared services
-import { resolveAllPlaceholders, MicroContext } from './placeholderResolver.ts';
+import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from './grammarValidator.ts';
 
 // Types matching the frontend
@@ -39,17 +39,6 @@ interface StoryTemplate {
     settingVariants: string[];
     randomSeed?: number;
   };
-}
-
-interface UserInfo {
-  name?: string;
-  avatar?: any;
-  favoriteColor?: string;
-  favoriteAnimal?: string;
-  favoriteFood?: string;
-  hobbies?: string;
-  specialRequest?: string;
-  difficultyLevel?: string;
 }
 
 // Simple seeded random generator (Linear Congruential Generator)
