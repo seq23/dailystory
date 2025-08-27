@@ -3,7 +3,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Import the single source of truth for templates
-import { TemplateLibraryService } from '../_shared/TemplateLibraryService.js';
+// Import new template system files
+import { LEVEL_0_TEMPLATES, getLevel0Template, getLevel0TemplateCount } from '../../src/constants/newFallbackTemplates/level0Templates.ts';
+import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, getVocabularyCompliantLevel0Template, getVocabularyCompliantLevel0TemplateCount } from '../../src/constants/newFallbackTemplates/level0VocabCompliant.ts';
+import { LEVEL_0_EXTENSIONS, getLevel0Extension, getLevel0ExtensionCount } from '../../src/constants/newFallbackTemplates/level0Extensions.ts';
 
 // Simple user info interface
 interface UserInfo {
@@ -108,7 +111,10 @@ serve(async (req) => {
     if (explore) {
       console.log('🔍 Exploration mode for level:', templateLevel);
       
-      const templateCount = TemplateLibraryService.getTemplateCount(templateLevel);
+      let templateCount = 0;
+      if (templateLevel === 'Level0') {
+        templateCount = VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.length + LEVEL_0_TEMPLATES.length + LEVEL_0_EXTENSIONS.length;
+      }
       
       return new Response(JSON.stringify({
         success: true,
@@ -125,15 +131,27 @@ serve(async (req) => {
       });
     }
 
-    // Get template from single source
-    console.log('📚 Getting template from TemplateLibraryService for level:', templateLevel);
+    // Get template using new system
+    console.log('📚 Getting template from new system for level:', templateLevel);
     
     let template: string[] | null = null;
     
     if (templateLevel === 'Level0') {
-      template = TemplateLibraryService.getLevel0Template(templateIndex);
+      // Combine all Level 0 templates for selection
+      const allLevel0Templates = [
+        ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, // Primary: 100 templates
+        ...LEVEL_0_TEMPLATES,                      // Secondary: 43 templates  
+        ...LEVEL_0_EXTENSIONS                      // Extensions: 7 templates
+      ];
+      
+      if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < allLevel0Templates.length) {
+        template = allLevel0Templates[templateIndex];
+      } else {
+        template = allLevel0Templates[Math.floor(Math.random() * allLevel0Templates.length)];
+      }
     } else {
-      template = TemplateLibraryService.getFallbackTemplate(templateLevel, templateIndex);
+      // For higher levels, return null since we're only migrating Level 0
+      template = null;
     }
 
     if (!template) {

@@ -2,365 +2,49 @@
 // Generated with enhanced prompt including hobbies, special requests, and 70% vocabulary flexibility
 
 export const LEVEL_0_TEMPLATES: string[][] = [
-  // Template 1: Playground Adventure
-  [
-    "{userName} runs fast.",
-    "The {favoriteColor} slide waits.",
-    "{userName} climbs up high.",
-    "Down they go!",
-    "Fun day outside."
-  ],
-  
-  // Template 2: Pet Story
-  [
-    "{userName} loves {favoriteAnimal}s.",
-    "The {favoriteAnimal} plays.",
-    "They run together.",
-    "{userName} gives food.",
-    "Best friends forever."
-  ],
-  
-  // Template 3: Cooking Fun
-  [
-    "{userName} helps cook.",
-    "Mix the {favoriteFood}.",
-    "Smell so good!",
-    "Time to eat.",
-    "Yummy food together."
-  ],
-  
-  // Template 4: Garden Discovery
-  [
-    "{userName} finds flowers.",
-    "Pretty {favoriteColor} ones.",
-    "Bees buzz around.",
-    "Water helps grow.",
-    "Garden looks beautiful."
-  ],
-  
-  // Template 5: Car Ride
-  [
-    "Car goes fast.",
-    "{userName} sits inside.",
-    "The {favoriteColor} car shines.",
-    "Windows show trees.",
-    "Happy car ride."
-  ],
-  
-  // Template 6: Bedtime Story
-  [
-    "{userName} feels sleepy.",
-    "Soft bed waits.",
-    "Moon shines bright.",
-    "Dreams come soon.",
-    "Good night sleep."
-  ],
-  
-  // Template 7: Beach Day
-  [
-    "Sand feels warm.",
-    "{userName} builds castles.",
-    "Water comes close.",
-    "Shells hide treasures.",
-    "Beach day fun."
-  ],
-  
-  // Template 8: Art Time
-  [
-    "{userName} draws pictures.",
-    "{favoriteColor} paint everywhere.",
-    "Brush moves fast.",
-    "Art looks good.",
-    "Creative day today."
-  ],
-  
-  // Template 9: Music Fun
-  [
-    "{userName} sings songs.",
-    "Music sounds nice.",
-    "Hands clap together.",
-    "Dance around room.",
-    "Happy music time."
-  ],
-  
-  // Template 10: Library Visit
-  [
-    "Books tell stories.",
-    "{userName} reads quietly.",
-    "Words come alive.",
-    "Pictures show magic.",
-    "Reading brings joy."
-  ],
-  
-  // Template 11: Picnic Adventure
-  [
-    "{userName} packs food.",
-    "Basket holds {favoriteFood}.",
-    "Grass feels soft.",
-    "Birds sing songs.",
-    "Perfect picnic day."
-  ],
-  
-  // Template 12: Rain Day
-  [
-    "Rain drops fall.",
-    "{userName} watches outside.",
-    "Puddles form quickly.",
-    "{favoriteAnimal}s hide dry.",
-    "Cozy inside today."
-  ],
-  
-  // Template 13: Birthday Party
-  [
-    "Today feels special.",
-    "{userName} turns older.",
-    "Cake tastes sweet.",
-    "Friends come over.",
-    "Best birthday ever."
-  ],
-  
-  // Template 14: Farm Visit
-  [
-    "{userName} sees animals.",
-    "Cows eat grass.",
-    "{favoriteAnimal}s run around.",
-    "Farmer works hard.",
-    "Farm life rocks."
-  ],
-  
-  // Template 15: Snow Day
-  [
-    "Snow falls down.",
-    "{userName} builds snowmen.",
-    "Cold feels good.",
-    "Mittens keep warm.",
-    "Winter fun outside."
-  ],
-  
-  // Template 16: Grocery Shopping
-  [
-    "{userName} helps shop.",
-    "Cart rolls smooth.",
-    "Find good {favoriteFood}.",
-    "Check list twice.",
-    "Shopping trip done."
-  ],
-  
-  // Template 17: Park Adventure
-  [
-    "Park has trees.",
-    "{userName} climbs high.",
-    "Birds fly overhead.",
-    "Swings move back.",
-    "Park day rocks."
-  ],
-  
-  // Template 18: Doctor Visit
-  [
-    "{userName} feels brave.",
-    "Doctor helps people.",
-    "Check ups help.",
-    "Medicine makes better.",
-    "Healthy body strong."
-  ],
-  
-  // Template 19: Toy Store
-  [
-    "Toys everywhere look.",
-    "{userName} picks favorites.",
-    "{favoriteColor} ones shine.",
-    "Play time starts.",
-    "Toy store magic."
-  ],
-  
-  // Template 20: Halloween Fun
-  [
-    "{userName} wears costume.",
-    "Trick or treat!",
-    "Houses give candy.",
-    "Bags fill up.",
-    "Halloween night fun."
-  ],
-  
-  // Template 21: School Day
-  [
-    "{userName} goes school.",
-    "Friends wave hello.",
-    "Learn new things.",
-    "Teacher helps lots.",
-    "School brings joy."
-  ],
-  
-  // Template 22: Camping Trip
-  [
-    "Tent keeps dry.",
-    "{userName} sleeps outside.",
-    "Stars shine bright.",
-    "Fire stays warm.",
-    "Camping feels great."
-  ],
-  
-  // Template 23: Swimming Fun
-  [
-    "Water feels cool.",
-    "{userName} swims fast.",
-    "Splash goes everywhere.",
-    "Sun keeps warm.",
-    "Swimming day perfect."
-  ],
-  
-  // Template 24: Dentist Visit
-  [
-    "{userName} brushes teeth.",
-    "Dentist checks smile.",
-    "Teeth look clean.",
-    "Healthy mouth important.",
-    "Smile feels good."
-  ],
-  
-  // Template 25: Ice Cream Treat
-  [
-    "Hot day outside.",
-    "{userName} wants treats.",
-    "{favoriteColor} ice cream.",
-    "Cold tastes good.",
-    "Sweet treat time."
-  ],
-  
-  // Template 26: Building Blocks
-  [
-    "{userName} builds towers.",
-    "Blocks stack high.",
-    "Colors make patterns.",
-    "Fall down fast.",
-    "Building brings fun."
-  ],
-  
-  // Template 27: Mail Delivery
-  [
-    "Mail comes today.",
-    "{userName} checks box.",
-    "Letters bring news.",
-    "Packages surprise us.",
-    "Mail brings joy."
-  ],
-  
-  // Template 28: Flower Garden
-  [
-    "{userName} plants seeds.",
-    "Water helps grow.",
-    "{favoriteColor} flowers bloom.",
-    "Bees come visit.",
-    "Garden grows beautiful."
-  ],
-  
-  // Template 29: Movie Night
-  [
-    "Lights turn off.",
-    "{userName} watches screen.",
-    "Popcorn tastes good.",
-    "Stories come alive.",
-    "Movie night fun."
-  ],
-  
-  // Template 30: Bus Ride
-  [
-    "Bus arrives early.",
-    "{userName} climbs up.",
-    "Seats feel soft.",
-    "Windows show world.",
-    "Bus ride adventure."
-  ],
-  
-  // Template 31: Laundry Day
-  [
-    "{userName} sorts clothes.",
-    "Machine spins around.",
-    "Soap makes bubbles.",
-    "Clean clothes smell.",
-    "Laundry day done."
-  ],
-  
-  // Template 32: Fire Station
-  [
-    "Fire trucks shine.",
-    "{userName} meets firefighters.",
-    "Brave people help.",
-    "Sirens sound loud.",
-    "Heroes save day."
-  ],
-  
-  // Template 33: Baking Cookies
-  [
-    "{userName} mixes dough.",
-    "Oven gets hot.",
-    "Cookies smell good.",
-    "Sweet treats ready.",
-    "Baking brings joy."
-  ],
-  
-  // Template 34: Zoo Adventure
-  [
-    "Animals live here.",
-    "{userName} sees {favoriteAnimal}s.",
-    "They play together.",
-    "Food keeps healthy.",
-    "Zoo day rocks."
-  ],
-  
-  // Template 35: Haircut Day
-  [
-    "{userName} sits still.",
-    "Scissors cut hair.",
-    "Mirror shows changes.",
-    "Hair looks neat.",
-    "Haircut feels good."
-  ],
-  
-  // Template 36: Playground Games
-  [
-    "Friends come play.",
-    "{userName} runs fast.",
-    "Games bring laughter.",
-    "Tag keeps moving.",
-    "Playground brings fun."
-  ],
-  
-  // Template 37: Weather Watch
-  [
-    "Clouds move fast.",
-    "{userName} watches sky.",
-    "Wind blows leaves.",
-    "Weather changes daily.",
-    "Nature shows beauty."
-  ],
-  
-  // Template 38: Morning Routine
-  [
-    "{userName} wakes up.",
-    "Breakfast tastes good.",
-    "Teeth get clean.",
-    "Clothes look nice.",
-    "Ready for day."
-  ],
-  
-  // Template 39: Night Sky
-  [
-    "Stars twinkle bright.",
-    "{userName} looks up.",
-    "Moon smiles down.",
-    "Night feels peaceful.",
-    "Sky holds magic."
-  ],
-  
-  // Template 40: Helping Hands
-  [
-    "{userName} helps others.",
-    "Kind acts matter.",
-    "Smiles spread joy.",
-    "Helping feels good.",
-    "Good hearts shine."
-  ]
+  ["{userName} runs fast.", "The {favoriteColor} slide waits.", "{userName} climbs up high.", "Down they go!", "Fun day outside."],
+  ["{userName} sees {favoriteColor} car.", "Zoom zoom!", "Fast car goes.", "Beep beep!", "{userName} waves goodbye."],
+  ["{userName} finds {favoriteAnimal}.", "Pet the soft fur.", "{favoriteAnimal} purrs loud.", "So warm and nice.", "Best friends now."],
+  ["{userName} eats {favoriteFood}.", "Yummy in tummy.", "More please!", "All done now.", "Happy belly."],
+  ["{userName} plays ball.", "{favoriteColor} ball rolls.", "Kick it far.", "Run get ball.", "Play again!"],
+  ["{userName} sees bird.", "Bird flies high.", "Tweet tweet song.", "Pretty feathers.", "Bye bye bird."],
+  ["{userName} hugs {favoriteAnimal}.", "Soft and warm.", "Love you lots.", "Snuggle time.", "Best friends."],
+  ["{userName} paints picture.", "{favoriteColor} paint drips.", "Make nice art.", "Show to mom.", "Pretty picture."],
+  ["{userName} rides bike.", "Pedal fast.", "{favoriteColor} wheels spin.", "Feel the wind.", "Fun ride."],
+  ["{userName} builds tower.", "Stack blocks high.", "{favoriteColor} on top.", "So very tall.", "Great job!"],
+  ["{userName} reads book.", "Look at pictures.", "Words tell story.", "Turn the page.", "Books are fun."],
+  ["{userName} helps cook.", "Stir the pot.", "Smells so good.", "Taste a bit.", "Yummy food."],
+  ["{userName} waters flowers.", "Pretty {favoriteColor} blooms.", "Grow big and tall.", "Bees buzz by.", "Garden nice."],
+  ["{userName} feeds {favoriteAnimal}.", "Hungry pet waits.", "Chomp chomp food.", "Full belly now.", "Happy pet."],
+  ["{userName} swims in pool.", "Splash splash water.", "{favoriteColor} floaties help.", "Kick feet fast.", "Swimming fun."],
+  ["{userName} picks berries.", "Red ones taste sweet.", "Fill up basket.", "Share with friends.", "Yummy treats."],
+  ["{userName} flies kite.", "{favoriteColor} kite soars.", "Wind lifts it up.", "String pulls tight.", "Sky dancing."],
+  ["{userName} makes music.", "Drum goes boom boom.", "Sing happy song.", "Dance and move.", "Music magic."],
+  ["{userName} blows bubbles.", "Round and shiny.", "Pop pop pop.", "More bubbles float.", "Bubble magic."],
+  ["{userName} counts stars.", "One two three four.", "Twinkle bright lights.", "Make a wish.", "Night sky pretty."],
+  ["{userName} jumps puddles.", "Splash in water.", "{favoriteColor} boots keep dry.", "Jump jump hop.", "Rainy day fun."],
+  ["{userName} picks apples.", "Red ones hang low.", "Fill up bag full.", "Share with family.", "Apple treats."],
+  ["{userName} makes sandcastles.", "Dig in warm sand.", "{favoriteColor} bucket helps.", "Build up high.", "Beach castle."],
+  ["{userName} catches butterflies.", "Pretty wings flutter.", "Gentle in hands.", "Let them fly free.", "Butterfly friends."],
+  ["{userName} slides down hill.", "Faster and faster.", "{favoriteColor} sled goes zoom.", "Snow flies by.", "Winter fun."],
+  ["{userName} plants seeds.", "Dig small holes.", "Water every day.", "Watch them grow.", "Garden helpers."],
+  ["{userName} makes soup.", "Chop up vegetables.", "Stir in big pot.", "Smells so good.", "Warm soup ready."],
+  ["{userName} builds snowman.", "Roll big snowballs.", "{favoriteColor} hat on top.", "Carrot nose smile.", "Snow friend."],
+  ["{userName} picks flowers.", "Pretty {favoriteColor} petals.", "Make nice bouquet.", "Give to mom.", "Flower love."],
+  ["{userName} rides swing.", "Push feet to sky.", "Higher and higher.", "Feel like flying.", "Swing fun."],
+  ["{userName} makes pancakes.", "Mix batter smooth.", "Pour on hot pan.", "Flip when ready.", "Breakfast yummy."],
+  ["{userName} chases fireflies.", "Blink blink lights.", "Gentle in jar.", "Let them go free.", "Night magic."],
+  ["{userName} rakes leaves.", "Big pile grows.", "Jump in middle.", "Leaves fly everywhere.", "Autumn fun."],
+  ["{userName} feeds ducks.", "Bread crumbs float.", "Ducks swim over.", "Quack quack thanks.", "Pond friends."],
+  ["{userName} makes cookies.", "Mix and stir.", "{favoriteColor} sprinkles on top.", "Bake until done.", "Sweet treats."],
+  ["{userName} climbs tree.", "Branch by branch.", "See far away.", "{favoriteAnimal} visits too.", "Tree adventure."],
+  ["{userName} makes fort.", "Blankets make walls.", "{favoriteColor} pillows inside.", "Secret hideout.", "Fort fun."],
+  ["{userName} catches rain.", "Drops on tongue.", "Cool and fresh.", "Puddles form below.", "Rain dance."],
+  ["{userName} makes pizza.", "Roll dough flat.", "{favoriteFood} on top.", "Cheese melts down.", "Pizza party."],
+  ["{userName} watches clouds.", "Shapes change slow.", "That one looks like {favoriteAnimal}.", "Sky art show.", "Dream time."],
+  ["{userName} makes ice cream.", "Mix and freeze.", "{favoriteColor} flavor best.", "Cold and sweet.", "Summer treat."],
+  ["{userName} builds bridge.", "Sticks across water.", "Ants march over.", "Strong and steady.", "Bridge builder."],
+  ["{userName} makes wind chimes.", "{favoriteColor} shells hang.", "Breeze makes music.", "Tinkle soft sounds.", "Wind songs."]
 ];
 
 export function getLevel0Template(): string[] {
