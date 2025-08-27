@@ -52,52 +52,17 @@ interface UserInfo {
   difficultyLevel?: string;
 }
 
-// Fallback pools - COMPLETE set including missing placeholders
-const FALLBACK_POOLS = {
-  animal: ["cat", "dog", "bird", "rabbit", "duck", "pig", "cow", "horse", "fish", "bear"],
-  animalType: ["owl", "fox", "bear", "deer", "rabbit", "wolf", "eagle", "squirrel"],
-  monsterType: ["dragon", "troll", "giant", "ogre", "goblin", "beast", "wizard", "creature"],
-  food: ["cake", "milk", "eat", "apple", "bread", "water", "pancakes", "cookies", "pizza", "noodles"],
-  setting: ["house", "farm", "school", "park", "bed", "home", "forest", "garden", "classroom", "kitchen", "playground"],
-  object: ["ball", "book", "box", "car", "toy", "tree"],
-  action: ["play", "run", "go", "come", "look", "jump"],
-  adjective: ["big", "little", "good", "funny", "pretty", "new", "brave", "clever", "kind", "happy"],
-  friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo", "Riley", "Taylor", "Jordan", "Casey"],
-  color: ["red", "blue", "yellow", "black", "brown", "white"],
-  forestType: ["magic", "deep", "green", "quiet", "old", "big", "enchanted", "dark", "sunny", "mysterious"],
-  weatherType: ["sunny", "rainy", "cloudy", "windy", "clear", "nice"],
-  placeType: ["park", "forest", "garden", "field", "yard", "beach"]
-} as const;
+// Simple seeded random generator (Linear Congruential Generator)
+function createSeededRandom(seed: number): () => number {
+  let state = seed;
+  return function() {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
 
 function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function cleanup(text: string): string {
-  return text
-    .replace(/\{[^}]+\}/g, "") // strip unresolved tokens
-    .replace(/\s{2,}/g, " ") // collapse multiple spaces
-    .replace(/\s+([,.!?:;])/g, "$1") // remove space before punctuation
-    .replace(/\s+$/, "") // trim trailing spaces
-    .replace(/^\s+/, "") // trim leading spaces
-    .replace(/\.\s*\./g, ".") // remove double periods
-    .replace(/,\s*,/g, ",") // remove double commas
-    .trim();
-}
-
-function firstName(name?: string): string | undefined {
-  if (!name) return undefined;
-  const parts = name.trim().split(/\s+/);
-  return parts[0];
-}
-
-function derivePronoun(userInfo?: UserInfo): string {
-  switch (userInfo?.avatar?.type) {
-    case "boy": return "he";
-    case "girl": return "she";
-    case "prefer-not-to-answer": return "they";
-    default: return "they";
-  }
 }
 
 // Process swappable elements for random variation (Grades 6-10 feature)
@@ -129,22 +94,17 @@ function applyRandomSeedSelection(template: StoryTemplate, userInfo: UserInfo): 
     const userSeed = userInfo.name ? userInfo.name.length : 1;
     const combinedSeed = (seed + userSeed) % 10000;
     
-    // Use combined seed for consistent randomization
-    Math.seedrandom = function(seed: number) {
-      let x = Math.sin(seed) * 10000;
-      return x - Math.floor(x);
-    };
-    
-    const seededRandom = Math.seedrandom(combinedSeed);
+    // Use proper seeded random generator
+    const seededRandom = createSeededRandom(combinedSeed);
     
     // Apply seeded randomization to weather and setting variants
     if (template.reuse.weatherVariants && template.reuse.weatherVariants.length > 0) {
-      const weatherIndex = Math.floor(seededRandom * template.reuse.weatherVariants.length);
+      const weatherIndex = Math.floor(seededRandom() * template.reuse.weatherVariants.length);
       seedData.weather = template.reuse.weatherVariants[weatherIndex];
     }
     
     if (template.reuse.settingVariants && template.reuse.settingVariants.length > 0) {
-      const settingIndex = Math.floor(seededRandom * template.reuse.settingVariants.length);
+      const settingIndex = Math.floor(seededRandom() * template.reuse.settingVariants.length);
       seedData.setting = template.reuse.settingVariants[settingIndex];
     }
   }
@@ -185,11 +145,8 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // Apply sophisticated placeholder resolution
   text = resolveAllPlaceholders(text, microContext);
   
-  // Get pronoun for grammar validation
-  const pronoun = derivePronoun(userInfo);
-  
   // Apply sophisticated grammar validation
-  text = validateAndEnhanceGrammar(text, pronoun);
+  text = validateAndEnhanceGrammar(text, "they");
   
   return text;
 }
@@ -217,11 +174,8 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template
   // Apply sophisticated placeholder resolution
   text = resolveAllPlaceholders(text, microContext);
   
-  // Get pronoun for grammar validation
-  const pronoun = derivePronoun(userInfo);
-  
   // Apply sophisticated grammar validation to ending (PHASE 4 enhancement)
-  text = validateAndEnhanceGrammar(text, pronoun);
+  text = validateAndEnhanceGrammar(text, "they");
   
   return text;
 }
