@@ -3,10 +3,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Import the single source of truth for templates
-// Import new template system files
-import { LEVEL_0_TEMPLATES, getLevel0Template, getLevel0TemplateCount } from '../../src/constants/newFallbackTemplates/level0Templates.ts';
-import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, getVocabularyCompliantLevel0Template, getVocabularyCompliantLevel0TemplateCount } from '../../src/constants/newFallbackTemplates/level0VocabCompliant.ts';
-import { LEVEL_0_EXTENSIONS, getLevel0Extension, getLevel0ExtensionCount } from '../../src/constants/newFallbackTemplates/level0Extensions.ts';
+// Import new template system files from shared directory
+import { LEVEL_0_TEMPLATES, getLevel0Template, getLevel0TemplateCount } from '../_shared/level0Templates.ts';
+import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES, getVocabularyCompliantLevel0Template, getVocabularyCompliantLevel0TemplateCount } from '../_shared/level0VocabCompliant.ts';
+import { LEVEL_0_EXTENSIONS, getLevel0Extension, getLevel0ExtensionCount } from '../_shared/level0Extensions.ts';
 
 // Simple user info interface
 interface UserInfo {
