@@ -5,6 +5,9 @@ import { corsHeaders } from '../_shared/cors.ts';
 // Import the single source of truth for templates
 import { TemplateLibraryService } from '../_shared/TemplateLibraryService.js';
 
+// Import dynamic template system
+import { getTemplate, getTemplateCount } from '../_shared/templateImporter.ts';
+
 // Simple user info interface
 interface UserInfo {
   name?: string;
@@ -108,7 +111,14 @@ serve(async (req) => {
     if (explore) {
       console.log('🔍 Exploration mode for level:', templateLevel);
       
-      const templateCount = TemplateLibraryService.getTemplateCount(templateLevel);
+      let templateCount: number;
+      
+      if (templateLevel === 'Level0') {
+        templateCount = TemplateLibraryService.getTemplateCount(templateLevel);
+      } else {
+        // Use dynamic template count for non-Level0
+        templateCount = await getTemplateCount(templateLevel);
+      }
       
       return new Response(JSON.stringify({
         success: true,
@@ -125,22 +135,50 @@ serve(async (req) => {
       });
     }
 
-    // Get template from single source
-    console.log('📚 Getting template from TemplateLibraryService for level:', templateLevel);
+    // Get template from appropriate source
+    console.log('📚 Getting template for level:', templateLevel);
     
-    let template: string[] | null = null;
+    let pages: string[] | null = null;
     
     if (templateLevel === 'Level0') {
-      template = TemplateLibraryService.getLevel0Template(templateIndex);
+      // Use static Level 0 templates
+      const template = TemplateLibraryService.getLevel0Template(templateIndex);
+      if (template) {
+        console.log('✅ Level0 template found with', template.length, 'pages');
+        // Process with legacy placeholder system for Level0
+        pages = processStoryTemplate(template, userInfo || {}, pageCount);
+      }
     } else {
-      template = TemplateLibraryService.getFallbackTemplate(templateLevel, templateIndex);
+      // Use dynamic import system for Level1+
+      try {
+        console.log('🔄 Loading dynamic template for:', templateLevel);
+        pages = await getTemplate(templateLevel, templateIndex, userInfo || {}, pageCount);
+        
+        if (pages) {
+          console.log('✅ Dynamic template converted to', pages.length, 'pages');
+        }
+      } catch (dynamicError) {
+        console.error('❌ Dynamic template import failed:', dynamicError);
+        
+        // Return structured error for dynamic import failure
+        return new Response(JSON.stringify({
+          error: 'Template system temporarily unavailable',
+          level: templateLevel,
+          canRetry: true,
+          suggestion: 'Please try again in a moment, or try a different difficulty level'
+        }), {
+          status: 503, // Service Temporarily Unavailable
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    if (!template) {
-      console.log('❌ No template found for level:', templateLevel);
+    if (!pages || pages.length === 0) {
+      console.log('❌ No pages generated for level:', templateLevel);
       return new Response(JSON.stringify({
         error: 'No templates available for this difficulty level',
         level: templateLevel,
+        canRetry: false,
         suggestion: 'Try a different difficulty level or check back later'
       }), {
         status: 404,
@@ -148,22 +186,13 @@ serve(async (req) => {
       });
     }
 
-    console.log('✅ Template found with', template.length, 'pages');
-
-    // Process template with user info and grammar validation
-    const processedPages = processStoryTemplate(
-      template,
-      userInfo || {},
-      pageCount
-    );
-
-    console.log('📖 Story generated successfully with', processedPages.length, 'pages');
+    console.log('📖 Story generated successfully with', pages.length, 'pages');
 
     return new Response(JSON.stringify({
       success: true,
-      story: processedPages,
+      pages: pages, // Changed from 'story' to 'pages' for consistency
       level: templateLevel,
-      pageCount: processedPages.length
+      pageCount: pages.length
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -182,7 +211,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      story: emergencyStory,
+      pages: emergencyStory, // Changed from 'story' to 'pages' for consistency
       level: 'emergency',
       pageCount: emergencyStory.length,
       note: 'Emergency fallback story used due to system error'
