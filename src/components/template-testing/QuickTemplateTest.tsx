@@ -3,9 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { StoryResultDisplay } from './StoryResultDisplay';
+import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
 import type { DifficultyLevel } from '@/types';
 
 const DIFFICULTY_OPTIONS: { value: DifficultyLevel; label: string; description: string }[] = [
@@ -26,6 +29,7 @@ const GRADE_OPTIONS = [
 
 export function QuickTemplateTest() {
   const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const [testingMode, setTestingMode] = useState<'testing' | 'real-user'>('testing');
   const { generateStory, isLoading, result, error } = useTemplateService();
 
   const handleTest = async () => {
@@ -46,7 +50,7 @@ export function QuickTemplateTest() {
       difficultyLevel: selectedLevel as DifficultyLevel,
     };
 
-    await generateStory(testUserInfo);
+    await generateStory(testUserInfo, testingMode);
   };
 
   const allOptions = [...DIFFICULTY_OPTIONS, ...GRADE_OPTIONS];
@@ -110,6 +114,28 @@ export function QuickTemplateTest() {
             </Button>
           </div>
 
+          {/* Phase 7: Mode Selection */}
+          <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
+            <Switch
+              id="testing-mode"
+              checked={testingMode === 'real-user'}
+              onCheckedChange={(checked) => setTestingMode(checked ? 'real-user' : 'testing')}
+            />
+            <div className="flex-1">
+              <Label htmlFor="testing-mode" className="text-sm font-medium">
+                {testingMode === 'testing' ? 'Testing Mode' : 'Real User Mode'}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {testingMode === 'testing' 
+                  ? 'Generate complete stories with dynamic page counts for validation' 
+                  : 'Generate single pages for never-ending story simulation'}
+              </p>
+            </div>
+            <Badge variant={testingMode === 'testing' ? 'default' : 'secondary'}>
+              {testingMode === 'testing' ? 'Complete Story' : 'Single Page'}
+            </Badge>
+          </div>
+
           {selectedLevel && (
             <div className="flex items-center gap-2">
               <Badge variant="outline">
@@ -118,6 +144,16 @@ export function QuickTemplateTest() {
               <span className="text-sm text-muted-foreground">
                 {allOptions.find(opt => opt.value === selectedLevel)?.description}
               </span>
+              {testingMode === 'testing' && selectedLevel && (
+                <>
+                  <Badge variant="secondary">
+                    Target: {getTokenLimitForDifficulty(selectedLevel as DifficultyLevel)} tokens
+                  </Badge>
+                  <Badge variant="outline">
+                    {selectedLevel !== 'beginner' ? 'Template density' : 'AI-matched density'}
+                  </Badge>
+                </>
+              )}
             </div>
           )}
         </CardContent>
@@ -134,7 +170,65 @@ export function QuickTemplateTest() {
         </Card>
       )}
 
-      {result && <StoryResultDisplay result={result} />}
+      {result && (
+        <div className="space-y-4">
+          <StoryResultDisplay result={result} />
+          
+          {/* Phase 7: Enhanced Validation Results */}
+          {result.pages && selectedLevel && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Validation Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const validationResult = validatePageTokenDistribution(
+                    result.pages, 
+                    selectedLevel as DifficultyLevel, 
+                    result.metadata?.targetWordDensity === 'Template-optimized' ? 'template' : 'ai'
+                  );
+                  
+                  return (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={validationResult.isValid ? 'default' : 'destructive'}>
+                          {validationResult.isValid ? 'Valid' : 'Invalid'}
+                        </Badge>
+                        <span className="text-sm">
+                          {validationResult.actualTokens} / {validationResult.maxAllowed} tokens
+                          {validationResult.templateMode && ' (Template mode)'}
+                        </span>
+                      </div>
+                      
+                      {validationResult.warnings.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Warnings:</p>
+                          {validationResult.warnings.map((warning, index) => (
+                            <p key={index} className="text-sm text-muted-foreground">• {warning}</p>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Mode:</span>
+                          <span className="ml-2 font-medium">{testingMode}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Scene cycling:</span>
+                          <span className="ml-2 font-medium">
+                            {result.pages.length > 5 ? 'Active' : 'Not needed'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }

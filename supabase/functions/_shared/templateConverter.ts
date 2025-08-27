@@ -172,27 +172,148 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template
 /**
  * Convert a StoryTemplate to a string array with sophisticated processing
  */
+/**
+ * Convert a StoryTemplate to a string array with sophisticated processing (Phase 5: Dual-Mode)
+ */
 export function convertStoryTemplateToStringArray(
   template: StoryTemplate, 
   userInfo: UserInfo = {}, 
-  pageCount: number = 5
+  pageCount: number = 5,
+  mode: string = 'testing'
 ): string[] {
-  console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages`);
+  console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages (${mode} mode)`);
   
   const pages: string[] = [];
   
-  // Process scenes up to pageCount - 1 (save one slot for ending)
-  const scenesToUse = Math.min(pageCount - 1, template.scenes.length);
-  
-  for (let i = 0; i < scenesToUse; i++) {
-    const processedScene = processScene(template.scenes[i], userInfo, template);
-    pages.push(processedScene);
+  if (mode === 'real-user' && pageCount === 1) {
+    // Real user mode: generate single page (Phase 4: Never-ending sustainability)
+    return [getNextTemplatePage(template, userInfo, 0)];
   }
   
-  // Add ending with sophisticated processing (PHASE 4)
+  // Testing mode: generate specific page count (Phase 3: Intelligent Scene Distribution)
+  if (template.scenes.length >= pageCount - 1) {
+    // Enough scenes for direct mapping
+    for (let i = 0; i < pageCount - 1; i++) {
+      const processedScene = processScene(template.scenes[i], userInfo, template);
+      pages.push(processedScene);
+    }
+  } else {
+    // Scene cycling needed: fewer scenes than target pages
+    console.log(`📚 Scene cycling: ${template.scenes.length} scenes for ${pageCount - 1} story pages`);
+    
+    for (let i = 0; i < pageCount - 1; i++) {
+      const sceneIndex = i % template.scenes.length;
+      const cycleNumber = Math.floor(i / template.scenes.length);
+      
+      // Enhanced scene with cycle variation
+      const processedScene = processSceneWithCycleVariation(
+        template.scenes[sceneIndex], 
+        userInfo, 
+        template, 
+        cycleNumber
+      );
+      pages.push(processedScene);
+    }
+  }
+  
+  // Always add ending
   const ending = processEnding(template.endings, userInfo, template);
   pages.push(ending);
   
   console.log(`✅ Template converted to ${pages.length} pages`);
   return pages;
+}
+
+/**
+ * Generate next page for never-ending story mode (Phase 4)
+ */
+export function getNextTemplatePage(
+  template: StoryTemplate, 
+  userInfo: UserInfo = {}, 
+  pageIndex: number = 0
+): string {
+  const sceneIndex = pageIndex % template.scenes.length;
+  const cycleNumber = Math.floor(pageIndex / template.scenes.length);
+  
+  return processSceneWithCycleVariation(
+    template.scenes[sceneIndex], 
+    userInfo, 
+    template, 
+    cycleNumber
+  );
+}
+
+/**
+ * Process scene with cycle variation for sustainability (Phase 3 & 4)
+ */
+function processSceneWithCycleVariation(
+  scene: StoryScene, 
+  userInfo: UserInfo, 
+  template: StoryTemplate, 
+  cycleNumber: number = 0
+): string {
+  // Increase variation probability with cycle number
+  const variationBoost = Math.min(cycleNumber * 0.15, 0.6); // Up to 60% boost
+  const shouldUseAlternative = Math.random() < (0.3 + variationBoost);
+  const shouldAddDetail = Math.random() < (0.4 + variationBoost);
+  
+  let text = shouldUseAlternative && scene.microVariants.alternatives.length > 0
+    ? pick(scene.microVariants.alternatives)
+    : scene.microVariants.text;
+  
+  // Enhanced detail addition with cycle awareness
+  if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
+    // Use cycle number to ensure different details over time
+    const detailIndex = (cycleNumber % scene.microVariants.optionalDetails.length);
+    const detail = scene.microVariants.optionalDetails[detailIndex];
+    
+    text = text.trim().endsWith('.') 
+      ? `${text.slice(0, -1)}, and ${detail}.`
+      : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+  }
+  
+  // Process swappable elements with cycle variation
+  const swappedElements = processSwappableElementsWithCycle(template, userInfo, cycleNumber);
+  const seedData = applyRandomSeedSelection(template, userInfo);
+  
+  // Create enhanced MicroContext with cycle-aware variations
+  const microContext: MicroContext = {
+    userInfo: userInfo,
+    pageText: text,
+    seed: { ...seedData, ...swappedElements, cycleNumber }
+  };
+  
+  // Apply sophisticated placeholder resolution
+  text = resolveAllPlaceholders(text, microContext);
+  
+  // Apply sophisticated grammar validation
+  text = validateAndEnhanceGrammar(text, "they");
+  
+  return text;
+}
+
+/**
+ * Process swappable elements with cycle awareness (Phase 4 enhancement)
+ */
+function processSwappableElementsWithCycle(
+  template: StoryTemplate, 
+  userInfo: UserInfo, 
+  cycleNumber: number = 0
+): Record<string, string> {
+  const swappedElements: Record<string, string> = {};
+  
+  if (template.reuse && template.reuse.swappableElements) {
+    for (const [key, options] of Object.entries(template.reuse.swappableElements)) {
+      if (options && options.length > 0) {
+        // Cycle-aware selection to avoid immediate repetition
+        const baseIndex = Math.floor(Math.random() * options.length);
+        const cycleOffset = cycleNumber % options.length;
+        const finalIndex = (baseIndex + cycleOffset) % options.length;
+        
+        swappedElements[key] = options[finalIndex];
+      }
+    }
+  }
+  
+  return swappedElements;
 }

@@ -115,7 +115,8 @@ export async function getTemplate(
   level: string, 
   templateIndex?: number, 
   userInfo: UserInfo = {}, 
-  pageCount: number = 5
+  pageCount: number = 5,
+  mode: string = 'testing'
 ): Promise<string[] | null> {
   try {
     console.log(`📚 Getting template for ${level}, index: ${templateIndex}`);
@@ -140,8 +141,8 @@ export async function getTemplate(
     
     console.log(`✅ Found template: "${storyTemplate.title}"`);
     
-    // Convert to string array
-    const pages = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount);
+    // Convert to string array with mode support (Phase 5)
+    const pages = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
     
     console.log(`📖 Converted to ${pages.length} pages`);
     return pages;

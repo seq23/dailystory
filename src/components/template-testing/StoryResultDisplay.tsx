@@ -9,6 +9,7 @@ interface StoryResult {
   level?: string;
   templateCount?: number;
   pages?: string[];
+  expectedPages?: number;
   metadata?: {
     sourceSystem: string;
     templateLevel: string;
@@ -16,6 +17,8 @@ interface StoryResult {
     processingTime?: number;
     placeholdersResolved?: number;
     grammarFixesApplied?: number;
+    mode?: string;
+    targetWordDensity?: string;
   };
   error?: string;
 }
@@ -54,10 +57,17 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{pages.length}</div>
+              <div className="text-2xl font-bold text-primary">
+                {pages.length}{result.expectedPages && result.expectedPages !== pages.length && 
+                  <span className="text-sm text-muted-foreground ml-1">/{result.expectedPages}</span>
+                }
+              </div>
               <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                 <FileText className="h-3 w-3" />
                 Pages Generated
+                {result.expectedPages && result.expectedPages !== pages.length && 
+                  <span className="text-xs">(Expected: {result.expectedPages})</span>
+                }
               </div>
             </div>
             
@@ -105,6 +115,12 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
                 )}
                 {metadata.grammarFixesApplied && (
                   <Badge variant="outline">{metadata.grammarFixesApplied} grammar fixes</Badge>
+                )}
+                {metadata.mode && (
+                  <Badge variant="secondary">Mode: {metadata.mode}</Badge>
+                )}
+                {metadata.targetWordDensity && (
+                  <Badge variant="outline">Density: {metadata.targetWordDensity}</Badge>
                 )}
               </div>
             </div>
@@ -154,8 +170,20 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
               <span className="text-muted-foreground">Average words per page:</span>
               <span className="font-medium">
                 {pages.length > 0 ? Math.round(pages.join(' ').split(' ').length / pages.length) : 0}
+                {metadata?.targetWordDensity === 'Template-optimized' && (
+                  <span className="text-xs text-muted-foreground ml-1">(Template density)</span>
+                )}
               </span>
             </div>
+            
+            {result.expectedPages && result.expectedPages !== pages.length && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Page count variance:</span>
+                <span className="font-medium text-accent">
+                  {pages.length - result.expectedPages > 0 ? '+' : ''}{pages.length - result.expectedPages} from expected
+                </span>
+              </div>
+            )}
             
             <div className="flex justify-between">
               <span className="text-muted-foreground">Estimated reading time:</span>

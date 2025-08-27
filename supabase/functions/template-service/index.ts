@@ -12,6 +12,33 @@ import { getTemplate, getTemplateCount } from '../_shared/templateImporter.ts';
 import { resolveAllPlaceholders, MicroContext, UserInfo } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 
+// Token limit configurations for dynamic page counts
+interface TokenLimitConfig {
+  difficulty: string;
+  maxTokens: number;
+  wordsPerToken: number;
+  expectedPages?: number;
+  tokensPerPage?: number;
+}
+
+const TOKEN_LIMITS: Record<string, TokenLimitConfig> = {
+  beginner: { difficulty: 'beginner', maxTokens: 200, wordsPerToken: 0.75, expectedPages: 5, tokensPerPage: 40 },
+  easy: { difficulty: 'easy', maxTokens: 300, wordsPerToken: 0.75, expectedPages: 6, tokensPerPage: 50 },
+  medium: { difficulty: 'medium', maxTokens: 400, wordsPerToken: 0.75, expectedPages: 8, tokensPerPage: 50 },
+  hard: { difficulty: 'hard', maxTokens: 600, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 60 },
+  expert: { difficulty: 'expert', maxTokens: 800, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 65 },
+  grade6: { difficulty: 'grade6', maxTokens: 1200, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 100 },
+  grade7: { difficulty: 'grade7', maxTokens: 1470, wordsPerToken: 0.75, expectedPages: 13, tokensPerPage: 113 },
+  grade8: { difficulty: 'grade8', maxTokens: 1600, wordsPerToken: 0.75, expectedPages: 14, tokensPerPage: 114 },
+  grade9: { difficulty: 'grade9', maxTokens: 1730, wordsPerToken: 0.75, expectedPages: 15, tokensPerPage: 115 },
+  grade10: { difficulty: 'grade10', maxTokens: 1870, wordsPerToken: 0.75, expectedPages: 16, tokensPerPage: 117 }
+};
+
+// Get expected page count for difficulty level
+function getExpectedPageCountForDifficulty(difficulty: string): number {
+  return TOKEN_LIMITS[difficulty]?.expectedPages || 5;
+}
+
 function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount: number = 5): string[] {
   const pages: string[] = [];
 
@@ -44,17 +71,21 @@ serve(async (req) => {
   }
 
   try {
-    const { difficulty, userInfo, pageCount = 5, templateIndex, explore = false } = await req.json();
+    const { difficulty, userInfo, pageCount, templateIndex, explore = false, mode = 'testing' } = await req.json();
     
     // Handle difficulty parameter
     const effectiveDifficulty = difficulty || userInfo?.difficultyLevel;
     
+    // Dynamic page count calculation (Phase 1)
+    const dynamicPageCount = pageCount || getExpectedPageCountForDifficulty(effectiveDifficulty);
+    
     console.log('🎯 Template service request:', { 
       difficulty: effectiveDifficulty, 
-      pageCount, 
+      pageCount: dynamicPageCount, 
       templateIndex, 
       userInfo: userInfo ? 'provided' : 'missing', 
-      explore 
+      explore,
+      mode
     });
 
     // Difficulty mapping
@@ -111,14 +142,14 @@ serve(async (req) => {
       const template = TemplateLibraryService.getLevel0Template(templateIndex);
       if (template) {
         console.log('✅ Level0 template found with', template.length, 'pages');
-        // Process with legacy placeholder system for Level0
-        pages = processStoryTemplate(template, userInfo || {}, pageCount);
+        // Process with legacy placeholder system for Level0 (maintain original word density)
+        pages = processStoryTemplate(template, userInfo || {}, dynamicPageCount);
       }
     } else {
       // Use dynamic import system for Level1+
       try {
         console.log('🔄 Loading dynamic template for:', templateLevel);
-        pages = await getTemplate(templateLevel, templateIndex, userInfo || {}, pageCount);
+        pages = await getTemplate(templateLevel, templateIndex, userInfo || {}, dynamicPageCount, mode);
         
         if (pages) {
           console.log('✅ Dynamic template converted to', pages.length, 'pages');
@@ -156,9 +187,17 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      pages: pages, // Changed from 'story' to 'pages' for consistency
+      pages: pages,
       level: templateLevel,
-      pageCount: pages.length
+      pageCount: pages.length,
+      expectedPages: dynamicPageCount,
+      metadata: {
+        sourceSystem: templateLevel === 'Level0' ? 'Static Templates' : 'Dynamic Templates',
+        templateLevel,
+        selectedTemplate: templateIndex,
+        mode: mode,
+        targetWordDensity: templateLevel === 'Level0' ? 'AI-matched' : 'Template-optimized'
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

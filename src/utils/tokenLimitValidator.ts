@@ -94,6 +94,9 @@ export interface TokenValidationResult {
   maxAllowed: number;
   exceededBy?: number;
   warnings: string[];
+  templateMode?: boolean;
+  expectedPages?: number;
+  actualPages?: number;
 }
 
 export function estimateTokenCount(text: string): number {
@@ -105,7 +108,8 @@ export function estimateTokenCount(text: string): number {
 
 export function validateTokenLimit(
   text: string, 
-  difficulty: DifficultyLevel | ExpertGradeLevel
+  difficulty: DifficultyLevel | ExpertGradeLevel,
+  mode: 'ai' | 'template' = 'ai'
 ): TokenValidationResult {
   const actualTokens = estimateTokenCount(text);
   const config = TOKEN_LIMITS[difficulty as DifficultyLevel] || 
@@ -120,37 +124,53 @@ export function validateTokenLimit(
     };
   }
   
-  const isValid = actualTokens <= config.maxTokens;
+  // Phase 6: Enhanced validation with template vs AI mode detection
+  const isTemplateMode = mode === 'template';
+  const templateMultiplier = isTemplateMode && difficulty !== 'beginner' ? 1.8 : 1.0; // Accept higher density for Level 1+ templates
+  const effectiveMaxTokens = Math.floor(config.maxTokens * templateMultiplier);
+  
+  const isValid = actualTokens <= effectiveMaxTokens;
   const warnings: string[] = [];
   
   if (!isValid) {
     warnings.push(
-      `Text exceeds token limit: ${actualTokens} tokens (max: ${config.maxTokens})`
+      `Text exceeds ${mode} token limit: ${actualTokens} tokens (max: ${effectiveMaxTokens})`
     );
   }
   
-  // Warning if approaching limit (90% or more)
-  if (actualTokens >= config.maxTokens * 0.9 && actualTokens <= config.maxTokens) {
+  // Different warning thresholds for template vs AI mode
+  const warningThreshold = isTemplateMode ? 0.95 : 0.9;
+  if (actualTokens >= effectiveMaxTokens * warningThreshold && actualTokens <= effectiveMaxTokens) {
     warnings.push(
-      `Text is approaching token limit: ${actualTokens}/${config.maxTokens} tokens`
+      `Text is approaching ${mode} token limit: ${actualTokens}/${effectiveMaxTokens} tokens`
+    );
+  }
+  
+  // Template mode specific warnings
+  if (isTemplateMode && difficulty !== 'beginner') {
+    warnings.push(
+      `Template mode: higher word density accepted (${Math.round(templateMultiplier * 100)}% of AI limit)`
     );
   }
   
   return {
     isValid,
     actualTokens,
-    maxAllowed: config.maxTokens,
-    exceededBy: isValid ? undefined : actualTokens - config.maxTokens,
-    warnings
+    maxAllowed: effectiveMaxTokens,
+    exceededBy: isValid ? undefined : actualTokens - effectiveMaxTokens,
+    warnings,
+    templateMode: isTemplateMode,
+    expectedPages: config.expectedPages
   };
 }
 
 export function validatePageTokenDistribution(
   pages: string[], 
-  difficulty: DifficultyLevel | ExpertGradeLevel
+  difficulty: DifficultyLevel | ExpertGradeLevel,
+  mode: 'ai' | 'template' = 'ai'
 ): TokenValidationResult {
   const totalText = pages.join(' ');
-  const totalValidation = validateTokenLimit(totalText, difficulty);
+  const totalValidation = validateTokenLimit(totalText, difficulty, mode);
   
   const config = TOKEN_LIMITS[difficulty as DifficultyLevel] || 
                   EXPERT_TOKEN_LIMITS[difficulty as ExpertGradeLevel];
@@ -175,7 +195,8 @@ export function validatePageTokenDistribution(
   
   return {
     ...totalValidation,
-    warnings
+    warnings,
+    actualPages: pages.length
   };
 }
 

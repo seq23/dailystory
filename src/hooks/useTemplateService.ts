@@ -7,6 +7,7 @@ interface TemplateResult {
   level?: string;
   templateCount?: number;
   pages?: string[];
+  expectedPages?: number;
   metadata?: {
     sourceSystem: string;
     templateLevel: string;
@@ -14,6 +15,8 @@ interface TemplateResult {
     processingTime?: number;
     placeholdersResolved?: number;
     grammarFixesApplied?: number;
+    mode?: string;
+    targetWordDensity?: string;
   };
   error?: string;
 }
@@ -23,7 +26,7 @@ export function useTemplateService() {
   const [result, setResult] = useState<TemplateResult | null>(null);
   const [error, setError] = useState<string>('');
 
-  const generateStory = async (userInfo: Partial<UserInfo>): Promise<TemplateResult> => {
+  const generateStory = async (userInfo: Partial<UserInfo>, mode: string = 'testing'): Promise<TemplateResult> => {
     setIsLoading(true);
     setError('');
     setResult(null);
@@ -32,7 +35,7 @@ export function useTemplateService() {
       console.log('Calling template-service with userInfo:', userInfo);
       
       const { data, error: functionError } = await supabase.functions.invoke('template-service', {
-        body: { userInfo }
+        body: { userInfo, mode }
       });
 
       if (functionError) {
