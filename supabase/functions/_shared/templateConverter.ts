@@ -116,54 +116,9 @@ function applyGrammarFixes(text: string, pronoun: string): string {
   return t;
 }
 
-// Resolve canonical placeholders
-function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
-  const map: Record<string, string> = {
-    userName: firstName(userInfo.name) || userInfo.name || "Child",
-    favoriteColor: userInfo.favoriteColor || pick(FALLBACK_POOLS.color),
-    favoriteAnimal: userInfo.favoriteAnimal || pick(FALLBACK_POOLS.animal),
-    favoriteFood: userInfo.favoriteFood || pick(FALLBACK_POOLS.food),
-    hobbies: userInfo.hobbies || "playing outside",
-    specialRequest: userInfo.specialRequest || "adventure"
-  };
-
-  let out = text;
-  for (const [k, v] of Object.entries(map)) {
-    if (v) {
-      out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
-    }
-  }
-  return out;
-}
-
-// Resolve micro placeholders - COMPLETE set including missing types
-function resolveMicroPlaceholders(text: string, userInfo: UserInfo): string {
-  const pronoun = derivePronoun(userInfo);
-  
-  const mappings: Record<string, string> = {
-    pronoun: pronoun,
-    animal: userInfo.favoriteAnimal || pick(FALLBACK_POOLS.animal),
-    animalType: pick(FALLBACK_POOLS.animalType), // CRITICAL: Missing placeholder causing Level 3+ failures
-    monsterType: pick(FALLBACK_POOLS.monsterType), // CRITICAL: Missing placeholder causing Level 3+ failures
-    food: userInfo.favoriteFood || pick(FALLBACK_POOLS.food),
-    setting: pick(FALLBACK_POOLS.setting),
-    object: pick(FALLBACK_POOLS.object),
-    action: pick(FALLBACK_POOLS.action),
-    adjective: pick(FALLBACK_POOLS.adjective),
-    color: userInfo.favoriteColor || pick(FALLBACK_POOLS.color),
-    friend: pick(FALLBACK_POOLS.friend),
-    forestType: pick(FALLBACK_POOLS.forestType),
-    weatherType: pick(FALLBACK_POOLS.weatherType),
-    placeType: pick(FALLBACK_POOLS.placeType)
-  };
-
-  let out = text;
-  for (const [k, v] of Object.entries(mappings)) {
-    if (v) out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
-  }
-  
-  return applyGrammarFixes(out, pronoun);
-}
+// Import sophisticated placeholder resolver from shared service
+import { resolveAllPlaceholders, MicroContext } from './placeholderResolver.ts';
+import { validateAndEnhanceGrammar } from './grammarValidator.ts';
 
 // Process scene with microVariants
 function processScene(scene: StoryScene, userInfo: UserInfo): string {
