@@ -187,6 +187,126 @@ export const GRADE_8_FALLBACK_TEMPLATES: StoryTemplate[] = [
           alternatives: ["Comprehensive advocacy combines legal support with policy reform and community education initiatives.", "Immigration rights work builds coalitions that amplify immigrant voices in policy advocacy."],
           optionalDetails: ["know-your-rights workshops reach 1,200+ community members annually", "sanctuary policy advocacy prevents 89 deportations in the first year"]
         }
+      },
+      {
+        text: "Chapter 3: Legal Support Network Development\n\n{userName} collaborates with immigration lawyers and legal aid organizations to establish systematic legal support services including document preparation assistance, court accompaniment programs, and referral networks that connect immigrant families with appropriate legal resources. They learn about immigration law complexities while helping to coordinate pro bono legal services and developing community education programs about legal rights and processes. This work teaches {userName} about the intersection of legal advocacy and community organizing while building relationships with lawyers who share commitment to immigrant justice.",
+        pause: true,
+        hook: "How will legal support services strengthen community protection and empowerment for immigrant families?",
+        microVariants: {
+          text: "Chapter 3: Legal Support Network Development\n\n{userName} collaborates with lawyers to establish systematic legal support including document assistance and court accompaniment programs.",
+          alternatives: ["Legal advocacy combines professional services with community education about rights and legal processes."],
+          optionalDetails: [`Legal clinics serve ${Math.floor(Math.random() * 400) + 150} families annually with document preparation and court support.`]
+        }
+      },
+      {
+        text: "Chapter 4: Community Education and Empowerment\n\n{userName} develops comprehensive community education programs that teach immigrant families about their rights, available resources, and strategies for protecting themselves and their communities from immigration enforcement. These programs include know-your-rights trainings, emergency preparedness workshops, and family safety planning sessions that empower immigrants to make informed decisions about their safety and legal options. The educational work also involves training community members to become peer educators and advocates who can support other immigrant families.",
+        pause: true,
+        hook: "What educational strategies will build long-term community capacity for immigrant protection and advocacy?",
+        microVariants: {
+          text: "Chapter 4: Community Education and Empowerment\n\n{userName} develops education programs teaching immigrant families about rights, resources, and protection strategies.",
+          alternatives: ["Community empowerment through education builds capacity for immigrant families to protect themselves and advocate for justice."],
+          optionalDetails: [`Emergency preparedness workshops train ${Math.floor(Math.random() * 300) + 100} families in safety planning and legal protection strategies.`]
+        }
+      },
+      {
+        text: "Chapter 5: Coalition Building and Interfaith Organizing\n\nRecognizing that immigrant rights advocacy requires broad-based support, {userName} helps build coalitions that include faith communities, labor unions, civil rights organizations, and community groups working together for comprehensive immigration reform. They learn about interfaith organizing, labor solidarity, and civil rights advocacy while developing relationships across different communities that share values of human dignity and social justice. The coalition work teaches {userName} about building unity across diverse communities while maintaining focus on immigrant leadership.",
+        pause: true,
+        hook: "How will diverse coalition partnerships strengthen advocacy power for immigration policy reform?",
+        microVariants: {
+          text: "Chapter 5: Coalition Building and Interfaith Organizing\n\n{userName} builds coalitions including faith communities, labor unions, and civil rights organizations for immigration reform.",
+          alternatives: ["Broad-based coalitions create power for policy change while maintaining immigrant community leadership in advocacy efforts."],
+          optionalDetails: [`Coalition includes ${Math.floor(Math.random() * 40) + 20} organizations representing diverse communities united for immigration justice.`]
+        }
+      },
+      {
+        text: "Chapter 6: Policy Advocacy and Legislative Engagement\n\n{userName} works with policy experts to analyze immigration legislation, develop policy proposals, and organize advocacy campaigns that push for comprehensive immigration reform including pathways to citizenship, family reunification, and worker protection. They learn about legislative processes while helping to coordinate constituent meetings, legislative testimony, and public pressure campaigns that influence policy makers. The policy work requires understanding complex immigration law while ensuring that advocacy efforts center immigrant voices and experiences.",
+        pause: true,
+        hook: "What specific policy changes will {userName}'s advocacy work target for comprehensive immigration reform?",
+        microVariants: {
+          text: "Chapter 6: Policy Advocacy and Legislative Engagement\n\n{userName} works with experts to analyze legislation and organize campaigns for comprehensive immigration reform.",
+          alternatives: ["Legislative advocacy combines policy expertise with grassroots organizing to create meaningful immigration policy reform."],
+          optionalDetails: [`Policy advocacy mobilizes ${Math.floor(Math.random() * 2000) + 800} constituents for legislative meetings and testimony sessions.`]
+        }
+      },
+      {
+        text: "Chapter 7: Media Strategy and Public Education\n\n{userName} helps develop media strategies that educate the broader public about immigration issues while humanizing immigration policy through storytelling that centers immigrant experiences and perspectives. They work with journalists, social media advocates, and community storytellers to create compelling narratives that build public support for immigration reform while challenging misinformation and stereotypes about immigrants and immigration policy.",
+        pause: true,
+        hook: "How will media advocacy shape public understanding and support for humane immigration policies?",
+        microVariants: {
+          text: "Chapter 7: Media Strategy and Public Education\n\n{userName} develops media strategies that educate the public about immigration issues through immigrant-centered storytelling.",
+          alternatives: ["Public education campaigns build support for immigration reform while challenging stereotypes through authentic immigrant stories."],
+          optionalDetails: [`Media campaigns reach ${Math.floor(Math.random() * 50000) + 20000} people monthly through diverse communication channels and platforms.`]
+        }
+      },
+      {
+        text: "Chapter 8: Direct Action and Civil Disobedience\n\nWhen legislative advocacy proves insufficient, {userName} works with experienced organizers to plan and coordinate direct action campaigns including protests, civil disobedience, and public demonstrations that pressure policymakers to address immigration injustices. They learn about nonviolent resistance strategies while building relationships with legal observers and community supporters who can provide protection and solidarity during actions.",
+        pause: true,
+        hook: "How will direct action tactics strengthen pressure for immigration policy reform and community protection?",
+        microVariants: {
+          text: "Chapter 8: Direct Action and Civil Disobedience\n\nDirect action campaigns including protests and civil disobedience pressure policymakers to address immigration injustices.",
+          alternatives: ["Nonviolent resistance tactics escalate advocacy pressure while building broader community support for immigration justice."],
+          optionalDetails: [`Direct actions involve ${Math.floor(Math.random() * 1500) + 500} participants across multiple demonstration sites and policy targets.`]
+        }
+      },
+      {
+        text: "Chapter 9: Sanctuary Movement and Local Policy Development\n\n{userName} helps coordinate sanctuary movement organizing that includes advocating for sanctuary city policies, immigrant-friendly local ordinances, and community protection initiatives that provide immediate safety for immigrant families. They work with city council members and local officials while building grassroots pressure for policies that limit cooperation with immigration enforcement and expand access to city services regardless of immigration status.",
+        pause: true,
+        hook: "What local policy victories will create immediate protection and support for immigrant communities?",
+        microVariants: {
+          text: "Chapter 9: Sanctuary Movement and Local Policy Development\n\n{userName} coordinates sanctuary organizing for local policies that provide immediate safety for immigrant families.",
+          alternatives: ["Local sanctuary policies create immediate protection while building models for broader immigration policy reform."],
+          optionalDetails: [`Sanctuary policies protect ${Math.floor(Math.random() * 3000) + 1000} immigrant families from deportation threats and enforcement actions.`]
+        }
+      },
+      {
+        text: "Chapter 10: Economic Justice and Worker Rights Integration\n\n{userName} recognizes that immigration justice requires addressing economic exploitation, so they work with labor organizers to develop campaigns that protect immigrant workers from wage theft, unsafe working conditions, and employer retaliation. They learn about labor rights while helping to coordinate workplace organizing that connects immigration status protection with broader worker justice campaigns.",
+        pause: true,
+        hook: "How will worker rights advocacy strengthen economic security and empowerment for immigrant communities?",
+        microVariants: {
+          text: "Chapter 10: Economic Justice and Worker Rights Integration\n\n{userName} works with labor organizers to protect immigrant workers from exploitation and unsafe conditions.",
+          alternatives: ["Worker rights advocacy connects immigration protection with economic justice for comprehensive community empowerment."],
+          optionalDetails: [`Labor organizing recovers ${Math.floor(Math.random() * 200000) + 100000} dollars in stolen wages while improving workplace safety for immigrant workers.`]
+        }
+      },
+      {
+        text: "Chapter 11: Youth Leadership and Educational Access\n\n{userName} develops programs that support immigrant youth through educational advocacy, leadership development, and peer support networks that address the specific challenges faced by young immigrants including language barriers, cultural adaptation, and educational access. They work with schools and youth organizations to create supportive environments that honor immigrant students' cultural assets while providing academic and social support.",
+        pause: true,
+        hook: "What educational support systems will empower immigrant youth to succeed while maintaining their cultural identity?",
+        microVariants: {
+          text: "Chapter 11: Youth Leadership and Educational Access\n\n{userName} develops programs supporting immigrant youth through educational advocacy and peer support networks.",
+          alternatives: ["Youth leadership development creates educational opportunities while honoring immigrant students' cultural strengths and experiences."],
+          optionalDetails: [`Youth programs serve ${Math.floor(Math.random() * 400) + 200} immigrant students with academic support and cultural affirmation initiatives.`]
+        }
+      },
+      {
+        text: "Chapter 12: Regional Network Building and Movement Development\n\nThe success of local immigration advocacy leads to invitations from regional and national organizations to help establish networks of immigrant rights organizations that can coordinate campaigns, share resources, and support each other's advocacy efforts. {userName} learns about movement building while supporting immigration rights campaigns in other communities and sharing organizing models that can be adapted to different local contexts.",
+        pause: true,
+        hook: "How will regional networking amplify the impact of local immigration rights organizing?",
+        microVariants: {
+          text: "Chapter 12: Regional Network Building and Movement Development\n\nLocal success leads to regional networking opportunities to establish immigrant rights organizations and coordinate campaigns.",
+          alternatives: ["Movement building strategies support immigration rights campaigns while sharing adaptable organizing models across communities."],
+          optionalDetails: [`Regional network includes ${Math.floor(Math.random() * 35) + 15} communities implementing immigrant protection and advocacy programs.`]
+        }
+      },
+      {
+        text: "Chapter 13: Policy Implementation and Community Empowerment\n\nThe sustained organizing pressure leads to significant policy victories including comprehensive immigration reform provisions, local sanctuary policies, and worker protection legislation that creates meaningful improvements in safety, economic security, and legal status for immigrant communities. {userName} learns about policy implementation while working to ensure that policy changes create concrete benefits for affected families and communities.",
+        pause: true,
+        hook: "What concrete improvements will policy victories create for immigrant families and community empowerment?",
+        microVariants: {
+          text: "Chapter 13: Policy Implementation and Community Empowerment\n\nSustained organizing leads to policy victories including immigration reform, sanctuary policies, and worker protection legislation.",
+          alternatives: ["Policy implementation creates concrete improvements in safety, economic security, and legal status for immigrant communities."],
+          optionalDetails: [`Policy victories provide pathways to legal status for ${Math.floor(Math.random() * 8000) + 3000} immigrant families across the metropolitan region.`]
+        }
+      },
+      {
+        text: "Chapter 14: Future Vision and Continuing Commitment\n\nAs {userName} prepares for college and future career paths, they reflect on how immigration rights advocacy has shaped their understanding of human rights, policy advocacy, and community organizing as interconnected approaches to social justice. Their advocacy experience has provided them with legal knowledge, organizing skills, and cross-cultural competencies while demonstrating their commitment to immigrant justice and human rights. The experience guides their choice of academic programs and career paths that will allow them to continue immigration advocacy at larger scales while maintaining accountability to immigrant communities.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 14: Future Vision and Continuing Commitment\n\nImmigration advocacy shaped understanding of human rights, policy advocacy, and organizing as interconnected approaches to justice.",
+          alternatives: ["Future commitment integrates immigration advocacy experience with academic interests and career planning for continued human rights work."],
+          optionalDetails: [`Professional network includes ${Math.floor(Math.random() * 100) + 40} immigration lawyers, policy experts, and community organizers committed to immigrant justice.`]
+        }
       }
     ],
     endings: [
@@ -196,9 +316,28 @@ export const GRADE_8_FALLBACK_TEMPLATES: StoryTemplate[] = [
         microVariants: ["Policy victories create lasting protections for immigrant communities nationwide.", "The advocacy model influences federal immigration policy reform efforts."]
       },
       {
+        type: 'cozy',
+        text: "Final Chapter: The Community Welcome Center\n\nYears later, {userName} walks through the thriving immigrant welcome center where families gather for {favoriteFood} from their home countries while children play with therapy {favoriteAnimal} and learn about their cultural heritage. The {favoriteColor} murals painted by community artists tell stories of resilience and belonging, celebrating the contributions of immigrant families to community strength.",
+        microVariants: [
+          "The welcome center hosts monthly cultural celebrations where three generations share traditions while building new community connections.",
+          "Families find safety and support in the center that {userName} helped establish as a place of dignity and mutual aid."
+        ]
+      },
+      {
+        type: 'silly',
+        text: "Final Chapter: The Immigration Justice Fiesta\n\nWhen the mayor declares an annual Immigration Appreciation Day featuring {userName} as honorary grand marshal riding a {favoriteColor} float shaped like a giant welcome sign, even the local {favoriteAnimal} rescue organization joins the parade by organizing multilingual 'Pets for Peace' demonstrations. The celebration includes a potluck featuring everyone's favorite {favoriteFood} while mariachi bands play immigration justice songs.",
+        microVariants: [
+          "The parade features dancing legislators who had opposed immigration reform but were converted by {userName}'s compelling advocacy and delicious cultural exchange dinners.",
+          "Local businesses sponsor citizenship exam study sessions held in taco trucks while community members celebrate policy victories with synchronized salsa dancing."
+        ]
+      },
+      {
         type: 'reflective',
-        text: "{userName} understands that immigration justice requires long-term commitment to policy advocacy and that meaningful reform must center immigrant voices and experiences.",
-        microVariants: ["Immigration advocacy becomes a lifelong commitment to human rights and social justice.", "The experience teaches the importance of centering affected communities in policy reform work."]
+        text: "Final Chapter: The Quiet Revolution in Welcome\n\n{userName} sits in the peaceful community garden on a soft {favoriteColor} evening, reflecting on how immigration advocacy had taught them that justice means creating communities where everyone can belong and contribute their gifts. The garden grows with plants from many countries, tended by families whose stories of resilience and hope had transformed the entire community's understanding of home and belonging.",
+        microVariants: [
+          "The diverse garden had become a place where cultural traditions flourished alongside new friendships, creating community strength through shared care for both people and plants.",
+          "Silent moments among the international flowers reminded {userName} that immigration justice was ultimately about recognizing the humanity and dignity of all people seeking safety and opportunity."
+        ]
       }
     ],
     reuse: {
@@ -235,18 +374,167 @@ export const GRADE_8_FALLBACK_TEMPLATES: StoryTemplate[] = [
           alternatives: ["Youth leadership creates peer support systems that complement professional mental health services.", "Comprehensive advocacy addresses both individual mental health needs and systemic barriers to treatment."],
           optionalDetails: ["peer support programs reduce crisis interventions by 34% in participating schools", "advocacy efforts double school mental health staffing over two years"]
         }
+      },
+      {
+        text: "Chapter 2: Research and Community Assessment\n\n{userName} conducts comprehensive research into mental health statistics, treatment accessibility, and support systems in their community while learning about evidence-based approaches to mental health promotion and suicide prevention. They collaborate with mental health professionals, school counselors, and peer advocates to understand barriers to mental health care including stigma, cost, language barriers, and cultural disconnection from mainstream mental health services. The research reveals how mental health challenges intersect with issues of trauma, discrimination, academic pressure, and social isolation while identifying gaps in culturally responsive treatment and peer support programs.",
+        pause: true,
+        hook: "What barriers to mental health support will {userName}'s research reveal, and how will community members contribute to solution development?",
+        microVariants: {
+          text: "Chapter 2: Research and Community Assessment\n\n{userName} conducts comprehensive research into mental health statistics and treatment accessibility while learning about evidence-based approaches.",
+          alternatives: ["Community assessment reveals barriers to mental health care including stigma, cost, and cultural disconnection from mainstream services."],
+          optionalDetails: [`Research interviews reach ${Math.floor(Math.random() * 300) + 100} young people about mental health experiences and support needs.`]
+        }
+      },
+      {
+        text: "Chapter 3: Peer Support Network Development\n\n{userName} works with mental health professionals and trained peer counselors to establish peer support networks that provide immediate assistance to students experiencing mental health challenges while creating ongoing communities of mutual support and advocacy. These networks include crisis support protocols, regular support group meetings, and peer education programs that reduce stigma while building mental health literacy throughout the school and community.",
+        pause: true,
+        hook: "How will peer support networks create sustainable mental health assistance while building community mental wellness capacity?",
+        microVariants: {
+          text: "Chapter 3: Peer Support Network Development\n\n{userName} works with professionals to establish peer networks providing immediate assistance and ongoing community support.",
+          alternatives: ["Peer support systems create crisis assistance while building mental health literacy and reducing stigma through student leadership."],
+          optionalDetails: [`Peer support networks train ${Math.floor(Math.random() * 80) + 30} student advocates in mental health first aid and crisis intervention.`]
+        }
+      },
+      {
+        text: "Chapter 4: Policy Advocacy and School System Reform\n\n{userName} advocates for comprehensive mental health policy changes in schools including increased counseling staff, trauma-informed educational practices, and mental health curricula that promote emotional literacy and help-seeking behaviors. They work with school administrators, teachers, and parent organizations to implement policies that prioritize student mental wellness while addressing systemic factors like academic pressure, discipline practices, and school climate that affect student mental health.",
+        pause: true,
+        hook: "What systemic changes in school mental health policy will {userName}'s advocacy achieve for student wellbeing?",
+        microVariants: {
+          text: "Chapter 4: Policy Advocacy and School System Reform\n\n{userName} advocates for school mental health policy changes including increased counseling staff and trauma-informed practices.",
+          alternatives: ["School policy advocacy addresses systemic factors affecting student mental health while implementing comprehensive wellness approaches."],
+          optionalDetails: [`Policy advocacy results in ${Math.floor(Math.random() * 15) + 5} additional counselors and social workers across the school district.`]
+        }
+      },
+      {
+        text: "Chapter 5: Community Mental Health Resource Development\n\nRecognizing that school-based support is insufficient, {userName} helps coordinate community-wide mental health initiatives that include expanding access to culturally responsive therapy, developing crisis intervention services, and creating community spaces where young people can access mental health support in comfortable, non-clinical environments. They work with community health centers, faith organizations, and cultural groups to develop mental health services that honor diverse cultural approaches to emotional wellness.",
+        pause: true,
+        hook: "How will community-based mental health resources complement school services while honoring cultural approaches to wellness?",
+        microVariants: {
+          text: "Chapter 5: Community Mental Health Resource Development\n\n{userName} coordinates community initiatives including culturally responsive therapy and crisis intervention services.",
+          alternatives: ["Community mental health development creates accessible services that honor diverse cultural approaches to emotional wellness and healing."],
+          optionalDetails: [`Community programs provide mental health services in ${Math.floor(Math.random() * 8) + 3} languages with culturally matched therapists and support staff.`]
+        }
+      },
+      {
+        text: "Chapter 6: Anti-Stigma Education and Public Awareness\n\n{userName} develops comprehensive anti-stigma campaigns that educate students, families, and community members about mental health while challenging misconceptions and promoting help-seeking behaviors. These campaigns include storytelling projects, educational workshops, and media initiatives that normalize conversations about mental health while highlighting the importance of professional treatment and peer support for recovery and wellness.",
+        pause: true,
+        hook: "What educational strategies will effectively reduce mental health stigma while promoting community understanding and support?",
+        microVariants: {
+          text: "Chapter 6: Anti-Stigma Education and Public Awareness\n\n{userName} develops anti-stigma campaigns that educate about mental health while challenging misconceptions.",
+          alternatives: ["Public education campaigns normalize mental health conversations while promoting professional treatment and peer support for recovery."],
+          optionalDetails: [`Anti-stigma campaigns reach ${Math.floor(Math.random() * 5000) + 2000} community members through workshops, social media, and storytelling events.`]
+        }
+      },
+      {
+        text: "Chapter 7: Crisis Intervention and Safety Planning\n\n{userName} works with mental health professionals to develop comprehensive crisis intervention protocols that include suicide prevention, safety planning, and emergency response systems that can provide immediate support to students experiencing mental health emergencies. They help establish 24/7 crisis hotlines, emergency support teams, and safety planning resources that connect students with appropriate professional help while maintaining peer support networks.",
+        pause: true,
+        hook: "How will crisis intervention systems provide immediate safety while connecting students to ongoing professional and peer support?",
+        microVariants: {
+          text: "Chapter 7: Crisis Intervention and Safety Planning\n\n{userName} works with professionals to develop crisis protocols including suicide prevention and emergency response systems.",
+          alternatives: ["Crisis intervention systems provide immediate safety support while connecting students to professional help and ongoing peer networks."],
+          optionalDetails: [`Crisis intervention programs prevent ${Math.floor(Math.random() * 25) + 10} suicide attempts while connecting students to ongoing treatment and support.`]
+        }
+      },
+      {
+        text: "Chapter 8: Family and Community Engagement\n\n{userName} recognizes that effective mental health advocacy must include families and community members, so they develop programs that educate parents and caregivers about mental health while providing them with tools for supporting young people experiencing emotional challenges. These programs include family therapy resources, parent education workshops, and community support groups that strengthen family resilience while reducing barriers to treatment.",
+        pause: true,
+        hook: "How will family engagement strengthen community capacity for supporting youth mental health and recovery?",
+        microVariants: {
+          text: "Chapter 8: Family and Community Engagement\n\n{userName} develops programs that educate families about mental health while providing tools for supporting young people.",
+          alternatives: ["Family engagement programs strengthen community support while reducing barriers to mental health treatment and recovery."],
+          optionalDetails: [`Family education programs train ${Math.floor(Math.random() * 200) + 100} parents and caregivers in mental health support and crisis response.`]
+        }
+      },
+      {
+        text: "Chapter 9: Integration with Healthcare Systems\n\n{userName} advocates for better integration between school mental health services and community healthcare systems to ensure that students can access comprehensive mental health care that includes both immediate support and long-term treatment. They work with healthcare providers, insurance companies, and policy makers to reduce barriers to mental health treatment while improving coordination between different service providers.",
+        pause: true,
+        hook: "What healthcare system changes will improve access to comprehensive mental health treatment for young people?",
+        microVariants: {
+          text: "Chapter 9: Integration with Healthcare Systems\n\n{userName} advocates for integration between school services and community healthcare for comprehensive mental health care.",
+          alternatives: ["Healthcare integration reduces treatment barriers while improving coordination between mental health service providers and school support systems."],
+          optionalDetails: [`Healthcare advocacy results in insurance coverage for ${Math.floor(Math.random() * 500) + 200} students previously unable to access mental health treatment.`]
+        }
+      },
+      {
+        text: "Chapter 10: Policy Advocacy and Legislative Engagement\n\n{userName} expands their advocacy to state and national levels, working with mental health organizations to push for comprehensive mental health policy reform including increased funding for school mental health services, improved access to treatment, and anti-discrimination protections for people with mental health conditions. They learn about legislative processes while helping to organize advocacy campaigns that influence policy makers and build public support for mental health funding.",
+        pause: true,
+        hook: "How will policy advocacy create systemic changes in mental health funding and treatment access?",
+        microVariants: {
+          text: "Chapter 10: Policy Advocacy and Legislative Engagement\n\n{userName} expands advocacy to push for mental health policy reform including funding increases and anti-discrimination protections.",
+          alternatives: ["Legislative advocacy creates systemic changes in mental health funding while building public support for comprehensive treatment access."],
+          optionalDetails: [`Policy advocacy secures ${Math.floor(Math.random() * 5000000) + 2000000} dollars in additional mental health funding for schools and community programs.`]
+        }
+      },
+      {
+        text: "Chapter 11: Technology and Innovation Integration\n\n{userName} explores how technology can support mental health advocacy through apps, online support communities, telehealth services, and digital mental health resources that can reach students who might not otherwise access traditional mental health services. They work with technology developers and mental health professionals to ensure that digital resources are evidence-based, culturally responsive, and integrated with professional treatment when appropriate.",
+        pause: true,
+        hook: "How will technology innovations expand access to mental health support while maintaining quality and safety standards?",
+        microVariants: {
+          text: "Chapter 11: Technology and Innovation Integration\n\n{userName} explores technology support through apps, online communities, and telehealth services for expanded access.",
+          alternatives: ["Technology innovations expand mental health access while ensuring digital resources are evidence-based and culturally responsive."],
+          optionalDetails: [`Digital platforms connect ${Math.floor(Math.random() * 2000) + 800} students to mental health resources and peer support networks.`]
+        }
+      },
+      {
+        text: "Chapter 12: Evaluation and Impact Assessment\n\n{userName} works with researchers and program evaluators to systematically assess the impact of their mental health advocacy including measuring changes in help-seeking behaviors, treatment access, stigma reduction, and overall student mental wellness. They learn about program evaluation while ensuring that assessment methods respect student privacy and dignity while providing evidence for the effectiveness of peer-led mental health advocacy approaches.",
+        pause: true,
+        hook: "What measurable improvements in student mental health will demonstrate the effectiveness of {userName}'s advocacy work?",
+        microVariants: {
+          text: "Chapter 12: Evaluation and Impact Assessment\n\n{userName} works with researchers to assess advocacy impact including help-seeking behaviors and treatment access.",
+          alternatives: ["Program evaluation provides evidence for peer-led advocacy effectiveness while respecting student privacy and dignity."],
+          optionalDetails: [`Impact assessment shows ${Math.floor(Math.random() * 40) + 20}% increase in help-seeking behaviors and 60% reduction in mental health stigma.`]
+        }
+      },
+      {
+        text: "Chapter 13: Sustainability and Leadership Development\n\nAs {userName} prepares for college and future career paths, they focus on building sustainable mental health advocacy infrastructure that can continue growing beyond their individual leadership. They establish leadership development programs, peer education curricula, and organizational structures that ensure ongoing mental health advocacy while training the next generation of student mental health advocates and peer supporters.",
+        pause: true,
+        hook: "How will leadership development ensure the sustainability of mental health advocacy beyond {userName}'s individual involvement?",
+        microVariants: {
+          text: "Chapter 13: Sustainability and Leadership Development\n\n{userName} focuses on building sustainable advocacy infrastructure and training future student mental health advocates.",
+          alternatives: ["Leadership development ensures ongoing mental health advocacy while creating organizational structures for sustainable peer support."],
+          optionalDetails: [`Leadership programs train ${Math.floor(Math.random() * 60) + 25} new student mental health advocates annually with comprehensive peer support skills.`]
+        }
+      },
+      {
+        text: "Chapter 14: Future Vision and Professional Commitment\n\nReflecting on their comprehensive mental health advocacy experience, {userName} commits to continuing this work through college and future career paths in mental health, social work, policy, or community organizing. They understand that youth mental health advocacy will require lifelong commitment to addressing systemic factors that affect mental wellness while building community capacity for supporting young people experiencing emotional challenges. Their advocacy experience has provided them with both professional skills and personal understanding that will guide their continued work for mental health justice and wellness equity.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 14: Future Vision and Professional Commitment\n\nMental health advocacy shaped understanding of systemic wellness factors and community support approaches for lifelong commitment.",
+          alternatives: ["Professional commitment integrates advocacy experience with career planning for continued mental health justice and wellness equity work."],
+          optionalDetails: [`Professional network includes ${Math.floor(Math.random() * 80) + 40} mental health advocates, researchers, and policy experts committed to youth wellness.`]
+        }
       }
     ],
     endings: [
       {
         type: 'triumphant',
-        text: "{userName}'s mental health advocacy leads to policy changes that increase school mental health resources and establish youth mental health as a public health priority.",
-        microVariants: ["Advocacy achievements create lasting improvements in youth mental health support systems.", "The network model influences statewide youth mental health policy and programming."]
+        text: "{userName}'s mental health advocacy leads to comprehensive policy changes and expanded treatment access that improves mental wellness support for young people across their region and beyond.",
+        microVariants: ["Advocacy achievements create lasting improvements in youth mental health support and treatment accessibility.", "Policy victories establish models for comprehensive mental health advocacy that influence state and national reforms."]
+      },
+      {
+        type: 'cozy',
+        text: "Final Chapter: The Wellness Community Garden\n\nYears later, {userName} visits the peaceful mental wellness center where young people gather for group activities, art therapy sessions, and peer support meetings surrounded by {favoriteColor} healing gardens tended by therapy {favoriteAnimal}. The center serves {favoriteFood} from cultures around the world while students share stories of recovery, resilience, and mutual support in a space designed for emotional safety and healing.",
+        microVariants: [
+          "The wellness center hosts monthly celebration gatherings where families and communities honor mental health recovery while reducing stigma through shared stories of hope.",
+          "Quiet garden spaces provide refuge for reflection and healing while group areas foster connection and peer support among students from diverse backgrounds."
+        ]
+      },
+      {
+        type: 'silly',
+        text: "Final Chapter: The Mental Health Superhero Celebration\n\nWhen the school district declares {userName} the official 'Wellness Warrior' and organizes a parade featuring a giant {favoriteColor} float shaped like a smiling brain, even the therapy {favoriteAnimal} march in formation wearing tiny superhero capes. The celebration includes a feast of mood-boosting {favoriteFood} while the marching band plays uplifting mental health awareness songs composed by students.",
+        microVariants: [
+          "The superhero costume includes a cape that changes colors based on emotional states and boots that leave footprints shaped like encouraging messages.",
+          "Local mental health organizations sponsor a synchronized happiness dance performed by counselors, students, and community members while therapy animals provide comic relief."
+        ]
       },
       {
         type: 'reflective',
-        text: "{userName} understands that mental health advocacy requires ongoing attention to both individual support and systemic change to address root causes.",
-        microVariants: ["Mental health advocacy becomes a foundation for lifelong commitment to community wellness and healthcare justice.", "The experience teaches the importance of peer support and community-based approaches to mental health."]
+        text: "Final Chapter: The Quiet Revolution in Wellness\n\n{userName} sits in the peaceful counseling center on a calm {favoriteColor} afternoon, reflecting on how mental health advocacy had taught them that healing happens through authentic connection, community support, and courage to seek help when needed. The center's gentle atmosphere reminded them that mental wellness is a community responsibility that requires both individual courage and collective care.",
+        microVariants: [
+          "The wellness space had become a place where students learned that seeking help was a sign of strength while building skills for supporting themselves and others through emotional challenges.",
+          "Silent moments in the healing garden reminded {userName} that mental health advocacy was ultimately about creating communities where everyone could access the emotional support needed to thrive."
+        ]
       }
     ],
     reuse: {

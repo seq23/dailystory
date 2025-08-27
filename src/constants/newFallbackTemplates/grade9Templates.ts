@@ -139,14 +139,134 @@ export const GRADE_9_FALLBACK_TEMPLATES: StoryTemplate[] = [
           alternatives: ["Advocacy work helps reshape societal understanding of technology issues as civil rights issues.", "Digital privacy organizing influences policy, research, and movement building approaches nationwide."],
           optionalDetails: ["digital rights frameworks are integrated into federal technology policy", "community-based advocacy methods become standard in technology policy development"]
         }
+      },
+      {
+        text: "Chapter 10: Advanced Privacy Technologies and Security Tools\n\n{userName} develops technical expertise in privacy-enhancing technologies including secure communication tools, encryption software, and privacy-focused alternatives to mainstream platforms while teaching community members how to use these tools effectively. They work with technology experts and security researchers to understand emerging surveillance technologies and develop community-based responses that combine technical countermeasures with policy advocacy and legal challenges to protect digital rights and privacy.",
+        pause: true,
+        hook: "How will advanced privacy technologies empower communities to protect themselves while building broader digital rights movements?",
+        microVariants: {
+          text: "Chapter 10: Advanced Privacy Technologies and Security Tools\n\n{userName} develops expertise in privacy technologies while teaching community members to use secure communication and encryption tools.",
+          alternatives: ["Technical training empowers communities with privacy tools while building capacity for digital self-defense and rights protection."],
+          optionalDetails: [`Technical workshops train ${Math.floor(Math.random() * 400) + 200} community members in advanced privacy and security technologies.`]
+        }
+      },
+      {
+        text: "Chapter 11: International Digital Rights Collaboration\n\nRecognizing that digital surveillance is a global issue, {userName} connects with international digital rights organizations to share strategies, coordinate campaigns, and learn from privacy advocates in other countries who face different surveillance threats and policy contexts. This international work teaches them about the global nature of digital surveillance while building solidarity networks that can challenge surveillance technologies and policies at international scales.",
+        pause: true,
+        hook: "How will international collaboration strengthen digital privacy advocacy while addressing global surveillance challenges?",
+        microVariants: {
+          text: "Chapter 11: International Digital Rights Collaboration\n\n{userName} connects with international organizations to share strategies and coordinate global digital rights campaigns.",
+          alternatives: ["Global collaboration builds solidarity networks to challenge surveillance technologies and policies at international scales."],
+          optionalDetails: [`International network includes digital rights advocates from ${Math.floor(Math.random() * 30) + 15} countries working on surveillance accountability.`]
+        }
+      },
+      {
+        text: "Chapter 12: Corporate Accountability and Technology Justice\n\n{userName} expands their advocacy to focus on corporate accountability for technology companies that profit from surveillance and data collection while developing campaigns that demand corporate responsibility for privacy protection and algorithmic fairness. They work with consumer advocates and corporate accountability organizations to challenge business models based on surveillance capitalism while promoting technology development that prioritizes user privacy and community benefit over profit maximization.",
+        pause: true,
+        hook: "What corporate accountability measures will {userName}'s advocacy achieve for technology justice and user protection?",
+        microVariants: {
+          text: "Chapter 12: Corporate Accountability and Technology Justice\n\n{userName} expands advocacy to focus on corporate responsibility for privacy protection and algorithmic fairness.",
+          alternatives: ["Corporate accountability campaigns challenge surveillance capitalism while promoting technology development that prioritizes user privacy over profit."],
+          optionalDetails: [`Accountability campaigns result in ${Math.floor(Math.random() * 500000000) + 200000000} dollar fines for privacy violations and algorithmic discrimination.`]
+        }
+      },
+      {
+        text: "Chapter 13: Educational Innovation and Digital Literacy\n\n{userName} works with educators and curriculum developers to integrate digital privacy education into school programs while creating educational resources that teach critical media literacy, algorithmic awareness, and digital citizenship skills. These educational initiatives help young people understand how technology affects their lives while providing practical skills for protecting their privacy and advocating for digital rights throughout their educational and professional development.",
+        pause: true,
+        hook: "How will digital literacy education create the next generation of privacy advocates and informed technology users?",
+        microVariants: {
+          text: "Chapter 13: Educational Innovation and Digital Literacy\n\n{userName} works with educators to integrate privacy education and critical media literacy into school curricula.",
+          alternatives: ["Educational innovation creates digital citizenship skills while preparing students to advocate for digital rights throughout their lives."],
+          optionalDetails: [`Digital literacy programs reach ${Math.floor(Math.random() * 25000) + 10000} students across multiple school districts and educational institutions.`]
+        }
+      },
+      {
+        text: "Chapter 14: Long-term Impact and Systemic Change\n\nReflecting on their comprehensive digital privacy advocacy, {userName} documents the concrete policy victories, technological innovations, and community empowerment achievements their work has created while continuing to adapt their strategies to address emerging surveillance threats and technological developments. They understand that digital privacy advocacy will require ongoing vigilance and community organizing as technology continues evolving and new surveillance capabilities emerge.",
+        pause: true,
+        hook: "What lasting changes in digital rights protection will {userName}'s advocacy create for future generations?",
+        microVariants: {
+          text: "Chapter 14: Long-term Impact and Systemic Change\n\n{userName} documents policy victories and community empowerment while adapting strategies to address emerging surveillance threats.",
+          alternatives: ["Systemic change in digital rights protection requires ongoing vigilance as technology evolves and new surveillance capabilities emerge."],
+          optionalDetails: [`Advocacy achievements establish digital privacy protections for ${Math.floor(Math.random() * 10000000) + 5000000} people across multiple jurisdictions and policy frameworks.`]
+        }
+      },
+      {
+        text: "Chapter 15: Future Vision and Technological Democracy\n\nAs {userName} prepares for college and future career paths in technology, law, policy, or community organizing, they reflect on how digital privacy advocacy has shaped their understanding of technology as a site of political struggle requiring community input, democratic oversight, and social justice analysis. Their advocacy experience has provided them with both technical skills and organizing experience that will guide their continued work for technological democracy, digital rights, and community empowerment in an increasingly digital world.",
+        pause: false,
+        hook: "",
+        microVariants: {
+          text: "Chapter 15: Future Vision and Technological Democracy\n\nDigital privacy advocacy shaped understanding of technology as political struggle requiring community input and democratic oversight.",
+          alternatives: ["Future commitment integrates technical skills with organizing experience for technological democracy and digital rights in an increasingly digital world."],
+          optionalDetails: [`Professional network includes ${Math.floor(Math.random() * 150) + 75} technologists, lawyers, and organizers committed to digital rights and community empowerment.`]
+        }
       }
     ],
     endings: [
       {
-        type: 'cozy',
-        text: "{userName} establishes a community digital privacy café where neighbors gather to learn secure communication over {favoriteFood} while sharing stories and building the warm relationships that make strong communities resistant to surveillance.",
-        microVariants: ["The privacy café becomes a neighborhood hub where digital security knowledge spreads through friendship.", "Over shared meals and secure conversations, {userName} helps build community resilience against digital surveillance."]
+        type: 'triumphant',
+        text: "Final Chapter: The Digital Rights Revolution\n\n{userName} addresses the International Conference on Digital Rights as the youngest keynote speaker, presenting comprehensive privacy protection frameworks that become the foundation for global digital rights legislation and community-controlled technology development.",
+        microVariants: [
+          "Their digital privacy network had established comprehensive legal protections for personal data while creating technological infrastructure for community-controlled digital platforms and services."
+        ]
       },
+      {
+        type: 'cozy',
+        text: "Final Chapter: The Community Technology Center\n\nYears later, {userName} visits the thriving community technology center where families learn digital skills together while children play educational games on privacy-protected devices. The {favoriteColor} server room hums quietly with community-owned technology while {favoriteAnimal} therapy visits help people feel comfortable learning about digital security over shared meals of {favoriteFood} from the center's community kitchen.",
+        microVariants: [
+          "The technology center hosts monthly digital literacy celebrations where three generations share knowledge about both technology and privacy while building community connections.",
+          "Families find empowerment through digital skills training that honors both technological innovation and community values of mutual care and protection."
+        ]
+      },
+      {
+        type: 'silly',
+        text: "Final Chapter: The Privacy Superhero Festival\n\nWhen the city declares {userName} the official 'Digital Privacy Defender' and organizes a parade featuring a giant {favoriteColor} float shaped like a secure smartphone, even the local {favoriteAnimal} join the celebration by wearing tiny encrypted message collars. The festivities include a potluck of {favoriteFood} while tech companies sponsor fun 'Encrypt Your Snacks' booths where people learn about data protection through interactive cooking demonstrations.",
+        microVariants: [
+          "The superhero costume includes a cape made from recycled circuit boards and boots that generate secure passwords with every step taken.",
+          "Local privacy organizations celebrate with a synchronized dance performed around giant inflatable smartphones while encryption algorithms provide the rhythm track."
+        ]
+      },
+      {
+        type: 'reflective',
+        text: "Final Chapter: The Quiet Revolution in Digital Democracy\n\n{userName} sits in the peaceful community garden on a soft {favoriteColor} evening, reflecting on how digital privacy advocacy had taught them that technology could serve community empowerment when developed with democratic oversight and social justice principles. The garden's solar-powered, privacy-protected WiFi network reminded them that technological innovation was ultimately about creating digital infrastructure that strengthened rather than undermined community connections and individual autonomy.",
+        microVariants: [
+          "The community-controlled technology had become nearly invisible infrastructure that supported both digital connection and real-world relationships while protecting everyone's privacy and dignity.",
+          "Silent moments among the flowers reminded {userName} that digital privacy was ultimately about ensuring technology served human flourishing rather than surveillance and control."
+        ]
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "Final Chapter: The Digital Rights Revolution\n\n{userName} addresses the International Conference on Digital Rights as the youngest keynote speaker, presenting comprehensive privacy protection frameworks that become the foundation for global digital rights legislation and community-controlled technology development.",
+        microVariants: [
+          "Their digital privacy network had established comprehensive legal protections for personal data while creating technological infrastructure for community-controlled digital platforms and services."
+        ]
+      },
+      {
+        type: 'cozy',
+        text: "Final Chapter: The Community Technology Center\n\nYears later, {userName} visits the thriving community technology center where families learn digital skills together while children play educational games on privacy-protected devices. The {favoriteColor} server room hums quietly with community-owned technology while {favoriteAnimal} therapy visits help people feel comfortable learning about digital security over shared meals of {favoriteFood} from the center's community kitchen.",
+        microVariants: [
+          "The technology center hosts monthly digital literacy celebrations where three generations share knowledge about both technology and privacy while building community connections.",
+          "Families find empowerment through digital skills training that honors both technological innovation and community values of mutual care and protection."
+        ]
+      },
+      {
+        type: 'silly',
+        text: "Final Chapter: The Privacy Superhero Festival\n\nWhen the city declares {userName} the official 'Digital Privacy Defender' and organizes a parade featuring a giant {favoriteColor} float shaped like a secure smartphone, even the local {favoriteAnimal} join the celebration by wearing tiny encrypted message collars. The festivities include a potluck of {favoriteFood} while tech companies sponsor fun 'Encrypt Your Snacks' booths where people learn about data protection through interactive cooking demonstrations.",
+        microVariants: [
+          "The superhero costume includes a cape made from recycled circuit boards and boots that generate secure passwords with every step taken.",
+          "Local privacy organizations celebrate with a synchronized dance performed around giant inflatable smartphones while encryption algorithms provide the rhythm track."
+        ]
+      },
+      {
+        type: 'reflective',
+        text: "Final Chapter: The Quiet Revolution in Digital Democracy\n\n{userName} sits in the peaceful community garden on a soft {favoriteColor} evening, reflecting on how digital privacy advocacy had taught them that technology could serve community empowerment when developed with democratic oversight and social justice principles. The garden's solar-powered, privacy-protected WiFi network reminded them that technological innovation was ultimately about creating digital infrastructure that strengthened rather than undermined community connections and individual autonomy.",
+        microVariants: [
+          "The community-controlled technology had become nearly invisible infrastructure that supported both digital connection and real-world relationships while protecting everyone's privacy and dignity.",
+          "Silent moments among the flowers reminded {userName} that digital privacy was ultimately about ensuring technology served human flourishing rather than surveillance and control."
+        ]
+      }
+    ],
       {
         type: 'silly',
         text: "During the big digital privacy presentation, {userName} discovers that their super-secure encryption demonstration has somehow turned all the presentation slides into pictures of {favoriteAnimal}s wearing tiny privacy masks, making it the most adorably educational cybersecurity lesson ever!",
