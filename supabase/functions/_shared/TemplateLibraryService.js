@@ -350,36 +350,133 @@ export const GRADE_6_FALLBACK_TEMPLATES = [
 
 export const GRADE_7_FALLBACK_TEMPLATES = [
   {
-    title: "The Climate Action Revolution: A Student's Journey to Global Impact", 
-    theme: "Environmental Leadership & Social Change",
+    title: "The Cultural Heritage Research Project",
+    theme: "Identity & Cultural Understanding",
     level: "Grade 7",
     scenes: [
       {
-        text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious, but their perspective on climate action fundamentally shifted during a seventh-grade environmental science unit. The {favoriteColor} algae blooms in their regional watershed weren't just natural phenomena, but consequences of agricultural runoff disrupting ecological balance.",
+        text: "{userName} stared at the family assignment sheet with a mix of curiosity and uncertainty - create a presentation about their cultural heritage and family immigration story. While some classmates immediately knew which countries to research and which traditions to highlight, {userName} realized their family history was more complicated, involving multiple generations, adopted relatives, and cultural influences that didn't fit neatly into the assignment's apparent expectations of a single, clear heritage narrative.",
         pause: true,
-        hook: "What environmental crisis will motivate {userName} to become an activist leader?",
+        hook: "How will {userName} navigate the complexity of modern family identity?",
         microVariants: {
-          text: "{userName} had always considered themselves environmentally conscious, but their perspective shifted.",
-          alternatives: ["{userName} had previously maintained adequate environmental awareness."],
-          optionalDetails: ["Local water quality had declined 40% in five years."]
+          text: "{userName} faced a challenging assignment about cultural heritage that revealed the complex nature of their modern, multi-faceted family identity and the assumptions embedded in traditional heritage projects.",
+          alternatives: [
+            "The cultural heritage project assignment made {userName} confront questions about identity, belonging, and the diverse ways that families and cultures intersect in contemporary society."
+          ],
+          optionalDetails: ["Some students excitedly discussed obvious heritage connections.", "The assignment guidelines seemed to assume simpler family narratives.", "Questions about identity felt suddenly more complex than expected."]
+        }
+      },
+      {
+        text: "Through interviews with family members, {userName} discovered that their grandmother had been adopted as a child, their grandfather's family included multiple ethnic backgrounds, and their parents had consciously created new family traditions that blended influences from their travels, friendships, and personal values rather than following any single cultural template - leading {userName} to realize that heritage isn't just about ancestry, but about the meaningful traditions and values that families actively choose to embrace and pass forward.",
+        pause: true,
+        hook: "What unique family story will {userName} share with their classmates?",
+        microVariants: {
+          text: "Family interviews revealed that {userName}'s heritage included adoption, multiple ethnicities, and consciously created traditions, teaching them that cultural identity involves both inherited and chosen elements.",
+          alternatives: [
+            "Research into their family history helped {userName} understand that modern heritage encompasses both traditional ancestry and the new customs that families deliberately create and maintain."
+          ],
+          optionalDetails: ["Old photo albums told stories of diverse family members.", "Grandparents shared memories of adapting to new places and customs.", "Parents explained how they'd intentionally built inclusive family traditions."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'reflective',
+        text: "Standing before their classmates with a presentation that celebrated their family's unique blend of adopted members, multiple ethnic influences, and consciously created traditions, {userName} felt a deep sense of pride in their complex heritage story. 'I learned that families don't have to fit traditional patterns to be meaningful,' they concluded thoughtfully. 'Our heritage includes both what we inherit and what we choose to create, and both parts are equally valid and important in shaping who we become.'",
+        microVariants: [
+          "Presenting their complex family heritage story, {userName} gained confidence in the validity of non-traditional family narratives and the beauty of consciously created cultural traditions."
+        ]
+      },
+      {
+        type: 'triumphant',
+        text: "The presentation sparked meaningful discussions throughout the school about different types of families and heritage stories, leading {userName} and several classmates to propose a 'Modern Families' club where students could explore and celebrate the diverse ways that contemporary families create identity, belonging, and cultural meaning beyond traditional ancestry-based definitions.",
+        microVariants: [
+          "{userName}'s presentation inspired schoolwide conversations about family diversity and led to the creation of a club celebrating various forms of modern family identity and belonging."
+        ]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "family_types": ["blended families", "adoptive families", "multi-ethnic families", "families of choice"],
+        "traditions": ["holiday celebrations", "food customs", "storytelling practices", "value systems"],
+        "heritage_elements": ["ancestral connections", "chosen traditions", "community influences", "personal values"]
+      },
+      weatherVariants: ["research phase", "interview sessions", "presentation day"],
+      settingVariants: ["classroom", "family home", "community center", "school library"]
+    }
+  },
+  {
+    title: "The Digital Citizenship Dilemma",
+    theme: "Ethics & Technology",
+    level: "Grade 7",
+    scenes: [
+      {
+        text: "{userName} witnessed something troubling during lunch when a group of students used social media to spread a false rumor about a classmate, watching as the story grew more exaggerated with each share and seeing how quickly online drama could impact someone's real-life friendships and emotional well-being, forcing {userName} to grapple with questions about bystander responsibility, digital ethics, and the power that young people wield when they participate in or stay silent about online behavior.",
+        pause: true,
+        hook: "What action will {userName} take regarding the harmful social media situation?",
+        microVariants: {
+          text: "{userName} witnessed harmful social media behavior targeting a classmate, confronting difficult questions about digital responsibility and the real-world impact of online actions.",
+          alternatives: [
+            "Observing how false rumors spread rapidly through social media and damaged a peer's reputation, {userName} faced challenging decisions about intervention and digital citizenship."
+          ],
+          optionalDetails: ["The rumors seemed to multiply exponentially online.", "The targeted student appeared increasingly isolated at school.", "Friends were choosing sides based on incomplete information."]
         }
       }
     ],
     endings: [
       {
         type: 'triumphant',
-        text: "Five years later, {userName} stood before the United Nations Youth Climate Summit as the youngest keynote speaker in history.",
-        microVariants: ["Their climate action network had prevented millions of tons of CO2 emissions."]
+        text: "By courageously speaking up and helping to organize a school-wide digital citizenship workshop, {userName} not only helped clear their classmate's reputation but also sparked important conversations about online responsibility that led to new school policies supporting both digital wellness and restorative justice approaches to technology-related conflicts.",
+        microVariants: [
+          "{userName}'s intervention in the digital bullying situation led to positive school policy changes and enhanced awareness about responsible technology use among students."
+        ]
       }
     ],
     reuse: {
       swappableElements: {
-        "environmental_issues": ["water pollution", "air quality", "soil degradation"],
-        "organizing_strategies": ["community meetings", "policy advocacy", "direct action"]
+        "digital_platforms": ["social media apps", "messaging groups", "online forums", "video platforms"],
+        "ethical_dilemmas": ["cyberbullying intervention", "false information sharing", "privacy violations", "digital harassment"],
+        "solutions": ["peer mediation", "adult intervention", "education programs", "policy changes"]
       },
-      weatherVariants: ["during environmental research", "throughout organizing campaigns"],
-      settingVariants: ["community watershed", "school environmental lab"],
-      randomSeed: Math.floor(Math.random() * 10000)
+      weatherVariants: ["lunch period", "after school", "weekend online activity"],
+      settingVariants: ["school cafeteria", "computer lab", "guidance counselor office", "peer mediation room"]
+    }
+  },
+  {
+    title: "The Mental Health Awareness Campaign",
+    theme: "Peer Support & Emotional Wellness",
+    level: "Grade 7",
+    scenes: [
+      {
+        text: "{userName} noticed that several classmates had become increasingly withdrawn and anxious during the school year, but when they tried to talk to friends about mental health, they realized that most students lacked the vocabulary and knowledge to discuss emotional wellness openly. After learning that suicide rates among teenagers had increased dramatically and that many young people felt isolated in their struggles, {userName} decided to research how schools could better support student mental health through peer education and destigmatization efforts.",
+        pause: true,
+        hook: "How can {userName} create effective mental health support among their peers?",
+        microVariants: {
+          text: "{userName} observed classmates struggling with mental health but lacking tools for open discussion, inspiring research into peer-based emotional wellness support systems.",
+          alternatives: [
+            "Recognizing emotional struggles among peers and inadequate mental health discourse, {userName} began developing student-centered wellness education approaches."
+          ],
+          optionalDetails: ["Guidance counselors had long waiting lists for appointments.", "Students often masked their feelings with humor or silence.", "Social media amplified both connection and comparison pressures."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "Six months later, {userName} sat in the newly designated 'Wellness Corner' of the library, surrounded by comfortable chairs and soft lighting, watching as students naturally gravitated toward this peaceful space during stressful moments. The gentle hum of quiet conversation and the sight of peers supporting each other created an atmosphere of healing and hope. 'Sometimes the most powerful medicine is simply knowing you're not alone,' {userName} reflected as they witnessed authentic friendships forming through shared vulnerability.",
+        microVariants: [
+          "In the peaceful Wellness Corner, {userName} found satisfaction watching peers support each other, realizing that connection and understanding were powerful healing forces."
+        ]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "mental_health_challenges": ["anxiety disorders", "depression", "eating disorders", "social isolation", "academic pressure"],
+        "support_strategies": ["peer listening", "stress management", "mindfulness practice", "crisis intervention", "resource connection"],
+        "wellness_activities": ["meditation sessions", "art therapy", "journaling workshops", "exercise programs", "support groups"]
+      },
+      weatherVariants: ["stressful exam period", "transitional school season", "winter wellness focus", "spring renewal activities"],
+      settingVariants: ["school counseling office", "peer support room", "wellness corner", "community mental health center"]
     }
   }
 ];
@@ -422,72 +519,390 @@ export const GRADE_8_FALLBACK_TEMPLATES = [
 
 export const GRADE_9_FALLBACK_TEMPLATES = [
   {
-    title: "The Mental Health Advocacy Campaign",
-    theme: "Mental Health Awareness & Support",
-    level: "Grade 9", 
+    title: "The Mental Health Advocacy Initiative", 
+    theme: "Health & Wellness Advocacy",
+    level: "Grade 9",
     scenes: [
       {
-        text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma and lack of resources prevent students from accessing mental health support. They discover the extent to which untreated mental health conditions affect academic performance and overall wellbeing.",
+        text: "{userName} had always been aware that many of their peers struggled with anxiety, depression, and other mental health challenges, but it wasn't until they researched statistics showing that over 40% of high school students experienced persistent sadness and that suicide was the second leading cause of death among teenagers that they fully grasped the scope of the mental health crisis affecting their generation - and realized that their school's current approach of occasional assemblies and outdated guidance counselor resources was woefully inadequate for addressing such widespread and serious needs.",
         pause: true,
-        hook: "What comprehensive mental health advocacy strategy will {userName} develop?",
+        hook: "How will {userName} advocate for better mental health resources and support systems?",
         microVariants: {
-          text: "{userName} becomes deeply concerned about mental health challenges in their community.",
-          alternatives: ["Mental health research exposes systemic barriers preventing students from accessing support."],
-          optionalDetails: ["73% of students report needing mental health support but only 23% receive adequate care"]
+          text: "{userName} researched alarming mental health statistics affecting teenagers and recognized the inadequacy of their school's current support systems for addressing widespread psychological challenges.",
+          alternatives: [
+            "Discovering that mental health crises affected nearly half of their peers, {userName} realized their school's limited counseling resources were insufficient for the scope of student psychological needs."
+          ],
+          optionalDetails: ["Crisis helpline numbers were outdated on school posters.", "Students often waited weeks for counseling appointments.", "Many peers felt stigmatized seeking mental health support."]
+        }
+      },
+      {
+        text: "Working with school psychologists, peer counselors, and community mental health professionals, {userName} developed a comprehensive proposal for improved mental health support that included peer support groups, mental health literacy education integrated into health class curriculum, expanded counseling staff, mindfulness and stress management workshops, and protocols for identifying and supporting students in crisis - recognizing that effective mental health advocacy required both immediate support resources and long-term cultural change to reduce stigma and normalize help-seeking behavior.",
+        pause: true,
+        hook: "What impact will {userName}'s mental health advocacy efforts have on their school community?",
+        microVariants: {
+          text: "Collaborating with mental health professionals, {userName} developed comprehensive proposals for expanded support services, educational programs, and cultural changes to normalize mental health care in schools.",
+          alternatives: [
+            "Through partnerships with counselors and community professionals, {userName} created detailed plans for systemic mental health improvements including education, support services, and stigma reduction."
+          ],
+          optionalDetails: ["Professional consultations provided evidence-based recommendations.", "Student surveys revealed specific unmet needs.", "Parent meetings addressed community concerns about mental health resources."]
         }
       }
     ],
     endings: [
       {
         type: 'triumphant',
-        text: "Five years later, Dr. {userName} addressed the National Conference on Youth Mental Health as the keynote speaker.",
-        microVariants: ["Their advocacy work resulted in $2.3 billion in funding for school-based mental health services."]
+        text: "The school district approved funding for {userName}'s mental health initiative, leading to expanded counseling services, peer support programs, and mental health education that measurably improved student well-being and academic performance while reducing crisis incidents - demonstrating that student advocacy could create systematic changes that saved lives and enhanced educational environments for entire communities.",
+        microVariants: [
+          "District approval and funding of {userName}'s mental health proposals led to measurable improvements in student well-being and established a model program for other schools to adopt."
+        ]
+      },
+      {
+        type: 'reflective',
+        text: "Sitting in the newly established peer support circle, listening to classmates share their struggles and celebrate their progress, {userName} felt profound gratitude for the courage it had taken to speak up about mental health needs. 'Sometimes the most important advocacy work is simply making it okay to not be okay,' they reflected. 'When we create spaces for authentic vulnerability and mutual support, we build communities where everyone can thrive.'",
+        microVariants: [
+          "Facilitating peer support groups, {userName} appreciated how creating safe spaces for vulnerability and mutual aid had transformed their school's approach to mental health and community care."
+        ]
       }
     ],
     reuse: {
       swappableElements: {
-        "mental_health_challenges": ["depression", "anxiety", "trauma", "substance abuse"],
-        "support_systems": ["peer support groups", "counseling services", "crisis intervention"]
+        "mental_health_issues": ["anxiety disorders", "depression", "eating disorders", "trauma responses", "substance abuse"],
+        "support_systems": ["peer counseling", "professional therapy", "support groups", "crisis intervention", "family education"],
+        "advocacy_strategies": ["policy proposals", "community education", "resource development", "stigma reduction campaigns"]
       },
-      weatherVariants: ["during awareness campaigns", "throughout advocacy efforts"],
-      settingVariants: ["school counseling centers", "community mental health facilities"],
-      randomSeed: Math.floor(Math.random() * 10000)
+      weatherVariants: ["awareness week", "crisis response", "program launch", "community meeting"],
+      settingVariants: ["counseling center", "peer support room", "school board meeting", "community mental health facility"]
+    }
+  },
+  {
+    title: "The Youth Criminal Justice Reform Project",
+    theme: "Legal Justice & System Reform",
+    level: "Grade 9",
+    scenes: [
+      {
+        text: "{userName} had always assumed that the criminal justice system was fundamentally fair until they learned that a classmate's older brother had received a dramatically harsher sentence than a peer from a wealthier neighborhood for the same offense, leading them to research disparities in how the legal system treats young people from different racial, economic, and social backgrounds. Through extensive investigation, they discovered that youth from communities of color and low-income families were significantly more likely to be tried as adults, receive longer sentences, and face barriers to rehabilitation and reintegration, while youth from privileged backgrounds often received treatment-focused interventions and second chances that set them up for future success.",
+        pause: true,
+        hook: "How will {userName} address systematic inequities in youth criminal justice outcomes?",
+        microVariants: {
+          text: "{userName} discovered that criminal justice outcomes for youth varied dramatically by race and class, inspiring research into systematic disparities in legal treatment and sentencing.",
+          alternatives: [
+            "Learning about unequal sentencing for similar offenses, {userName} investigated how socioeconomic factors influence youth experiences in the criminal justice system."
+          ],
+          optionalDetails: ["Public defenders had overwhelming caseloads in certain districts.", "Some schools had police officers while others had counselors.", "Diversion programs were primarily available in affluent areas."]
+        }
+      },
+      {
+        text: "Working with juvenile defense attorneys, formerly incarcerated individuals, and criminal justice reform organizations, {userName} documented specific cases that illustrated systematic bias in youth sentencing and developed comprehensive policy proposals for reform. They learned about restorative justice principles, evidence-based rehabilitation programs, and successful models from other states that prioritized healing and community repair over punishment and incarceration. Their research revealed that communities investing in education, mental health services, and economic opportunities had dramatically lower youth crime rates and better outcomes for all young people.",
+        pause: true,
+        hook: "What reform strategies will {userName} propose to create more equitable youth justice outcomes?",
+        microVariants: {
+          text: "{userName} partnered with legal advocates to document bias cases and develop policy proposals based on restorative justice and community investment principles.",
+          alternatives: [
+            "Through collaboration with reform organizations, {userName} researched successful alternative justice models emphasizing rehabilitation and community healing over punishment."
+          ],
+          optionalDetails: ["Restorative justice programs had 30% lower recidivism rates.", "States investing in youth programs saw crime decreases.", "Community members wanted healing rather than punishment."]
+        }
+      },
+      {
+        text: "The youth justice reform campaign gained momentum when {userName} organized listening sessions where community members, formerly incarcerated individuals, and families affected by the justice system could share their experiences and priorities for change. These sessions revealed that most people wanted accountability coupled with opportunities for redemption and growth, rather than purely punitive approaches that often failed to address underlying causes of problematic behavior. {userName} used these community voices to develop legislation that would require equal access to diversion programs, fund community-based alternatives to incarceration, and eliminate disparities in how youth from different backgrounds were treated by the system.",
+        pause: true,
+        hook: "How will {userName}'s community-centered approach influence policy makers and public opinion?",
+        microVariants: {
+          text: "Community listening sessions revealed desire for accountability with redemption opportunities, informing {userName}'s legislation for equal diversion access and community alternatives.",
+          alternatives: [
+            "Through community engagement, {userName} learned that people wanted justice systems emphasizing healing and growth, leading to comprehensive reform proposals."
+          ],
+          optionalDetails: ["Former inmates became powerful advocates for change.", "Families shared stories of transformation and second chances.", "Community leaders endorsed the reform proposals."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'reflective',
+        text: "Sitting in a circle during a restorative justice conference where a young person was taking accountability for their actions while the community discussed healing and support rather than punishment, {userName} felt the profound difference between justice that tears communities apart and justice that brings them together. 'Real safety comes from healthy communities, not from punishment,' they understood with deep clarity. 'When we invest in young people's potential rather than their mistakes, we create the conditions where everyone can thrive and contribute to the common good.'",
+        microVariants: [
+          "Witnessing restorative justice in action, {userName} appreciated how community-centered accountability created healing and safety through investment in human potential."
+        ]
+      },
+      {
+        type: 'triumphant',
+        text: "The comprehensive youth justice reform legislation passed with bipartisan support, establishing equal access to diversion programs, funding community-based alternatives to incarceration, and creating oversight mechanisms to monitor sentencing disparities. {userName}'s research and advocacy contributed to policy changes that were projected to reduce youth incarceration by 40% while increasing public safety through community investment. Three other states adopted similar legislation based on the model that {userName} had helped develop through community engagement and evidence-based research.",
+        microVariants: [
+          "{userName}'s youth justice legislation passed with bipartisan support, reducing incarceration while increasing safety through community investment and inspiring multi-state adoption."
+        ]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "justice_disparities": ["sentencing differences", "diversion access", "legal representation quality", "rehabilitation opportunities"],
+        "reform_approaches": ["restorative justice", "community investment", "diversion programs", "policy oversight"],
+        "community_impact": ["healing circles", "victim support", "offender reintegration", "public safety improvement"]
+      },
+      weatherVariants: ["legislative session", "community organizing", "policy hearing", "reform implementation"],
+      settingVariants: ["community meeting space", "legislative chambers", "restorative justice circle", "reform organization office"]
+    }
+  },
+  {
+    title: "The Educational Equity Research Initiative",
+    theme: "Academic Justice & Opportunity Access",
+    level: "Grade 9",
+    scenes: [
+      {
+        text: "{userName} had always excelled academically and assumed that educational opportunities were equally available to all students until they began tutoring at an underfunded middle school and discovered vast disparities in resources, technology, course offerings, and teacher experience that directly impacted student achievement and college preparedness. When they learned that school funding formulas often perpetuated inequality by tying resources to local property taxes, creating a system where wealthy districts could spend three times more per student than poor districts, {userName} realized that educational inequality was not accidental but structurally embedded in how schools were funded and supported.",
+        pause: true,
+        hook: "How will {userName} address systematic educational inequities that affect student opportunities?",
+        microVariants: {
+          text: "{userName} discovered vast resource disparities between schools through tutoring, learning how funding formulas tied to property taxes create systematic educational inequality.",
+          alternatives: [
+            "Tutoring at an underfunded school revealed how property tax-based funding creates unequal educational opportunities and limits student potential."
+          ],
+          optionalDetails: ["Some schools lacked basic supplies like textbooks and paper.", "Class sizes varied dramatically between wealthy and poor districts.", "Technology access determined which students could complete digital assignments."]
+        }
+      },
+      {
+        text: "Collaborating with education researchers, parent advocacy groups, and policy organizations, {userName} conducted comprehensive analysis of funding disparities, achievement gaps, and opportunity differences across their state's school districts. Their research revealed that educational inequality intersected with racial and economic segregation, creating a system where zip code determined educational destiny more than student potential or effort. They documented how underfunded schools lost experienced teachers to better-resourced districts, creating a cycle where students most in need of support received the least qualified instruction and fewest advanced opportunities.",
+        pause: true,
+        hook: "What evidence-based solutions will {userName} propose to create more equitable educational funding?",
+        microVariants: {
+          text: "{userName} analyzed statewide educational disparities, revealing how funding inequality intersected with segregation to limit opportunities based on zip code rather than potential.",
+          alternatives: [
+            "Research partnerships documented how underfunding created teacher turnover and opportunity gaps, making educational success dependent on geographic location."
+          ],
+          optionalDetails: ["Wealthy districts offered 15+ Advanced Placement courses while poor districts offered 2-3.", "Teacher salaries differed by $20,000+ between neighboring districts.", "Some schools had counselors for every 100 students while others had 1 for 800."]
+        }
+      },
+      {
+        text: "The educational equity campaign gained support when {userName} organized joint presentations where students from differently funded schools could share their experiences and demonstrate the impact of resource disparities on learning opportunities. These powerful testimonials, combined with rigorous data analysis, convinced lawmakers that educational funding reform was both a moral imperative and an economic necessity for state competitiveness. {userName} proposed legislation that would establish minimum per-pupil funding floors, provide additional resources for high-need students, and create transparency mechanisms so communities could track how educational dollars were being used to support student success.",
+        pause: true,
+        hook: "How will {userName}'s student-centered advocacy influence educational policy and public understanding?",
+        microVariants: {
+          text: "Joint student presentations demonstrated funding impact on opportunities, convincing lawmakers that educational equity was both morally and economically essential.",
+          alternatives: [
+            "Students sharing their experiences with resource disparities created powerful advocacy for funding reform legislation establishing minimum per-pupil investment."
+          ],
+          optionalDetails: ["Rural students described traveling hours for advanced courses.", "Urban students shared overcrowded classroom experiences.", "Suburban students acknowledged their resource advantages."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "The educational equity legislation was signed into law, establishing increased minimum per-pupil funding, weighted formulas that provided additional resources for students facing greater challenges, and transparency requirements that allowed communities to monitor educational investment effectiveness. {userName}'s research and student-centered advocacy had contributed to policy changes projected to impact over 500,000 students, with particular benefits for rural, urban, and high-poverty school districts that had been systematically underfunded for decades.",
+        microVariants: [
+          "{userName}'s educational equity legislation became law, establishing minimum funding floors and weighted formulas benefiting over 500,000 students in previously underfunded districts."
+        ]
+      },
+      {
+        type: 'reflective',
+        text: "Visiting the middle school where they had first witnessed educational inequality, {userName} saw the beginning changes that adequate funding was making possible - new books, updated technology, smaller class sizes, and most importantly, the spark of possibility returning to students' eyes. 'Education is the foundation of everything else,' they reflected with deep satisfaction. 'When we ensure that every child has access to quality learning opportunities regardless of their zip code, we're not just investing in individual success - we're building a society where everyone can contribute their talents and potential to the common good.'",
+        microVariants: [
+          "Witnessing educational improvements at the underfunded school, {userName} understood how equitable funding created opportunities for all students to contribute their potential to society."
+        ]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "education_disparities": ["funding inequalities", "resource gaps", "teacher quality differences", "opportunity access"],
+        "equity_solutions": ["funding floor policies", "weighted formulas", "resource transparency", "community engagement"],
+        "student_impacts": ["academic achievement", "college readiness", "career preparation", "civic engagement"]
+      },
+      weatherVariants: ["legislative session", "school board meeting", "student presentation", "community forum"],
+      settingVariants: ["underfunded school", "legislative chambers", "education research center", "student advocacy meeting"]
     }
   }
 ];
 
 export const GRADE_10_FALLBACK_TEMPLATES = [
   {
-    title: "The Climate Justice Leadership Initiative",
-    theme: "Climate Change & Intergenerational Responsibility",
+    title: "The Global Climate Action Network",
+    theme: "Global Citizenship & Environmental Leadership", 
     level: "Grade 10",
     scenes: [
       {
-        text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns. They discover how climate change disproportionately affects marginalized communities.",
+        text: "{userName} felt simultaneously inspired and overwhelmed while attending a virtual climate summit where teenage activists from six continents shared how climate change was already affecting their communities through rising sea levels, extreme weather events, droughts, and flooding - making {userName} realize that while their own community hadn't yet experienced dramatic climate impacts, their lifestyle choices and their generation's collective actions would determine whether millions of young people around the world would have sustainable futures or face displacement, food insecurity, and environmental catastrophe.",
         pause: true,
-        hook: "How will {userName} build a movement that addresses both climate change and social justice?",
+        hook: "How will {userName} translate global climate awareness into effective local action?", 
         microVariants: {
-          text: "{userName} recognizes the urgent need for comprehensive climate action.",
-          alternatives: ["Climate research reveals the intersection of environmental and social justice issues."],
-          optionalDetails: ["vulnerable communities face the greatest climate risks with the least resources"]
+          text: "{userName} attended a virtual climate summit where global youth activists shared how climate change was already devastating their communities, inspiring urgent questions about intergenerational responsibility and effective action.",
+          alternatives: [
+            "Connecting with international youth climate activists online, {userName} confronted the stark reality that their generation's choices would determine whether peers worldwide faced environmental catastrophe or sustainable futures."
+          ],
+          optionalDetails: ["Activists shared photos of flooded homes and failed crops.", "Scientific projections showed accelerating climate impacts.", "The urgency of the crisis became personally meaningful through peer connections."]
+        }
+      },
+      {
+        text: "Rather than feeling paralyzed by the enormity of global climate challenges, {userName} channeled their concern into researching evidence-based solutions and discovering that effective climate action required both individual lifestyle changes and systematic policy advocacy - leading them to organize a comprehensive climate action network that connected their school with environmental organizations, elected officials, and international youth activists while implementing concrete projects like renewable energy installations, waste reduction programs, and community education initiatives that demonstrated how local action could contribute to global solutions.",
+        pause: true,
+        hook: "What lasting impact will {userName}'s climate leadership have on their community and beyond?",
+        microVariants: {
+          text: "Channeling climate concern into systematic action, {userName} organized comprehensive networks connecting local projects with global movements while implementing evidence-based environmental solutions.",
+          alternatives: [
+            "Transforming climate anxiety into effective leadership, {userName} developed multi-level action strategies that connected individual choices, community projects, and policy advocacy for systematic change."
+          ],
+          optionalDetails: ["Research revealed specific policy changes needed for climate action.", "Community partnerships provided resources for environmental projects.", "International connections offered models for successful youth climate organizing."]
         }
       }
     ],
     endings: [
       {
         type: 'triumphant',
-        text: "Ten years later, Ambassador {userName} sat in the United Nations General Assembly as the youngest climate negotiator in history.",
-        microVariants: ["The Global Climate Justice Framework established binding commitments for climate financing."]
+        text: "Two years later, {userName}'s climate action network had expanded to include fifty schools across three states, successfully lobbied for renewable energy policies in their city, and established sister relationships with youth environmental groups on four continents - demonstrating that young people could create meaningful change by combining passion with strategic thinking, local action with global perspective, and individual commitment with collective organizing power.",
+        microVariants: [
+          "{userName}'s climate network grew to encompass multiple states and international partnerships, achieving policy victories and demonstrating the power of strategic youth environmental organizing."
+        ]
+      },
+      {
+        type: 'reflective',
+        text: "Standing before the solar panels that their advocacy had helped install on their school roof, {userName} reflected on how climate action had taught them that the most important leadership involved empowering others to discover their own capacity for change. 'The climate crisis requires all of us,' they understood with deep conviction. 'But when young people connect their idealism with strategic action, we can accomplish things that seemed impossible and create the sustainable world that all generations deserve.'",
+        microVariants: [
+          "Viewing the solar installation their advocacy had achieved, {userName} appreciated how climate leadership meant empowering others and connecting idealism with strategic action for systematic change."
+        ]
       }
     ],
     reuse: {
       swappableElements: {
-        "climate_impacts": ["sea level rise", "extreme weather", "drought", "flooding"],
-        "affected_communities": ["frontline communities", "indigenous populations", "low-income neighborhoods"]
+        "climate_impacts": ["rising sea levels", "extreme weather", "food insecurity", "forced migration", "ecosystem collapse"],
+        "solutions": ["renewable energy", "sustainable transportation", "regenerative agriculture", "policy advocacy", "community resilience"],
+        "organizing_tools": ["digital networks", "policy research", "community partnerships", "international connections", "educational campaigns"]
       },
-      weatherVariants: ["during climate research", "throughout organizing campaigns"],
-      settingVariants: ["community resilience centers", "climate research facilities"],
-      randomSeed: Math.floor(Math.random() * 10000)
+      weatherVariants: ["virtual summit", "community meeting", "policy hearing", "action planning session"],
+      settingVariants: ["school environmental lab", "city council chambers", "community center", "international online platform"]
+    }
+  },
+  {
+    title: "The Global Health Equity Initiative",
+    theme: "Public Health & International Development",
+    level: "Grade 10",
+    scenes: [
+      {
+        text: "{userName} had always been interested in medicine until they learned that preventable diseases continued to kill millions of people worldwide not because of lack of medical knowledge, but because of poverty, inequality, and inadequate health system infrastructure that made life-saving treatments inaccessible to those who needed them most. When they discovered that children in some countries died from conditions easily treated in wealthy nations, while pharmaceutical companies spent more on marketing than research for diseases affecting the global poor, {userName} realized that health equity was fundamentally about justice, power, and the moral obligation to ensure that geographical accident of birth did not determine life or death outcomes.",
+        pause: true,
+        hook: "How will {userName} address global health disparities that reflect broader patterns of international inequality?",
+        microVariants: {
+          text: "{userName} learned that preventable diseases killed millions due to poverty and inadequate infrastructure rather than lack of medical knowledge, recognizing health equity as justice.",
+          alternatives: [
+            "Discovering that treatable conditions caused deaths globally due to inequality rather than medical limitations, {userName} understood health as a fundamental human rights issue."
+          ],
+          optionalDetails: ["Some vaccines cost $100+ per dose in poor countries but $3 in wealthy ones.", "Rural areas lacked basic health clinics within walking distance.", "Medical patents prevented generic drug production for neglected diseases."]
+        }
+      },
+      {
+        text: "Working with global health organizations, medical professionals, and international development groups, {userName} researched successful models for improving health outcomes in resource-limited settings, including community health worker programs, technology-enabled diagnostics, and innovative financing mechanisms for essential medicines. They learned how local knowledge and community engagement were often more effective than top-down interventions, and how addressing social determinants of health like clean water, nutrition, and education could prevent more diseases than medical treatment alone. Their research emphasized solutions that built local capacity rather than creating dependency on external aid.",
+        pause: true,
+        hook: "What sustainable approaches will {userName} develop for addressing global health challenges?",
+        microVariants: {
+          text: "{userName} researched community-centered health models emphasizing local capacity building, social determinants, and sustainable solutions over aid dependency.",
+          alternatives: [
+            "Through partnerships with global health experts, {userName} explored how community engagement and local knowledge created more effective health outcomes than external interventions."
+          ],
+          optionalDetails: ["Community health workers could treat 80% of childhood illnesses with basic training.", "Clean water access prevented more disease than most medical interventions.", "Local production of essential medicines reduced costs by 90%."]
+        }
+      },
+      {
+        text: "The global health equity project expanded to include direct partnerships with youth organizations in countries most affected by health disparities, creating collaborative research and advocacy initiatives that centered the voices and priorities of those most impacted by health inequality. {userName} helped establish cross-cultural exchanges where young people could share knowledge about health challenges and solutions in their communities, leading to innovative approaches that combined traditional healing practices with modern medical techniques. These partnerships revealed that global health equity required not just technical solutions but fundamental changes in how resources, knowledge, and power were distributed worldwide.",
+        pause: true,
+        hook: "How will international youth collaboration transform approaches to global health equity?",
+        microVariants: {
+          text: "International youth partnerships created collaborative research centering affected communities' voices and combining traditional healing with modern medicine for innovative solutions.",
+          alternatives: [
+            "Cross-cultural exchanges enabled young people to share health knowledge and develop solutions integrating traditional practices with contemporary medical approaches."
+          ],
+          optionalDetails: ["Traditional medicinal plants showed promise for treating drug-resistant infections.", "Youth peer education programs had higher vaccination rates than adult-led campaigns.", "Community-designed health clinics had better utilization than government-built facilities."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'reflective',
+        text: "Standing in a community health clinic that had been designed and staffed by local residents using both traditional healing knowledge and modern medical training, {userName} witnessed the power of approaches that honored both scientific evidence and cultural wisdom. Watching healers and doctors collaborate to provide care that was both effective and culturally respectful, they understood that sustainable health equity required humility, partnership, and recognition that every community had valuable knowledge to contribute. 'Global health isn't about saving others,' {userName} realized with deep clarity. 'It's about learning from each other and building systems where everyone's knowledge and humanity are valued and protected.'",
+        microVariants: [
+          "In the community health clinic combining traditional and modern approaches, {userName} appreciated how sustainable health equity required partnership, humility, and mutual learning."
+        ]
+      },
+      {
+        type: 'triumphant',
+        text: "The global health equity network expanded to include youth organizations from forty countries, creating collaborative research initiatives that influenced international health policy and funding priorities. {userName}'s emphasis on community-centered approaches and traditional knowledge integration was adopted by major global health organizations, leading to more effective and culturally appropriate health interventions worldwide. When the World Health Organization announced new guidelines emphasizing community partnership and local capacity building, {userName} was recognized as a key contributor to this paradigm shift toward health justice and equity.",
+        microVariants: [
+          "{userName}'s global health network influenced international policy, with WHO adopting community-centered approaches and traditional knowledge integration for more effective health interventions."
+        ]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "health_disparities": ["infectious disease burden", "maternal mortality", "malnutrition", "mental health access"],
+        "equity_approaches": ["community health workers", "traditional medicine integration", "local capacity building", "social determinants focus"],
+        "global_partnerships": ["cross-cultural exchange", "knowledge sharing", "collaborative research", "policy advocacy"]
+      },
+      weatherVariants: ["global health conference", "community health campaign", "international development summit", "traditional healing ceremony"],
+      settingVariants: ["community health clinic", "international conference center", "traditional healing space", "global health organization"]
+    }
+  },
+  {
+    title: "The Democratic Participation Project",
+    theme: "Civic Engagement & Political Empowerment",
+    level: "Grade 10",
+    scenes: [
+      {
+        text: "{userName} had always assumed that democracy was working well until they researched voter turnout statistics and discovered that many communities, particularly those with younger, lower-income, and minority populations, had significantly lower rates of electoral participation not due to apathy but because of systematic barriers including voter ID requirements, limited polling locations, restricted early voting hours, and purged voter registration rolls that made voting difficult or impossible for many eligible citizens. When they learned that some communities had wait times of eight hours to vote while others had no wait at all, {userName} realized that voting access was not equally distributed and that meaningful democracy required removing barriers to participation rather than simply encouraging people to vote.",
+        pause: true,
+        hook: "How will {userName} address systematic barriers that prevent equal democratic participation?",
+        microVariants: {
+          text: "{userName} discovered that low voter turnout resulted from systematic barriers like ID requirements and limited polling locations rather than apathy, recognizing voting access inequality.",
+          alternatives: [
+            "Research revealed that voting barriers disproportionately affected younger, lower-income, and minority communities, inspiring {userName} to view democratic participation as an access issue."
+          ],
+          optionalDetails: ["Some districts had 1 polling place per 1,000 voters while others had 1 per 10,000.", "Voter ID requirements disproportionately affected elderly and low-income citizens.", "College students faced barriers voting in their campus communities."]
+        }
+      },
+      {
+        text: "Collaborating with voting rights organizations, election officials, and civic engagement groups, {userName} researched best practices for expanding democratic participation including automatic voter registration, extended early voting periods, vote-by-mail systems, and multilingual ballot access that had proven successful in increasing turnout while maintaining election security. They learned how some states had deliberately made voting more difficult while others had actively removed barriers, and how these policy choices directly impacted which voices were heard in democratic decision-making. Their research emphasized that robust democracy required making participation as accessible as possible for all eligible citizens.",
+        pause: true,
+        hook: "What comprehensive strategies will {userName} propose to expand democratic access and participation?",
+        microVariants: {
+          text: "{userName} researched democratic participation best practices including automatic registration and expanded access methods that increased turnout while maintaining election security.",
+          alternatives: [
+            "Through voting rights partnerships, {userName} studied how policy choices about voting access directly determined which voices participated in democratic decision-making."
+          ],
+          optionalDetails: ["States with automatic registration had 10% higher turnout rates.", "Vote-by-mail increased participation among working parents and students.", "Multilingual ballots enabled citizenship participation across language barriers."]
+        }
+      },
+      {
+        text: "The democratic participation campaign gained momentum when {userName} organized voter education and registration drives that addressed both access barriers and civic knowledge gaps, recognizing that effective democracy required not just the ability to vote but also the information and understanding necessary to make informed choices. They created multilingual resources explaining candidate positions and ballot measures, established partnerships with libraries and community organizations to provide neutral civic education, and advocated for high school graduation requirements that would ensure all students learned about democratic participation, media literacy, and civic responsibility before becoming eligible voters.",
+        pause: true,
+        hook: "How will {userName}'s comprehensive approach to civic engagement transform democratic participation in their community?",
+        microVariants: {
+          text: "{userName} combined voter registration drives with civic education, creating multilingual resources and advocating for high school democracy requirements to ensure informed participation.",
+          alternatives: [
+            "The campaign addressed both voting access and civic knowledge through community partnerships, educational resources, and advocacy for democratic literacy requirements."
+          ],
+          optionalDetails: ["High school students became certified voter registration volunteers.", "Community organizations hosted candidate forums in multiple languages.", "Media literacy workshops helped citizens evaluate political information."]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "The comprehensive democracy initiative resulted in expanded voting access legislation that included automatic voter registration, extended early voting, and multilingual ballot requirements, while {userName}'s civic education programs became a model adopted by school districts across the region. When the next election saw record-breaking youth turnout and increased participation across all demographic groups, {userName} was recognized as having played a crucial role in strengthening democratic engagement and ensuring that all citizens could meaningfully participate in shaping their communities and country.",
+        microVariants: [
+          "{userName}'s democracy initiative achieved voting access legislation and civic education programs that increased participation across all demographics and strengthened democratic engagement."
+        ]
+      },
+      {
+        type: 'reflective',
+        text: "Standing in a community polling place on election day, watching people from all backgrounds exercise their fundamental right to vote in a process that had been made more accessible and inclusive through advocacy efforts, {userName} felt deep pride in the democratic principles that allowed ordinary citizens to shape their shared future. 'Democracy isn't something that happens to us,' they understood with profound clarity. 'It's something we actively create together when we ensure that every voice can be heard and every vote can be cast. The strength of our democracy depends on how well we protect and expand the opportunity for everyone to participate.'",
+        microVariants: [
+          "Observing inclusive voting on election day, {userName} appreciated how democracy required active creation through protecting and expanding participation opportunities for all citizens."
+        ]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "participation_barriers": ["voter ID requirements", "limited polling locations", "registration difficulties", "information gaps"],
+        "access_solutions": ["automatic registration", "extended voting periods", "multilingual resources", "civic education"],
+        "democratic_outcomes": ["increased turnout", "informed voting", "representative participation", "community engagement"]
+      },
+      weatherVariants: ["voter registration drive", "election day", "civic education workshop", "legislative hearing"],
+      settingVariants: ["polling place", "community center", "high school civics class", "legislative chambers"]
     }
   }
 ];
