@@ -1,0 +1,252 @@
+import type { UserInfo } from "@/types";
+import { APP_CONFIG } from "@/config/appConfig";
+// Canonical placeholders we support across prompts/components
+// {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, {specialRequest}
+// Micro-tokens used by style patterns
+// {animal}, {friend}, {setting}, {adjective}, {object}, {action}, {pronoun}, {food}, {color}
+
+type Seed = Record<string, string>;
+
+export interface MicroContext {
+  userInfo?: UserInfo;
+  pageText?: string;
+  seed?: Seed; // variables extracted from content (e.g., names, adjectives)
+}
+
+const FALLBACK_POOLS = {
+  // Level 0 vocabulary-compliant fallback pools (using ENHANCED_LEVEL_0_VOCABULARY)
+  animal: ["cat", "dog", "bird", "rabbit", "duck", "pig", "cow", "horse", "fish", "bear"],
+  food: ["cake", "milk", "eat", "apple", "bread", "water"],
+  setting: ["house", "farm", "school", "park", "bed", "home"],
+  object: ["ball", "book", "box", "car", "toy", "tree"],
+  action: ["play", "run", "go", "come", "look", "jump"],
+  adjective: ["big", "little", "good", "funny", "pretty", "new"],
+    friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
+  color: ["red", "blue", "yellow", "black", "brown", "white"],
+  // Legacy and edge case placeholders
+  forestType: ["magic", "deep", "green", "quiet", "old", "big"],
+  weatherType: ["sunny", "rainy", "cloudy", "windy", "clear", "nice"],
+  placeType: ["park", "forest", "garden", "field", "yard", "beach"]
+} as const;
+
+const KNOWN_ANIMALS = new Set([
+  "cat","dog","puppy","kitten","rabbit","bunny","turtle","bird","owl","fox","bear","panda","deer","lion","tiger","monkey","zebra","giraffe","horse","pig","cow","sheep","goat","duck","chicken","mouse","rat","hamster","parrot","goldfish","fish"
+]);
+
+function pick<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function cleanup(text: string): string {
+  const originalText = text;
+  
+  // Enhanced cleanup - more aggressive placeholder removal
+  let cleaned = text
+    .replace(/\{[^}]+\}/g, "") // strip unresolved tokens
+    .replace(/\s{2,}/g, " ") // collapse multiple spaces
+    .replace(/\s+([,.!?:;])/g, "$1") // remove space before punctuation
+    .replace(/\s+$/, "") // trim trailing spaces
+    .replace(/^\s+/, "") // trim leading spaces
+    .replace(/\.\s*\./g, ".") // remove double periods
+    .replace(/,\s*,/g, ",") // remove double commas
+    .trim();
+
+  // Log if we cleaned up any placeholders for monitoring
+  const hadPlaceholders = /\{[^}]+\}/.test(originalText);
+  const stillHasPlaceholders = /\{[^}]+\}/.test(cleaned);
+  
+  if (hadPlaceholders && !stillHasPlaceholders) {
+    console.log('🧹 [CLEANUP] Removed unresolved placeholders from text');
+  } else if (stillHasPlaceholders) {
+    console.warn('⚠️ [CLEANUP] Text still contains unresolved placeholders after cleanup:', cleaned.match(/\{[^}]+\}/g));
+  }
+  
+  return cleaned;
+}
+
+function applyTheyGrammarFixes(text: string): string {
+  let t = text;
+  t = t.replace(/\bthey\s+is\b/gi, "they are");
+  t = t.replace(/\bthey\s+was\b/gi, "they were");
+  t = t.replace(/\bthey\s+has\b/gi, "they have");
+  t = t.replace(/\bthey\s+does\b/gi, "they do");
+  t = t.replace(/\bthey\s+goes\b/gi, "they go");
+  // Drop 3rd person singular -s after they (simple heuristic)
+  t = t.replace(/\bthey\s+([a-z]+)s\b/gi, (_m, v: string) => `they ${v}`);
+  return t;
+}
+
+function applyHeShePronounFixes(text: string): string {
+  let t = text;
+  // Fix common subject-verb agreement errors for he/she
+  t = t.replace(/\bhe\s+have\b/gi, "he has");
+  t = t.replace(/\bshe\s+have\b/gi, "she has");
+  t = t.replace(/\bhe\s+are\b/gi, "he is");
+  t = t.replace(/\bshe\s+are\b/gi, "she is");
+  t = t.replace(/\bhe\s+were\b/gi, "he was");
+  t = t.replace(/\bshe\s+were\b/gi, "she was");
+  t = t.replace(/\bhe\s+do\b/gi, "he does");
+  t = t.replace(/\bshe\s+do\b/gi, "she does");
+  
+  // Additional comprehensive grammar fixes
+  t = t.replace(/\bhe\s+don't\b/gi, "he doesn't");
+  t = t.replace(/\bshe\s+don't\b/gi, "she doesn't");
+  t = t.replace(/\bhe\s+can't\b/gi, "he can't"); // This is actually correct
+  t = t.replace(/\bshe\s+can't\b/gi, "she can't"); // This is actually correct
+  
+  return t;
+}
+
+function firstName(name?: string): string | undefined {
+  if (!name) return undefined;
+  const parts = name.trim().split(/\s+/);
+  return parts[0];
+}
+
+function derivePronoun(userInfo?: UserInfo): string {
+  console.log('🔍 [DEBUG] Deriving pronoun from userInfo:', { 
+    hasUserInfo: !!userInfo,
+    avatar: userInfo?.avatar,
+    avatarType: userInfo?.avatar?.type 
+  });
+  
+  switch (userInfo?.avatar?.type) {
+    case "boy":
+      console.log('✅ [DEBUG] Using "he" pronoun for boy avatar');
+      return "he";
+    case "girl":
+      console.log('✅ [DEBUG] Using "she" pronoun for girl avatar');
+      return "she";
+    case "prefer-not-to-answer":
+      console.log('✅ [DEBUG] Using "they" pronoun for prefer-not-to-answer avatar');
+      return "they";
+    default:
+      console.log('⚠️ [DEBUG] Using "they" pronoun (default fallback)');
+      return "they";
+  }
+}
+
+function scanForAnimalFromText(text?: string): string | undefined {
+  if (!text) return undefined;
+  const words = text.toLowerCase().match(/[a-zA-Z]+/g) || [];
+  const irregularMap: Record<string, string> = {
+    mice: "mouse",
+    geese: "goose",
+    deer: "deer",
+    fish: "fish"
+  };
+  for (const w of words) {
+    if (KNOWN_ANIMALS.has(w)) return w;
+    const irregular = irregularMap[w];
+    if (irregular && KNOWN_ANIMALS.has(irregular)) return irregular;
+    let singular = w;
+    if (w.endsWith("ies")) singular = w.slice(0, -3) + "y"; // bunnies -> bunny
+    else if (w.endsWith("es")) singular = w.slice(0, -2); // foxes -> fox
+    else if (w.endsWith("s")) singular = w.slice(0, -1); // dogs -> dog
+    if (KNOWN_ANIMALS.has(singular)) return singular;
+  }
+  return undefined;
+}
+
+export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
+  const map: Record<string, string | undefined> = {
+    userName: firstName(userInfo.name) || userInfo.name || "Child",
+    favoriteColor: userInfo.favoriteColor,
+    favoriteAnimal: userInfo.favoriteAnimal,
+    favoriteFood: userInfo.favoriteFood,
+    hobbies: userInfo.hobbies,
+    specialRequest: userInfo.specialRequest
+  };
+
+  console.log('🔍 [DEBUG] Canonical placeholder resolution:', { 
+    originalName: userInfo.name, 
+    firstName: firstName(userInfo.name),
+    finalUserName: map.userName 
+  });
+
+  let out = text;
+  for (const [k, v] of Object.entries(map)) {
+    if (v) {
+      const before = out;
+      out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+      if (before !== out) {
+        console.log(`🔍 [DEBUG] Replaced {${k}} with "${v}"`);
+      }
+    }
+  }
+  return cleanup(out);
+}
+
+// Simplified pronoun handling - just return the base pronoun
+
+export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): string {
+  const { userInfo, pageText, seed } = ctx;
+
+  const basePronoun = derivePronoun(userInfo);
+  
+  console.log(`🔍 [DEBUG] Using simple pronoun: ${basePronoun}`);
+
+  const candidate: Record<string, string | undefined> = {
+    // bridge from seed variables
+    userName: seed?.userName || seed?.name || firstName(userInfo?.name) || userInfo?.name,
+    adjective: seed?.adjective,
+
+    // micro tokens with mapping to canonical where sensible
+    pronoun: basePronoun,
+    animal: seed?.animal || userInfo?.favoriteAnimal || scanForAnimalFromText(pageText) || pick(FALLBACK_POOLS.animal),
+    food: seed?.food || userInfo?.favoriteFood || pick(FALLBACK_POOLS.food),
+    setting: seed?.setting || pick(FALLBACK_POOLS.setting),
+    object: seed?.object || pick(FALLBACK_POOLS.object),
+    action: seed?.action || pick(FALLBACK_POOLS.action),
+    adjectiveFallback: pick(FALLBACK_POOLS.adjective),
+    color: seed?.color || userInfo?.favoriteColor || pick(FALLBACK_POOLS.color),
+    friend: seed?.friend || pick(FALLBACK_POOLS.friend),
+    forestType: seed?.forestType || pick(FALLBACK_POOLS.forestType),
+    weatherType: seed?.weatherType || pick(FALLBACK_POOLS.weatherType),
+    placeType: seed?.placeType || pick(FALLBACK_POOLS.placeType)
+  };
+
+  // prefer explicit adjective, else fallback
+  const adjective = candidate.adjective || candidate.adjectiveFallback;
+
+  let out = text;
+  const mappings: Record<string, string | undefined> = {
+    userName: candidate.userName,
+    pronoun: candidate.pronoun,
+    animal: candidate.animal,
+    food: candidate.food,
+    setting: candidate.setting,
+    object: candidate.object,
+    action: candidate.action,
+    adjective: adjective,
+    color: candidate.color,
+    friend: candidate.friend,
+    forestType: candidate.forestType,
+    weatherType: candidate.weatherType,
+    placeType: candidate.placeType
+  };
+
+  console.log(`🔍 [DEBUG] Final simplified mappings:`, mappings);
+
+  for (const [k, v] of Object.entries(mappings)) {
+    if (v) out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+  }
+
+  // Apply grammar fixes based on pronoun type
+  if ((APP_CONFIG as any)?.features?.authorVoice?.grammarTweaks?.theyAgreement) {
+    if (mappings.pronoun === "they") {
+      out = applyTheyGrammarFixes(out);
+    } else if (mappings.pronoun === "he" || mappings.pronoun === "she") {
+      out = applyHeShePronounFixes(out);
+    }
+  }
+
+  return cleanup(out);
+}
+
+export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): string {
+  let out = text;
+  if (ctx.userInfo) out = resolveCanonicalPlaceholders(out, ctx.userInfo);
+  out = resolveMicroPlaceholders(out, ctx);
+  return out;
+}

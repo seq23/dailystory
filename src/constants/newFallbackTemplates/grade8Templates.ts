@@ -549,7 +549,7 @@ export const GRADE_8_FALLBACK_TEMPLATES: StoryTemplate[] = [
   }
 ];
 
-export function getGrade8Template(templateIndex?: number): StoryTemplate {
+export function getGrade8FallbackTemplate(templateIndex?: number): StoryTemplate {
   if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < GRADE_8_FALLBACK_TEMPLATES.length) {
     return GRADE_8_FALLBACK_TEMPLATES[templateIndex];
   }
@@ -557,6 +557,6 @@ export function getGrade8Template(templateIndex?: number): StoryTemplate {
   return GRADE_8_FALLBACK_TEMPLATES[randomIndex];
 }
 
-export function getGrade8TemplateCount(): number {
+export function getGrade8FallbackTemplateCount(): number {
   return GRADE_8_FALLBACK_TEMPLATES.length;
 }

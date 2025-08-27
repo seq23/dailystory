@@ -5,9 +5,8 @@ import { corsHeaders } from '../_shared/cors.ts';
 // Import the single source of truth for templates
 import { TemplateLibraryService } from '../_shared/TemplateLibraryService.js';
 
-// Import dynamic template system and consolidated placeholder resolver
+// Import dynamic template system
 import { getTemplate, getTemplateCount } from '../_shared/templateImporter.ts';
-import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 
 // Simple user info interface
 interface UserInfo {
@@ -21,6 +20,56 @@ interface UserInfo {
   difficultyLevel?: string;
 }
 
+// Placeholder resolution functions
+function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
+  let resolved = text;
+  
+  resolved = resolved.replace(/\{userName\}/g, userInfo.name || 'the child');
+  resolved = resolved.replace(/\{favoriteColor\}/g, userInfo.favoriteColor || 'blue');
+  resolved = resolved.replace(/\{favoriteAnimal\}/g, userInfo.favoriteAnimal || 'puppy');
+  resolved = resolved.replace(/\{favoriteFood\}/g, userInfo.favoriteFood || 'cookies');
+  resolved = resolved.replace(/\{hobbies\}/g, userInfo.hobbies || 'playing outside');
+  resolved = resolved.replace(/\{specialRequest\}/g, userInfo.specialRequest || 'adventure');
+  
+  return resolved;
+}
+
+function validateAndFixGrammar(text: string): string {
+  let fixedText = text;
+  
+  // Fix incorrect articles with plural nouns
+  fixedText = fixedText.replace(/\b(a|an)\s+([a-zA-Z]*s\b|children|feet|geese|men|women|teeth|mice|people|sheep|deer|fish)/gi, 
+    (match, article, noun) => noun);
+  
+  // Fix double spaces
+  fixedText = fixedText.replace(/\s+/g, ' ');
+  
+  // Remove malformed template variables
+  fixedText = fixedText.replace(/\{[^}]*\}/g, '');
+  
+  return fixedText.trim();
+}
+
+function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount: number = 5): string[] {
+  const pages: string[] = [];
+
+  // Process each page in the template
+  const pagesToUse = template.slice(0, Math.min(pageCount, template.length));
+  
+  for (const page of pagesToUse) {
+    let processedPage = page;
+    
+    // Apply placeholder resolution
+    processedPage = resolveCanonicalPlaceholders(processedPage, userInfo);
+    
+    // Apply grammar fixes
+    processedPage = validateAndFixGrammar(processedPage);
+    
+    pages.push(processedPage);
+  }
+
+  return pages;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -96,9 +145,8 @@ serve(async (req) => {
       const template = TemplateLibraryService.getLevel0Template(templateIndex);
       if (template) {
         console.log('✅ Level0 template found with', template.length, 'pages');
-        // Process with consolidated placeholder resolver for Level0
-        const pagesToUse = template.slice(0, Math.min(pageCount, template.length));
-        pages = pagesToUse.map(page => resolveAllPlaceholders(page, { userInfo: userInfo || {} }));
+        // Process with legacy placeholder system for Level0
+        pages = processStoryTemplate(template, userInfo || {}, pageCount);
       }
     } else {
       // Use dynamic import system for Level1+

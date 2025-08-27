@@ -3,9 +3,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config/storyPrompts';
 import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
+import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 
@@ -44,19 +46,42 @@ export class LiveGenerationService {
       const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
       console.log(`🎯 Live Generation: Using user-selected difficulty ${difficulty} for ${userInfo.name}`);
       
-      // Simple prompts for free users - no complex configuration
-      const systemPrompt = `Generate a ${difficulty} level story with 6 pages. Keep it age-appropriate and engaging.`;
-      const userPrompt = `Create a story for ${userInfo.name} who likes ${userInfo.favoriteAnimal || 'animals'} and the color ${userInfo.favoriteColor || 'blue'}. ${userInfo.specialRequest || 'Make it fun!'}`;
-      
-      console.log(`🔄 Live Generation: Calling generate-adaptive-story with sessionType: ${sessionType || 'default'}`);
-      
-      // Remove removed prompt config references
+      // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
+      let promptConfig: any;
       
       if (difficulty === 'expert') {
-        expertGradeLevel = (userInfo.expertGradeLevel || '6th') as ExpertGradeLevel;
-        console.log(`📚 Live Generation: Using expert grade ${expertGradeLevel} for ${userInfo.name}`);
+        // Premium expert progression: adaptive grade selection
+        expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
+        promptConfig = getExpertStoryPrompt(expertGradeLevel);
+        console.log(`📚 Live Generation: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
       }
+      const systemPrompt = `${promptConfig.systemPrompt}
+      
+      IMPORTANT: You are generating the FIRST PAGE only of a multi-page story. 
+      - Create an engaging opening that establishes the character and setting
+      - End with a hook that makes the reader want to continue
+      - This is page 1 of ${promptConfig.expectedPages || 'an unlimited'} ${promptConfig.expectedPages ? 'pages' : 'story'}
+      - Keep the content appropriate for the difficulty level
+      - Return ONLY the page content, no page numbers or formatting
+      - Focus on quality storytelling over exact word counts`;
+      
+      // Use configured prompts from storyPrompts.ts only
+let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
+
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getColorVoiceForUser(userInfo, difficulty);
+          if (voice?.preferredThemes?.length) {
+            userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
+      
+      console.log(`🔄 Live Generation: Calling generate-adaptive-story with sessionType: ${sessionType || 'default'}`);
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -92,16 +117,16 @@ export class LiveGenerationService {
         return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'content_too_short');
       }
       
-      // Remove removed prompt config references  
+      // Create context for next page
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
         expertGradeLevel,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: 6, // Fixed for live generation  
+        totalExpectedPages: promptConfig.expectedPages || 999, // Use high number for unlimited stories
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-        openEnded: false // Fixed stories for simplicity
+        openEnded: !promptConfig.expectedPages // Open-ended if no expected pages set
       };
 
       console.log('🚀 Live Generation: First page generated and validated successfully');
@@ -112,7 +137,13 @@ export class LiveGenerationService {
       console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
       let contentOut = content;
-      // Removed author voice processing for simplicity
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getColorVoiceForUser(userInfo, difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          contentOut = applyAuthorVoice(content, voice, applyOn.first, userInfo, difficulty);
+        }
+      } catch {}
 
       return {
         content: contentOut,
@@ -139,12 +170,36 @@ export class LiveGenerationService {
       
       console.log(`🚀 Live Generation: Generating page ${nextPageNumber}/${context.totalExpectedPages} (openEnded=${openEnded})`);
       
-      // Simple prompts for continued generation
-      const systemPrompt = `Generate page ${nextPageNumber} of a story. Keep it consistent with the story so far.`;
-      const userPrompt = `Continue the story for ${context.userInfo.name}. ${shouldConclude ? 'Bring the story to a satisfying conclusion.' : 'Keep the story going with excitement.'}`;
+      let promptConfig: any;
+      if (context.difficulty === 'expert' && context.expertGradeLevel) {
+        promptConfig = getExpertStoryPrompt(context.expertGradeLevel);
+      } else {
+        promptConfig = getStoryPrompt(context.difficulty);
+      }
       
-      console.log(`Generated system prompt: ${systemPrompt.substring(0, 100)}...`);
-      console.log(`Previous context: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`);
+      const systemPrompt = `${promptConfig.systemPrompt}
+      
+      IMPORTANT: You are generating page ${nextPageNumber} of a ${openEnded ? 'continuous' : context.totalExpectedPages + '-page'} story.
+      - Continue the story naturally from the previous pages
+      - ${shouldConclude ? 'This is the FINAL page - provide a satisfying conclusion' : 'End with a small hook/cliffhanger. Do NOT conclude the entire story.'}
+      - Maintain consistency with characters and themes
+      - Return ONLY the page content, no page numbers or formatting
+      
+      Previous story context:
+      ${context.storyContext.join('\n\n')}`;
+      
+      // Use configured prompts from storyPrompts.ts only - append page context
+let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
+          if (voice?.preferredThemes?.length) {
+            baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
+      const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${shouldConclude ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Keep momentum and end with an engaging teaser for what happens next.'}`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -195,7 +250,14 @@ export class LiveGenerationService {
       console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
       let contentOut = content;
-      // Removed author voice processing for simplicity
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          const position = shouldConclude ? applyOn.last : applyOn.middle;
+          contentOut = applyAuthorVoice(content, voice, position, context.userInfo, context.difficulty);
+        }
+      } catch {}
 
       return {
         content: contentOut,
@@ -217,9 +279,34 @@ export class LiveGenerationService {
   static async generateEndingPage(context: LiveGenerationContext): Promise<LivePageResult> {
     try {
       const nextPageNumber = context.currentPage + 1;
-      // Simple ending prompts
-      const systemPrompt = `Generate a concluding page for the story. Make it satisfying and age-appropriate.`;
-      const userPrompt = `Create a nice ending for ${context.userInfo.name}'s story that wraps things up warmly.`;
+      let promptConfig: any;
+      if (context.difficulty === 'expert' && context.expertGradeLevel) {
+        promptConfig = getExpertStoryPrompt(context.expertGradeLevel);
+      } else {
+        promptConfig = getStoryPrompt(context.difficulty);
+      }
+
+      const systemPrompt = `${promptConfig.systemPrompt}
+
+      IMPORTANT: You are generating a CONCLUDING page for the ongoing story.
+      - Provide a satisfying, age-appropriate ending that wraps up current threads
+      - Keep tone uplifting and encouraging
+      - Return ONLY the page content, no page numbers or formatting
+
+      Previous story context:
+      ${context.storyContext.join('\n\n')}`;
+
+let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
+      // Append author voice preferred themes as a gentle hint
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
+          if (voice?.preferredThemes?.length) {
+            baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
+          }
+        }
+      } catch {}
+      const userPrompt = `${baseUserPrompt} Create a concluding page that ties the adventure together warmly and clearly indicates the story has reached a nice ending.`;
 
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -259,7 +346,13 @@ export class LiveGenerationService {
       } catch {}
 
       let contentOut = content;
-      // Removed author voice processing for simplicity
+      try {
+        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
+          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
+          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
+          contentOut = applyAuthorVoice(content, voice, applyOn.last, context.userInfo, context.difficulty);
+        }
+      } catch {}
 
       return {
         content: contentOut,
@@ -288,8 +381,14 @@ export class LiveGenerationService {
     });
     
     try {
-      // Simple prompts for fallback
-      const promptConfig = { expectedPages: 6 }; // Fixed pages for simplicity
+      // Get proper prompt config to preserve page expectations
+      let promptConfig: any;
+      if (difficulty === 'expert') {
+        // For expert users, we can't easily get their adaptive grade here, so use a reasonable default
+        promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories (12-16 pages)
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
+      }
       
       // Use enhanced fallback system
       const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
@@ -323,8 +422,13 @@ export class LiveGenerationService {
       };
     } catch (error) {
       console.error('🚀 Enhanced fallback failed:', error);
-      // Simple prompts for fallback
-      const promptConfig = { expectedPages: 6 }; // Fixed pages for simplicity
+      // Get proper prompt config for emergency fallback too
+      let promptConfig: any;
+      if (difficulty === 'expert') {
+        promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories
+      } else {
+        promptConfig = getStoryPrompt(difficulty);
+      }
       
       // Emergency fallback using Enhanced Template Library
       const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);

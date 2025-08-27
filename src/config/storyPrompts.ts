@@ -1,9 +1,12 @@
 // Configuration-driven story prompts with no hardcoding
-// Moved from frontend to edge functions for single source of truth
 // Easy to update and modify without code changes
 
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
-export type ExpertGradeLevel = '6th' | '7th' | '8th' | '9th' | '10th';
+import type { DifficultyLevel, ExpertGradeLevel, UserInfo } from '@/types';
+import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
+import { extractThemeIntent } from '@/utils/themeIntent';
+
+import { getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
+import { APP_CONFIG } from '@/config/appConfig';
 
 export interface StoryPromptConfig {
   difficulty: DifficultyLevel;
@@ -296,44 +299,77 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
   }
 };
 
-/**
- * Get token limit for difficulty level
- */
-export function getTokenLimitForDifficulty(difficulty: DifficultyLevel): number {
-  const limits: Record<DifficultyLevel, number> = {
-    beginner: 200,
-    easy: 350,
-    medium: 500,
-    hard: 650,
-    expert: 800
-  };
-  return limits[difficulty];
+// Utility functions for prompt management
+export function getStoryPrompt(difficulty: DifficultyLevel): StoryPromptConfig {
+  return STORY_PROMPTS[difficulty];
 }
 
-/**
- * Apply placeholder resolution to prompts
- * Simple resolution without dependencies on frontend utilities
- */
-export function resolvePromptPlaceholders(
-  text: string, 
-  userInfo: any = {}, 
-  seed?: string | number
-): string {
-  const placeholders = {
-    userName: userInfo.name || 'Child',
-    favoriteColor: userInfo.favoriteColor || 'blue',
-    favoriteAnimal: userInfo.favoriteAnimal || 'cat',
-    favoriteFood: userInfo.favoriteFood || 'pizza',
-    hobbies: userInfo.hobbies || 'playing',
-    specialRequest: userInfo.specialRequest || 'adventure',
-    age: userInfo.age || '8',
-    seed: seed || Math.floor(Math.random() * 10000)
-  };
+export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryPromptConfig {
+  return EXPERT_STORY_PROMPTS[gradeLevel];
+}
+
+export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>): string {
+  console.log('🔍 [DEBUG] Formatting user prompt with userInfo:', { 
+    name: userInfo.name, 
+    avatar: userInfo.avatar,
+    difficultyLevel: userInfo.difficultyLevel,
+    template: template.slice(0, 100) + '...'
+  });
   
-  let resolved = text;
-  for (const [key, value] of Object.entries(placeholders)) {
-    resolved = resolved.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value));
+  // Start with basic placeholder resolution
+  let prompt = resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
+  
+  // Extract theme intent with enhanced fallback system
+  if (userInfo as UserInfo) {
+    const themeIntent = extractThemeIntent(userInfo as UserInfo);
+    const difficultyLevel = userInfo.difficultyLevel || userInfo.readingAbility;
+    
+    // For beginner/easy levels: use interests if no explicit themes
+    const isBeginnerOrEasy = difficultyLevel === 'beginner' || difficultyLevel === 'easy';
+    
+    // Priority 1: Structured themes or detected keywords from themeIntent
+    if (themeIntent.themes.length > 0 || themeIntent.tone.length > 0) {
+      const themeGuidance = [];
+      if (themeIntent.themes.length > 0) {
+        themeGuidance.push(`Focus on themes: ${themeIntent.themes.join(', ')}`);
+      }
+      if (themeIntent.tone.length > 0) {
+        themeGuidance.push(`Use tone: ${themeIntent.tone.join(', ')}`);
+      }
+      prompt += ` ${themeGuidance.join('. ')}.`;
+    } else {
+      // Priority 2: Try inputEnhancementEngine for theme extraction
+      let enhancedThemes: string[] = [];
+      try {
+        const { InputEnhancementEngine } = require('@/services/inputEnhancementEngine');
+        const enhanced = InputEnhancementEngine.enhanceUserInputs(userInfo as UserInfo);
+        if (enhanced.storyElements?.length > 0) {
+          enhancedThemes = enhanced.storyElements
+            .filter(el => el.description.includes('theme') || el.description.includes('setting'))
+            .map(el => el.narrativeHook)
+            .slice(0, 3);
+        }
+      } catch (error) {
+        // Fallback gracefully if inputEnhancementEngine is not available
+      }
+      
+      if (enhancedThemes.length > 0) {
+        prompt += ` Focus on themes derived from user inputs: ${enhancedThemes.join(', ')}.`;
+      } else if (isBeginnerOrEasy) {
+        // Priority 3: Only for beginner/easy - fall back to interests
+        const interests = [];
+        if (userInfo.hobbies) interests.push(userInfo.hobbies);
+        if (userInfo.favoriteAnimal) interests.push(userInfo.favoriteAnimal);
+        if (userInfo.favoriteColor) interests.push(userInfo.favoriteColor);
+        if (userInfo.favoriteFood) interests.push(userInfo.favoriteFood);
+        
+        if (interests.length > 0) {
+          prompt += ` Focus the story around the child's interests: ${interests.join(', ')}.`;
+        }
+      }
+      // Priority 4: Generic fallback (default AI creativity) - no explicit guidance needed
+    }
   }
   
-  return resolved;
+  return prompt;
 }

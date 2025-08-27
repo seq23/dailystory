@@ -839,14 +839,17 @@ export const LEVEL_3_FALLBACK_TEMPLATES: StoryTemplate[] = [
   }
 ];
 
-export function getLevel3Template(templateIndex?: number): StoryTemplate | null {
-  if (templateIndex !== undefined) {
-    return LEVEL_3_FALLBACK_TEMPLATES[templateIndex] || null;
+export function getLevel3FallbackTemplate(templateIndex?: number): StoryTemplate | null {
+  if (LEVEL_3_FALLBACK_TEMPLATES.length === 0) return null;
+  
+  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_FALLBACK_TEMPLATES.length) {
+    return LEVEL_3_FALLBACK_TEMPLATES[templateIndex];
   }
+  
   const randomIndex = Math.floor(Math.random() * LEVEL_3_FALLBACK_TEMPLATES.length);
   return LEVEL_3_FALLBACK_TEMPLATES[randomIndex];
 }
 
-export function getLevel3TemplateCount(): number {
+export function getLevel3FallbackTemplateCount(): number {
   return LEVEL_3_FALLBACK_TEMPLATES.length;
 }

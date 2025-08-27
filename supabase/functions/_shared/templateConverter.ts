@@ -48,19 +48,17 @@ interface UserInfo {
   difficultyLevel?: string;
 }
 
-// Fallback pools - COMPLETE set including missing placeholders
+// Fallback pools (matching placeholderResolver.ts)
 const FALLBACK_POOLS = {
   animal: ["cat", "dog", "bird", "rabbit", "duck", "pig", "cow", "horse", "fish", "bear"],
-  animalType: ["owl", "fox", "bear", "deer", "rabbit", "wolf", "eagle", "squirrel"],
-  monsterType: ["dragon", "troll", "giant", "ogre", "goblin", "beast", "wizard", "creature"],
-  food: ["cake", "milk", "eat", "apple", "bread", "water", "pancakes", "cookies", "pizza", "noodles"],
-  setting: ["house", "farm", "school", "park", "bed", "home", "forest", "garden", "classroom", "kitchen", "playground"],
+  food: ["cake", "milk", "eat", "apple", "bread", "water"],
+  setting: ["house", "farm", "school", "park", "bed", "home"],
   object: ["ball", "book", "box", "car", "toy", "tree"],
   action: ["play", "run", "go", "come", "look", "jump"],
-  adjective: ["big", "little", "good", "funny", "pretty", "new", "brave", "clever", "kind", "happy"],
-  friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo", "Riley", "Taylor", "Jordan", "Casey"],
+  adjective: ["big", "little", "good", "funny", "pretty", "new"],
+  friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
   color: ["red", "blue", "yellow", "black", "brown", "white"],
-  forestType: ["magic", "deep", "green", "quiet", "old", "big", "enchanted", "dark", "sunny", "mysterious"],
+  forestType: ["magic", "deep", "green", "quiet", "old", "big"],
   weatherType: ["sunny", "rainy", "cloudy", "windy", "clear", "nice"],
   placeType: ["park", "forest", "garden", "field", "yard", "beach"]
 } as const;
@@ -136,15 +134,13 @@ function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string 
   return out;
 }
 
-// Resolve micro placeholders - COMPLETE set including missing types
+// Resolve micro placeholders
 function resolveMicroPlaceholders(text: string, userInfo: UserInfo): string {
   const pronoun = derivePronoun(userInfo);
   
   const mappings: Record<string, string> = {
     pronoun: pronoun,
     animal: userInfo.favoriteAnimal || pick(FALLBACK_POOLS.animal),
-    animalType: pick(FALLBACK_POOLS.animalType), // CRITICAL: Missing placeholder causing Level 3+ failures
-    monsterType: pick(FALLBACK_POOLS.monsterType), // CRITICAL: Missing placeholder causing Level 3+ failures
     food: userInfo.favoriteFood || pick(FALLBACK_POOLS.food),
     setting: pick(FALLBACK_POOLS.setting),
     object: pick(FALLBACK_POOLS.object),
