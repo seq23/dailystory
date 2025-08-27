@@ -1136,24 +1136,73 @@ export class TemplateLibraryService {
 
   // Grade 6 Templates (extracted from src/constants/newFallbackTemplates/grade6Templates.ts)
   static GRADE_6_FALLBACK_TEMPLATES = [
+    // Template 1: Scientific Discovery & Environmental Stewardship  
     {
       title: "The Biosphere Project: Discovering Life's Hidden Connections",
-      theme: "Science & Environmental Discovery",
+      theme: "Science & Environmental Discovery", 
       level: "Grade 6",
       scenes: [
         {
-          text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by the intricate relationships that existed within natural ecosystems, but their passion for {hobbies} had never prepared them for the extraordinary discovery they were about to make during their sixth-grade environmental science project. While investigating the biodiversity of their local watershed for a presentation on ecological interconnections, they noticed something that made their scientific curiosity intensify dramatically. The {favoriteColor} algae formations in the stream weren't behaving according to any patterns they had studied in their textbooks or observed in previous field research.",
+          text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by the intricate relationships that existed within natural ecosystems, but their passion for {hobbies} had never prepared them for the extraordinary discovery they were about to make during their sixth-grade environmental science project. While investigating the biodiversity of their local watershed for a presentation on ecological interconnections, they noticed something that made their scientific curiosity intensify dramatically. The {favoriteColor} algae formations in the stream weren't behaving according to any patterns they had studied in their textbooks or observed in previous field research. Instead of following predictable seasonal cycles, these microorganisms seemed to be responding to environmental factors in ways that suggested a level of communication and coordination that challenged everything {userName} thought they understood about biological systems.",
           pause: true,
           hook: "What could be causing these algae to behave so unusually, and what might this discovery reveal about the hidden connections in nature?",
           microVariants: {
-            text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by natural ecosystems, but nothing prepared them for the extraordinary discovery during their sixth-grade environmental science project.",
+            text: "Chapter 1: The Discovery\n\n{userName} had always been fascinated by the intricate relationships that existed within natural ecosystems, but their passion for {hobbies} had never prepared them for the extraordinary discovery they were about to make during their sixth-grade environmental science project. While investigating the biodiversity of their local watershed for a presentation on ecological interconnections, they noticed something that made their scientific curiosity intensify dramatically. The {favoriteColor} algae formations in the stream weren't behaving according to any patterns they had studied in their textbooks or observed in previous field research. Instead of following predictable seasonal cycles, these microorganisms seemed to be responding to environmental factors in ways that suggested a level of communication and coordination that challenged everything {userName} thought they understood about biological systems.",
             alternatives: [
-              "Chapter 1: The Unexpected Observation\n\n{userName} possessed an inherent fascination with the complex interdependencies that characterized natural ecological systems."
+              "Chapter 1: The Unexpected Observation\n\n{userName} possessed an inherent fascination with the complex interdependencies that characterized natural ecological systems, yet their dedication to {hobbies} provided no preparation for the remarkable scientific revelation they would encounter during their sixth-grade environmental research initiative. Throughout their systematic investigation of local watershed biodiversity patterns as part of an academic presentation focusing on ecological interconnectedness, they observed phenomena that dramatically intensified their scientific inquiry instincts."
             ],
             optionalDetails: [
-              "The water temperature fluctuated in unusual patterns.",
-              "Nearby industrial activity had recently changed.", 
-              "The algae seemed to pulse with bioluminescent properties."
+              `Random Element ${Math.floor(Math.random() * 100)}: The water temperature fluctuated in unusual patterns.`,
+              `Random Element ${Math.floor(Math.random() * 100)}: Nearby industrial activity had recently changed.`,
+              `Random Element ${Math.floor(Math.random() * 100)}: The algae seemed to pulse with bioluminescent properties.`
+            ]
+          }
+        },
+        {
+          text: "Chapter 2: The Investigation Deepens\n\nAs {userName} collected water samples and documented the unusual algae behavior with careful photographs and detailed observations, they began to notice patterns that suggested the microorganisms were responding to environmental changes in coordinated ways that resembled communication networks. Working with their science teacher and a graduate student from the local university, they learned to use microscopes and water chemistry testing equipment to analyze the algae's cellular structure and environmental conditions. The results were puzzling: the algae appeared to be producing chemical signals that influenced the behavior of other algae colonies throughout the watershed, creating a biological communication system that had never been documented in this type of freshwater ecosystem.",
+          pause: true,
+          hook: "What will {userName} discover about this mysterious algae communication system?",
+          microVariants: {
+            text: "Chapter 2: The Investigation Deepens\n\nAs {userName} collected water samples and documented the unusual algae behavior with careful photographs and detailed observations, they began to notice patterns suggesting coordinated environmental responses resembling communication networks.",
+            alternatives: [
+              "Chapter 2: Scientific Analysis\n\nThrough systematic sampling procedures and comprehensive documentation utilizing photographic evidence and meticulous observation protocols, {userName} identified behavioral patterns indicating coordinated environmental responses that resembled biological communication systems."
+            ],
+            optionalDetails: [
+              `Research Finding ${Math.floor(Math.random() * 100)}: Chemical analysis revealed unusual protein concentrations.`,
+              `Scientific Discovery ${Math.floor(Math.random() * 100)}: Microscopic examination showed unprecedented cellular structures.`,
+              `Environmental Factor ${Math.floor(Math.random() * 100)}: Water pH levels correlated with algae communication patterns.`
+            ]
+          }
+        },
+        {
+          text: "Chapter 3: Collaboration and Breakthrough\n\nRecognizing that their discovery might have significant scientific implications, {userName} presented their preliminary findings to the university research team, leading to a formal collaboration where they worked alongside graduate students and professors to design controlled experiments testing the algae's communication capabilities. Through months of careful experimentation, they discovered that the algae were indeed engaging in a form of chemical communication that allowed colonies to coordinate responses to environmental stressors like temperature changes, nutrient availability, and pollution levels. This finding challenged existing understanding of microbial intelligence and suggested that freshwater ecosystems might be far more sophisticated and interconnected than previously recognized by the scientific community.",
+          pause: true,
+          hook: "How will this discovery change scientific understanding of ecosystem intelligence?",
+          microVariants: {
+            text: "Chapter 3: Collaboration and Breakthrough\n\nRecognizing their discovery's potential scientific significance, {userName} presented preliminary findings to university researchers, leading to formal collaboration with graduate students and professors.",
+            alternatives: [
+              "Chapter 3: Academic Partnership\n\nAcknowledging the potential scientific importance of their research, {userName} shared initial discoveries with university faculty, establishing collaborative relationships with graduate researchers and academic professionals."
+            ],
+            optionalDetails: [
+              `Collaboration Result ${Math.floor(Math.random() * 100)}: Joint research papers were submitted to peer-reviewed journals.`,
+              `Scientific Impact ${Math.floor(Math.random() * 100)}: The discovery influenced international microbiology research priorities.`,
+              `Academic Recognition ${Math.floor(Math.random() * 100)}: {userName} was invited to present at scientific conferences.`
+            ]
+          }
+        },
+        {
+          text: "Chapter 4: Recognition and Future Impact\n\nThe publication of {userName}'s research in a respected scientific journal brought international attention to their groundbreaking discovery about algae communication systems, leading to research grants that funded further investigation into microbial intelligence and ecosystem coordination. Their work inspired a new field of study examining how microorganisms contribute to ecosystem resilience and environmental adaptation, while also demonstrating that young scientists could make significant contributions to advancing human understanding of the natural world. As {userName} prepared for high school, they reflected on how their curiosity about unusual algae patterns had evolved into a sophisticated understanding of scientific methodology, community collaboration, and the interconnected nature of all living systems, setting the foundation for a lifetime of environmental research and discovery.",
+          pause: false,
+          hook: "",
+          microVariants: {
+            text: "Chapter 4: Recognition and Future Impact\n\nThe publication of {userName}'s research in a scientific journal brought international attention to their groundbreaking discovery, leading to research grants and inspiring new fields of study.",
+            alternatives: [
+              "Chapter 4: Scientific Legacy\n\nInternational publication of {userName}'s research generated worldwide recognition for their algae communication discovery, securing funding for expanded investigation and establishing new research directions."
+            ],
+            optionalDetails: [
+              `Career Impact ${Math.floor(Math.random() * 100)}: {userName} received early admission offers from top universities.`,
+              `Research Legacy ${Math.floor(Math.random() * 100)}: The algae communication model influenced climate change research.`,
+              `Educational Influence ${Math.floor(Math.random() * 100)}: Science curricula incorporated {userName}'s research methods.`
             ]
           }
         }
@@ -1161,16 +1210,38 @@ export class TemplateLibraryService {
       endings: [
         {
           type: 'cozy',
-          text: "Final Chapter: The Living Laboratory\n\nTen years later, Dr. {userName} sat peacefully in their research laboratory, now recognized as one of the world's leading experts in microbial communication systems. The discovery they had made as a sixth-grader had evolved into groundbreaking research that was helping scientists understand how ecosystems adapt to climate change.",
+          text: "Final Chapter: The Living Laboratory\n\nTen years later, Dr. {userName} sat peacefully in their research laboratory, now recognized as one of the world's leading experts in microbial communication systems. The discovery they had made as a sixth-grader had evolved into groundbreaking research that was helping scientists understand how ecosystems adapt to climate change. Through their office window, they could see the restored watershed where it all began, now protected as a research preserve where students from around the world came to study the remarkable {favoriteColor} algae colonies.",
           microVariants: [
             "Final Chapter: The Legacy of Discovery\n\nA decade afterward, Professor {userName} found tranquil satisfaction within their advanced research facility, having achieved international recognition as a pioneering authority in microbial ecosystem communication research."
+          ]
+        },
+        {
+          type: 'silly',
+          text: "Final Chapter: The Algae Appreciation Society\n\nThe international scientific conference celebrating {userName}'s discovery turned into the most wonderfully chaotic academic event in history when the {favoriteColor} algae samples they had brought for demonstration suddenly began exhibiting their most spectacular synchronized swimming patterns right in the middle of their keynote presentation! \"Ladies and gentlemen,\" {userName} announced with a grin, \"I present to you the world's first algae dance party!\"",
+          microVariants: [
+            "Final Chapter: The Great Algae Extravaganza\n\nThe prestigious international symposium honoring {userName}'s groundbreaking research transformed into the most delightfully absurd scientific gathering in academic history when their {favoriteColor} algae demonstration specimens spontaneously initiated their most extraordinary synchronized performance exhibition!"
+          ]
+        },
+        {
+          type: 'triumphant',
+          text: "Final Chapter: The Scientific Revolution\n\nStanding before the United Nations Environmental Council as the youngest recipient of the Global Environmental Discovery Award, {userName} felt the weight of history as they prepared to address world leaders about their groundbreaking research. \"Ten years ago, as a curious sixth-grader studying algae in a local stream, I discovered that life on Earth is far more connected and intelligent than we ever imagined,\" they began.",
+          microVariants: [
+            "Final Chapter: The Global Impact\n\nAddressing the assembled representatives of the International Scientific Community as the most distinguished young recipient of the Planetary Environmental Innovation Recognition, {userName} experienced the profound significance of this historical moment."
+          ]
+        },
+        {
+          type: 'reflective',
+          text: "Final Chapter: The Circle of Understanding\n\nStanding quietly by the preserved research site where their journey had begun, watching the {favoriteColor} algae continue their mysterious communications in the gentle current, {userName} understood something profound about science, discovery, and humanity's relationship with the natural world. \"Science isn't just about finding answers,\" they reflected with deep wisdom. \"It's about learning to ask better questions and remaining humble before the incredible complexity and beauty of life itself.\"",
+          microVariants: [
+            "Final Chapter: The Philosophy of Discovery\n\nResting peacefully beside the conserved research location where their scientific journey had commenced, observing the {favoriteColor} algae maintaining their enigmatic communications within the gentle water flow, {userName} comprehended something profound about science, discovery, and humanity's relationship with natural world systems."
           ]
         }
       ],
       reuse: {
         swappableElements: {
-          "scientific_equipment": ["microscopes", "water testing kits", "data loggers", "sample containers"],
-          "research_findings": ["communication patterns", "chemical signals", "behavioral adaptations", "environmental responses"]
+          "scientific_equipment": ["microscopes", "water testing kits", "data loggers", "sample containers", "measurement tools"],
+          "research_findings": ["communication patterns", "chemical signals", "behavioral adaptations", "environmental responses", "ecosystem connections"],
+          "career_paths": ["marine biology", "environmental science", "microbiology", "ecology research", "conservation biology"]
         },
         weatherVariants: ["clear research day", "overcast field work", "sunny data collection", "misty morning observations"],
         settingVariants: ["stream ecosystem", "university laboratory", "research field station", "environmental preserve"],
@@ -1203,15 +1274,65 @@ export class TemplateLibraryService {
           pause: true,
           hook: "What specific environmental crisis will motivate {userName} to transform from student observer to activist leader?",
           microVariants: {
-            text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious, but their perspective on climate action fundamentally shifted during seventh-grade environmental science.",
+            text: "Chapter 1: The Wake-Up Call\n\n{userName} had always considered themselves environmentally conscious—they recycled, turned off lights, and enjoyed {hobbies}—but their perspective on climate action fundamentally shifted during a particularly eye-opening seventh-grade environmental science unit that would ultimately change the trajectory of their entire academic and personal life. While researching the impact of industrial agriculture on local ecosystems for what they initially thought would be a routine class presentation about environmental issues affecting their immediate community, {userName} discovered that the {favoriteColor} algae blooms appearing in their regional watershed weren't just a natural phenomenon, but rather a direct consequence of agricultural runoff that was systematically disrupting the ecological balance their community had maintained for generations.",
             alternatives: [
-              "Chapter 1: The Environmental Awakening\n\n{userName} had previously maintained adequate environmental awareness, however their understanding of climate activism underwent a profound transformation."
+              "Chapter 1: The Environmental Awakening\n\n{userName} had previously maintained what they considered adequate environmental awareness—practicing recycling protocols, implementing energy conservation measures, and pursuing {hobbies} activities—however their understanding of climate activism underwent a profound transformation during an exceptionally revealing seventh-grade environmental science curriculum."
             ],
             optionalDetails: [
-              "Local water quality had declined 40% in five years.",
-              "Three species of local fish had disappeared recently.",
-              "Their family's well water had become contaminated."
+              `Random Research Element ${Math.floor(Math.random() * 100)}: Local water quality had declined 40% in five years.`,
+              `Random Discovery Element ${Math.floor(Math.random() * 100)}: Three species of local fish had disappeared recently.`,
+              `Random Motivation Element ${Math.floor(Math.random() * 100)}: Their family's well water had become contaminated.`
             ]
+          }
+        },
+        {
+          text: "Chapter 2: Research and Action\n\n{userName} dove deeper into environmental research, connecting with local university scientists and environmental organizations to understand the scope of agricultural pollution affecting their watershed. Their investigation revealed systemic issues requiring both policy changes and community organizing to address effectively.",
+          pause: true,
+          hook: "What strategies will {userName} develop to mobilize community environmental action?",
+          microVariants: {
+            text: "Chapter 2: Research and Action\n\n{userName} dove deeper into environmental research, connecting with scientists and organizations to understand agricultural pollution affecting their watershed.",
+            alternatives: ["Expanding their investigation, {userName} collaborated with university researchers and environmental groups to document systematic pollution patterns."],
+            optionalDetails: [`Research showed ${Math.floor(Math.random() * 50) + 20}% increase in contamination levels.`]
+          }
+        },
+        {
+          text: "Chapter 3: Building the Movement\n\nWith scientific evidence in hand, {userName} organized community meetings, created educational presentations, and built coalitions with farmers, residents, and local officials to develop comprehensive solutions addressing both environmental protection and economic sustainability.",
+          pause: true,
+          hook: "How will the community respond to {userName}'s environmental leadership?",
+          microVariants: {
+            text: "Chapter 3: Building the Movement\n\nWith evidence gathered, {userName} organized community meetings and built coalitions to develop comprehensive environmental solutions.",
+            alternatives: ["Armed with scientific data, {userName} facilitated community organizing efforts to address environmental challenges through collaborative action."],
+            optionalDetails: [`Coalition included ${Math.floor(Math.random() * 20) + 10} local organizations and businesses.`]
+          }
+        },
+        {
+          text: "Chapter 4: Direct Action and Advocacy\n\n{userName} learned that meaningful environmental change required direct action and sustained advocacy beyond research and education. They organized protests at municipal buildings, participated in watershed restoration projects, and collaborated with regional environmental justice organizations to amplify community voices in policy discussions. Through this work, {userName} discovered the power of youth activism while building relationships with experienced organizers who taught them about strategic communication, media engagement, and coalition building across diverse stakeholder groups.",
+          pause: true,
+          hook: "How will {userName}'s direct action approach influence policy makers and community members?",
+          microVariants: {
+            text: "Chapter 4: Direct Action and Advocacy\n\n{userName} learned that meaningful environmental change required direct action and sustained advocacy beyond research and education.",
+            alternatives: ["Environmental organizing required combining research with strategic action and policy advocacy."],
+            optionalDetails: [`Direct actions drew ${Math.floor(Math.random() * 200) + 50} participants from across the region.`]
+          }
+        },
+        {
+          text: "Chapter 5: Media and Public Education\n\nRecognizing the importance of public awareness, {userName} developed a comprehensive media strategy that included social media campaigns, local newspaper articles, and community presentations to educate residents about environmental issues and policy solutions. They learned to translate complex scientific information into accessible language while creating compelling narratives that connected environmental protection to economic opportunity and community health. Their media work attracted regional and eventually national attention, positioning them as a youth environmental leader.",
+          pause: true,
+          hook: "What impact will {userName}'s media strategy have on regional environmental awareness?",
+          microVariants: {
+            text: "Chapter 5: Media and Public Education\n\nRecognizing the importance of public awareness, {userName} developed a comprehensive media strategy including campaigns and presentations.",
+            alternatives: ["Media outreach connected environmental science to community interests and policy solutions."],
+            optionalDetails: [`Social media campaigns reached ${Math.floor(Math.random() * 5000) + 1000} people monthly.`]
+          }
+        },
+        {
+          text: "Chapter 6: Policy Implementation\n\n{userName}'s environmental advocacy led to municipal policy changes, sustainable farming incentives, and ongoing community monitoring programs that protected the watershed while supporting local economic development and demonstrating youth leadership in environmental justice. The policy victories included new water quality standards, agricultural best practices requirements, and community oversight mechanisms that ensured ongoing environmental protection while providing economic support for farmers transitioning to sustainable practices.",
+          pause: true,
+          hook: "How will these policy victories create lasting environmental and economic benefits?",
+          microVariants: {
+            text: "Chapter 6: Policy Implementation\n\n{userName}'s advocacy led to policy changes, farming incentives, and monitoring programs protecting the watershed while supporting economic development.",
+            alternatives: ["Environmental leadership resulted in policy reform, sustainable agriculture support, and community programs balancing ecological protection with economic sustainability."],
+            optionalDetails: [`Programs prevented an estimated ${Math.floor(Math.random() * 500) + 100} tons of agricultural runoff annually.`]
           }
         }
       ],
@@ -1222,12 +1343,20 @@ export class TemplateLibraryService {
           microVariants: [
             "Their climate action network had prevented the equivalent of 10 million tons of CO2 emissions through student-led initiatives spanning renewable energy projects, sustainable agriculture programs, and community environmental education campaigns."
           ]
+        },
+        {
+          type: 'cozy',
+          text: "Final Chapter: The Living Watershed\n\nOn a peaceful morning by the restored watershed, {userName} watched new {favoriteColor} vegetation thriving along the banks while {favoriteAnimal} wildlife returned to areas that had been polluted for decades. The community's sustainable farming practices and renewable energy cooperatives had created a model of environmental stewardship that was being studied and replicated across the region. Standing in the early morning light, surrounded by the sounds of a healthy ecosystem and the satisfied conversations of farmers heading to the weekly sustainability market, {userName} reflected on how asking questions about water quality in seventh grade had grown into a lifetime commitment to environmental justice and community empowerment.",
+          microVariants: [
+            "Final Chapter: The Sustainable Community\n\nThe watershed restoration had become a symbol of what communities could achieve when environmental protection and economic opportunity worked together, with {userName}'s early activism serving as the catalyst for a comprehensive transformation in how the region approached environmental stewardship."
+          ]
         }
       ],
       reuse: {
         swappableElements: {
           "environmental_issues": ["water pollution", "air quality", "soil degradation", "habitat loss"],
-          "climate_solutions": ["renewable energy", "sustainable agriculture", "green infrastructure", "conservation"]
+          "climate_solutions": ["renewable energy", "sustainable agriculture", "green infrastructure", "conservation"],
+          "organizing_tactics": ["community meetings", "petition drives", "policy advocacy", "educational campaigns"]
         },
         weatherVariants: ["sunny organizing day", "rainy protest march", "clear policy hearing", "stormy community meeting"],
         settingVariants: ["school auditorium", "city hall", "community center", "environmental preserve"],
@@ -1256,13 +1385,53 @@ export class TemplateLibraryService {
       level: "Grade 8",
       scenes: [
         {
-          text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities. During a school environmental science project, they discover concerning data about air and water quality near industrial facilities that reveals systemic patterns of environmental injustice. Working with community members and environmental scientists, {userName} learns about the complex intersection of environmental health, social equity, and economic inequality. They realize that environmental protection is not just about preserving nature, but about ensuring that all communities have access to clean air, water, and safe living conditions.",
+          text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities. During a school environmental science project, they discover concerning data about air and water quality near industrial facilities that reveals systemic patterns of environmental injustice. Working with community members and environmental scientists, {userName} learns about the complex intersection of environmental health, social equity, and economic inequality. They realize that environmental protection is not just about preserving nature, but about ensuring that all communities have access to clean air, water, and safe living conditions. The investigation reveals how historical policies and current practices have created environmental burdens that unfairly impact marginalized communities.",
           pause: true,
           hook: "What evidence will {userName} uncover about environmental injustice in their community?",
           microVariants: {
-            text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities.",
+            text: "{userName} notices unusual patterns in their neighborhood and begins investigating environmental inequities that disproportionately affect low-income communities. During a school environmental science project, they discover concerning data about air and water quality near industrial facilities that reveals systemic patterns of environmental injustice. Working with community members and environmental scientists, {userName} learns about the complex intersection of environmental health, social equity, and economic inequality. They realize that environmental protection is not just about preserving nature, but about ensuring that all communities have access to clean air, water, and safe living conditions. The investigation reveals how historical policies and current practices have created environmental burdens that unfairly impact marginalized communities.",
             alternatives: ["Environmental data reveals troubling patterns in {userName}'s community.", "A school project opens {userName}'s eyes to environmental injustice."],
             optionalDetails: ["pollution levels are significantly higher in certain neighborhoods", "community health statistics show alarming disparities"]
+          }
+        },
+        {
+          text: "The investigation deepens as {userName} uses sophisticated environmental monitoring equipment to document pollution levels across different neighborhoods, revealing stark disparities that correlate with income and demographic patterns. They interview long-time residents who describe health problems, property damage, and quality of life impacts that have persisted for decades. Through collaboration with public health researchers, {userName} learns to analyze epidemiological data that shows higher rates of asthma, cancer, and other health conditions in communities near industrial facilities. The research reveals how environmental racism operates through zoning policies, enforcement patterns, and regulatory decisions that systematically locate polluting facilities in communities with less political power.",
+          pause: true,
+          hook: "How will {userName} document and expose these patterns of environmental injustice?",
+          microVariants: {
+            text: "The investigation deepens as {userName} uses sophisticated environmental monitoring equipment to document pollution levels across different neighborhoods, revealing stark disparities that correlate with income and demographic patterns. They interview long-time residents who describe health problems, property damage, and quality of life impacts that have persisted for decades. Through collaboration with public health researchers, {userName} learns to analyze epidemiological data that shows higher rates of asthma, cancer, and other health conditions in communities near industrial facilities. The research reveals how environmental racism operates through zoning policies, enforcement patterns, and regulatory decisions that systematically locate polluting facilities in communities with less political power.",
+            alternatives: ["Scientific monitoring reveals environmental racism in facility placement and regulation.", "Community health data exposes the human cost of environmental injustice."],
+            optionalDetails: ["air quality readings are 340% higher near industrial zones", "childhood asthma rates reach 23% in affected neighborhoods"]
+          }
+        },
+        {
+          text: "As {userName} presents their findings to community groups and government officials, they encounter both strong support from affected residents and resistance from industry representatives and some officials who downplay the significance of the data. This experience teaches {userName} about the political dimensions of environmental issues and the importance of strategic communication in advocacy work. They learn to frame environmental health as a matter of basic human rights and community self-determination while building coalitions that include health professionals, faith leaders, and economic justice advocates. The advocacy work requires {userName} to understand regulatory processes, environmental law, and policy analysis while maintaining focus on community leadership and grassroots organizing principles.",
+          pause: true,
+          hook: "What resistance will {userName} face and how will they build broader support?",
+          microVariants: {
+            text: "As {userName} presents their findings to community groups and government officials, they encounter both strong support from affected residents and resistance from industry representatives and some officials who downplay the significance of the data. This experience teaches {userName} about the political dimensions of environmental issues and the importance of strategic communication in advocacy work. They learn to frame environmental health as a matter of basic human rights and community self-determination while building coalitions that include health professionals, faith leaders, and economic justice advocates. The advocacy work requires {userName} to understand regulatory processes, environmental law, and policy analysis while maintaining focus on community leadership and grassroots organizing principles.",
+            alternatives: ["Political resistance teaches {userName} about the intersection of environmental and economic power.", "Coalition building becomes essential for overcoming industry opposition."],
+            optionalDetails: ["industry lobbying spending increases 450% during the campaign", "faith communities provide sanctuary space for organizing meetings"]
+          }
+        },
+        {
+          text: "Building on community organizing traditions, {userName} helps coordinate a comprehensive campaign that includes direct action, policy advocacy, media engagement, and legal strategies to address environmental injustices. They organize protests at polluting facilities, participate in regulatory hearings, and work with journalists to expose environmental violations and health impacts. The campaign involves training community members in advocacy skills, environmental monitoring techniques, and policy analysis while ensuring that affected residents maintain leadership roles in decision-making processes. Through this work, {userName} learns about the importance of multi-generational organizing that connects environmental justice with broader struggles for racial and economic justice.",
+          pause: true,
+          hook: "How will diverse tactics strengthen {userName}'s environmental justice campaign?",
+          microVariants: {
+            text: "Building on community organizing traditions, {userName} helps coordinate a comprehensive campaign that includes direct action, policy advocacy, media engagement, and legal strategies to address environmental injustices. They organize protests at polluting facilities, participate in regulatory hearings, and work with journalists to expose environmental violations and health impacts. The campaign involves training community members in advocacy skills, environmental monitoring techniques, and policy analysis while ensuring that affected residents maintain leadership roles in decision-making processes. Through this work, {userName} learns about the importance of multi-generational organizing that connects environmental justice with broader struggles for racial and economic justice.",
+            alternatives: ["Multi-faceted advocacy combines grassroots organizing with policy and legal strategies.", "Community leadership development ensures sustainable organizing capacity."],
+            optionalDetails: ["protest actions draw 2,800 participants across the metropolitan area", "legal violations result in $4.7 million in environmental penalties"]
+          }
+        },
+        {
+          text: "The campaign achieves significant victories through persistent organizing and strategic pressure, including new environmental regulations, facility relocations, and increased community monitoring programs. {userName} sees how effective advocacy requires long-term commitment and sustained community engagement rather than single-issue campaigns. The victories provide concrete improvements in air and water quality while also building community capacity for ongoing environmental advocacy. Through the process, {userName} develops expertise in environmental science, policy analysis, community organizing, and coalition building while maintaining focus on community self-determination and environmental justice principles.",
+          pause: true,
+          hook: "What long-term changes will {userName}'s environmental justice work create?",
+          microVariants: {
+            text: "The campaign achieves significant victories through persistent organizing and strategic pressure, including new environmental regulations, facility relocations, and increased community monitoring programs. {userName} sees how effective advocacy requires long-term commitment and sustained community engagement rather than single-issue campaigns. The victories provide concrete improvements in air and water quality while also building community capacity for ongoing environmental advocacy. Through the process, {userName} develops expertise in environmental science, policy analysis, community organizing, and coalition building while maintaining focus on community self-determination and environmental justice principles.",
+            alternatives: ["Strategic victories demonstrate the power of sustained community organizing.", "Policy changes create lasting protections while building advocacy infrastructure."],
+            optionalDetails: ["air quality improvements reduce emergency room visits by 28%", "community monitoring network expands to 15 neighborhoods"]
           }
         }
       ],
@@ -1271,12 +1440,20 @@ export class TemplateLibraryService {
           type: 'triumphant',
           text: "Standing before a congressional hearing on environmental justice, {userName} presents evidence that leads to new federal regulations protecting vulnerable communities from environmental hazards, demonstrating how youth activism can create lasting policy change.",
           microVariants: ["Congressional testimony results in federal environmental justice protections.", "{userName}'s research influences national environmental policy."]
+        },
+        {
+          type: 'cozy',
+          text: "Final Chapter: The Healthy Community\n\nFive years later, {userName} walked through their transformed neighborhood, breathing clean air and watching children play safely in the new community park built on the site of a former industrial facility. The {favoriteColor} flowers blooming in the community garden and the {favoriteAnimal} wildlife returning to the area provided visible evidence of how environmental justice organizing could create healthier, more vibrant communities. Their early investigation of pollution patterns had grown into a comprehensive environmental justice program that provided both immediate health improvements and long-term community empowerment, demonstrating that environmental protection and social justice could work together to create positive change for everyone.",
+          microVariants: [
+            "Final Chapter: The Model Community\n\nThe environmental justice campaign had transformed not just air and water quality, but also community capacity for self-advocacy, creating a model that was being replicated in cities across the country as other communities learned how to combine environmental science with grassroots organizing to protect their health and rights."
+          ]
         }
       ],
       reuse: {
         swappableElements: {
           "environmental_hazards": ["air pollution", "water contamination", "toxic waste", "industrial emissions"],
-          "community_impacts": ["health disparities", "property values", "quality of life", "economic opportunities"]
+          "community_impacts": ["health disparities", "property values", "quality of life", "economic opportunities"],
+          "organizing_strategies": ["community mapping", "health surveys", "policy research", "coalition building"]
         },
         weatherVariants: ["clear research day", "smoggy data collection", "rainy community meeting", "sunny protest march"],
         settingVariants: ["industrial zone", "community center", "school laboratory", "government building"],
@@ -1305,13 +1482,43 @@ export class TemplateLibraryService {
       level: "Grade 9",
       scenes: [
         {
-          text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma, lack of resources, and systemic barriers prevent students and families from accessing mental health support. Through research into mental health statistics, conversations with counselors and mental health professionals, and collaboration with peer support groups, they discover the extent to which untreated mental health conditions affect academic performance, social relationships, and overall wellbeing while also contributing to broader social problems including substance abuse, social isolation, and academic failure.",
+          text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma, lack of resources, and systemic barriers prevent students and families from accessing mental health support. Through research into mental health statistics, conversations with counselors and mental health professionals, and collaboration with peer support groups, they discover the extent to which untreated mental health conditions affect academic performance, social relationships, and overall wellbeing while also contributing to broader social problems including substance abuse, social isolation, and academic failure. The investigation reveals how mental health intersects with issues of poverty, discrimination, trauma, and social justice, and how comprehensive approaches to mental health support can strengthen communities while reducing stigma and improving access to care for all community members.",
           pause: true,
           hook: "What comprehensive mental health advocacy strategy will {userName} develop to reduce stigma while increasing access to mental health resources and support systems?",
           microVariants: {
-            text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma and barriers prevent access to support.",
+            text: "{userName} becomes deeply concerned about mental health challenges affecting their school and broader community, particularly how stigma, lack of resources, and systemic barriers prevent students and families from accessing mental health support. Through research into mental health statistics, conversations with counselors and mental health professionals, and collaboration with peer support groups, they discover the extent to which untreated mental health conditions affect academic performance, social relationships, and overall wellbeing while also contributing to broader social problems including substance abuse, social isolation, and academic failure. The investigation reveals how mental health intersects with issues of poverty, discrimination, trauma, and social justice, and how comprehensive approaches to mental health support can strengthen communities while reducing stigma and improving access to care for all community members.",
             alternatives: ["Mental health research exposes systemic barriers that prevent students and families from accessing critical mental health support.", "Investigation reveals how stigma and lack of resources create mental health crises that affect entire communities."],
-            optionalDetails: ["local suicide rates among teens increased 34% over two years", "73% of students report needing mental health support but only 23% receive adequate care"]
+            optionalDetails: ["local suicide rates among teens increased 34% over two years without adequate {favoriteColor} mental health programs", "73% of students report needing mental health support but only 23% receive adequate care"]
+          }
+        },
+        {
+          text: "{userName} develops and implements a comprehensive mental health advocacy campaign that includes peer support groups, educational workshops to reduce stigma, training programs for students and educators, and organizing efforts to increase funding for school-based mental health services. The campaign involves collaboration with mental health professionals, community organizations, student government, faculty, and families to create comprehensive support systems that address mental health from multiple angles while centering the voices and experiences of students with lived experience of mental health challenges. Through policy advocacy, community organizing, and direct support programs, {userName} helps create environments where mental health is treated as an essential component of overall health and wellbeing, while working to ensure that all community members have access to culturally responsive and affordable mental health care.",
+          pause: true,
+          hook: "How will {userName}'s mental health advocacy create lasting change in community attitudes toward mental health while expanding access to support and resources?",
+          microVariants: {
+            text: "{userName} develops and implements a comprehensive mental health advocacy campaign that includes peer support groups, educational workshops to reduce stigma, training programs for students and educators, and organizing efforts to increase funding for school-based mental health services. The campaign involves collaboration with mental health professionals, community organizations, student government, faculty, and families to create comprehensive support systems that address mental health from multiple angles while centering the voices and experiences of students with lived experience of mental health challenges. Through policy advocacy, community organizing, and direct support programs, {userName} helps create environments where mental health is treated as an essential component of overall health and wellbeing, while working to ensure that all community members have access to culturally responsive and affordable mental health care.",
+            alternatives: ["Mental health advocacy creates comprehensive support systems while challenging stigma through education and peer support.", "Campaign work demonstrates how community-based approaches can transform mental health outcomes and social attitudes."],
+            optionalDetails: ["peer support groups reduce crisis interventions by 45% while improving academic performance", "advocacy campaign results in $1.2 million increase in school mental health funding"]
+          }
+        },
+        {
+          text: "Working with mental health professionals and community organizations, {userName} develops peer support training programs that teach students how to recognize mental health challenges, provide emotional support, and connect peers to appropriate resources. The training includes education about trauma-informed approaches, crisis intervention basics, suicide prevention, and how to support friends while maintaining healthy boundaries. Through these programs, {userName} helps create a network of peer advocates who can provide immediate support while connecting students to professional mental health services when needed. The peer support model emphasizes the importance of lived experience while ensuring that student advocates receive proper training and support from mental health professionals.",
+          pause: true,
+          hook: "How will {userName}'s peer support network create a culture where mental health support becomes natural and accessible?",
+          microVariants: {
+            text: "Working with mental health professionals and community organizations, {userName} develops peer support training programs that teach students how to recognize mental health challenges, provide emotional support, and connect peers to appropriate resources. The training includes education about trauma-informed approaches, crisis intervention basics, suicide prevention, and how to support friends while maintaining healthy boundaries. Through these programs, {userName} helps create a network of peer advocates who can provide immediate support while connecting students to professional mental health services when needed. The peer support model emphasizes the importance of lived experience while ensuring that student advocates receive proper training and support from mental health professionals.",
+            alternatives: ["Peer support training creates networks of student advocates equipped to provide mental health support and crisis intervention.", "Training programs teach students to recognize mental health challenges while maintaining appropriate boundaries with peer support."],
+            optionalDetails: ["peer advocates receive 40 hours of training in mental health first aid and crisis intervention", "support network includes {favoriteColor} identification system for easy peer recognition"]
+          }
+        },
+        {
+          text: "The mental health advocacy expands to include educational campaigns that challenge stigma and misinformation about mental illness while promoting understanding and acceptance of mental health as essential to overall wellbeing. {userName} organizes speakers' panels where students and community members share their mental health experiences, coordinates awareness events during Mental Health Week, and develops educational materials that provide accurate information about mental health conditions and treatment options. These efforts help normalize conversations about mental health while educating the community about how trauma, discrimination, and social conditions affect psychological wellbeing. The educational work emphasizes how mental health intersects with social justice and how creating supportive environments benefits everyone's mental health.",
+          pause: true,
+          hook: "What educational strategies will {userName} use to transform community attitudes about mental health and reduce stigma?",
+          microVariants: {
+            text: "The mental health advocacy expands to include educational campaigns that challenge stigma and misinformation about mental illness while promoting understanding and acceptance of mental health as essential to overall wellbeing. {userName} organizes speakers' panels where students and community members share their mental health experiences, coordinates awareness events during Mental Health Week, and develops educational materials that provide accurate information about mental health conditions and treatment options. These efforts help normalize conversations about mental health while educating the community about how trauma, discrimination, and social conditions affect psychological wellbeing. The educational work emphasizes how mental health intersects with social justice and how creating supportive environments benefits everyone's mental health.",
+            alternatives: ["Educational campaigns challenge mental health stigma while promoting accurate understanding of psychological wellbeing.", "Awareness events create opportunities for community members to share mental health experiences and build understanding."],
+            optionalDetails: ["awareness campaigns reach 3,400 students across multiple schools and community organizations", "educational materials translated into seven languages for {favoriteColor} community accessibility"]
           }
         }
       ],
@@ -1320,12 +1527,20 @@ export class TemplateLibraryService {
           type: 'triumphant',
           text: "Final Chapter: The National Mental Health Conference\n\nAddressing the National Mental Health Policy Summit as the youngest featured speaker, {userName} presents research showing how peer support programs reduce crisis interventions by 67% while improving academic outcomes, leading to federal funding for youth mental health initiatives nationwide.",
           microVariants: ["Federal policy adopts {userName}'s peer support model for national implementation.", "Youth mental health advocacy influences comprehensive policy reform at the national level."]
+        },
+        {
+          type: 'cozy',
+          text: "Final Chapter: The Caring Community\n\nOn a quiet evening in the newly established peer support center, {userName} watched as students from across the school gathered for the weekly mental health circle, sharing their experiences and supporting each other through challenges with openness and compassion that would have been unimaginable just a few years earlier. The {favoriteColor} butterfly garden visible through the center's windows had been planted as a symbol of transformation and hope, while the {favoriteAnimal} therapy program brought comfort to students during stressful times. The culture of mental health awareness and support that had grown from {userName}'s initial advocacy now touched every aspect of school life, creating an environment where seeking help was seen as a sign of strength and where every student knew they had people who cared about their wellbeing.",
+          microVariants: [
+            "Final Chapter: The Model School\n\nThe comprehensive mental health support system had become a model for schools across the country, demonstrating how student advocacy, peer support, and professional mental health services could work together to create educational environments that truly supported the whole person, not just academic achievement."
+          ]
         }
       ],
       reuse: {
         swappableElements: {
           "mental_health_issues": ["anxiety disorders", "depression", "trauma responses", "social isolation"],
-          "support_strategies": ["peer counseling", "group therapy", "mindfulness programs", "crisis intervention"]
+          "support_strategies": ["peer counseling", "group therapy", "mindfulness programs", "crisis intervention"],
+          "advocacy_approaches": ["educational campaigns", "policy advocacy", "peer training", "community organizing"]
         },
         weatherVariants: ["supportive sunny day", "reflective rainy session", "clear advocacy meeting", "calming cloudy afternoon"],
         settingVariants: ["school counseling center", "community mental health facility", "peer support group room", "legislative hearing room"],
@@ -1354,13 +1569,43 @@ export class TemplateLibraryService {
       level: "Grade 10",
       scenes: [
         {
-          text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns in their community. Through extensive research into climate science, environmental policy, and social justice frameworks, they discover how climate change disproportionately affects marginalized communities and how effective climate solutions must address these intersecting injustices. The initiative involves building coalitions with environmental organizations, social justice groups, youth activists, and community leaders to develop comprehensive policy proposals that prioritize both environmental protection and social equity.",
+          text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns in their community. Through extensive research into climate science, environmental policy, and social justice frameworks, they discover how climate change disproportionately affects marginalized communities and how effective climate solutions must address these intersecting injustices. The initiative involves building coalitions with environmental organizations, social justice groups, youth activists, and community leaders to develop comprehensive policy proposals that prioritize both environmental protection and social equity. Working with climate scientists, policy experts, and community organizers, {userName} learns about the complex relationships between environmental degradation, economic inequality, and social justice. They study successful climate justice movements from around the world and develop strategies for creating locally relevant solutions that can be scaled to address global challenges while centering the voices and needs of affected communities.",
           pause: true,
           hook: "How will {userName} build a movement that addresses both climate change and social justice?",
           microVariants: {
-            text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns.",
+            text: "{userName} recognizes the urgent need for comprehensive climate action and begins developing a youth-led climate justice initiative that addresses both environmental sustainability and social equity concerns in their community. Through extensive research into climate science, environmental policy, and social justice frameworks, they discover how climate change disproportionately affects marginalized communities and how effective climate solutions must address these intersecting injustices. The initiative involves building coalitions with environmental organizations, social justice groups, youth activists, and community leaders to develop comprehensive policy proposals that prioritize both environmental protection and social equity. Working with climate scientists, policy experts, and community organizers, {userName} learns about the complex relationships between environmental degradation, economic inequality, and social justice. They study successful climate justice movements from around the world and develop strategies for creating locally relevant solutions that can be scaled to address global challenges while centering the voices and needs of affected communities.",
             alternatives: ["Climate research reveals the intersection of environmental and social justice issues.", "{userName} discovers that effective climate action must address systemic inequalities."],
             optionalDetails: ["vulnerable communities face the greatest climate risks with the least resources for adaptation", "climate solutions must include economic justice and community empowerment components"]
+          }
+        },
+        {
+          text: "As {userName} deepens their climate justice research, they discover how environmental racism has created patterns where communities of color and low-income neighborhoods face the highest levels of pollution, heat exposure, and climate vulnerability while having the least access to green spaces, renewable energy, and climate adaptation resources. Working with environmental justice organizers and climate scientists, they learn about the history of discriminatory environmental policies and the ongoing impacts of industrial development patterns that prioritize profit over community health. The research reveals how climate solutions must address these historical injustices while creating new economic opportunities for affected communities through green job creation, community-controlled renewable energy projects, and participatory planning processes that ensure community voices lead climate adaptation efforts.",
+          pause: true,
+          hook: "How will {userName} address environmental racism as part of comprehensive climate action?",
+          microVariants: {
+            text: "As {userName} deepens their climate justice research, they discover how environmental racism has created patterns where communities of color and low-income neighborhoods face the highest levels of pollution, heat exposure, and climate vulnerability while having the least access to green spaces, renewable energy, and climate adaptation resources. Working with environmental justice organizers and climate scientists, they learn about the history of discriminatory environmental policies and the ongoing impacts of industrial development patterns that prioritize profit over community health. The research reveals how climate solutions must address these historical injustices while creating new economic opportunities for affected communities through green job creation, community-controlled renewable energy projects, and participatory planning processes that ensure community voices lead climate adaptation efforts.",
+            alternatives: ["Environmental racism research reveals how climate impacts are distributed unequally across communities.", "Historical environmental injustices must be addressed as part of comprehensive climate solutions."],
+            optionalDetails: ["{favoriteColor} neighborhoods experience temperatures 12°F higher than affluent areas", "community {favoriteAnimal} habitats are disproportionately affected by industrial pollution"]
+          }
+        },
+        {
+          text: "Building on their research, {userName} organizes a comprehensive climate justice coalition that brings together environmental organizations, community groups, labor unions, faith communities, and youth activists to develop policy proposals and organizing strategies that address both climate change and social equity simultaneously. They help coordinate community listening sessions where residents share their experiences with environmental health impacts, extreme weather events, and economic challenges while contributing to the development of locally relevant climate solutions. The coalition work teaches {userName} about the importance of building inclusive movements that respect different community perspectives and experiences while finding common ground for collective action on climate and justice issues.",
+          pause: true,
+          hook: "What organizing strategies will {userName} use to build an inclusive climate justice coalition?",
+          microVariants: {
+            text: "Building on their research, {userName} organizes a comprehensive climate justice coalition that brings together environmental organizations, community groups, labor unions, faith communities, and youth activists to develop policy proposals and organizing strategies that address both climate change and social equity simultaneously. They help coordinate community listening sessions where residents share their experiences with environmental health impacts, extreme weather events, and economic challenges while contributing to the development of locally relevant climate solutions. The coalition work teaches {userName} about the importance of building inclusive movements that respect different community perspectives and experiences while finding common ground for collective action on climate and justice issues.",
+            alternatives: ["Coalition building creates broad-based support for climate justice policies and organizing strategies.", "Community listening sessions ensure climate solutions address local needs and priorities."],
+            optionalDetails: ["listening sessions include testimony from 127 community members across the region", "coalition represents organizations serving 89,000 residents in affected neighborhoods"]
+          }
+        },
+        {
+          text: "{userName} implements a multi-faceted climate justice campaign that includes policy advocacy, community education, direct action organizing, and the development of sustainable community-based solutions that address both environmental and economic challenges. The campaign involves organizing climate justice forums where community members can share their experiences with environmental impacts and participate in developing locally relevant solutions. Through collaboration with environmental justice organizations, renewable energy cooperatives, and sustainable agriculture initiatives, {userName} helps develop economic models that create green jobs while addressing environmental challenges. The work requires learning about renewable energy systems, sustainable agriculture, green infrastructure, environmental law, and community economic development strategies. As the initiative expands, {userName} discovers the importance of building intergenerational coalitions that respect both traditional ecological knowledge and cutting-edge climate science while ensuring that climate solutions create opportunities for economic justice and community empowerment rather than displacement or further marginalization.",
+          pause: true,
+          hook: "What lasting impact will {userName}'s climate justice initiative have on their community and beyond?",
+          microVariants: {
+            text: "{userName} implements a multi-faceted climate justice campaign that includes policy advocacy, community education, direct action organizing, and the development of sustainable community-based solutions that address both environmental and economic challenges. The campaign involves organizing climate justice forums where community members can share their experiences with environmental impacts and participate in developing locally relevant solutions. Through collaboration with environmental justice organizations, renewable energy cooperatives, and sustainable agriculture initiatives, {userName} helps develop economic models that create green jobs while addressing environmental challenges. The work requires learning about renewable energy systems, sustainable agriculture, green infrastructure, environmental law, and community economic development strategies. As the initiative expands, {userName} discovers the importance of building intergenerational coalitions that respect both traditional ecological knowledge and cutting-edge climate science while ensuring that climate solutions create opportunities for economic justice and community empowerment rather than displacement or further marginalization.",
+            alternatives: ["Community-based solutions demonstrate that climate action can create economic opportunities.", "{userName}'s initiative proves that youth leadership can drive meaningful policy change."],
+            optionalDetails: ["green jobs training programs provide pathways to economic stability", "traditional ecological knowledge informs innovative climate adaptation strategies"]
           }
         }
       ],
@@ -1369,12 +1614,20 @@ export class TemplateLibraryService {
           type: 'triumphant',
           text: "Final Chapter: The International Climate Justice Summit\n\nAs the youngest delegate to the International Climate Justice Summit, {userName} presents the community-based climate justice model they developed, which is adopted by 47 countries as a framework for equitable climate action that prioritizes community empowerment and environmental justice.",
           microVariants: ["Their climate justice framework becomes an international model for equitable environmental policy.", "Global climate policy incorporates {userName}'s community empowerment approach to environmental justice."]
+        },
+        {
+          type: 'cozy',
+          text: "Final Chapter: The Resilient Future\n\nOn a bright morning in the community resilience center, {userName} watched as neighbors gathered to share {favoriteFood} from the rooftop gardens, discuss the week's renewable energy production from the community solar cooperative, and plan the next steps in their ongoing climate adaptation work. The {favoriteColor} mosaic on the center's wall told the story of their community's transformation from vulnerability to empowerment, while the thriving {favoriteAnimal} habitat in the restored wetlands nearby demonstrated how climate solutions could heal both human and natural communities. Looking toward the future, {userName} felt confident that the climate justice movement they had helped build would continue growing, creating resilient communities that could face any challenge while ensuring that everyone had access to clean energy, healthy environments, and economic opportunity.",
+          microVariants: [
+            "Final Chapter: The Living Legacy\n\nThe climate justice initiative had grown from {userName}'s high school project into a comprehensive community transformation that demonstrated how climate action could address both environmental challenges and social inequities, creating a model of resilience and justice that inspired communities around the world."
+          ]
         }
       ],
       reuse: {
         swappableElements: {
           "climate_impacts": ["sea level rise", "extreme weather", "drought patterns", "ecosystem disruption"],
-          "justice_solutions": ["community energy cooperatives", "green job training", "environmental remediation", "participatory planning"]
+          "justice_solutions": ["community energy cooperatives", "green job training", "environmental remediation", "participatory planning"],
+          "organizing_approaches": ["community forums", "policy advocacy", "direct action", "coalition building"]
         },
         weatherVariants: ["urgent action day", "coalition building session", "policy advocacy meeting", "community organizing event"],
         settingVariants: ["community center", "city council chambers", "environmental justice organization", "university research facility"],
