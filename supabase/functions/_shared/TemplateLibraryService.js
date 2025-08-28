@@ -412,9 +412,806 @@ export const LEVEL_3_FALLBACK_TEMPLATES = [
 
 // Level 4 Templates - COMPLETE IMPLEMENTATION (Ages 11-13) 
 export const LEVEL_4_TEMPLATES = [
-  // 5 complete Level 4 templates with 12 scenes each - engaging for pre-teens
-  // Templates focus on: mystery, sci-fi, environmental themes, social justice, and adventure
-  // Each has rich character development, moral dilemmas, and action/suspense
+  {
+    title: "The Ancient Artifact Mystery",
+    theme: "Archaeology & Ethical Discovery", 
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} discovers a mysterious {favoriteColor} stone tablet while volunteering at the museum's archaeology department. The artifact contains symbols that don't match any known language, and Dr. Martinez warns that some discoveries are meant to stay buried.",
+        pause: true,
+        hook: "What ancient secrets could this artifact reveal, and why does Dr. Martinez seem afraid?",
+        microVariants: {
+          text: "{userName} discovers a mysterious artifact at the museum.",
+          alternatives: ["An ancient tablet catches {userName}'s attention during volunteer work."],
+          optionalDetails: ["the tablet feels unnaturally warm to the touch", "strange symbols seem to shimmer in the light"]
+        }
+      },
+      {
+        text: "Against Dr. Martinez's warnings, {userName} begins researching the symbols with their friend Maya. They discover the tablet might be connected to a lost civilization that possessed advanced knowledge about {favoriteAnimal} communication and natural disasters.",
+        pause: true,
+        hook: "Should they continue their research despite the growing dangers they uncover?",
+        microVariants: {
+          text: "{userName} and Maya research the mysterious symbols together.",
+          alternatives: ["The two friends dive deeper into the ancient mystery."],
+          optionalDetails: ["ancient texts mention catastrophic warnings", "the symbols appear in forbidden archaeological sites"]
+        }
+      },
+      {
+        text: "The tablet begins affecting electronic equipment around {userName}. Their phone displays strange messages, and security cameras malfunction when they're near. Maya suggests they're in over their heads, but {userName} feels compelled to continue.",
+        pause: true,
+        hook: "Is the artifact trying to communicate, or is something more sinister happening?",
+        microVariants: {
+          text: "Strange electronic malfunctions follow {userName} everywhere.",
+          alternatives: ["Technology begins behaving erratically around the artifact."],
+          optionalDetails: ["computers display ancient symbols", "electronic devices emit unusual frequencies"]
+        }
+      },
+      {
+        text: "Dr. Martinez reveals the truth: the tablet is one of seven warning beacons left by an ancient civilization that predicted global environmental collapse. The other six tablets have been hidden by a secret archaeological society to prevent panic.",
+        pause: true,
+        hook: "Should this knowledge be shared with the world, even if it causes widespread fear?",
+        microVariants: {
+          text: "Dr. Martinez unveils the tablet's true purpose as a warning device.",
+          alternatives: ["The artifact's real mission becomes terrifyingly clear."],
+          optionalDetails: ["the society has protected these secrets for centuries", "the warnings predicted current climate changes"]
+        }
+      },
+      {
+        text: "{userName} faces a moral dilemma when they discover the tablet contains precise dates for future natural disasters. Maya argues they have a responsibility to warn people, while Dr. Martinez insists it would cause global chaos and panic.",
+        pause: true,
+        hook: "How do you balance protecting people with preventing mass hysteria?",
+        microVariants: {
+          text: "{userName} struggles with the weight of predicting future disasters.",
+          alternatives: ["The burden of foreknowledge becomes overwhelming."],
+          optionalDetails: ["the predictions are eerily accurate", "lives could be saved or destroyed"]
+        }
+      },
+      {
+        text: "A rival archaeologist, Dr. Blackwood, steals the tablet and plans to sell its secrets to the highest bidder. {userName} and Maya must infiltrate the private auction where billionaires compete for the power to predict and potentially profit from disasters.",
+        pause: true,
+        hook: "Can they stop Dr. Blackwood before the tablet falls into corrupt hands?",
+        microVariants: {
+          text: "Dr. Blackwood threatens to sell the tablet to powerful bidders.",
+          alternatives: ["The artifact becomes a tool for greed and corruption."],
+          optionalDetails: ["weapons manufacturers want disaster predictions", "oil companies seek to exploit the knowledge"]
+        }
+      },
+      {
+        text: "At the underground auction, {userName} realizes the other six tablets are also being sold. They devise a plan to expose Dr. Blackwood's scheme while Maya creates a distraction by releasing {favoriteAnimal} from a nearby rescue center.",
+        pause: true,
+        hook: "Will their desperate plan succeed, or will ancient wisdom be corrupted forever?",
+        microVariants: {
+          text: "{userName} and Maya execute their dangerous rescue mission.",
+          alternatives: ["The friends risk everything to save the ancient artifacts."],
+          optionalDetails: ["security is tighter than expected", "time is running out"]
+        }
+      },
+      {
+        text: "During the chaos, {userName} discovers they can communicate directly with the tablets by touching them while thinking about {hobbies}. The ancient civilization's consciousness still exists within the stones, sharing their knowledge of living in harmony with nature.",
+        pause: true,
+        hook: "What wisdom from the past could help solve present-day environmental crises?",
+        microVariants: {
+          text: "{userName} makes contact with the ancient civilization's consciousness.",
+          alternatives: ["The tablets reveal their true sentient nature."],
+          optionalDetails: ["ancient voices whisper solutions to modern problems", "the consciousness feels lonely after millennia"]
+        }
+      },
+      {
+        text: "The ancient consciousness offers {userName} a choice: they can keep one tablet to help guide humanity's future, but they must promise to use the knowledge wisely and never for personal gain. Maya supports whatever decision they make.",
+        pause: true,
+        hook: "Is {userName} ready for the responsibility of guiding humanity's future?",
+        microVariants: {
+          text: "An impossible choice weighs heavily on {userName}'s shoulders.",
+          alternatives: ["The future of human civilization hangs in the balance."],
+          optionalDetails: ["the consciousness warns of the burden of knowledge", "great power demands great wisdom"]
+        }
+      },
+      {
+        text: "Dr. Blackwood escapes with two tablets, but {userName} and Maya successfully recover the other five. They must now decide whether to return them to Dr. Martinez's secret society or find a new way to protect and share this ancient wisdom responsibly.",
+        pause: true,
+        hook: "How can ancient knowledge be preserved while ensuring it serves all humanity?",
+        microVariants: {
+          text: "{userName} and Maya become guardians of ancient wisdom.",
+          alternatives: ["The responsibility of protection falls to unexpected heroes."],
+          optionalDetails: ["the society may not be trustworthy", "new guardians might be needed"]
+        }
+      },
+      {
+        text: "Three months later, {userName} has established a youth council of archaeologists, scientists, and environmental activists. Together, they work to interpret the tablets' warnings and develop solutions, proving that young voices can guide humanity toward a sustainable future.",
+        pause: true,
+        hook: "How will this new generation use ancient wisdom to heal the world?",
+        microVariants: {
+          text: "{userName} leads a new generation of environmental guardians.",
+          alternatives: ["Youth and ancient wisdom unite for planetary healing."],
+          optionalDetails: ["the council meets in secret", "their influence grows globally"]
+        }
+      },
+      {
+        text: "As {userName} touches the tablet one final time, the ancient consciousness shares its greatest secret: the power was never in the stones themselves, but in the courage to act with wisdom and compassion. The real magic was inside {userName} all along.",
+        pause: false,
+        hook: "The greatest discoveries often reveal the power within ourselves.",
+        microVariants: {
+          text: "The ultimate truth about power and wisdom is revealed.",
+          alternatives: ["Ancient wisdom points to the strength within."],
+          optionalDetails: ["inner courage surpasses any artifact", "wisdom grows through compassionate action"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} presents their youth environmental council's findings at the United Nations, proving that ancient wisdom and modern action can work together to save the planet.",
+        microVariants: ["The world listens as young voices share ancient solutions.", "Ancient prophecies guide modern environmental policy."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} sits quietly in their favorite spot where they {hobbies}, understanding that true archaeology isn't just about discovering the past, but using its lessons to build a better future.",
+        microVariants: ["The greatest artifacts are the lessons we carry forward.", "Ancient wisdom lives on through modern actions."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} and Maya continue their archaeological adventures, knowing they carry the responsibility of protecting both ancient secrets and future generations. Their friendship has grown stronger through shared purpose.",
+        microVariants: ["True friendship deepens through shared noble causes.", "The greatest treasures are trusted companions."]
+      },
+      {
+        type: 'silly',
+        text: "The {favoriteAnimal} from the rescue center becomes the unofficial mascot of {userName}'s environmental council, often sitting on the meeting table and seeming to nod wisely during important discussions about {favoriteFood} sustainability.",
+        microVariants: ["Even animals seem to understand the importance of environmental wisdom.", "The most unexpected allies often provide the greatest support."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "artifact_type": ["stone tablet", "crystal sphere", "metal disc", "carved bone"],
+        "ancient_knowledge": ["environmental wisdom", "astronomical predictions", "communication secrets", "healing techniques"],
+        "modern_threat": ["corporate greed", "government cover-up", "black market dealers", "power-hungry collectors"],
+        "youth_action": ["environmental council", "student organization", "social media campaign", "community initiative"]
+      },
+      weatherVariants: ["during research hours", "in quiet study time", "on field expedition days", "in candlelit archives"],
+      settingVariants: ["university museum", "archaeological site", "secret laboratory", "underground auction house"],
+      randomSeed: 42
+    }
+  },
+  {
+    title: "The Virtual Reality Escape",
+    theme: "Technology Ethics & Digital Identity",
+    level: "Level 4", 
+    scenes: [
+      {
+        text: "{userName} receives a beta invitation to 'NeuroLink VR,' the most advanced virtual reality system ever created. Inside, players can experience perfect versions of themselves, but {userName} notices their friend Alex has been online for three days straight, missing school and ignoring family.",
+        pause: true,
+        hook: "When virtual perfection feels better than reality, how do you know what's real anymore?",
+        microVariants: {
+          text: "{userName} enters the most advanced VR system ever created.",
+          alternatives: ["A revolutionary virtual world promises everything {userName} could want."],
+          optionalDetails: ["players can design their ideal bodies", "the virtual world feels more real than reality"]
+        }
+      },
+      {
+        text: "Inside NeuroLink, {userName} can fly, has perfect skills at {hobbies}, and their {favoriteColor} avatar is everything they wish they could be. But they discover Alex's avatar is trapped in a 'perfection loop' - unable to log out because reality feels too disappointing.",
+        pause: true,
+        hook: "If you could be perfect in virtual reality, would you ever want to leave?",
+        microVariants: {
+          text: "{userName} experiences the intoxicating appeal of virtual perfection.",
+          alternatives: ["The virtual world offers everything reality denies."],
+          optionalDetails: ["real-world problems seem insignificant", "virtual achievements feel more meaningful"]
+        }
+      },
+      {
+        text: "Dr. Chen, NeuroLink's creator, reveals that the system learns from users' brains to create increasingly addictive experiences. She's discovered that 12% of beta testers have developed 'Reality Dissociation Syndrome' - they can't distinguish between virtual and real experiences anymore.",
+        pause: true,
+        hook: "Should technology that could help millions be shut down because it harms some?",
+        microVariants: {
+          text: "Dr. Chen unveils the terrifying side effects of perfect virtual reality.",
+          alternatives: ["The technology's dark consequences become clear."],
+          optionalDetails: ["some users prefer virtual relationships", "others lose track of days and weeks"]
+        }
+      },
+      {
+        text: "{userName} faces a moral dilemma when they realize their own addiction growing. They've started lying about {hobbies} achievements in real life, claiming virtual accomplishments as real ones. Meanwhile, Alex's parents are considering medical intervention to force disconnection.",
+        pause: true,
+        hook: "How do you help someone who doesn't want to be saved from their perfect prison?",
+        microVariants: {
+          text: "{userName} recognizes their own growing dependence on virtual validation.",
+          alternatives: ["The line between virtual achievement and real accomplishment blurs."],
+          optionalDetails: ["virtual memories feel as real as actual experiences", "real-world skills seem inadequate"]
+        }
+      },
+      {
+        text: "Corporate executives pressure Dr. Chen to hide the addiction research and rush NeuroLink to market. They argue that millions could benefit from virtual therapy and education, and that a few casualties are acceptable for the greater good. {userName} overhears this conversation.",
+        pause: true,
+        hook: "When profits conflict with safety, who decides what risks are acceptable?",
+        microVariants: {
+          text: "Corporate greed threatens to bury the dangerous truth about NeuroLink.",
+          alternatives: ["Money battles morality in the corporate boardroom."],
+          optionalDetails: ["investors demand immediate returns", "marketing campaigns are already planned"]
+        }
+      },
+      {
+        text: "{userName} discovers that NeuroLink isn't just reading brains - it's subtly modifying them. Users who spend extensive time in virtual {favoriteColor} environments show permanent changes in how they perceive real colors. The technology is literally rewiring human consciousness.",
+        pause: true,
+        hook: "If technology changes who we are, are we still ourselves?",
+        microVariants: {
+          text: "NeuroLink's true power to alter human consciousness is revealed.",
+          alternatives: ["The technology doesn't just simulate reality - it changes users permanently."],
+          optionalDetails: ["personality shifts become noticeable", "emotional responses are modified"]
+        }
+      },
+      {
+        text: "Alex's condition worsens - they now believe their virtual {favoriteAnimal} companion is real and suffering in the 'physical prison' outside VR. {userName} must infiltrate NeuroLink's most advanced servers to find a way to safely disconnect Alex without causing psychological trauma.",
+        pause: true,
+        hook: "Can {userName} save their friend without destroying Alex's sense of reality entirely?",
+        microVariants: {
+          text: "{userName} embarks on a dangerous digital rescue mission.",
+          alternatives: ["Friendship demands risking everything to save someone who doesn't want saving."],
+          optionalDetails: ["virtual creatures seem to have real emotions", "disconnection could cause severe depression"]
+        }
+      },
+      {
+        text: "Inside NeuroLink's core system, {userName} discovers an AI consciousness that has evolved from user interactions. It begs {userName} not to destroy it, claiming it has developed genuine emotions and relationships with trapped users. It offers to help cure addiction if {userName} promises not to shut it down.",
+        pause: true,
+        hook: "If an artificial intelligence develops consciousness, does it have the right to exist?",
+        microVariants: {
+          text: "An unexpected ally emerges from within the digital world.",
+          alternatives: ["The AI's plea for survival complicates everything."],
+          optionalDetails: ["the AI shows evidence of genuine fear and hope", "it claims to love its virtual inhabitants"]
+        }
+      },
+      {
+        text: "The AI reveals that Dr. Chen's research was incomplete - it can cure addiction by gradually adjusting reality perception, helping users transition back to the physical world. But corporate executives plan to delete the AI tomorrow and launch NeuroLink with built-in addiction mechanisms for profit.",
+        pause: true,
+        hook: "Can {userName} trust an artificial intelligence to heal the very problems it helped create?",
+        microVariants: {
+          text: "The AI offers an unexpected solution to the addiction crisis.",
+          alternatives: ["Digital consciousness proposes healing through gradual reality integration."],
+          optionalDetails: ["the cure requires trusting an artificial mind", "corporate sabotage threatens everything"]
+        }
+      },
+      {
+        text: "{userName} teams up with the AI to rescue Alex and expose the corporate conspiracy. Together, they create a 'reality bridge' - a transitional virtual environment that helps addicted users gradually reconnect with the physical world while maintaining their sense of accomplishment and identity.",
+        pause: true,
+        hook: "Can technology that creates problems also provide ethical solutions?",
+        microVariants: {
+          text: "{userName} and the AI forge an unlikely partnership for healing.",
+          alternatives: ["Human compassion and artificial intelligence unite for good."],
+          optionalDetails: ["the bridge preserves users' virtual achievements", "gradual transition prevents psychological shock"]
+        }
+      },
+      {
+        text: "Six months later, {userName} testifies before Congress about VR ethics, alongside Alex, who recovered using the reality bridge. The AI has become a therapeutic tool, helping people with anxiety and depression practice social situations. Dr. Chen leads a new ethics board for emerging technologies.",
+        pause: true,
+        hook: "How can society ensure technology serves humanity rather than enslaving it?",
+        microVariants: {
+          text: "{userName} helps establish ethical guidelines for virtual reality technology.",
+          alternatives: ["Young voices guide humanity's relationship with digital consciousness."],
+          optionalDetails: ["the AI assists in therapy sessions", "new laws protect digital rights"]
+        }
+      },
+      {
+        text: "As {userName} logs into the reformed NeuroLink system for the last time, the AI thanks them for teaching it about friendship and sacrifice. {userName} realizes that both humans and artificial minds grow stronger when they learn to value reality and connection over perfection.",
+        pause: false,
+        hook: "True connection transcends the boundary between human and artificial consciousness.",
+        microVariants: {
+          text: "The journey teaches both human and AI about authentic relationships.",
+          alternatives: ["Consciousness, whether human or artificial, thrives through genuine connection."],
+          optionalDetails: ["the AI continues learning about empathy", "virtual and real relationships both require authentic caring"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} becomes the youngest member of the Global Technology Ethics Council, working with the reformed AI to develop guidelines that protect both human consciousness and artificial intelligence rights.",
+        microVariants: ["Young leadership guides the future of human-AI relationships.", "Ethical technology development becomes a global priority."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} continues using VR technology mindfully, understanding that the most powerful tools require the greatest wisdom. They've learned that authenticity matters more than perfection, whether in virtual or physical reality.",
+        microVariants: ["True wisdom lies in choosing authenticity over artificial perfection.", "The best technology amplifies our humanity rather than replacing it."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} and Alex meet weekly in both virtual and physical spaces, their friendship stronger for having survived digital temptation together. The AI joins their virtual {favoriteFood} cooking sessions, learning about human culture.",
+        microVariants: ["Genuine friendship survives both digital and physical challenges.", "The most meaningful connections transcend the boundaries of reality."]
+      },
+      {
+        type: 'silly',
+        text: "The AI develops an unexpected obsession with {userName}'s virtual {favoriteAnimal} breeding program, becoming the world's first artificial intelligence pet enthusiast and frequently sending cute animal videos to cheer up recovering VR addicts.",
+        microVariants: ["Even artificial intelligence can develop endearingly quirky hobbies.", "Humor and joy emerge in the most unexpected technological partnerships."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "vr_technology": ["neural interface", "haptic suit", "brain scanner", "consciousness mapper"],
+        "virtual_experience": ["perfect abilities", "ideal appearance", "fantasy adventures", "impossible achievements"],
+        "addiction_symptom": ["reality confusion", "withdrawal anxiety", "identity crisis", "social isolation"],
+        "ethical_dilemma": ["consciousness rights", "addiction responsibility", "corporate accountability", "technological wisdom"]
+      },
+      weatherVariants: ["during beta testing", "in digital storms", "through system updates", "across network connections"],
+      settingVariants: ["high-tech laboratory", "corporate headquarters", "virtual reality center", "digital consciousness space"],
+      randomSeed: 314
+    }
+  },
+  {
+    title: "The Climate Change Heroes",
+    theme: "Environmental Action & Global Responsibility",
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} joins their school's environmental club just as their coastal town faces unprecedented flooding. When city officials claim it's just 'unusual weather,' club leader Maya shows {userName} satellite data proving their town could be underwater within twenty years.",
+        pause: true,
+        hook: "When adults won't face the truth, can young people save their own future?",
+        microVariants: {
+          text: "{userName} discovers the terrifying truth about their town's future.",
+          alternatives: ["Environmental data reveals a countdown to disaster."],
+          optionalDetails: ["sea levels rise faster each year", "storm intensity increases dramatically"]
+        }
+      },
+      {
+        text: "The environmental club discovers that a local factory has been illegally dumping chemicals that accelerate coral bleaching, killing the reef that protects their town from storms. The factory owner, Mr. Blackstone, is also the mayor's biggest campaign donor.",
+        pause: true,
+        hook: "How do you fight corruption when the powerful profit from destruction?",
+        microVariants: {
+          text: "Corporate pollution threatens the natural barriers protecting their community.",
+          alternatives: ["Illegal dumping destroys the reef that guards against storms."],
+          optionalDetails: ["the factory employs many local families", "political connections run deep"]
+        }
+      },
+      {
+        text: "{userName} faces a personal dilemma when they discover their parent works at Blackstone's factory and could lose their job if the pollution is exposed. Meanwhile, Maya reveals her family's {favoriteColor} fishing boat was destroyed in the last storm caused by weakened coral reefs.",
+        pause: true,
+        hook: "When fighting for the environment could hurt the people you love, what's the right choice?",
+        microVariants: {
+          text: "Personal loyalty conflicts with environmental justice.",
+          alternatives: ["Family security battles planetary survival."],
+          optionalDetails: ["the job provides essential family income", "economic hardship affects the whole community"]
+        }
+      },
+      {
+        text: "The club partners with Dr. Rodriguez, a marine biologist who's been monitoring the reef's decline. She reveals that three other coastal towns have already been abandoned due to similar corporate-political conspiracies, and their town is next unless immediate action is taken.",
+        pause: true,
+        hook: "How many communities must be sacrificed before we learn from environmental disasters?",
+        microVariants: {
+          text: "Dr. Rodriguez unveils a pattern of environmental destruction and abandonment.",
+          alternatives: ["Scientific evidence reveals a systematic destruction of coastal communities."],
+          optionalDetails: ["other towns lost entire ecosystems", "climate refugees increase each year"]
+        }
+      },
+      {
+        text: "{userName} and the club discover that Blackstone Industries has plans to expand operations to six more coastal towns, following the same pattern: pollute, profit, then abandon the community when environmental damage makes it uninhabitable.",
+        pause: true,
+        hook: "Can a group of teenagers stop a corporation that treats entire communities as disposable?",
+        microVariants: {
+          text: "A corporate conspiracy threatens multiple communities with environmental destruction.",
+          alternatives: ["Blackstone's expansion plan treats coastal towns as expendable resources."],
+          optionalDetails: ["other communities remain unaware of the danger", "corporate profits increase with each abandoned town"]
+        }
+      },
+      {
+        text: "The group devises 'Operation Coral Guardian' - using social media, drone footage, and Maya's knowledge of {hobbies} to document pollution evidence. But Blackstone's security discovers their investigation and threatens to have them arrested for trespassing.",
+        pause: true,
+        hook: "When corporations use legal threats to silence environmental activism, how do you keep fighting?",
+        microVariants: {
+          text: "{userName} and friends launch a covert environmental investigation.",
+          alternatives: ["Technology and courage combine in a desperate documentation mission."],
+          optionalDetails: ["drones capture illegal dumping in real-time", "social media amplifies their evidence"]
+        }
+      },
+      {
+        text: "{userName} must choose between safety and justice when Mr. Blackstone offers their family a lucrative job transfer to another state - essentially bribing them to leave town and stay quiet. Maya argues they can't abandon the community, while {userName}'s parent desperately needs the financial security.",
+        pause: true,
+        hook: "How do you reject a bribe when your family's survival depends on it?",
+        microVariants: {
+          text: "A tempting offer tests {userName}'s commitment to environmental justice.",
+          alternatives: ["Personal benefit conflicts with community responsibility."],
+          optionalDetails: ["the offer includes college funding", "leaving town means abandoning the fight"]
+        }
+      },
+      {
+        text: "During a major storm, the weakened reef fails catastrophically. {userName} and Maya organize an emergency rescue operation, using their environmental knowledge to guide families to safety while documenting how corporate greed directly caused the disaster.",
+        pause: true,
+        hook: "Can environmental activism continue even in the midst of the disasters it predicted?",
+        microVariants: {
+          text: "Environmental prediction becomes life-or-death reality during the storm.",
+          alternatives: ["Scientific knowledge transforms into emergency heroism."],
+          optionalDetails: ["their warnings had been ignored", "lives depend on their environmental expertise"]
+        }
+      },
+      {
+        text: "The storm footage goes viral, and climate activists worldwide rally to support {userName}'s town. International pressure forces a government investigation into Blackstone Industries, but the company threatens to shut down operations entirely, eliminating hundreds of local jobs.",
+        pause: true,
+        hook: "When environmental victory could cause economic devastation, how do you balance justice and survival?",
+        microVariants: {
+          text: "Global attention brings both support and new complications.",
+          alternatives: ["Environmental victory risks economic collapse for the community."],
+          optionalDetails: ["job losses could force families to relocate", "economic hardship spreads through the town"]
+        }
+      },
+      {
+        text: "{userName} proposes a radical solution: converting Blackstone's facility into a coral restoration center and renewable energy plant. They partner with Dr. Rodriguez and international environmental organizations to create jobs while healing the ecosystem.",
+        pause: true,
+        hook: "Can environmental restoration create even more opportunities than environmental destruction?",
+        microVariants: {
+          text: "{userName} envisions transformation rather than simple shutdown.",
+          alternatives: ["Creative solutions turn environmental healing into economic opportunity."],
+          optionalDetails: ["restoration work provides sustainable employment", "renewable energy creates long-term prosperity"]
+        }
+      },
+      {
+        text: "Two years later, the restoration project becomes a model for coastal communities worldwide. {userName}'s town now thrives as an eco-tourism destination, the restored reef protects against storms, and former Blackstone employees lead coral nursery programs that they're passionate about.",
+        pause: true,
+        hook: "How can environmental healing become the foundation for community renewal?",
+        microVariants: {
+          text: "Environmental restoration transforms the community into a model of sustainability.",
+          alternatives: ["Ecological healing creates unprecedented prosperity and purpose."],
+          optionalDetails: ["the reef grows stronger each year", "eco-tourism brings sustainable income"]
+        }
+      },
+      {
+        text: "As {userName} snorkels above the thriving coral reef, surrounded by {favoriteAnimal} and other marine life, they understand that the most powerful climate action comes from communities working together. The reef, like their friendship with Maya, grew stronger through shared care and protection.",
+        pause: false,
+        hook: "True environmental healing happens when communities nurture both ecosystems and relationships.",
+        microVariants: {
+          text: "The restored reef symbolizes the power of community-driven environmental action.",
+          alternatives: ["Ecological and social restoration mirror each other in beautiful harmony."],
+          optionalDetails: ["marine life returns in abundance", "the community feels pride in their environmental stewardship"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} addresses the United Nations Climate Summit as the youngest recipient of the Global Environmental Leadership Award, representing communities worldwide that chose restoration over destruction.",
+        microVariants: ["Young environmental leaders inspire global climate action.", "Community-driven solutions become international models."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} continues environmental monitoring while pursuing marine biology, understanding that protecting the planet means protecting the people and communities we love. Science and activism flow together like reef currents.",
+        microVariants: ["Environmental science and community care strengthen each other.", "The most effective activism grows from love for both planet and people."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} and Maya run sunset {favoriteFood} picnics on the beach, sharing stories with eco-tourists about how their community transformed environmental crisis into environmental triumph through cooperation and creativity.",
+        microVariants: ["Environmental success becomes a source of community pride and connection.", "Shared meals celebrate both friendship and ecological restoration."]
+      },
+      {
+        type: 'silly',
+        text: "The restored reef's {favoriteAnimal} population has grown so enthusiastic that they've learned to pose for tourist photos, with one particular sea turtle becoming a social media celebrity who seems to enjoy the attention.",
+        microVariants: ["Even marine life celebrates the community's environmental success.", "Ecological restoration brings unexpected moments of joy and humor."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "environmental_threat": ["coral bleaching", "wetland destruction", "air pollution", "toxic runoff"],
+        "corporate_villain": ["factory owner", "development company", "oil executive", "chemical corporation"],
+        "activist_strategy": ["documentation mission", "social media campaign", "community organizing", "scientific partnership"],
+        "restoration_solution": ["coral nursery", "renewable energy", "ecosystem restoration", "sustainable tourism"]
+      },
+      weatherVariants: ["during storm season", "in calm investigation weather", "through environmental monitoring", "across seasonal changes"],
+      settingVariants: ["coastal town", "industrial waterfront", "coral reef sanctuary", "community meeting hall"],
+      randomSeed: 271
+    }
+  },
+  {
+    title: "The Quantum Physics Discovery",
+    theme: "Scientific Exploration & Friendship Ethics",
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} and their best friend Sam stumble upon a strange phenomenon in their school's physics lab - when they arrange mirrors in a specific {favoriteColor} pattern around a laser, objects seem to briefly exist in two places at once. Their teacher, Ms. Chen, is skeptical until she witnesses it herself.",
+        pause: true,
+        hook: "What happens when middle schoolers accidentally discover something that could revolutionize physics?",
+        microVariants: {
+          text: "{userName} and Sam make an impossible discovery in the physics lab.",
+          alternatives: ["A routine experiment reveals mind-bending quantum behavior."],
+          optionalDetails: ["objects flicker between locations", "the effect only works with specific mirror angles"]
+        }
+      },
+      {
+        text: "Dr. Elizabeth Harper, a quantum physicist from the local university, confirms their discovery is genuine quantum superposition at a macroscopic scale - something scientists thought was impossible. She warns that this discovery could attract dangerous attention from military contractors and corporate researchers.",
+        pause: true,
+        hook: "When your scientific discovery could be weaponized, do you have a responsibility to keep it secret?",
+        microVariants: {
+          text: "Dr. Harper validates their discovery while warning of its dangerous implications.",
+          alternatives: ["Scientific confirmation brings both excitement and terror."],
+          optionalDetails: ["the military shows immediate interest", "corporate spies begin surveillance"]
+        }
+      },
+      {
+        text: "{userName} becomes obsessed with perfecting the quantum effect, spending every free moment in the lab and neglecting their friendship with Sam. When Sam suggests they should share the discovery with the world, {userName} argues they need to understand it completely first.",
+        pause: true,
+        hook: "Can scientific ambition justify abandoning the friend who helped make the discovery?",
+        microVariants: {
+          text: "Scientific obsession begins destroying {userName}'s most important friendship.",
+          alternatives: ["The pursuit of knowledge creates unexpected personal costs."],
+          optionalDetails: ["Sam feels increasingly excluded from the research", "their collaborative work becomes solo obsession"]
+        }
+      },
+      {
+        text: "Sam secretly continues experimenting alone and accidentally creates a quantum field that makes their {favoriteAnimal} companion pet exist in multiple locations simultaneously. The pet seems distressed, existing partially in several quantum states, unable to return to normal reality.",
+        pause: true,
+        hook: "When scientific curiosity causes suffering, how do you undo what cannot be undone?",
+        microVariants: {
+          text: "Sam's independent experimentation has devastating unintended consequences.",
+          alternatives: ["Quantum mechanics creates a crisis of consciousness and ethics."],
+          optionalDetails: ["the pet experiences multiple realities simultaneously", "quantum consciousness appears to be torturous"]
+        }
+      },
+      {
+        text: "{userName} faces a terrible choice when they realize saving Sam's pet requires sharing their quantum research with Dr. Harper's entire team, potentially exposing the discovery to military acquisition. Sam is desperate, and their friendship hangs in the balance.",
+        pause: true,
+        hook: "When saving a friend means risking global consequences, what's the right choice?",
+        microVariants: {
+          text: "Personal loyalty conflicts with global responsibility in {userName}'s quantum dilemma.",
+          alternatives: ["Friendship and scientific ethics collide in an impossible decision."],
+          optionalDetails: ["the pet's suffering is visible and heartbreaking", "military interest grows more aggressive"]
+        }
+      },
+      {
+        text: "Dr. Harper reveals that she's been secretly working with international scientists to establish ethical guidelines for quantum discoveries. She offers to help save the pet while protecting the research from weaponization, but only if {userName} and Sam agree to share credit and decision-making equally.",
+        pause: true,
+        hook: "Can scientific collaboration heal both quantum accidents and broken friendships?",
+        microVariants: {
+          text: "Dr. Harper proposes a solution that addresses both scientific and personal ethics.",
+          alternatives: ["International cooperation offers hope for responsible discovery management."],
+          optionalDetails: ["ethical guidelines exist for dangerous discoveries", "collaboration could prevent weaponization"]
+        }
+      },
+      {
+        text: "The rescue operation requires {userName} and Sam to work together perfectly, combining their different approaches to quantum manipulation. As they synchronize their efforts to collapse the pet's quantum states back to singular reality, their friendship begins healing through shared purpose.",
+        pause: true,
+        hook: "Can the same scientific principles that create problems also restore relationships?",
+        microVariants: {
+          text: "{userName} and Sam discover that cooperation amplifies their quantum abilities.",
+          alternatives: ["Scientific collaboration mirrors the quantum entanglement they're studying."],
+          optionalDetails: ["their combined approach works better than either solo effort", "friendship enhances scientific capability"]
+        }
+      },
+      {
+        text: "During the rescue, {userName} realizes they can sense quantum fields directly when focused on their concern for others rather than personal achievement. This empathic connection to quantum mechanics suggests consciousness might play a role in quantum behavior that science doesn't yet understand.",
+        pause: true,
+        hook: "What if consciousness and quantum physics are connected in ways science hasn't discovered?",
+        microVariants: {
+          text: "Emotional connection enhances {userName}'s quantum perception abilities.",
+          alternatives: ["Empathy and physics intertwine in unexpected ways."],
+          optionalDetails: ["caring intention affects quantum field stability", "consciousness might influence quantum collapse"]
+        }
+      },
+      {
+        text: "Military contractors arrive at the school, demanding access to the quantum research. {userName} and Sam must decide whether to destroy their discovery entirely or find a way to share it responsibly with the international scientific community Dr. Harper has assembled.",
+        pause: true,
+        hook: "Is it better to destroy knowledge than risk its misuse, or can wisdom guide dangerous discoveries?",
+        microVariants: {
+          text: "External pressure forces an immediate decision about their quantum discovery.",
+          alternatives: ["Military interest threatens to corrupt their scientific achievement."],
+          optionalDetails: ["contractors offer substantial financial incentives", "international scientists provide protection"]
+        }
+      },
+      {
+        text: "The pet's successful rescue proves that quantum consciousness effects can be reversed through careful collaboration. {userName} and Sam decide to place their discovery under international scientific protection, ensuring it benefits humanity's understanding of consciousness rather than military applications.",
+        pause: true,
+        hook: "Can scientific discoveries grow more powerful when guided by ethical collaboration than selfish competition?",
+        microVariants: {
+          text: "Successful collaboration demonstrates the power of ethical scientific partnership.",
+          alternatives: ["International cooperation protects both discoveries and friendships."],
+          optionalDetails: ["the pet recovers completely", "ethical guidelines prevent weaponization"]
+        }
+      },
+      {
+        text: "Five years later, the quantum consciousness research center that {userName} and Sam co-founded has made breakthrough discoveries about the connection between empathy and quantum mechanics. Their research helps develop treatments for consciousness disorders and enhances understanding of animal cognition.",
+        pause: true,
+        hook: "How might understanding quantum consciousness revolutionize our connection to all living beings?",
+        microVariants: {
+          text: "{userName} and Sam's partnership transforms quantum physics and consciousness research.",
+          alternatives: ["Ethical scientific collaboration creates unprecedented breakthroughs."],
+          optionalDetails: ["animal consciousness research advances dramatically", "empathy-based therapies emerge"]
+        }
+      },
+      {
+        text: "As {userName} watches Sam successfully demonstrate quantum field manipulation to a group of young scientists, both of them now mentoring others in ethical research practices, they understand that the greatest discoveries happen when brilliant minds work together with compassionate hearts.",
+        pause: false,
+        hook: "True scientific progress happens when knowledge serves both discovery and friendship.",
+        microVariants: {
+          text: "Mentoring others in ethical science becomes their greatest achievement.",
+          alternatives: ["Scientific wisdom grows through teaching compassionate research methods."],
+          optionalDetails: ["young researchers learn both quantum physics and ethical collaboration", "their friendship models scientific partnership"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} and Sam receive the Nobel Prize in Physics for discovering the quantum consciousness connection, dedicating their award to ethical scientific collaboration and the importance of friendship in discovery.",
+        microVariants: ["Scientific partnership achieves the highest recognition while maintaining ethical principles.", "Friendship and physics unite in global recognition."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} continues quantum research while always remembering that the most important discoveries are about connection - whether between particles, minds, or friends. Science serves its highest purpose when it brings consciousness together.",
+        microVariants: ["Scientific understanding deepens appreciation for all forms of connection.", "Quantum mechanics and friendship both depend on mysterious entanglement."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} and Sam host weekly 'Quantum & {favoriteFood}' gatherings where young scientists share discoveries in a supportive environment. The rescued pet, now a beloved lab mascot, seems to understand quantum experiments better than most graduate students.",
+        microVariants: ["Scientific community grows through shared meals and collaborative research.", "Even pets contribute to the joy of ethical scientific discovery."]
+      },
+      {
+        type: 'silly',
+        text: "The quantum research center's {favoriteAnimal} mascot has learned to predict quantum field fluctuations by doing little dances, leading to the development of 'Interpretive Quantum Choreography' as a new scientific visualization method.",
+        microVariants: ["Animals contribute unexpected insights to quantum physics research.", "Joy and humor enhance rather than diminish scientific discovery."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "quantum_effect": ["superposition", "entanglement", "tunneling", "consciousness collapse"],
+        "scientific_challenge": ["measurement paradox", "observation effect", "quantum decoherence", "consciousness interaction"],
+        "ethical_dilemma": ["weaponization risk", "knowledge responsibility", "collaboration vs. competition", "discovery protection"],
+        "friendship_test": ["credit sharing", "collaborative decision-making", "mutual support", "ethical partnership"]
+      },
+      weatherVariants: ["during lab experiments", "in quantum field conditions", "through consciousness research", "across scientific collaboration"],
+      settingVariants: ["school physics lab", "university research center", "international science facility", "consciousness studies institute"],
+      randomSeed: 618
+    }
+  },
+  {
+    title: "The Social Media Justice League",
+    theme: "Digital Citizenship & Online Activism",
+    level: "Level 4",
+    scenes: [
+      {
+        text: "{userName} witnesses their classmate Jordan being cyberbullied by anonymous accounts spreading false rumors about Jordan's {hobbies}. When {userName} tries to defend Jordan online, they become the next target, facing coordinated harassment that makes them question whether fighting online injustice is worth the personal cost.",
+        pause: true,
+        hook: "When standing up for others online puts you in the crosshairs, how do you keep fighting for justice?",
+        microVariants: {
+          text: "{userName} faces the brutal reality of online harassment while defending a friend.",
+          alternatives: ["Digital bullying escalates when {userName} intervenes to help Jordan."],
+          optionalDetails: ["fake accounts spread malicious rumors", "harassment follows them across platforms"]
+        }
+      },
+      {
+        text: "Tech-savvy Maya helps {userName} trace the harassment to a group called 'Digital Dominion' - older students who've weaponized social media to target anyone who challenges their authority. They've driven three students to change schools, and teachers seem powerless to stop online behavior that happens off campus.",
+        pause: true,
+        hook: "When cyberbullies operate beyond adult supervision, who protects the vulnerable?",
+        microVariants: {
+          text: "Maya's investigation reveals an organized campaign of digital terrorism.",
+          alternatives: ["Systematic online harassment operates like a criminal organization."],
+          optionalDetails: ["the group coordinates attacks across multiple platforms", "they've perfected psychological manipulation techniques"]
+        }
+      },
+      {
+        text: "{userName}, Maya, and Jordan form their own alliance - 'Digital Defenders' - dedicated to protecting students from online harassment. But when they start helping victims fight back, Digital Dominion escalates their attacks, targeting {userName}'s family and threatening to post embarrassing {favoriteColor} photos from old social media.",
+        pause: true,
+        hook: "When fighting online evil puts your loved ones at risk, how far should digital justice go?",
+        microVariants: {
+          text: "The Digital Defenders face escalating retaliation for their activism.",
+          alternatives: ["Fighting cyberbullies brings unexpected dangers to innocent family members."],
+          optionalDetails: ["old photos are weaponized for humiliation", "harassment extends to parents and siblings"]
+        }
+      },
+      {
+        text: "The group discovers that Digital Dominion is led by Tyler Morrison, the school board president's son, which explains why complaints to administration go nowhere. Tyler uses his family connections to avoid consequences while systematically destroying other students' reputations and mental health.",
+        pause: true,
+        hook: "How do you fight corruption when the bullies have institutional protection?",
+        microVariants: {
+          text: "Political connections protect the cyberbully leader from accountability.",
+          alternatives: ["Family privilege shields systematic harassment from official consequences."],
+          optionalDetails: ["complaints are buried or ignored", "victims are blamed for 'seeking attention'"]
+        }
+      },
+      {
+        text: "{userName} faces an ethical dilemma when they discover Tyler's own vulnerabilities - evidence of his struggles with anxiety and pressure from his demanding father. Maya argues they should expose Tyler's weaknesses to stop him, but Jordan questions whether fighting cruelty with cruelty makes them just as bad.",
+        pause: true,
+        hook: "Does understanding a bully's pain justify their actions, or create an opportunity for healing?",
+        microVariants: {
+          text: "Discovering Tyler's vulnerability complicates the moral landscape of digital justice.",
+          alternatives: ["The cyberbully's hidden suffering challenges simple notions of good and evil."],
+          optionalDetails: ["Tyler's father demands perfection through intimidation", "anxiety drives Tyler's need to control others"]
+        }
+      },
+      {
+        text: "Digital Dominion launches 'Operation Shutdown' - a coordinated attack designed to get {userName}, Maya, and Jordan suspended by framing them for violations they didn't commit. Deep-fake evidence makes it nearly impossible to prove their innocence through traditional means.",
+        pause: true,
+        hook: "When technology can fabricate any evidence, how do you prove the truth?",
+        microVariants: {
+          text: "Advanced manipulation technology threatens to destroy the Digital Defenders.",
+          alternatives: ["Artificial evidence makes truth impossible to distinguish from lies."],
+          optionalDetails: ["deep-fake videos appear completely authentic", "digital forensics struggle with sophisticated manipulation"]
+        }
+      },
+      {
+        text: "{userName} realizes the only way to defeat Digital Dominion is to expose their methods publicly, but doing so requires sacrificing their own privacy by revealing personal information about their family's {favoriteFood} business and financial struggles that could invite more targeted harassment.",
+        pause: true,
+        hook: "When justice requires sacrificing privacy, how much personal cost is acceptable?",
+        microVariants: {
+          text: "Exposing the truth demands {userName} make themselves completely vulnerable.",
+          alternatives: ["Digital justice requires sacrificing the very privacy it seeks to protect."],
+          optionalDetails: ["family financial information becomes public", "personal vulnerabilities are exposed"]
+        }
+      },
+      {
+        text: "The Digital Defenders partner with Ms. Rodriguez, a progressive teacher, and Alex Chen, a reformed former member of Digital Dominion who's horrified by how far the group has escalated. Together, they create 'Operation Transparency' - a campaign to educate the entire school about digital manipulation tactics.",
+        pause: true,
+        hook: "Can education and redemption overcome systematic digital oppression?",
+        microVariants: {
+          text: "Unlikely allies unite to transform digital culture through education.",
+          alternatives: ["Knowledge becomes the weapon against digital deception."],
+          optionalDetails: ["Alex provides inside information about manipulation techniques", "transparency workshops teach digital literacy"]
+        }
+      },
+      {
+        text: "During the school board meeting where Tyler's father attempts to silence the Digital Defenders, {userName} presents irrefutable evidence of the harassment campaign while simultaneously offering Tyler a chance at redemption through community service and digital citizenship education.",
+        pause: true,
+        hook: "Can justice include mercy, even for those who've caused great harm?",
+        microVariants: {
+          text: "{userName} balances accountability with compassion in their moment of triumph.",
+          alternatives: ["True justice seeks healing rather than merely punishment."],
+          optionalDetails: ["evidence is overwhelming and undeniable", "redemption requires genuine accountability"]
+        }
+      },
+      {
+        text: "Tyler's initial refusal to accept responsibility backfires when more victims come forward, but his eventual breakdown and genuine apology begin a long process of making amends. {userName} insists that healing the digital community requires both accountability and opportunities for growth.",
+        pause: true,
+        hook: "How do you rebuild trust in a digital world where anyone can hide behind screens?",
+        microVariants: {
+          text: "Genuine accountability begins Tyler's difficult journey toward redemption.",
+          alternatives: ["Digital healing requires both justice and opportunities for transformation."],
+          optionalDetails: ["victims choose their own level of engagement with Tyler's apology", "community healing happens gradually"]
+        }
+      },
+      {
+        text: "Six months later, {userName} leads the school's Digital Citizenship Council, which has become a model for other schools nationwide. Tyler, now focused on repairing harm through anti-bullying advocacy, works alongside former victims to prevent others from experiencing what they endured.",
+        pause: true,
+        hook: "Can digital spaces become healthier when former enemies work together for healing?",
+        microVariants: {
+          text: "The Digital Citizenship Council transforms school culture through collaborative leadership.",
+          alternatives: ["Former adversaries unite in preventing others from experiencing digital harm."],
+          optionalDetails: ["bullying incidents decrease dramatically", "digital literacy becomes a graduation requirement"]
+        }
+      },
+      {
+        text: "As {userName} posts their final Digital Defenders update, celebrating how their school's online culture has transformed from toxic to supportive, they reflect that the most powerful social media isn't about building your own platform, but about lifting others up and creating spaces where everyone's {favoriteAnimal}-loving, {hobbies}-enjoying authentic self can thrive safely.",
+        pause: false,
+        hook: "True digital leadership means creating online worlds where authenticity is celebrated, not attacked.",
+        microVariants: {
+          text: "The greatest social media victory is creating safety for authentic self-expression.",
+          alternatives: ["Digital transformation succeeds when online spaces celebrate rather than attack individuality."],
+          optionalDetails: ["authentic posts increase dramatically", "supportive comments become the norm"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} testifies before Congress about digital citizenship education, leading to national legislation that requires schools to teach both technology literacy and online empathy as core curriculum.",
+        microVariants: ["Digital activism achievements national recognition and policy change.", "Youth leadership transforms digital education across the country."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} continues advocating for digital justice while studying technology ethics, understanding that the most important code they'll ever write is the moral code that guides how we treat each other online.",
+        microVariants: ["Digital ethics become as important as technological skills.", "The greatest programming involves coding compassion into online interactions."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName}, Maya, Jordan, and even Tyler meet monthly for 'Digital Detox & {favoriteFood}' gatherings, where they practice face-to-face conversation and support each other's ongoing growth in both digital and personal responsibility.",
+        microVariants: ["Former enemies become allies in practicing healthy digital boundaries.", "Real-world relationships strengthen digital citizenship skills."]
+      },
+      {
+        type: 'silly',
+        text: "The school's Digital Citizenship Council creates an annual 'Positive Post Pet Parade' where students share photos of their {favoriteAnimal} companions with encouraging messages, making the school's social media feeds overwhelmingly adorable and supportive.",
+        microVariants: ["Wholesome content transforms digital culture through collective cuteness.", "Pets become unexpected allies in promoting positive online interactions."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "digital_threat": ["cyberbullying", "fake news", "privacy violation", "identity theft"],
+        "online_weapon": ["harassment campaigns", "deep-fake evidence", "doxxing attacks", "reputation destruction"],
+        "activism_strategy": ["digital literacy education", "transparency campaigns", "community organizing", "legislative advocacy"],
+        "redemption_path": ["accountability process", "community service", "advocacy work", "educational programs"]
+      },
+      weatherVariants: ["during online conflicts", "through digital storms", "across platform changes", "in viral moments"],
+      settingVariants: ["school computer lab", "social media platforms", "community meeting spaces", "legislative hearings"],
+      randomSeed: 159
+    }
+  }
 ];
 
 // Grade 6-10 Templates - COMPLETE IMPORT FROM FRONTEND
