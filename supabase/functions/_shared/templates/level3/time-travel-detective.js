@@ -63,6 +63,36 @@ export const template = {
         alternatives: ["Ancient wisdom, military strategy, and modern knowledge unite to protect history from criminal manipulation."],
         optionalDetails: ["historians around the world notice mysterious improvements in artifact authenticity", "the time thieves are sent to a special temporal prison"]
       }
+    },
+    {
+      text: "After successfully completing their mission, the three friends discover their time-travel devices have been enhanced by their collaboration. They can now communicate across centuries and coordinate efforts to protect historical artifacts. {userName} learns that their watch can detect temporal disturbances anywhere in history, making them an essential member of the newly formed Time Guardian Alliance.",
+      pause: true,
+      hook: "What other historical periods might need their protection?",
+      microVariants: {
+        text: "Enhanced time-travel abilities allow the three friends to communicate across centuries and coordinate historical protection efforts.",
+        alternatives: ["Successful teamwork upgrades their temporal powers, creating opportunities for ongoing historical preservation missions."],
+        optionalDetails: ["the devices glow with {favoriteColor} energy when history is threatened", "they establish secret communication codes using ancient languages"]
+      }
+    },
+    {
+      text: "Their first official mission as Time Guardians takes them to Medieval England, where someone is trying to prevent the signing of the Magna Carta. {userName} uses their {hobbies} skills to blend in with the time period, while Kira's knowledge of ancient civilizations helps them understand the political situation, and Marcus applies his Roman strategic thinking to outmaneuver the saboteurs.",
+      pause: true,
+      hook: "How will they preserve one of history's most important documents?",
+      microVariants: {
+        text: "Medieval England becomes their testing ground as Time Guardians work to protect the historic Magna Carta from temporal saboteurs.",
+        alternatives: ["Their diverse historical knowledge combines perfectly to address complex threats against fundamental democratic documents."],
+        optionalDetails: ["they wear period-appropriate disguises made from {favoriteColor} fabrics", "the saboteurs use anachronistic technology that seems familiar"]
+      }
+    },
+    {
+      text: "Through their investigation, the three friends discover that the adult time thieves they captured were part of a larger organization trying to rewrite history for personal profit. The Medieval mission becomes their opportunity to gather evidence and build alliances with historical figures who can help them protect the timeline from future threats while maintaining secrecy about their true identities.",
+      pause: true,
+      hook: "What powerful allies will help them in their ongoing mission to protect history?",
+      microVariants: {
+        text: "Uncovering a larger conspiracy, the Time Guardians must build historical alliances while gathering evidence against temporal criminals.",
+        alternatives: ["The Medieval investigation reveals a network of time criminals that requires careful historical detective work to defeat."],
+        optionalDetails: ["they meet surprisingly familiar faces in different time periods", "historical figures prove more perceptive than expected about temporal anomalies"]
+      }
     }
   ],
   endings: [

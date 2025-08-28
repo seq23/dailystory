@@ -63,6 +63,36 @@ export const template = {
         alternatives: ["The underwater kingdom's recovery demonstrates the powerful connection between land-based conservation and marine ecosystem health."],
         optionalDetails: ["new species of colorful fish have returned to the reefs", "the water is so clear that sunlight reaches the deepest coral gardens"]
       }
+    },
+    {
+      text: "King Neptune, now fully recovered, reveals that {userName} has been chosen to establish the first Inter-Realm Environmental Council, where surface dwellers and sea creatures work together on conservation projects. Marina becomes {userName}'s co-leader, teaching them advanced ocean science while they share surface-world environmental knowledge with the underwater kingdom's most brilliant marine scientists.",
+      pause: true,
+      hook: "What groundbreaking conservation projects will the Inter-Realm Council develop?",
+      microVariants: {
+        text: "The Inter-Realm Environmental Council combines surface and underwater expertise to create revolutionary conservation approaches.",
+        alternatives: ["Leadership opportunities emerge as {userName} helps bridge scientific knowledge between land and sea civilizations."],
+        optionalDetails: ["the council meets in a magical air-filled chamber beneath the waves", "surface scientists are amazed by underwater environmental technologies"]
+      }
+    },
+    {
+      text: "The council's first project involves creating {favoriteColor} coral nurseries that can filter ocean pollution while providing homes for displaced sea life. {userName} coordinates with surface environmental groups to reduce plastic waste, while Marina leads underwater teams in developing new filtration systems using their knowledge of {hobbies} to design innovative solutions that benefit both ecosystems.",
+      pause: true,
+      hook: "How will the success of the coral nursery project inspire larger environmental changes?",
+      microVariants: {
+        text: "Innovative coral nurseries demonstrate how collaborative environmental science can address pollution while supporting marine biodiversity.",
+        alternatives: ["The groundbreaking project showcases practical solutions that emerge from combining surface and underwater environmental expertise."],
+        optionalDetails: ["young {favoriteAnimal} families are among the first to inhabit the new coral homes", "the filtration systems use natural processes enhanced by inter-realm cooperation"]
+      }
+    },
+    {
+      text: "As their environmental work expands globally, {userName} discovers that other magical seashells exist around the world, each connecting to different underwater kingdoms facing their own conservation challenges. They become a traveling environmental ambassador, teaching both surface communities and underwater civilizations about sustainable practices while building a worldwide network of inter-species environmental cooperation.",
+      pause: true,
+      hook: "What global impact will {userName}'s expanding environmental network achieve?",
+      microVariants: {
+        text: "Global environmental ambassador work expands as {userName} discovers a worldwide network of underwater kingdoms needing conservation support.",
+        alternatives: ["The success model spreads internationally as {userName} helps establish environmental partnerships between surface and underwater communities worldwide."],
+        optionalDetails: ["each magical seashell resonates with a unique {favoriteColor} frequency", "international environmental conferences now include underwater delegates"]
+      }
     }
   ],
   endings: [
