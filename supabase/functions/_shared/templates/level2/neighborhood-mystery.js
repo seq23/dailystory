@@ -53,6 +53,36 @@ export const template = {
         alternatives: ["Mrs. Chen's relief and gratitude surprise the worried detectives with an unexpectedly positive reaction.", "The Mystery Club's success brings joy to Mrs. Chen, who had been very worried about her missing pet."],
         optionalDetails: ["Mrs. Chen had been posting missing pet signs everywhere", "Snowball runs into Mrs. Chen's arms when called"]
       }
+    },
+    {
+      text: "Mrs. Chen rewards the Mystery Club with homemade cookies and asks if they would help her create a neighborhood pet safety program. She wants to make sure all the pets stay safe while still having fun exploring. {userName} suggests they make {favoriteColor} identification tags and a map showing which yards are pet-friendly.",
+      pause: true,
+      hook: "How will the pet safety program help the neighborhood?",
+      microVariants: {
+        text: "Mrs. Chen rewards the Mystery Club with homemade cookies and asks if they would help her create a neighborhood pet safety program. She wants to make sure all the pets stay safe while still having fun exploring. {userName} suggests they make {favoriteColor} identification tags and a map showing which yards are pet-friendly.",
+        alternatives: ["Cookie rewards lead to an important new project helping pets stay safe during their neighborhood adventures.", "The successful mystery solving expands into a community service project that protects local pets."],
+        optionalDetails: ["the cookies are still warm and smell amazing", "other neighbors offer to help with the safety program"]
+      }
+    },
+    {
+      text: "The friends work together to visit every house on their street, talking to neighbors about pet safety and creating a neighborhood directory. Mr. Rodriguez offers to help by building safe feeding stations, and other neighbors volunteer to share their yards with pets who need more space to play and exercise.",
+      pause: true,
+      hook: "What other neighborhood improvements will their teamwork inspire?",
+      microVariants: {
+        text: "The friends work together to visit every house on their street, talking to neighbors about pet safety and creating a neighborhood directory. Mr. Rodriguez offers to help by building safe feeding stations, and other neighbors volunteer to share their yards with pets who need more space to play and exercise.",
+        alternatives: ["Door-to-door visits build community connections as neighbors join the pet safety initiative.", "The Mystery Club discovers that solving one problem leads to neighbors working together on many improvements."],
+        optionalDetails: ["they create a detailed map with photos and contact information", "some neighbors offer special treats for visiting pets"]
+      }
+    },
+    {
+      text: "During their final neighborhood meeting, the Mystery Club presents their complete pet safety plan to everyone. {userName} feels proud as neighbors congratulate their team for bringing the community together. Even Snowball and the raccoon family attend the meeting, peacefully sharing {favoriteFood} snacks in Mrs. Chen's backyard.",
+      pause: true,
+      hook: "How has solving mysteries changed {userName} and their friends?",
+      microVariants: {
+        text: "During their final neighborhood meeting, the Mystery Club presents their complete pet safety plan to everyone. {userName} feels proud as neighbors congratulate their team for bringing the community together. Even Snowball and the raccoon family attend the meeting, peacefully sharing {favoriteFood} snacks in Mrs. Chen's backyard.",
+        alternatives: ["The presentation showcases how detective work has brought the entire neighborhood together for a common cause.", "Animals and humans gather peacefully to celebrate the Mystery Club's success in creating community cooperation."],
+        optionalDetails: ["neighbors applaud the professional presentation", "the raccoons keep a respectful distance but seem curious about the meeting"]
+      }
     }
   ],
   endings: [
@@ -65,6 +95,16 @@ export const template = {
       type: 'triumphant',
       text: "{userName} and their friends expand the Mystery Club to include kids from other neighborhoods, creating a city-wide network of young problem-solvers who help communities stay connected and safe.",
       microVariants: ["The successful model spreads throughout the city as other children start their own Mystery Clubs.", "Young detectives across the city work together to solve problems and build stronger communities."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} realizes that the best mysteries aren't about finding clues - they're about bringing people together and making everyone feel cared for. The detective skills help them understand that community problems need community solutions.",
+      microVariants: ["Mystery solving teaches {userName} that cooperation and caring are more valuable than individual detective work.", "The club's success shows {userName} how working together makes neighborhoods stronger and friendlier."]
+    },
+    {
+      type: 'silly',
+      text: "The Mystery Club becomes so good at solving animal mysteries that they're hired by the local zoo! {userName} and friends spend their weekends helping zookeepers understand why the {favoriteAnimal} keeps rearranging its habitat into {favoriteColor} patterns.",
+      microVariants: ["Zoo animals create their own mysteries that only {userName}'s experienced Mystery Club can solve.", "Professional animal detective work becomes the friends' favorite weekend activity at the local zoo."]
     }
   ],
   reuse: {

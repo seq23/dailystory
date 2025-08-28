@@ -53,6 +53,46 @@ export const template = {
         alternatives: ["The successful mission conclusion opens doors to advanced space program participation for talented {userName}."],
         optionalDetails: ["other space agencies hear about the innovative simulation", "local media interviews {userName} about their experience"]
       }
+    },
+    {
+      text: "Inspired by their success, {userName} returns to school with a mission to share their space exploration knowledge with classmates. They establish the Junior Space Scientists Club, where members learn about astronomy, engineering, and the importance of teamwork in scientific discovery. Their friend Alex joins as the club's first member, eager to explore how {hobbies} connects to space science and technology.",
+      pause: true,
+      hook: "What exciting space projects will the Junior Space Scientists Club develop?",
+      microVariants: {
+        text: "The space camp experience motivates {userName} to establish a school club dedicated to space science education and collaborative learning.",
+        alternatives: ["Returning to school, {userName} channels their space exploration passion into creating educational opportunities for curious classmates."],
+        optionalDetails: ["they design model rockets using recycled materials", "the club meets in the library to study constellation patterns"]
+      }
+    },
+    {
+      text: "The Junior Space Scientists Club grows tremendously as students become fascinated by space exploration and scientific methodology. {userName} teaches club members about problem-solving techniques learned at NASA, while different members contribute their unique talents. Maria excels at mathematical calculations, James designs creative spacecraft models, and everyone learns that diverse skills strengthen team capabilities in scientific endeavors.",
+      pause: true,
+      hook: "How will the club's collaborative approach influence their next big project?",
+      microVariants: {
+        text: "Club expansion reveals how different students' unique talents contribute to collective scientific learning and space exploration understanding.",
+        alternatives: ["The growing club demonstrates that successful space exploration requires diverse skills and collaborative teamwork approaches."],
+        optionalDetails: ["parents volunteer to help with club activities and field trips", "the principal notices increased interest in science throughout the school"]
+      }
+    },
+    {
+      text: "For their first major project, the club decides to organize a school-wide Space Exploration Fair where students can display models, experiments, and presentations about different aspects of space science. {userName} coordinates the event using organizational skills developed during space camp, while club members each focus on their areas of expertise and interest, including {favoriteColor} planet research and {favoriteAnimal} space adaptation studies.",
+      pause: true,
+      hook: "What impact will the Space Exploration Fair have on the entire school community?",
+      microVariants: {
+        text: "The club's Space Exploration Fair becomes a school-wide celebration of scientific learning, curiosity, and collaborative achievement.",
+        alternatives: ["Organizing a major science fair allows {userName} and club members to demonstrate leadership while inspiring broader school participation in space science."],
+        optionalDetails: ["younger students create artwork depicting space adventures", "local astronomers volunteer as judges and guest speakers"]
+      }
+    },
+    {
+      text: "The Space Exploration Fair becomes an extraordinary success, attracting families, community members, and even representatives from local science museums. {userName} presents their space camp experience and problem-solving techniques to enthusiastic audiences, while realizing that their greatest achievement isn't personal recognition, but inspiring others to pursue scientific curiosity and collaborative learning. The fair establishes an annual tradition celebrating scientific exploration and community engagement.",
+      pause: true,
+      hook: "How has {userName}'s journey from space camp to community leadership shaped their understanding of scientific exploration?",
+      microVariants: {
+        text: "The successful fair demonstrates how {userName}'s individual space camp experience has grown into community-wide scientific inspiration and educational leadership.",
+        alternatives: ["Personal achievement transforms into community impact as {userName} realizes that sharing scientific passion creates broader educational opportunities."],
+        optionalDetails: ["the museum offers summer internships for interested students", "other schools request guidance for organizing similar science fairs"]
+      }
     }
   ],
   endings: [
@@ -65,6 +105,16 @@ export const template = {
       type: 'cozy',
       text: "{userName} returns home with a deep love of astronomy and science, starting a space club at school where they teach other kids about planets, stars, and the importance of creative problem-solving in scientific exploration.",
       microVariants: ["The space club becomes a place where {userName} shares their passion for astronomy and creative thinking.", "Teaching others about space exploration helps {userName} continue their learning while inspiring classmates."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} realizes that the most important lesson from space camp wasn't about rockets or planets, but about perseverance, teamwork, and creative problem-solving. These skills help them approach every challenge with confidence and curiosity, whether exploring outer space or navigating daily life on Earth.",
+      microVariants: ["Space camp teaches {userName} life skills about perseverance and teamwork that apply to every future challenge.", "The experience shows {userName} that scientific thinking and collaboration are valuable tools for solving any problem."]
+    },
+    {
+      type: 'silly',
+      text: "The space simulation becomes so popular that {userName} starts the world's first {favoriteColor} {favoriteAnimal} Space Academy! Students learn astronomy while caring for classroom pets that serve as 'space animal researchers,' and everyone enjoys {favoriteFood} space meals during their educational Mars missions.",
+      microVariants: ["The wonderfully silly Space Academy combines animal care with astronomy education in the most entertaining way possible.", "Students learn serious space science while enjoying ridiculous space-themed activities with classroom animals and themed meals."]
     }
   ],
   reuse: {

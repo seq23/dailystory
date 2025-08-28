@@ -53,6 +53,46 @@ export const template = {
         alternatives: ["Instead of gold, they found a library of infinite stories that could fulfill any wish through imagination and learning."],
         optionalDetails: ["Books floated and glowed on the shelves.", "Some stories came alive as they read them.", "The library was bigger inside than the cave."]
       }
+    },
+    {
+      text: "As they explored the magnificent library, {userName} discovered books that responded to their interests in {hobbies}. When they opened a {favoriteColor} book about adventure, the pages showed moving pictures that demonstrated exactly what they were reading about. The dragon revealed that readers could actually enter these stories and experience adventures firsthand, learning important lessons through direct participation.",
+      pause: true,
+      hook: "Which story world will {userName} choose to enter first?",
+      microVariants: {
+        text: "Interactive books respond to {userName}'s interests, showing moving pictures and offering opportunities to enter story worlds directly.",
+        alternatives: ["The library's magical books adapt to {userName}'s preferences, creating immersive learning experiences through story participation."],
+        optionalDetails: ["characters from books wave hello from their pages", "the dragon has bookmarks made from rainbow scales"]
+      }
+    },
+    {
+      text: "{userName} and their friend decide to experience a story about environmental protection, finding themselves in a forest where talking animals need help cleaning up pollution. They work alongside a wise {favoriteAnimal} to organize a community cleanup, learning that cooperation and determination can solve enormous problems. The experience teaches them that heroic actions often involve working together rather than individual glory.",
+      pause: true,
+      hook: "How will this story experience prepare them for real-world challenges?",
+      microVariants: {
+        text: "The environmental story teaches {userName} about cooperation, community service, and solving problems through teamwork rather than individual heroics.",
+        alternatives: ["Hands-on story participation shows {userName} that real heroism involves collaboration and environmental responsibility."],
+        optionalDetails: ["forest animals celebrate their successful cleanup efforts", "the polluted stream becomes crystal clear again"]
+      }
+    },
+    {
+      text: "After experiencing several story adventures, {userName} realizes the dragon has been lonely for centuries, serving as the library's guardian with no one to share stories with. {userName} and their friend propose establishing regular visits where they can read together and discuss the lessons learned from different tales. The dragon gratefully accepts, explaining that sharing stories makes them even more meaningful and educational.",
+      pause: true,
+      hook: "What wonderful friendship will develop through their shared love of stories?",
+      microVariants: {
+        text: "The lonely dragon finds companionship through {userName}'s proposal for regular story-sharing sessions in the magical library.",
+        alternatives: ["Friendship blossoms as {userName} recognizes the dragon's need for companionship and offers regular visits for shared reading."],
+        optionalDetails: ["they establish a cozy reading corner with comfortable cushions", "the dragon prepares special {favoriteFood} treats for reading sessions"]
+      }
+    },
+    {
+      text: "When it's time to return home, the dragon gives {userName} and their friend each a special bookmark that glows whenever they're reading and truly understanding the lessons in their books. The treehouse safely returns them to their own forest, but now they know they can return to the library whenever they want to learn something new or share an adventure with their dragon friend.",
+      pause: true,
+      hook: "How will the magical bookmarks change {userName}'s approach to reading and learning?",
+      microVariants: {
+        text: "Special glowing bookmarks connect {userName} to the magical library, indicating when they're truly comprehending their reading material.",
+        alternatives: ["The dragon's gift ensures {userName} maintains their connection to meaningful learning through the magical bookmarks."],
+        optionalDetails: ["the bookmarks shimmer with {favoriteColor} light when learning occurs", "other children notice {userName}'s improved reading enthusiasm"]
+      }
     }
   ],
   endings: [
@@ -65,6 +105,16 @@ export const template = {
       type: 'triumphant',
       text: "{userName} and their friend started a global campaign for education, inspiring people around the world to donate books and support schools. They received awards and recognition, but their greatest reward was seeing children everywhere learning and growing.",
       microVariants: ["They started a global education campaign, inspiring people to donate books and support schools. Their reward was seeing children learning and growing."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} realizes that the greatest adventures don't require magic treehouses - they happen whenever someone opens a book with curiosity and imagination. This understanding transforms their approach to learning, making every day an opportunity for discovery and growth through reading.",
+      microVariants: ["Understanding that books provide endless adventures changes {userName}'s perspective on learning and daily opportunities for growth.", "The magical library experience teaches {userName} that curiosity and imagination transform ordinary reading into extraordinary adventures."]
+    },
+    {
+      type: 'silly',
+      text: "The dragon becomes so excited about having reading friends that they start a magical book delivery service! {userName} wakes up every morning to find new books floating through their window, along with {favoriteColor} notes from their dragon friend recommending the most entertaining stories.",
+      microVariants: ["A magical book delivery service brings daily literary surprises from {userName}'s enthusiastic dragon friend.", "The dragon's excitement about friendship leads to wonderfully silly book delivery adventures through {userName}'s bedroom window."]
     }
   ],
   reuse: {

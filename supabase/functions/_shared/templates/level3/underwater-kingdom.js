@@ -53,6 +53,16 @@ export const template = {
         alternatives: ["Beach cleanups and conservation education create visible improvements that the seashell reflects through its magical glow."],
         optionalDetails: ["classmates become excited about ocean protection", "local businesses start using eco-friendly materials"]
       }
+    },
+    {
+      text: "When {userName} returns to the underwater kingdom, they discover remarkable improvements everywhere. The coral reefs show new growth in brilliant colors, fish families are healthier and more numerous, and King Neptune has recovered enough strength to begin healing the ocean's damaged areas. Marina and the sea creatures celebrate {userName}'s conservation work, explaining how surface-world changes create positive impacts throughout the marine ecosystem.",
+      pause: true,
+      hook: "How will {userName} continue bridging the worlds of land and sea?",
+      microVariants: {
+        text: "Return visits reveal dramatic ocean improvements directly connected to {userName}'s surface-world environmental advocacy and education efforts.",
+        alternatives: ["The underwater kingdom's recovery demonstrates the powerful connection between land-based conservation and marine ecosystem health."],
+        optionalDetails: ["new species of colorful fish have returned to the reefs", "the water is so clear that sunlight reaches the deepest coral gardens"]
+      }
     }
   ],
   endings: [
@@ -65,6 +75,16 @@ export const template = {
       type: 'cozy',
       text: "{userName} continues their regular visits to Marina and the sea creatures, helping with small conservation projects and learning about ocean science. The magical seashell becomes their constant reminder that even small actions can make big differences for the environment.",
       microVariants: ["Regular underwater visits keep {userName} connected to marine conservation while building lasting friendships.", "The seashell reminds {userName} daily that individual actions create collective environmental healing."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} realizes that protecting the environment isn't just about helping animals and plants - it's about understanding that everything in nature is connected. Their ocean adventure teaches them that caring for the Earth means caring for all living things, including themselves.",
+      microVariants: ["Ocean conservation teaches {userName} about environmental interconnectedness and the importance of caring for all living things.", "Understanding marine ecosystem connections helps {userName} appreciate how environmental stewardship benefits everyone."]
+    },
+    {
+      type: 'silly',
+      text: "The Coral Kingdom becomes so healthy that Marina starts an underwater {favoriteColor} {favoriteAnimal} postal service! {userName} receives daily seashell messages with ocean news, marine jokes, and invitations to the most ridiculous underwater dance parties celebrating environmental protection.",
+      microVariants: ["An underwater postal service delivers daily marine news and silly ocean-themed party invitations to {userName}.", "The healthiest ocean kingdom in history celebrates with wonderfully absurd underwater festivities and constant communication with their surface friend."]
     }
   ],
   reuse: {

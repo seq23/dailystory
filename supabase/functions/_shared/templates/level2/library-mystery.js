@@ -43,6 +43,36 @@ export const template = {
         alternatives: ["Compassionate detective work turns into friendship as {userName} helps Tommy feel proud of his reading choices.", "The case closes with kindness as {userName} becomes Tommy's reading mentor and friend."],
         optionalDetails: ["they return the books together to Mrs. Chen", "Tommy's face lights up with relief and happiness"]
       }
+    },
+    {
+      text: "{userName} and Tommy work together to return all the books to Mrs. Chen, who is so happy to see the missing books that she doesn't get upset about the hiding. Instead, she thanks {userName} for solving the mystery with kindness and suggests they start a weekly reading club for students who love animal stories.",
+      pause: true,
+      hook: "Who else might join their new reading club?",
+      microVariants: {
+        text: "{userName} and Tommy work together to return all the books to Mrs. Chen, who is so happy to see the missing books that she doesn't get upset about the hiding. Instead, she thanks {userName} for solving the mystery with kindness and suggests they start a weekly reading club for students who love animal stories.",
+        alternatives: ["Mrs. Chen's relief turns into excitement as she helps {userName} and Tommy create something positive from the situation.", "The mystery's solution leads to a wonderful new opportunity for students who share the same reading interests."],
+        optionalDetails: ["Mrs. Chen has many more animal books to share", "other shy students need reading friends too"]
+      }
+    },
+    {
+      text: "The first meeting of the Animal Story Reading Club brings five students together in the library corner. {userName} helps each new member feel welcome by sharing how they solved their first mystery and learned that everyone loves different kinds of books. Tommy feels proud to help other students find their favorite {favoriteColor} animal stories.",
+      pause: true,
+      hook: "How will the reading club grow and change?",
+      microVariants: {
+        text: "The first meeting of the Animal Story Reading Club brings five students together in the library corner. {userName} helps each new member feel welcome by sharing how they solved their first mystery and learned that everyone loves different kinds of books. Tommy feels proud to help other students find their favorite {favoriteColor} animal stories.",
+        alternatives: ["The reading club creates a welcoming space where {userName} and Tommy help other students discover their love of books.", "Five students begin a friendship through shared stories, with {userName} as their encouraging leader."],
+        optionalDetails: ["each student brings their favorite snack to share", "they vote on which {favoriteAnimal} story to read first"]
+      }
+    },
+    {
+      text: "As the club grows bigger each week, {userName} realizes that solving mysteries isn't just about finding missing things - it's about helping people feel understood and included. The reading club becomes so popular that Mrs. Chen asks {userName} to help start similar clubs for students with other interests like {hobbies}.",
+      pause: true,
+      hook: "What other mysteries might {userName} solve through kindness and understanding?",
+      microVariants: {
+        text: "As the club grows bigger each week, {userName} realizes that solving mysteries isn't just about finding missing things - it's about helping people feel understood and included. The reading club becomes so popular that Mrs. Chen asks {userName} to help start similar clubs for students with other interests like {hobbies}.",
+        alternatives: ["The club's success teaches {userName} that the best detective work involves understanding people's feelings and needs.", "Growing popularity of the reading club inspires {userName} to create more inclusive spaces for different student interests."],
+        optionalDetails: ["new students ask to join every week", "the library corner becomes the most popular spot in school"]
+      }
     }
   ],
   endings: [
@@ -55,6 +85,16 @@ export const template = {
       type: 'triumphant',
       text: "{userName} solves many more school mysteries with kindness, eventually becoming the school's official Student Problem Solver, helping everyone feel included and understood.",
       microVariants: ["The Reading Buddy detective becomes legendary for solving problems with heart and wisdom.", "Other schools invite {userName} to help them create kindness-based problem-solving programs."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} learns that being a good detective means listening with your heart, not just looking with your eyes. This lesson helps them make friends and solve problems throughout their life by understanding what people really need.",
+      microVariants: ["The mystery teaches {userName} that understanding feelings is more important than finding clues.", "Detective skills become life skills as {userName} learns to help others by truly listening and caring."]
+    },
+    {
+      type: 'silly',
+      text: "The Animal Story Reading Club becomes so popular that even the school principal's {favoriteAnimal} wants to join! {userName} creates tiny {favoriteColor} library cards for pets, and the library becomes famous for its four-legged book club members.",
+      microVariants: ["The reading club welcomes furry members with their own special library cards and reading spots.", "Even animals want to join {userName}'s inclusive reading club, making the library the friendliest place in town."]
     }
   ],
   reuse: {

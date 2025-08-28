@@ -53,6 +53,36 @@ export const template = {
         alternatives: ["Perfect partnership with Maya creates touching performances that earn standing ovations.", "Success on stage opens doors to regional drama opportunities for {userName} and Maya."],
         optionalDetails: ["several audience members wipe away happy tears", "the local newspaper wants to interview the cast"]
       }
+    },
+    {
+      text: "After their success, a local theater director named Mr. Kim visits the school to watch {userName} and Maya perform scenes from their play. He tells them about a summer theater camp where young actors can learn advanced skills like stage combat, singing, and even writing their own scripts about topics they love, like {hobbies}.",
+      pause: true,
+      hook: "Will {userName} and Maya decide to audition for theater camp?",
+      microVariants: {
+        text: "After their success, a local theater director named Mr. Kim visits the school to watch {userName} and Maya perform scenes from their play. He tells them about a summer theater camp where young actors can learn advanced skills like stage combat, singing, and even writing their own scripts about topics they love, like {hobbies}.",
+        alternatives: ["A visiting theater director offers {userName} and Maya the chance to develop their acting skills at summer camp.", "Mr. Kim's theater camp invitation could help {userName} and Maya become even better performers."],
+        optionalDetails: ["the camp teaches sword fighting and dance moves", "students get to work with professional costume designers"]
+      }
+    },
+    {
+      text: "{userName} feels excited but nervous about auditioning for theater camp. Maya suggests they practice together using their favorite {favoriteFood} as props in silly comedy scenes. Their friendship grows stronger as they help each other prepare, and they discover that working as a team makes everything more fun and less scary.",
+      pause: true,
+      hook: "How will their teamwork help them at the audition?",
+      microVariants: {
+        text: "{userName} feels excited but nervous about auditioning for theater camp. Maya suggests they practice together using their favorite {favoriteFood} as props in silly comedy scenes. Their friendship grows stronger as they help each other prepare, and they discover that working as a team makes everything more fun and less scary.",
+        alternatives: ["Audition nerves disappear when {userName} and Maya practice together using creative and silly methods.", "The friends discover that preparing together makes challenging things feel easier and more enjoyable."],
+        optionalDetails: ["they use {favoriteFood} to practice emotional expressions", "their practice sessions become hilarious and memorable"]
+      }
+    },
+    {
+      text: "At the theater camp audition, {userName} and Maya perform a scene they created together about two friends who use the power of {favoriteColor} magic and their shared love of {hobbies} to solve problems in their community. The audition panel is impressed by their creativity, teamwork, and natural chemistry as scene partners.",
+      pause: true,
+      hook: "Will their original scene be enough to get them into theater camp?",
+      microVariants: {
+        text: "At the theater camp audition, {userName} and Maya perform a scene they created together about two friends who use the power of {favoriteColor} magic and their shared love of {hobbies} to solve problems in their community. The audition panel is impressed by their creativity, teamwork, and natural chemistry as scene partners.",
+        alternatives: ["Their original audition scene showcases both individual talent and incredible partnership chemistry.", "The creative audition performance demonstrates {userName} and Maya's skills in writing, acting, and collaboration."],
+        optionalDetails: ["the panel takes notes throughout their entire performance", "other auditioning students watch with admiration and respect"]
+      }
     }
   ],
   endings: [
@@ -65,6 +95,16 @@ export const template = {
       type: 'cozy', 
       text: "{userName} may not become a professional actor, but they never lose their love of storytelling and creative expression, using drama techniques to help them {hobbies} and connect with others throughout their life.",
       microVariants: ["Acting skills enhance {userName}'s hobbies and help them express themselves more confidently.", "The drama experience gives {userName} tools for creativity and communication they use forever."]
+    },
+    {
+      type: 'reflective',
+      text: "Years later, {userName} realizes that the most important thing they learned in drama club wasn't about acting - it was about friendship, teamwork, and finding the courage to be themselves. These lessons help them in everything they do, from {hobbies} to making new friends.",
+      microVariants: ["The drama club teaches {userName} life lessons about courage, friendship, and authenticity that last forever.", "Acting skills become secondary to the confidence and social skills {userName} develops through theater."]
+    },
+    {
+      type: 'silly',
+      text: "{userName} and Maya become famous for creating the world's first {favoriteColor} {favoriteAnimal} musical, where all the characters speak in rhyme and eat {favoriteFood} during every song! Their silly creativity brings joy to audiences everywhere.",
+      microVariants: ["Their wonderfully ridiculous {favoriteAnimal} musical becomes a beloved comedy that makes everyone laugh.", "The friends discover that the silliest ideas often create the most memorable and joyful performances."]
     }
   ],
   reuse: {

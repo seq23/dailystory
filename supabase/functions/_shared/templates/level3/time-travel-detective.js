@@ -53,6 +53,16 @@ export const template = {
         alternatives: ["Each child brings unique knowledge from their era to solve the time crime mystery."],
         optionalDetails: ["the time machine looks like a metal pyramid", "guards from all time periods protect it"]
       }
+    },
+    {
+      text: "Working together brilliantly, the three friends create an elaborate plan combining ancient Egyptian engineering, Roman military tactics, and {userName}'s knowledge of modern technology. They successfully disable the time machine and trap the adult thieves, returning all stolen artifacts to their proper historical periods and ensuring that history remains accurate for future generations to study.",
+      pause: true,
+      hook: "What will happen to the three young heroes now that they've saved history?",
+      microVariants: {
+        text: "Their combined skills from different eras create the perfect plan to stop the time thieves and preserve historical accuracy.",
+        alternatives: ["Ancient wisdom, military strategy, and modern knowledge unite to protect history from criminal manipulation."],
+        optionalDetails: ["historians around the world notice mysterious improvements in artifact authenticity", "the time thieves are sent to a special temporal prison"]
+      }
     }
   ],
   endings: [
@@ -65,6 +75,16 @@ export const template = {
       type: 'cozy',
       text: "{userName} returns home with amazing memories and two best friends they can visit across time. They meet regularly in different time periods to share adventures and protect history together.",
       microVariants: ["Friendship across time periods creates endless opportunities for historical adventures.", "The three friends maintain their bond despite living in different centuries."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} learns that understanding history helps us make better decisions in the present. Their time-travel adventures teach them that every generation faces similar challenges and that learning from the past creates wisdom for the future.",
+      microVariants: ["Time travel teaches {userName} that historical knowledge provides wisdom for present-day decision-making.", "Understanding different time periods helps {userName} appreciate how past experiences guide future choices."]
+    },
+    {
+      type: 'silly',
+      text: "The three friends become time-traveling tour guides, taking {favoriteAnimal} pets on historical adventures! They specialize in {favoriteColor} costume tours where visitors experience history while dressed in the most ridiculous but historically accurate outfits from each era.",
+      microVariants: ["Time-traveling pet tours become the most entertaining way to learn history while wearing silly period costumes.", "Historical education becomes wonderfully absurd when combined with animal companions and outrageous authentic clothing."]
     }
   ],
   reuse: {
