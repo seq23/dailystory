@@ -17,7 +17,7 @@ export const template = {
     {
       text: "So {userName} followed the path through the neighborhood park with careful attention to every detail marked on the weathered paper.",
       pause: false,
-      hook: "",
+      hook: "What clues will the map reveal next?",
       microVariants: {
         text: "So {userName} followed the path through the neighborhood park with careful attention to every detail marked on the weathered paper.",
         alternatives: ["{userName} carefully studied each marking on the old map while walking through the familiar neighborhood park paths."],
@@ -37,7 +37,7 @@ export const template = {
     {
       text: "Before long, sharing the treasure with friends became the most exciting part of the entire adventure and discovery.",
       pause: false,
-      hook: "",
+      hook: "How will sharing make the adventure better?",
       microVariants: {
         text: "Before long, sharing the treasure with friends became the most exciting part of the entire adventure and discovery.",
         alternatives: ["Soon {userName} realized that the joy of sharing this amazing discovery with friends was better than keeping the treasure alone."],
@@ -47,7 +47,7 @@ export const template = {
     {
       text: "The friends worked together to carefully document their amazing find with drawings and notes about the magical crystal cave.",
       pause: false,
-      hook: "",
+      hook: "What will their treasure book contain?",
       microVariants: {
         text: "The friends worked together to carefully document their amazing find with drawings and notes about the magical crystal cave.",
         alternatives: ["Working as a team, the friends created detailed records of their discovery through careful drawings and written observations."],
@@ -67,7 +67,7 @@ export const template = {
     {
       text: "Every weekend, the explorer club met to plan new adventures and share {favoriteFood} while telling stories about their discoveries.",
       pause: false,
-      hook: "",
+      hook: "What will make their club meetings special?",
       microVariants: {
         text: "Every weekend, the explorer club met to plan new adventures and share {favoriteFood} while telling stories about their discoveries.",
         alternatives: ["Each weekend brought exciting club meetings where friends enjoyed {favoriteFood} and shared tales of their exploration adventures."],

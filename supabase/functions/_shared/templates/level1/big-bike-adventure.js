@@ -17,7 +17,7 @@ export const template = {
     {
       text: "Dad holds the back while {userName} pedals.",
       pause: false,
-      hook: "",
+      hook: "How will Dad help {userName} learn?",
       microVariants: {
         text: "Dad holds the back while {userName} pedals.",
         alternatives: ["Dad keeps the bike steady as {userName} starts pedaling."],
@@ -37,7 +37,7 @@ export const template = {
     {
       text: "{userName} rides all the way down the street.",
       pause: false,
-      hook: "",
+      hook: "What will {userName} discover while riding?",
       microVariants: {
         text: "{userName} rides all the way down the street.",
         alternatives: ["{userName} pedals successfully down the entire street."],
@@ -47,7 +47,7 @@ export const template = {
     {
       text: "Everyone cheers for {userName}'s success.",
       pause: false,
-      hook: "",
+      hook: "How will this success change {userName}?",
       microVariants: {
         text: "Everyone cheers for {userName}'s success.",
         alternatives: ["The whole family celebrates {userName}'s achievement."],

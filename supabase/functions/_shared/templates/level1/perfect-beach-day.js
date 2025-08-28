@@ -17,7 +17,7 @@ export const template = {
     {
       text: "The sand is warm between {userName}'s toes.",
       pause: false,
-      hook: "",
+      hook: "How will the sand feel on their feet?",
       microVariants: {
         text: "The sand is warm between {userName}'s toes.",
         alternatives: ["The soft, warm sand feels wonderful under {userName}'s feet."],
@@ -37,7 +37,7 @@ export const template = {
     {
       text: "The waves come close but don't wash it away.",
       pause: false,
-      hook: "",
+      hook: "What will the waves bring to shore?",
       microVariants: {
         text: "The waves come close but don't wash it away.",
         alternatives: ["The ocean waves dance nearby but leave the castle standing."],
@@ -47,7 +47,7 @@ export const template = {
     {
       text: "{userName} finds beautiful shells and smooth rocks.",
       pause: false,
-      hook: "",
+      hook: "What treasures will {userName} discover?",
       microVariants: {
         text: "{userName} finds beautiful shells and smooth rocks.",
         alternatives: ["{userName} discovers lovely shells and perfectly smooth stones."],

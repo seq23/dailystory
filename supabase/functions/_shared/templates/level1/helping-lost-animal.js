@@ -17,7 +17,7 @@ export const template = {
     {
       text: "The {favoriteAnimal} is hungry and thirsty.",
       pause: false,
-      hook: "",
+      hook: "How will {userName} show they want to help?",
       microVariants: {
         text: "The {favoriteAnimal} is hungry and thirsty.",
         alternatives: ["The poor {favoriteAnimal} needs food and water badly."],
@@ -37,7 +37,7 @@ export const template = {
     {
       text: "The {favoriteAnimal} feels better and follows {userName}.",
       pause: false,
-      hook: "",
+      hook: "What will make the {favoriteAnimal} feel safe?",
       microVariants: {
         text: "The {favoriteAnimal} feels better and follows {userName}.",
         alternatives: ["After eating, the {favoriteAnimal} begins to trust {userName}."],
@@ -47,7 +47,7 @@ export const template = {
     {
       text: "{userName} helps find the {favoriteAnimal}'s family.",
       pause: false,
-      hook: "",
+      hook: "How will the rescue change both of them?",
       microVariants: {
         text: "{userName} helps find the {favoriteAnimal}'s family.",
         alternatives: ["{userName} works hard to reunite the {favoriteAnimal} with its owners."],

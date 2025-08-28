@@ -17,7 +17,7 @@ export const template = {
     {
       text: "Every day {userName} waters the seeds carefully.",
       pause: false,
-      hook: "",
+      hook: "How will the water help the seeds grow?",
       microVariants: {
         text: "Every day {userName} waters the seeds carefully.",
         alternatives: ["{userName} gives the seeds fresh water each morning."],
@@ -37,7 +37,7 @@ export const template = {
     {
       text: "The plants get bigger and turn {favoriteColor} each week.",
       pause: false,
-      hook: "",
+      hook: "What colors will brighten the garden?",
       microVariants: {
         text: "The plants get bigger and turn {favoriteColor} each week.",
         alternatives: ["Each week the plants grow taller and show {favoriteColor} colors."],
@@ -47,7 +47,7 @@ export const template = {
     {
       text: "{userName} is proud of the beautiful flowers.",
       pause: false,
-      hook: "",
+      hook: "How will the flowers make everyone feel?",
       microVariants: {
         text: "{userName} is proud of the beautiful flowers.",
         alternatives: ["{userName} feels very happy about the lovely garden."],
