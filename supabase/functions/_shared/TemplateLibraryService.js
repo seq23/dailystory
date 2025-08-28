@@ -3837,7 +3837,14 @@ export const GRADE_8_FALLBACK_TEMPLATES = [
         }
       },
       {
-        text: "Maya was invited to speak at a national conference on student digital rights, with Alex as her co-presenter and official boyfriend. Standing on stage before hundreds of educators, policymakers, and technology leaders, Maya felt the weight of representing her generation's fight for digital autonomy. 'Student privacy isn't just about protecting our personal information,' she told the audience, with Alex nodding encouragingly from beside her. 'It's about ensuring that young people can develop their identities, explore ideas, and make mistakes without permanent digital surveillance shaping our opportunities.' When Alex added his perspective on the technical solutions needed for ethical educational technology, Maya realized they had become true partners in every sense - intellectually, romantically, and as advocates for justice. Their success had given them each other and a platform to protect countless other students' digital rights."
+        text: "Maya was invited to speak at a national conference on student digital rights, with Alex as her co-presenter and official boyfriend. Standing on stage before hundreds of educators, policymakers, and technology leaders, Maya felt the weight of representing her generation's fight for digital autonomy. 'Student privacy isn't just about protecting our personal information,' she told the audience, with Alex nodding encouragingly from beside her. 'It's about ensuring that young people can develop their identities, explore ideas, and make mistakes without permanent digital surveillance shaping our opportunities.' When Alex added his perspective on the technical solutions needed for ethical educational technology, Maya realized they had become true partners in every sense - intellectually, romantically, and as advocates for justice. Their success had given them each other and a platform to protect countless other students' digital rights.",
+        pause: true,
+        hook: "What lasting impact will Maya and Alex's advocacy have on student digital rights nationwide?",
+        microVariants: {
+          text: "Speaking at a national conference, Maya and Alex realized their privacy advocacy had grown from school-based activism into a platform for protecting students' digital rights everywhere.",
+          alternatives: ["Their national conference presentation marked Maya and Alex's evolution from student activists to recognized leaders in youth digital rights.", "Standing together on the national stage, Maya and Alex understood their relationship and activism had created a model for combining love with social justice."],
+          optionalDetails: ["Their presentation was livestreamed to over 500 schools", "Technology companies began implementing their policy recommendations", "They were offered internships at major digital rights organizations"]
+        }
       }
     ],
     endings: [
