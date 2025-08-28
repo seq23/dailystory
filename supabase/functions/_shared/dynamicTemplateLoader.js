@@ -23,9 +23,12 @@ export async function loadTemplate(level, templateIndex = null) {
 
   console.log(`🔄 Loading template ${level} index ${templateIndex}`);
   
-  const config = getRegistryConfig(level);
+  // Handle case variations (Level0 -> level0)
+  const normalizedLevel = level.toLowerCase().replace('level', 'level');
+  let config = getRegistryConfig(level) || getRegistryConfig(normalizedLevel);
+  
   if (!config) {
-    throw new Error(`Unknown template level: ${level}`);
+    throw new Error(`Unknown template level: ${level} (tried ${normalizedLevel})`);
   }
 
   let template = null;
