@@ -4054,39 +4054,143 @@ export const GRADE_9_FALLBACK_TEMPLATES = [
     level: "Grade 9",
     scenes: [
       {
-        text: "{userName} had always assumed that the criminal justice system was fundamentally fair until they learned that a classmate's older brother had received a dramatically harsher sentence than a peer from a wealthier neighborhood for the same offense, leading them to research disparities in how the legal system treats young people from different racial, economic, and social backgrounds. Through extensive investigation, they discovered that youth from communities of color and low-income families were significantly more likely to be tried as adults, receive longer sentences, and face barriers to rehabilitation and reintegration, while youth from privileged backgrounds often received treatment-focused interventions and second chances that set them up for future success.",
+        text: "Jordan Williams had always believed in fairness until their older brother Marcus was sentenced to three years in juvenile detention for the same car theft that got their wealthy classmate Tyler just community service and counseling. Sitting in the courthouse watching Marcus led away in shackles, Jordan met Zoe Chen, whose brother had also received a harsh sentence while attending the same hearing. 'This isn't justice,' Zoe whispered, tears streaming down her face as she clutched Jordan's hand for support. 'This is just punishment based on who your parents are.' Walking out together, Jordan felt something shift inside them - both a burning anger at the injustice and an unexpected connection to Zoe, whose pain mirrored their own.",
         pause: true,
-        hook: "How will {userName} address systematic inequities in youth criminal justice outcomes?",
+        hook: "How will Jordan and Zoe's shared trauma inspire them to fight for reform?",
         microVariants: {
-          text: "{userName} discovered that criminal justice outcomes for youth varied dramatically by race and class, inspiring research into systematic disparities in legal treatment and sentencing.",
-          alternatives: [
-            "Learning about unequal sentencing for similar offenses, {userName} investigated how socioeconomic factors influence youth experiences in the criminal justice system."
-          ],
-          optionalDetails: ["Public defenders had overwhelming caseloads in certain districts.", "Some schools had police officers while others had counselors.", "Diversion programs were primarily available in affluent areas."]
+          text: "Witnessing unequal sentencing for identical crimes brought Jordan and Zoe together in shared grief and determination to fight systemic injustice.",
+          alternatives: ["The courthouse became where Jordan and Zoe realized criminal justice disparities weren't abstract - they were devastating their families.", "Meeting during their brothers' sentencing created an immediate bond between Jordan and Zoe based on shared injustice and mutual support."],
+          optionalDetails: ["Marcus had no prior record while Tyler had been arrested twice before", "Tyler's family hired a private attorney while Marcus had an overworked public defender", "The same judge sentenced both boys on the same day"]
         }
       },
       {
-        text: "Working with juvenile defense attorneys, formerly incarcerated individuals, and criminal justice reform organizations, {userName} documented specific cases that illustrated systematic bias in youth sentencing and developed comprehensive policy proposals for reform. They learned about restorative justice principles, evidence-based rehabilitation programs, and successful models from other states that prioritized healing and community repair over punishment and incarceration. Their research revealed that communities investing in education, mental health services, and economic opportunities had dramatically lower youth crime rates and better outcomes for all young people.",
+        text: "That night, Jordan couldn't sleep, haunted by the image of Marcus in handcuffs. When Zoe texted at 2 AM asking if they were awake, Jordan called immediately. They spent hours sharing stories about their brothers, their fears about the justice system, and their growing anger at how wealth determined outcomes. 'I keep thinking about Tyler getting counseling while Marcus gets a cell,' Zoe said, her voice breaking. 'What if we researched this? What if we could prove it's not just our families?' Jordan felt their heart race, both from the possibility of making change and from how much they already cared about Zoe's pain. 'Let's do it together,' Jordan replied. 'For Marcus and your brother, and for everyone else like them.'",
         pause: true,
-        hook: "What reform strategies will {userName} propose to create more equitable youth justice outcomes?",
+        hook: "What will Jordan and Zoe discover about systemic bias in youth justice?",
         microVariants: {
-          text: "{userName} partnered with legal advocates to document bias cases and develop policy proposals based on restorative justice and community investment principles.",
-          alternatives: [
-            "Through collaboration with reform organizations, {userName} researched successful alternative justice models emphasizing rehabilitation and community healing over punishment."
-          ],
-          optionalDetails: ["Restorative justice programs had 30% lower recidivism rates.", "States investing in youth programs saw crime decreases.", "Community members wanted healing rather than punishment."]
+          text: "Late-night conversations revealed Jordan and Zoe's shared determination to research criminal justice disparities while growing closer through mutual support.",
+          alternatives: ["Zoe's vulnerability about her brother's case deepened Jordan's commitment to justice reform and their feelings for her.", "Research into youth sentencing disparities became the foundation for both Jordan and Zoe's activism and their growing connection."],
+          optionalDetails: ["They discovered sentencing data was often not publicly available", "Wealthy families could afford bail while poor families couldn't", "Private attorneys had much better success rates than public defenders"]
         }
       },
       {
-        text: "The youth justice reform campaign gained momentum when {userName} organized listening sessions where community members, formerly incarcerated individuals, and families affected by the justice system could share their experiences and priorities for change. These sessions revealed that most people wanted accountability coupled with opportunities for redemption and growth, rather than purely punitive approaches that often failed to address underlying causes of problematic behavior. {userName} used these community voices to develop legislation that would require equal access to diversion programs, fund community-based alternatives to incarceration, and eliminate disparities in how youth from different backgrounds were treated by the system.",
+        text: "Jordan and Zoe spent weeks at the law library, poring over court records and sentencing data. Their research revealed a devastating pattern: youth of color from low-income families received sentences averaging 40% longer than white youth from affluent families for identical crimes. Working late into the evening became their routine, surrounded by legal documents and growing closer with each shared discovery of injustice. When Zoe leaned against Jordan's shoulder while reading a particularly heartbreaking case file, Jordan felt their breath catch. 'I'm so glad I'm not doing this alone,' Zoe whispered. 'You make me feel like we can actually change things.' Jordan's heart pounded as they realized their fight for justice was becoming inseparable from their feelings for Zoe.",
         pause: true,
-        hook: "How will {userName}'s community-centered approach influence policy makers and public opinion?",
+        hook: "How will their research findings strengthen both their case and their bond?",
         microVariants: {
-          text: "Community listening sessions revealed desire for accountability with redemption opportunities, informing {userName}'s legislation for equal diversion access and community alternatives.",
-          alternatives: [
-            "Through community engagement, {userName} learned that people wanted justice systems emphasizing healing and growth, leading to comprehensive reform proposals."
-          ],
-          optionalDetails: ["Former inmates became powerful advocates for change.", "Families shared stories of transformation and second chances.", "Community leaders endorsed the reform proposals."]
+          text: "Legal research revealed systematic sentencing disparities while long library sessions brought Jordan and Zoe closer together emotionally and romantically.",
+          alternatives: ["Discovering 40% sentencing disparities between wealthy and poor youth intensified both Jordan's outrage and their growing feelings for Zoe.", "Hours of research into criminal justice bias created intimate moments between Jordan and Zoe as they supported each other through difficult discoveries."],
+          optionalDetails: ["Black youth were six times more likely to be tried as adults", "Wealthy families could afford expert witnesses and psychological evaluations", "Public defenders often met clients for the first time on court day"]
+        }
+      },
+      {
+        text: "Their breakthrough came when Jordan's uncle, a former public defender, introduced them to Maria Santos, a juvenile justice advocate who'd been fighting reform for years. 'You two have done more comprehensive research than most law students,' Maria said, reviewing their data. 'But research alone won't change anything. We need policy proposals and community support.' As Maria explained the legislative process, Jordan watched Zoe take notes with fierce concentration, admiring her determination and intelligence. When Zoe caught them staring and smiled, Jordan felt their cheeks warm. 'We're really going to do this, aren't we?' Zoe asked later as they walked to the bus stop. 'Change the whole system?' Jordan squeezed her hand. 'With you, I believe we can change anything.'",
+        pause: true,
+        hook: "What strategies will Jordan and Zoe develop to turn research into policy change?",
+        microVariants: {
+          text: "Meeting juvenile justice advocate Maria Santos validated Jordan and Zoe's research while providing guidance on transforming data into policy proposals.",
+          alternatives: ["Maria's mentorship gave Jordan and Zoe the tools to turn their research into actionable reform while their partnership deepened.", "Professional validation of their work strengthened Jordan and Zoe's confidence in their activism and in each other."],
+          optionalDetails: ["Maria had successfully passed reform legislation in two other states", "She connected them with formerly incarcerated advocates", "Their research was more thorough than some published studies"]
+        }
+      },
+      {
+        text: "Jordan and Zoe organized community listening sessions, inviting formerly incarcerated individuals, families affected by the justice system, and community leaders to share their experiences. The first session was held in the community center where Marcus used to play basketball, and seeing Zoe comfort a mother whose son was facing adult charges made Jordan fall even deeper in love with her compassion. 'We're not here to speak for you,' Zoe told the packed room. 'We're here to amplify your voices and turn your experiences into policy that protects other families.' When people shared stories of transformation, second chances, and the power of community support over punishment, Jordan realized they weren't just fighting for Marcus anymore - they were fighting for a completely different vision of justice.",
+        pause: true,
+        hook: "How will community voices shape Jordan and Zoe's reform proposals?",
+        microVariants: {
+          text: "Community listening sessions revealed desire for healing-centered justice while showcasing Zoe's compassionate leadership that deepened Jordan's feelings for her.",
+          alternatives: ["Families sharing transformation stories influenced Jordan and Zoe's policy vision while their partnership in organizing demonstrated their growing bond.", "Zoe's ability to create safe space for difficult conversations impressed Jordan and strengthened their commitment to both reform and their relationship."],
+          optionalDetails: ["Fifteen formerly incarcerated individuals attended and shared their stories", "Parents spoke about wanting accountability with opportunities for redemption", "Community leaders endorsed restorative justice approaches"]
+        }
+      },
+      {
+        text: "Working with Maria, Jordan and Zoe drafted comprehensive legislation requiring equal access to diversion programs, funding community-based alternatives to incarceration, and eliminating racial and economic disparities in sentencing. Their late-night policy writing sessions in Jordan's kitchen became precious time together, fueled by coffee and shared purpose. One evening, while debating the language around restorative justice programs, Zoe looked up from her laptop and said, 'Jordan, I need to tell you something. This work is important, but working with you has become the most important thing in my life.' Jordan's heart soared as they realized Zoe's feelings matched their own. 'I was hoping you'd say that,' Jordan whispered, reaching across the table to take her hand.",
+        pause: true,
+        hook: "How will their acknowledged feelings affect their final push for legislative change?",
+        microVariants: {
+          text: "Late-night policy drafting sessions led Jordan and Zoe to acknowledge their romantic feelings while completing comprehensive justice reform legislation.",
+          alternatives: ["Zoe's confession during bill writing deepened their partnership while they prepared to advocate for systematic criminal justice changes.", "Their first acknowledgment of love energized Jordan and Zoe for the challenging work of pushing their legislation through the political process."],
+          optionalDetails: ["Their bill included funding for mental health services and job training", "Restorative justice programs would be available in every county", "Sentencing guidelines would be standardized regardless of defendant's economic status"]
+        }
+      },
+      {
+        text: "Jordan and Zoe presented their research and policy proposals to the state legislature's Juvenile Justice Committee, holding hands under the witness table for support. 'The data is clear,' Jordan testified. 'Our current system isn't creating safety - it's creating cycles of incarceration that destroy communities and waste human potential.' When Zoe added personal testimony about watching their brothers receive different sentences for identical crimes, several committee members looked visibly moved. Their presentation was featured on the evening news, with reporters commenting on how their obvious partnership and shared commitment made their advocacy particularly powerful. 'Young love fighting for justice,' one anchor said, making both teens blush but also feel proud of what they'd built together.",
+        pause: true,
+        hook: "What impact will their legislative testimony have on both policy and their relationship?",
+        microVariants: {
+          text: "Legislative testimony allowed Jordan and Zoe to present their research professionally while their obvious partnership strengthened their credibility and message.",
+          alternatives: ["Their united front at the state legislature demonstrated both their policy expertise and their commitment to each other.", "Media coverage of their testimony framed their relationship as proof that love and justice advocacy could reinforce each other."],
+          optionalDetails: ["Three committee members pledged to sponsor their bill", "Advocacy groups began using their research in their own lobbying efforts", "Law schools invited them to speak about youth justice reform"]
+        }
+      },
+      {
+        text: "The committee voted to advance their bill, but Jordan and Zoe knew the real challenge would be building public support and pressure for a full legislative vote. They organized rallies, wrote op-eds, and spoke at community meetings across the state. During one particularly successful rally where over 300 people attended, Zoe grabbed the microphone and said, 'This fight started because Jordan and I watched our brothers get treated differently by a system that should treat everyone equally. But it's grown into something bigger - a movement for the kind of justice that heals communities instead of dividing them.' When she reached for Jordan's hand and they raised their joined hands together, the crowd erupted in cheers. Jordan realized their love story had become part of their justice story.",
+        pause: true,
+        hook: "How will public rallies and media attention advance their cause and relationship?",
+        microVariants: {
+          text: "Public rallies showcased Jordan and Zoe's effective partnership while their visible relationship became symbolic of their justice movement.",
+          alternatives: ["Their 300-person rally demonstrated growing support while Zoe's speech connected their personal story to broader justice reform.", "Raising joined hands at the rally showed how their love and activism had become inseparable parts of their identity."],
+          optionalDetails: ["Former inmates spoke at every rally sharing transformation stories", "Local newspapers published their op-eds about restorative justice", "Social media campaigns using their hashtag gained thousands of followers"]
+        }
+      },
+      {
+        text: "When the full legislature voted on their bill, Jordan and Zoe sat in the gallery with Marcus, who had been released early thanks to new programs their advocacy had already influenced. The bill passed 78-22, with several representatives specifically citing Jordan and Zoe's research and personal testimony as changing their minds. As they celebrated in the capitol rotunda, Marcus hugged them both. 'You two saved my future,' he said, tears in his eyes. 'And you saved each other too.' Jordan and Zoe's first kiss as official policy advocates tasted like victory and possibility, surrounded by the marble columns of democracy and the knowledge that their love had helped create lasting change.",
+        pause: true,
+        hook: "What broader changes will their legislative victory inspire?",
+        microVariants: {
+          text: "Legislative victory with Marcus present validated Jordan and Zoe's work while their first celebration kiss marked their evolution from activists to policy makers.",
+          alternatives: ["Passing their justice reform bill with a 78-22 vote proved Jordan and Zoe's approach of combining research, community voices, and personal story.", "Marcus's presence at their victory celebration showed the personal impact of their policy work while their relationship reached a new milestone."],
+          optionalDetails: ["The bill was signed into law two weeks later", "Five other states requested copies of their legislation", "They were invited to the bill signing ceremony at the governor's mansion"]
+        }
+      },
+      {
+        text: "Implementation of their legislation began immediately, with funding allocated for community-based programs, restorative justice training for judges, and equal access to diversion programs regardless of family income. Jordan and Zoe were appointed to the oversight committee, making them the youngest policy advisors in state history. During their first committee meeting, watching judges and attorneys take notes on their recommendations, Jordan marveled at how far they'd come from two heartbroken siblings in a courthouse. 'We're actually doing this,' Zoe whispered, squeezing Jordan's hand under the conference table. 'We're changing how justice works.' Their relationship had grown stronger through shared purpose, mutual support, and the knowledge that their love had made them more effective advocates.",
+        pause: true,
+        hook: "How will their oversight role expand their influence on justice reform?",
+        microVariants: {
+          text: "Serving on the oversight committee made Jordan and Zoe the youngest policy advisors in state history while strengthening their relationship through shared achievement.",
+          alternatives: ["Implementation oversight roles validated Jordan and Zoe's expertise while their relationship provided foundation for expanded advocacy work.", "Watching professionals implement their recommendations showed Jordan and Zoe how personal trauma had been transformed into systematic change."],
+          optionalDetails: ["Juvenile detention rates dropped 25% in the first year", "Recidivism rates decreased significantly in counties using restorative justice", "Other states began adapting their legislative model"]
+        }
+      },
+      {
+        text: "A year after their bill passed, Jordan and Zoe were invited to speak at a national conference on juvenile justice reform. Standing on stage together, they shared data showing dramatic improvements in youth outcomes - lower recidivism, higher high school graduation rates, and reduced racial disparities in sentencing. 'Love and justice aren't separate things,' Jordan told the audience of judges, attorneys, and advocates. 'When we fight for each other's humanity and potential, we create conditions where both healing and accountability are possible.' When Zoe added her perspective on how community investment prevented crime more effectively than punishment, Jordan felt overwhelming pride in their partner's wisdom and their shared accomplishments.",
+        pause: true,
+        hook: "What national influence will Jordan and Zoe's model have on juvenile justice?",
+        microVariants: {
+          text: "National conference speaking opportunities allowed Jordan and Zoe to share their successful model while demonstrating how their relationship strengthened their advocacy.",
+          alternatives: ["Data showing improved youth outcomes validated Jordan and Zoe's approach while their partnership became a model for combining love with justice work.", "Speaking to judges and attorneys nationwide, Jordan and Zoe proved that young people's voices and relationships could transform criminal justice systems."],
+          optionalDetails: ["Twelve states introduced similar legislation", "The Department of Justice requested their policy recommendations", "They were featured in a documentary about youth-led criminal justice reform"]
+        }
+      },
+      {
+        text: "Jordan and Zoe's senior year brought college acceptances to programs where they could continue their justice work - Jordan to pre-law and Zoe to social work, with plans to attend schools only an hour apart. Their relationship had matured through shared activism, and they'd learned to balance their personal connection with their public advocacy. During Marcus's college graduation - made possible by the second-chance programs their legislation had funded - Jordan realized how personal healing and policy change had reinforced each other. 'You two taught me that love can be a form of resistance,' Marcus told them at his graduation party. 'When you love someone enough to fight for their future, you end up changing the world.'",
+        pause: true,
+        hook: "How will college and continued advocacy test their relationship?",
+        microVariants: {
+          text: "Senior year college planning showed Jordan and Zoe's commitment to continuing justice work together while Marcus's graduation validated their policy impact.",
+          alternatives: ["Marcus's college graduation proved how their legislation created opportunities while their relationship planning showed long-term commitment.", "Choosing nearby colleges demonstrated Jordan and Zoe's intention to maintain both their romantic partnership and their justice advocacy work."],
+          optionalDetails: ["Their legislation had helped 847 youth avoid adult prosecution", "Community-based programs had 73% success rates compared to 45% for traditional detention", "They received full scholarships based on their advocacy work"]
+        }
+      },
+      {
+        text: "At graduation, Jordan and Zoe were selected as co-valedictorians, the first time the school had chosen two students to share the honor. Their joint speech focused on how individual trauma could be transformed into collective healing through policy change and community support. 'Two years ago, we were just angry siblings watching injustice happen to our families,' Zoe told the packed auditorium. 'But we learned that our personal pain could become fuel for systematic change when we supported each other and centered community voices.' Walking across the stage hand-in-hand, Jordan felt grateful that the worst day of their life - watching Marcus get sentenced - had led to the best parts of their life: meaningful work, lasting change, and love with someone who shared their values and vision.",
+        pause: true,
+        hook: "What legacy will Jordan and Zoe leave for future student advocates?",
+        microVariants: {
+          text: "Co-valedictorian honors reflected Jordan and Zoe's shared academic and advocacy achievements while their speech inspired classmates to transform personal pain into social change.",
+          alternatives: ["Their graduation speech demonstrated how personal trauma could become systematic reform when supported by love and community partnership.", "Walking across the stage together symbolized how their relationship had grown from shared grief to shared purpose to lasting love and effective advocacy."],
+          optionalDetails: ["Their justice model was being implemented in fifteen states", "They established a scholarship fund for students affected by the justice system", "Law schools competed to recruit them both"]
+        }
+      },
+      {
+        text: "Five years later, Jordan (now in law school) and Zoe (completing her MSW) returned to their hometown for the opening of the Marcus Williams Community Justice Center, named after Jordan's brother and funded by their legislation. The center provided restorative justice programs, job training, and family support services - everything they'd advocated for as teenagers. Standing with Marcus, who was now the center's youth coordinator, Jordan and Zoe reflected on how their high school romance had grown into a partnership that had transformed not just their own lives, but their entire community's approach to justice. 'We started with love for our brothers,' Zoe said, leaning into Jordan's embrace. 'But we discovered that when you love someone enough to fight for justice, you create the conditions where everyone can heal and thrive.'",
+        pause: true,
+        hook: "How has their model influenced national approaches to juvenile justice reform?",
+        microVariants: {
+          text: "The Marcus Williams Community Justice Center represented the culmination of Jordan and Zoe's advocacy work while their mature relationship continued supporting community transformation.",
+          alternatives: ["Five years later, their teenage activism had created lasting institutions while their love had grown into a partnership focused on lifelong justice work.", "Marcus serving as youth coordinator at the center named for him showed how their advocacy had created opportunities for those most affected by injustice."],
+          optionalDetails: ["Their model had been replicated in 28 states", "Juvenile incarceration rates had dropped 40% nationally", "They were engaged and planning to continue their justice work together"]
         }
       }
     ],
@@ -4122,39 +4226,143 @@ export const GRADE_9_FALLBACK_TEMPLATES = [
     level: "Grade 9",
     scenes: [
       {
-        text: "{userName} had always excelled academically and assumed that educational opportunities were equally available to all students until they began tutoring at an underfunded middle school and discovered vast disparities in resources, technology, course offerings, and teacher experience that directly impacted student achievement and college preparedness. When they learned that school funding formulas often perpetuated inequality by tying resources to local property taxes, creating a system where wealthy districts could spend three times more per student than poor districts, {userName} realized that educational inequality was not accidental but structurally embedded in how schools were funded and supported.",
+        text: "Kai Nakamura had always excelled at their well-funded suburban high school until they started volunteering at Lincoln Middle School across town and met Devon Washington, a brilliant eighth-grader whose school lacked basic resources. 'We don't have chemistry labs,' Devon explained while Kai helped with homework in the crowded library. 'Half our textbooks are from the 1990s, and we have one guidance counselor for 800 students.' As Devon showed Kai around the school - peeling paint, broken lockers, no air conditioning - Kai felt both heartbroken about the inequity and drawn to Devon's resilience and intelligence despite the obstacles. 'You're the smartest person I know,' Kai said softly, watching Devon solve calculus problems on scratch paper because the school couldn't afford graphing calculators.",
         pause: true,
-        hook: "How will {userName} address systematic educational inequities that affect student opportunities?",
+        hook: "How will Kai's friendship with Devon inspire them to fight educational inequality?",
         microVariants: {
-          text: "{userName} discovered vast resource disparities between schools through tutoring, learning how funding formulas tied to property taxes create systematic educational inequality.",
-          alternatives: [
-            "Tutoring at an underfunded school revealed how property tax-based funding creates unequal educational opportunities and limits student potential."
-          ],
-          optionalDetails: ["Some schools lacked basic supplies like textbooks and paper.", "Class sizes varied dramatically between wealthy and poor districts.", "Technology access determined which students could complete digital assignments."]
+          text: "Volunteering at Devon's underfunded school opened Kai's eyes to educational inequity while Devon's brilliance despite resource limitations sparked both admiration and romantic feelings.",
+          alternatives: ["Meeting Devon at Lincoln Middle School revealed how school funding disparities limited talented students' opportunities while creating an immediate connection between them.", "Devon's intelligence shining through despite resource constraints made Kai realize both the injustice of educational inequality and their growing feelings for Devon."],
+          optionalDetails: ["Devon's school had no Advanced Placement classes while Kai's offered fifteen", "Class sizes at Lincoln averaged 35 students while Kai's school had 18-20", "Devon walked two miles to school because the district couldn't afford adequate bus routes"]
         }
       },
       {
-        text: "Collaborating with education researchers, parent advocacy groups, and policy organizations, {userName} conducted comprehensive analysis of funding disparities, achievement gaps, and opportunity differences across their state's school districts. Their research revealed that educational inequality intersected with racial and economic segregation, creating a system where zip code determined educational destiny more than student potential or effort. They documented how underfunded schools lost experienced teachers to better-resourced districts, creating a cycle where students most in need of support received the least qualified instruction and fewest advanced opportunities.",
+        text: "That weekend, Kai invited Devon to visit their school's state-of-the-art science labs and college counseling center. Walking through hallways lined with college pennants and trophy cases, Devon was quiet until they reached the library with its wall of computers and comfortable study spaces. 'This is what a school is supposed to look like,' Devon said with a mix of wonder and sadness. When Kai showed Devon the college planning resources - individual meetings with counselors, SAT prep classes, scholarship databases - Devon's expression broke Kai's heart. 'My counselor has fifteen minutes per student per year,' Devon whispered. 'She doesn't even know my name.' That night, Kai couldn't sleep, haunted by the unfairness and by how much they already cared about Devon's future.",
         pause: true,
-        hook: "What evidence-based solutions will {userName} propose to create more equitable educational funding?",
+        hook: "Will witnessing educational disparities strengthen Kai and Devon's connection?",
         microVariants: {
-          text: "{userName} analyzed statewide educational disparities, revealing how funding inequality intersected with segregation to limit opportunities based on zip code rather than potential.",
-          alternatives: [
-            "Research partnerships documented how underfunding created teacher turnover and opportunity gaps, making educational success dependent on geographic location."
-          ],
-          optionalDetails: ["Wealthy districts offered 15+ Advanced Placement courses while poor districts offered 2-3.", "Teacher salaries differed by $20,000+ between neighboring districts.", "Some schools had counselors for every 100 students while others had 1 for 800."]
+          text: "Devon's quiet response to Kai's well-resourced school revealed both the depth of educational inequality and the growing emotional bond between them.",
+          alternatives: ["Showing Devon their school's resources highlighted funding disparities while creating intimate moments that deepened their connection.", "Devon's sadness at seeing what education could be made Kai realize both the urgency of reform and their deepening feelings for Devon."],
+          optionalDetails: ["Kai's school spent $18,000 per student while Devon's received $6,000", "College acceptance rates differed by 60% between the two schools", "Devon had never met anyone who'd attended an Ivy League university"]
         }
       },
       {
-        text: "The educational equity campaign gained support when {userName} organized joint presentations where students from differently funded schools could share their experiences and demonstrate the impact of resource disparities on learning opportunities. These powerful testimonials, combined with rigorous data analysis, convinced lawmakers that educational funding reform was both a moral imperative and an economic necessity for state competitiveness. {userName} proposed legislation that would establish minimum per-pupil funding floors, provide additional resources for high-need students, and create transparency mechanisms so communities could track how educational dollars were being used to support student success.",
+        text: "Kai started researching educational funding and was horrified to learn that their state's school financing system tied resources to local property taxes, creating a system where wealthy districts spent three times more per student than poor districts. When they shared these findings with Devon during their weekly tutoring sessions, Devon nodded grimly. 'I know kids who are just as smart as anyone at your school,' Devon said, leaning closer to Kai as they studied the data together. 'But they'll never get the same chances.' The injustice made Kai angry, but sitting so close to Devon, feeling their determination and warmth, Kai realized their growing feelings were inseparable from their desire to fight for Devon's educational opportunities.",
         pause: true,
-        hook: "How will {userName}'s student-centered advocacy influence educational policy and public understanding?",
+        hook: "How will their research into educational inequality deepen both their cause and their relationship?",
         microVariants: {
-          text: "Joint student presentations demonstrated funding impact on opportunities, convincing lawmakers that educational equity was both morally and economically essential.",
-          alternatives: [
-            "Students sharing their experiences with resource disparities created powerful advocacy for funding reform legislation establishing minimum per-pupil investment."
-          ],
-          optionalDetails: ["Rural students described traveling hours for advanced courses.", "Urban students shared overcrowded classroom experiences.", "Suburban students acknowledged their resource advantages."]
+          text: "Learning about property tax-based school funding intensified both Kai's outrage at educational inequality and their romantic feelings for Devon during research sessions.",
+          alternatives: ["Devon's knowledge of talented classmates lacking opportunities motivated Kai's research while their close collaboration sparked deeper emotional connection.", "Studying funding disparities together brought Kai and Devon physically and emotionally closer while revealing the systematic nature of educational injustice."],
+          optionalDetails: ["Some districts had teacher turnover rates of 40% while others had 5%", "Technology access varied from 1:1 devices to 30 students sharing one computer", "Advanced course availability directly correlated with district wealth"]
+        }
+      },
+      {
+        text: "Kai approached their school's debate coach, Ms. Rodriguez, about researching educational equity for a policy competition. When Ms. Rodriguez learned about Devon's school situation, she immediately offered to include Devon as Kai's research partner. 'Two perspectives will make your research stronger,' she said. Working together after school became Kai and Devon's routine, analyzing funding formulas and achievement data in Kai's well-equipped library. One evening, while reviewing statistics about college readiness gaps, Devon looked up from their laptop and said, 'Kai, I need you to know - this research is important, but getting to work with you has become the best part of my week.' Kai's heart raced as they realized Devon's feelings matched their own growing attachment.",
+        pause: true,
+        hook: "Will their acknowledged feelings motivate stronger advocacy for educational reform?",
+        microVariants: {
+          text: "Ms. Rodriguez's suggestion to collaborate gave Kai and Devon official partnership while Devon's confession revealed mutual romantic feelings during their research sessions.",
+          alternatives: ["Working as official research partners provided cover for Kai and Devon's growing relationship while they documented educational inequities.", "Devon's admission about looking forward to their time together transformed their collaboration from academic work to romantic partnership."],
+          optionalDetails: ["Their research uncovered that 60% of students at underfunded schools never took calculus", "Teacher quality differences explained 20% of achievement gaps between districts", "College counseling ratios varied from 1:100 to 1:800 across districts"]
+        }
+      },
+      {
+        text: "Kai and Devon's research revealed that educational inequality intersected with racial and economic segregation, creating a system where zip code determined educational destiny more than student potential. They documented how underfunded schools lost experienced teachers to better-resourced districts, creating cycles where students most needing support received the least qualified instruction. During one particularly late research session, Devon's eyes filled with tears while reading about limited Advanced Placement access. 'I could handle college physics,' they said, 'but my school doesn't even offer it.' Kai reached over to squeeze Devon's hand, and when Devon didn't pull away, Kai felt the electricity of their first intentional romantic touch.",
+        pause: true,
+        hook: "How will personal connection strengthen their commitment to systematic change?",
+        microVariants: {
+          text: "Research revealing educational inequality's systematic nature brought Kai and Devon closer together emotionally while highlighting the personal stakes of their advocacy work.",
+          alternatives: ["Devon's tears over limited opportunities created an intimate moment where Kai's comfort evolved into romantic connection.", "Documenting how zip code determined educational destiny made their advocacy personal while their hand-holding marked their relationship's evolution."],
+          optionalDetails: ["Segregation indices showed most students attended schools with limited racial and economic diversity", "Teacher experience levels varied by 8+ years between wealthy and poor districts", "AP course availability correlated directly with district property values"]
+        }
+      },
+      {
+        text: "For the policy competition, Kai and Devon proposed comprehensive educational funding reform including minimum per-pupil spending floors, weighted formulas providing extra resources for high-need students, and transparency mechanisms for community oversight. Preparing their presentation became their excuse for spending every afternoon together, their collaboration seamless and their connection obvious to anyone watching. When they practiced their testimony, Devon's passion about educational justice made Kai fall even deeper in love with their partner's intelligence and values. 'We're going to change this system,' Devon said confidently after a particularly strong practice run. 'Together, we can make education fair for everyone.' Kai squeezed Devon's hand, grateful for a partner who shared their vision of justice.",
+        pause: true,
+        hook: "What impact will their policy proposal have on educational reform efforts?",
+        microVariants: {
+          text: "Developing comprehensive funding reform proposals brought Kai and Devon closer together while their shared passion for educational justice strengthened their romantic connection.",
+          alternatives: ["Policy competition preparation provided cover for Kai and Devon's growing relationship while they created systematic solutions to educational inequality.", "Devon's confidence in their partnership made Kai realize their love was inseparable from their shared commitment to educational justice."],
+          optionalDetails: ["Their proposal included interstate funding comparisons and international best practices", "Weighted funding formulas would provide 40% more resources for high-poverty schools", "Transparency requirements would publish per-pupil spending data publicly"]
+        }
+      },
+      {
+        text: "The state policy competition brought together student researchers from across the region, and Kai and Devon's presentation on educational equity won first place. Standing on stage together, accepting recognition for work that had brought them so close, felt like validation of both their research and their relationship. After the ceremony, walking across the university campus where the competition was held, Devon stopped under a streetlight and said, 'Kai, this work matters to me, but you matter to me more. I think I'm falling in love with you.' Kai's heart soared as they realized their feelings were completely mutual. Their first kiss tasted like possibility and justice, surrounded by the promise of higher education they were fighting to make accessible to everyone.",
+        pause: true,
+        hook: "How will their victory and acknowledged love energize their continued advocacy?",
+        microVariants: {
+          text: "Winning the state policy competition validated Kai and Devon's research while Devon's love confession on the university campus marked their relationship's beginning.",
+          alternatives: ["First place recognition for their educational equity research created a romantic backdrop for Devon and Kai's first declaration of love.", "Victory at the competition symbolized both their policy success and their personal milestone of acknowledging mutual romantic feelings."],
+          optionalDetails: ["Judges praised their comprehensive analysis and practical solutions", "University professors offered to mentor their continued research", "Media coverage highlighted their student-led approach to policy analysis"]
+        }
+      },
+      {
+        text: "Their competition victory attracted attention from education advocacy organizations and state legislators interested in their funding reform proposals. When Senator Martinez invited them to testify at legislative hearings, Kai and Devon prepared intensively, their late-night practice sessions filled with both policy discussions and stolen moments of affection. 'I can't believe we're going to speak to actual lawmakers,' Devon said during one practice session. 'A year ago, I didn't think anyone would care about kids like me.' Kai took Devon's hands and looked into their eyes. 'Devon, you're not just 'kids like you' - you're brilliant and passionate and you deserve every opportunity. And I love you for who you are, not despite where you come from.' Their kiss was interrupted by applause from Ms. Rodriguez, who'd been watching their practice session with obvious pride.",
+        pause: true,
+        hook: "What will their legislative testimony accomplish for educational reform?",
+        microVariants: {
+          text: "Legislative invitation validated Kai and Devon's work while their practice sessions became opportunities for romantic connection and mutual affirmation.",
+          alternatives: ["Preparing for legislative testimony deepened both Kai and Devon's policy expertise and their romantic relationship through shared purpose.", "Kai's declaration that Devon deserved opportunities regardless of background reinforced both their love and their commitment to systematic change."],
+          optionalDetails: ["Senator Martinez had been working on education funding reform for three years", "Their testimony would be the first student voices in the legislative hearings", "Ms. Rodriguez helped them prepare for likely questions from lawmakers"]
+        }
+      },
+      {
+        text: "At the state capitol, Kai and Devon presented their research to the Education Committee, holding hands under the witness table for support. 'Educational inequality isn't accidental,' Kai testified. 'It's the predictable result of funding systems that tie resources to wealth rather than student need.' When Devon added personal testimony about brilliant classmates whose potential was limited by resource constraints, several committee members looked visibly moved. Their presentation was featured on the evening news, with reporters noting how their obvious partnership and shared commitment made their advocacy particularly compelling. 'Young love fighting for educational justice,' one commentator said, making both teens blush but also feel proud of their combined impact.",
+        pause: true,
+        hook: "How will legislative testimony amplify their message and strengthen their bond?",
+        microVariants: {
+          text: "Legislative testimony allowed Kai and Devon to present their research professionally while their obvious partnership strengthened their credibility and message impact.",
+          alternatives: ["Their united front at the state legislature demonstrated both their policy expertise and their commitment to each other and educational justice.", "Media coverage framed their relationship as evidence that love and advocacy could reinforce each other in fighting systematic inequality."],
+          optionalDetails: ["Committee members asked detailed questions about their funding formulas", "Three legislators pledged to introduce their proposals as bills", "Education advocacy groups began using their research in lobbying efforts"]
+        }
+      },
+      {
+        text: "The committee voted to advance comprehensive education funding reform based largely on Kai and Devon's research and recommendations. Celebrating in the capitol rotunda, surrounded by marble columns and the symbols of democracy, felt like validation of everything they'd built together. 'We did this,' Devon said, pulling Kai close for a celebratory hug that lasted longer than friendship required. 'We actually changed policy!' Kai looked into Devon's eyes, overwhelmed with love and pride. 'This is just the beginning,' they replied. 'There are students all over the country who need what we've fought for here.' Their relationship had grown stronger through shared purpose, and their love had made their advocacy more powerful.",
+        pause: true,
+        hook: "What broader impact will their legislative success create?",
+        microVariants: {
+          text: "Legislative victory in the capitol rotunda strengthened Kai and Devon's relationship while their comprehensive funding reform advanced to full legislative consideration.",
+          alternatives: ["Celebrating policy success together, Kai and Devon realized their love had enhanced their advocacy effectiveness while their work had deepened their bond.", "Victory at the committee level validated their research approach while their embrace in the rotunda symbolized how personal and political success reinforced each other."],
+          optionalDetails: ["The bill included their weighted funding formulas and transparency requirements", "Implementation would affect over 400,000 students statewide", "Other states requested copies of their research and policy proposals"]
+        }
+      },
+      {
+        text: "Implementation of their education funding reform began the following school year, with increased resources flowing to previously underfunded districts. Kai and Devon were appointed to the state oversight committee, making them the youngest education policy advisors in state history. During their first committee meeting, watching officials take notes on their recommendations about equitable resource distribution, Kai marveled at how far they'd come from two students studying in different libraries. 'Look what we built together,' Devon whispered, squeezing Kai's hand under the conference table. Their relationship had matured through shared accomplishment, and their love had become inseparable from their commitment to educational justice.",
+        pause: true,
+        hook: "How will their oversight role expand educational equity beyond their state?",
+        microVariants: {
+          text: "Serving on the state oversight committee made Kai and Devon the youngest education policy advisors while their relationship provided foundation for expanded advocacy.",
+          alternatives: ["Implementation oversight validated Kai and Devon's expertise while their partnership demonstrated how personal support enhanced policy effectiveness.", "Watching officials implement their recommendations showed how their teenage research had created systematic change affecting hundreds of thousands of students."],
+          optionalDetails: ["Per-pupil funding increased by an average of $2,400 in previously underfunded districts", "Advanced course offerings expanded significantly in rural and urban schools", "Teacher retention improved as salary disparities decreased"]
+        }
+      },
+      {
+        text: "A year after implementation, Kai and Devon returned to Lincoln Middle School to see the changes their advocacy had created. New science labs, updated technology, smaller class sizes, and expanded course offerings had transformed the educational environment. Most importantly, they saw hope returning to students' faces - the spark of possibility that adequate resources made visible. 'You two didn't just change funding formulas,' the principal told them. 'You changed what our students believe is possible for their futures.' Walking through hallways that now looked like places of learning rather than neglect, Kai and Devon held hands and felt proud of how their love had strengthened their ability to create lasting change for thousands of students.",
+        pause: true,
+        hook: "What lasting impact will their model have on national education policy?",
+        microVariants: {
+          text: "Visiting the transformed Lincoln Middle School showed Kai and Devon how their advocacy had created tangible improvements in educational opportunities and student hope.",
+          alternatives: ["Seeing new labs and smaller classes at Devon's former school proved how their funding reform had transformed educational possibilities for thousands of students.", "The principal's gratitude and students' renewed hope validated how Kai and Devon's partnership had created systematic change beyond their original vision."],
+          optionalDetails: ["Test scores had improved significantly across all previously underfunded schools", "College enrollment rates increased by 35% in affected districts", "Teacher applications to previously struggling schools increased dramatically"]
+        }
+      },
+      {
+        text: "Kai and Devon's senior year brought college acceptances to top universities with full scholarships based on their policy research and advocacy work. They chose schools within an hour of each other, planning to continue their education policy work while maintaining their relationship. During Devon's valedictorian speech at Lincoln - now a transformed school with resources to support student achievement - they reflected on their journey together. 'Education opened doors for me,' Devon told the packed auditorium, 'but love gave me someone to walk through them with. Kai taught me that when we fight for each other's opportunities, we create the conditions where everyone can succeed.' Their story had become proof that love and justice work could reinforce each other to create lasting change.",
+        pause: true,
+        hook: "How will their continued partnership influence national education reform?",
+        microVariants: {
+          text: "College acceptances and scholarship recognition validated Kai and Devon's work while Devon's valedictorian speech celebrated how love had strengthened their advocacy effectiveness.",
+          alternatives: ["Devon speaking as valedictorian at the transformed Lincoln proved how their funding reform had created opportunities while their relationship provided ongoing support.", "Choosing nearby colleges demonstrated Kai and Devon's commitment to continuing both their romantic partnership and their education policy work."],
+          optionalDetails: ["Devon was Lincoln's first student accepted to an Ivy League university", "Their policy research was published in education journals", "Five other states had implemented similar funding reforms based on their model"]
+        }
+      },
+      {
+        text: "Five years later, Kai (completing their JD in education law) and Devon (finishing their PhD in education policy) were invited to the White House to discuss national education funding reform. Standing in the Oval Office, presenting research that had grown from their high school partnership, felt like the culmination of everything they'd built together. 'Your model has influenced policy in eighteen states,' the Secretary of Education told them. 'What started as student research has become a national movement for educational equity.' As they walked out together, engagement rings catching the afternoon light, Kai and Devon reflected on how their teenage love had grown into a lifelong partnership dedicated to ensuring every student had access to quality education regardless of their zip code.",
+        pause: true,
+        hook: "What legacy will Kai and Devon's partnership leave for future educational equity advocates?",
+        microVariants: {
+          text: "White House recognition of their national impact on education funding reform validated how Kai and Devon's teenage partnership had grown into lifelong advocacy.",
+          alternatives: ["Standing in the Oval Office as engaged partners and recognized policy experts, Kai and Devon embodied how love and justice work could create lasting change.", "Their model influencing eighteen states proved how their high school research and relationship had transformed into a national movement for educational equity."],
+          optionalDetails: ["Their funding formulas had been adopted by Congress for federal education programs", "Over 2 million students had benefited from policies based on their research", "They were planning to establish a foundation supporting student-led education advocacy"]
         }
       }
     ],
