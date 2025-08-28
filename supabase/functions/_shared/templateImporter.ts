@@ -45,63 +45,22 @@ interface TemplateModule {
   getGrade10FallbackTemplateCount?: () => number;
 }
 
-import { TemplateLibraryService } from './TemplateLibraryService.js';
-
-// Map template levels to their TemplateLibraryService methods
-const TEMPLATE_MAP = {
-  level1: {
-    getterName: 'getLevel1Template',
-    countName: 'getLevel1TemplateCount'
-  },
-  level2: {
-    getterName: 'getLevel2Template', 
-    countName: 'getLevel2TemplateCount'
-  },
-  level3: {
-    getterName: 'getLevel3Template',
-    countName: 'getLevel3TemplateCount'
-  },
-  level4: {
-    getterName: 'getLevel4Template',
-    countName: 'getLevel4TemplateCount'
-  },
-  grade6: {
-    getterName: 'getGrade6FallbackTemplate',
-    countName: 'getGrade6FallbackTemplateCount'
-  },
-  grade7: {
-    getterName: 'getGrade7FallbackTemplate',
-    countName: 'getGrade7FallbackTemplateCount'
-  },
-  grade8: {
-    getterName: 'getGrade8FallbackTemplate',
-    countName: 'getGrade8FallbackTemplateCount'
-  },
-  grade9: {
-    getterName: 'getGrade9FallbackTemplate',
-    countName: 'getGrade9FallbackTemplateCount'
-  },
-  grade10: {
-    getterName: 'getGrade10FallbackTemplate',
-    countName: 'getGrade10FallbackTemplateCount'
-  }
-};
+// Import new dynamic template loader
+import { loadTemplate, getDynamicTemplateCount } from './dynamicTemplateLoader.js';
 
 /**
  * Get template count for a given level (for exploration mode)
+ * Now uses dynamic template system for all levels including Level 0
  */
 export async function getTemplateCount(level: string): Promise<number> {
   try {
-    const config = TEMPLATE_MAP[level as keyof typeof TEMPLATE_MAP];
-    if (!config) return 0;
+    console.log(`📊 Getting template count for ${level}`);
     
-    // Use TemplateLibraryService to get count
-    const countFn = TemplateLibraryService[config.countName as keyof typeof TemplateLibraryService];
-    if (typeof countFn === 'function') {
-      return (countFn as () => number)();
-    }
+    // Use new dynamic template system for all levels
+    const count = getDynamicTemplateCount(level);
+    console.log(`✅ Found ${count} templates for ${level}`);
     
-    return 0;
+    return count;
   } catch (error) {
     console.error(`❌ Error getting template count for ${level}:`, error);
     return 0;
@@ -110,6 +69,7 @@ export async function getTemplateCount(level: string): Promise<number> {
 
 /**
  * Get and convert a template to string array
+ * Now uses dynamic template system for all levels including Level 0
  */
 export async function getTemplate(
   level: string, 
@@ -121,31 +81,28 @@ export async function getTemplate(
   try {
     console.log(`📚 Getting template for ${level}, index: ${templateIndex}`);
     
-    const config = TEMPLATE_MAP[level as keyof typeof TEMPLATE_MAP];
-    if (!config) {
-      throw new Error(`No template configuration for level: ${level}`);
-    }
-    
-    let storyTemplate: StoryTemplate | null = null;
-    
-    // Use TemplateLibraryService to get template
-    const getterFn = TemplateLibraryService[config.getterName as keyof typeof TemplateLibraryService];
-    if (typeof getterFn === 'function') {
-      storyTemplate = (getterFn as (index?: number) => StoryTemplate).call(TemplateLibraryService, templateIndex);
-    }
+    // Use new dynamic template loader for all levels
+    const storyTemplate = await loadTemplate(level, templateIndex);
     
     if (!storyTemplate) {
       console.log(`❌ No template found for ${level} at index ${templateIndex}`);
       return null;
     }
     
-    console.log(`✅ Found template: "${storyTemplate.title}"`);
-    
-    // Convert to string array with mode support (Phase 5)
-    const pages = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
-    
-    console.log(`📖 Converted to ${pages.length} pages`);
-    return pages;
+    // Handle Level 0 templates (arrays of strings) vs structured templates
+    if (Array.isArray(storyTemplate)) {
+      console.log(`✅ Found Level 0 template with ${storyTemplate.length} pages`);
+      // Level 0 templates are already string arrays - return as-is (limited to pageCount)
+      return storyTemplate.slice(0, Math.min(pageCount, storyTemplate.length));
+    } else {
+      console.log(`✅ Found structured template: "${storyTemplate.title}"`);
+      
+      // Convert structured template to string array with mode support
+      const pages = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
+      
+      console.log(`📖 Converted to ${pages.length} pages`);
+      return pages;
+    }
     
   } catch (error) {
     console.error(`❌ Error getting template for ${level}:`, error);

@@ -108,14 +108,8 @@ serve(async (req) => {
     if (explore) {
       console.log('🔍 Exploration mode for level:', templateLevel);
       
-      let templateCount: number;
-      
-      if (templateLevel === 'Level0') {
-        templateCount = TemplateLibraryService.getTemplateCount(templateLevel);
-      } else {
-        // Use dynamic template count for non-Level0
-        templateCount = await getTemplateCount(templateLevel);
-      }
+      // Use unified dynamic template count for all levels including Level0
+      const templateCount = await getTemplateCount(templateLevel);
       
       return new Response(JSON.stringify({
         success: true,
@@ -132,42 +126,37 @@ serve(async (req) => {
       });
     }
 
-    // Get template from appropriate source
+    // Get template from unified dynamic system
     console.log('📚 Getting template for level:', templateLevel);
     
     let pages: string[] | null = null;
     
-    if (templateLevel === 'Level0') {
-      // Use static Level 0 templates
-      const template = TemplateLibraryService.getLevel0Template(templateIndex);
-      if (template) {
-        console.log('✅ Level0 template found with', template.length, 'pages');
-        // Process with legacy placeholder system for Level0 (maintain original word density)
-        pages = processStoryTemplate(template, userInfo || {}, dynamicPageCount);
-      }
-    } else {
-      // Use dynamic import system for Level1+
-      try {
-        console.log('🔄 Loading dynamic template for:', templateLevel);
-        pages = await getTemplate(templateLevel, templateIndex, userInfo || {}, dynamicPageCount, mode);
+    try {
+      console.log('🔄 Loading template using unified dynamic system for:', templateLevel);
+      // Use unified dynamic template system for ALL levels including Level0
+      pages = await getTemplate(templateLevel, templateIndex, userInfo || {}, dynamicPageCount, mode);
+      
+      if (pages) {
+        console.log('✅ Template converted to', pages.length, 'pages');
         
-        if (pages) {
-          console.log('✅ Dynamic template converted to', pages.length, 'pages');
+        // Apply additional processing for Level 0 templates (placeholder resolution only)
+        if (templateLevel === 'Level0') {
+          pages = processStoryTemplate(pages, userInfo || {}, dynamicPageCount);
         }
-      } catch (dynamicError) {
-        console.error('❌ Dynamic template import failed:', dynamicError);
-        
-        // Return structured error for dynamic import failure
-        return new Response(JSON.stringify({
-          error: 'Template system temporarily unavailable',
-          level: templateLevel,
-          canRetry: true,
-          suggestion: 'Please try again in a moment, or try a different difficulty level'
-        }), {
-          status: 503, // Service Temporarily Unavailable
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
       }
+    } catch (dynamicError) {
+      console.error('❌ Dynamic template import failed:', dynamicError);
+      
+      // Return structured error for dynamic import failure
+      return new Response(JSON.stringify({
+        error: 'Template system temporarily unavailable',
+        level: templateLevel,
+        canRetry: true,
+        suggestion: 'Please try again in a moment, or try a different difficulty level'
+      }), {
+        status: 503, // Service Temporarily Unavailable
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     if (!pages || pages.length === 0) {
@@ -192,11 +181,11 @@ serve(async (req) => {
       pageCount: pages.length,
       expectedPages: dynamicPageCount,
       metadata: {
-        sourceSystem: templateLevel === 'Level0' ? 'Static Templates' : 'Dynamic Templates',
+        sourceSystem: 'Unified Dynamic Templates',
         templateLevel,
         selectedTemplate: templateIndex,
         mode: mode,
-        targetWordDensity: templateLevel === 'Level0' ? 'AI-matched' : 'Template-optimized'
+        targetWordDensity: 'Template-optimized'
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

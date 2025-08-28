@@ -4951,8 +4951,22 @@ export function getGrade10FallbackTemplateCount() {
   return GRADE_10_FALLBACK_TEMPLATES.length;
 }
 
+// Level 0 getter functions (MISSING - ADDED)
+export function getLevel0Template(templateIndex) {
+  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_0_TEMPLATES.length) {
+    return LEVEL_0_TEMPLATES[templateIndex];
+  }
+  return LEVEL_0_TEMPLATES[Math.floor(Math.random() * LEVEL_0_TEMPLATES.length)];
+}
+
+export function getLevel0TemplateCount() {
+  return LEVEL_0_TEMPLATES.length;
+}
+
 // Export service object for compatibility
 export const TemplateLibraryService = {
+  getLevel0Template,
+  getLevel0TemplateCount,
   getLevel1Template,
   getLevel1TemplateCount,
   getLevel2Template,
