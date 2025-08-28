@@ -13,7 +13,7 @@ export const LEVEL_0_TEMPLATES = [
 
 // ... keep existing vocabulary compliant templates
 
-// Level 1 Templates - COMPLETE IMPORT FROM FRONTEND (Ages 5-7)
+// Level 1 Templates - COMPLETE COLLECTION (Ages 5-7) - 5 Templates Required
 export const LEVEL_1_TEMPLATES = [
   {
     title: "The Magical Garden Discovery",
@@ -28,6 +28,56 @@ export const LEVEL_1_TEMPLATES = [
           text: "{userName} discovers a magical garden behind their house. The flowers sparkle with rainbow colors in the bright sunlight.",
           alternatives: ["Behind the house, {userName} finds an enchanted garden.", "A secret garden appears to {userName} with glowing flowers."],
           optionalDetails: ["butterflies dance around the flowers", "a gentle breeze carries sweet perfume"]
+        }
+      },
+      {
+        text: "A tiny fairy appears from behind a {favoriteColor} flower. The fairy explains that the garden needs help because the magic is fading.",
+        pause: true,
+        hook: "How can {userName} help save the magical garden?",
+        microVariants: {
+          text: "A tiny fairy appears from behind a {favoriteColor} flower. The fairy explains that the garden needs help because the magic is fading.",
+          alternatives: ["A small fairy flies out to greet {userName}, worried about the garden's magic.", "From the flowers comes a fairy who needs {userName}'s help."],
+          optionalDetails: ["the fairy has wings like butterfly wings", "sparkles trail behind the fairy as it flies"]
+        }
+      },
+      {
+        text: "{userName} follows the fairy to a dry fountain in the center of the garden. The fairy says the fountain used to sing beautiful songs, but now it's silent.",
+        pause: true,
+        hook: "What will make the fountain sing again?",
+        microVariants: {
+          text: "{userName} follows the fairy to a dry fountain in the center of the garden. The fairy says the fountain used to sing beautiful songs, but now it's silent.",
+          alternatives: ["The fairy leads {userName} to a quiet fountain that once made music.", "In the garden's heart, {userName} finds a fountain that lost its voice."],
+          optionalDetails: ["carved animals decorate the fountain's edge", "rainbow stones line the bottom"]
+        }
+      },
+      {
+        text: "The fairy gives {userName} a special watering can filled with giggles and kindness. When {userName} pours it into the fountain, the water begins to sparkle and bubble with joy.",
+        pause: true,
+        hook: "What magical sounds will the fountain make?",
+        microVariants: {
+          text: "The fairy gives {userName} a special watering can filled with giggles and kindness. When {userName} pours it into the fountain, the water begins to sparkle and bubble with joy.",
+          alternatives: ["A magical watering can with giggles makes the fountain come alive with sparkling water.", "{userName} uses the fairy's special can to fill the fountain with happy, bubbling water."],
+          optionalDetails: ["the water changes colors as it flows", "tiny musical notes float in the air"]
+        }
+      },
+      {
+        text: "The fountain starts singing the most beautiful song {userName} has ever heard. All the flowers begin to glow brighter, and new {favoriteColor} blooms appear everywhere.",
+        pause: true,
+        hook: "What other magical changes will happen in the garden?",
+        microVariants: {
+          text: "The fountain starts singing the most beautiful song {userName} has ever heard. All the flowers begin to glow brighter, and new {favoriteColor} blooms appear everywhere.",
+          alternatives: ["Beautiful fountain music makes flowers glow and new ones bloom in {userName}'s favorite color.", "The singing fountain brings the garden to life with bright flowers and {favoriteColor} petals."],
+          optionalDetails: ["butterflies come to dance around the fountain", "the song sounds like wind chimes and laughter"]
+        }
+      },
+      {
+        text: "The fairy thanks {userName} and gives them a magical seed. 'Plant this in your own garden,' says the fairy, 'and you'll always have a little magic nearby.'",
+        pause: true,
+        hook: "What will grow from the magical seed?",
+        microVariants: {
+          text: "The fairy thanks {userName} and gives them a magical seed. 'Plant this in your own garden,' says the fairy, 'and you'll always have a little magic nearby.'",
+          alternatives: ["A grateful fairy gives {userName} a special seed to bring magic to their own garden.", "The fairy's gift of a magical seed means {userName} can grow their own fairy garden."],
+          optionalDetails: ["the seed glows softly in {userName}'s hand", "the fairy promises to visit the new garden"]
         }
       }
     ],
@@ -45,6 +95,334 @@ export const LEVEL_1_TEMPLATES = [
       },
       weatherVariants: ["on a sunny morning", "during a gentle rain"],
       settingVariants: ["backyard", "school garden", "park"]
+    }
+  },
+  {
+    title: "The Lost Puppy Adventure",
+    theme: "Animals & Problem-Solving",
+    level: "Level 1",
+    scenes: [
+      {
+        text: "{userName} hears sad whimpering coming from the bushes near the park. They find a small {favoriteColor} puppy with no collar, looking scared and hungry.",
+        pause: true,
+        hook: "How can {userName} help the lost puppy?",
+        microVariants: {
+          text: "{userName} hears sad whimpering coming from the bushes near the park. They find a small {favoriteColor} puppy with no collar, looking scared and hungry.",
+          alternatives: ["A scared little puppy hides in the bushes, and {userName} wants to help.", "Near the park, {userName} discovers a hungry puppy that needs help."],
+          optionalDetails: ["the puppy has big, sad eyes", "its fur is muddy from hiding"]
+        }
+      },
+      {
+        text: "{userName} gently approaches the puppy and offers it some {favoriteFood} from their lunch. The puppy wags its tail and comes closer, no longer afraid.",
+        pause: true,
+        hook: "What should {userName} do next to help the puppy?",
+        microVariants: {
+          text: "{userName} gently approaches the puppy and offers it some {favoriteFood} from their lunch. The puppy wags its tail and comes closer, no longer afraid.",
+          alternatives: ["Sharing {favoriteFood} helps the puppy trust {userName} and feel safe.", "The puppy stops being scared when {userName} shares their lunch."],
+          optionalDetails: ["the puppy's tail wags faster and faster", "it licks {userName}'s hand to say thank you"]
+        }
+      },
+      {
+        text: "{userName} decides to look for the puppy's family. They walk around the neighborhood with the puppy, asking everyone they meet if they know who it belongs to.",
+        pause: true,
+        hook: "Will someone recognize the puppy?",
+        microVariants: {
+          text: "{userName} decides to look for the puppy's family. They walk around the neighborhood with the puppy, asking everyone they meet if they know who it belongs to.",
+          alternatives: ["Together, {userName} and the puppy search the neighborhood for its family.", "Walking with the puppy, {userName} asks neighbors if they know where it lives."],
+          optionalDetails: ["the puppy stays close to {userName}'s side", "neighbors smile at the cute puppy"]
+        }
+      },
+      {
+        text: "A little girl named Emma runs toward them crying, 'That's my puppy! His name is Max!' She explains that Max escaped through a hole in the fence while she was at school.",
+        pause: true,
+        hook: "How happy will Emma be to have Max back?",
+        microVariants: {
+          text: "A little girl named Emma runs toward them crying, 'That's my puppy! His name is Max!' She explains that Max escaped through a hole in the fence while she was at school.",
+          alternatives: ["Emma finds her lost puppy Max and explains how he got away from home.", "The puppy's owner Emma arrives, so happy to see Max is safe."],
+          optionalDetails: ["Emma hugs Max tightly", "tears of joy run down Emma's face"]
+        }
+      },
+      {
+        text: "Emma thanks {userName} for taking such good care of Max. She invites {userName} to visit anytime to play with Max in their newly fixed backyard.",
+        pause: true,
+        hook: "What fun games will {userName} play with Max?",
+        microVariants: {
+          text: "Emma thanks {userName} for taking such good care of Max. She invites {userName} to visit anytime to play with Max in their newly fixed backyard.",
+          alternatives: ["A grateful Emma invites {userName} to play with Max whenever they want.", "Emma's invitation means {userName} has a new friend and a puppy to visit."],
+          optionalDetails: ["Max barks happily at {userName}", "Emma's parents thank {userName} too"]
+        }
+      },
+      {
+        text: "{userName} feels proud for helping reunite Max with Emma. They visit every week to play fetch and teach Max new tricks, becoming the best of friends.",
+        pause: true,
+        hook: "What other animals might {userName} help in the future?",
+        microVariants: {
+          text: "{userName} feels proud for helping reunite Max with Emma. They visit every week to play fetch and teach Max new tricks, becoming the best of friends.",
+          alternatives: ["Weekly visits to play with Max make {userName} feel happy about helping.", "Playing with Max every week, {userName} enjoys their new friendship."],
+          optionalDetails: ["Max learns to sit and roll over", "Emma and {userName} become friends too"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} and Emma become neighborhood helpers, always ready to assist any lost pets that need to find their way home.",
+        microVariants: ["Together they create a lost pet rescue team.", "Their kindness spreads throughout the neighborhood."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "puppy": ["kitten", "bunny", "hamster", "bird"],
+        "park": ["playground", "yard", "street", "school"]
+      },
+      weatherVariants: ["on a sunny day", "after the rain", "in the afternoon"],
+      settingVariants: ["neighborhood", "park", "school grounds", "backyard"]
+    }
+  },
+  {
+    title: "The Magic Art Set",
+    theme: "Creativity & Self-Expression",
+    level: "Level 1",
+    scenes: [
+      {
+        text: "{userName} finds an old art set in the garage with paintbrushes that shimmer in {favoriteColor} light. When they dip a brush in water, it starts to glow!",
+        pause: true,
+        hook: "What will happen when {userName} paints with the magical brushes?",
+        microVariants: {
+          text: "{userName} finds an old art set in the garage with paintbrushes that shimmer in {favoriteColor} light. When they dip a brush in water, it starts to glow!",
+          alternatives: ["A magical art set with glowing brushes appears in the garage for {userName}.", "In the garage, {userName} discovers paintbrushes that light up when wet."],
+          optionalDetails: ["the paints sparkle like jewels", "the brushes feel warm to touch"]
+        }
+      },
+      {
+        text: "{userName} decides to paint a picture of their {favoriteAnimal}. As soon as the brush touches the paper, the {favoriteColor} paint moves by itself, creating the most beautiful animal they've ever seen.",
+        pause: true,
+        hook: "What amazing thing will the painted animal do?",
+        microVariants: {
+          text: "{userName} decides to paint a picture of their {favoriteAnimal}. As soon as the brush touches the paper, the {favoriteColor} paint moves by itself, creating the most beautiful animal they've ever seen.",
+          alternatives: ["Painting a {favoriteAnimal}, {userName} watches the magical brush create art by itself.", "The magic brush paints a perfect {favoriteAnimal} when {userName} touches paper."],
+          optionalDetails: ["the paint seems to know exactly what to draw", "colors blend perfectly together"]
+        }
+      },
+      {
+        text: "Suddenly, the painted {favoriteAnimal} winks at {userName} and steps right off the paper! The magical creature is friendly and wants to play.",
+        pause: true,
+        hook: "What games will {userName} play with their painted friend?",
+        microVariants: {
+          text: "Suddenly, the painted {favoriteAnimal} winks at {userName} and steps right off the paper! The magical creature is friendly and wants to play.",
+          alternatives: ["The {favoriteAnimal} comes alive from the painting and wants to be {userName}'s friend.", "Magic brings the painted {favoriteAnimal} to life, ready to play with {userName}."],
+          optionalDetails: ["the creature leaves tiny paint paw prints", "it makes happy sounds as it moves"]
+        }
+      },
+      {
+        text: "{userName} and their painted friend play hide-and-seek around the garage. The {favoriteAnimal} can change colors to match anything it hides behind!",
+        pause: true,
+        hook: "Where else will they explore together?",
+        microVariants: {
+          text: "{userName} and their painted friend play hide-and-seek around the garage. The {favoriteAnimal} can change colors to match anything it hides behind!",
+          alternatives: ["Playing hide-and-seek, the magical {favoriteAnimal} changes colors to hide perfectly.", "The painted friend's color-changing ability makes hide-and-seek extra fun for {userName}."],
+          optionalDetails: ["it turns brown behind boxes", "it becomes green near plants"]
+        }
+      },
+      {
+        text: "{userName} paints a {favoriteColor} door on the wall, and it becomes real! They step through with their painted friend into a world where everything is made of art.",
+        pause: true,
+        hook: "What wonderful sights will they see in the art world?",
+        microVariants: {
+          text: "{userName} paints a {favoriteColor} door on the wall, and it becomes real! They step through with their painted friend into a world where everything is made of art.",
+          alternatives: ["A painted door opens to an art world where {userName} and their friend explore together.", "Through the magical door, {userName} enters a land made entirely of paintings and drawings."],
+          optionalDetails: ["rainbow clouds float overhead", "the ground is covered in colorful paint splatters"]
+        }
+      },
+      {
+        text: "After exploring the art world, {userName} and their friend return through the door. The painted {favoriteAnimal} gives {userName} a special paintbrush that will always help them create something beautiful.",
+        pause: true,
+        hook: "What masterpiece will {userName} create next?",
+        microVariants: {
+          text: "After exploring the art world, {userName} and their friend return through the door. The painted {favoriteAnimal} gives {userName} a special paintbrush that will always help them create something beautiful.",
+          alternatives: ["Returning home, {userName} receives a forever paintbrush from their artistic friend.", "The {favoriteAnimal} friend gifts {userName} a magical brush for creating beautiful art."],
+          optionalDetails: ["the brush glows softly in {userName}'s hand", "the friend promises to visit again"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} becomes the neighborhood's favorite artist, painting beautiful pictures that make everyone smile.",
+        microVariants: ["Every painting {userName} creates brings joy to their community.", "The magical brush helps {userName} spread happiness through art."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "art set": ["paint box", "crayon case", "drawing kit", "craft supplies"],
+        "garage": ["attic", "basement", "art room", "closet"]
+      },
+      weatherVariants: ["on a creative afternoon", "during art time", "on a quiet morning"],
+      settingVariants: ["garage", "art room", "bedroom", "backyard"]
+    }
+  },
+  {
+    title: "The Friendship Garden",
+    theme: "Friendship & Cooperation",
+    level: "Level 1",
+    scenes: [
+      {
+        text: "{userName} starts a small garden at school but feels sad because they have to work alone. They wish they had friends to help make it beautiful.",
+        pause: true,
+        hook: "Who might want to help {userName} with the garden?",
+        microVariants: {
+          text: "{userName} starts a small garden at school but feels sad because they have to work alone. They wish they had friends to help make it beautiful.",
+          alternatives: ["Working alone in the school garden makes {userName} wish for friends to help.", "The school garden project feels lonely when {userName} has no one to share it with."],
+          optionalDetails: ["the soil is hard to dig alone", "the empty garden patch looks too big"]
+        }
+      },
+      {
+        text: "Maria sees {userName} struggling with the heavy watering can and offers to help. She says the garden looks like it will be wonderful when it's finished.",
+        pause: true,
+        hook: "What will Maria and {userName} plant together?",
+        microVariants: {
+          text: "Maria sees {userName} struggling with the heavy watering can and offers to help. She says the garden looks like it will be wonderful when it's finished.",
+          alternatives: ["Kind Maria helps {userName} carry water and compliments the garden plan.", "Maria's offer to help with watering makes {userName} feel less alone."],
+          optionalDetails: ["Maria has strong arms for carrying", "she smiles warmly at {userName}"]
+        }
+      },
+      {
+        text: "Together, {userName} and Maria plant {favoriteColor} flowers and carrot seeds. Working as a team makes the job fun instead of hard, and they laugh as they get dirty.",
+        pause: true,
+        hook: "Who else might join their gardening team?",
+        microVariants: {
+          text: "Together, {userName} and Maria plant {favoriteColor} flowers and carrot seeds. Working as a team makes the job fun instead of hard, and they laugh as they get dirty.",
+          alternatives: ["Planting flowers and carrots together, {userName} and Maria have fun getting muddy.", "Teamwork makes gardening enjoyable as {userName} and Maria plant colorful seeds."],
+          optionalDetails: ["dirt gets under their fingernails", "they make silly jokes about the carrots"]
+        }
+      },
+      {
+        text: "Sam notices them having fun and asks if he can help too. He brings his {favoriteAnimal} toy to guard the garden and help them remember to water it every day.",
+        pause: true,
+        hook: "How will three friends work together in the garden?",
+        microVariants: {
+          text: "Sam notices them having fun and asks if he can help too. He brings his {favoriteAnimal} toy to guard the garden and help them remember to water it every day.",
+          alternatives: ["Sam joins with his toy {favoriteAnimal} to help guard and water the growing garden.", "Three friends work together when Sam brings his {favoriteAnimal} helper to the garden."],
+          optionalDetails: ["the toy sits proudly among the plants", "Sam makes a watering schedule"]
+        }
+      },
+      {
+        text: "Every day the three friends check on their garden together. They take turns watering, pulling weeds, and talking about how big everything is growing.",
+        pause: true,
+        hook: "What wonderful things will grow in their friendship garden?",
+        microVariants: {
+          text: "Every day the three friends check on their garden together. They take turns watering, pulling weeds, and talking about how big everything is growing.",
+          alternatives: ["Daily garden visits bring the three friends closer as they care for their plants.", "Working together each day, the friends watch their garden and friendship grow."],
+          optionalDetails: ["tiny green shoots appear in the soil", "they measure the plants with rulers"]
+        }
+      },
+      {
+        text: "When the {favoriteColor} flowers bloom and the carrots are ready, {userName}, Maria, and Sam share their harvest with the whole class. Everyone says it's the most beautiful garden they've ever seen.",
+        pause: true,
+        hook: "How will their successful garden inspire other students?",
+        microVariants: {
+          text: "When the {favoriteColor} flowers bloom and the carrots are ready, {userName}, Maria, and Sam share their harvest with the whole class. Everyone says it's the most beautiful garden they've ever seen.",
+          alternatives: ["The blooming garden becomes a gift that {userName}, Maria, and Sam share with everyone.", "Beautiful flowers and fresh carrots from their garden make the whole class happy."],
+          optionalDetails: ["the flowers smell sweet and fresh", "the carrots taste better than store ones"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "The three friends decide to plant a bigger garden next year, and many more classmates want to join their gardening club.",
+        microVariants: ["Their friendship garden grows into a whole school gardening program.", "Next year's garden will be even bigger with more friend helpers."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "flowers": ["vegetables", "herbs", "sunflowers", "butterflies"],
+        "school": ["home", "community center", "park", "backyard"]
+      },
+      weatherVariants: ["in the spring sunshine", "after gentle rain", "on warm afternoons"],
+      settingVariants: ["school yard", "community garden", "backyard", "park"]
+    }
+  },
+  {
+    title: "The Brave Little Explorer",
+    theme: "Overcoming Fears & Building Confidence",
+    level: "Level 1",
+    scenes: [
+      {
+        text: "{userName} wants to explore the big playground at the new park, but it looks scary and much bigger than their old playground. All the equipment seems too high and fast.",
+        pause: true,
+        hook: "How will {userName} find the courage to try the new playground?",
+        microVariants: {
+          text: "{userName} wants to explore the big playground at the new park, but it looks scary and much bigger than their old playground. All the equipment seems too high and fast.",
+          alternatives: ["The new playground looks exciting but scary to {userName} who misses their smaller old one.", "Big playground equipment makes {userName} nervous about playing at the new park."],
+          optionalDetails: ["the slide looks very tall and steep", "swings move higher than at the old park"]
+        }
+      },
+      {
+        text: "{userName} starts with the smallest slide, which is painted {favoriteColor}. It's actually fun and not scary at all! This gives them confidence to try something a little bigger.",
+        pause: true,
+        hook: "What will {userName} try next on the playground?",
+        microVariants: {
+          text: "{userName} starts with the smallest slide, which is painted {favoriteColor}. It's actually fun and not scary at all! This gives them confidence to try something a little bigger.",
+          alternatives: ["The small {favoriteColor} slide proves easy and fun, building {userName}'s confidence.", "Starting small, {userName} discovers the {favoriteColor} slide is actually enjoyable."],
+          optionalDetails: ["the slide is smooth and fast", "{userName} giggles while sliding down"]
+        }
+      },
+      {
+        text: "Next, {userName} tries the rope climbing area. At first their hands feel shaky, but they remember how they learned to tie their shoes - one step at a time.",
+        pause: true,
+        hook: "Will {userName} make it to the top of the rope climb?",
+        microVariants: {
+          text: "Next, {userName} tries the rope climbing area. At first their hands feel shaky, but they remember how they learned to tie their shoes - one step at a time.",
+          alternatives: ["Trying the rope climb, {userName} remembers that practice makes everything easier.", "Shaky hands become steady when {userName} takes the rope climb step by step."],
+          optionalDetails: ["the rope has good knots for climbing", "other kids cheer {userName} on"]
+        }
+      },
+      {
+        text: "Halfway up the rope, {userName} stops and looks around. They can see the whole park from up there and feel proud of how high they've climbed!",
+        pause: true,
+        hook: "What amazing view will {userName} see from up high?",
+        microVariants: {
+          text: "Halfway up the rope, {userName} stops and looks around. They can see the whole park from up there and feel proud of how high they've climbed!",
+          alternatives: ["From halfway up the rope, {userName} enjoys a proud view of the entire park.", "Looking around from the rope climb, {userName} feels amazed by how high they've gotten."],
+          optionalDetails: ["they can see birds flying nearby", "the playground looks different from above"]
+        }
+      },
+      {
+        text: "Finally, {userName} decides to try the big slide - the one that looked so scary before. They climb up slowly and carefully, then zoom down with a huge smile!",
+        pause: true,
+        hook: "How will {userName} feel about conquering their biggest fear?",
+        microVariants: {
+          text: "Finally, {userName} decides to try the big slide - the one that looked so scary before. They climb up slowly and carefully, then zoom down with a huge smile!",
+          alternatives: ["The scary big slide becomes {userName}'s favorite when they finally try it.", "Conquering the big slide fills {userName} with joy and pride."],
+          optionalDetails: ["the wind rushes past as they slide", "their smile stretches from ear to ear"]
+        }
+      },
+      {
+        text: "{userName} realizes that most scary things aren't really scary once you try them. They spend the rest of the day exploring every part of the playground, feeling brave and confident.",
+        pause: true,
+        hook: "What other new adventures will {userName} be brave enough to try?",
+        microVariants: {
+          text: "{userName} realizes that most scary things aren't really scary once you try them. They spend the rest of the day exploring every part of the playground, feeling brave and confident.",
+          alternatives: ["Learning that scary things become fun, {userName} explores the playground with new confidence.", "The playground becomes {userName}'s favorite place after discovering courage conquers fear."],
+          optionalDetails: ["they help other nervous kids try new things", "every piece of equipment becomes a new adventure"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} becomes known as the playground helper, encouraging other children to try new things and overcome their fears.",
+        microVariants: ["Other kids look up to {userName} as the brave playground leader.", "The playground becomes a place where {userName} helps everyone feel confident."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "playground": ["climbing gym", "adventure course", "sports field", "nature trail"],
+        "slide": ["swing", "monkey bars", "seesaw", "merry-go-round"]
+      },
+      weatherVariants: ["on a sunny day", "in the afternoon", "after school"],
+      settingVariants: ["new park", "school playground", "community center", "adventure park"]
     }
   }
 ];
