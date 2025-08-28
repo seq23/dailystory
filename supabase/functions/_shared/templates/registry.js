@@ -8,7 +8,7 @@ export const TEMPLATE_REGISTRY = {
   level0: {
     count: 100,
     type: 'static', 
-    path: './level0.js',
+    path: 'level0.js',
     functions: {
       getter: 'getLevel0Template',
       counter: 'getLevel0TemplateCount'
@@ -17,7 +17,7 @@ export const TEMPLATE_REGISTRY = {
   level1: {
     count: 5,
     type: 'dynamic',
-    path: './level1/',
+    path: 'level1/',
     templates: [
       { file: 'beautiful-garden.js', title: 'The Beautiful Garden Adventure' },
       { file: 'big-bike-adventure.js', title: 'The Big Bike Adventure' },
@@ -29,7 +29,7 @@ export const TEMPLATE_REGISTRY = {
   level2: {
     count: 5,
     type: 'dynamic',
-    path: './level2/',
+    path: 'level2/',
     templates: [
       { file: 'drama-club-adventure.js', title: 'Drama Club Adventure' },
       { file: 'library-mystery.js', title: 'The Library Mystery' },
@@ -41,7 +41,7 @@ export const TEMPLATE_REGISTRY = {
   level3: {
     count: 5,
     type: 'dynamic',
-    path: './level3/',
+    path: 'level3/',
     templates: [
       { file: 'magical-treehouse.js', title: 'The Magical Treehouse Adventure' },
       { file: 'space-mission.js', title: 'Space Mission Adventure' },
@@ -53,7 +53,7 @@ export const TEMPLATE_REGISTRY = {
   level4: {
     count: 5,
     type: 'dynamic',
-    path: './level4/',
+    path: 'level4/',
     templates: [
       { file: 'ancient-artifact-mystery.js', title: 'Ancient Artifact Mystery' },
       { file: 'climate-change-heroes.js', title: 'Climate Change Heroes' },
@@ -65,7 +65,7 @@ export const TEMPLATE_REGISTRY = {
   grade6: {
     count: 3,
     type: 'dynamic',
-    path: './grade6/',
+    path: 'grade6/',
     templates: [
       { file: 'biosphere-project.js', title: 'Biosphere Research Project' },
       { file: 'coding-for-change.js', title: 'Coding for Change Project' },
@@ -75,7 +75,7 @@ export const TEMPLATE_REGISTRY = {
   grade7: {
     count: 3,
     type: 'dynamic',
-    path: './grade7/',
+    path: 'grade7/',
     templates: [
       { file: 'cultural-heritage-research.js', title: 'Cultural Heritage Research Project' },
       { file: 'digital-citizenship-dilemma.js', title: 'Digital Citizenship Dilemma' },
@@ -85,7 +85,7 @@ export const TEMPLATE_REGISTRY = {
   grade8: {
     count: 3,
     type: 'dynamic',
-    path: './grade8/',
+    path: 'grade8/',
     templates: [
       { file: 'digital-privacy-rights.js', title: 'Digital Privacy Rights Campaign' },
       { file: 'environmental-justice.js', title: 'Environmental Justice Investigation' },
@@ -95,7 +95,7 @@ export const TEMPLATE_REGISTRY = {
   grade9: {
     count: 3,
     type: 'dynamic',
-    path: './grade9/',
+    path: 'grade9/',
     templates: [
       { file: 'criminal-justice-reform.js', title: 'Criminal Justice Reform Initiative' },
       { file: 'educational-equity.js', title: 'Educational Equity Research Project' },
@@ -105,7 +105,7 @@ export const TEMPLATE_REGISTRY = {
   grade10: {
     count: 3,
     type: 'dynamic',
-    path: './grade10/',
+    path: 'grade10/',
     templates: [
       { file: 'democratic-participation.js', title: 'Democratic Participation Project' },
       { file: 'global-climate-action.js', title: 'Global Climate Action Network' },
