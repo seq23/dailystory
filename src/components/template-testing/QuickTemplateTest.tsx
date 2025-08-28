@@ -7,31 +7,36 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
+import { useTemplateCounts } from '@/hooks/useTemplateCounts';
 import { StoryResultDisplay } from './StoryResultDisplay';
 import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { DifficultyLevel } from '@/types';
 
-const DIFFICULTY_OPTIONS: { value: DifficultyLevel; label: string; description: string }[] = [
-  { value: 'beginner', label: 'Beginner', description: 'Level 0 - 199+ templates' },
-  { value: 'easy', label: 'Easy', description: 'Level 1 - 5+ templates' },
-  { value: 'medium', label: 'Medium', description: 'Level 2 - 5+ templates' },
-  { value: 'hard', label: 'Hard', description: 'Level 3 - 5+ templates' },
-  { value: 'expert', label: 'Expert', description: 'Level 4 - 5+ templates' },
-];
-
-const GRADE_OPTIONS = [
-  { value: 'grade6', label: 'Grade 6', description: 'Grade 6 - 3+ templates' },
-  { value: 'grade7', label: 'Grade 7', description: 'Grade 7 - 3+ templates' },
-  { value: 'grade8', label: 'Grade 8', description: 'Grade 8 - 3+ templates' },
-  { value: 'grade9', label: 'Grade 9', description: 'Grade 9 - 3+ templates' },
-  { value: 'grade10', label: 'Grade 10', description: 'Grade 10 - 3+ templates' },
-];
-
 export function QuickTemplateTest() {
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [testingMode, setTestingMode] = useState<'testing' | 'real-user'>('testing');
   const { generateStory, isLoading, result, error, retryCount, isMaxRetriesReached, resetRetryState } = useTemplateService();
+  const { counts, loading: countsLoading } = useTemplateCounts();
+
+  // Generate dynamic options based on template counts
+  const difficultyOptions = [
+    { value: 'beginner', label: 'Beginner', description: `Level 0 - ${counts.beginner || 100} templates` },
+    { value: 'easy', label: 'Easy', description: `Level 1 - ${counts.easy || 5} templates` },
+    { value: 'medium', label: 'Medium', description: `Level 2 - ${counts.medium || 5} templates` },
+    { value: 'hard', label: 'Hard', description: `Level 3 - ${counts.hard || 5} templates` },
+    { value: 'expert', label: 'Expert', description: `Level 4 - ${counts.expert || 5} templates` },
+  ];
+
+  const gradeOptions = [
+    { value: 'grade6', label: 'Grade 6', description: `Grade 6 - ${counts.grade6 || 3} templates` },
+    { value: 'grade7', label: 'Grade 7', description: `Grade 7 - ${counts.grade7 || 3} templates` },
+    { value: 'grade8', label: 'Grade 8', description: `Grade 8 - ${counts.grade8 || 3} templates` },
+    { value: 'grade9', label: 'Grade 9', description: `Grade 9 - ${counts.grade9 || 3} templates` },
+    { value: 'grade10', label: 'Grade 10', description: `Grade 10 - ${counts.grade10 || 3} templates` },
+  ];
+
+  const allOptions = [...difficultyOptions, ...gradeOptions];
 
   const handleTest = async () => {
     if (!selectedLevel) return;
@@ -63,8 +68,6 @@ export function QuickTemplateTest() {
     handleTest();
   };
 
-  const allOptions = [...DIFFICULTY_OPTIONS, ...GRADE_OPTIONS];
-
   return (
     <div className="space-y-6">
       <Card>
@@ -85,7 +88,7 @@ export function QuickTemplateTest() {
                 <SelectContent>
                   <div className="p-2">
                     <div className="text-xs font-medium text-muted-foreground mb-2">Standard Levels</div>
-                    {DIFFICULTY_OPTIONS.map((option) => (
+                    {difficultyOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex flex-col">
                           <span>{option.label}</span>
@@ -96,7 +99,7 @@ export function QuickTemplateTest() {
                   </div>
                   <div className="p-2 border-t">
                     <div className="text-xs font-medium text-muted-foreground mb-2">Grade Levels</div>
-                    {GRADE_OPTIONS.map((option) => (
+                    {gradeOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex flex-col">
                           <span>{option.label}</span>
