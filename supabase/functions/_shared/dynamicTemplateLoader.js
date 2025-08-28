@@ -115,38 +115,23 @@ export async function loadTemplate(level, templateIndex = null) {
 
 /**
  * Get template count for exploration mode
- * Falls back to TemplateLibraryService if registry count doesn't match actual implementation
+ * Uses registry counts since they now accurately match existing files
  */
 export async function getDynamicTemplateCount(level) {
   const registryCount = getRegistryTemplateCount(level);
   
-  // For now, fall back to TemplateLibraryService to get accurate counts
-  if (level !== 'level0') {
-    try {
-      const { TemplateLibraryService } = await import('../TemplateLibraryService.js');
-      
-      const countMap = {
-        level1: 'getLevel1TemplateCount',
-        level2: 'getLevel2TemplateCount',
-        level3: 'getLevel3TemplateCount', 
-        level4: 'getLevel4TemplateCount',
-        grade6: 'getGrade6FallbackTemplateCount',
-        grade7: 'getGrade7FallbackTemplateCount',
-        grade8: 'getGrade8FallbackTemplateCount',
-        grade9: 'getGrade9FallbackTemplateCount',
-        grade10: 'getGrade10FallbackTemplateCount'
-      };
-      
-      const countFunction = countMap[level];
-      if (countFunction && typeof TemplateLibraryService[countFunction] === 'function') {
-        return TemplateLibraryService[countFunction]();
-      }
-    } catch (error) {
-      console.error(`❌ Error getting count from TemplateLibraryService for ${level}:`, error);
-    }
+  // Registry is now accurate after optimization, so use it directly
+  if (registryCount > 0) {
+    return registryCount;
   }
   
-  return registryCount;
+  // Fallback for level0 or if registry lookup fails
+  if (level === 'level0') {
+    return 100; // Level 0 has 100 templates
+  }
+  
+  console.warn(`⚠️ No count found for level ${level}, returning 0`);
+  return 0;
 }
 
 /**

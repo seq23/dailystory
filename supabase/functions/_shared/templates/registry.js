@@ -19,11 +19,11 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: './level1/',
     templates: [
+      { file: 'beautiful-garden.js', title: 'The Beautiful Garden Adventure' },
+      { file: 'big-bike-adventure.js', title: 'The Big Bike Adventure' },
+      { file: 'helping-lost-animal.js', title: 'Helping the Lost Animal' },
       { file: 'magical-garden-discovery.js', title: 'The Magical Garden Discovery' },
-      { file: 'lost-puppy-adventure.js', title: 'The Lost Puppy Adventure' },
-      { file: 'magic-art-set.js', title: 'The Magic Art Set' },
-      { file: 'friendship-garden.js', title: 'The Friendship Garden' },
-      { file: 'brave-little-explorer.js', title: 'The Brave Little Explorer' }
+      { file: 'perfect-beach-day.js', title: 'The Perfect Beach Day' }
     ]
   },
   level2: {
@@ -31,11 +31,11 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: './level2/',
     templates: [
-      { file: 'school-science-fair-champion.js', title: 'School Science Fair Champion' },
-      { file: 'mystery-missing-library-books.js', title: 'Mystery of the Missing Library Books' },
-      { file: 'neighborhood-mystery-club.js', title: 'The Neighborhood Mystery Club' },
-      { file: 'invention-fair-champion.js', title: 'Invention Fair Champion' },
-      { file: 'animal-rescue-team.js', title: 'Animal Rescue Team Adventure' }
+      { file: 'drama-club-adventure.js', title: 'Drama Club Adventure' },
+      { file: 'library-mystery.js', title: 'The Library Mystery' },
+      { file: 'mysterious-treasure-map.js', title: 'The Mysterious Treasure Map' },
+      { file: 'neighborhood-mystery.js', title: 'The Neighborhood Mystery' },
+      { file: 'science-discovery.js', title: 'The Science Discovery' }
     ]
   },
   level3: {
@@ -43,11 +43,11 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: './level3/',
     templates: [
-      { file: 'magical-treehouse-adventure.js', title: 'The Magical Treehouse Adventure' },
+      { file: 'magical-treehouse.js', title: 'The Magical Treehouse Adventure' },
+      { file: 'space-mission.js', title: 'Space Mission Adventure' },
+      { file: 'superhero-academy.js', title: 'Superhero Academy Challenge' },
       { file: 'time-travel-detective.js', title: 'Time Travel Detective Mystery' },
-      { file: 'dragon-academy-challenge.js', title: 'Dragon Academy Challenge' },
-      { file: 'robot-best-friend.js', title: 'My Robot Best Friend' },
-      { file: 'secret-underground-city.js', title: 'The Secret Underground City' }
+      { file: 'underwater-kingdom.js', title: 'The Underwater Kingdom' }
     ]
   },
   level4: {
@@ -56,10 +56,10 @@ export const TEMPLATE_REGISTRY = {
     path: './level4/',
     templates: [
       { file: 'ancient-artifact-mystery.js', title: 'Ancient Artifact Mystery' },
-      { file: 'virtual-reality-escape.js', title: 'Virtual Reality Escape Challenge' },
       { file: 'climate-change-heroes.js', title: 'Climate Change Heroes' },
       { file: 'quantum-physics-discovery.js', title: 'Quantum Physics Discovery' },
-      { file: 'social-media-justice-league.js', title: 'Social Media Justice League' }
+      { file: 'social-media-justice-league.js', title: 'Social Media Justice League' },
+      { file: 'virtual-reality-escape.js', title: 'Virtual Reality Escape Challenge' }
     ]
   },
   grade6: {
@@ -68,8 +68,8 @@ export const TEMPLATE_REGISTRY = {
     path: './grade6/',
     templates: [
       { file: 'biosphere-project.js', title: 'Biosphere Research Project' },
-      { file: 'time-capsule-mystery.js', title: 'Time Capsule Mystery Investigation' },
-      { file: 'coding-club-championship.js', title: 'Coding Club Championship Challenge' }
+      { file: 'coding-for-change.js', title: 'Coding for Change Project' },
+      { file: 'urban-farming-lab.js', title: 'Urban Farming Lab Initiative' }
     ]
   },
   grade7: {
@@ -87,9 +87,9 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: './grade8/',
     templates: [
-      { file: 'environmental-justice-investigation.js', title: 'Environmental Justice Investigation' },
-      { file: 'food-justice-research.js', title: 'Food Justice Research Project' },
-      { file: 'digital-privacy-rights.js', title: 'Digital Privacy Rights Campaign' }
+      { file: 'digital-privacy-rights.js', title: 'Digital Privacy Rights Campaign' },
+      { file: 'environmental-justice.js', title: 'Environmental Justice Investigation' },
+      { file: 'food-justice-research.js', title: 'Food Justice Research Project' }
     ]
   },
   grade9: {
@@ -97,9 +97,9 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: './grade9/',
     templates: [
-      { file: 'mental-health-advocacy.js', title: 'Mental Health Advocacy Project' },
-      { file: 'youth-criminal-justice-reform.js', title: 'Youth Criminal Justice Reform Initiative' },
-      { file: 'educational-equity-research.js', title: 'Educational Equity Research Project' }
+      { file: 'criminal-justice-reform.js', title: 'Criminal Justice Reform Initiative' },
+      { file: 'educational-equity.js', title: 'Educational Equity Research Project' },
+      { file: 'mental-health-advocacy.js', title: 'Mental Health Advocacy Project' }
     ]
   },
   grade10: {
@@ -107,9 +107,9 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: './grade10/',
     templates: [
-      { file: 'global-climate-action-network.js', title: 'Global Climate Action Network' },
-      { file: 'global-health-equity-initiative.js', title: 'Global Health Equity Initiative' },
-      { file: 'democratic-participation-project.js', title: 'Democratic Participation Project' }
+      { file: 'democratic-participation.js', title: 'Democratic Participation Project' },
+      { file: 'global-climate-action.js', title: 'Global Climate Action Network' },
+      { file: 'global-health-equity.js', title: 'Global Health Equity Initiative' }
     ]
   }
 };

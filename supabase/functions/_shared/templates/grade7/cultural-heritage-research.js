@@ -27,6 +27,18 @@ export const template = {
         ],
         optionalDetails: ["Old photo albums told stories of diverse family members.", "Grandparents shared memories of adapting to new places and customs.", "Parents explained how they'd intentionally built inclusive family traditions."]
       }
+    },
+    {
+      text: "During a follow-up family meeting, {userName} interviewed their older siblings and cousins, discovering that each family member had different perspectives on their heritage and that some had struggled with feeling caught between different cultural expectations at school and at home - leading {userName} to understand that heritage isn't something fixed that gets passed down unchanged, but something that each generation interprets, adapts, and makes their own based on their experiences and values.",
+      pause: true,
+      hook: "How will {userName} represent the diversity within their own family?",
+      microVariants: {
+        text: "Extended family interviews revealed that each generation interpreted their heritage differently, helping {userName} understand heritage as an evolving, personal process rather than a fixed tradition.",
+        alternatives: [
+          "Conversations with siblings and cousins showed {userName} that heritage means different things to different family members, even within the same family unit."
+        ],
+        optionalDetails: ["Older siblings had faced different cultural pressures at school.", "Some family members felt more connected to certain traditions than others.", "Each person had created their own way of balancing different cultural influences."]
+      }
     }
   ],
   endings: [
@@ -42,6 +54,13 @@ export const template = {
       text: "The presentation sparked meaningful discussions throughout the school about different types of families and heritage stories, leading {userName} and several classmates to propose a 'Modern Families' club where students could explore and celebrate the diverse ways that contemporary families create identity, belonging, and cultural meaning beyond traditional ancestry-based definitions.",
       microVariants: [
         "{userName}'s presentation inspired schoolwide conversations about family diversity and led to the creation of a club celebrating various forms of modern family identity and belonging."
+      ]
+    },
+    {
+      type: 'inspiring',
+      text: "Months later, {userName} and their teacher collaborated to redesign the heritage assignment for future classes, creating a more inclusive project that celebrated diverse family structures, modern traditions, and the ongoing process of cultural identity formation rather than assuming all students had simple, single-culture backgrounds.",
+      microVariants: [
+        "Collaborating with their teacher, {userName} helped redesign the heritage project to be more inclusive of diverse family structures and modern cultural identity formation."
       ]
     }
   ],
