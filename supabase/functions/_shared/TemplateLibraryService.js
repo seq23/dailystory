@@ -4401,27 +4401,163 @@ export const GRADE_10_FALLBACK_TEMPLATES = [
     level: "Grade 10",
     scenes: [
       {
-        text: "{userName} felt simultaneously inspired and overwhelmed while attending a virtual climate summit where teenage activists from six continents shared how climate change was already affecting their communities through rising sea levels, extreme weather events, droughts, and flooding - making {userName} realize that while their own community hadn't yet experienced dramatic climate impacts, their lifestyle choices and their generation's collective actions would determine whether millions of young people around the world would have sustainable futures or face displacement, food insecurity, and environmental catastrophe.",
+        text: "Sam Chen felt simultaneously inspired and overwhelmed while attending a virtual climate summit where they met Amara Okafor, a seventeen-year-old activist from Nigeria whose village was facing severe flooding due to rising sea levels. As Amara shared photos of her community's struggles, Sam realized how privileged their California suburb felt compared to the climate impacts already devastating Amara's daily life. 'We're the same age, but you're living in a climate emergency while I'm just learning about it,' Sam said during a breakout session. Amara's warm smile and determination despite her circumstances made Sam feel both heartbroken about the injustice and drawn to her incredible resilience and intelligence.",
         pause: true,
-        hook: "How will {userName} translate global climate awareness into effective local action?", 
+        hook: "How will Sam's connection with Amara inspire them to take meaningful climate action?",
         microVariants: {
-          text: "{userName} attended a virtual climate summit where global youth activists shared how climate change was already devastating their communities, inspiring urgent questions about intergenerational responsibility and effective action.",
-          alternatives: [
-            "Connecting with international youth climate activists online, {userName} confronted the stark reality that their generation's choices would determine whether peers worldwide faced environmental catastrophe or sustainable futures."
-          ],
-          optionalDetails: ["Activists shared photos of flooded homes and failed crops.", "Scientific projections showed accelerating climate impacts.", "The urgency of the crisis became personally meaningful through peer connections."]
+          text: "Meeting Amara at a virtual climate summit opened Sam's eyes to how climate impacts were already devastating peers worldwide while sparking immediate admiration for her resilience.",
+          alternatives: ["Amara's photos of climate flooding in her Nigerian village made Sam realize the inequality of climate impacts while creating an instant connection.", "The virtual climate summit brought Sam and Amara together across continents, revealing both climate injustice and mutual attraction."],
+          optionalDetails: ["Amara's village had been flooded three times in the past year", "Sam's suburban area had experienced only minor temperature increases", "Other activists shared equally devastating stories from around the world"]
         }
       },
       {
-        text: "Rather than feeling paralyzed by the enormity of global climate challenges, {userName} channeled their concern into researching evidence-based solutions and discovering that effective climate action required both individual lifestyle changes and systematic policy advocacy - leading them to organize a comprehensive climate action network that connected their school with environmental organizations, elected officials, and international youth activists while implementing concrete projects like renewable energy installations, waste reduction programs, and community education initiatives that demonstrated how local action could contribute to global solutions.",
+        text: "That night, Sam couldn't sleep, haunted by Amara's stories and the unfairness that people their age were suffering from a crisis they didn't create. When Amara messaged at 2 AM California time (10 AM in Nigeria), asking if they wanted to video chat, Sam immediately said yes. They spent hours talking about everything - climate science, their hopes for the future, and their shared frustration with adult inaction. 'Thank you for really listening,' Amara said softly before they signed off. 'Most people hear about climate impacts and forget. But you make me feel like my story matters.' Sam felt their heart flutter, realizing that their concern for climate justice was becoming inseparable from their growing feelings for Amara.",
         pause: true,
-        hook: "What lasting impact will {userName}'s climate leadership have on their community and beyond?",
+        hook: "Will Sam and Amara's international connection strengthen their climate advocacy?",
         microVariants: {
-          text: "Channeling climate concern into systematic action, {userName} organized comprehensive networks connecting local projects with global movements while implementing evidence-based environmental solutions.",
-          alternatives: [
-            "Transforming climate anxiety into effective leadership, {userName} developed multi-level action strategies that connected individual choices, community projects, and policy advocacy for systematic change."
-          ],
-          optionalDetails: ["Research revealed specific policy changes needed for climate action.", "Community partnerships provided resources for environmental projects.", "International connections offered models for successful youth climate organizing."]
+          text: "Late-night video calls with Amara deepened Sam's understanding of climate injustice while their growing emotional connection motivated stronger advocacy.",
+          alternatives: ["Amara's gratitude for Sam's genuine listening created intimate moments that strengthened both their climate commitment and romantic feelings.", "Cross-continental conversations about climate impacts brought Sam and Amara closer together emotionally while inspiring collaborative action."],
+          optionalDetails: ["Amara was studying renewable energy engineering despite limited resources", "Sam had never thought seriously about climate action until meeting Amara", "Their time zone difference meant one was always staying up late to talk"]
+        }
+      },
+      {
+        text: "Sam started researching climate solutions with new urgency, motivated by both the global crisis and their desire to understand Amara's world better. They learned about climate adaptation strategies, renewable energy systems, and how wealth inequality made some communities far more vulnerable to climate impacts than others. During their weekly video calls, Sam shared their research while Amara explained traditional knowledge about weather patterns and sustainable farming that her community had used for generations. 'You're brilliant,' Sam told Amara during one call, watching her explain indigenous water conservation techniques. 'Your community knows things about sustainability that my school never taught.' The way Amara blushed at the compliment made Sam's heart race with affection and admiration.",
+        pause: true,
+        hook: "How will combining modern research with traditional knowledge strengthen their relationship and advocacy?",
+        microVariants: {
+          text: "Sam's research into climate solutions combined with Amara's traditional knowledge created a powerful partnership that deepened both their expertise and emotional bond.",
+          alternatives: ["Learning about indigenous sustainability from Amara made Sam realize how much Western education missed while strengthening their romantic connection.", "Weekly research discussions brought Sam and Amara closer together while combining their different knowledge systems for more effective climate advocacy."],
+          optionalDetails: ["Amara's community used traditional rainwater harvesting that was more effective than modern systems", "Sam's school had never taught about indigenous climate knowledge", "Their collaboration was creating innovative solutions neither could develop alone"]
+        }
+      },
+      {
+        text: "Sam approached their environmental science teacher, Ms. Martinez, about starting a global climate action network connecting their school with international activists like Amara. Ms. Martinez was enthusiastic and helped Sam apply for grants to fund international collaboration and local sustainability projects. When Sam shared the news with Amara during their daily video call, her excitement was infectious. 'Sam, you're amazing!' Amara said, her eyes lighting up on the screen. 'We could connect our schools, share resources, maybe even visit each other's communities someday.' The possibility of meeting Amara in person made Sam's pulse quicken with anticipation and nervousness. 'Would you want to be my co-leader?' Sam asked, and Amara's radiant smile was answer enough.",
+        pause: true,
+        hook: "What impact will their official partnership have on both their advocacy and relationship?",
+        microVariants: {
+          text: "Ms. Martinez's support for Sam's global climate network proposal created official partnership opportunities with Amara while strengthening their personal connection.",
+          alternatives: ["Grant funding for international collaboration gave Sam and Amara's relationship both legitimacy and resources for expanded climate action.", "Creating formal leadership roles together deepened Sam and Amara's partnership while providing structure for their growing climate advocacy."],
+          optionalDetails: ["The grant would fund video conferencing equipment for multiple schools", "Ms. Martinez had connections with environmental organizations globally", "Sam's school had significant resources compared to Amara's underfunded institution"]
+        }
+      },
+      {
+        text: "The Global Climate Action Network launched with twelve schools across six continents, connected through weekly video conferences where students shared local climate impacts and solutions. Sam and Amara co-facilitated these sessions, their partnership seamless and obviously close despite the physical distance. Other students began commenting on their chemistry and collaborative leadership style. 'You two complement each other perfectly,' said Diego, a student from Mexico whose coastal community was facing erosion. 'Sam brings the resources and research, Amara brings the wisdom and experience. It's like you were meant to work together.' Sam and Amara exchanged shy smiles on screen, both feeling the truth of Diego's observation about their connection.",
+        pause: true,
+        hook: "How will leading together strengthen Sam and Amara's bond despite the distance?",
+        microVariants: {
+          text: "Co-facilitating international climate sessions showcased Sam and Amara's natural partnership while other students recognized their obvious connection and complementary strengths.",
+          alternatives: ["Leading global climate discussions together revealed Sam and Amara's seamless collaboration while creating opportunities for romantic moments despite the distance.", "Diego's observation about their perfect partnership made Sam and Amara realize their connection was obvious to everyone in their international network."],
+          optionalDetails: ["Students from twelve countries participated in weekly sessions", "Each school shared unique climate challenges and traditional solutions", "The network was creating a database of global climate adaptation strategies"]
+        }
+      },
+      {
+        text: "Sam organized their school's first Climate Solutions Fair, featuring projects inspired by innovations shared through their network with Amara. The fair included solar cookers based on designs from Amara's engineering class, rain gardens using indigenous planting techniques, and presentations about climate adaptation strategies from around the world. When Amara joined virtually as the keynote speaker, Sam felt overwhelming pride watching their girlfriend (they'd finally admitted their feelings during a late-night call) address hundreds of students and parents. 'Sam Chen created this network because they believe in global collaboration and justice,' Amara told the audience, looking directly at the camera. 'But they also taught me that love can be a form of climate activism - when we care about each other across borders, we create the motivation to fight for everyone's future.'",
+        pause: true,
+        hook: "How will their public acknowledgment of love and activism inspire broader change?",
+        microVariants: {
+          text: "The Climate Solutions Fair showcased Sam and Amara's collaborative work while Amara's keynote speech publicly connected their romantic relationship with their climate advocacy.",
+          alternatives: ["Amara's virtual keynote at Sam's school fair celebrated both their successful partnership and their romantic relationship as forms of climate activism.", "Public recognition of their love and advocacy work validated how personal connection could strengthen global climate action."],
+          optionalDetails: ["Over 400 community members attended the Climate Solutions Fair", "Local media covered the international partnership and youth leadership", "Three other schools requested help starting similar global networks"]
+        }
+      },
+      {
+        text: "The network's success attracted attention from major environmental organizations, and Sam and Amara were invited to speak at the UN Youth Climate Summit in New York. The prospect of finally meeting in person after months of video calls made both teens nervous and excited. Sam's parents helped fund Amara's travel visa and expenses, recognizing how important this relationship had become to their child's sense of purpose and happiness. When Sam saw Amara walking through JFK Airport arrivals, everything else faded away. Their first hug was months of video calls and shared dreams made physical, and Sam felt complete in a way they'd never experienced. 'You're really here,' Sam whispered, and Amara laughed with tears in her eyes. 'We're going to change the world together, in person this time.'",
+        pause: true,
+        hook: "How will meeting in person transform both their relationship and their advocacy work?",
+        microVariants: {
+          text: "Sam and Amara's first in-person meeting at JFK Airport marked a milestone in both their romantic relationship and their global climate partnership.",
+          alternatives: ["Finally meeting face-to-face after months of video calls made Sam and Amara's connection even stronger while preparing for their UN presentation.", "Their first physical embrace represented both personal love and their commitment to international climate collaboration."],
+          optionalDetails: ["Sam's parents had grown to love Amara through video calls", "Amara had never been outside Nigeria before this trip", "Their UN presentation would be attended by delegates from 50 countries"]
+        }
+      },
+      {
+        text: "At the UN Youth Climate Summit, Sam and Amara presented their Global Climate Action Network as a model for international youth collaboration on climate solutions. Standing together on the same stage where world leaders addressed global challenges, they shared how combining traditional knowledge with modern technology, and local action with global partnership, could create more effective climate responses than either approach alone. When a delegate asked about the role of personal relationships in sustaining international activism, Sam and Amara looked at each other with obvious affection. 'Love makes the work sustainable,' Amara said confidently. 'When you care about specific people affected by climate change, you can't give up.' Their presentation received a standing ovation and requests for partnership from organizations on every continent.",
+        pause: true,
+        hook: "What global impact will their UN presentation have on climate action and their future together?",
+        microVariants: {
+          text: "Sam and Amara's UN presentation showcased their network as a model for international climate collaboration while publicly affirming how love sustained their activism.",
+          alternatives: ["Speaking at the UN together validated Sam and Amara's approach while their obvious romantic partnership inspired questions about love and activism.", "Their UN presentation demonstrated how personal relationships could strengthen global climate advocacy while earning international recognition."],
+          optionalDetails: ["Organizations from 15 countries requested partnerships after their presentation", "Their model was featured in the UN's annual youth climate report", "Major climate foundations offered funding for network expansion"]
+        }
+      },
+      {
+        text: "The week in New York deepened Sam and Amara's relationship in every way. Exploring the city together, sharing meals, and having face-to-face conversations about their dreams and fears made their bond stronger than months of video calls had achieved. On their last night, walking through Central Park under the stars, Amara took Sam's hand and said, 'I need to tell you something. I've been accepted to MIT for environmental engineering, with a full scholarship. I could be in Boston, just a few hours from you.' Sam's heart soared with joy and possibility. 'Amara, that's incredible! We could actually be together, working on climate solutions in the same country.' Their kiss under the New York City lights tasted like shared dreams and a future they could build together.",
+        pause: true,
+        hook: "How will the possibility of attending college near each other change their plans and relationship?",
+        microVariants: {
+          text: "Amara's MIT acceptance with a full scholarship offered the possibility of Sam and Amara being geographically close while continuing their climate work together.",
+          alternatives: ["The prospect of attending college in the same region transformed Sam and Amara's long-distance relationship into plans for a shared future.", "Amara's scholarship to MIT represented both her incredible achievement and the possibility of maintaining their partnership beyond high school."],
+          optionalDetails: ["MIT had recruited Amara based on her innovative water conservation designs", "Sam was also applying to colleges in the Boston area", "Their network had created opportunities for both of them to study environmental solutions"]
+        }
+      },
+      {
+        text: "Returning to their respective countries with plans to attend college together strengthened both Sam and Amara's commitment to their relationship and their climate work. Their daily video calls now included discussing course selections, research opportunities, and how they could continue expanding their global network while studying environmental solutions. When Sam's school board approved a permanent Climate Action curriculum based on their international collaboration model, and Amara's village received funding for a climate adaptation project inspired by techniques shared through the network, they realized their teenage activism was creating lasting institutional change. 'We're actually doing this,' Sam said during one of their calls. 'We're building a life together while building solutions for the planet.'",
+        pause: true,
+        hook: "How will their continued collaboration influence environmental education and climate action?",
+        microVariants: {
+          text: "Planning for college together while seeing their climate advocacy create institutional changes validated Sam and Amara's approach to combining love with environmental activism.",
+          alternatives: ["Permanent curriculum adoption and village funding proved how their international partnership was creating lasting change while strengthening their personal bond.", "Their success in both relationship and advocacy demonstrated how personal connection could enhance global climate action effectiveness."],
+          optionalDetails: ["Sam's district adopted their curriculum model for all high schools", "Amara's village project would serve as a regional climate adaptation demonstration site", "Five universities offered joint research opportunities based on their collaborative work"]
+        }
+      },
+      {
+        text: "Sam and Amara's senior year brought college acceptances to complementary programs - Sam to environmental policy at Harvard and Amara to environmental engineering at MIT, just 20 minutes apart. Their relationship had matured through shared purpose and long-distance commitment, and they'd learned to balance their personal connection with their public advocacy. During Amara's graduation ceremony, which Sam attended virtually due to visa complications, Amara was named valedictorian and spoke about how international partnerships and love had shaped her understanding of climate action. 'Sam Chen taught me that fighting for our planet means fighting for each other across all boundaries,' she told her graduating class. 'When we love someone from another culture, another continent, we create the global citizenship our planet needs.'",
+        pause: true,
+        hook: "How will their college experience test and strengthen their international partnership?",
+        microVariants: {
+          text: "Attending Harvard and MIT just twenty minutes apart validated Sam and Amara's relationship planning while their graduation speeches celebrated international love and climate activism.",
+          alternatives: ["Amara's valedictorian speech about international love and climate action proved how their relationship had influenced her entire worldview.", "College acceptances to nearby schools represented the success of their long-term planning while their graduation marked transition to adult partnership."],
+          optionalDetails: ["Amara was the first person from her village to attend a US university", "Sam had learned basic Igbo to better understand Amara's culture", "Their global network had influenced college applications for dozens of students worldwide"]
+        }
+      },
+      {
+        text: "College brought new challenges and opportunities for Sam and Amara's relationship and climate work. Living in the same region for the first time, they could finally have regular in-person dates while collaborating on research projects that combined policy analysis with engineering solutions. Their undergraduate thesis project - designing climate adaptation strategies for vulnerable coastal communities - drew on everything they'd learned from their global network and their different academic strengths. When their research was published in a leading environmental journal with both their names as co-authors, it felt like validation of both their intellectual partnership and their personal bond. 'Remember when we first met in that virtual climate summit?' Amara asked during a study session in Harvard's library. 'Did you ever think we'd be here, together, as published researchers?' Sam looked up from their policy analysis and smiled. 'I hoped, but I was too nervous to believe it could really happen.'",
+        pause: true,
+        hook: "What impact will their published research have on climate adaptation strategies globally?",
+        microVariants: {
+          text: "Publishing joint research as undergraduates validated Sam and Amara's intellectual partnership while their regular in-person collaboration strengthened their romantic relationship.",
+          alternatives: ["Their published research on coastal climate adaptation represented the culmination of years of collaboration while proving their effectiveness as both romantic and academic partners.", "Co-authoring climate research as undergraduates demonstrated how their relationship had enhanced their individual capabilities and global impact."],
+          optionalDetails: ["Their research was cited by UN climate adaptation reports", "Three countries implemented pilot programs based on their recommendations", "Environmental organizations recruited them for internships based on their collaborative approach"]
+        }
+      },
+      {
+        text: "Sam and Amara's junior year brought an opportunity to work together at the UN Environment Programme in Nairobi, where they could implement climate adaptation strategies in Amara's region while conducting research for their senior theses. Living and working in Kenya deepened their relationship while allowing Sam to experience firsthand the climate impacts that had first brought them together. Walking through Amara's village, meeting her family, and seeing the traditional knowledge systems they'd studied in textbooks made Sam understand climate change in a completely new way. 'This is where it all started for me,' Amara said, showing Sam the seasonal flooding patterns that had motivated her activism. 'But now I have you to help fight for solutions.' Their work in Kenya resulted in a climate adaptation pilot program that combined traditional ecological knowledge with modern engineering, creating a model that could be replicated globally.",
+        pause: true,
+        hook: "How will working in Amara's home region transform Sam's understanding and their partnership?",
+        microVariants: {
+          text: "Working at the UN in Kenya allowed Sam to experience Amara's climate reality firsthand while their collaboration created innovative adaptation strategies combining traditional and modern knowledge.",
+          alternatives: ["Living and working in Amara's home region deepened Sam's understanding of climate impacts while strengthening their partnership through shared experience.", "Their UN internship in Kenya validated their relationship while creating climate solutions that honored both traditional knowledge and contemporary research."],
+          optionalDetails: ["Sam learned traditional farming techniques from Amara's grandmother", "Their pilot program reduced flooding impact by 60% using combined approaches", "Local communities became partners in designing and implementing solutions"]
+        }
+      },
+      {
+        text: "Their senior year brought graduate school acceptances to joint PhD programs where they could continue collaborating on climate solutions while building their life together. Sam's proposal during their graduation party - not just for marriage, but for a lifetime partnership in both love and climate action - surprised no one who'd watched their relationship develop over four years. 'Amara Okafor,' Sam said, kneeling in Harvard Yard surrounded by friends from their global climate network who'd flown in for graduation, 'will you marry me and spend our lives fighting climate change together?' Amara's tears of joy were visible on screens worldwide as their network friends watched via video call. 'Sam Chen,' she replied, 'I've been ready since that first virtual climate summit. Yes to everything - yes to marriage, yes to partnership, yes to saving the world together.'",
+        pause: true,
+        hook: "What legacy will Sam and Amara's partnership leave for future climate activists?",
+        microVariants: {
+          text: "Sam's graduation proposal for both marriage and lifelong climate partnership celebrated four years of combining personal love with global environmental advocacy.",
+          alternatives: ["Their engagement celebrated by friends from six continents demonstrated how their relationship had inspired an international community of climate activists.", "Proposing marriage and climate partnership together showed how Sam and Amara had made love and activism inseparable parts of their identity."],
+          optionalDetails: ["Friends from their original network attended virtually from around the world", "Their engagement was featured in environmental publications as a model of activist partnership", "Three other couples from their network had also gotten engaged"]
+        }
+      },
+      {
+        text: "Five years later, Dr. Sam Chen-Okafor and Dr. Amara Chen-Okafor stood before the UN General Assembly, presenting their research on community-based climate adaptation that had been implemented in 23 countries. Their Global Climate Action Network had grown to include over 1,000 schools worldwide, and their marriage had become a symbol of how personal love could fuel global action. As they concluded their presentation to world leaders, Amara reached for Sam's hand. 'Climate action requires both scientific solutions and emotional commitment,' she told the assembly. 'When we love specific people affected by climate change - whether they're our partner, our community, or people we've never met but choose to care about - we find the motivation to never give up on building a sustainable future for everyone.' Their standing ovation echoed around the world, broadcast to schools in their network where a new generation of climate activists was learning that love and environmentalism could strengthen each other.",
+        pause: true,
+        hook: "How has their model of combining love with climate activism influenced global environmental movements?",
+        microVariants: {
+          text: "Addressing the UN General Assembly as married climate researchers, Sam and Amara demonstrated how their teenage love had grown into a partnership transforming global environmental action.",
+          alternatives: ["Their presentation to world leaders showed how personal love could fuel effective climate activism while their marriage inspired other activist partnerships.", "Speaking as Dr. Chen-Okafor and Dr. Chen-Okafor represented the culmination of their journey from virtual climate summit to global environmental leadership."],
+          optionalDetails: ["Their network had influenced policy in 47 countries", "Over 50,000 students had participated in their programs", "Their model was being used by major environmental organizations worldwide"]
+        }
+      },
+      {
+        text: "Ten years after their first virtual meeting, Sam and Amara returned to their respective high schools to speak about climate action and international partnership. At Sam's California high school, now powered entirely by renewable energy, they addressed students in the same classroom where they'd first learned about Amara's flooded village. At Amara's school in Nigeria, now equipped with climate-resilient infrastructure, they spoke in a new science lab funded by their foundation. 'We were just teenagers when we met,' Sam told both audiences via satellite connection, 'but we learned that when you combine personal care with global action, age doesn't matter. Love doesn't recognize borders, and neither do the solutions our planet needs.' Their foundation continued funding climate projects worldwide, but their greatest legacy was proving that international love could create the kind of global citizenship necessary to address humanity's greatest challenges.",
+        pause: true,
+        hook: "What lasting impact have Sam and Amara created for future generations of climate activists?",
+        microVariants: {
+          text: "Returning to their renovated high schools ten years later, Sam and Amara demonstrated how teenage climate activism and international love could create lasting global change.",
+          alternatives: ["Speaking at schools transformed by their advocacy, Sam and Amara proved how youth climate action could create permanent infrastructure and policy changes.", "Their return to upgraded facilities showed how their teenage partnership had created lasting improvements while inspiring new generations of activists."],
+          optionalDetails: ["Sam's school was completely carbon-neutral with student-designed systems", "Amara's community had become a model for climate resilience in West Africa", "Their foundation supported climate projects in 67 countries"]
         }
       }
     ],
@@ -4457,39 +4593,163 @@ export const GRADE_10_FALLBACK_TEMPLATES = [
     level: "Grade 10",
     scenes: [
       {
-        text: "{userName} had always been interested in medicine until they learned that preventable diseases continued to kill millions of people worldwide not because of lack of medical knowledge, but because of poverty, inequality, and inadequate health system infrastructure that made life-saving treatments inaccessible to those who needed them most. When they discovered that children in some countries died from conditions easily treated in wealthy nations, while pharmaceutical companies spent more on marketing than research for diseases affecting the global poor, {userName} realized that health equity was fundamentally about justice, power, and the moral obligation to ensure that geographical accident of birth did not determine life or death outcomes.",
+        text: "Taylor Kim had always wanted to be a doctor until they learned about global health disparities through an online course and met Dr. Elena Restrepo, a young medical resident from Colombia who was teaching about how preventable diseases continued killing millions worldwide due to poverty and inadequate healthcare infrastructure. During a virtual seminar, Elena shared photos from her work in rural clinics where children died from conditions easily treated in wealthy countries. 'The same antibiotics that cost $3 in the US cost $150 in my region,' Elena explained, her passion evident even through the screen. Taylor felt both heartbroken about the injustice and captivated by Elena's dedication to fighting health inequality. 'How do you keep working when the system is so unfair?' Taylor asked during a breakout session, and Elena's thoughtful response sparked hours of private messaging.",
         pause: true,
-        hook: "How will {userName} address global health disparities that reflect broader patterns of international inequality?",
+        hook: "How will Taylor's connection with Elena inspire them to address global health inequity?",
         microVariants: {
-          text: "{userName} learned that preventable diseases killed millions due to poverty and inadequate infrastructure rather than lack of medical knowledge, recognizing health equity as justice.",
-          alternatives: [
-            "Discovering that treatable conditions caused deaths globally due to inequality rather than medical limitations, {userName} understood health as a fundamental human rights issue."
-          ],
-          optionalDetails: ["Some vaccines cost $100+ per dose in poor countries but $3 in wealthy ones.", "Rural areas lacked basic health clinics within walking distance.", "Medical patents prevented generic drug production for neglected diseases."]
+          text: "Meeting Dr. Elena through a global health course opened Taylor's eyes to health disparities while sparking admiration for Elena's dedication to fighting medical inequality.",
+          alternatives: ["Elena's photos of rural clinic work revealed how preventable diseases killed due to poverty rather than medical limitations, creating an immediate connection with Taylor.", "The global health seminar brought Taylor and Elena together across continents, revealing both healthcare injustice and mutual attraction."],
+          optionalDetails: ["Elena worked 60-hour weeks at a clinic serving 20,000 people", "Medication costs varied by 5000% between countries for identical drugs", "Taylor had never considered healthcare as a justice issue before meeting Elena"]
         }
       },
       {
-        text: "Working with global health organizations, medical professionals, and international development groups, {userName} researched successful models for improving health outcomes in resource-limited settings, including community health worker programs, technology-enabled diagnostics, and innovative financing mechanisms for essential medicines. They learned how local knowledge and community engagement were often more effective than top-down interventions, and how addressing social determinants of health like clean water, nutrition, and education could prevent more diseases than medical treatment alone. Their research emphasized solutions that built local capacity rather than creating dependency on external aid.",
+        text: "Their private messages evolved into daily video calls where Taylor learned about Elena's work treating patients who walked hours for basic healthcare, while Elena was curious about Taylor's privileged access to advanced medical technology. 'I had an MRI last month for a sports injury,' Taylor admitted embarrassedly. 'That same machine could diagnose hundreds of patients where you work, but they'll never have access to it.' Elena's gentle response touched Taylor deeply. 'It's not your fault you were born somewhere with good healthcare,' Elena said softly, 'but now that you understand the inequality, what will you do with that knowledge?' Taylor felt their heart race, realizing their growing feelings for Elena were inseparable from their awakening commitment to health justice.",
         pause: true,
-        hook: "What sustainable approaches will {userName} develop for addressing global health challenges?",
+        hook: "Will Taylor and Elena's international connection strengthen their commitment to health equity?",
         microVariants: {
-          text: "{userName} researched community-centered health models emphasizing local capacity building, social determinants, and sustainable solutions over aid dependency.",
-          alternatives: [
-            "Through partnerships with global health experts, {userName} explored how community engagement and local knowledge created more effective health outcomes than external interventions."
-          ],
-          optionalDetails: ["Community health workers could treat 80% of childhood illnesses with basic training.", "Clean water access prevented more disease than most medical interventions.", "Local production of essential medicines reduced costs by 90%."]
+          text: "Daily video calls with Elena deepened Taylor's understanding of healthcare inequality while their growing emotional connection motivated stronger advocacy for health justice.",
+          alternatives: ["Elena's gentle challenge about using privilege responsibly created intimate moments that strengthened both Taylor's commitment to equity and their romantic feelings.", "Cross-continental conversations about medical access brought Taylor and Elena closer together emotionally while inspiring collaborative action."],
+          optionalDetails: ["Elena had never seen an MRI machine in person despite being a medical resident", "Taylor's sports injury cost more to diagnose than Elena's monthly salary", "Their time zone difference meant one was always staying up late to talk"]
         }
       },
       {
-        text: "The global health equity project expanded to include direct partnerships with youth organizations in countries most affected by health disparities, creating collaborative research and advocacy initiatives that centered the voices and priorities of those most impacted by health inequality. {userName} helped establish cross-cultural exchanges where young people could share knowledge about health challenges and solutions in their communities, leading to innovative approaches that combined traditional healing practices with modern medical techniques. These partnerships revealed that global health equity required not just technical solutions but fundamental changes in how resources, knowledge, and power were distributed worldwide.",
+        text: "Taylor started researching global health solutions with new passion, motivated by both the crisis Elena described and their desire to understand her world better. They learned about community health worker programs, telemedicine initiatives, and how pharmaceutical patents prevented generic drug production for neglected diseases. During their weekly calls, Taylor shared research about successful health equity programs while Elena explained traditional healing practices and community-based healthcare that worked effectively with limited resources. 'You're incredible,' Taylor told Elena during one call, watching her demonstrate how village healers diagnosed conditions without expensive equipment. 'Your community has medical wisdom that my textbooks never mention.' Elena's shy smile at the compliment made Taylor's heart flutter with affection and respect.",
         pause: true,
-        hook: "How will international youth collaboration transform approaches to global health equity?",
+        hook: "How will combining modern research with traditional medicine strengthen their relationship and advocacy?",
         microVariants: {
-          text: "International youth partnerships created collaborative research centering affected communities' voices and combining traditional healing with modern medicine for innovative solutions.",
-          alternatives: [
-            "Cross-cultural exchanges enabled young people to share health knowledge and develop solutions integrating traditional practices with contemporary medical approaches."
-          ],
-          optionalDetails: ["Traditional medicinal plants showed promise for treating drug-resistant infections.", "Youth peer education programs had higher vaccination rates than adult-led campaigns.", "Community-designed health clinics had better utilization than government-built facilities."]
+          text: "Taylor's research into health equity solutions combined with Elena's traditional medicine knowledge created a powerful partnership that deepened both their expertise and emotional bond.",
+          alternatives: ["Learning about indigenous healing practices from Elena made Taylor realize how much Western medicine missed while strengthening their romantic connection.", "Weekly research discussions brought Taylor and Elena closer together while combining their different medical knowledge systems for more effective health advocacy."],
+          optionalDetails: ["Elena's grandmother was a traditional healer who successfully treated conditions Western medicine struggled with", "Community health workers achieved better outcomes than expensive urban hospitals in some cases", "Their collaboration was creating innovative solutions neither could develop alone"]
+        }
+      },
+      {
+        text: "Taylor approached their school's global studies teacher, Mr. Patel, about organizing a global health equity project connecting students worldwide. Mr. Patel was enthusiastic and helped Taylor apply for grants to fund international collaboration and local health education programs. When Taylor shared the news with Elena during their nightly video call, her excitement was contagious. 'Taylor, you're amazing!' Elena said, her eyes bright on the screen. 'We could connect medical students globally, share treatment protocols, maybe even arrange exchange programs.' The possibility of meeting Elena in person made Taylor's pulse quicken with anticipation and nervousness. 'Would you want to be my co-director?' Taylor asked, and Elena's radiant smile was answer enough.",
+        pause: true,
+        hook: "What impact will their official partnership have on both their advocacy and relationship?",
+        microVariants: {
+          text: "Mr. Patel's support for Taylor's global health project created official partnership opportunities with Elena while strengthening their personal connection.",
+          alternatives: ["Grant funding for international collaboration gave Taylor and Elena's relationship both legitimacy and resources for expanded health equity work.", "Creating formal leadership roles together deepened Taylor and Elena's partnership while providing structure for their growing health advocacy."],
+          optionalDetails: ["The grant would fund medical supply donations to underserved clinics", "Mr. Patel had connections with global health organizations", "Taylor's school had advanced science equipment that could be shared virtually"]
+        }
+      },
+      {
+        text: "The Global Health Equity Initiative launched with twenty medical schools and high schools across four continents, connected through weekly video conferences where students shared local health challenges and innovative solutions. Taylor and Elena co-facilitated these sessions, their partnership seamless and obviously close despite the physical distance. Other participants began commenting on their chemistry and collaborative leadership style. 'You two balance each other perfectly,' said Priya, a medical student from India whose community health program was reducing maternal mortality. 'Taylor brings the resources and research connections, Elena brings the clinical experience and cultural wisdom. It's like you were meant to work together.' Taylor and Elena exchanged shy smiles on screen, both feeling the truth of Priya's observation about their connection.",
+        pause: true,
+        hook: "How will leading together strengthen Taylor and Elena's bond despite the distance?",
+        microVariants: {
+          text: "Co-facilitating international health equity sessions showcased Taylor and Elena's natural partnership while other participants recognized their obvious connection and complementary strengths.",
+          alternatives: ["Leading global health discussions together revealed Taylor and Elena's seamless collaboration while creating opportunities for romantic moments despite the distance.", "Priya's observation about their perfect partnership made Taylor and Elena realize their connection was obvious to everyone in their international network."],
+          optionalDetails: ["Participants from twenty institutions joined weekly sessions", "Each school shared unique health innovations and traditional practices", "The network was creating a database of global community health solutions"]
+        }
+      },
+      {
+        text: "Taylor organized their school's first Global Health Fair, featuring projects inspired by innovations shared through their network with Elena. The fair included community health worker training simulations, traditional medicine demonstrations, and presentations about health equity strategies from around the world. When Elena joined virtually as the keynote speaker, Taylor felt overwhelming pride watching their girlfriend (they'd finally admitted their feelings during a late-night call about treating infant malnutrition) address hundreds of students and community members. 'Taylor Kim created this network because they believe in health justice and global collaboration,' Elena told the audience, looking directly at the camera. 'But they also taught me that love can be a form of medical activism - when we care about each other across borders, we create the motivation to fight for everyone's health.'",
+        pause: true,
+        hook: "How will their public acknowledgment of love and activism inspire broader change?",
+        microVariants: {
+          text: "The Global Health Fair showcased Taylor and Elena's collaborative work while Elena's keynote speech publicly connected their romantic relationship with their health equity advocacy.",
+          alternatives: ["Elena's virtual keynote at Taylor's school fair celebrated both their successful partnership and their romantic relationship as forms of medical activism.", "Public recognition of their love and advocacy work validated how personal connection could strengthen global health action."],
+          optionalDetails: ["Over 500 community members attended the Global Health Fair", "Local hospitals offered internships based on the event", "Three medical schools requested partnerships after seeing their model"]
+        }
+      },
+      {
+        text: "The network's success attracted attention from major global health organizations, and Taylor and Elena were invited to present at the World Health Assembly in Geneva. The prospect of finally meeting in person after months of video calls made both young people nervous and excited. Taylor's family helped fund Elena's travel expenses, recognizing how important this relationship had become to their child's sense of purpose and happiness. When Taylor saw Elena walking through Geneva Airport arrivals, everything else faded away. Their first hug was months of video calls and shared dreams made physical, and Taylor felt complete in a way they'd never experienced. 'You're really here,' Taylor whispered, and Elena laughed with tears in her eyes. 'We're going to change global health together, in person this time.'",
+        pause: true,
+        hook: "How will meeting in person transform both their relationship and their advocacy work?",
+        microVariants: {
+          text: "Taylor and Elena's first in-person meeting at Geneva Airport marked a milestone in both their romantic relationship and their global health partnership.",
+          alternatives: ["Finally meeting face-to-face after months of video calls made Taylor and Elena's connection even stronger while preparing for their WHO presentation.", "Their first physical embrace represented both personal love and their commitment to international health collaboration."],
+          optionalDetails: ["Taylor's parents had grown to love Elena through video calls", "Elena had never traveled to Europe before this opportunity", "Their WHO presentation would be attended by health ministers from 80 countries"]
+        }
+      },
+      {
+        text: "At the World Health Assembly, Taylor and Elena presented their Global Health Equity Initiative as a model for international collaboration on community-based health solutions. Standing together on the same stage where health ministers addressed global challenges, they shared how combining traditional healing with modern medicine, and local knowledge with global resources, could create more effective and culturally appropriate healthcare than either approach alone. When a delegate asked about the role of personal relationships in sustaining international health work, Taylor and Elena looked at each other with obvious affection. 'Love makes the work sustainable,' Elena said confidently. 'When you care about specific people affected by health inequality, you can't give up on finding solutions.' Their presentation received a standing ovation and partnership requests from health organizations on every continent.",
+        pause: true,
+        hook: "What global impact will their WHO presentation have on health equity and their future together?",
+        microVariants: {
+          text: "Taylor and Elena's WHO presentation showcased their initiative as a model for international health collaboration while publicly affirming how love sustained their advocacy.",
+          alternatives: ["Speaking at the World Health Assembly together validated Taylor and Elena's approach while their obvious romantic partnership inspired questions about love and activism.", "Their WHO presentation demonstrated how personal relationships could strengthen global health advocacy while earning international recognition."],
+          optionalDetails: ["Organizations from 25 countries requested partnerships after their presentation", "Their model was featured in the WHO's annual global health report", "Major foundations offered funding for network expansion"]
+        }
+      },
+      {
+        text: "The week in Geneva deepened Taylor and Elena's relationship in every way. Exploring the city together, sharing meals, and having face-to-face conversations about their dreams and fears made their bond stronger than months of video calls had achieved. On their last night, walking along Lake Geneva under the stars, Elena took Taylor's hand and said, 'I need to tell you something. I've been accepted to Johns Hopkins for global health, with a research assistantship. I could be in Baltimore, on the same coast as you.' Taylor's heart soared with joy and possibility. 'Elena, that's incredible! We could actually be together, working on health equity in the same country.' Their kiss beside the lake tasted like shared dreams and a future they could build together.",
+        pause: true,
+        hook: "How will the possibility of studying in the same country change their plans and relationship?",
+        microVariants: {
+          text: "Elena's Johns Hopkins acceptance with funding offered the possibility of Taylor and Elena being geographically close while continuing their health work together.",
+          alternatives: ["The prospect of studying on the same coast transformed Taylor and Elena's long-distance relationship into plans for a shared future.", "Elena's assistantship at Johns Hopkins represented both her incredible achievement and the possibility of maintaining their partnership beyond high school."],
+          optionalDetails: ["Johns Hopkins had recruited Elena based on her community health innovations", "Taylor was applying to pre-med programs in the Mid-Atlantic region", "Their network had created opportunities for both of them to study global health"]
+        }
+      },
+      {
+        text: "Returning to their respective countries with plans to study on the same coast strengthened both Taylor and Elena's commitment to their relationship and their health work. Their daily video calls now included discussing course selections, research opportunities, and how they could continue expanding their global network while studying health equity solutions. When Taylor's school district approved a Global Health curriculum based on their international collaboration model, and Elena's clinic received funding for a telemedicine project inspired by techniques shared through the network, they realized their teenage activism was creating lasting institutional change. 'We're actually doing this,' Taylor said during one of their calls. 'We're building a life together while building solutions for global health inequality.'",
+        pause: true,
+        hook: "How will their continued collaboration influence health education and medical equity?",
+        microVariants: {
+          text: "Planning for college on the same coast while seeing their health advocacy create institutional changes validated Taylor and Elena's approach to combining love with medical activism.",
+          alternatives: ["Permanent curriculum adoption and clinic funding proved how their international partnership was creating lasting change while strengthening their personal bond.", "Their success in both relationship and advocacy demonstrated how personal connection could enhance global health action effectiveness."],
+          optionalDetails: ["Taylor's district adopted their health equity curriculum for all high schools", "Elena's telemedicine project would serve as a regional healthcare model", "Seven universities offered joint research opportunities based on their collaborative work"]
+        }
+      },
+      {
+        text: "Taylor and Elena's senior year brought college acceptances to complementary programs - Taylor to global health policy at Georgetown and Elena to epidemiology at Johns Hopkins, just an hour apart. Their relationship had matured through shared purpose and long-distance commitment, and they'd learned to balance their personal connection with their public advocacy. During Elena's medical school graduation ceremony, which Taylor attended in person now that Elena was studying in the US, Elena was awarded the Outstanding Global Health Leadership prize and spoke about how international partnerships and love had shaped her understanding of medicine. 'Taylor Kim taught me that healing our world means caring for each other across all boundaries,' she told her graduating class. 'When we love someone from another culture, another economic reality, we develop the empathy that makes us better healers and advocates.'",
+        pause: true,
+        hook: "How will their graduate studies test and strengthen their international partnership?",
+        microVariants: {
+          text: "Taylor attending Georgetown and Elena at Johns Hopkins just an hour apart validated their relationship planning while Elena's graduation speech celebrated international love and medical activism.",
+          alternatives: ["Elena's Outstanding Global Health Leadership award proved how their relationship had influenced her medical education while their geographic proximity represented successful planning.", "Graduate school acceptances to nearby programs marked the success of their long-term planning while Elena's graduation celebrated transition to advanced partnership."],
+          optionalDetails: ["Elena was the first international student to win the leadership award", "Taylor had learned basic Spanish to better understand Elena's cultural background", "Their global network had influenced graduate applications for dozens of students worldwide"]
+        }
+      },
+      {
+        text: "Graduate school brought new challenges and opportunities for Taylor and Elena's relationship and health work. Living within driving distance for the first time, they could finally have regular in-person dates while collaborating on research projects that combined policy analysis with epidemiological studies. Their joint research on community health worker effectiveness in treating infectious diseases drew on everything they'd learned from their global network and their different academic strengths. When their research was published in The Lancet Global Health with both their names as co-authors, it felt like validation of both their intellectual partnership and their personal bond. 'Remember when we first met in that global health seminar?' Elena asked during a study session at Georgetown's library. 'Did you ever think we'd be here, together, as published researchers changing how people think about healthcare?' Taylor looked up from their policy analysis and smiled. 'I hoped, but I was too nervous to believe we could really make it work across continents.'",
+        pause: true,
+        hook: "What impact will their published research have on global health policy?",
+        microVariants: {
+          text: "Publishing joint research in The Lancet as graduate students validated Taylor and Elena's intellectual partnership while their regular in-person collaboration strengthened their romantic relationship.",
+          alternatives: ["Their published research on community health workers represented the culmination of years of collaboration while proving their effectiveness as both romantic and academic partners.", "Co-authoring global health research as graduate students demonstrated how their relationship had enhanced their individual capabilities and international impact."],
+          optionalDetails: ["Their research influenced WHO guidelines for community health programs", "Fifteen countries implemented pilot programs based on their recommendations", "Global health organizations recruited them for consulting based on their collaborative approach"]
+        }
+      },
+      {
+        text: "Taylor and Elena's final year brought an opportunity to work together with Doctors Without Borders in Colombia, where they could implement community health strategies in Elena's home region while conducting research for their dissertations. Living and working in Medellín deepened their relationship while allowing Taylor to experience firsthand the health challenges that had first brought them together through video calls. Walking through Elena's neighborhood, meeting her family, and seeing the traditional healing systems they'd studied in textbooks made Taylor understand global health in a completely new way. 'This is where my passion for health justice started,' Elena said, showing Taylor the community clinic where she'd first volunteered as a teenager. 'But now I have you to help implement solutions that honor both traditional wisdom and modern medicine.' Their work in Colombia resulted in a community health program that reduced infant mortality by 40% while training local healers in evidence-based practices.",
+        pause: true,
+        hook: "How will working in Elena's home region transform Taylor's understanding and their partnership?",
+        microVariants: {
+          text: "Working with Doctors Without Borders in Colombia allowed Taylor to experience Elena's health reality firsthand while their collaboration created innovative programs combining traditional and modern medicine.",
+          alternatives: ["Living and working in Elena's home region deepened Taylor's understanding of health equity while strengthening their partnership through shared experience.", "Their Doctors Without Borders work in Colombia validated their relationship while creating health solutions that honored both traditional knowledge and contemporary research."],
+          optionalDetails: ["Taylor learned traditional diagnostic techniques from Elena's healer grandmother", "Their program achieved better health outcomes than purely Western medical approaches", "Local communities became partners in designing and implementing health solutions"]
+        }
+      },
+      {
+        text: "Their doctoral defenses brought PhD acceptances to joint postdoctoral fellowships where they could continue collaborating on global health solutions while building their life together. Taylor's proposal during their graduation party - not just for marriage, but for a lifetime partnership in both love and health equity - surprised no one who'd watched their relationship develop over six years. 'Elena Restrepo,' Taylor said, kneeling in Georgetown's campus courtyard surrounded by friends from their global health network who'd flown in for graduation, 'will you marry me and spend our lives fighting health inequality together?' Elena's tears of joy were visible on screens worldwide as their network friends watched via video call. 'Taylor Kim,' she replied, 'I've been ready since that first global health seminar. Yes to everything - yes to marriage, yes to partnership, yes to healing the world together.'",
+        pause: true,
+        hook: "What legacy will Taylor and Elena's partnership leave for future global health advocates?",
+        microVariants: {
+          text: "Taylor's graduation proposal for both marriage and lifelong health equity partnership celebrated six years of combining personal love with global medical advocacy.",
+          alternatives: ["Their engagement celebrated by friends from four continents demonstrated how their relationship had inspired an international community of health advocates.", "Proposing marriage and health partnership together showed how Taylor and Elena had made love and medical activism inseparable parts of their identity."],
+          optionalDetails: ["Friends from their original network attended virtually from around the world", "Their engagement was featured in global health publications as a model of activist partnership", "Five other couples from their network had also gotten engaged during graduate school"]
+        }
+      },
+      {
+        text: "Five years later, Dr. Taylor Kim-Restrepo and Dr. Elena Kim-Restrepo stood before the World Health Assembly, presenting their research on integrative community health approaches that had been implemented in 35 countries. Their Global Health Equity Initiative had grown to include over 200 medical schools worldwide, and their marriage had become a symbol of how personal love could fuel global health action. As they concluded their presentation to health ministers, Elena reached for Taylor's hand. 'Health equity requires both scientific rigor and emotional commitment,' she told the assembly. 'When we love specific people affected by health inequality - whether they're our partner, our patients, or communities we've never met but choose to serve - we find the motivation to never give up on building healthcare systems that work for everyone.' Their standing ovation echoed through translation to medical schools in their network where a new generation of health advocates was learning that love and medicine could strengthen each other.",
+        pause: true,
+        hook: "How has their model of combining love with health activism influenced global medical movements?",
+        microVariants: {
+          text: "Addressing the World Health Assembly as married global health researchers, Taylor and Elena demonstrated how their graduate school love had grown into a partnership transforming international healthcare.",
+          alternatives: ["Their presentation to health ministers showed how personal love could fuel effective medical activism while their marriage inspired other healthcare partnerships.", "Speaking as Dr. Kim-Restrepo and Dr. Kim-Restrepo represented the culmination of their journey from global health seminar to international medical leadership."],
+          optionalDetails: ["Their integrative model had influenced health policy in 52 countries", "Over 25,000 health workers had been trained using their approaches", "Their methods were being implemented by major global health organizations worldwide"]
+        }
+      },
+      {
+        text: "Ten years after their first video call, Taylor and Elena returned to their respective schools to speak about global health and international partnership. At Taylor's American high school, now offering a Global Health track, they addressed students in the same classroom where they'd first learned about health disparities. At Elena's medical school in Colombia, now partnered with Johns Hopkins for exchange programs, they spoke in a new telemedicine center funded by their foundation. 'We were just students when we met,' Elena told both audiences via satellite connection, 'but we learned that when you combine personal care with professional expertise, education level doesn't limit your impact. Love doesn't recognize borders, and neither do the health solutions our world needs.' Their foundation continued funding community health projects worldwide, but their greatest legacy was proving that international love could create the kind of global citizenship necessary to address humanity's health challenges.",
+        pause: true,
+        hook: "What lasting impact have Taylor and Elena created for future generations of global health advocates?",
+        microVariants: {
+          text: "Returning to their transformed schools ten years later, Taylor and Elena demonstrated how graduate student global health activism and international love could create lasting institutional change.",
+          alternatives: ["Speaking at institutions enhanced by their advocacy, Taylor and Elena proved how student health activism could create permanent infrastructure and program changes.", "Their return to upgraded medical education facilities showed how their graduate partnership had created lasting improvements while inspiring new generations of health advocates."],
+          optionalDetails: ["Taylor's high school had established the first Global Health track in their state", "Elena's medical school had become a regional center for community health training", "Their foundation supported health projects in 89 countries"]
         }
       }
     ],
