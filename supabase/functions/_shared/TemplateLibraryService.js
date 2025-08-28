@@ -2925,132 +2925,449 @@ export const GRADE_6_FALLBACK_TEMPLATES = [
 export const GRADE_7_FALLBACK_TEMPLATES = [
   {
     title: "The Cultural Heritage Research Project",
-    theme: "Identity & Cultural Understanding",
+    theme: "Identity & Cultural Understanding", 
     level: "Grade 7",
     scenes: [
       {
-        text: "{userName} stared at the family assignment sheet with a mix of curiosity and uncertainty - create a presentation about their cultural heritage and family immigration story. While some classmates immediately knew which countries to research and which traditions to highlight, {userName} realized their family history was more complicated, involving multiple generations, adopted relatives, and cultural influences that didn't fit neatly into the assignment's apparent expectations of a single, clear heritage narrative.",
+        text: "Ava Rodriguez had been dreading Ms. Chen's heritage assignment for weeks, especially since her crush, Noah Kim, seemed so confident about his Korean family history. 'I wish I had something cool like that,' {userName} muttered to their best friend Jasmine during lunch. 'My family's just... complicated.' When {userName} finally sat down with their parents to research their background, they discovered something shocking: their 'biological' grandmother Maria had actually been adopted, their grandfather's family tree included Italian, Mexican, AND Filipino roots, and their dad had been raised by his aunt after his parents died in a car crash. 'Honey,' their mom said gently, 'our family doesn't fit in neat boxes, and that's actually pretty amazing.'",
         pause: true,
-        hook: "How will {userName} navigate the complexity of modern family identity?",
+        hook: "How will {userName} turn their complicated family story into something special?",
         microVariants: {
-          text: "{userName} faced a challenging assignment about cultural heritage that revealed the complex nature of their modern, multi-faceted family identity and the assumptions embedded in traditional heritage projects.",
-          alternatives: [
-            "The cultural heritage project assignment made {userName} confront questions about identity, belonging, and the diverse ways that families and cultures intersect in contemporary society."
-          ],
-          optionalDetails: ["Some students excitedly discussed obvious heritage connections.", "The assignment guidelines seemed to assume simpler family narratives.", "Questions about identity felt suddenly more complex than expected."]
+          text: "The heritage assignment revealed that {userName}'s family history was beautifully complex rather than traditionally simple.",
+          alternatives: ["What seemed like a confusing family background turned out to be a rich story of love and chosen connections.", "Sometimes the most interesting families are the ones that don't fit typical patterns."],
+          optionalDetails: ["Noah offered to help with research techniques his dad had taught him", "Jasmine was dealing with her own identity questions", "Other students seemed so sure of their heritage stories"]
         }
       },
       {
-        text: "Through interviews with family members, {userName} discovered that their grandmother had been adopted as a child, their grandfather's family included multiple ethnic backgrounds, and their parents had consciously created new family traditions that blended influences from their travels, friendships, and personal values rather than following any single cultural template - leading {userName} to realize that heritage isn't just about ancestry, but about the meaningful traditions and values that families actively choose to embrace and pass forward.",
+        text: "The research phase became an adventure when {userName} convinced Noah and Jasmine to help interview their extended family. At Tía Rosa's house, they discovered boxes of old photographs showing family gatherings that included people from all different backgrounds - some biological relatives, some chosen family, some longtime friends who'd become part of their traditions. 'This is your real heritage,' Noah said, looking through pictures of quinceañeras where Korean neighbors danced alongside Mexican cousins. 'It's not about blood. It's about love.' {userName} felt their heart skip - was Noah always this wise, or was the soft lighting in Tía Rosa's kitchen making everything seem more romantic?",
         pause: true,
-        hook: "What unique family story will {userName} share with their classmates?",
+        hook: "What stories will these family photos reveal about belonging and identity?",
         microVariants: {
-          text: "Family interviews revealed that {userName}'s heritage included adoption, multiple ethnicities, and consciously created traditions, teaching them that cultural identity involves both inherited and chosen elements.",
-          alternatives: [
-            "Research into their family history helped {userName} understand that modern heritage encompasses both traditional ancestry and the new customs that families deliberately create and maintain."
-          ],
-          optionalDetails: ["Old photo albums told stories of diverse family members.", "Grandparents shared memories of adapting to new places and customs.", "Parents explained how they'd intentionally built inclusive family traditions."]
+          text: "Family photos revealed a heritage built on love and chosen connections rather than just genetics.",
+          alternatives: ["Old pictures showed how their family had always embraced diversity and inclusion.", "The real family story was about people choosing to belong together across cultural lines."],
+          optionalDetails: ["Tía Rosa told stories about each photo in animated Spanish and English", "Jasmine documented everything on her phone for their research", "Noah's thoughtful comments made {userName}'s stomach flutter with butterflies"]
+        }
+      },
+      {
+        text: "Things got complicated when Madison Walsh, the popular girl who seemed to have perfect everything, made snide comments about {userName}'s 'made-up family story' during peer review day. 'That's not real heritage,' she said loudly enough for half the class to hear. 'My family came over on the Mayflower.' {userName} felt their face burn with embarrassment until Noah stood up from his desk. 'Actually, Madison, {userName}'s family represents what America really looks like - people from everywhere choosing to build something beautiful together.' The classroom went dead silent. Even Ms. Chen looked impressed. Jasmine squeezed {userName}'s hand under the desk and whispered, 'Your boyfriend just defended your honor like a knight in shining armor.'",
+        pause: true,
+        hook: "How will {userName} handle the tension between traditional and modern concepts of heritage?",
+        microVariants: {
+          text: "Noah's public defense of {userName}'s family story created both gratitude and romantic tension.",
+          alternatives: ["Standing up to bullying revealed character and deepened friendships in unexpected ways.", "Sometimes the most powerful heritage stories are about inclusion rather than exclusion."],
+          optionalDetails: ["Madison looked shocked that someone had challenged her", "Other students started whispering about Noah's courage", "{userName} had never been called Noah's 'boyfriend' before and liked how it sounded"]
+        }
+      },
+      {
+        text: "The presentation preparation brought {userName} and Noah closer together as they worked on visual displays in the art room after school. While Jasmine edited their interview videos, {userName} and Noah painted a family tree that looked more like a garden - with different colored branches representing chosen family, adoptive relationships, and cultural influences that had shaped their identity. 'Your family is like a patchwork quilt,' Noah said, accidentally brushing {userName}'s fingers while reaching for the {favoriteColor} paint. 'Each piece is different, but together they make something warm and beautiful.' The moment hung between them until Jasmine fake-coughed from across the room. 'Are you two going to kiss or finish this poster?'",
+        pause: true,
+        hook: "Will art class lead to {userName}'s first real romantic moment?",
+        microVariants: {
+          text: "Art room collaboration created intimate moments and romantic tension while building their heritage presentation.",
+          alternatives: ["Working together on creative projects revealed feelings that had been building for weeks.", "Sometimes the best conversations happen when your hands are busy creating something meaningful."],
+          optionalDetails: ["The art room smelled like paint and possibility", "Other students had gone home, leaving them in comfortable privacy", "Jasmine was an excellent wingwoman disguised as a helpful friend"]
+        }
+      },
+      {
+        text: "The week before presentations, {userName} discovered that several other classmates were also struggling with non-traditional family stories. Carmen's parents were same-sex partners who'd adopted from three different countries. David lived with his grandmother because his parents were deployed overseas. Even perfect Madison quietly admitted that her 'Mayflower ancestors' story was mostly family mythology - her great-grandmother had actually been an undocumented immigrant from Ireland. 'Maybe we should present together,' {userName} suggested during lunch. 'We could show how modern families create heritage in new ways.' Noah smiled proudly. 'That's brilliant. You're going to change how people think about belonging.'",
+        pause: true,
+        hook: "How will their group presentation challenge traditional ideas about family and heritage?",
+        microVariants: {
+          text: "Discovering other students' complex family stories led to a collaborative presentation about modern heritage.",
+          alternatives: ["The assignment revealed that most families don't fit traditional patterns, creating opportunities for connection.", "Sometimes the most powerful learning happens when students teach each other about acceptance."],
+          optionalDetails: ["Ms. Chen was excited about their innovative approach", "Parents volunteered to help with the group presentation", "The cafeteria became their regular planning headquarters"]
+        }
+      },
+      {
+        text: "Presentation day arrived with nervous energy and excited families filling the classroom. {userName} stood with their diverse group of presenters, heart pounding as they explained how heritage could include biological ancestry, chosen family, cultural adoption, and conscious tradition-making. When they shared Tía Rosa's stories about quinceañeras that welcomed Korean neighbors and Italian cousins, the audience was visibly moved. Noah squeezed {userName}'s hand encouragingly as they concluded: 'Our heritage isn't about where we came from. It's about how we choose to love and include each other.' The applause was thunderous, but the best moment came when Madison approached afterward to apologize and ask if she could join their 'Modern Families' discussion group.",
+        pause: true,
+        hook: "What impact will their presentation have on their school community's understanding of belonging?",
+        microVariants: {
+          text: "The group presentation transformed classroom discussions and inspired broader conversations about inclusive heritage.",
+          alternatives: ["Public speaking about family diversity created community connections and changed minds about belonging.", "Sometimes courage to share personal stories opens hearts and builds bridges between different experiences."],
+          optionalDetails: ["Parents were wiping away tears during the presentation", "Ms. Chen said it was the best project she'd seen in fifteen years", "Noah's hand-holding felt perfectly natural and right"]
+        }
+      },
+      {
+        text: "The success of their presentation led to unexpected opportunities when the principal asked them to present at the district's Diversity and Inclusion showcase. Working together to prepare for the bigger stage, {userName} and Noah's partnership deepened into something unmistakably romantic. During a late-night video call to finalize their slides, Noah finally said what they'd both been feeling: 'I really like you, {userName}. Not just as a project partner.' Through the screen, {userName} could see his nervous smile. 'I really like you too,' they admitted, feeling simultaneously terrified and thrilled. Jasmine, who'd been listening from her own video window, erupted in cheers. 'FINALLY! I've been waiting for this moment for weeks!'",
+        pause: true,
+        hook: "How will their new relationship dynamic affect their advocacy work?",
+        microVariants: {
+          text: "The district presentation opportunity coincided with {userName} and Noah's relationship becoming officially romantic.",
+          alternatives: ["Professional collaboration blossomed into personal connection as their advocacy work expanded.", "Sometimes shared values and mutual respect naturally grow into deeper feelings."],
+          optionalDetails: ["The district showcase would reach five schools and hundreds of families", "Video calls had become the highlight of their evenings", "Jasmine had been playing matchmaker more successfully than they'd realized"]
+        }
+      },
+      {
+        text: "At the district showcase, their presentation reached over 300 students and families from diverse backgrounds. Standing before the packed auditorium with Noah by their side (officially their boyfriend as of three days ago), {userName} felt confident sharing their message about inclusive heritage. When they finished, a high school senior approached them with tears in her eyes. 'Thank you,' she said. 'I'm adopted from China, and my family is white, and I've always felt like I didn't fit anywhere. Your presentation helped me realize that belonging isn't about looking the same - it's about loving the same.' Noah squeezed {userName}'s hand as they realized their seventh-grade project was genuinely changing lives.",
+        pause: true,
+        hook: "What lasting impact will their advocacy have on students across the district?",
+        microVariants: {
+          text: "The district presentation touched hundreds of families and inspired conversations about belonging across all schools.",
+          alternatives: ["Their message about inclusive heritage resonated with students who'd felt isolated by traditional family narratives.", "Sometimes the most powerful activism starts with middle school students brave enough to share their truth."],
+          optionalDetails: ["News reporters covered the event", "Other schools requested similar presentations", "The adopted senior became their mentor and friend"]
+        }
+      },
+      {
+        text: "Spring semester brought the formation of their official 'Modern Families Club,' meeting weekly in Ms. Chen's classroom with membership that had grown to include students from all grades. {userName} and Noah co-facilitated discussions about adoption, immigration, blended families, and chosen family structures while Jasmine documented their conversations for a potential book project. The club became a safe space where students could share complex family stories without judgment. 'We're creating new traditions,' {userName} realized during one particularly meaningful meeting about holiday celebrations. 'Just like our families did.' Noah smiled across their circle of chairs. 'And just like we will with our own families someday.'",
+        pause: true,
+        hook: "How will their club influence the broader school culture around family diversity?",
+        microVariants: {
+          text: "The Modern Families Club created ongoing safe spaces for students to explore identity and belonging.",
+          alternatives: ["Weekly meetings built community among students whose families didn't fit traditional molds.", "Sometimes the most important learning happens in student-led spaces designed for authentic sharing."],
+          optionalDetails: ["Teachers asked to observe their facilitation techniques", "Parents volunteered to share their own family stories", "The club's influence was spreading to other schools in the district"]
+        }
+      },
+      {
+        text: "The school year culminated when their club was invited to present at the state education conference about student-led diversity initiatives. Standing before hundreds of educators and administrators, {userName} felt nervous but proud explaining how their heritage assignment had evolved into a movement. 'Traditional curricula often assume nuclear families with clear ethnic backgrounds,' they said confidently. 'But our generation needs education that reflects family diversity and teaches inclusion as heritage.' When Noah added, 'Students can lead these conversations if adults create space for our voices,' the audience burst into applause. Later, during the conference dinner, {userName} and Noah shared their first official public kiss, surrounded by educators who'd been inspired by their leadership.",
+        pause: true,
+        hook: "What changes will their advocacy inspire in educational curricula statewide?",
+        microVariants: {
+          text: "The state conference established their reputation as youth leaders in educational diversity and inclusion.",
+          alternatives: ["Seventh-grade advocacy was influencing adult professionals to reconsider how schools address family diversity.", "Their romantic relationship had grown alongside their shared commitment to social change."],
+          optionalDetails: ["Three school districts requested consultation on inclusive curriculum", "Education professors wanted to study their peer facilitation methods", "The conference organizers offered them summer internships"]
+        }
+      },
+      {
+        text: "Summer brought reflection as {userName} and Noah worked as junior counselors at a camp for adopted children and diverse families. Watching younger kids struggle with identity questions they'd faced themselves, {userName} realized how much they'd grown since that first heritage assignment. 'Remember when you thought your family was just complicated?' Noah asked one evening as they sat together watching campers perform skits about their unique family stories. {userName} leaned against his shoulder, thinking about Tía Rosa's photos, Madison's transformation, and all the families they'd learned to celebrate. 'Now I know complicated means beautiful,' they said. 'And so does love.'",
+        pause: true,
+        hook: "How will their experiences prepare them for future leadership in diversity and inclusion work?",
+        microVariants: {
+          text: "Summer camp work allowed them to mentor younger children while deepening their relationship and understanding of family diversity.",
+          alternatives: ["Professional experience with diverse families confirmed their passion for inclusion advocacy.", "Their personal growth and romantic development intertwined with their commitment to helping others find belonging."],
+          optionalDetails: ["Camp directors were impressed by their maturity and leadership skills", "Parents requested them specifically as counselors for children with similar backgrounds", "Their relationship had become a model for other young couples at camp"]
+        }
+      },
+      {
+        text: "Starting eighth grade as established campus leaders felt both exciting and daunting. Their Modern Families Club had a waiting list, Ms. Chen had incorporated their inclusive heritage curriculum into standard assignments, and {userName} had been elected to student council on a platform of expanding diversity education. During their first council meeting, they proposed mandatory diversity training for all students and staff. 'Our school should be a place where every family structure feels welcome and valued,' they argued passionately. Noah, now student body vice president, nodded in support. 'We have the chance to make our school a model for inclusion,' he added. When the proposal passed unanimously, {userName} felt proud of how far they'd come from that nervous kid worried about their complicated family story.",
+        pause: true,
+        hook: "What lasting changes will their eighth-grade leadership create for future students?",
+        microVariants: {
+          text: "Eighth-grade leadership positions allowed them to implement systemic changes in school diversity education and policies.",
+          alternatives: ["Student government became a platform for advancing the inclusion work they'd started in seventh grade.", "Their partnership in both romance and activism was creating lasting institutional change."],
+          optionalDetails: ["The diversity training program became a district model", "Younger students looked up to them as mentors and role models", "Their relationship was known throughout school as both romantic and professionally collaborative"]
         }
       }
     ],
     endings: [
       {
-        type: 'reflective',
-        text: "Standing before their classmates with a presentation that celebrated their family's unique blend of adopted members, multiple ethnic influences, and consciously created traditions, {userName} felt a deep sense of pride in their complex heritage story. 'I learned that families don't have to fit traditional patterns to be meaningful,' they concluded thoughtfully. 'Our heritage includes both what we inherit and what we choose to create, and both parts are equally valid and important in shaping who we become.'",
-        microVariants: [
-          "Presenting their complex family heritage story, {userName} gained confidence in the validity of non-traditional family narratives and the beauty of consciously created cultural traditions."
-        ]
+        type: 'triumphant',
+        text: "Three years later, {userName} and Noah's high school graduation speech focused on how their seventh-grade heritage project had evolved into a statewide initiative for inclusive family education. Standing together at the podium as co-valedictorians, they announced their acceptance to the same college where they planned to study education policy and continue their advocacy work. 'Our complicated families taught us that love creates belonging,' {userName} concluded to thunderous applause. 'And our partnership taught us that shared values create the strongest relationships.' As they walked off stage hand-in-hand, Jasmine (now editor of the school newspaper) captured the moment that symbolized how academic collaboration could grow into lifelong love and social change.",
+        microVariants: ["Their high school leadership in diversity education led to college scholarships and continued advocacy partnership.", "From seventh-grade heritage assignment to graduation speech, their journey proved that student voices could transform educational institutions."]
       },
       {
-        type: 'triumphant',
-        text: "The presentation sparked meaningful discussions throughout the school about different types of families and heritage stories, leading {userName} and several classmates to propose a 'Modern Families' club where students could explore and celebrate the diverse ways that contemporary families create identity, belonging, and cultural meaning beyond traditional ancestry-based definitions.",
-        microVariants: [
-          "{userName}'s presentation inspired schoolwide conversations about family diversity and led to the creation of a club celebrating various forms of modern family identity and belonging."
-        ]
+        type: 'cozy',
+        text: "Five years later, {userName} and Noah returned to Ms. Chen's classroom as guest speakers for the annual Heritage Celebration, now a school tradition inspired by their original project. Watching seventh-graders present their diverse family stories with confidence and pride, they smiled at how natural inclusion had become. 'Remember when we were terrified to share our complicated families?' Noah whispered as they held hands in the back of the room. {userName} squeezed his fingers, thinking of Tía Rosa (now grandmother to their engagement), Madison (now their close friend), and Jasmine (their future maid of honor). 'The best complications,' they realized, 'are the ones that teach us love has infinite forms.'",
+        microVariants: ["Their annual return as mentors kept their inclusive heritage work alive for new generations of students.", "Their engagement represented the natural evolution of partnership that began with shared values and collaborative activism."]
       }
     ],
     reuse: {
       swappableElements: {
-        "family_types": ["blended families", "adoptive families", "multi-ethnic families", "families of choice"],
-        "traditions": ["holiday celebrations", "food customs", "storytelling practices", "value systems"],
-        "heritage_elements": ["ancestral connections", "chosen traditions", "community influences", "personal values"]
+        "family_complexity": ["adoption stories", "blended cultures", "chosen family bonds", "immigrant experiences"],
+        "relationship_development": ["friendship to romance", "collaborative partnerships", "peer support networks", "mentorship dynamics"],
+        "advocacy_evolution": ["classroom presentations", "school-wide programming", "district initiatives", "state-level influence"]
       },
-      weatherVariants: ["research phase", "interview sessions", "presentation day"],
-      settingVariants: ["classroom", "family home", "community center", "school library"]
+      weatherVariants: ["research season discoveries", "presentation preparation", "celebration and recognition"],
+      settingVariants: ["family homes and stories", "school collaboration spaces", "community presentation venues"],
+      randomSeed: Math.floor(Math.random() * 10000)
     }
   },
   {
-    title: "The Digital Citizenship Dilemma",
+    title: "The Digital Citizenship Dilemma", 
     theme: "Ethics & Technology",
     level: "Grade 7",
     scenes: [
       {
-        text: "{userName} witnessed something troubling during lunch when a group of students used social media to spread a false rumor about a classmate, watching as the story grew more exaggerated with each share and seeing how quickly online drama could impact someone's real-life friendships and emotional well-being, forcing {userName} to grapple with questions about bystander responsibility, digital ethics, and the power that young people wield when they participate in or stay silent about online behavior.",
+        text: "Everything started going wrong during lunch when {userName} saw popular eighth-grader Kai Thompson screenshot a private text from their classmate Emma Santos, adding the caption 'Guess who has a crush on Mr. Rodriguez 😂' before posting it to his story. Within minutes, the screenshot was everywhere - TikTok, Snapchat, Instagram. {userName} watched Emma's face crumble as notifications exploded on her phone. 'This is so messed up,' whispered {userName}'s best friend Riley, but they both just stood there, frozen. When Emma ran to the bathroom in tears, {userName} felt sick. They had the power to speak up, but would anyone listen? And what if Kai's crew turned on them next?",
         pause: true,
-        hook: "What action will {userName} take regarding the harmful social media situation?",
+        hook: "Will {userName} find the courage to stand up against digital bullying?",
         microVariants: {
-          text: "{userName} witnessed harmful social media behavior targeting a classmate, confronting difficult questions about digital responsibility and the real-world impact of online actions.",
-          alternatives: [
-            "Observing how false rumors spread rapidly through social media and damaged a peer's reputation, {userName} faced challenging decisions about intervention and digital citizenship."
-          ],
-          optionalDetails: ["The rumors seemed to multiply exponentially online.", "The targeted student appeared increasingly isolated at school.", "Friends were choosing sides based on incomplete information."]
+          text: "A viral screenshot destroyed Emma's privacy and dignity while {userName} faced the difficult choice of whether to intervene.",
+          alternatives: ["Digital cruelty spread faster than {userName} could process, forcing difficult decisions about bystander responsibility.", "What started as a 'harmless joke' quickly became a lesson in how technology amplifies both kindness and cruelty."],
+          optionalDetails: ["Other students were sharing and commenting before understanding the context", "Emma's crush on their young teacher was innocent and sweet", "Kai seemed to enjoy the chaos he'd created"]
+        }
+      },
+      {
+        text: "That afternoon, {userName} couldn't concentrate on anything except Emma's devastated expression. During computer science class, they found themselves sitting next to Alex Chen, the quiet kid who everyone knew was brilliant with technology but rarely spoke up about social stuff. 'The Emma thing is really bothering you, isn't it?' Alex said softly, surprising {userName}. When they nodded, Alex pulled out their phone and showed {userName} something shocking: detailed analytics showing how Kai's post had been shared over 200 times in four hours, reaching students from three different schools. 'Digital harassment spreads like a virus,' Alex explained. 'But so does digital activism. We could fight back, if you want.'",
+        pause: true,
+        hook: "How can {userName} and Alex use technology to combat the digital harassment?",
+        microVariants: {
+          text: "Alex Chen's tech expertise offered {userName} a way to turn digital tools from weapons into shields for their classmate.",
+          alternatives: ["Quiet Alex emerged as an unexpected ally with both technical skills and moral clarity.", "Sometimes the most powerful friendships form when shared values meet complementary skills."],
+          optionalDetails: ["Alex had been documenting digital harassment patterns for months", "Their analytics showed how quickly online cruelty could spread", "Riley joined their planning session after overhearing their conversation"]
+        }
+      },
+      {
+        text: "The trio spent the weekend developing what Alex called 'Operation Digital Shield' - a multi-platform campaign to counter the harassment with support for Emma. Riley, who'd always been artistic, designed graphics promoting digital kindness. Alex built a website documenting the real impact of cyberbullying, while {userName} reached out to classmates they trusted, building a network of students ready to flood social media with positive messages. But their biggest breakthrough came when {userName} convinced Emma's older sister Maya, a high school senior with 3,000 followers, to share her own story about overcoming online harassment. 'My sister shouldn't have to deal with this alone,' Maya said fiercely. 'And neither should any of you.'",
+        pause: true,
+        hook: "Will their digital activism campaign successfully support Emma and change online behavior?",
+        microVariants: {
+          text: "Operation Digital Shield combined creative content, technical expertise, and social networking to combat harassment with kindness.",
+          alternatives: ["Three unlikely allies discovered they could use social media platforms to spread empathy instead of cruelty.", "Sometimes the best response to viral negativity is organized, intentional positivity."],
+          optionalDetails: ["Maya's story resonated with students from multiple schools", "Their positive hashtag started trending locally", "Even some of Kai's friends began questioning his behavior"]
+        }
+      },
+      {
+        text: "Monday morning brought the results of their campaign - and unexpected complications. Emma returned to school smiling for the first time in days, surrounded by supportive messages and new friendships sparked by their activism. But Kai was furious about the counter-narrative and confronted {userName} in the hallway. 'You think you're some kind of digital hero?' he sneered, loud enough for everyone to hear. Before {userName} could respond, something amazing happened: Alex stepped forward, no longer the quiet kid in the corner. 'Actually, we think we're decent human beings,' Alex said calmly. 'You should try it sometime.' The crowd that had gathered erupted in supportive comments and laughter, marking a clear shift in social power.",
+        pause: true,
+        hook: "How will the confrontation change the school's digital culture and social dynamics?",
+        microVariants: {
+          text: "Public confrontation revealed how their digital activism had shifted social support toward kindness and accountability.",
+          alternatives: ["Alex's newfound confidence and {userName}'s leadership had created a new social dynamic based on empathy.", "Sometimes standing up to bullies requires both online strategy and offline courage."],
+          optionalDetails: ["Teachers overheard the exchange and began paying closer attention", "Emma publicly thanked her defenders, inspiring others to speak up", "Several students approached {userName} for advice about their own online harassment situations"]
+        }
+      },
+      {
+        text: "The success of Operation Digital Shield caught the attention of Ms. Martinez, the media literacy teacher, who invited them to present their campaign to the whole seventh grade. Standing before 150 classmates, {userName} felt nervous but determined as they explained how they'd used the same platforms that spread harassment to build support networks instead. Alex presented the technical data showing how positive content could 'go viral' just like negative content, while Riley shared the creative strategies they'd used to make kindness feel cool and engaging. When Emma joined them on stage to thank the audience for their support, the sustained applause felt like a victory for digital humanity.",
+        pause: true,
+        hook: "What broader changes will their presentation inspire in school policy and student behavior?",
+        microVariants: {
+          text: "The seventh-grade presentation established them as digital citizenship leaders and inspired policy discussions.",
+          alternatives: ["Public speaking about their activism transformed {userName}, Alex, and Riley from reactive helpers to proactive leaders.", "Sometimes the most powerful education happens when students teach each other about using technology responsibly."],
+          optionalDetails: ["Ms. Martinez was taking notes for curriculum development", "Several teachers asked for consultation on digital citizenship policies", "Students from other grades requested similar presentations"]
+        }
+      },
+      {
+        text: "Spring semester brought new challenges when {userName} was elected to student council on a platform of improving digital citizenship school-wide. Working with Alex (now student tech advisor) and Riley (editor of the digital school newspaper), they developed comprehensive guidelines for social media use that emphasized empathy and accountability. But their biggest test came when they had to mediate a conflict between two popular cliques who were using Instagram stories to wage psychological warfare against each other. 'This is exactly what we fought against with Emma,' {userName} reminded the group during a tense meeting in the principal's office. 'We can be better than this.'",
+        pause: true,
+        hook: "Can their mediation skills resolve complex social media conflicts between different groups?",
+        microVariants: {
+          text: "Student council leadership gave {userName} official power to address digital citizenship issues at the institutional level.",
+          alternatives: ["Their success with Emma's situation established them as trusted mediators for more complex online conflicts.", "Sometimes effective activism leads to opportunities for systematic change and policy influence."],
+          optionalDetails: ["The principal was impressed by their mature approach to conflict resolution", "Other schools began requesting consultation on student-led digital citizenship programs", "Their friendship trio had become a recognized leadership team"]
+        }
+      },
+      {
+        text: "The mediation sessions revealed something unexpected: most students engaged in online drama because they felt powerless or invisible in real life. Working with the school counselor, {userName}, Alex, and Riley developed peer support groups that addressed the emotional needs underlying digital aggression. 'Hurt people hurt people,' Alex observed during one of their planning meetings. 'But supported people support people.' Their program paired students struggling with online behavior with mentors who'd overcome similar challenges. Emma, now confident and healed, became one of their most effective peer counselors, helping other students navigate the intersection of technology and emotions.",
+        pause: true,
+        hook: "How will addressing underlying emotional needs transform the school's digital culture long-term?",
+        microVariants: {
+          text: "Peer support programming addressed the emotional roots of digital harassment while building empathy and connection.",
+          alternatives: ["Understanding why students engaged in online cruelty led to more effective interventions than punishment alone.", "Sometimes the most sustainable solutions address human needs rather than just problematic behaviors."],
+          optionalDetails: ["The counseling department expanded their digital wellness resources", "Students were voluntarily seeking help for online behavior issues", "Emma's transformation from victim to advocate inspired others"]
+        }
+      },
+      {
+        text: "By eighth grade, {userName} had become known as the go-to person for digital citizenship issues, but their favorite part was watching the culture shift they'd helped create. New seventh-graders arrived at a school where online kindness was genuinely cool, where students actively called out harassment, and where technology was seen as a tool for connection rather than destruction. During the annual Digital Citizenship Week (a tradition they'd started), {userName} watched Alex confidently lead workshops on ethical technology use while Riley moderated panel discussions about social media and mental health. 'We actually changed things,' {userName} marveled to Emma during the closing ceremony. 'Like, really changed them.'",
+        pause: true,
+        hook: "What lasting impact will their digital citizenship work have on future students?",
+        microVariants: {
+          text: "Eighth-grade reflection revealed how their activism had created institutional changes and cultural shifts around technology use.",
+          alternatives: ["Their individual response to one incident had grown into systematic changes that would protect future students.", "Sometimes the most important legacy work happens when students create better environments for those who come after them."],
+          optionalDetails: ["Digital Citizenship Week had become a district-wide initiative", "Other schools were adopting their peer mediation models", "National education organizations had featured their program as a best practice"]
+        }
+      },
+      {
+        text: "The program's success led to an invitation to speak at the state technology education conference, where {userName} addressed an audience of teachers, administrators, and policy makers about student-led approaches to digital citizenship. 'Adults often try to solve technology problems by restricting technology,' they said confidently from the podium. 'But we believe the solution is teaching students to use technology with empathy and intention.' Alex and Riley flanked them for moral support as they shared statistics showing decreased cyberbullying and increased peer support in schools that implemented student-led digital citizenship programs. When the audience gave them a standing ovation, {userName} felt proud not just of their success, but of how they'd grown from a bystander to a leader.",
+        pause: true,
+        hook: "How will their state-level advocacy influence digital citizenship education policy?",
+        microVariants: {
+          text: "The state conference established their credibility as youth experts on digital citizenship and technology ethics.",
+          alternatives: ["Speaking to adult professionals validated their student-led approach and expanded their influence beyond their school.", "Their confidence in addressing systemic issues had grown from local activism to state-level policy advocacy."],
+          optionalDetails: ["Several districts requested implementation assistance for similar programs", "Education professors wanted to study their peer mediation model", "Technology companies asked for consultation on ethical design for teen users"]
+        }
+      },
+      {
+        text: "Summer brought unexpected opportunities when a major social media company invited them to participate in their Teen Advisory Council, helping design safety features for young users. Working alongside teenagers from across the country, {userName} felt both excited and sobered by the responsibility. 'We're not just representing our school anymore,' Alex pointed out during one of their video conference planning sessions. 'We're representing all students who've been hurt by technology.' Their input influenced features like improved reporting mechanisms, empathy prompts before posting, and digital wellness tools. When the company's CEO personally thanked them for their contributions, {userName} realized their seventh-grade activism had grown into a platform for protecting young people nationwide.",
+        pause: true,
+        hook: "What other opportunities will their digital citizenship expertise create?",
+        microVariants: {
+          text: "Corporate consulting opportunities validated their expertise while expanding their influence to national technology policy.",
+          alternatives: ["Their grassroots activism had evolved into professional expertise that could influence how technology companies design platforms for young people.", "Sometimes local solutions to universal problems attract attention from decision-makers who can implement change at scale."],
+          optionalDetails: ["The Teen Advisory Council became a permanent feature of the company's development process", "Their safety recommendations were implemented across multiple platforms", "They were invited to speak at technology conferences worldwide"]
+        }
+      },
+      {
+        text: "Starting high school, {userName} reflected on how much had changed since that awful lunch period when Emma was harassed and they'd felt powerless to help. Now they were co-president of the Regional Youth Digital Rights Coalition, Alex was designing ethical technology curricula for middle schools, and Riley was the editor-in-chief of a teen publication focused on technology and social justice. Emma had been accepted to a prestigious summer program for aspiring counselors, planning to specialize in digital wellness. 'Remember when we thought technology was just something that happened to us?' Riley asked during their weekly planning meeting. {userName} smiled, thinking of all the students they'd helped and policies they'd influenced. 'Now we know we can shape how it happens.'",
+        pause: true,
+        hook: "How will their continued partnership create lasting change in digital citizenship education?",
+        microVariants: {
+          text: "High school transition marked their evolution from reactive helpers to proactive leaders in digital rights and ethics.",
+          alternatives: ["Their friendship and shared values had grown into a professional partnership focused on protecting young people online.", "From seventh-grade bystanders to high school digital rights advocates, their journey proved students could create systematic change."],
+          optionalDetails: ["Their coalition was influencing policy at both state and federal levels", "Technology companies regularly consulted them on youth safety features", "Their story was being taught in digital citizenship curricula nationwide"]
+        }
+      },
+      {
+        text: "Graduation day brought full-circle reflection when {userName} was selected as valedictorian, with their speech focusing on the power of digital citizenship to transform communities. Looking out at the audience, they spotted Emma (now a peer counseling specialist), Alex (heading to MIT for computer science), and Riley (accepted to journalism school on a full scholarship). 'Four years ago, we learned that technology amplifies human nature - both our cruelty and our compassion,' {userName} said to the packed auditorium. 'We chose to amplify compassion, and it changed everything.' As they walked off stage, {userName} felt grateful that a moment of moral crisis in seventh grade had led to a lifetime of meaningful work protecting others from the same harm they'd witnessed.',
+        pause: true,
+        hook: "What legacy will their digital citizenship work leave for future generations of students?",
+        microVariants: {
+          text: "Graduation speech reflected on how their seventh-grade response to cyberbullying had grown into a movement for ethical technology use.",
+          alternatives: ["Their valedictorian address demonstrated how individual moral courage could grow into systematic social change.", "From bystanders to leaders, their journey proved that young people could reshape digital culture through persistent advocacy and collaboration."],
+          optionalDetails: ["Their digital citizenship curriculum was being implemented in hundreds of schools", "Major technology platforms had adopted their safety recommendations", "They were already accepted to college programs in technology ethics and digital rights law"]
         }
       }
     ],
     endings: [
       {
-        type: 'triumphant',
-        text: "By courageously speaking up and helping to organize a school-wide digital citizenship workshop, {userName} not only helped clear their classmate's reputation but also sparked important conversations about online responsibility that led to new school policies supporting both digital wellness and restorative justice approaches to technology-related conflicts.",
-        microVariants: [
-          "{userName}'s intervention in the digital bullying situation led to positive school policy changes and enhanced awareness about responsible technology use among students."
-        ]
+        type: 'triumphant', 
+        text: "Five years later, {userName} stood before the United Nations Youth Assembly, presenting their research on global digital citizenship education as a doctoral candidate in Technology Ethics. In the audience, Alex (now a leading AI safety researcher) and Riley (investigative journalist covering technology and human rights) smiled proudly as their former classmate advocated for international standards protecting young people online. Their seventh-grade response to one instance of cyberbullying had grown into a global movement, proving that students who refuse to be bystanders can reshape the digital world for everyone.",
+        microVariants: ["Their grassroots digital citizenship work evolved into international advocacy, influencing how nations protect young people online.", "From middle school bystanders to global leaders, their journey demonstrated how moral courage could create worldwide change."]
+      },
+      {
+        type: 'cozy',
+        text: "Every year, {userName} returned to their old middle school for Digital Citizenship Week, watching new seventh-graders learn the skills they'd helped develop. Emma, now the school's digital wellness counselor, would join them to share stories about overcoming online harassment and building supportive communities. 'The internet is a reflection of who we choose to be,' {userName} always told the students. 'Choose kindness.' Watching young faces light up with understanding, they felt proud that their moment of moral courage had created lasting protection for countless students who would never have to face digital harassment alone.",
+        microVariants: ["Annual mentoring visits kept their digital citizenship legacy alive, protecting new generations from online harm.", "Their program had become so embedded in school culture that ethical technology use felt natural and expected."]
       }
     ],
     reuse: {
       swappableElements: {
-        "digital_platforms": ["social media apps", "messaging groups", "online forums", "video platforms"],
-        "ethical_dilemmas": ["cyberbullying intervention", "false information sharing", "privacy violations", "digital harassment"],
-        "solutions": ["peer mediation", "adult intervention", "education programs", "policy changes"]
+        "digital_platforms": ["Instagram stories", "TikTok challenges", "Snapchat harassment", "group chat drama"],
+        "harassment_types": ["screenshot sharing", "fake rumor spreading", "exclusion campaigns", "identity theft"],
+        "activism_strategies": ["positive content creation", "peer support networks", "policy development", "adult collaboration"]
       },
-      weatherVariants: ["lunch period", "after school", "weekend online activity"],
-      settingVariants: ["school cafeteria", "computer lab", "guidance counselor office", "peer mediation room"]
+      weatherVariants: ["crisis response", "campaign development", "policy implementation"],
+      settingVariants: ["school hallways and classrooms", "digital platforms", "community meeting spaces"],
+      randomSeed: Math.floor(Math.random() * 10000)
     }
   },
   {
     title: "The Mental Health Awareness Campaign",
-    theme: "Peer Support & Emotional Wellness",
+    theme: "Peer Support & Emotional Wellness", 
     level: "Grade 7",
     scenes: [
       {
-        text: "{userName} noticed that several classmates had become increasingly withdrawn and anxious during the school year, but when they tried to talk to friends about mental health, they realized that most students lacked the vocabulary and knowledge to discuss emotional wellness openly. After learning that suicide rates among teenagers had increased dramatically and that many young people felt isolated in their struggles, {userName} decided to research how schools could better support student mental health through peer education and destigmatization efforts.",
+        text: "The first sign something was wrong came when {userName}'s usually bubbly friend Jordan stopped laughing at lunch. Day after day, Jordan picked at their food silently while the rest of their group chatted about homework and weekend plans. When {userName} tried asking what was wrong, Jordan just shrugged and said 'I'm fine' - but their eyes told a different story. Meanwhile, {userName} noticed other classmates showing similar signs: Aisha constantly checking her phone with a worried expression, Marcus snapping at friends over minor things, and even confident Sophia seeming overwhelmed by simple decisions. 'Is everyone okay this year?' {userName} wondered aloud to their best friend Casey. 'Because it feels like everyone's struggling with something.'",
         pause: true,
-        hook: "How can {userName} create effective mental health support among their peers?",
+        hook: "How can {userName} help friends who seem to be struggling but won't talk about it?",
         microVariants: {
-          text: "{userName} observed classmates struggling with mental health but lacking tools for open discussion, inspiring research into peer-based emotional wellness support systems.",
-          alternatives: [
-            "Recognizing emotional struggles among peers and inadequate mental health discourse, {userName} began developing student-centered wellness education approaches."
-          ],
-          optionalDetails: ["Guidance counselors had long waiting lists for appointments.", "Students often masked their feelings with humor or silence.", "Social media amplified both connection and comparison pressures."]
+          text: "Observing friends' emotional struggles, {userName} recognized signs that their peer group needed mental health support but lacked ways to discuss it.",
+          alternatives: ["Multiple classmates were showing signs of distress, making {userName} realize their generation needed better tools for emotional wellness.", "The silent suffering of friends motivated {userName} to research how young people could support each other's mental health."],
+          optionalDetails: ["The school counselor had a waiting list of three weeks", "Social media seemed to make everyone's anxiety worse", "Parents and teachers didn't seem to notice the emotional changes students were experiencing"]
+        }
+      },
+      {
+        text: "Everything changed during health class when Ms. Rodriguez shared statistics about teenage mental health that made the room go completely silent. Depression rates among teens had doubled in five years. Anxiety disorders affected one in three middle schoolers. Suicide was the second leading cause of death for people their age. When {userName} looked around the classroom, they saw their own shock reflected in twenty-eight other faces. After class, Jordan finally approached {userName} with tears in their eyes. 'I think I might be one of those statistics,' they whispered. 'I don't know what's wrong with me, but everything feels impossible lately.' That's when {userName} realized their friends weren't just having 'bad days' - they needed real support, and there was nowhere to get it.",
+        pause: true,
+        hook: "What can {userName} do to create mental health support for students who need help now?",
+        microVariants: {
+          text: "Alarming mental health statistics and Jordan's vulnerable admission revealed the urgent need for peer support systems.",
+          alternatives: ["Learning about teen mental health crisis statistics made the classroom problems feel part of a larger emergency.", "Jordan's confession transformed abstract statistics into personal reality, motivating {userName} to take action."],
+          optionalDetails: ["Several students were visibly crying during the statistics presentation", "The school nurse confirmed she'd seen increased anxiety-related visits", "Ms. Rodriguez seemed as concerned as the students about the data she'd presented"]
+        }
+      },
+      {
+        text: "That weekend, {userName} dove deep into research about peer support and mental health advocacy, discovering programs at other schools where students had successfully created supportive communities. They learned about active listening techniques, crisis intervention basics, and how to recognize when someone needed professional help versus peer support. But the most important discovery came when they found stories of teenagers who'd overcome mental health challenges with the help of understanding friends. When Casey offered to help research, {userName} realized they wouldn't have to tackle this alone. 'We could actually make a difference,' Casey said excitedly. 'We could create the support system we wish existed.'",
+        pause: true,
+        hook: "How will {userName} and Casey design a peer support system that really helps their classmates?",
+        microVariants: {
+          text: "Research revealed effective peer support models while Casey's partnership provided the encouragement {userName} needed to move forward.",
+          alternatives: ["Discovering successful student mental health programs gave {userName} hope that their generation could solve its own wellness crisis.", "Casey's enthusiasm transformed {userName}'s individual concern into a collaborative mission to help their peers."],
+          optionalDetails: ["Online training modules taught them basic counseling skills", "Other schools shared detailed guides for starting peer support programs", "Mental health professionals offered to provide guidance for student-led initiatives"]
+        }
+      },
+      {
+        text: "Starting their mental health awareness initiative required navigating complex school bureaucracy, but {userName} and Casey were determined. They presented their research to Principal Martinez, who was surprisingly supportive after learning about the three-week counseling wait list and increased nurse visits for anxiety. 'Student peer support could really help,' she agreed, 'but we'll need proper training and adult supervision.' That's when Jordan stepped up in a way that surprised everyone. 'I want to help,' they said quietly during their planning meeting in the library. 'Maybe talking about my struggles could help other people feel less alone.' Aisha and Marcus, who'd been listening from nearby tables, asked if they could join too. Suddenly, their two-person initiative had become a movement.",
+        pause: true,
+        hook: "How will peer support group members help each other while learning to help others?",
+        microVariants: {
+          text: "Administrative support and brave peer volunteers transformed {userName}'s idea into an official school program with real participants.",
+          alternatives: ["Students who'd been struggling privately found courage to join the peer support initiative publicly.", "The hardest part wasn't getting adult permission - it was helping peers overcome the stigma of seeking emotional support."],
+          optionalDetails: ["The school social worker volunteered to provide training and supervision", "Teachers started referring students who seemed to be struggling", "Word spread quickly through social media and hallway conversations"]
+        }
+      },
+      {
+        text: "Training sessions with Ms. Chen, the school social worker, revealed how much {userName}'s peer group had been carrying without support. Learning active listening skills, crisis recognition, and self-care strategies, they also shared their own experiences with anxiety, depression, family stress, and social pressure. Jordan's openness about their therapy sessions encouraged others to talk about medication, counseling experiences, and family mental health history. 'We're not trying to be therapists,' {userName} reminded the group during one particularly emotional session. 'We're trying to be the friends we wish we'd had when we were struggling alone.' The training brought them closer together while preparing them to support others authentically.",
+        pause: true,
+        hook: "How will their personal experiences with mental health challenges strengthen their ability to help peers?",
+        microVariants: {
+          text: "Professional training combined with personal vulnerability created a peer support team with both skills and authentic experience.",
+          alternatives: ["Learning counseling techniques while sharing their own struggles prepared them to offer genuine empathy alongside practical help.", "The training process revealed that many 'popular' and 'successful' students were also dealing with mental health challenges privately."],
+          optionalDetails: ["Ms. Chen was impressed by their emotional maturity and commitment", "Group members started supporting each other outside of official meetings", "Parents were initially concerned but became supportive after meeting the supervising adults"]
+        }
+      },
+      {
+        text: "Launch day for 'Minds Matter,' their peer support program, brought nervous excitement and a packed library meeting room. {userName} had worried no one would come, but twenty-three students showed up for the first session - some dragged by friends, some desperately seeking help, others just curious about mental health discussions. When Jordan shared their story about recognizing depression symptoms and getting help, the room was completely silent except for occasional sniffles. 'The hardest part wasn't admitting I needed help,' Jordan concluded. 'It was believing I deserved to feel better.' The discussion that followed was the most honest conversation about emotions {userName} had ever witnessed among their peers.",
+        pause: true,
+        hook: "What impact will ongoing peer support meetings have on participants and the broader school community?",
+        microVariants: {
+          text: "The first Minds Matter meeting exceeded expectations, creating safe space for authentic mental health conversations among peers.",
+          alternatives: ["Jordan's vulnerability gave other students permission to share their own struggles and seek support openly.", "What started as a small initiative became a packed room of students hungry for emotional connection and understanding."],
+          optionalDetails: ["Several participants scheduled individual counseling after the group meeting", "Teachers reported improved classroom participation from several group members", "Students started using mental health vocabulary more comfortably in daily conversations"]
+        }
+      },
+      {
+        text: "By winter, Minds Matter had grown to include weekly support circles, mental health awareness presentations for younger grades, and partnerships with local therapists who provided training workshops. {userName} found themselves becoming a trusted resource for classmates in crisis, learning to balance empathy with appropriate boundaries. The program's success attracted attention from other schools, and {userName} was invited to speak at a district mental health summit alongside professional counselors and psychologists. 'Student peer support isn't just helpful,' they told the audience of adults. 'It's essential. We understand each other's language and experiences in ways that adults, no matter how well-meaning, sometimes can't.'",
+        pause: true,
+        hook: "How will district recognition expand their mental health advocacy beyond their own school?",
+        microVariants: {
+          text: "District-level recognition established {userName} as a youth mental health advocate while expanding peer support to other schools.",
+          alternatives: ["Speaking alongside mental health professionals validated their peer support approach and inspired program replication.", "Their grassroots initiative had grown into a model that professionals wanted to study and implement elsewhere."],
+          optionalDetails: ["Three middle schools requested help starting similar programs", "Local mental health organizations offered internship opportunities", "Casey had become co-facilitator and was equally recognized for their leadership"]
+        }
+      },
+      {
+        text: "Spring brought both triumph and challenge when the state education department featured Minds Matter as a 'Best Practice' for student mental health programming. The recognition was amazing, but {userName} struggled with the pressure of being seen as the 'mental health kid' by classmates who didn't understand that advocates could also need support sometimes. During a particularly stressful week of standardized testing and college prep anxiety, {userName} found themselves in Jordan's position from months earlier - overwhelmed and struggling to cope. 'I think I need to take my own advice,' they admitted to Casey and Jordan during a private moment after their weekly meeting. 'Being a helper doesn't make me immune to needing help.'",
+        pause: true,
+        hook: "How will {userName}'s own mental health challenges affect their advocacy work and personal growth?",
+        microVariants: {
+          text: "Recognition brought pressure that challenged {userName} to practice self-care and accept support from the community they'd created.",
+          alternatives: ["Success in mental health advocacy didn't protect {userName} from their own emotional struggles, teaching important lessons about self-care.", "Leading peer support required {userName} to model vulnerability and help-seeking, not just strength and guidance."],
+          optionalDetails: ["The peer support team rallied around {userName} just as they'd learned to do for others", "Ms. Chen helped them understand that advocates need support systems too", "Taking a brief step back from leadership responsibilities actually strengthened the program's sustainability"]
+        }
+      },
+      {
+        text: "Eighth-grade transition brought reflection on how much their school culture had changed since starting Minds Matter. Mental health vocabulary was now part of everyday conversation. Students regularly checked in on each other's emotional wellbeing. Teachers had received training on recognizing mental health warning signs. Most importantly, seeking help for emotional struggles had become normalized rather than stigmatized. During their final seventh-grade Minds Matter meeting, {userName} looked around the room at peers who'd found their voices, formed supportive friendships, and learned to navigate mental health challenges with community support. 'We didn't just create a program,' they realized. 'We created a culture where it's okay to not be okay, and where no one has to struggle alone.'",
+        pause: true,
+        hook: "What lasting cultural changes will their mental health advocacy create for future students?",
+        microVariants: {
+          text: "Eighth-grade reflection revealed how Minds Matter had transformed school culture around mental health and peer support.",
+          alternatives: ["Their peer support program had created lasting changes in how students talked about and supported each other's mental health.", "The cultural shift from individual struggle to community support would benefit students for years to come."],
+          optionalDetails: ["Incoming seventh-graders would enter a school where mental health support was already normalized", "Teachers incorporated emotional wellness into their regular curriculum", "The program had a waiting list of students wanting to become peer facilitators"]
+        }
+      },
+      {
+        text: "High school brought new opportunities when {userName} was recruited for the Regional Youth Mental Health Coalition, working alongside teenagers from five counties to advocate for better mental health resources in schools. Their expertise from Minds Matter made them a valuable contributor to policy discussions about counseling ratios, crisis intervention protocols, and peer support funding. But the most meaningful work remained local - mentoring new Minds Matter facilitators, maintaining friendships with Jordan, Casey, and other program alumni, and continuing to normalize conversations about emotional wellness in their daily interactions. 'Mental health advocacy isn't just about programs,' {userName} reflected during a coalition planning meeting. 'It's about changing how we treat each other every single day.'",
+        pause: true,
+        hook: "How will their continued mental health advocacy influence policy and culture beyond their original school?",
+        microVariants: {
+          text: "High school mental health coalition work expanded their influence while keeping them grounded in the peer relationships that started their advocacy.",
+          alternatives: ["Regional advocacy built on their local success, allowing them to influence mental health policy at larger scales.", "Their foundation in authentic peer support kept them focused on human connections while engaging in policy work."],
+          optionalDetails: ["Several coalition members had started similar programs in their own schools", "State legislators consulted them about youth mental health policy", "Their friendship with original Minds Matter members remained strong and supportive"]
+        }
+      },
+      {
+        text: "Graduation day brought full recognition when {userName} received the 'Community Impact Award' for their mental health advocacy, but the real celebration happened at the Minds Matter alumni gathering the night before. Sitting in a circle with Jordan (now a peer counseling specialist), Casey (planning to study social work), and dozens of other students whose lives had been touched by their program, {userName} felt grateful for the struggle that had sparked their mission. 'I'm proud of the program we built,' they told the group. 'But I'm most proud of how we learned to take care of each other.' When Jordan added, 'And how we learned to let others take care of us too,' the room filled with the kind of supportive laughter that had become their trademark.",
+        pause: true,
+        hook: "What impact will their mental health advocacy have on their future careers and continued service?",
+        microVariants: {
+          text: "Graduation celebration revealed how their mental health advocacy had created lasting relationships and career directions for multiple students.",
+          alternatives: ["The alumni gathering demonstrated that their peer support program had become a launching pad for lifetime careers in mental health service.", "Recognition was meaningful, but the relationships and cultural changes they'd created were the true measure of success."],
+          optionalDetails: ["Several Minds Matter alumni were pursuing careers in counseling, social work, or psychology", "The program was now permanently embedded in school culture", "Their model was being replicated in schools across multiple states"]
+        }
+      },
+      {
+        text: "Five years later, Dr. {userName} completed their psychology doctorate with a dissertation on peer support models in adolescent mental health, but they still returned every October for Mental Health Awareness Week at their old middle school. Watching new seventh-graders facilitate support circles with confidence and compassion, they marveled at how their desperate response to friends' struggles had grown into a sustainable system that continued helping students long after they'd graduated. Jordan, now a licensed counselor specializing in teen therapy, would join them for the traditional 'founder's panel' where they shared the origin story of Minds Matter. 'Sometimes the most powerful help comes from people who understand exactly what you're going through,' {userName} always told the current students. 'And sometimes those people are sitting right next to you in math class.'",
+        pause: true,
+        hook: "How will their model continue inspiring peer support programs in schools nationwide?",
+        microVariants: {
+          text: "Professional success in mental health allowed {userName} to continue supporting the peer program that had launched their career and passion.",
+          alternatives: ["Annual return visits kept their original mission alive while demonstrating how early advocacy could grow into lifelong careers.", "Their story proved that middle school students could create lasting institutional change that benefits generations of peers."],
+          optionalDetails: ["Minds Matter had been implemented in over 200 schools nationwide", "Their research continued informing best practices for peer mental health support", "The original friend group remained close and continued collaborating on mental health initiatives"]
         }
       }
     ],
     endings: [
       {
         type: 'cozy',
-        text: "Six months later, {userName} sat in the newly designated 'Wellness Corner' of the library, surrounded by comfortable chairs and soft lighting, watching as students naturally gravitated toward this peaceful space during stressful moments. The gentle hum of quiet conversation and the sight of peers supporting each other created an atmosphere of healing and hope. 'Sometimes the most powerful medicine is simply knowing you're not alone,' {userName} reflected as they witnessed authentic friendships forming through shared vulnerability.",
-        microVariants: [
-          "In the peaceful Wellness Corner, {userName} found satisfaction watching peers support each other, realizing that connection and understanding were powerful healing forces."
-        ]
+        text: "Every autumn, {userName} returned to facilitate the annual Minds Matter training retreat, watching new generations of seventh-graders discover their capacity for empathy and peer support. Sitting by the lake where they'd first brainstormed their mental health program with Casey and Jordan, now both successful mental health professionals, they felt deep satisfaction knowing their response to teenage emotional crisis had created lasting protection for students they'd never meet. 'The best programs are the ones that don't need their founders,' {userName} reflected, watching confident student facilitators lead activities they'd designed years earlier. 'We didn't just create Minds Matter. We created mind-changers.'",
+        microVariants: ["Annual retreats kept their peer support legacy alive while demonstrating how student-created programs could become permanently embedded in school culture.", "Their friendship and shared commitment to mental health advocacy had grown into a professional network dedicated to supporting young people."]
+      },
+      {
+        type: 'triumphant', 
+        text: "Ten years after starting Minds Matter in seventh grade, {userName} addressed the National Conference on Youth Mental Health as the youngest keynote speaker in the event's history. In the audience, Jordan (now a clinical director), Casey (leading a nonprofit for teen mental health), and dozens of other Minds Matter alumni cheered as their former classmate shared research showing how peer support programs reduced teen suicide rates, improved academic outcomes, and created more empathetic school cultures nationwide. 'Mental health advocacy isn't just about helping people survive their struggles,' {userName} concluded to thunderous applause. 'It's about helping them thrive as advocates for others who are still struggling.'",
+        microVariants: ["National recognition validated their peer support model while demonstrating how middle school advocacy could influence mental health policy nationwide.", "Their original friend group had become a professional network dedicated to expanding access to youth mental health support."]
       }
     ],
     reuse: {
       swappableElements: {
-        "mental_health_challenges": ["anxiety disorders", "depression", "eating disorders", "social isolation", "academic pressure"],
-        "support_strategies": ["peer listening", "stress management", "mindfulness practice", "crisis intervention", "resource connection"],
-        "wellness_activities": ["meditation sessions", "art therapy", "journaling workshops", "exercise programs", "support groups"]
+        "mental_health_challenges": ["anxiety disorders", "depression symptoms", "family stress", "social pressure", "academic overwhelm"],
+        "support_strategies": ["active listening", "crisis recognition", "peer counseling", "group facilitation", "self-care education"],
+        "program_elements": ["support circles", "awareness campaigns", "training workshops", "crisis protocols", "cultural change initiatives"]
       },
-      weatherVariants: ["stressful exam period", "transitional school season", "winter wellness focus", "spring renewal activities"],
-      settingVariants: ["school counseling office", "peer support room", "wellness corner", "community mental health center"]
+      weatherVariants: ["crisis recognition", "program development", "community building"],
+      settingVariants: ["library meeting spaces", "counseling offices", "community presentation venues"],
+      randomSeed: Math.floor(Math.random() * 10000)
     }
   }
 ];
