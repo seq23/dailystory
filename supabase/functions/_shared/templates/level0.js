@@ -367,13 +367,6 @@ export const LEVEL_0_TEMPLATES = [
 ];
 
 /**
- * Get Level 0 templates array
- */
-export function getLevel0Templates() {
-  return LEVEL_0_TEMPLATES;
-}
-
-/**
  * Get specific Level 0 template
  */
 export function getLevel0Template(templateIndex) {

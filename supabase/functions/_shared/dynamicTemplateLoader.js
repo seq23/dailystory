@@ -31,39 +31,72 @@ export async function loadTemplate(level, templateIndex = null) {
   let template = null;
 
   if (config.type === 'static') {
-    // Level 0 - import from single file
+    // Level 0 - import from single file and call getter function
     try {
       const module = await import(config.path);
-      const templates = module[config.functions.getter]();
       
-      if (templateIndex !== null && templateIndex >= 0 && templateIndex < templates.length) {
-        template = templates[templateIndex];
+      // Call the getter function with templateIndex
+      if (templateIndex !== null && templateIndex >= 0) {
+        template = module[config.functions.getter](templateIndex);
       } else {
-        template = templates[Math.floor(Math.random() * templates.length)];
+        template = module[config.functions.getter](); // Random template
       }
     } catch (error) {
       console.error(`❌ Failed to load static template ${level}:`, error);
       throw error;
     }
   } else {
-    // Dynamic templates - import individual file
+    // Dynamic templates - import individual file OR fall back to TemplateLibraryService
     try {
       let targetIndex = templateIndex;
       if (targetIndex === null || targetIndex < 0 || targetIndex >= config.count) {
         targetIndex = Math.floor(Math.random() * config.count);
       }
 
+      // First, try individual template files (when they exist)
       const templateInfo = config.templates[targetIndex];
-      if (!templateInfo) {
-        throw new Error(`Template index ${targetIndex} not found for ${level}`);
+      if (templateInfo) {
+        try {
+          const templatePath = `${config.path}${templateInfo.file}`;
+          const module = await import(templatePath);
+          template = module.default || module.template;
+          
+          if (template) {
+            console.log(`✅ Loaded individual template file: ${templatePath}`);
+          }
+        } catch (fileError) {
+          console.log(`📄 Individual template file not found, falling back to TemplateLibraryService for ${level}[${targetIndex}]`);
+          template = null; // Will trigger fallback below
+        }
       }
-
-      const templatePath = `${config.path}${templateInfo.file}`;
-      const module = await import(templatePath);
-      template = module.default || module.template;
+      
+      // Fallback to TemplateLibraryService if individual file not found
+      if (!template) {
+        console.log(`🔄 Using TemplateLibraryService fallback for ${level}[${targetIndex}]`);
+        const { TemplateLibraryService } = await import('../TemplateLibraryService.js');
+        
+        // Map levels to TemplateLibraryService functions
+        const functionMap = {
+          level1: 'getLevel1Template',
+          level2: 'getLevel2Template', 
+          level3: 'getLevel3Template',
+          level4: 'getLevel4Template',
+          grade6: 'getGrade6FallbackTemplate',
+          grade7: 'getGrade7FallbackTemplate',
+          grade8: 'getGrade8FallbackTemplate',
+          grade9: 'getGrade9FallbackTemplate',
+          grade10: 'getGrade10FallbackTemplate'
+        };
+        
+        const functionName = functionMap[level];
+        if (functionName && typeof TemplateLibraryService[functionName] === 'function') {
+          template = TemplateLibraryService[functionName](targetIndex);
+          console.log(`✅ Loaded from TemplateLibraryService: ${functionName}(${targetIndex})`);
+        }
+      }
       
       if (!template) {
-        throw new Error(`Template module ${templatePath} did not export template`);
+        throw new Error(`No template found for ${level}[${targetIndex}] in either individual files or TemplateLibraryService`);
       }
     } catch (error) {
       console.error(`❌ Failed to load dynamic template ${level}[${templateIndex}]:`, error);
@@ -82,9 +115,38 @@ export async function loadTemplate(level, templateIndex = null) {
 
 /**
  * Get template count for exploration mode
+ * Falls back to TemplateLibraryService if registry count doesn't match actual implementation
  */
-export function getDynamicTemplateCount(level) {
-  return getRegistryTemplateCount(level);
+export async function getDynamicTemplateCount(level) {
+  const registryCount = getRegistryTemplateCount(level);
+  
+  // For now, fall back to TemplateLibraryService to get accurate counts
+  if (level !== 'level0') {
+    try {
+      const { TemplateLibraryService } = await import('../TemplateLibraryService.js');
+      
+      const countMap = {
+        level1: 'getLevel1TemplateCount',
+        level2: 'getLevel2TemplateCount',
+        level3: 'getLevel3TemplateCount', 
+        level4: 'getLevel4TemplateCount',
+        grade6: 'getGrade6FallbackTemplateCount',
+        grade7: 'getGrade7FallbackTemplateCount',
+        grade8: 'getGrade8FallbackTemplateCount',
+        grade9: 'getGrade9FallbackTemplateCount',
+        grade10: 'getGrade10FallbackTemplateCount'
+      };
+      
+      const countFunction = countMap[level];
+      if (countFunction && typeof TemplateLibraryService[countFunction] === 'function') {
+        return TemplateLibraryService[countFunction]();
+      }
+    } catch (error) {
+      console.error(`❌ Error getting count from TemplateLibraryService for ${level}:`, error);
+    }
+  }
+  
+  return registryCount;
 }
 
 /**

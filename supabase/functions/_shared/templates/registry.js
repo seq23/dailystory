@@ -6,11 +6,11 @@
 
 export const TEMPLATE_REGISTRY = {
   level0: {
-    count: 199,
-    type: 'static',
+    count: 40,
+    type: 'static', 
     path: './level0.js',
     functions: {
-      getter: 'getLevel0Templates',
+      getter: 'getLevel0Template',
       counter: 'getLevel0TemplateCount'
     }
   },
