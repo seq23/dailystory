@@ -1261,9 +1261,9 @@ const initializeStory = async () => {
       
       console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
         hasError: !!result.error,
-        pagesCount: result.pages?.length,
-        title: result.title,
-        sampleContent: result.pages?.[0]?.substring(0, 50)
+        pagesCount: result.content?.length,
+        pageCount: result.pageCount,
+        sampleContent: result.content?.[0]?.substring(0, 50)
       });
 
       if (result.error) {
@@ -1273,19 +1273,19 @@ const initializeStory = async () => {
       }
       
       console.log('🔍 DIAGNOSTIC: Pre-processing story for placeholders BEFORE setStory', {
-        pagesCount: result.pages.length,
-        firstPage: result.pages[0]?.substring(0, 100),
-        hasPlaceholders: result.pages.some(page => page.includes('{'))
+        pagesCount: result.content.length,
+        firstPage: result.content[0]?.substring(0, 100),
+        hasPlaceholders: result.content.some(page => page.includes('{'))
       });
 
       // PHASE 1: STORY STABILIZATION LOADING STATE - Process in background, show loading until complete
       console.log('📝 PHASE 1: Processing story content in background - users will see loading state until complete...');
       
-      let processedPages = result.pages;
+      let processedPages = result.content;
       try {
         const { EnhancedPostProcessor } = await import('@/services/EnhancedPostProcessor');
         processedPages = await EnhancedPostProcessor.processStoryContent(
-          result.pages,
+          result.content,
           userInfo,
           characterSessionId
         );
@@ -1295,23 +1295,23 @@ const initializeStory = async () => {
         });
       } catch (error) {
         console.warn('Failed to post-process story pages:', error);
-        processedPages = result.pages;
+        processedPages = result.content;
       }
 
       StoryContentLogger.logStoryChange('free_complete_story', 'before', processedPages, {
-        originalPageCount: result.pages.length,
+        originalPageCount: result.content.length,
         processedPageCount: processedPages.length,
-        title: result.title,
+        storyTitle: `Story for ${effectiveUser.name}`,
         storySource: (window as any).__LAST_STORY_SOURCE__ || 'unknown'
       });
       setStory(processedPages);
-      setStoryTitle(result.title);
+      setStoryTitle(`Story for ${effectiveUser.name}`);
       setIsStoryComplete(true);
       const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
       StoryContentLogger.logStoryChange('free_complete_story', 'after', processedPages, {
         isComplete: true,
         finalSource: srcFree,
-        title: result.title
+        storyTitle: `Story for ${effectiveUser.name}`
       });
       console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
       setStorySource(srcFree as any);
@@ -2223,10 +2223,10 @@ const handleRestartTimer = () => {
         });
         
         const result = await NetflixStyleStoryService.generateCompleteStory(refreshUserInfo);
-        const newStory = result.pages.slice(0, originalPageCount || result.pages.length);
+        const newStory = result.content.slice(0, originalPageCount || result.content.length);
         StoryContentLogger.logStoryChange('free_story_rewrite', 'before', newStory, {
           originalPageCount: originalPageCount,
-          totalGeneratedPages: result.pages.length,
+          totalGeneratedPages: result.content.length,
           slicedToCount: newStory.length,
           userInfo: refreshUserInfo.name
         });

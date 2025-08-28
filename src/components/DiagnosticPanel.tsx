@@ -26,8 +26,8 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({ userInfo }) =>
       // Test 2: Direct story generation
       console.log('🔍 Testing direct story generation...');
       const storyResult = await NetflixStyleStoryService.generateCompleteStory(userInfo);
-      setResults(prev => [...prev, `📖 Story generation result: ${storyResult.pages.length} pages`]);
-      setResults(prev => [...prev, `📝 First page: ${storyResult.pages[0]?.substring(0, 100)}...`]);
+      setResults(prev => [...prev, `📖 Story generation result: ${storyResult.content.length} pages`]);
+      setResults(prev => [...prev, `📝 First page: ${storyResult.content[0]?.substring(0, 100)}...`]);
 
     } catch (error) {
       console.error('Diagnostic failed:', error);

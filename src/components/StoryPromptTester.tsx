@@ -241,11 +241,11 @@ export function StoryPromptTester() {
       // Test Netflix-style (free) generation
       const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
       
-      if (!result.isComplete || !result.pages || result.pages.length === 0) {
+      if (!result.content || result.content.length === 0) {
         throw new Error('Story generation failed or returned empty content');
       }
 
-      const fullContent = result.pages.join('\n\n');
+      const fullContent = result.content.join('\n\n');
       const analysis = analyzeStoryContent(fullContent, level);
       const tokenValidation = validateTokenLimit(fullContent, userInfo.difficultyLevel || 'beginner');
 
