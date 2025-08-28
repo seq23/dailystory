@@ -16,70 +16,93 @@ serve(async (req) => {
   try {
     const { type = 'base' } = await req.json();
     
-    const baseTemplatePrompt = `Write joyful, easy-to-read stories for pre-readers. Generate 40 story templates for children ages 3-5. Each template should be exactly 5 pages with 1 sentence per page.
+    const baseTemplatePrompt = `Write joyful, easy-to-read stories for pre-readers. Generate 100 story templates for children ages 3-5. Each template should be exactly 6 pages with 1 sentence per page.
 
-Include {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, or {specialRequest} as clear, distinct story elements used at least once. The story should be fun to read aloud and visually engaging as a picture book.
+Include {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies}, {friend}, {object}, {setting}, or {specialRequest} as clear, distinct story elements used throughout. Allow "I" and "the" pronouns. Avoid he/she/they/it pronouns.
 
-FORMAT & STRUCTURE:
-- Exactly 5 pages, one complete sentence per page
-- Max 8 words per page; max 40 words total
-- Use a natural mix of 2-, 3-, and 4-word sentences across the 5 pages
-- Aim for at least one 2-word sentence and one 3-word sentence per template
-- Examples of preferred sentence lengths:
-  * 2 words: "{userName} runs." / "Ball bounces." / "Cat sleeps."
-  * 3 words: "{userName} likes cats." / "The ball jumps." / "Food tastes good."
-  * 4 words: "{userName} plays with toys." / "The {favoriteColor} car goes fast."
-- Sentence patterns: Subject–Verb, Subject–Verb–Object, or Subject–Verb–Adjective
-- Use Enhanced Level 0 vocabulary at least 70% of the time. User inputs are always allowed
-- Favor 2–4 letter words and simple rhymes when natural; avoid forced rhyme
+CRITICAL REQUIREMENTS:
+- Exactly 6 pages, one complete sentence per page
+- Mix sentence lengths: 2, 3, 4, 5, and 6 words per sentence across the template
+- Use mostly 2-4 letter words from Enhanced Level 0 vocabulary (a, am, at, be, do, go, he, i, in, is, it, me, my, no, on, so, to, up, we, all, and, are, ate, big, but, can, did, eat, for, get, had, new, not, now, one, our, out, ran, red, run, saw, say, she, the, too, two, was, who, yes, you, away, blue, came, come, down, find, four, good, have, help, here, into, jump, like, look, make, must, play, ride, said, soon, that, they, this, want, well, went, what, will, with)
+- Allow essential longer words: funny, little, where, yellow, black, brown, please, pretty, there, under, white, three, been, called, water, time, words, each, which, would, doctor, dentist
+
+SENTENCE LENGTH EXAMPLES:
+- 2 words: "{userName} runs." / "I go." / "Cat sleeps." / "Ball bounces."  
+- 3 words: "{userName} will run." / "I like cake." / "The cat runs." / "Ball is {favoriteColor}."
+- 4 words: "{userName} and {friend} play." / "The big cat runs." / "I can see water."
+- 5 words: "{userName} and {friend} will play." / "I can see the dog." / "The big {favoriteColor} ball bounces."
+- 6 words: "{userName} and {friend} will play today." / "The big red cat runs fast." / "I can see the pretty flowers."
+
+NATURAL PRONOUN PATTERNS:
+- Use "I" statements: "I will go." / "I like cake."  
+- Use "the" with objects: "The ball bounces." / "The cat runs."
+- Use multi-character constructions: "{userName} and {friend} play."
+- Use future tense to avoid awkward "-s" endings: "{userName} will run." instead of "{userName} runs."
+- Avoid he/she/they/it - use names, "I", or "the" + object instead
+
+STORY DISTRIBUTION (100 templates):
+- Daily Life (20): Morning routines, meals, bedtime, home activities
+- Healthcare (10): Doctor visits, dentist, staying healthy  
+- Educational (15): School, library, learning, books
+- Play & Recreation (15): Playground, sports, games, toys
+- Community (10): Shopping, helpers, neighborhood
+- Transportation (8): Cars, buses, walking, travel
+- Special Occasions (12): Birthdays, holidays, celebrations
+- Nature & Animals (10): Outdoors, pets, weather, gardens
 
 TONE & STYLE:
 - Keep content positive, warm, age-appropriate, and engaging for ages 3–5
-- Make stories fun to read aloud with good rhythm and flow
+- Make stories fun to read aloud with natural rhythm and flow
 - Design for picture book format with visual engagement in mind
+- Use natural language patterns that flow well when read aloud
 
-STORY THEMES: Animals, toys, family activities, nature, food, colors, simple adventures, friendship, daily activities, hobbies, special requests.
-
-VARIATION: Internally select a random story seed to vary details for uniqueness.
-
-Return as a JavaScript array of arrays, where each inner array contains exactly 5 sentences. Format:
+Return as a JavaScript array of arrays, where each inner array contains exactly 6 sentences. Format:
 [
   [
     "sentence 1",
     "sentence 2", 
     "sentence 3",
     "sentence 4",
-    "sentence 5"
+    "sentence 5",
+    "sentence 6"
   ],
-  // ... 39 more templates
+  // ... 99 more templates
 ]`;
 
-    const extensionTemplatePrompt = `Generate 5 story extension templates for children ages 3-5. Each template should be exactly 5 pages with 1 sentence per page.
+    const extensionTemplatePrompt = `Generate 10 story extension templates for children ages 3-5. Each template should be exactly 6 pages with 1 sentence per page.
 
 CRITICAL REQUIREMENTS:
-- Each sentence must be 8 words or fewer
-- Each template must have a natural mix of 2, 3, and 4-word sentences
-- Include at least one 2-word sentence and one 3-word sentence per template
-- Use only Enhanced Level 0 vocabulary (Dolch Pre-Primer + Primer + basic Fry words)
-- Include personalization placeholders: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}
+- Mix sentence lengths: 2, 3, 4, 5, and 6 words per sentence across each template
+- Use mostly 2-4 letter words from Enhanced Level 0 vocabulary 
+- Allow "I" and "the" pronouns, avoid he/she/they/it
+- Include personalization placeholders: {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {friend}, {object}, {setting}
 
 SENTENCE LENGTH EXAMPLES:
-- 2-word sentences: "{userName} runs.", "Ball rolls.", "Cat sleeps.", "We play.", "Sun shines."
-- 3-word sentences: "{userName} likes dogs.", "Ball is {favoriteColor}.", "We play together.", "Cat runs fast.", "Food tastes good."
-- 4-word sentences: "{userName} sees the cat.", "The ball rolls away.", "They play all day.", "We eat {favoriteFood} together."
+- 2 words: "{userName} runs." / "I go." / "Ball bounces."
+- 3 words: "{userName} will run." / "I like cake." / "The cat runs."
+- 4 words: "{userName} and {friend} play." / "The big cat runs."
+- 5 words: "{userName} and {friend} will play." / "I can see the dog."
+- 6 words: "{userName} and {friend} will play today." / "The big red cat runs fast."
 
-STORY THEMES: More advanced adventures, problem-solving, helping others, discovery, seasonal activities.
+NATURAL PATTERNS:
+- Use future tense: "{userName} will go." instead of "{userName} goes."
+- Multi-character: "{userName} and {friend} play."
+- "I" statements: "I will help." / "I like this."
+- Object focus: "The ball bounces high." / "The {favoriteColor} car goes."
 
-Return as a JavaScript array of arrays, where each inner array contains exactly 5 sentences. Format:
+STORY THEMES: Advanced adventures, problem-solving, helping others, discovery, seasonal activities, friendship.
+
+Return as a JavaScript array of arrays, where each inner array contains exactly 6 sentences. Format:
 [
   [
     "sentence 1",
     "sentence 2", 
     "sentence 3",
     "sentence 4",
-    "sentence 5"
+    "sentence 5",
+    "sentence 6"
   ],
-  // ... 4 more templates
+  // ... 9 more templates
 ]`;
 
     const prompt = type === 'base' ? baseTemplatePrompt : extensionTemplatePrompt;
