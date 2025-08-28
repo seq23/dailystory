@@ -75,6 +75,21 @@ export const template = {
       type: 'cozy',
       text: "{userName} plants the magical seed in their own garden and watches it grow into something wonderful.",
       microVariants: ["The seed grows into a bridge between the two gardens.", "A new fairy home sprouts from the magical seed."]
+    },
+    {
+      type: 'silly',
+      text: "The magical seed grows into a tree that grows {favoriteFood} instead of leaves! A tiny {favoriteAnimal} moves in and becomes the tree's silly guardian.",
+      microVariants: ["The tree grows shoes and socks on its branches.", "Flowers that giggle bloom everywhere in the garden."]
+    },
+    {
+      type: 'triumphant',
+      text: "{userName} becomes the neighborhood's magical garden helper, teaching other children how to grow their own fairy gardens and spread magic everywhere.",
+      microVariants: ["Everyone wants to learn {userName}'s garden magic secrets.", "The whole street becomes filled with magical gardens thanks to {userName}."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} learns that real magic happens when we care for things with kindness and patience, just like they did for the fairy's garden.",
+      microVariants: ["Kindness is the most powerful magic of all.", "{userName} realizes they can make magic anywhere by being caring."]
     }
   ],
   reuse: {
