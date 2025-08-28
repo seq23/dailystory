@@ -198,14 +198,27 @@ export function QuickTemplateTest() {
             )}
 
             {isMaxRetriesReached && (
-              <div className="space-y-3 p-4 bg-muted rounded-lg">
+              <div className="space-y-3 p-4 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg border">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
-                  <p className="text-sm font-medium">Service Temporarily Unavailable</p>
+                  <div className="text-2xl">🎭</div>
+                  <p className="text-sm font-medium">Story Magic Taking a Break</p>
                 </div>
+                
+                {result && result.pages && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-primary">Here's a special rhyming message while we fix things:</p>
+                    <div className="bg-white/50 p-3 rounded-md space-y-1">
+                      {result.pages.map((line, index) => (
+                        <p key={index} className="text-sm italic text-muted-foreground leading-relaxed">
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <p className="text-xs text-muted-foreground">
-                  Our template service is experiencing issues. Please try again in a few minutes, 
-                  or report this issue if it persists.
+                  Our story elves are fixing the magic! Try again in a few minutes for fresh stories.
                 </p>
                 <div className="flex gap-2">
                   <Button onClick={handleRetry} variant="outline" size="sm">

@@ -2595,8 +2595,21 @@ const handleRestartTimer = () => {
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
         <div className="text-center max-w-4xl w-full">
-          <h2 className="text-2xl font-bold text-white mb-4">Oops! Something went wrong</h2>
-          <p className="text-white/80 mb-6">{error}</p>
+          <div className="text-6xl mb-4">🎭</div>
+          <h2 className="text-2xl font-bold text-white mb-4">Story Magic Taking a Break</h2>
+          
+          {/* Show rhyming emergency content if available */}
+          <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-6">
+            <p className="text-white/90 text-lg leading-relaxed mb-4">
+              Don't worry, {userInfo.name}! Our story elves are working hard to fix things.
+            </p>
+            <p className="text-white/70 text-sm mb-4">
+              Try clicking "Try Again" or come back in a few minutes for fresh stories!
+            </p>
+            <div className="text-xs text-white/60 mb-4">
+              Error details: {error}
+            </div>
+          </div>
           
           {/* Diagnostic Panel for troubleshooting */}
           <div className="mb-6">

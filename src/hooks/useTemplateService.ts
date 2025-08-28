@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ErrorHandlingManager, type ErrorContext } from '@/services/errorHandlingManager';
+import { useToast } from '@/hooks/use-toast';
 import type { UserInfo } from '@/types';
 
 interface TemplateResult {
@@ -28,6 +29,18 @@ export function useTemplateService() {
   const [error, setError] = useState<string>('');
   const [retryCount, setRetryCount] = useState(0);
   const [isMaxRetriesReached, setIsMaxRetriesReached] = useState(false);
+  const { toast } = useToast();
+
+  // Show toast when max retries reached
+  useEffect(() => {
+    if (isMaxRetriesReached) {
+      toast({
+        title: "Story System Resting",
+        description: "Our story system is taking a rest! Please try again in a few minutes, or let us know if you need help!",
+        duration: 5000,
+      });
+    }
+  }, [isMaxRetriesReached, toast]);
 
   const generateStory = async (userInfo: Partial<UserInfo>, mode: string = 'testing'): Promise<TemplateResult> => {
     setIsLoading(true);

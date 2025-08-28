@@ -108,26 +108,70 @@ export class ErrorHandlingManager {
   }
 
   /**
-   * Get emergency content for critical failures - simple fallback content
+   * Get creative rhyming emergency content for critical failures
    */
   static async getEmergencyContent(userInfo?: UserInfo): Promise<string[]> {
     try {
-      // Simple emergency content - Level0StoryProcessor removed
-      const userName = userInfo?.name || 'Someone';
-      return [
-        `${userName} had a wonderful day.`,
-        `They found something amazing.`,
-        `It was a great adventure.`
+      const userName = userInfo?.name || 'Friend';
+      
+      // Rotate through 5 different rhyming templates to avoid repetition
+      const rhymingTemplates = [
+        [
+          `Oh dear ${userName}, our story machine took a little rest,`,
+          `Sometimes computers need breaks to work their very best!`,
+          `Click the magic "Try Again" button that you can see,`,
+          `And soon a wonderful new story there will be!`
+        ],
+        [
+          `Whoops-a-daisy ${userName}, our story elves went to play,`,
+          `They're fixing all the gears in their magical way!`,
+          `Press "Try Again" when you're ready for more fun,`,
+          `Your amazing adventure has only just begun!`
+        ],
+        [
+          `Hello there ${userName}, our story box needs a snack,`,
+          `Give it just a moment and it will bounce right back!`,
+          `The "Try Again" button is your magical key,`,
+          `To unlock the stories that are waiting to be free!`
+        ],
+        [
+          `Oh my ${userName}, our story garden needs some rain,`,
+          `Click "Try Again" and the flowers will bloom again!`,
+          `Every great adventure sometimes needs a little pause,`,
+          `Before the magic continues with thunderous applause!`
+        ],
+        [
+          `Dear ${userName}, our story rocket ran out of fuel,`,
+          `But don't you worry - that's just part of the rule!`,
+          `Hit "Try Again" to help it soar up high,`,
+          `And watch your story reach up to the sky!`
+        ]
       ];
+      
+      // Add helpful instruction for max retries
+      const maxRetryMessage = [
+        `If three little tries don't make it quite right,`,
+        `Don't worry, don't fret - everything's still bright!`,
+        `Come back in a few minutes to try once more,`,
+        `Or tell us what happened - we'd love to explore!`
+      ];
+      
+      // Select random template and add max retry instruction
+      const randomIndex = Math.floor(Math.random() * rhymingTemplates.length);
+      const selectedTemplate = rhymingTemplates[randomIndex];
+      
+      return [...selectedTemplate, ...maxRetryMessage];
+      
     } catch (error) {
       console.error('Emergency content generation failed:', error);
       
-      // Final simple fallback for critical errors
-      const userName = userInfo?.name || 'I';
+      // Final simple rhyming fallback for critical errors
+      const userName = userInfo?.name || 'Friend';
       return [
-        `${userName} had fun today.`,
-        `${userName} felt happy.`,
-        `It was good.`
+        `Dear ${userName}, something went a bit wrong,`,
+        `But don't you worry - we'll fix it before too long!`,
+        `Try again later when our systems are ready,`,
+        `Your amazing story adventure will be steady!`
       ];
     }
   }
