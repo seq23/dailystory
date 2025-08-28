@@ -89,7 +89,7 @@ serve(async (req) => {
 
     // Difficulty mapping
     const levelMap: Record<string, string> = {
-      'beginner': 'Level0',
+      'beginner': 'level0',
       'easy': 'level1',
       'medium': 'level2',
       'hard': 'level3',
@@ -101,7 +101,7 @@ serve(async (req) => {
       'grade10': 'grade10'
     };
 
-    const templateLevel = levelMap[effectiveDifficulty] || 'Level0';
+    const templateLevel = levelMap[effectiveDifficulty] || 'level0';
 
     // Handle exploration requests
     if (explore) {
@@ -138,8 +138,8 @@ serve(async (req) => {
       if (pages) {
         console.log('✅ Template converted to', pages.length, 'pages');
         
-        // Apply additional processing for Level 0 templates (placeholder resolution only)
-        if (templateLevel === 'Level0') {
+        // Apply additional processing for level0 templates (placeholder resolution only)
+        if (templateLevel === 'level0') {
           pages = processStoryTemplate(pages, userInfo || {}, dynamicPageCount);
         }
       }
