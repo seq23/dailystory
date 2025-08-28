@@ -5,9 +5,10 @@ The AI Story Generation System is a sophisticated, multi-layered platform that c
 
 ## System Statistics
 - **Backend Functions**: 38 Supabase Edge Functions
-- **Fallback Templates**: 35 templates across 5 difficulty levels
+- **Level 0 Templates**: 100 simple sentence templates for ages 3-5
+- **Structured Templates**: 35 templates across levels 1-4 and grades 6-10
 - **Total Content**: 390+ story pages (13-16 hours of reading)
-- **Endings Available**: 140+ unique story endings (4 per template)
+- **Endings Available**: 140+ unique story endings (4 per structured template)
 - **Supported Languages**: Multi-language with cultural context
 - **User Tiers**: 4-tier system with graceful degradation
 
@@ -42,13 +43,14 @@ The AI Story Generation System is a sophisticated, multi-layered platform that c
 - Quality assurance pipelines
 - Error handling and retry mechanisms
 
-### 3. Template Library System (35 Templates)
+### 3. Template Library System (135 Total Templates)
 **Content Distribution**:
-- **Level 1 (Ages 3-5)**: 8 templates, ~88 pages
-- **Level 2 (Ages 5-7)**: 7 templates, ~77 pages  
-- **Level 3 (Ages 7-9)**: 6 templates, ~66 pages
-- **Level 4 (Ages 9-12)**: 8 templates, ~88 pages
-- **Grades 6-10**: 6 templates, ~71 pages
+- **Level 0 (Ages 3-5)**: 100 simple sentence templates (6 sentences each)
+- **Level 1 (Ages 3-5)**: 8 structured templates, ~88 pages
+- **Level 2 (Ages 5-7)**: 7 structured templates, ~77 pages  
+- **Level 3 (Ages 7-9)**: 6 structured templates, ~66 pages
+- **Level 4 (Ages 9-12)**: 8 structured templates, ~88 pages
+- **Grades 6-10**: 6 structured templates, ~71 pages
 
 **Template Features**:
 - Never-ending story capability

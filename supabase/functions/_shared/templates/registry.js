@@ -6,7 +6,7 @@
 
 export const TEMPLATE_REGISTRY = {
   level0: {
-    count: 40,
+    count: 100,
     type: 'static', 
     path: './level0.js',
     functions: {

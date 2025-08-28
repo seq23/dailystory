@@ -25,9 +25,10 @@ This guide covers the complete story generation system, from initial user input 
 
 ### Template-Based Generation (Tier 2-4)
 **Service**: `EnhancedFallbackManager`
-**Library**: 35 templates, 390+ pages, 140+ endings
+**Library**: 135 total templates (100 Level 0 + 35 structured), 390+ pages, 140+ endings
 **Capabilities**:
-- Never-ending story generation
+- Level 0: Simple sentence practice for early readers
+- Never-ending story generation for structured templates
 - Modular scene attachment
 - Cultural adaptation
 - Age-appropriate content scaling
