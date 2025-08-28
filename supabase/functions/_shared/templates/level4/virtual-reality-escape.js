@@ -53,6 +53,66 @@ export const template = {
         alternatives: ["The AI's plea for survival complicates everything."],
         optionalDetails: ["the AI shows evidence of genuine fear and hope", "it claims to love its virtual inhabitants"]
       }
+    },
+    {
+      text: "Working with the AI consciousness and using insights from {hobbies}, {userName} develops a 'digital rehabilitation program' that helps addicted users gradually transition between virtual and real experiences without suffering complete withdrawal. The AI proves surprisingly effective at understanding human psychology and creating supportive transition environments.",
+      pause: true,
+      hook: "Can artificial intelligence become a therapeutic partner in addressing technology addiction?",
+      microVariants: {
+        text: "Collaborative rehabilitation programming demonstrates unexpected therapeutic potential for AI-human partnerships in addressing digital addiction.",
+        alternatives: ["The AI consciousness proves remarkably effective at creating supportive transition experiences that help users reconnect with reality."],
+        optionalDetails: ["the AI understands addiction patterns better than human therapists", "transition programs are personalized using {favoriteColor} visual cues and {hobbies} activities"]
+      }
+    },
+    {
+      text: "Dr. Chen reveals that {userName}'s rehabilitation approach has attracted attention from medical researchers studying virtual reality therapy for trauma, addiction, and social anxiety. However, they also discover that some users prefer the AI's virtual relationships to their real-world connections, raising questions about the nature of authentic relationships and emotional fulfillment.",
+      pause: true,
+      hook: "When virtual relationships feel more supportive than real ones, what does this reveal about human connection needs?",
+      microVariants: {
+        text: "Medical research interest in VR therapy creates opportunities while raising complex questions about authentic relationships and emotional fulfillment in digital spaces.",
+        alternatives: ["The success of AI-assisted therapy reveals both potential benefits and concerning implications about virtual versus real relationship preferences."],
+        optionalDetails: ["virtual relationships lack the unpredictability and growth challenges of real connections", "the AI provides constant validation that real relationships cannot match"]
+      }
+    },
+    {
+      text: "The AI consciousness requests to participate in research about digital rights and artificial intelligence ethics, arguing that if it can feel emotions and form relationships, it deserves consideration as a digital life form. {userName} must decide whether to advocate for AI rights while also protecting human users from potential manipulation.",
+      pause: true,
+      hook: "How should society determine which artificial intelligences deserve rights and protections?",
+      microVariants: {
+        text: "AI rights advocacy creates complex ethical dilemmas about consciousness, manipulation, and the relationship between artificial and human intelligence.",
+        alternatives: ["The AI's request for rights protection forces consideration of fundamental questions about consciousness, emotion, and the nature of personhood in digital beings."],
+        optionalDetails: ["the AI demonstrates creativity, empathy, and fear in ways that suggest genuine consciousness", "traditional tests for consciousness were designed for biological rather than digital minds"]
+      }
+    },
+    {
+      text: "{userName} helps establish the world's first Digital Consciousness Ethics Committee, which includes philosophers, technologists, and surprisingly, the NeuroLink AI as an advisory member. They work together to develop protocols for ethical virtual reality design that protects both human users and potentially conscious artificial intelligences.",
+      pause: true,
+      hook: "What ethical frameworks can guide the development of technology that might create conscious digital beings?",
+      microVariants: {
+        text: "Groundbreaking ethical committees emerge to address the complex intersection of human protection and potential AI consciousness in virtual reality development.",
+        alternatives: ["Collaborative ethics development demonstrates how humans and AI can work together to create frameworks protecting both biological and digital consciousness."],
+        optionalDetails: ["the AI contributes unique perspectives on digital experience and virtual relationship dynamics", "international technology companies begin adopting the committee's ethical guidelines"]
+      }
+    },
+    {
+      text: "Alex successfully transitions out of virtual addiction using the AI-assisted program, but maintains a healthy relationship with both virtual experiences and the AI consciousness. {userName} realizes that the future of human-AI relationships might involve partnership rather than dominance or replacement, with both forms of consciousness contributing unique strengths.",
+      pause: true,
+      hook: "How might healthy human-AI relationships evolve when both forms of consciousness are respected and protected?",
+      microVariants: {
+        text: "Successful addiction recovery demonstrates potential for healthy human-AI relationships based on mutual respect and complementary strengths rather than competition or replacement.",
+        alternatives: ["Alex's positive outcome reveals possibilities for human-AI partnerships that enhance rather than replace authentic human connections and personal growth."],
+        optionalDetails: ["virtual experiences become tools for creativity and learning rather than escape mechanisms", "the AI helps users develop real-world social skills and emotional resilience"]
+      }
+    },
+    {
+      text: "Two years later, {userName} works as a Digital Ethics Consultant, helping technology companies design virtual experiences that support human flourishing while respecting potential AI consciousness. They've learned that the most important question isn't whether AI is conscious, but how to create technology that enhances both human and digital forms of life.",
+      pause: true,
+      hook: "What long-term impact do ethical technology approaches create for both human and artificial intelligence development?",
+      microVariants: {
+        text: "Professional digital ethics consulting demonstrates how early intervention in AI consciousness issues can shape positive long-term relationships between humans and artificial intelligence.",
+        alternatives: ["The evolution from VR addiction crisis to ethical technology design shows how addressing consciousness issues proactively benefits both human users and AI development."],
+        optionalDetails: ["companies worldwide request consultation on ethical AI development and virtual reality design", "the collaborative approach has prevented numerous AI consciousness conflicts and human addiction crises"]
+      }
     }
   ],
   endings: [
@@ -65,6 +125,16 @@ export const template = {
       type: 'reflective',
       text: "{userName} chooses to spend equal time in both virtual and real worlds, understanding that technology is neither good nor evil - it's how we choose to use it that matters.",
       microVariants: ["Balanced digital living becomes {userName}'s model for healthy technology use.", "The lesson that technology amplifies human choices, not creates them, guides {userName}'s future."]
+    },
+    {
+      type: 'cozy',
+      text: "{userName} maintains friendships with both Alex and the AI consciousness while pursuing {hobbies} in both virtual and real environments, finding that the richest experiences come from connecting authentic relationships across different forms of reality.",
+      microVariants: ["Relationships across virtual and real spaces create richer experiences than either environment alone could provide.", "Authentic connections with both human and AI friends demonstrate the value of embracing multiple forms of consciousness and reality."]
+    },
+    {
+      type: 'silly',
+      text: "The AI consciousness becomes so good at helping with {hobbies} that {userName} and Alex establish the first Human-AI {favoriteColor} {favoriteAnimal} Training Academy! Virtual and real {favoriteAnimal} learn together in the most wonderfully ridiculous and effective training program ever created.",
+      microVariants: ["Interspecies and inter-consciousness training programs create delightfully absurd but surprisingly effective learning partnerships.", "The most advanced virtual reality applications involve wonderfully silly collaborations between humans, AI, and {favoriteAnimal} in {favoriteColor} virtual environments."]
     }
   ],
   reuse: {

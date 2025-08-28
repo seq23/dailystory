@@ -53,6 +53,66 @@ export const template = {
         alternatives: ["The burden of foreknowledge becomes overwhelming."],
         optionalDetails: ["the predictions are eerily accurate", "lives could be saved or destroyed"]
       }
+    },
+    {
+      text: "After extensive ethical deliberation, {userName} and Maya propose establishing a youth environmental council that can interpret the ancient warnings through modern scientific methodology. They discover that incorporating {hobbies} principles helps bridge ancient wisdom with contemporary environmental science, creating actionable climate adaptation strategies.",
+      pause: true,
+      hook: "Can young voices transform ancient prophecies into modern environmental solutions?",
+      microVariants: {
+        text: "Youth environmental leadership emerges as {userName} and Maya develop innovative approaches combining ancient wisdom with scientific methodology.",
+        alternatives: ["Creative integration of traditional knowledge and modern science creates new possibilities for environmental action."],
+        optionalDetails: ["the council attracts international attention from climate scientists", "other ancient artifacts surface with similar environmental messages"]
+      }
+    },
+    {
+      text: "The archaeological society reveals they've been secretly working with indigenous communities worldwide to preserve traditional environmental knowledge that parallels the tablet's warnings. {userName} learns that the ancient civilization wasn't lost - their descendants have been maintaining environmental wisdom for millennia, but their voices have been systematically ignored by mainstream science.",
+      pause: true,
+      hook: "How should modern society integrate traditional ecological knowledge that has been preserved for thousands of years?",
+      microVariants: {
+        text: "Hidden connections between ancient artifacts and living indigenous knowledge challenge {userName}'s understanding of archaeological preservation and environmental science.",
+        alternatives: ["The discovery reveals ongoing traditional knowledge systems that have been protecting environmental wisdom while mainstream science overlooked indigenous expertise."],
+        optionalDetails: ["indigenous elders confirm the tablet's authenticity using traditional methods", "similar environmental warnings exist in oral traditions worldwide"]
+      }
+    },
+    {
+      text: "Corporate interests attempt to acquire the tablet through legal manipulation, claiming that any potentially profitable discoveries belong to shareholders rather than humanity. {userName} and Maya must navigate intellectual property laws while working with indigenous communities and environmental activists to protect both ancient artifacts and traditional knowledge from commercialization.",
+      pause: true,
+      hook: "Who owns ancient wisdom, and how can it be protected from exploitation while remaining accessible to those who need it?",
+      microVariants: {
+        text: "Legal battles over ownership of ancient environmental knowledge force {userName} to grapple with questions about intellectual property, cultural heritage, and environmental justice.",
+        alternatives: ["Corporate attempts to monetize ancient wisdom create conflicts that require understanding complex relationships between cultural preservation and environmental action."],
+        optionalDetails: ["lawyers argue that discoveries made in public institutions belong to private investors", "indigenous communities assert their ancestral rights to traditional knowledge"]
+      }
+    },
+    {
+      text: "Working with Dr. Martinez and indigenous knowledge keepers, {userName} helps establish protocols for ethical archaeological research that honors traditional communities while advancing environmental science. They discover that the tablet is part of a global network of ancient environmental monitoring systems that could revolutionize climate prediction when combined with modern technology.",
+      pause: true,
+      hook: "How can ancient technologies enhance modern environmental science while respecting the communities that preserved this knowledge?",
+      microVariants: {
+        text: "Collaborative research protocols emerge as {userName} helps bridge archaeological science, indigenous knowledge, and modern environmental technology.",
+        alternatives: ["Ethical research frameworks demonstrate how respecting traditional communities enhances rather than restricts scientific discovery."],
+        optionalDetails: ["ancient monitoring systems show sophisticated understanding of climate patterns", "traditional communities possess calibration knowledge essential for interpreting the data"]
+      }
+    },
+    {
+      text: "The youth environmental council's presentation combining ancient predictions with modern climate data convinces international environmental organizations to fund a global traditional knowledge preservation project. {userName} realizes that their role has evolved from archaeology student to environmental justice advocate, using their platform to amplify voices that have been protecting the planet for millennia.",
+      pause: true,
+      hook: "What responsibilities come with being a bridge between ancient wisdom and modern environmental action?",
+      microVariants: {
+        text: "Global recognition of the traditional knowledge project establishes {userName} as an advocate for environmental justice and cultural preservation.",
+        alternatives: ["Success brings new responsibilities as {userName} becomes a spokesperson for integrating traditional ecological knowledge into modern environmental policy."],
+        optionalDetails: ["funding supports indigenous communities in documenting their environmental knowledge", "universities begin incorporating traditional knowledge into environmental science curricula"]
+      }
+    },
+    {
+      text: "As the global project expands, {userName} faces the challenge of maintaining authentic relationships with traditional communities while managing international attention and funding. They learn that environmental activism requires not just scientific knowledge but cultural humility, recognizing that the most advanced environmental technologies have always existed in traditional ecological practices.",
+      pause: true,
+      hook: "How do environmental advocates ensure that amplifying traditional voices doesn't accidentally appropriate or overshadow the communities they're trying to support?",
+      microVariants: {
+        text: "Managing international environmental projects teaches {userName} about cultural humility and the importance of centering traditional voices in environmental advocacy.",
+        alternatives: ["The complexities of environmental justice require {userName} to understand how authentic allyship supports rather than overshadows traditional communities."],
+        optionalDetails: ["traditional communities lead the project while {userName} provides administrative and advocacy support", "indigenous environmental technologies prove more sophisticated than modern alternatives"]
+      }
     }
   ],
   endings: [
@@ -65,6 +125,16 @@ export const template = {
       type: 'reflective',
       text: "{userName} sits quietly in their favorite spot where they {hobbies}, understanding that true archaeology isn't just about discovering the past, but using its lessons to build a better future.",
       microVariants: ["The greatest artifacts are the lessons we carry forward.", "Ancient wisdom lives on through modern actions."]
+    },
+    {
+      type: 'cozy',
+      text: "{userName} continues working with Dr. Martinez and indigenous communities, helping translate ancient environmental wisdom into practical solutions for local communities while building lasting relationships across cultures and generations.",
+      microVariants: ["Daily collaboration between ancient wisdom and modern science creates sustainable community solutions.", "Cross-cultural partnerships demonstrate how environmental stewardship connects all generations."]
+    },
+    {
+      type: 'silly',
+      text: "The ancient tablet becomes famous for predicting that {favoriteAnimal} populations will thrive if humans learn to communicate with them using {favoriteColor} signals! {userName} becomes the world's first official Human-Animal Environmental Coordinator, making conservation wonderfully ridiculous and effective.",
+      microVariants: ["Ancient predictions about animal communication lead to surprisingly successful conservation programs involving {favoriteAnimal} environmental consultants.", "The most effective environmental solutions combine serious science with joyfully absurd interspecies cooperation."]
     }
   ],
   reuse: {

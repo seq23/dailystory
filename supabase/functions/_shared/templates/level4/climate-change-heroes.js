@@ -53,6 +53,66 @@ export const template = {
         alternatives: ["Success creates new challenges as {userName} learns that being labeled a 'climate hero' comes with complex responsibilities and expectations."],
         optionalDetails: ["media attention brings both supporters and critics", "other communities request similar solutions"]
       }
+    },
+    {
+      text: "The regenerative mining project attracts international investment, but {userName} discovers that scaling their local solution globally requires navigating complex international politics, economic systems, and cultural differences. Working with their team and Dr. Patel, they learn that environmental solutions must address social justice issues to be truly sustainable.",
+      pause: true,
+      hook: "How can environmental innovations address both climate change and social inequality simultaneously?",
+      microVariants: {
+        text: "Global scaling of environmental solutions reveals interconnections between climate action and social justice that require comprehensive approaches.",
+        alternatives: ["International expansion teaches {userName} that effective environmental action must simultaneously address economic inequality and cultural differences."],
+        optionalDetails: ["mining communities need economic transitions that protect both workers and environments", "different regions require culturally appropriate adaptations of the technology"]
+      }
+    },
+    {
+      text: "Maya's insights from {hobbies} help the team develop community-ownership models where local populations control and benefit from environmental technologies rather than being displaced by them. They establish partnerships with other youth climate activists worldwide to ensure that environmental solutions strengthen rather than exploit vulnerable communities.",
+      pause: true,
+      hook: "How can environmental technology empower rather than displace the communities it's meant to help?",
+      microVariants: {
+        text: "Community ownership models ensure that environmental technologies serve local populations while advancing global climate goals.",
+        alternatives: ["International youth partnerships demonstrate how environmental justice requires economic empowerment alongside technological innovation."],
+        optionalDetails: ["local communities receive training and ownership shares in environmental technology projects", "youth climate networks share successful community-empowerment strategies globally"]
+      }
+    },
+    {
+      text: "The team faces opposition from both traditional extractive industries and some environmental groups who argue that any mining, even regenerative, compromises ecosystem integrity. {userName} must learn to navigate criticism while maintaining commitment to solutions that balance environmental protection with economic realities faced by displaced climate refugees.",
+      pause: true,
+      hook: "How do climate activists address legitimate concerns while advancing imperfect but necessary solutions?",
+      microVariants: {
+        text: "Opposition from multiple directions requires {userName} to defend nuanced solutions that acknowledge environmental protection and economic justice complexities.",
+        alternatives: ["Criticism from both industry and environmental groups teaches {userName} about the challenges of advocating for pragmatic approaches to climate action."],
+        optionalDetails: ["some environmental purists oppose any form of mining regardless of its regenerative potential", "industry groups attempt to co-opt the regenerative mining concept for traditional extraction"]
+      }
+    },
+    {
+      text: "Dr. Patel helps the team understand that climate activism requires building coalitions across different perspectives and interests. {userName} learns to facilitate conversations between environmental advocates, displaced communities, traditional workers, and indigenous groups to develop solutions that address everyone's concerns while prioritizing planetary survival.",
+      pause: true,
+      hook: "What leadership skills help climate activists build coalitions across different communities and interests?",
+      microVariants: {
+        text: "Coalition building across diverse groups teaches {userName} essential skills for effective climate leadership and inclusive environmental advocacy.",
+        alternatives: ["Learning to facilitate multi-stakeholder conversations prepares {userName} for the complex collaborative work that climate solutions require."],
+        optionalDetails: ["indigenous communities share traditional knowledge that enhances regenerative mining approaches", "displaced workers contribute practical insights about economic transition needs"]
+      }
+    },
+    {
+      text: "As their regenerative mining model spreads globally, {userName} and their team establish the International Youth Climate Justice Network, connecting young environmental leaders who prioritize both planetary health and social equity. They discover that the most effective climate action emerges from diverse perspectives working together across cultural and economic differences.",
+      pause: true,
+      hook: "How can global youth climate movements maintain local relevance while building international solidarity?",
+      microVariants: {
+        text: "Global youth climate organizing teaches {userName} about maintaining cultural relevance while building international environmental justice movements.",
+        alternatives: ["International climate justice work demonstrates how local environmental solutions contribute to global movements while respecting diverse community needs."],
+        optionalDetails: ["the network facilitates technology sharing between communities facing similar environmental challenges", "youth climate leaders develop culturally specific approaches to environmental activism"]
+      }
+    },
+    {
+      text: "Three years after their initial presentation, {userName} reflects on how their local regenerative mining project has evolved into a global movement for community-controlled environmental technology. They understand that climate heroism isn't about individual recognition, but about creating systems that empower communities to develop their own environmental solutions.",
+      pause: true,
+      hook: "What lasting impact do young environmental leaders create when they prioritize community empowerment over personal recognition?",
+      microVariants: {
+        text: "Long-term impact assessment reveals how community empowerment approaches create sustainable environmental movements that outlast individual leadership.",
+        alternatives: ["The evolution from local project to global movement demonstrates how effective climate activism builds capacity for ongoing community-led environmental action."],
+        optionalDetails: ["communities worldwide adapt regenerative technologies to their specific environmental and cultural contexts", "the movement continues expanding as local communities train and support each other"]
+      }
     }
   ],
   endings: [
@@ -65,6 +125,16 @@ export const template = {
       type: 'reflective',
       text: "{userName} continues working on climate solutions while understanding that environmental heroism isn't about individual glory - it's about persistent collaboration, innovation, and the courage to keep working on problems bigger than any one person can solve.",
       microVariants: ["Daily environmental work teaches {userName} that heroism comes from sustained effort rather than dramatic moments.", "The ongoing nature of climate work helps {userName} find purpose in contribution rather than recognition."]
+    },
+    {
+      type: 'cozy',
+      text: "{userName} returns to their coastal community regularly to work with local environmental projects, finding joy in hands-on conservation work and mentoring younger students while maintaining global connections through the climate justice network.",
+      microVariants: ["Local environmental work provides grounding and purpose while maintaining connections to global climate action.", "Mentoring younger environmental activists helps {userName} share practical skills while continuing their own learning."]
+    },
+    {
+      type: 'silly',
+      text: "{userName}'s regenerative mining technique works so well that {favoriteAnimal} populations start helping with the mining process! The world's first {favoriteColor} Animal-Human Mining Cooperative becomes a model for environmental technology that makes both conservation and energy production wonderfully fun.",
+      microVariants: ["Interspecies cooperation in environmental technology creates surprisingly effective and joyful conservation partnerships.", "The most successful environmental solutions combine serious innovation with delightfully unexpected {favoriteAnimal} collaboration."]
     }
   ],
   reuse: {

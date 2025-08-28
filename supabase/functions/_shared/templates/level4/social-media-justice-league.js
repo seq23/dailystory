@@ -53,6 +53,66 @@ export const template = {
         alternatives: ["Success brings new challenges as both allies and opponents question whether ethical approaches can effectively combat organized digital harassment."],
         optionalDetails: ["some activists want more aggressive counter-attacks", "the harassment network adapts its tactics to avoid detection"]
       }
+    },
+    {
+      text: "The harassment attacks on their platform reveal sophisticated psychological manipulation techniques that {userName} and the team document to help others recognize similar patterns. Maya discovers that the harassers use advanced artificial intelligence to create personalized attacks that exploit individual vulnerabilities, raising questions about the intersection of AI development and digital ethics.",
+      pause: true,
+      hook: "How should society regulate AI technologies that can be weaponized for psychological manipulation?",
+      microVariants: {
+        text: "AI-enhanced harassment techniques raise complex questions about regulating artificial intelligence development to prevent psychological manipulation applications.",
+        alternatives: ["The discovery of AI-powered personalized harassment reveals the need for ethical frameworks governing artificial intelligence in digital communication platforms."],
+        optionalDetails: ["the AI creates unique attack strategies for each target based on their digital behavior patterns", "traditional content moderation cannot detect AI-generated psychological manipulation"]
+      }
+    },
+    {
+      text: "Using knowledge from {hobbies}, {userName} develops counter-AI tools that detect and neutralize artificial manipulation while protecting legitimate privacy and free expression. Their innovation attracts attention from both technology companies and human rights organizations who want to understand how to build ethical AI safeguards into social media platforms.",
+      pause: true,
+      hook: "How can technology be designed to protect against its own potential for abuse?",
+      microVariants: {
+        text: "Counter-AI development using {hobbies} insights creates new possibilities for building ethical safeguards into artificial intelligence systems.",
+        alternatives: ["Protective technology emerges from creative problem-solving approaches that address AI manipulation while preserving legitimate digital communications."],
+        optionalDetails: ["the counter-AI tools can distinguish between genuine debate and artificial manipulation", "technology companies begin implementing similar ethical safeguards in their platforms"]
+      }
+    },
+    {
+      text: "The team's anti-harassment work evolves into broader digital rights advocacy when they discover that the same AI techniques used for harassment are being deployed for political manipulation, consumer exploitation, and educational surveillance. {userName} realizes that digital justice involves protecting entire communities from systematic technological abuse.",
+      pause: true,
+      hook: "How can digital rights activists address systemic technological abuse across multiple sectors of society?",
+      microVariants: {
+        text: "Systematic technological abuse across multiple sectors requires comprehensive digital rights approaches rather than isolated anti-harassment efforts.",
+        alternatives: ["The expansion from harassment protection to broader digital rights advocacy reveals interconnected patterns of technological exploitation requiring comprehensive solutions."],
+        optionalDetails: ["similar AI manipulation affects elections, consumer choices, and student assessment", "the same network responsible for harassment operates across multiple sectors"]
+      }
+    },
+    {
+      text: "Maya and Alex help {userName} establish the Youth Digital Rights Coalition, connecting young activists worldwide who are developing technological solutions to protect their communities from digital exploitation. They learn that effective digital activism requires both technical skills and deep understanding of how technology impacts different communities.",
+      pause: true,
+      hook: "How can global youth movements effectively address digital justice issues that affect communities differently?",
+      microVariants: {
+        text: "International youth digital rights organizing requires understanding how technological exploitation affects different communities while building cross-cultural technological solutions.",
+        alternatives: ["Global digital rights activism demonstrates the need for culturally responsive approaches to technological protection and community empowerment."],
+        optionalDetails: ["different communities face unique forms of digital exploitation requiring tailored technological solutions", "youth activists share effective strategies while adapting them to local cultural and economic contexts"]
+      }
+    },
+    {
+      text: "The Coalition's success in protecting communities from AI manipulation attracts both government support and corporate opposition. {userName} must navigate complex political pressures while maintaining the grassroots, youth-led nature of the movement and ensuring that digital rights protections don't become tools for broader censorship or surveillance.",
+      pause: true,
+      hook: "How do successful activist movements maintain their integrity when they gain institutional power and attention?",
+      microVariants: {
+        text: "Success brings institutional attention that requires careful navigation to maintain grassroots integrity while advancing digital rights protection.",
+        alternatives: ["Political and corporate interest in digital rights work creates opportunities and risks that require sophisticated understanding of power dynamics and movement building."],
+        optionalDetails: ["government agencies offer funding that could compromise independence", "corporations attempt to co-opt digital rights language for their own technological products"]
+      }
+    },
+    {
+      text: "Three years after witnessing Jordan's harassment, {userName} reflects on how digital justice work has evolved from protecting individual victims to building technological systems that support community resilience and democratic participation. They understand that the most effective digital activism creates infrastructure for ongoing community empowerment rather than just responding to individual crises.",
+      pause: true,
+      hook: "What long-term impact do digital rights movements create when they focus on community empowerment rather than crisis response?",
+      microVariants: {
+        text: "Long-term digital rights impact emerges from building community empowerment infrastructure rather than only addressing individual instances of technological abuse.",
+        alternatives: ["The evolution from individual protection to community empowerment demonstrates how effective digital activism creates lasting change through systematic rather than reactive approaches."],
+        optionalDetails: ["communities worldwide use the Coalition's tools to protect themselves from various forms of digital exploitation", "the infrastructure supports democratic participation and economic opportunity alongside harassment protection"]
+      }
     }
   ],
   endings: [
@@ -65,6 +125,16 @@ export const template = {
       type: 'reflective',
       text: "{userName} continues developing digital justice tools while understanding that fighting online injustice requires not just technical solutions, but a commitment to modeling the ethical behavior we want to see in digital spaces.",
       microVariants: ["Ongoing digital activism teaches {userName} that lasting change requires demonstrating better ways rather than simply opposing bad ones.", "The work reveals that digital justice movements succeed by embodying the values they want to promote online."]
+    },
+    {
+      type: 'cozy',
+      text: "{userName} mentors other young digital rights activists while maintaining their local community focus, finding that the most meaningful digital justice work happens through sustained relationships and community-building rather than viral campaigns or dramatic confrontations.",
+      microVariants: ["Local digital rights mentoring creates lasting change through community relationships rather than large-scale technological interventions.", "Sustained community organizing proves more effective than dramatic digital activism for creating long-term protection and empowerment."]
+    },
+    {
+      type: 'silly',
+      text: "The Digital Justice Platform works so well that even {favoriteAnimal} create their own social media accounts to report harassment using {favoriteColor} paw-print verification! {userName} becomes the world's first Interspecies Digital Rights Coordinator, making online safety wonderfully ridiculous and effective.",
+      microVariants: ["Interspecies digital rights protection creates surprisingly effective online safety through delightfully absurd {favoriteAnimal} reporting systems.", "The most advanced digital justice platform includes wonderfully silly {favoriteAnimal} moderators who prove remarkably effective at detecting harassment."]
     }
   ],
   reuse: {
