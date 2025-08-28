@@ -33,7 +33,7 @@ export async function loadTemplate(level, templateIndex = null) {
   if (config.type === 'static') {
     // Level 0 - import from single file and call getter function
     try {
-      const module = await import(config.path);
+      const module = await import(`./templates/${config.path}`);
       
       // Call the getter function with templateIndex
       if (templateIndex !== null && templateIndex >= 0) {
@@ -56,7 +56,7 @@ export async function loadTemplate(level, templateIndex = null) {
       // Load individual template files
       const templateInfo = config.templates[targetIndex];
       if (templateInfo) {
-        const templatePath = `${config.path}${templateInfo.file}`;
+        const templatePath = `./templates/${config.path}${templateInfo.file}`;
         const module = await import(templatePath);
         template = module.default || module.template;
         
