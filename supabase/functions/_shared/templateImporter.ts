@@ -57,7 +57,7 @@ export async function getTemplateCount(level: string): Promise<number> {
     console.log(`📊 Getting template count for ${level}`);
     
     // Use new dynamic template system for all levels
-    const count = getDynamicTemplateCount(level);
+    const count = await getDynamicTemplateCount(level);
     console.log(`✅ Found ${count} templates for ${level}`);
     
     return count;
