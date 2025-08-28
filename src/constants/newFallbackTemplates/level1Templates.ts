@@ -81,6 +81,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
         type: 'triumphant',
         text: "{userName} becomes the garden's official human helper, protecting all the magical creatures.",
         microVariants: ["The fairy declares {userName} the guardian of garden magic.", "{userName} earns their own set of magical gardening tools."]
+      },
+      {
+        type: 'silly',
+        text: "The magical seed grows into a dancing tree that plays music whenever {userName} visits!",
+        microVariants: ["Every leaf on the tree giggles when the wind blows.", "The tree grows {favoriteFood} that tastes like rainbows."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that the greatest magic comes from kindness and taking care of nature.",
+        microVariants: ["Every act of garden care creates a little more magic in the world.", "The fairy teaches {userName} that gentle hearts grow the most beautiful flowers."]
       }
     ],
     reuse: {
@@ -169,6 +179,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
         type: 'triumphant',
         text: "{userName} becomes the best young camper in their family and teaches others about nature.",
         microVariants: ["Their camping skills help them become a nature guide.", "Other kids ask {userName} to teach them about outdoor adventures."]
+      },
+      {
+        type: 'silly',
+        text: "The {favoriteAnimal} sends {userName} funny forest mail made of leaves with silly animal jokes!",
+        microVariants: ["Each camping trip brings new animal mail with forest puns.", "The forest friends start a comedy club with {userName} as the star."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that the best adventures happen when we respect nature and make friends with animals.",
+        microVariants: ["Every camping trip teaches {userName} something new about caring for the earth.", "The forest becomes a classroom where kindness is the most important lesson."]
       }
     ],
     reuse: {
@@ -257,6 +277,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
         type: 'silly',
         text: "Sarah's toy becomes the mascot for their friendship club, where helping others is the most important rule!",
         microVariants: ["The rescued toy becomes a symbol of their helpful friendship club.", "Every rescue mission makes their friendship club grow!"]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName} and Sarah become the playground heroes, solving every problem with teamwork and kindness.",
+        microVariants: ["Their rescue skills make them the playground problem-solving champions.", "Every kid at school knows to ask {userName} and Sarah for help."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that helping others feels better than any game and creates the strongest friendships.",
+        microVariants: ["Every act of kindness plants a seed that grows into lasting friendship.", "The best adventures happen when we help others feel happy and safe."]
       }
     ],
     reuse: {
@@ -345,6 +375,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
         type: 'triumphant',
         text: "{userName} starts a junior animal rescue club with friends, and they save many animals together.",
         microVariants: ["The bird rescue inspires {userName} to create an animal helping team.", "Friends join {userName} in becoming neighborhood animal heroes."]
+      },
+      {
+        type: 'silly',
+        text: "The grateful birds teach {userName} their secret bird language, and now they have conversations every day!",
+        microVariants: ["Bird friends share the funniest forest gossip with {userName}.", "The baby bird grows up to become {userName}'s personal bird news reporter."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that even small acts of kindness can make a big difference in the world.",
+        microVariants: ["Every gentle rescue reminds {userName} that caring hearts create a better world.", "The bird family teaches {userName} that love and kindness always find their way home."]
       }
     ],
     reuse: {
@@ -433,6 +473,16 @@ export const LEVEL_1_TEMPLATES: StoryTemplate[] = [
         type: 'cozy',
         text: "{userName} falls asleep in their rocket ship, dreaming of floating among the stars with their new alien friends.",
         microVariants: ["Sweet space dreams fill the cardboard rocket all night long.", "The backyard rocket becomes a cozy spaceship for dreaming."]
+      },
+      {
+        type: 'triumphant',
+        text: "{userName} becomes the first kid astronaut ambassador between Earth and the moon, bringing peace to the galaxy!",
+        microVariants: ["The alien friends make {userName} the official Earth-Moon friendship champion.", "Space agencies want to hire {userName} as their youngest space diplomat."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that friendship can happen anywhere in the universe, even with beings who are different from us.",
+        microVariants: ["The greatest space discovery is that kindness is the same language everywhere.", "Among the stars, {userName} discovers that friendship is the most powerful force in the universe."]
       }
     ],
     reuse: {

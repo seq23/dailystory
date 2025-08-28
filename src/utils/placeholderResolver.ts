@@ -13,6 +13,24 @@ export interface MicroContext {
   seed?: Seed; // variables extracted from content (e.g., names, adjectives)
 }
 
+// Enhanced validation and error handling
+export interface PlaceholderValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  resolvedCount: number;
+  unresolvedPlaceholders: string[];
+}
+
+export interface SafeUserInfo extends Partial<UserInfo> {
+  name: string;
+  favoriteColor: string;
+  favoriteAnimal: string;
+  favoriteFood: string;
+  hobbies: string;
+  specialRequest: string;
+}
+
 const FALLBACK_POOLS = {
   // Level 0 vocabulary-compliant fallback pools (using ENHANCED_LEVEL_0_VOCABULARY)
   animal: ["cat", "dog", "bird", "rabbit", "duck", "pig", "cow", "horse", "fish", "bear"],
@@ -21,13 +39,31 @@ const FALLBACK_POOLS = {
   object: ["ball", "book", "box", "car", "toy", "tree"],
   action: ["play", "run", "go", "come", "look", "jump"],
   adjective: ["big", "little", "good", "funny", "pretty", "new"],
-    friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
+  friend: ["Sam", "Alex", "Kim", "Lee", "Pat", "Jo"],
   color: ["red", "blue", "yellow", "black", "brown", "white"],
   // Legacy and edge case placeholders
   forestType: ["magic", "deep", "green", "quiet", "old", "big"],
   weatherType: ["sunny", "rainy", "cloudy", "windy", "clear", "nice"],
   placeType: ["park", "forest", "garden", "field", "yard", "beach"]
 } as const;
+
+// Enhanced fallback system with comprehensive defaults
+const SAFE_DEFAULTS: SafeUserInfo = {
+  name: "Child",
+  favoriteColor: "blue", 
+  favoriteAnimal: "puppy",
+  favoriteFood: "cookies",
+  hobbies: "playing",
+  specialRequest: "fun adventure"
+};
+
+// Article agreement for a/an placement
+const VOWEL_SOUNDS = new Set(['a', 'e', 'i', 'o', 'u']);
+function getArticle(word: string): string {
+  if (!word) return 'a';
+  const firstChar = word.toLowerCase().charAt(0);
+  return VOWEL_SOUNDS.has(firstChar) ? 'an' : 'a';
+}
 
 const KNOWN_ANIMALS = new Set([
   "cat","dog","puppy","kitten","rabbit","bunny","turtle","bird","owl","fox","bear","panda","deer","lion","tiger","monkey","zebra","giraffe","horse","pig","cow","sheep","goat","duck","chicken","mouse","rat","hamster","parrot","goldfish","fish"
@@ -37,10 +73,40 @@ function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Enhanced validation for user data
+export function validateAndSanitizeUserInfo(userInfo?: Partial<UserInfo>): SafeUserInfo {
+  const errors: string[] = [];
+  
+  if (!userInfo) {
+    console.warn('⚠️ [VALIDATION] No userInfo provided, using safe defaults');
+    return { ...SAFE_DEFAULTS };
+  }
+
+  const sanitized: SafeUserInfo = {
+    name: sanitizeString(userInfo.name) || SAFE_DEFAULTS.name,
+    favoriteColor: sanitizeString(userInfo.favoriteColor) || SAFE_DEFAULTS.favoriteColor,
+    favoriteAnimal: sanitizeString(userInfo.favoriteAnimal) || SAFE_DEFAULTS.favoriteAnimal,
+    favoriteFood: sanitizeString(userInfo.favoriteFood) || SAFE_DEFAULTS.favoriteFood,
+    hobbies: sanitizeString(userInfo.hobbies) || SAFE_DEFAULTS.hobbies,
+    specialRequest: sanitizeString(userInfo.specialRequest) || SAFE_DEFAULTS.specialRequest
+  };
+
+  if (errors.length > 0) {
+    console.warn('⚠️ [VALIDATION] UserInfo validation errors:', errors);
+  }
+
+  return sanitized;
+}
+
+function sanitizeString(value: any): string {
+  if (typeof value !== 'string') return '';
+  return value.trim().replace(/[<>{}]/g, '').substring(0, 50); // Remove potential injection chars and limit length
+}
+
 function cleanup(text: string): string {
   const originalText = text;
   
-  // Enhanced cleanup - more aggressive placeholder removal
+  // Enhanced cleanup - more aggressive placeholder removal and grammar fixes
   let cleaned = text
     .replace(/\{[^}]+\}/g, "") // strip unresolved tokens
     .replace(/\s{2,}/g, " ") // collapse multiple spaces
@@ -49,6 +115,10 @@ function cleanup(text: string): string {
     .replace(/^\s+/, "") // trim leading spaces
     .replace(/\.\s*\./g, ".") // remove double periods
     .replace(/,\s*,/g, ",") // remove double commas
+    // Enhanced grammar fixes
+    .replace(/\ba\s+([aeiouAEIOU])/g, "an $1") // Fix a/an agreement
+    .replace(/\ban\s+([^aeiouAEIOU])/g, "a $1") // Fix an/a agreement
+    .replace(/([.!?])\s*([a-z])/g, (match, punct, letter) => punct + " " + letter.toUpperCase()) // Capitalize after sentences
     .trim();
 
   // Log if we cleaned up any placeholders for monitoring
@@ -148,105 +218,214 @@ function scanForAnimalFromText(text?: string): string | undefined {
   return undefined;
 }
 
+// Template structural validation
+export function validateTemplateStructure(text: string): PlaceholderValidationResult {
+  const placeholders = text.match(/\{[^}]+\}/g) || [];
+  const knownPlaceholders = new Set([
+    'userName', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest',
+    'animal', 'friend', 'setting', 'adjective', 'object', 'action', 'pronoun', 'food', 'color',
+    'forestType', 'weatherType', 'placeType'
+  ]);
+  
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const unresolvedPlaceholders: string[] = [];
+  
+  for (const placeholder of placeholders) {
+    const cleanPlaceholder = placeholder.replace(/[{}]/g, '');
+    if (!knownPlaceholders.has(cleanPlaceholder)) {
+      errors.push(`Unknown placeholder: ${placeholder}`);
+      unresolvedPlaceholders.push(placeholder);
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+    resolvedCount: placeholders.length - unresolvedPlaceholders.length,
+    unresolvedPlaceholders
+  };
+}
+
 export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
-  const map: Record<string, string | undefined> = {
-    userName: firstName(userInfo.name) || userInfo.name || "Child",
-    favoriteColor: userInfo.favoriteColor,
-    favoriteAnimal: userInfo.favoriteAnimal,
-    favoriteFood: userInfo.favoriteFood,
-    hobbies: userInfo.hobbies,
-    specialRequest: userInfo.specialRequest
+  // Validate and sanitize user info first
+  const safeUserInfo = validateAndSanitizeUserInfo(userInfo);
+  
+  const map: Record<string, string> = {
+    userName: firstName(safeUserInfo.name) || safeUserInfo.name,
+    favoriteColor: safeUserInfo.favoriteColor,
+    favoriteAnimal: safeUserInfo.favoriteAnimal,
+    favoriteFood: safeUserInfo.favoriteFood,
+    hobbies: safeUserInfo.hobbies,
+    specialRequest: safeUserInfo.specialRequest
   };
 
   console.log('🔍 [DEBUG] Canonical placeholder resolution:', { 
     originalName: userInfo.name, 
-    firstName: firstName(userInfo.name),
+    firstName: firstName(safeUserInfo.name),
     finalUserName: map.userName 
   });
 
   let out = text;
+  let resolvedCount = 0;
+  
   for (const [k, v] of Object.entries(map)) {
-    if (v) {
-      const before = out;
-      out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
-      if (before !== out) {
-        console.log(`🔍 [DEBUG] Replaced {${k}} with "${v}"`);
-      }
+    const before = out;
+    out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
+    if (before !== out) {
+      resolvedCount++;
+      console.log(`🔍 [DEBUG] Replaced {${k}} with "${v}"`);
     }
   }
+
+  // Validate what we couldn't resolve
+  const validation = validateTemplateStructure(out);
+  if (!validation.isValid) {
+    console.warn('⚠️ [VALIDATION] Template validation failed:', validation.errors);
+  }
+
   return cleanup(out);
 }
 
 // Simplified pronoun handling - just return the base pronoun
 
 export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): string {
-  const { userInfo, pageText, seed } = ctx;
+  try {
+    const { userInfo, pageText, seed } = ctx;
 
-  const basePronoun = derivePronoun(userInfo);
-  
-  console.log(`🔍 [DEBUG] Using simple pronoun: ${basePronoun}`);
+    // Validate and sanitize user input
+    const safeUserInfo = validateAndSanitizeUserInfo(userInfo);
+    const basePronoun = derivePronoun(userInfo);
+    
+    console.log(`🔍 [DEBUG] Using simple pronoun: ${basePronoun}`);
 
-  const candidate: Record<string, string | undefined> = {
-    // bridge from seed variables
-    userName: seed?.userName || seed?.name || firstName(userInfo?.name) || userInfo?.name,
-    adjective: seed?.adjective,
+    const candidate: Record<string, string | undefined> = {
+      // bridge from seed variables with fallback safety
+      userName: seed?.userName || seed?.name || firstName(safeUserInfo?.name) || safeUserInfo?.name,
+      adjective: seed?.adjective,
 
-    // micro tokens with mapping to canonical where sensible
-    pronoun: basePronoun,
-    animal: seed?.animal || userInfo?.favoriteAnimal || scanForAnimalFromText(pageText) || pick(FALLBACK_POOLS.animal),
-    food: seed?.food || userInfo?.favoriteFood || pick(FALLBACK_POOLS.food),
-    setting: seed?.setting || pick(FALLBACK_POOLS.setting),
-    object: seed?.object || pick(FALLBACK_POOLS.object),
-    action: seed?.action || pick(FALLBACK_POOLS.action),
-    adjectiveFallback: pick(FALLBACK_POOLS.adjective),
-    color: seed?.color || userInfo?.favoriteColor || pick(FALLBACK_POOLS.color),
-    friend: seed?.friend || pick(FALLBACK_POOLS.friend),
-    forestType: seed?.forestType || pick(FALLBACK_POOLS.forestType),
-    weatherType: seed?.weatherType || pick(FALLBACK_POOLS.weatherType),
-    placeType: seed?.placeType || pick(FALLBACK_POOLS.placeType)
-  };
+      // micro tokens with comprehensive fallback chain
+      pronoun: basePronoun,
+      animal: seed?.animal || safeUserInfo?.favoriteAnimal || scanForAnimalFromText(pageText) || pick(FALLBACK_POOLS.animal),
+      food: seed?.food || safeUserInfo?.favoriteFood || pick(FALLBACK_POOLS.food),
+      setting: seed?.setting || pick(FALLBACK_POOLS.setting),
+      object: seed?.object || pick(FALLBACK_POOLS.object),
+      action: seed?.action || pick(FALLBACK_POOLS.action),
+      adjectiveFallback: pick(FALLBACK_POOLS.adjective),
+      color: seed?.color || safeUserInfo?.favoriteColor || pick(FALLBACK_POOLS.color),
+      friend: seed?.friend || pick(FALLBACK_POOLS.friend),
+      forestType: seed?.forestType || pick(FALLBACK_POOLS.forestType),
+      weatherType: seed?.weatherType || pick(FALLBACK_POOLS.weatherType),
+      placeType: seed?.placeType || pick(FALLBACK_POOLS.placeType)
+    };
 
-  // prefer explicit adjective, else fallback
-  const adjective = candidate.adjective || candidate.adjectiveFallback;
+    // prefer explicit adjective, else fallback
+    const adjective = candidate.adjective || candidate.adjectiveFallback;
 
-  let out = text;
-  const mappings: Record<string, string | undefined> = {
-    userName: candidate.userName,
-    pronoun: candidate.pronoun,
-    animal: candidate.animal,
-    food: candidate.food,
-    setting: candidate.setting,
-    object: candidate.object,
-    action: candidate.action,
-    adjective: adjective,
-    color: candidate.color,
-    friend: candidate.friend,
-    forestType: candidate.forestType,
-    weatherType: candidate.weatherType,
-    placeType: candidate.placeType
-  };
+    let out = text;
+    const mappings: Record<string, string> = {
+      userName: candidate.userName || "Child",
+      pronoun: candidate.pronoun || "they",
+      animal: candidate.animal || "cat",
+      food: candidate.food || "cookies",
+      setting: candidate.setting || "home",
+      object: candidate.object || "toy",
+      action: candidate.action || "play",
+      adjective: adjective || "happy",
+      color: candidate.color || "blue",
+      friend: candidate.friend || "Alex",
+      forestType: candidate.forestType || "magic",
+      weatherType: candidate.weatherType || "sunny",
+      placeType: candidate.placeType || "park"
+    };
 
-  console.log(`🔍 [DEBUG] Final simplified mappings:`, mappings);
+    console.log(`🔍 [DEBUG] Final robust mappings:`, mappings);
 
-  for (const [k, v] of Object.entries(mappings)) {
-    if (v) out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
-  }
-
-  // Apply grammar fixes based on pronoun type
-  if ((APP_CONFIG as any)?.features?.authorVoice?.grammarTweaks?.theyAgreement) {
-    if (mappings.pronoun === "they") {
-      out = applyTheyGrammarFixes(out);
-    } else if (mappings.pronoun === "he" || mappings.pronoun === "she") {
-      out = applyHeShePronounFixes(out);
+    // Apply all replacements with guaranteed values
+    for (const [k, v] of Object.entries(mappings)) {
+      out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
     }
+
+    // Enhanced grammar fixes
+    out = applyEnhancedGrammarFixes(out, mappings.pronoun);
+
+    return cleanup(out);
+  } catch (error) {
+    console.error('❌ [ERROR] Failed to resolve micro placeholders:', error);
+    // Emergency fallback - return cleaned text with all placeholders removed
+    return cleanup(text);
+  }
+}
+
+// Enhanced grammar fixing system
+function applyEnhancedGrammarFixes(text: string, pronoun: string): string {
+  let fixed = text;
+  
+  // Apply pronoun-specific fixes
+  if (pronoun === "they") {
+    fixed = applyTheyGrammarFixes(fixed);
+  } else if (pronoun === "he" || pronoun === "she") {
+    fixed = applyHeShePronounFixes(fixed);
   }
 
-  return cleanup(out);
+  // Apply universal grammar enhancements
+  fixed = fixed
+    // Fix double articles
+    .replace(/\ba\s+a\s+/gi, "a ")
+    .replace(/\ban\s+an\s+/gi, "an ")
+    // Fix spacing around contractions
+    .replace(/(\w)\s+'(\w)/g, "$1'$2")
+    // Fix capitalization after quotes
+    .replace(/(['"])\s*([a-z])/g, (match, quote, letter) => quote + letter.toUpperCase())
+    // Ensure proper sentence spacing
+    .replace(/([.!?])\s*([A-Z])/g, "$1 $2");
+
+  return fixed;
 }
 
 export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): string {
-  let out = text;
-  if (ctx.userInfo) out = resolveCanonicalPlaceholders(out, ctx.userInfo);
-  out = resolveMicroPlaceholders(out, ctx);
-  return out;
+  try {
+    // Validate template structure first
+    const validation = validateTemplateStructure(text);
+    if (!validation.isValid) {
+      console.warn('⚠️ [VALIDATION] Template structure issues detected:', validation.errors);
+    }
+
+    let out = text;
+    
+    // Apply canonical placeholders first (user-specific)
+    if (ctx.userInfo) {
+      out = resolveCanonicalPlaceholders(out, ctx.userInfo);
+    }
+    
+    // Apply micro placeholders (fallback system)
+    out = resolveMicroPlaceholders(out, ctx);
+    
+    // Final validation check
+    const finalValidation = validateTemplateStructure(out);
+    if (finalValidation.unresolvedPlaceholders.length > 0) {
+      console.warn('⚠️ [FINAL] Unresolved placeholders remain:', finalValidation.unresolvedPlaceholders);
+    }
+    
+    return out;
+  } catch (error) {
+    console.error('❌ [ERROR] Complete placeholder resolution failed:', error);
+    // Emergency fallback - clean everything
+    return cleanup(text);
+  }
+}
+
+// Additional utility functions for external validation
+export function getPlaceholderCoverage(text: string): { total: number; covered: number; missing: string[] } {
+  const validation = validateTemplateStructure(text);
+  return {
+    total: validation.resolvedCount + validation.unresolvedPlaceholders.length,
+    covered: validation.resolvedCount,
+    missing: validation.unresolvedPlaceholders
+  };
+}
+
+export function isTemplateValid(text: string): boolean {
+  return validateTemplateStructure(text).isValid;
 }
