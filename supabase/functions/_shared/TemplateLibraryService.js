@@ -614,6 +614,330 @@ export const LEVEL_2_TEMPLATES = [
       weatherVariants: ["during library time", "after school", "during lunch break", "on a quiet afternoon"],
       settingVariants: ["school library", "public library", "classroom", "reading room"]
     }
+  },
+  {
+    title: "The Neighborhood Mystery Club",
+    theme: "Teamwork & Investigation",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "{userName} and their friends Alex and Emma discover that several neighbors have been reporting strange things happening in their yards. Mrs. Chen's garden gnomes keep moving positions overnight, and Mr. Rodriguez's bird feeder is mysteriously empty every morning despite being full the day before.",
+        pause: true,
+        hook: "What mysterious force is causing these neighborhood puzzles?",
+        microVariants: {
+          text: "{userName} and their friends Alex and Emma discover that several neighbors have been reporting strange things happening in their yards. Mrs. Chen's garden gnomes keep moving positions overnight, and Mr. Rodriguez's bird feeder is mysteriously empty every morning despite being full the day before.",
+          alternatives: ["Strange neighborhood events puzzle {userName}, Alex, and Emma as they hear about moving gnomes and disappearing birdseed.", "The three detective friends investigate mysterious happenings including wandering garden decorations and vanishing bird food."],
+          optionalDetails: ["the gnomes are always facing different directions", "neighbors compare notes about the odd occurrences"]
+        }
+      },
+      {
+        text: "The three friends decide to form the Neighborhood Mystery Club and investigate these puzzling events. They create detective notebooks with {favoriteColor} covers and make official badges using cardboard and markers. {userName} suggests they start by interviewing all the affected neighbors to gather clues.",
+        pause: true,
+        hook: "What important clues will the young detectives discover?",
+        microVariants: {
+          text: "The three friends decide to form the Neighborhood Mystery Club and investigate these puzzling events. They create detective notebooks with {favoriteColor} covers and make official badges using cardboard and markers. {userName} suggests they start by interviewing all the affected neighbors to gather clues.",
+          alternatives: ["Forming an official mystery club, the three friends prepare detective supplies and plan their investigation strategy.", "With homemade badges and notebooks ready, {userName}, Alex, and Emma begin their first neighborhood case."],
+          optionalDetails: ["they practice asking questions like real detectives", "the badges have magnifying glass drawings"]
+        }
+      },
+      {
+        text: "During their interviews, the detective club learns that all the strange events happen during the night. Mrs. Chen shows them tiny paw prints near her gnomes, and Mr. Rodriguez points out scratch marks on his bird feeder pole. The friends carefully record every detail in their notebooks.",
+        pause: true,
+        hook: "What do these mysterious clues point to?",
+        microVariants: {
+          text: "During their interviews, the detective club learns that all the strange events happen during the night. Mrs. Chen shows them tiny paw prints near her gnomes, and Mr. Rodriguez points out scratch marks on his bird feeder pole. The friends carefully record every detail in their notebooks.",
+          alternatives: ["Nighttime patterns emerge as the detectives document paw prints and scratch marks from their thorough interviews.", "Evidence of small animals appears during the investigation as neighbors share physical clues with the mystery club."],
+          optionalDetails: ["they measure the paw prints with rulers", "photos are taken for their evidence file"]
+        }
+      },
+      {
+        text: "{userName} has a brilliant idea - they should do a nighttime stakeout to catch the mystery culprit in action. The three friends convince their parents to let them camp out in Alex's backyard, which has a perfect view of both Mrs. Chen's garden and Mr. Rodriguez's bird feeder.",
+        pause: true,
+        hook: "What will the detectives discover during their nighttime watch?",
+        microVariants: {
+          text: "{userName} has a brilliant idea - they should do a nighttime stakeout to catch the mystery culprit in action. The three friends convince their parents to let them camp out in Alex's backyard, which has a perfect view of both Mrs. Chen's garden and Mr. Rodriguez's bird feeder.",
+          alternatives: ["A clever stakeout plan emerges when {userName} realizes they need to observe the nighttime activities firsthand.", "Camping out becomes the perfect detective strategy when the mystery club sets up surveillance in Alex's backyard."],
+          optionalDetails: ["they bring flashlights and binoculars", "parents help set up a safe camping area"]
+        }
+      },
+      {
+        text: "Around midnight, the friends quietly watch as a family of raccoons emerges from the woods behind the houses. The clever animals work together - some move the gnomes to reach the tasty bugs underneath while others figure out how to open the bird feeder to access the seeds inside.",
+        pause: true,
+        hook: "How will the detectives solve the raccoon problem peacefully?",
+        microVariants: {
+          text: "Around midnight, the friends quietly watch as a family of raccoons emerges from the woods behind the houses. The clever animals work together - some move the gnomes to reach the tasty bugs underneath while others figure out how to open the bird feeder to access the seeds inside.",
+          alternatives: ["The midnight mystery unfolds as intelligent raccoons demonstrate their problem-solving skills to amazed young detectives.", "Working together like a team, the raccoon family shows the children exactly how they've been solving their food puzzles."],
+          optionalDetails: ["baby raccoons learn from their parents", "the raccoons use tiny hands like tools"]
+        }
+      },
+      {
+        text: "Instead of just reporting the raccoons to animal control, {userName} suggests they find a solution that helps both the neighbors and the raccoon family. The mystery club researches raccoon-proof bird feeders and suggests Mrs. Chen place smooth stones under her gnomes so the raccoons can still hunt for bugs without moving the decorations.",
+        pause: true,
+        hook: "Will their thoughtful solution work for everyone involved?",
+        microVariants: {
+          text: "Instead of just reporting the raccoons to animal control, {userName} suggests they find a solution that helps both the neighbors and the raccoon family. The mystery club researches raccoon-proof bird feeders and suggests Mrs. Chen place smooth stones under her gnomes so the raccoons can still hunt for bugs without moving the decorations.",
+          alternatives: ["Compassionate problem-solving leads {userName} to find solutions that protect both neighbors and wildlife.", "The detective club chooses kindness over punishment, researching ways to coexist peacefully with their raccoon neighbors."],
+          optionalDetails: ["they draw diagrams of raccoon-proof designs", "neighbors appreciate the wildlife-friendly approach"]
+        }
+      },
+      {
+        text: "The neighbors are impressed with the young detectives' thorough investigation and thoughtful solutions. Mrs. Chen and Mr. Rodriguez both implement the suggestions, and the raccoon problems are solved without harming the animals. The Neighborhood Mystery Club becomes famous for their detective skills and compassionate approach to problem-solving.",
+        pause: true,
+        hook: "What other neighborhood mysteries will the detective club solve next?",
+        microVariants: {
+          text: "The neighbors are impressed with the young detectives' thorough investigation and thoughtful solutions. Mrs. Chen and Mr. Rodriguez both implement the suggestions, and the raccoon problems are solved without harming the animals. The Neighborhood Mystery Club becomes famous for their detective skills and compassionate approach to problem-solving.",
+          alternatives: ["Success brings recognition as the mystery club earns respect for both their detective work and animal-friendly solutions.", "Neighbors praise the young investigators who proved that the best mysteries are solved with both smarts and kindness."],
+          optionalDetails: ["other neighbors ask for help with small mysteries", "the club gets requests from nearby streets"]
+        }
+      },
+      {
+        text: "Inspired by their success, {userName}, Alex, and Emma decide to expand their detective club and help solve small mysteries throughout their community. They learn that the best investigators use both careful observation and creative, caring solutions to help everyone involved.",
+        pause: false,
+        hook: "What important life lessons have the young detectives learned?",
+        microVariants: {
+          text: "Inspired by their success, {userName}, Alex, and Emma decide to expand their detective club and help solve small mysteries throughout their community. They learn that the best investigators use both careful observation and creative, caring solutions to help everyone involved.",
+          alternatives: ["The mystery club's success inspires them to help their entire community while learning valuable lessons about investigation and compassion.", "Growing confidence leads the young detectives to expand their services while discovering that kindness makes every solution better."],
+          optionalDetails: ["they create a neighborhood newsletter about their cases", "parents help them make official detective certificates"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "The Neighborhood Mystery Club solves dozens of cases and becomes a model for young detective groups in other communities, always focusing on solutions that help everyone.",
+        microVariants: ["Their fame spreads as other neighborhoods request help from the compassionate young investigators.", "The club's success inspires detective clubs worldwide that follow their example of kindness and thoroughness."]
+      },
+      {
+        type: 'cozy',
+        text: "{userName} and their friends continue solving neighborhood puzzles and learn that the best mysteries often have the most heartwarming solutions.",
+        microVariants: ["Every solved case brings the neighborhood closer together and teaches valuable lessons about cooperation.", "The friends discover that helping their community creates the most satisfying adventures of all."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "raccoons": ["squirrels", "cats", "opossums", "birds"],
+        "gnomes": ["flower pots", "decorations", "garden tools", "outdoor furniture"],
+        "bird feeder": ["pet food bowls", "garbage cans", "compost bins", "garden plants"]
+      },
+      weatherVariants: ["on quiet summer nights", "during the full moon", "after evening storms"],
+      settingVariants: ["suburban neighborhood", "apartment complex", "small town", "residential area"]
+    }
+  },
+  {
+    title: "The Invention Fair Champion",
+    theme: "Creativity & Problem-Solving",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "{userName} discovers that their school is hosting its first-ever Invention Fair, where students can create original inventions to solve real-world problems. The announcement excites {userName} because they love building things and have noticed several problems around school that need creative solutions.",
+        pause: true,
+        hook: "What problem will {userName} choose to solve with their invention?",
+        microVariants: {
+          text: "{userName} discovers that their school is hosting its first-ever Invention Fair, where students can create original inventions to solve real-world problems. The announcement excites {userName} because they love building things and have noticed several problems around school that need creative solutions.",
+          alternatives: ["The Invention Fair announcement sparks {userName}'s imagination as they consider which school problems their creativity could solve.", "Building excitement fills {userName} when they learn about the opportunity to invent solutions for everyday school challenges."],
+          optionalDetails: ["the fair will have judges from local engineering companies", "winning inventions might be used throughout the school"]
+        }
+      },
+      {
+        text: "After observing student struggles during lunch, {userName} notices that many kids have trouble opening stubborn milk cartons and juice boxes, often spilling their drinks or needing adult help. They decide to invent a {favoriteColor} lunch helper tool that makes opening containers easy and mess-free for everyone.",
+        pause: true,
+        hook: "How will {userName} design their innovative lunch helper?",
+        microVariants: {
+          text: "After observing student struggles during lunch, {userName} notices that many kids have trouble opening stubborn milk cartons and juice boxes, often spilling their drinks or needing adult help. They decide to invent a {favoriteColor} lunch helper tool that makes opening containers easy and mess-free for everyone.",
+          alternatives: ["Lunchtime observations inspire {userName} to create a helpful tool for students who struggle with stubborn containers.", "The daily lunch challenge of opening difficult cartons gives {userName} the perfect invention idea."],
+          optionalDetails: ["younger students often ask teachers for help", "spilled drinks create slip hazards on floors"]
+        }
+      },
+      {
+        text: "{userName} spends weeks designing their invention using cardboard, plastic pieces, and a small lever mechanism. They test different prototypes with various container types, carefully adjusting the design each time it doesn't work perfectly. Their notebook fills with detailed drawings and improvement ideas.",
+        pause: true,
+        hook: "Will {userName}'s persistence lead to a working prototype?",
+        microVariants: {
+          text: "{userName} spends weeks designing their invention using cardboard, plastic pieces, and a small lever mechanism. They test different prototypes with various container types, carefully adjusting the design each time it doesn't work perfectly. Their notebook fills with detailed drawings and improvement ideas.",
+          alternatives: ["Persistent experimentation helps {userName} refine their invention through multiple prototype versions and careful testing.", "The design process teaches {userName} valuable lessons as they iterate through different versions of their helpful tool."],
+          optionalDetails: ["family members volunteer to test prototypes", "the kitchen table becomes a workshop space"]
+        }
+      },
+      {
+        text: "During lunch periods, {userName} secretly tests their invention with willing classmates, making sure it works safely and effectively. The tool successfully opens milk cartons, juice boxes, and even stubborn yogurt containers without spilling. Friends are amazed and ask if they can have their own lunch helpers.",
+        pause: true,
+        hook: "How will {userName} prepare for the big Invention Fair presentation?",
+        microVariants: {
+          text: "During lunch periods, {userName} secretly tests their invention with willing classmates, making sure it works safely and effectively. The tool successfully opens milk cartons, juice boxes, and even stubborn yogurt containers without spilling. Friends are amazed and ask if they can have their own lunch helpers.",
+          alternatives: ["Successful lunch testing proves {userName}'s invention works perfectly for its intended purpose while impressing classmates.", "The lunch helper exceeds expectations during real-world testing, making {userName} confident about the upcoming fair."],
+          optionalDetails: ["they document successful tests with photos", "cafeteria staff notice fewer spills"]
+        }
+      },
+      {
+        text: "For the Invention Fair display, {userName} creates colorful posters showing the problem, their solution process, and test results. They prepare a live demonstration using different types of containers and practice explaining their invention clearly to judges and visitors.",
+        pause: true,
+        hook: "What will the judges think of {userName}'s practical invention?",
+        microVariants: {
+          text: "For the Invention Fair display, {userName} creates colorful posters showing the problem, their solution process, and test results. They prepare a live demonstration using different types of containers and practice explaining their invention clearly to judges and visitors.",
+          alternatives: ["Professional presentation skills develop as {userName} prepares comprehensive displays and practices clear explanations.", "The invention booth takes shape with visual aids and interactive demonstrations that showcase the lunch helper's effectiveness."],
+          optionalDetails: ["before and after photos show the improvement", "statistics track reduced spills and increased independence"]
+        }
+      },
+      {
+        text: "At the Invention Fair, judges are impressed by {userName}'s practical problem-solving approach and thorough testing process. They especially appreciate that the invention helps younger students become more independent during lunch. Other students crowd around the booth wanting to try the lunch helper themselves.",
+        pause: true,
+        hook: "What recognition will {userName} receive for their thoughtful invention?",
+        microVariants: {
+          text: "At the Invention Fair, judges are impressed by {userName}'s practical problem-solving approach and thorough testing process. They especially appreciate that the invention helps younger students become more independent during lunch. Other students crowd around the booth wanting to try the lunch helper themselves.",
+          alternatives: ["Judge appreciation grows as they recognize both the invention's practicality and {userName}'s methodical development approach.", "The lunch helper attracts crowds of interested students while earning praise from judges for its real-world impact."],
+          optionalDetails: ["judges take detailed notes about the invention", "the demonstration draws applause from spectators"]
+        }
+      },
+      {
+        text: "{userName} wins first place in the 'Most Practical Invention' category and receives a trophy along with a certificate to present their invention to the school board. The principal announces that lunch helpers will be purchased for every classroom to help students during snack and lunch times.",
+        pause: true,
+        hook: "How will this success inspire {userName}'s future inventions?",
+        microVariants: {
+          text: "{userName} wins first place in the 'Most Practical Invention' category and receives a trophy along with a certificate to present their invention to the school board. The principal announces that lunch helpers will be purchased for every classroom to help students during snack and lunch times.",
+          alternatives: ["First place victory leads to real implementation as the school adopts {userName}'s invention for daily use.", "The practical invention category winner sees their creation become an official school tool helping students every day."],
+          optionalDetails: ["local newspaper wants to feature the young inventor", "other schools inquire about the lunch helper design"]
+        }
+      },
+      {
+        text: "Months later, {userName} watches younger students confidently opening their lunch containers using the helpers and feels proud knowing their invention makes school life easier for everyone. They start sketching ideas for next year's Invention Fair, excited to solve more everyday problems through creative engineering.",
+        pause: false,
+        hook: "What other helpful inventions will {userName} create in the future?",
+        microVariants: {
+          text: "Months later, {userName} watches younger students confidently opening their lunch containers using the helpers and feels proud knowing their invention makes school life easier for everyone. They start sketching ideas for next year's Invention Fair, excited to solve more everyday problems through creative engineering.",
+          alternatives: ["Real-world impact brings lasting satisfaction as {userName} sees their invention helping students daily while inspiring future projects.", "The success story continues as {userName} becomes passionate about using creativity to solve problems and help others."],
+          optionalDetails: ["they become the go-to person for fixing broken classroom items", "teachers consult them about other school challenges"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'triumphant',
+        text: "{userName} becomes a famous inventor whose lunch helper design is used in schools worldwide, inspiring other young inventors to solve problems in their communities.",
+        microVariants: ["The simple lunch helper evolves into a global solution that improves school experiences for millions of students.", "{userName}'s invention inspires a movement of young problem-solvers creating helpful tools for everyday challenges."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that the best inventions solve real problems for real people, and continues creating helpful tools that make life easier and more enjoyable for others.",
+        microVariants: ["The experience teaches {userName} that meaningful inventions come from observing others' needs and caring enough to help.", "Every successful invention reinforces {userName}'s belief that creativity combined with compassion can improve the world."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "lunch helper": ["book organizer", "pencil sharpener", "desk tidier", "art supply holder"],
+        "milk cartons": ["lunch boxes", "water bottles", "snack packages", "art supplies"],
+        "Invention Fair": ["Science Fair", "Creativity Contest", "Problem-Solving Challenge", "Innovation Day"]
+      },
+      weatherVariants: ["during the school year", "in the spring semester", "before winter break"],
+      settingVariants: ["elementary school", "middle school", "community center", "maker space"]
+    }
+  },
+  {
+    title: "The Animal Rescue Team",
+    theme: "Compassion & Environmental Responsibility",
+    level: "Level 2",
+    scenes: [
+      {
+        text: "{userName} discovers a injured baby bird that has fallen from its nest during a storm behind their school. The tiny {favoriteColor}-feathered bird can't fly and looks scared and hungry. {userName} carefully wraps the bird in their jacket and decides they need to help, but they're not sure how to care for wild animals properly.",
+        pause: true,
+        hook: "How will {userName} learn to help the injured bird safely?",
+        microVariants: {
+          text: "{userName} discovers a injured baby bird that has fallen from its nest during a storm behind their school. The tiny {favoriteColor}-feathered bird can't fly and looks scared and hungry. {userName} carefully wraps the bird in their jacket and decides they need to help, but they're not sure how to care for wild animals properly.",
+          alternatives: ["A storm-damaged baby bird needs {userName}'s help, but proper wildlife care requires more knowledge than they currently have.", "Finding an injured bird behind school, {userName} feels compassion but realizes they need expert guidance for proper animal rescue."],
+          optionalDetails: ["the bird makes soft chirping sounds", "other students gather to see what happened"]
+        }
+      },
+      {
+        text: "{userName} remembers their teacher mentioning the local wildlife rehabilitation center and asks to call them for advice. The kind veterinarian, Dr. Martinez, explains how to safely transport the bird and invites {userName} to bring it to the center where trained professionals can provide proper medical care.",
+        pause: true,
+        hook: "What will {userName} learn at the wildlife center?",
+        microVariants: {
+          text: "{userName} remembers their teacher mentioning the local wildlife rehabilitation center and asks to call them for advice. The kind veterinarian, Dr. Martinez, explains how to safely transport the bird and invites {userName} to bring it to the center where trained professionals can provide proper medical care.",
+          alternatives: ["Smart thinking leads {userName} to contact wildlife experts who can provide proper care for the injured bird.", "Dr. Martinez at the wildlife center offers professional guidance when {userName} seeks help for the storm-damaged bird."],
+          optionalDetails: ["the teacher helps make the phone call", "Dr. Martinez explains the importance of quick action"]
+        }
+      },
+      {
+        text: "At the wildlife center, {userName} watches amazed as Dr. Martinez and her team gently examine the baby bird, clean its tiny wounds, and provide proper nutrition. They explain that the bird has a minor wing injury that will heal with time and care. {userName} learns about different types of local birds and how to help animals in emergencies.",
+        pause: true,
+        hook: "How can {userName} contribute to the bird's recovery?",
+        microVariants: {
+          text: "At the wildlife center, {userName} watches amazed as Dr. Martinez and her team gently examine the baby bird, clean its tiny wounds, and provide proper nutrition. They explain that the bird has a minor wing injury that will heal with time and care. {userName} learns about different types of local birds and how to help animals in emergencies.",
+          alternatives: ["Professional wildlife care amazes {userName} as they learn proper animal rescue techniques from Dr. Martinez's expert team.", "The rehabilitation center becomes a classroom where {userName} discovers the science and compassion behind animal rescue work."],
+          optionalDetails: ["they use special tools for examination", "charts show different local bird species"]
+        }
+      },
+      {
+        text: "Dr. Martinez asks if {userName} would like to volunteer as a junior helper while the bird recovers. {userName} eagerly agrees and learns to prepare bird food, clean enclosures, and record observations about the animals' healing progress. They also help care for other rescued animals including rabbits, squirrels, and even a young owl.",
+        pause: true,
+        hook: "What important skills will {userName} develop as a volunteer?",
+        microVariants: {
+          text: "Dr. Martinez asks if {userName} would like to volunteer as a junior helper while the bird recovers. {userName} eagerly agrees and learns to prepare bird food, clean enclosures, and record observations about the animals' healing progress. They also help care for other rescued animals including rabbits, squirrels, and even a young owl.",
+          alternatives: ["Volunteer opportunities teach {userName} valuable animal care skills while helping multiple species recover from injuries.", "The junior helper role expands {userName}'s knowledge as they care for various rescued wildlife under professional guidance."],
+          optionalDetails: ["they wear special gloves for animal handling", "detailed charts track each animal's recovery"]
+        }
+      },
+      {
+        text: "After three weeks of dedicated care, the baby bird's wing heals completely and it's ready for release back to the wild. {userName} has the honor of opening the carrier and watching the bird fly strong and free back to its natural habitat. The moment fills {userName} with joy and pride in their contribution to the rescue.",
+        pause: true,
+        hook: "How will this experience change {userName}'s relationship with wildlife?",
+        microVariants: {
+          text: "After three weeks of dedicated care, the baby bird's wing heals completely and it's ready for release back to the wild. {userName} has the honor of opening the carrier and watching the bird fly strong and free back to its natural habitat. The moment fills {userName} with joy and pride in their contribution to the rescue.",
+          alternatives: ["The successful release brings tremendous joy as {userName} watches their rescued bird fly free with healed wings.", "Three weeks of caring culminate in the magical moment when {userName} returns the healthy bird to its natural freedom."],
+          optionalDetails: ["the bird circles back as if to say thank you", "other volunteers cheer the successful release"]
+        }
+      },
+      {
+        text: "Inspired by this experience, {userName} starts an Animal Rescue Club at school to teach other students about wildlife protection and proper emergency animal care. They organize educational presentations with Dr. Martinez and create first-aid kits specifically designed for helping injured animals safely.",
+        pause: true,
+        hook: "How will the rescue club impact their school community?",
+        microVariants: {
+          text: "Inspired by this experience, {userName} starts an Animal Rescue Club at school to teach other students about wildlife protection and proper emergency animal care. They organize educational presentations with Dr. Martinez and create first-aid kits specifically designed for helping injured animals safely.",
+          alternatives: ["The rescue experience motivates {userName} to educate classmates about proper wildlife care and emergency animal assistance.", "School-wide education becomes {userName}'s mission as they share knowledge about responsible animal rescue with other students."],
+          optionalDetails: ["club members practice safe animal handling techniques", "emergency contact cards list local wildlife centers"]
+        }
+      },
+      {
+        text: "The Animal Rescue Club becomes so successful that other schools in the district ask for help starting their own chapters. {userName} and Dr. Martinez work together to create a training program for young wildlife helpers. They develop educational materials that teach children how to coexist peacefully with local wildlife while knowing how to help in emergencies.",
+        pause: true,
+        hook: "What lasting impact will {userName}'s compassion have on wildlife protection?",
+        microVariants: {
+          text: "The Animal Rescue Club becomes so successful that other schools in the district ask for help starting their own chapters. {userName} and Dr. Martinez work together to create a training program for young wildlife helpers. They develop educational materials that teach children how to coexist peacefully with local wildlife while knowing how to help in emergencies.",
+          alternatives: ["Success spreads as {userName}'s animal rescue education program expands to help students throughout the school district.", "The partnership with Dr. Martinez grows into a comprehensive wildlife education program that teaches responsible animal care across multiple schools."],
+          optionalDetails: ["they create colorful identification guides", "training videos help students learn proper techniques"]
+        }
+      },
+      {
+        text: "Years later, {userName} continues working with wildlife and becomes known throughout their community as a young conservation leader. They understand that helping animals requires both immediate compassion and long-term education, and they're proud to have started with one small bird that needed their care.",
+        pause: false,
+        hook: "What conservation career will {userName} pursue in the future?",
+        microVariants: {
+          text: "Years later, {userName} continues working with wildlife and becomes known throughout their community as a young conservation leader. They understand that helping animals requires both immediate compassion and long-term education, and they're proud to have started with one small bird that needed their care.",
+          alternatives: ["Community recognition grows as {userName} becomes a respected voice for wildlife conservation and responsible animal care.", "The journey from rescuing one bird evolves into a lifelong commitment to wildlife protection and environmental education."],
+          optionalDetails: ["they receive awards for conservation work", "the first rescued bird still visits their backyard"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} becomes a wildlife biologist who protects endangered species and teaches children worldwide about the importance of caring for animals and their habitats.",
+        microVariants: ["The rescued bird experience grows into a career protecting wildlife habitats and educating future conservationists.", "Every species {userName} helps can trace back to the lesson learned from one small bird's successful rescue."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} learns that even small acts of kindness toward animals can grow into movements that protect entire ecosystems and inspire others to become wildlife guardians.",
+        microVariants: ["One bird's rescue demonstrates how individual compassion can multiply into community-wide conservation efforts.", "The ripple effect of caring shows {userName} that protecting wildlife starts with noticing when one small creature needs help."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "baby bird": ["kitten", "puppy", "rabbit", "squirrel"],
+        "Dr. Martinez": ["Dr. Johnson", "Ms. Rodriguez", "Dr. Kim", "Mrs. Thompson"],
+        "wildlife center": ["animal hospital", "nature preserve", "zoo clinic", "veterinary school"]
+      },
+      weatherVariants: ["after spring storms", "during migration season", "in early summer"],
+      settingVariants: ["school grounds", "neighborhood park", "nature trail", "backyard"]
+    }
   }
 ];
 
