@@ -46,57 +46,27 @@ export async function loadTemplate(level, templateIndex = null) {
       throw error;
     }
   } else {
-    // Dynamic templates - import individual file OR fall back to TemplateLibraryService
+    // Dynamic templates - load individual files
     try {
       let targetIndex = templateIndex;
       if (targetIndex === null || targetIndex < 0 || targetIndex >= config.count) {
         targetIndex = Math.floor(Math.random() * config.count);
       }
 
-      // First, try individual template files (when they exist)
+      // Load individual template files
       const templateInfo = config.templates[targetIndex];
       if (templateInfo) {
-        try {
-          const templatePath = `${config.path}${templateInfo.file}`;
-          const module = await import(templatePath);
-          template = module.default || module.template;
-          
-          if (template) {
-            console.log(`✅ Loaded individual template file: ${templatePath}`);
-          }
-        } catch (fileError) {
-          console.log(`📄 Individual template file not found, falling back to TemplateLibraryService for ${level}[${targetIndex}]`);
-          template = null; // Will trigger fallback below
-        }
-      }
-      
-      // Fallback to TemplateLibraryService if individual file not found
-      if (!template) {
-        console.log(`🔄 Using TemplateLibraryService fallback for ${level}[${targetIndex}]`);
-        const { TemplateLibraryService } = await import('../TemplateLibraryService.js');
+        const templatePath = `${config.path}${templateInfo.file}`;
+        const module = await import(templatePath);
+        template = module.default || module.template;
         
-        // Map levels to TemplateLibraryService functions
-        const functionMap = {
-          level1: 'getLevel1Template',
-          level2: 'getLevel2Template', 
-          level3: 'getLevel3Template',
-          level4: 'getLevel4Template',
-          grade6: 'getGrade6FallbackTemplate',
-          grade7: 'getGrade7FallbackTemplate',
-          grade8: 'getGrade8FallbackTemplate',
-          grade9: 'getGrade9FallbackTemplate',
-          grade10: 'getGrade10FallbackTemplate'
-        };
-        
-        const functionName = functionMap[level];
-        if (functionName && typeof TemplateLibraryService[functionName] === 'function') {
-          template = TemplateLibraryService[functionName](targetIndex);
-          console.log(`✅ Loaded from TemplateLibraryService: ${functionName}(${targetIndex})`);
+        if (template) {
+          console.log(`✅ Loaded individual template file: ${templatePath}`);
         }
       }
       
       if (!template) {
-        throw new Error(`No template found for ${level}[${targetIndex}] in either individual files or TemplateLibraryService`);
+        throw new Error(`No template found for ${level}[${targetIndex}]`);
       }
     } catch (error) {
       console.error(`❌ Failed to load dynamic template ${level}[${templateIndex}]:`, error);

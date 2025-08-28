@@ -4,10 +4,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config/storyPrompts';
-import { EnhancedFallbackManager } from '@/constants/enhancedFallbackTemplates';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
-import { getColorVoiceForUser, applyAuthorVoice } from '@/constants/authorVoicePatterns';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 
@@ -22,7 +20,6 @@ export interface LiveGenerationContext {
   openEnded?: boolean;
 }
 
-
 export interface LivePageResult {
   content: string;
   isComplete: boolean;
@@ -31,8 +28,6 @@ export interface LivePageResult {
 }
 
 export class LiveGenerationService {
-  private static fallbackManager = new EnhancedFallbackManager();
-
   /**
    * Generate the first page of a story for premium users
    * @param userInfo - User information
@@ -69,17 +64,7 @@ export class LiveGenerationService {
       - Focus on quality storytelling over exact word counts`;
       
       // Use configured prompts from storyPrompts.ts only
-let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
-
-      // Append author voice preferred themes as a gentle hint
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(userInfo, difficulty);
-          if (voice?.preferredThemes?.length) {
-            userPrompt = `${userPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
-          }
-        }
-      } catch {}
+      let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       
       console.log(`🔄 Live Generation: Calling generate-adaptive-story with sessionType: ${sessionType || 'default'}`);
       
@@ -104,7 +89,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate first page:', error);
         console.log(`🎯 Live Generation API Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
-        return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'api_error');
+        return this.generateFallbackFirstPage(userInfo, difficulty, 'api_error');
       }
 
       // Extract first page from the pages array and strip any page markers
@@ -114,7 +99,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
         console.log('❌ First page too short, using fallback');
-        return this.generateEnhancedFallbackFirstPage(userInfo, difficulty, 'content_too_short');
+        return this.generateFallbackFirstPage(userInfo, difficulty, 'content_too_short');
       }
       
       // Create context for next page
@@ -136,17 +121,8 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
-      let contentOut = content;
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(userInfo, difficulty);
-          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-          contentOut = applyAuthorVoice(content, voice, applyOn.first, userInfo, difficulty);
-        }
-      } catch {}
-
       return {
-        content: contentOut,
+        content,
         isComplete: false,
         nextContext: context
       };
@@ -157,7 +133,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       // Use same difficulty determination logic as main function
       const fallbackDifficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
       console.log(`🎯 Live Generation Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name} (from ${userInfo.difficultyLevel ? 'difficultyLevel' : userInfo.readingAbility ? 'readingAbility' : 'default'})`);
-      return this.generateEnhancedFallbackFirstPage(userInfo, fallbackDifficulty, 'generation_error');
+      return this.generateFallbackFirstPage(userInfo, fallbackDifficulty, 'generation_error');
     }
   }
 
@@ -189,16 +165,7 @@ let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       ${context.storyContext.join('\n\n')}`;
       
       // Use configured prompts from storyPrompts.ts only - append page context
-let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
-      // Append author voice preferred themes as a gentle hint
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
-          if (voice?.preferredThemes?.length) {
-            baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
-          }
-        }
-      } catch {}
+      let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
       const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${shouldConclude ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Keep momentum and end with an engaging teaser for what happens next.'}`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
@@ -221,7 +188,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
 
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate page:', error);
-        return this.generateEnhancedFallbackNextPage(context, nextPageNumber, shouldConclude, 'api_error');
+        return this.generateFallbackNextPage(context, nextPageNumber, shouldConclude, 'api_error');
       }
 
       // Extract first page from the pages array and strip any page markers
@@ -231,7 +198,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
         console.log(`❌ Page ${nextPageNumber} too short, using fallback`);
-        return this.generateEnhancedFallbackNextPage(context, nextPageNumber, shouldConclude, 'content_too_short');
+        return this.generateFallbackNextPage(context, nextPageNumber, shouldConclude, 'content_too_short');
       }
       
       // Update context for next page
@@ -249,18 +216,8 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
-      let contentOut = content;
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
-          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-          const position = shouldConclude ? applyOn.last : applyOn.middle;
-          contentOut = applyAuthorVoice(content, voice, position, context.userInfo, context.difficulty);
-        }
-      } catch {}
-
       return {
-        content: contentOut,
+        content,
         isComplete: shouldConclude,
         nextContext: shouldConclude ? undefined : updatedContext
       };
@@ -271,7 +228,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       const reachedEnd = nextPageNumber >= context.totalExpectedPages;
       const shouldConclude = !context.openEnded && reachedEnd;
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateNextPage');
-      return this.generateEnhancedFallbackNextPage(context, nextPageNumber, shouldConclude, 'generation_error');
+      return this.generateFallbackNextPage(context, nextPageNumber, shouldConclude, 'generation_error');
     }
   }
 
@@ -296,16 +253,7 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       Previous story context:
       ${context.storyContext.join('\n\n')}`;
 
-let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
-      // Append author voice preferred themes as a gentle hint
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
-          if (voice?.preferredThemes?.length) {
-            baseUserPrompt = `${baseUserPrompt}\n\nPrefer themes: ${voice.preferredThemes.slice(0, 3).join(', ')}.`;
-          }
-        }
-      } catch {}
+      let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
       const userPrompt = `${baseUserPrompt} Create a concluding page that ties the adventure together warmly and clearly indicates the story has reached a nice ending.`;
 
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
@@ -329,14 +277,14 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate ending page:', error);
         // Fallback: use next-page fallback with isLastPage true
-        return this.generateEnhancedFallbackNextPage(context, nextPageNumber, true, 'api_error_conclusion');
+        return this.generateFallbackNextPage(context, nextPageNumber, true, 'api_error_conclusion');
       }
 
       // Strip page markers from ending page content
       const rawContent = (data.pages[0] || '').trim();
       const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       if (!content || content.length < 10) {
-        return this.generateEnhancedFallbackNextPage(context, nextPageNumber, true, 'content_too_short_conclusion');
+        return this.generateFallbackNextPage(context, nextPageNumber, true, 'content_too_short_conclusion');
       }
 
       console.log('🚀 Live Generation: Ending page generated successfully');
@@ -345,17 +293,8 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
       } catch {}
 
-      let contentOut = content;
-      try {
-        if ((APP_CONFIG as any)?.features?.authorVoice?.deepeningEnabled) {
-          const voice = getColorVoiceForUser(context.userInfo, context.difficulty);
-          const applyOn = (APP_CONFIG as any).features.authorVoice.applyOn;
-          contentOut = applyAuthorVoice(content, voice, applyOn.last, context.userInfo, context.difficulty);
-        }
-      } catch {}
-
       return {
-        content: contentOut,
+        content,
         isComplete: true,
         nextContext: undefined
       };
@@ -370,8 +309,8 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     }
   }
 
-  private static generateEnhancedFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): LivePageResult {
-    console.log(`🚀 Live Generation: Using enhanced fallback first page (reason: ${reason})`);
+  private static async generateFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): Promise<LivePageResult> {
+    console.log(`🚀 Live Generation: Using fallback first page (reason: ${reason})`);
     
     // Show toast notification for template usage
     toast({
@@ -381,32 +320,38 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     });
     
     try {
+      // Use template service for fallback
+      const { data, error } = await supabase.functions.invoke('template-service', {
+        body: {
+          difficulty: difficulty,
+          userInfo: userInfo,
+          pageCount: 1,
+          templateIndex: 0
+        }
+      });
+
+      if (error || !data?.pages?.length) {
+        throw new Error('Template service failed');
+      }
+
+      const content = data.pages[0];
+      
       // Get proper prompt config to preserve page expectations
       let promptConfig: any;
       if (difficulty === 'expert') {
-        // For expert users, we can't easily get their adaptive grade here, so use a reasonable default
         promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories (12-16 pages)
       } else {
         promptConfig = getStoryPrompt(difficulty);
       }
-      
-      // Use enhanced fallback system
-      const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
-      const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
-      // Strip page markers from fallback pages as safety net
-      const pages = rawPages.map(page => 
-        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
-      ).filter(page => page.length > 0);
-      const content = pages[0] || `${userInfo.name} began a wonderful adventure.`;
-      
+
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: promptConfig.expectedPages || 999, // Use same logic as main generation
+        totalExpectedPages: promptConfig.expectedPages || 999, // Preserve unlimited behavior
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-        openEnded: !promptConfig.expectedPages // Preserve unlimited behavior
+        openEnded: !promptConfig.expectedPages
       };
 
       try {
@@ -421,25 +366,23 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         nextContext: context
       };
     } catch (error) {
-      console.error('🚀 Enhanced fallback failed:', error);
-      // Get proper prompt config for emergency fallback too
+      console.error('🚀 Fallback failed:', error);
+      // Emergency fallback with simple template
+      const content = `${userInfo.name} began a wonderful adventure.`;
+      
       let promptConfig: any;
       if (difficulty === 'expert') {
-        promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories
+        promptConfig = { expectedPages: 14 };
       } else {
         promptConfig = getStoryPrompt(difficulty);
       }
       
-      // Emergency fallback using Enhanced Template Library
-      const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(difficulty, userInfo, 0);
-      const rawContent = emergencyFallback.split('\n\n')[0] || `${userInfo.name} began a wonderful adventure.`;
-      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
         storyContext: [content],
         currentPage: 1,
-        totalExpectedPages: promptConfig.expectedPages || 999, // Preserve unlimited behavior
+        totalExpectedPages: promptConfig.expectedPages || 999,
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
         openEnded: !promptConfig.expectedPages
       };
@@ -452,13 +395,13 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     }
   }
 
-  private static generateEnhancedFallbackNextPage(
+  private static async generateFallbackNextPage(
     context: LiveGenerationContext, 
     pageNumber: number, 
     isLastPage: boolean,
     reason: string
-  ): LivePageResult {
-    console.log(`🚀 Live Generation: Using enhanced fallback templates page ${pageNumber} (reason: ${reason})`);
+  ): Promise<LivePageResult> {
+    console.log(`🚀 Live Generation: Using fallback page ${pageNumber} (reason: ${reason})`);
     
     // Show toast notification for template usage
     toast({
@@ -468,27 +411,24 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
     });
     
     try {
-      // Use enhanced fallback system for continuation (187 templates available)
-      const fallbackStory = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
-      const rawPages = fallbackStory.split('\n\n').filter(page => page.trim().length > 0);
-      // Strip page markers from fallback pages as safety net
-      const pages = rawPages.map(page => 
-        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
-      ).filter(page => page.length > 0);
-      
-      let content: string;
-      if (pages.length > pageNumber - 1) {
-        content = pages[pageNumber - 1];
-      } else {
-        // Use Enhanced Template Library for missing pages
-        const fallbackTemplate = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
-        const rawFallbackPages = fallbackTemplate.split('\n\n').filter(page => page.trim().length > 0);
-        const fallbackPages = rawFallbackPages.map(page => 
-          page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
-        ).filter(page => page.length > 0);
-        content = fallbackPages[Math.min(pageNumber - 1, fallbackPages.length - 1)] || 
-          (isLastPage ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!` : `${context.userInfo.name} continued the exciting journey.`);
+      // Use template service for fallback continuation
+      const { data, error } = await supabase.functions.invoke('template-service', {
+        body: {
+          difficulty: context.difficulty,
+          userInfo: context.userInfo,
+          pageCount: pageNumber,
+          templateIndex: 0
+        }
+      });
+
+      if (error || !data?.pages?.length) {
+        throw new Error('Template service failed');
       }
+
+      // Get the appropriate page or use the last available page
+      const content = data.pages[Math.min(pageNumber - 1, data.pages.length - 1)] ||
+        (isLastPage ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!` : 
+         `${context.userInfo.name} continued the exciting journey.`);
       
       const updatedContext: LiveGenerationContext = {
         ...context,
@@ -508,15 +448,11 @@ let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.u
         nextContext: isLastPage ? undefined : updatedContext
       };
     } catch (error) {
-      console.error('🚀 Enhanced fallback failed:', error);
-      // Emergency fallback using Enhanced Template Library
-      const emergencyFallback = EnhancedFallbackManager.getFallbackTemplate(context.difficulty, context.userInfo, pageNumber - 1, context.storyContext);
-      const rawEmergencyPages = emergencyFallback.split('\n\n').filter(page => page.trim().length > 0);
-      const emergencyPages = rawEmergencyPages.map(page => 
-        page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
-      ).filter(page => page.length > 0);
-      const content = emergencyPages[Math.min(pageNumber - 1, emergencyPages.length - 1)] || 
-        (isLastPage ? `${context.userInfo.name} had a great day. The end.` : `${context.userInfo.name} continued the adventure.`);
+      console.error('🚀 Fallback failed:', error);
+      // Emergency fallback with simple template
+      const content = isLastPage ? 
+        `${context.userInfo.name} had a great day. The end.` : 
+        `${context.userInfo.name} continued the adventure.`;
       
       const updatedContext: LiveGenerationContext = {
         ...context,

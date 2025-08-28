@@ -2,8 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
-// Import the single source of truth for templates
-import { TemplateLibraryService } from '../_shared/TemplateLibraryService.js';
+// Template service now uses dynamic loading only
 
 // Import dynamic template system
 import { getTemplate, getTemplateCount } from '../_shared/templateImporter.ts';

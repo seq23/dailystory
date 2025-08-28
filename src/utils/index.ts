@@ -1,13 +1,9 @@
-// Universal Template System - Main Exports
-export * from './universalTemplateValidator';
+// Utility functions - re-export commonly used utilities
+export * from './templateConverter';
 export * from './vocabCoverage';
-export * from './grammarValidator';
-export * from './sentenceValidator';
-export * from './implementationReport';
-
-// Run verification on startup
-import { runFinalVerification } from './finalVerification';
-
-console.log('🚀 Universal Template System Loading...');
-const verified = runFinalVerification();
-console.log(`✅ System Verification: ${verified.overallSuccess ? 'COMPLETE' : 'IN PROGRESS'}`);
+export * from './grammarEnhancer';
+export * from './tokenLimitValidator';
+export * from './errorHandling';
+export * from './diagnostics';
+export * from './inputSanitizer';
+export * from './placeholderResolver';
