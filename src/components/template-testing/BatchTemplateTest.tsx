@@ -205,7 +205,7 @@ export function BatchTemplateTest() {
                       )}
                       {result.success && result.result && (
                         <div className="text-sm text-muted-foreground">
-                          Generated {result.result.content?.length || 0} pages
+                          Generated {result.result.pages?.length || 0} pages
                         </div>
                       )}
                     </div>
