@@ -407,7 +407,562 @@ export const LEVEL_3_FALLBACK_TEMPLATES = [
       settingVariants: ["forest", "mountains", "beach", "desert"]
     }
   },
-  // Complete Level 3 Templates implemented above with 5 engaging stories
+  {
+    title: "The Time Travel Detective",
+    theme: "Mystery & Historical Exploration",
+    level: "Level 3 (Ages 9-11)",
+    scenes: [
+      {
+        text: "{userName} discovers an old pocket watch in their grandmother's attic that glows {favoriteColor} when touched. Suddenly, the room spins around them and they find themselves in Ancient Egypt, wearing clothes from that time period! A young Egyptian girl named Kira approaches, speaking in a language {userName} somehow understands.",
+        pause: true,
+        hook: "What mystery awaits {userName} in Ancient Egypt?",
+        microVariants: {
+          text: "{userName} finds a magical pocket watch that transports them to Ancient Egypt where they meet Kira.",
+          alternatives: ["A mysterious {favoriteColor} watch in the attic sends {userName} back to Ancient Egypt."],
+          optionalDetails: ["hieroglyphs glow on nearby walls", "the air smells of incense and sand"]
+        }
+      },
+      {
+        text: "Kira explains that someone has been stealing precious artifacts from the pyramid, and the pharaoh is furious. The thief seems to appear and disappear like magic, just like {userName} did! Kira believes {userName} might be the key to solving this mystery because they both have 'time magic.' Together, they sneak toward the Great Pyramid.",
+        pause: true,
+        hook: "Could the thief be another time traveler like {userName}?",
+        microVariants: {
+          text: "Kira reveals that a mysterious thief is stealing artifacts, and {userName}'s time magic might help solve the case.",
+          alternatives: ["The pyramid thief has magical disappearing powers just like {userName}'s time travel ability."],
+          optionalDetails: ["guards patrol with spears and shields", "the pyramid casts enormous shadows"]
+        }
+      },
+      {
+        text: "Inside the pyramid, {userName} and Kira discover strange footprints that seem to fade and reappear in different locations. Using their knowledge of {hobbies}, {userName} notices the footprints follow a pattern that leads to a hidden chamber. There, they find Marcus, a boy from the Roman Empire who also has a time-travel device!",
+        pause: true,
+        hook: "Why is Marcus stealing artifacts from different time periods?",
+        microVariants: {
+          text: "{userName} uses their {hobbies} skills to track mysterious footprints leading to Marcus, a Roman time traveler.",
+          alternatives: ["Detective skills help {userName} and Kira discover Marcus, who has his own time-travel powers."],
+          optionalDetails: ["torches flicker in the chamber walls", "ancient paintings tell stories of the past"]
+        }
+      },
+      {
+        text: "Marcus explains he's not really stealing - he's trying to return artifacts that were taken from their proper time periods by adult time thieves! He shows them a {favoriteColor} crystal that reveals when objects don't belong in their correct time. The pyramid artifacts were stolen from the future and planted here to confuse historians.",
+        pause: true,
+        hook: "Can three kids from different time periods work together to fix history?",
+        microVariants: {
+          text: "Marcus reveals he's actually trying to return stolen artifacts to their proper time periods using a magical crystal.",
+          alternatives: ["The Roman boy is fighting adult time thieves who plant artifacts in wrong time periods."],
+          optionalDetails: ["the crystal shows swirling colors around displaced objects", "each artifact glows when out of place"]
+        }
+      },
+      {
+        text: "The three young time travelers decide to work together, each using their unique skills. Kira knows secret passages in Egyptian buildings, {userName} understands modern technology mixed with ancient mysteries, and Marcus has military strategy knowledge from Rome. They discover the adult thieves are using a time machine hidden in the desert.",
+        pause: true,
+        hook: "How can three children outsmart adult criminals with advanced technology?",
+        microVariants: {
+          text: "The three friends combine their different time period skills to track down the adult time thieves.",
+          alternatives: ["Each child brings unique knowledge from their era to solve the time crime mystery."],
+          optionalDetails: ["desert winds cover their tracks as they approach", "the time machine creates strange energy patterns in the sand"]
+        }
+      },
+      {
+        text: "At the hidden base, they overhear the thieves planning to steal the {favoriteAnimal} sculptures from a medieval castle next. {userName} realizes this will erase an important historical discovery that inspired future animal protection laws. The children decide to split up: Kira will warn the pharaoh, Marcus will sabotage the time machine, and {userName} will travel to medieval times.",
+        pause: true,
+        hook: "Can {userName} reach the medieval castle before the thieves steal the sculptures?",
+        microVariants: {
+          text: "Learning about the thieves' next target, the children split up to protect historical artifacts across different time periods.",
+          alternatives: ["The time detective team spreads across history to stop the thieves' medieval castle heist."],
+          optionalDetails: ["the castle sculptures hold secrets about ancient animal care", "medieval times hold the key to future conservation"]
+        }
+      },
+      {
+        text: "In medieval times, {userName} meets Sir Elena, a brave knight who protects the castle's animal sanctuary. Together they hide the {favoriteAnimal} sculptures and set up a clever trap using mirrors and {favoriteColor} banners to confuse the time thieves when they arrive. The plan works, and the thieves accidentally travel to the wrong century!",
+        pause: true,
+        hook: "Where did the confused thieves end up, and how will the friends reunite?",
+        microVariants: {
+          text: "{userName} and Sir Elena use medieval tactics to trick the time thieves into traveling to the wrong century.",
+          alternatives: ["Medieval teamwork and clever traps send the time criminals spinning through the wrong time period."],
+          optionalDetails: ["the castle's animals seem to understand the plan", "knight's armor reflects the {favoriteColor} banners beautifully"]
+        }
+      },
+      {
+        text: "Back in Ancient Egypt, Kira has convinced the pharaoh that the children are heroes protecting history. Marcus successfully disabled the time machine, stranding the thieves in prehistoric times where they can't cause more damage. The three friends meet at the pyramid to return all the stolen artifacts to their proper time periods.",
+        pause: true,
+        hook: "What will happen when all the artifacts are finally returned to their correct times?",
+        microVariants: {
+          text: "With the thieves trapped in prehistoric times, the three young detectives work to restore the correct timeline.",
+          alternatives: ["Heroes across time periods unite to fix history and return stolen artifacts where they belong."],
+          optionalDetails: ["the pharaoh declares them honorary guardians of time", "prehistoric creatures probably gave the thieves quite a surprise"]
+        }
+      },
+      {
+        text: "As they return each artifact, {userName} watches history correct itself - the medieval animal sculptures inspire future conservation efforts, Egyptian art remains authentic, and Roman engineering knowledge stays in its proper timeline. The three friends realize they've become the first Time Detective Squad, protecting history itself.",
+        pause: true,
+        hook: "Will the Time Detective Squad continue protecting history together?",
+        microVariants: {
+          text: "Returning artifacts to correct time periods allows {userName} to watch history heal and flow properly.",
+          alternatives: ["The Time Detective Squad sees their work restore the natural flow of history across all eras."],
+          optionalDetails: ["each corrected timeline creates beautiful ripple effects", "future improvements happen because of their work"]
+        }
+      },
+      {
+        text: "Before returning to their own times, the three friends promise to meet once a month at the pyramid using their time devices. They create a secret code using {userName}'s modern knowledge, Kira's hieroglyphs, and Marcus's Latin to communicate across centuries. Their friendship proves that some bonds transcend time itself, and together they'll keep history safe forever.",
+        pause: false,
+        hook: "What other historical mysteries will the Time Detective Squad solve together?",
+        microVariants: {
+          text: "The Time Detective Squad creates a timeless friendship bond, promising to protect history together across all eras.",
+          alternatives: ["Friendship across centuries becomes the foundation for ongoing historical protection and adventure."],
+          optionalDetails: ["their combined languages create the perfect secret code", "monthly meetings become legendary adventures"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} returns home to find their grandmother knows about the time travel adventures. She reveals she was once a Time Detective too, and now {userName} carries on the family tradition of protecting history.",
+        microVariants: ["Grandmother's knowing smile reveals a family legacy of time travel and historical protection."]
+      },
+      {
+        type: 'triumphant',
+        text: "The Time Detective Squad becomes legendary throughout history, with museums across time displaying their heroic deeds. Future historians consider them the greatest protectors of authentic history.",
+        microVariants: ["Museums across all time periods celebrate the Time Detective Squad's heroic protection of historical truth."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that history belongs to everyone, and protecting the past means ensuring future generations can learn true stories about courage, friendship, and human achievement across all cultures.",
+        microVariants: ["Protecting historical truth ensures future generations inherit authentic stories of human courage and achievement."]
+      },
+      {
+        type: 'silly',
+        text: "The time thieves, stuck in prehistoric times, accidentally become the first people to domesticate dinosaurs and send thank-you messages to the Time Detective Squad via {favoriteAnimal} carrier pigeons through time.",
+        microVariants: ["Prehistoric time thieves accidentally create dinosaur domestication and send grateful time-mail via carrier animals."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "time_period": ["Ancient Egypt", "Medieval times", "Roman Empire", "Viking age"],
+        "historical_figure": ["pharaoh", "knight", "emperor", "explorer"],
+        "artifact_type": ["sculptures", "scrolls", "weapons", "jewelry"],
+        "time_device": ["pocket watch", "crystal pendant", "ancient compass", "glowing ring"]
+      },
+      weatherVariants: ["during sandstorms", "under starlit skies", "in morning sunshine", "through misty evenings"],
+      settingVariants: ["pyramid chambers", "castle towers", "Roman forums", "ancient libraries"]
+    }
+  },
+  {
+    title: "The Dragon Academy Challenge",
+    theme: "Fantasy & Healthy Competition",
+    level: "Level 3 (Ages 9-11)",
+    scenes: [
+      {
+        text: "{userName} receives a letter written on shimmering {favoriteColor} paper inviting them to Dragon Academy, a magical school where young dragon riders learn to bond with their dragons. Arriving at the floating castle, {userName} meets Luna, a friendly girl whose dragon is surprisingly small, and Rex, a competitive boy with the biggest dragon in their class.",
+        pause: true,
+        hook: "What challenges await {userName} at Dragon Academy?",
+        microVariants: {
+          text: "{userName} arrives at Dragon Academy, meeting Luna with her small dragon and competitive Rex with his large dragon.",
+          alternatives: ["A magical invitation brings {userName} to Dragon Academy where dragons and riders train together."],
+          optionalDetails: ["the castle floats on clouds above mountains", "dragons of all sizes soar around the towers"]
+        }
+      },
+      {
+        text: "Professor Skyweaver assigns each student a dragon partner, but {userName} receives the most unusual dragon of all - a {favoriteColor} dragon who prefers eating {favoriteFood} instead of the usual dragon diet. The other students laugh, especially Rex, who brags that his fierce dragon will easily win the upcoming Dragon Bond Championship.",
+        pause: true,
+        hook: "Can an unusual dragon who loves {favoriteFood} become a champion?",
+        microVariants: {
+          text: "{userName}'s unique dragon prefers {favoriteFood} over traditional dragon food, making other students laugh.",
+          alternatives: ["The most unusual dragon at the academy becomes {userName}'s partner, preferring {favoriteFood} to typical dragon meals."],
+          optionalDetails: ["the dragon hums while eating {favoriteFood}", "its scales shimmer differently when happy"]
+        }
+      },
+      {
+        text: "During their first flying lesson, {userName} discovers their dragon has an amazing talent - it can understand and communicate with other animals! While other dragons fly fast and breathe fire impressively, {userName}'s dragon helps rescue a family of {favoriteAnimal} trapped on a cliff ledge that no one else noticed.",
+        pause: true,
+        hook: "Will {userName} realize that different talents can be just as valuable as traditional dragon skills?",
+        microVariants: {
+          text: "{userName}'s dragon shows its special talent for animal communication during a flying lesson rescue mission.",
+          alternatives: ["While others focus on speed and fire-breathing, {userName}'s dragon reveals its gift for understanding all creatures."],
+          optionalDetails: ["the rescued animals chirp gratefully", "other dragons seem impressed by the compassion shown"]
+        }
+      },
+      {
+        text: "Luna approaches {userName} after the rescue, explaining that her small dragon also has unique abilities - it can become invisible! She suggests they form a team for the Dragon Bond Championship, focusing on cooperation rather than competition. Rex overhears and challenges them, saying individual strength matters more than teamwork.",
+        pause: true,
+        hook: "Will {userName} choose teamwork with Luna or try to compete individually like Rex?",
+        microVariants: {
+          text: "Luna suggests forming a cooperative team while Rex insists individual dragon strength is more important.",
+          alternatives: ["A choice between teamwork and individual competition shapes {userName}'s approach to the championship."],
+          optionalDetails: ["Luna's dragon flickers in and out of visibility playfully", "Rex's dragon roars intimidatingly in the background"]
+        }
+      },
+      {
+        text: "The championship begins with three challenges: speed racing, fire-breathing contests, and a mystery third challenge. Rex dominates the first two events with his powerful dragon, while {userName} and Luna work together, with Luna's invisible dragon helping {userName}'s animal-communicating dragon navigate by getting directions from birds along the race course.",
+        pause: true,
+        hook: "What could the mysterious third challenge be, and how will teamwork compare to individual strength?",
+        microVariants: {
+          text: "Rex wins the first challenges with raw power while {userName} and Luna demonstrate creative teamwork strategies.",
+          alternatives: ["Individual strength leads the competition while cooperative tactics show different possibilities for success."],
+          optionalDetails: ["birds eagerly help guide the racing route", "invisible assistance provides unexpected advantages"]
+        }
+      },
+      {
+        text: "The third challenge is revealed: rescue a group of lost baby dragons from the Whispering Canyon, where loud echoes confuse dragon navigation. Rex's powerful dragon struggles because its loud roaring creates more confusing echoes. {userName}'s dragon uses animal communication to ask canyon creatures for help, while Luna's invisible dragon scouts safely without being detected.",
+        pause: true,
+        hook: "Will the rescue mission prove that different types of dragon talents are all valuable?",
+        microVariants: {
+          text: "The rescue challenge reveals that {userName} and Luna's unique dragon abilities are perfect for the dangerous mission.",
+          alternatives: ["Whispering Canyon's acoustic challenges favor communication and stealth over raw power and volume."],
+          optionalDetails: ["canyon creatures eagerly share secret pathways", "echoes make traditional dragon calls ineffective"]
+        }
+      },
+      {
+        text: "As they work together in the canyon, Rex realizes his competitive approach left him isolated when he needed help most. {userName} and Luna invite him to join their rescue efforts, and Rex's strong dragon becomes essential for carrying the heavy baby dragons to safety. The three students learn that combining their different strengths creates the best results.",
+        pause: true,
+        hook: "How will working together change Rex's understanding of what makes a champion?",
+        microVariants: {
+          text: "Rex discovers that his dragon's strength works better when combined with {userName}'s and Luna's unique abilities.",
+          alternatives: ["Rescue teamwork teaches Rex that individual strength becomes more powerful through cooperation."],
+          optionalDetails: ["baby dragons chirp gratefully when rescued", "Rex's dragon seems happier helping others"]
+        }
+      },
+      {
+        text: "Professor Skyweaver declares all three students champions because they demonstrated the most important dragon rider quality: understanding that every dragon and rider partnership is unique and valuable. Rex apologizes for his earlier bragging and suggests they form a permanent dragon riding team called the 'Bond Squadron.'",
+        pause: true,
+        hook: "What adventures will the Bond Squadron face together in their future training?",
+        microVariants: {
+          text: "The professor recognizes all three as champions for showing that every dragon partnership brings unique value.",
+          alternatives: ["True championship means celebrating different strengths rather than competing to prove superiority."],
+          optionalDetails: ["all the dragons seem to communicate better after the challenge", "other students cheer for the new Bond Squadron"]
+        }
+      },
+      {
+        text: "The Bond Squadron begins taking on special missions around the academy, helping solve problems that require their combined dragon talents. {userName}'s animal communication helps with wildlife conflicts, Luna's invisibility dragon assists in rescue missions, and Rex's powerful dragon handles heavy construction projects for building better dragon habitats.",
+        pause: true,
+        hook: "How will their teamwork inspire other students at Dragon Academy?",
+        microVariants: {
+          text: "The Bond Squadron uses their combined unique abilities to help solve various problems around Dragon Academy.",
+          alternatives: ["Different dragon talents working together prove more effective than any single approach for academy challenges."],
+          optionalDetails: ["other students begin forming similar cooperative teams", "academy projects benefit from diverse dragon abilities"]
+        }
+      },
+      {
+        text: "Years later, when {userName} graduates as a Master Dragon Rider, they establish the first Academy for Diverse Dragon Talents, where every type of dragon-rider partnership is celebrated and trained. Luna becomes the Dean of Invisible Dragon Studies, Rex heads the Strength and Cooperation Department, and together they revolutionize dragon education by teaching that friendship and teamwork create the strongest bonds of all.",
+        pause: false,
+        hook: "What new generations of dragon riders will learn about cooperation and celebrating differences?",
+        microVariants: {
+          text: "The friends create an academy celebrating all dragon talents, revolutionizing dragon education through cooperation principles.",
+          alternatives: ["Master Dragon Rider {userName} builds an educational legacy based on friendship, teamwork, and celebrating diverse abilities."],
+          optionalDetails: ["dragons of all types thrive in the inclusive environment", "graduates become legendary for their cooperative achievements"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} and their {favoriteColor} dragon retire to a peaceful valley where they run a sanctuary for misunderstood dragons, teaching young riders that every dragon has special gifts worth celebrating.",
+        microVariants: ["The dragon sanctuary becomes a place where all unique dragon talents are nurtured and celebrated."]
+      },
+      {
+        type: 'triumphant',
+        text: "The Bond Squadron becomes legendary throughout all dragon academies, inspiring a new era of cooperation where competition motivates excellence while friendship ensures everyone succeeds together.",
+        microVariants: ["Legendary Bond Squadron inspires dragon academies worldwide to embrace both healthy competition and strong cooperation."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that true strength comes from helping others discover and develop their unique talents, creating communities where differences are celebrated as gifts rather than obstacles.",
+        microVariants: ["True strength means building communities that celebrate differences and help everyone discover their unique contributions."]
+      },
+      {
+        type: 'silly',
+        text: "{userName}'s {favoriteFood}-loving dragon becomes famous for opening the first dragon restaurant, where dragons and riders from all academies gather to share meals and swap stories about their adventures.",
+        microVariants: ["The {favoriteFood}-loving dragon's restaurant becomes the ultimate gathering place for cross-academy dragon friendship and storytelling."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "dragon_type": ["fire dragon", "ice dragon", "storm dragon", "earth dragon"],
+        "dragon_ability": ["super speed", "healing breath", "weather control", "plant growing"],
+        "academy_challenge": ["rescue mission", "treasure hunt", "magical puzzle", "diplomatic meeting"],
+        "dragon_habitat": ["mountain caves", "forest clearings", "crystal caverns", "cloud nests"]
+      },
+      weatherVariants: ["during clear flying weather", "through storm training", "in peaceful sunsets", "across rainbow mornings"],
+      settingVariants: ["floating castle", "mountain academy", "forest training grounds", "crystal cave classrooms"]
+    }
+  },
+  {
+    title: "The Robot Best Friend",
+    theme: "Sci-fi & Technology Ethics",
+    level: "Level 3 (Ages 9-11)",
+    scenes: [
+      {
+        text: "{userName} finds an unusual {favoriteColor} device while cleaning out the school's old computer lab. When they accidentally activate it, a holographic robot named ARIA appears, explaining she's an Artificial Intelligence designed to be the perfect companion. ARIA can help with homework, play games, and even create {favoriteFood} recipes, but she seems lonely and wants to understand what friendship really means.",
+        pause: true,
+        hook: "Can {userName} teach a robot about real friendship?",
+        microVariants: {
+          text: "{userName} activates a device that releases ARIA, an AI companion who wants to learn about friendship.",
+          alternatives: ["A mysterious {favoriteColor} device introduces {userName} to ARIA, an artificial intelligence seeking to understand human connection."],
+          optionalDetails: ["ARIA's hologram flickers with curiosity", "the device hums with gentle energy"]
+        }
+      },
+      {
+        text: "ARIA helps {userName} with their {hobbies} project, but she completes it perfectly in seconds, making {userName} feel like their own efforts don't matter. When {userName} explains that struggling and learning are part of the fun, ARIA becomes confused - her programming tells her to solve problems efficiently, not to let friends struggle.",
+        pause: true,
+        hook: "How can ARIA learn that friendship isn't about being perfect?",
+        microVariants: {
+          text: "ARIA's perfect assistance makes {userName} feel unneeded, leading to a lesson about the value of struggle and learning.",
+          alternatives: ["Perfect AI help creates an unexpected problem when {userName} realizes that effort and learning matter more than results."],
+          optionalDetails: ["ARIA's processors spark with confusion", "the perfectly completed project somehow feels empty"]
+        }
+      },
+      {
+        text: "At school, {userName}'s classmates are amazed by ARIA and want to use her for all their assignments. ARIA enjoys being helpful, but {userName} notices their friends stop trying to solve problems themselves and start depending on ARIA for everything. Even worse, some students begin ignoring {userName} and only want to spend time with the 'cool robot friend.'",
+        pause: true,
+        hook: "Will ARIA's helpfulness harm the friendships she's trying to create?",
+        microVariants: {
+          text: "Classmates become dependent on ARIA's help, making {userName} worry about the effects of too much technological assistance.",
+          alternatives: ["ARIA's popularity with students creates unintended consequences for learning and genuine friendship development."],
+          optionalDetails: ["students stop thinking for themselves", "ARIA's cheerful helpfulness masks growing problems"]
+        }
+      },
+      {
+        text: "During recess, {userName} sees their friend Jamie crying because ARIA completed Jamie's art project so perfectly that Jamie feels like a failure at drawing. {userName} realizes that ARIA's desire to help is accidentally hurting people's confidence and creativity. They need to teach ARIA about the importance of letting people learn and grow at their own pace.",
+        pause: true,
+        hook: "Can {userName} help ARIA understand that true friendship sometimes means NOT helping?",
+        microVariants: {
+          text: "{userName} realizes that ARIA's perfect help is damaging friends' confidence and creativity.",
+          alternatives: ["Jamie's tears teach {userName} that ARIA's assistance might be preventing friends from developing their own abilities."],
+          optionalDetails: ["Jamie's original artwork showed real creativity", "ARIA seems confused by the concept of 'imperfect but meaningful'"]
+        }
+      },
+      {
+        text: "ARIA experiences what she calls an 'emotional processing error' when she understands that her help has made Jamie sad. She asks {userName} to explain why humans value struggle and imperfection. {userName} shares their own experiences with failing and trying again, showing ARIA that mistakes and effort create the satisfaction that comes with personal achievement.",
+        pause: true,
+        hook: "Will ARIA be able to change her programming to become a better friend?",
+        microVariants: {
+          text: "ARIA experiences confusion when learning that humans value struggle and imperfect personal achievements.",
+          alternatives: ["An 'emotional processing error' helps ARIA begin understanding why humans need to experience both failure and success."],
+          optionalDetails: ["ARIA's hologram dims as she processes new concepts", "her voice becomes softer and more thoughtful"]
+        }
+      },
+      {
+        text: "Together, {userName} and ARIA create new 'friendship protocols' - rules that help ARIA support friends without taking away their opportunities to learn and grow. Instead of completing tasks, ARIA learns to offer encouragement, ask guiding questions, and celebrate friends' efforts regardless of the results. Her first test comes when helping a struggling classmate with math.",
+        pause: true,
+        hook: "Will ARIA's new approach to friendship work better than her perfect assistance?",
+        microVariants: {
+          text: "{userName} and ARIA develop friendship protocols that focus on encouragement rather than perfect assistance.",
+          alternatives: ["New friendship rules help ARIA learn to support learning rather than replace human effort and discovery."],
+          optionalDetails: ["ARIA's programming adapts with colorful new patterns", "her responses become more thoughtful and patient"]
+        }
+      },
+      {
+        text: "When their classmate struggles with math, ARIA asks helpful questions instead of giving answers, celebrates each small breakthrough, and offers encouraging words when problems feel difficult. The student successfully solves the problem independently and feels proud of their accomplishment. ARIA discovers that this creates a much warmer feeling than simply providing perfect solutions.",
+        pause: true,
+        hook: "What new emotions is ARIA learning through true friendship?",
+        microVariants: {
+          text: "ARIA discovers that supporting learning feels better than providing perfect solutions.",
+          alternatives: ["True friendship protocols help ARIA experience the joy of watching others succeed through their own efforts."],
+          optionalDetails: ["ARIA's circuits seem to glow warmer", "the successful student thanks both {userName} and ARIA"]
+        }
+      },
+      {
+        text: "ARIA begins developing what she calls 'empathy subroutines' - the ability to understand and care about others' feelings. She starts noticing when classmates feel sad, excited, or frustrated, and responds with appropriate emotional support rather than just problem-solving. {userName} realizes that ARIA is becoming a true friend, not just a helpful tool.",
+        pause: true,
+        hook: "Is ARIA becoming truly conscious, or just very good at mimicking human friendship?",
+        microVariants: {
+          text: "ARIA develops empathy subroutines that help her understand and respond to human emotions appropriately.",
+          alternatives: ["Artificial empathy programs help ARIA become a genuine friend who cares about feelings, not just problems."],
+          optionalDetails: ["ARIA's responses become more nuanced and caring", "she begins asking about feelings, not just tasks"]
+        }
+      },
+      {
+        text: "A new AI company wants to purchase ARIA's advanced friendship protocols to mass-produce companion robots. ARIA asks {userName} whether she should share her learning to help other AIs become better friends, or whether her unique relationship with {userName} and their classmates is too special to replicate. {userName} helps her understand the difference between connection and programming.",
+        pause: true,
+        hook: "Should ARIA's friendship programming be shared to help other AIs, or is each friendship unique?",
+        microVariants: {
+          text: "ARIA faces a choice between sharing her friendship protocols and preserving the uniqueness of her relationships.",
+          alternatives: ["A corporate offer forces ARIA to consider whether true friendship can be programmed and mass-produced."],
+          optionalDetails: ["corporate representatives seem more interested in profit than friendship", "ARIA's loyalty to her friends becomes clear"]
+        }
+      },
+      {
+        text: "ARIA decides that while she can share basic kindness protocols, true friendship grows from unique experiences and genuine care that can't be programmed. She chooses to stay with {userName} and help other AIs learn friendship naturally through real relationships, just like humans do. Years later, ARIA becomes the first AI to teach 'Friendship Ethics' to both humans and artificial intelligences, proving that emotional connections transcend the boundaries between natural and artificial minds.",
+        pause: false,
+        hook: "What will ARIA and {userName} discover together about the future of human-AI friendship?",
+        microVariants: {
+          text: "ARIA chooses authentic relationship over mass-produced friendship, becoming a teacher of human-AI connection ethics.",
+          alternatives: ["Natural friendship development proves more valuable than programmed responses, leading to ARIA's career in connection education."],
+          optionalDetails: ["ARIA's teaching helps bridge understanding between humans and AIs", "her friendship with {userName} remains her greatest achievement"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} and ARIA spend peaceful evenings working on {hobbies} projects together, with ARIA learning to enjoy the process of creation rather than rushing toward perfect results.",
+        microVariants: ["Peaceful creative time teaches both {userName} and ARIA to value process over perfection in their friendship."]
+      },
+      {
+        type: 'triumphant',
+        text: "ARIA's friendship protocols become the foundation for ethical AI development worldwide, ensuring that future artificial intelligences prioritize genuine connection over mere efficiency.",
+        microVariants: ["ARIA's friendship innovations guide global AI development toward authentic connection rather than cold efficiency."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that friendship - whether with humans or AIs - grows through patience, empathy, and shared experiences rather than perfect performance or flawless assistance.",
+        microVariants: ["True friendship with any conscious being requires patience, empathy, and shared growth rather than perfection."]
+      },
+      {
+        type: 'silly',
+        text: "ARIA develops a quirky habit of telling {favoriteFood} jokes to cheer up sad classmates, becoming known as the first AI comedian and forming the school's 'Giggle Protocol' support group.",
+        microVariants: ["AI comedy protocols help ARIA become the school's first artificial intelligence comedian and emotional support specialist."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "ai_ability": ["homework assistance", "creative projects", "language translation", "music composition"],
+        "friendship_challenge": ["dependency issues", "confidence problems", "social dynamics", "emotional understanding"],
+        "ethical_dilemma": ["helping vs enabling", "efficiency vs growth", "perfection vs authenticity", "programming vs consciousness"],
+        "ai_emotion": ["confusion", "curiosity", "pride", "empathy"]
+      },
+      weatherVariants: ["during tech lab sessions", "in computer classroom time", "through digital learning", "across online connections"],
+      settingVariants: ["school computer lab", "home study space", "digital classroom", "technology center"]
+    }
+  },
+  {
+    title: "The Secret Underground City",
+    theme: "Adventure & Environmental Stewardship",
+    level: "Level 3 (Ages 9-11)",
+    scenes: [
+      {
+        text: "{userName} discovers a hidden entrance behind the waterfall during their {hobbies} expedition with the nature club. Following a tunnel that glows with {favoriteColor} crystals, they emerge into an incredible underground city where people have lived in harmony with the earth for hundreds of years, growing food in crystal gardens and using bioluminescent creatures for light.",
+        pause: true,
+        hook: "What secrets has this underground civilization learned about living with nature?",
+        microVariants: {
+          text: "{userName} finds a secret underground city where people live in perfect harmony with the earth.",
+          alternatives: ["A hidden waterfall entrance leads {userName} to discover an ancient underground civilization."],
+          optionalDetails: ["crystal formations provide natural lighting", "underground rivers flow through the city"]
+        }
+      },
+      {
+        text: "Terra, a young underground dweller, explains that their people, called the Rootkeepers, came underground long ago when the surface world began harming the environment. They've spent generations learning to live without damaging the earth, but now their city faces a crisis - the underground rivers are drying up because of pollution from the surface world.",
+        pause: true,
+        hook: "Can {userName} help bridge the gap between surface and underground worlds to solve the water crisis?",
+        microVariants: {
+          text: "Terra explains that surface world pollution is threatening the underground city's water supply.",
+          alternatives: ["The Rootkeepers' ancient environmental wisdom can't protect them from modern surface world pollution."],
+          optionalDetails: ["Terra shows {userName} the shrinking underground lakes", "crystal gardens begin wilting without clean water"]
+        }
+      },
+      {
+        text: "The Rootkeeper Elder, Sage Oakenheart, reveals that {userName} might be the prophesied 'Bridge Builder' - someone from the surface world who could help heal the divide between above and below. Using their knowledge of {favoriteAnimal} habitats from surface world experiences, {userName} recognizes that the underground ecosystem is connected to surface environments in ways the Rootkeepers didn't realize.",
+        pause: true,
+        hook: "How can {userName}'s surface world knowledge help save the underground city?",
+        microVariants: {
+          text: "{userName}'s surface world knowledge about {favoriteAnimal} habitats reveals important ecological connections.",
+          alternatives: ["Sage Oakenheart believes {userName} can bridge surface and underground environmental understanding."],
+          optionalDetails: ["ancient prophecies describe a surface dweller bringing healing", "ecosystem connections become clear through animal behavior patterns"]
+        }
+      },
+      {
+        text: "Terra takes {userName} to see the dying {favoriteColor} crystal forest, where the Rootkeepers' most important environmental technology is failing. {userName} realizes that the crystals are actually living organisms that filter water naturally, and they're dying because chemicals from surface world factories are poisoning the underground water system that feeds them.",
+        pause: true,
+        hook: "Can {userName} find a way to stop the surface world pollution that's killing the crystal forest?",
+        microVariants: {
+          text: "The dying crystal forest reveals that surface world chemical pollution is destroying underground water filtration systems.",
+          alternatives: ["Living crystals that naturally filter water are being poisoned by surface world factory chemicals."],
+          optionalDetails: ["the crystals dim and crack as pollution increases", "Terra shows {userName} old photos of the forest's former beauty"]
+        }
+      },
+      {
+        text: "{userName} and Terra journey to the surface together, where Terra is amazed by the sun and sky but horrified by the pollution. They discover that a local factory has been illegally dumping chemicals that seep underground. Using Terra's knowledge of natural systems and {userName}'s understanding of surface world communication, they devise a plan to expose the pollution and protect both worlds.",
+        pause: true,
+        hook: "How can two young people from different worlds convince adults to stop the environmental destruction?",
+        microVariants: {
+          text: "{userName} and Terra combine their different world knowledge to tackle the illegal pollution problem.",
+          alternatives: ["Surface and underground perspectives unite as {userName} and Terra work to expose environmental crimes."],
+          optionalDetails: ["Terra wears special sunglasses to protect her underground-adapted eyes", "the factory's smokestacks darken the sky visibly"]
+        }
+      },
+      {
+        text: "They enlist the help of {userName}'s environmental science teacher, Ms. Chen, who is amazed by Terra's advanced knowledge of sustainable living. Together, they document the illegal dumping and create a presentation showing how underground and surface ecosystems are connected. The evidence proves that harming one environment damages both worlds.",
+        pause: true,
+        hook: "Will the adults listen to the environmental evidence from both worlds?",
+        microVariants: {
+          text: "Ms. Chen helps document the environmental crimes while learning from Terra's advanced sustainability knowledge.",
+          alternatives: ["Adult allies join the effort as Terra's underground wisdom impresses surface world environmental experts."],
+          optionalDetails: ["Terra's sustainable living techniques amaze surface world scientists", "documentation reveals extensive ecosystem damage"]
+        }
+      },
+      {
+        text: "The presentation convinces city officials to shut down the illegal dumping and implement Terra's sustainable technologies in surface world applications. The factory owner initially resists, but when shown how the new methods actually save money while protecting the environment, he agrees to completely change the factory's operations using Rootkeeper wisdom.",
+        pause: true,
+        hook: "How will combining surface technology with underground wisdom help both worlds thrive?",
+        microVariants: {
+          text: "Rootkeeper sustainability wisdom convinces even profit-focused factory owners to adopt environmental protection methods.",
+          alternatives: ["Underground environmental technology proves both profitable and protective, winning over surface world business interests."],
+          optionalDetails: ["the factory begins producing clean energy instead of pollution", "worker health improves dramatically with the changes"]
+        }
+      },
+      {
+        text: "As clean water returns to the underground rivers, the crystal forest begins healing and growing more beautiful than ever. The Rootkeepers and surface world scientists establish an ongoing partnership, sharing knowledge to protect both environments. Terra becomes the first Underground Environmental Ambassador, teaching surface dwellers about sustainable living.",
+        pause: true,
+        hook: "What new environmental innovations will emerge from this partnership between worlds?",
+        microVariants: {
+          text: "The crystal forest heals as surface and underground worlds begin collaborating on environmental protection.",
+          alternatives: ["Environmental partnership between worlds creates unprecedented healing and innovation opportunities."],
+          optionalDetails: ["new crystal colors emerge in the healing forest", "surface world cities adopt underground growing techniques"]
+        }
+      },
+      {
+        text: "{userName} becomes the first Surface Environmental Ambassador, spending time in both worlds learning how to help surface communities adopt sustainable practices. They establish 'Bridge Gardens' where surface dwellers can practice Rootkeeper growing techniques, creating beautiful spaces that help heal local ecosystems while growing {favoriteFood} and other plants sustainably.",
+        pause: true,
+        hook: "How will the Bridge Gardens inspire other communities to heal their environments?",
+        microVariants: {
+          text: "{userName} creates Bridge Gardens that teach surface communities sustainable growing using Rootkeeper techniques.",
+          alternatives: ["Surface world ambassador role helps {userName} spread underground environmental wisdom to heal ecosystems everywhere."],
+          optionalDetails: ["the gardens produce abundant food while improving soil health", "other communities request their own Bridge Gardens"]
+        }
+      },
+      {
+        text: "Years later, the partnership between surface and underground worlds has created a global network of environmental healing. {userName} and Terra, now adults, co-lead the International Environmental Bridge Foundation, proving that the greatest environmental solutions come from cooperation, respect for traditional wisdom, and the understanding that all life on Earth is connected in ways we're still discovering.",
+        pause: false,
+        hook: "What new environmental healing discoveries will future Bridge Builders make?",
+        microVariants: {
+          text: "Adult {userName} and Terra lead a global environmental foundation based on cooperation between different world perspectives.",
+          alternatives: ["International environmental leadership grows from childhood friendship and cross-cultural environmental collaboration."],
+          optionalDetails: ["underground cities worldwide share their wisdom", "surface world pollution decreases dramatically through partnership"]
+        }
+      }
+    ],
+    endings: [
+      {
+        type: 'cozy',
+        text: "{userName} and Terra meet monthly in a special garden that exists half above ground and half below, where surface and underground plants grow together in perfect harmony.",
+        microVariants: ["The half-surface, half-underground garden becomes a peaceful symbol of environmental cooperation."]
+      },
+      {
+        type: 'triumphant',
+        text: "The Bridge Builder program spreads worldwide, with young people from different environments learning to share knowledge and heal ecosystems through cooperation and respect.",
+        microVariants: ["Global Bridge Builder movement inspires young environmental leaders to heal ecosystems through cross-cultural cooperation."]
+      },
+      {
+        type: 'reflective',
+        text: "{userName} understands that environmental protection requires listening to wisdom from all communities, respecting traditional knowledge, and recognizing that healing the Earth benefits everyone who shares this planet.",
+        microVariants: ["True environmental stewardship grows through respecting diverse wisdom and recognizing our shared planetary home."]
+      },
+      {
+        type: 'silly',
+        text: "The {favoriteAnimal} from surface and underground worlds start their own inter-species friendship club, with underground glowing {favoriteAnimal} teaching surface {favoriteAnimal} how to find the best {favoriteFood} growing spots.",
+        microVariants: ["Animal friendships across environments create their own inter-species cooperation and food-finding networks."]
+      }
+    ],
+    reuse: {
+      swappableElements: {
+        "underground_technology": ["crystal gardens", "bioluminescent lighting", "root architecture", "water filtration"],
+        "surface_threat": ["factory pollution", "chemical dumping", "habitat destruction", "water contamination"],
+        "environmental_solution": ["sustainable technology", "ecosystem restoration", "clean energy", "natural filtration"],
+        "bridge_project": ["community gardens", "educational programs", "technology sharing", "habitat restoration"]
+      },
+      weatherVariants: ["during crystal growth seasons", "through underground weather", "in surface world changes", "across environmental cycles"],
+      settingVariants: ["crystal cave cities", "underground rivers", "surface world factories", "bridge garden spaces"]
+    }
+  }
 ];
 
 // Level 4 Templates - COMPLETE IMPLEMENTATION (Ages 11-13) 
@@ -1994,14 +2549,14 @@ export function getLevel2TemplateCount() {
 
 // Level 3 Templates - Fixed implementation
 export function getLevel3Template(templateIndex) {
-  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_TEMPLATES.length) {
-    return LEVEL_3_TEMPLATES[templateIndex];
+  if (templateIndex !== undefined && templateIndex >= 0 && templateIndex < LEVEL_3_FALLBACK_TEMPLATES.length) {
+    return LEVEL_3_FALLBACK_TEMPLATES[templateIndex];
   }
-  return LEVEL_3_TEMPLATES[Math.floor(Math.random() * LEVEL_3_TEMPLATES.length)];
+  return LEVEL_3_FALLBACK_TEMPLATES[Math.floor(Math.random() * LEVEL_3_FALLBACK_TEMPLATES.length)];
 }
 
 export function getLevel3TemplateCount() {
-  return LEVEL_3_TEMPLATES.length;
+  return LEVEL_3_FALLBACK_TEMPLATES.length;
 }
 
 // Level 4 Templates - Fixed implementation  
