@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
-import { LiveGenerationService } from '@/services/LiveGenerationService';
+import { useTemplateService } from '@/hooks/useTemplateService';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 import { validateTokenLimit } from '@/utils/tokenLimitValidator';
 
@@ -173,6 +172,7 @@ export function StoryPromptTester() {
   const [isRunning, setIsRunning] = useState(false);
   const [currentTest, setCurrentTest] = useState('');
   const [progress, setProgress] = useState(0);
+  const { generateStory } = useTemplateService();
 
   const checkPageConcatenation = (pages: string[], level: string): boolean => {
     // Level 0 (beginner) should have exactly 1 sentence per page, max 8 words
@@ -204,20 +204,20 @@ export function StoryPromptTester() {
     return false;
   };
 
-  const analyzeStoryContent = (content: string, level: string): { 
+  const analyzeStoryContent = (result: any, level: string): { 
     pages: number; 
     wordCount: number; 
     hasPageConcatenation: boolean; 
   } => {
-    // Handle both array of pages and string content
+    // Handle template service response format
     let pages: string[] = [];
-    if (Array.isArray(content)) {
-      pages = content.filter(p => p && p.trim());
-    } else if (typeof content === 'string') {
-      // Try to split by Page markers first, then by paragraphs
-      pages = content.split(/(?:^|\n)(?:Page \d+:?\s*)/i).filter(p => p.trim());
+    if (result?.pages && Array.isArray(result.pages)) {
+      pages = result.pages.filter((p: string) => p && p.trim());
+    } else if (typeof result === 'string') {
+      // Fallback for string content
+      pages = result.split(/(?:^|\n)(?:Page \d+:?\s*)/i).filter(p => p.trim());
       if (pages.length <= 1) {
-        pages = content.split(/\n\n+/).filter(p => p.trim());
+        pages = result.split(/\n\n+/).filter(p => p.trim());
       }
     }
     
@@ -236,18 +236,18 @@ export function StoryPromptTester() {
 
   const testStoryGeneration = async (level: string, userInfo: UserInfo): Promise<TestResult> => {
     try {
-      console.log(`Testing ${level} level story generation...`);
+      console.log(`🧪 Testing ${level} level template generation...`);
       
-      // Test Netflix-style (free) generation
-      const result = await NetflixStyleStoryService.generateCompleteStory(userInfo);
+      // Use template service instead of Netflix service
+      const result = await generateStory(userInfo, 'testing');
       
-      if (!result.content || result.content.length === 0) {
-        throw new Error('Story generation failed or returned empty content');
+      if (!result || !result.pages) {
+        throw new Error('Template generation failed or returned empty content');
       }
 
-      const fullContent = result.content.join('\n\n');
-      const analysis = analyzeStoryContent(fullContent, level);
-      const tokenValidation = validateTokenLimit(fullContent, userInfo.difficultyLevel || 'beginner');
+      const analysis = analyzeStoryContent(result, level);
+      const contentForValidation = result.pages ? result.pages.join('\n\n') : '';
+      const tokenValidation = validateTokenLimit(contentForValidation, userInfo.difficultyLevel || 'beginner');
 
       return {
         level,
@@ -255,11 +255,11 @@ export function StoryPromptTester() {
         pages: analysis.pages,
         wordCount: analysis.wordCount,
         hasPageConcatenation: analysis.hasPageConcatenation,
-        content: fullContent.substring(0, 500) + '...', // Truncate for display
+        content: contentForValidation.substring(0, 500) + '...', // Truncate for display
         tokenValidation
       };
     } catch (error) {
-      console.error(`Error testing ${level}:`, error);
+      console.error(`❌ Error testing ${level}:`, error);
       return {
         level,
         success: false,
