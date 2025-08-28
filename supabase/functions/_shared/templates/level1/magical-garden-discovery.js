@@ -1,42 +1,103 @@
 /**
- * Level 1 Template: The Magical Garden Discovery  
- * Story about curiosity, wonder, and discovering nature's secrets
+ * Level 1 Template: The Magical Garden Discovery
+ * Theme: Magic & Nature
+ * Individual template file for on-demand loading
  */
 
 export const template = {
   title: "The Magical Garden Discovery",
-  theme: "curiosity and discovering nature's wonders",
-  level: "level1",
+  theme: "Magic & Nature",
+  level: "Level 1",
   scenes: [
     {
-      text: "[userName] was [hobbies] in their grandmother's old garden when they noticed something strange. One of the [favoriteColor] flowers was glowing softly, and it seemed to be humming a gentle tune that no other flower was making.",
+      text: "{userName} discovers a magical garden behind their house. The flowers sparkle with rainbow colors in the bright sunlight.",
       pause: true,
-      hook: "What could make a flower glow and sing?",
+      hook: "What magical creatures might live in this garden?",
       microVariants: {
-        text: "[userName] was [hobbies] in their grandmother's old garden when they noticed something strange. One of the [favoriteColor] flowers was glowing softly, and it seemed to be humming a gentle tune that no other flower was making.",
-        alternatives: [],
-        optionalDetails: []
+        text: "{userName} discovers a magical garden behind their house. The flowers sparkle with rainbow colors in the bright sunlight.",
+        alternatives: ["Behind the house, {userName} finds an enchanted garden.", "A secret garden appears to {userName} with glowing flowers."],
+        optionalDetails: ["butterflies dance around the flowers", "a gentle breeze carries sweet perfume"]
+      }
+    },
+    {
+      text: "A tiny fairy appears from behind a {favoriteColor} flower. The fairy explains that the garden needs help because the magic is fading.",
+      pause: true,
+      hook: "How can {userName} help save the magical garden?",
+      microVariants: {
+        text: "A tiny fairy appears from behind a {favoriteColor} flower. The fairy explains that the garden needs help because the magic is fading.",
+        alternatives: ["A small fairy flies out to greet {userName}, worried about the garden's magic.", "From the flowers comes a fairy who needs {userName}'s help."],
+        optionalDetails: ["the fairy has wings like butterfly wings", "sparkles trail behind the fairy as it flies"]
+      }
+    },
+    {
+      text: "{userName} follows the fairy to a dry fountain in the center of the garden. The fairy says the fountain used to sing beautiful songs, but now it's silent.",
+      pause: true,
+      hook: "What will make the fountain sing again?",
+      microVariants: {
+        text: "{userName} follows the fairy to a dry fountain in the center of the garden. The fairy says the fountain used to sing beautiful songs, but now it's silent.",
+        alternatives: ["The fairy leads {userName} to a quiet fountain that once made music.", "In the garden's heart, {userName} finds a fountain that lost its voice."],
+        optionalDetails: ["carved animals decorate the fountain's edge", "rainbow stones line the bottom"]
+      }
+    },
+    {
+      text: "The fairy gives {userName} a special watering can filled with giggles and kindness. When {userName} pours it into the fountain, the water begins to sparkle and bubble with joy.",
+      pause: true,
+      hook: "What magical sounds will the fountain make?",
+      microVariants: {
+        text: "The fairy gives {userName} a special watering can filled with giggles and kindness. When {userName} pours it into the fountain, the water begins to sparkle and bubble with joy.",
+        alternatives: ["A magical watering can with giggles makes the fountain come alive with sparkling water.", "{userName} uses the fairy's special can to fill the fountain with happy, bubbling water."],
+        optionalDetails: ["the water changes colors as it flows", "tiny musical notes float in the air"]
+      }
+    },
+    {
+      text: "The fountain starts singing the most beautiful song {userName} has ever heard. All the flowers begin to glow brighter, and new {favoriteColor} blooms appear everywhere.",
+      pause: true,
+      hook: "What other magical changes will happen in the garden?",
+      microVariants: {
+        text: "The fountain starts singing the most beautiful song {userName} has ever heard. All the flowers begin to glow brighter, and new {favoriteColor} blooms appear everywhere.",
+        alternatives: ["Beautiful fountain music makes flowers glow and new ones bloom in {userName}'s favorite color.", "The singing fountain brings the garden to life with bright flowers and {favoriteColor} petals."],
+        optionalDetails: ["butterflies come to dance around the fountain", "the song sounds like wind chimes and laughter"]
+      }
+    },
+    {
+      text: "The fairy thanks {userName} and gives them a magical seed. 'Plant this in your own garden,' says the fairy, 'and you'll always have a little magic nearby.'",
+      pause: true,
+      hook: "What will grow from the magical seed?",
+      microVariants: {
+        text: "The fairy thanks {userName} and gives them a magical seed. 'Plant this in your own garden,' says the fairy, 'and you'll always have a little magic nearby.'",
+        alternatives: ["A grateful fairy gives {userName} a special seed to bring magic to their own garden.", "The fairy's gift of a magical seed means {userName} can grow their own fairy garden."],
+        optionalDetails: ["the seed glows softly in {userName}'s hand", "the fairy promises to visit the new garden"]
       }
     }
   ],
   endings: [
     {
-      type: "reflective",
-      text: "As the sun set each evening, [userName] sat among the softly glowing flowers and thought about how much magic exists in the world when we take time to really look and listen. Sometimes the most extraordinary things are hiding in the most ordinary places.",
-      microVariants: []
+      type: 'cozy',
+      text: "{userName} plants the magical seed in their own garden and watches it grow into something wonderful.",
+      microVariants: ["The seed grows into a bridge between the two gardens.", "A new fairy home sprouts from the magical seed."]
+    },
+    {
+      type: 'silly',
+      text: "The magical seed grows into a tree that grows {favoriteFood} instead of leaves! A tiny {favoriteAnimal} moves in and becomes the tree's silly guardian.",
+      microVariants: ["The tree grows shoes and socks on its branches.", "Flowers that giggle bloom everywhere in the garden."]
+    },
+    {
+      type: 'triumphant',
+      text: "{userName} becomes the neighborhood's magical garden helper, teaching other children how to grow their own fairy gardens and spread magic everywhere.",
+      microVariants: ["Everyone wants to learn {userName}'s garden magic secrets.", "The whole street becomes filled with magical gardens thanks to {userName}."]
+    },
+    {
+      type: 'reflective',
+      text: "{userName} learns that real magic happens when we care for things with kindness and patience, just like they did for the fairy's garden.",
+      microVariants: ["Kindness is the most powerful magic of all.", "{userName} realizes they can make magic anywhere by being caring."]
     }
   ],
   reuse: {
     swappableElements: {
-      "[userName]": ["the child", "little one", "the curious explorer", "the gentle storyteller"],
-      "[favoriteAnimal]": ["butterfly", "ladybug", "hummingbird", "bunny", "squirrel", "cricket"],
-      "[favoriteColor]": ["rainbow", "golden", "silver", "pearl white", "lavender", "rose pink"],
-      "[favoriteFood]": ["magical berries", "honeyed fruits", "sparkling treats", "garden vegetables", "sweet nectar"],
-      "[hobbies]": ["exploring quietly", "drawing flowers", "reading nature books", "collecting pretty stones", "listening to birds"]
+      "fairy": ["pixie", "sprite", "nature spirit", "garden guardian"],
+      "fountain": ["pond", "stream", "waterfall", "spring"]
     },
-    weatherVariants: ["The gentle evening light made everything glow softly"],
-    settingVariants: ["nestled between ancient rose bushes"]
+    weatherVariants: ["on a sunny morning", "during a gentle rain"],
+    settingVariants: ["backyard", "school garden", "park"]
   }
 };
-
-export default template;
