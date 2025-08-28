@@ -71,9 +71,21 @@ export function useTemplateService() {
           }
 
           console.log('Template service response:', data);
+          
+          // EMERGENCY DIAGNOSTIC: Log response structure
+          console.log('🔍 DIAGNOSTIC: Response keys:', Object.keys(data || {}));
+          console.log('🔍 DIAGNOSTIC: Pages property:', data?.pages);
+          console.log('🔍 DIAGNOSTIC: Pages length:', data?.pages?.length);
+          console.log('🔍 DIAGNOSTIC: Response type:', typeof data);
 
           // Check for successful response based on actual template service format
           if (!data.pages || data.pages.length === 0) {
+            console.error('🚨 EMERGENCY: No pages in response!', { 
+              hasData: !!data, 
+              hasPages: !!data?.pages, 
+              pagesLength: data?.pages?.length,
+              fullResponse: data 
+            });
             throw new Error(data.error || 'Template generation failed - no pages generated');
           }
 

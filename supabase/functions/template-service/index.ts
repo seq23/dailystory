@@ -172,8 +172,9 @@ serve(async (req) => {
     }
 
     console.log('📖 Story generated successfully with', pages.length, 'pages');
-
-    return new Response(JSON.stringify({
+    
+    // EMERGENCY DIAGNOSTIC: Log response structure
+    const responseData = {
       success: true,
       pages: pages,
       level: templateLevel,
@@ -186,7 +187,10 @@ serve(async (req) => {
         mode: mode,
         targetWordDensity: 'Template-optimized'
       }
-    }), {
+    };
+    console.log('🔍 DIAGNOSTIC: Final response structure:', JSON.stringify(responseData, null, 2));
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

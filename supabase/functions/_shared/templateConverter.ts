@@ -137,6 +137,12 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // Apply sophisticated grammar validation
   text = validateAndEnhanceGrammar(text, "they");
   
+  // EMERGENCY FALLBACK: Ensure never empty
+  if (!text || text.trim().length === 0) {
+    console.log('🚨 EMERGENCY: Empty scene text, creating fallback');
+    text = `This is a story scene from "${template?.title || 'a story'}".`;
+  }
+  
   return text;
 }
 
@@ -221,6 +227,18 @@ export function convertStoryTemplateToStringArray(
   pages.push(ending);
   
   console.log(`✅ Template converted to ${pages.length} pages`);
+  
+  // EMERGENCY DIAGNOSTIC: Log first few characters of each page
+  pages.forEach((page, index) => {
+    console.log(`📄 Page ${index + 1}: ${page ? page.substring(0, 50) + '...' : 'EMPTY'}`);
+  });
+  
+  // EMERGENCY FALLBACK: If no pages, create minimal content
+  if (pages.length === 0) {
+    console.log('🚨 EMERGENCY: No pages generated, creating fallback');
+    return [`This is a fallback story page for template: ${template?.title || 'Unknown'}`];
+  }
+  
   return pages;
 }
 
