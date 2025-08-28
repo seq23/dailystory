@@ -4,7 +4,7 @@
  * Individual template file for on-demand loading
  */
 
-export default {
+export const template = {
   title: "The Magical Garden Discovery",
   theme: "Magic & Nature",
   level: "Level 1",

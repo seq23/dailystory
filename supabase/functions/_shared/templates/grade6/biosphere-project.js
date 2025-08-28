@@ -4,7 +4,7 @@
  * Individual template file for on-demand loading
  */
 
-export default {
+export const template = {
   title: "Biosphere Research Project",
   theme: "Environmental Science & Research",
   level: "Grade 6",

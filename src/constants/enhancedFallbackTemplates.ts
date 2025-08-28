@@ -28,7 +28,6 @@ export interface EnhancedFallbackTemplate {
 
 // ===== PROTECTED LEVEL 0 SYSTEM - DO NOT MODIFY =====
 // Import Level 0 templates - these are preserved exactly as-is
-import { VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES } from './newFallbackTemplates/level0VocabCompliant';
 import { LEVEL_0_EXTENSIONS } from './newFallbackTemplates/level0Extensions';
 
 // ===== NEW TEMPLATE SYSTEM INTEGRATION =====
@@ -46,16 +45,6 @@ const DIFFICULTY_TO_FALLBACK_MAP: Record<Exclude<DifficultyLevel, 'beginner'>, F
  * DO NOT MODIFY - Level 0 system remains fully intact
  */
 export const LEVEL_0_ENHANCED_TEMPLATES: EnhancedFallbackTemplate[] = [
-  // Convert vocabulary-compliant Level 0 templates to enhanced format
-  ...VOCABULARY_COMPLIANT_LEVEL_0_TEMPLATES.map(template => ({
-    setup: template.slice(0, 2),
-    development: template.slice(2, 3),
-    climax: template.slice(3, 4),
-    resolution: template.slice(4, 5),
-    contextualContinuations: [],
-    continuationPoints: ["What happens next?", "Where will they go?"],
-    nextStorySeeds: ["Another adventure begins", "A new friend appears"]
-  })),
   // Convert Level 0 extensions (universal access)
   ...LEVEL_0_EXTENSIONS.map(template => ({
     setup: template.slice(0, 2),
