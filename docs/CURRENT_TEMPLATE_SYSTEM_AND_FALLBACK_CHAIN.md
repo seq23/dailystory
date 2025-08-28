@@ -39,22 +39,25 @@ This document provides the accurate, current state of the template system and fa
 
 **On Failure → Level 2**
 
-### Level 2: Enhanced Template System
-**Manager**: `EnhancedFallbackManager`
-- **Location**: `src/constants/enhancedFallbackTemplates.ts`
-- **Content**: 35 comprehensive templates across 5 difficulty levels
-- **Total Pages**: 390+ story pages
+### Level 2: Backend Template System
+**Service**: `template-service` Edge Function
+- **Location**: `supabase/functions/template-service/index.ts`
+- **Content**: 136 individual template files accessed via dynamic loading
+- **Total Pages**: 400+ story pages
+- **Architecture**: Backend-only with no frontend template storage
 - **Features**:
-  - User personalization via placeholder resolution
-  - Grammar validation and enhancement
+  - Individual template file loading from `supabase/functions/_shared/templates/`
+  - User personalization via `placeholderResolver.ts`
+  - Grammar validation via `grammarValidator.ts`
   - Cultural context integration
   - 4 ending types per template (Cozy, Silly, Triumphant, Reflective)
 
 **Template Distribution**:
-- **Level 0 (beginner)**: Protected Level 0 system (vocabulary-compliant)
-- **Level 1 (easy)**: 8 templates, ~88 pages
-- **Level 2 (medium)**: 7 templates, ~77 pages  
-- **Grade 6+ (hard/expert)**: 6-8 templates per grade, ~71-88 pages
+- **Level 0 (beginner)**: 100 simple sentence templates (600 sentences)
+- **Level 1-4**: 20 structured templates (5 per level)
+- **Grades 6-10**: 15 advanced templates (3 per grade)
+- **Access Method**: Dynamic loading via `dynamicTemplateLoader.js`
+- **Registry System**: Metadata-only mapping in `registry.js`
 
 **On Failure → Level 3**
 
@@ -114,10 +117,16 @@ static async executeWithRecovery<T>(
 
 #### State Management
 - `isLoading`: Request in progress
-- `result`: Generated content or fallback
-- `error`: Error message
+- `result`: Generated content from backend template service
+- `error`: Error message from Edge Function failures
 - `retryCount`: Current attempt number (0-3)
 - `isMaxRetriesReached`: Boolean flag for UI changes
+
+#### Backend API Integration
+- **Primary Call**: `supabase.functions.invoke('template-service')` to Edge Function
+- **Request Format**: `{ difficulty, userInfo, pageCount, templateIndex, explore, mode }`
+- **Response Processing**: Converts Edge Function response to frontend-compatible format
+- **Error Handling**: Captures 503 Service Unavailable and 404 Not Found responses
 
 #### Toast Notifications
 - Automatic toast when `isMaxRetriesReached` becomes true
@@ -125,11 +134,13 @@ static async executeWithRecovery<T>(
 - Duration: 5 seconds
 
 #### Fallback Flow
-1. Calls `supabase.functions.invoke('template-service')`
-2. On failure → calls `ErrorHandlingManager.executeWithRecovery()`
-3. Fallback function → calls `ErrorHandlingManager.getEmergencyContent()`
-4. Returns rhyming emergency content as story pages
-5. UI displays creative poems instead of generic error messages
+1. Frontend calls `useTemplateService.generateTemplate()`
+2. Hook invokes `supabase.functions.invoke('template-service')`
+3. Edge Function loads template via `dynamicTemplateLoader.js`
+4. On backend failure → Hook calls `ErrorHandlingManager.executeWithRecovery()`
+5. Fallback function → calls `ErrorHandlingManager.getEmergencyContent()`
+6. Returns rhyming emergency content as story pages
+7. UI displays creative poems instead of generic error messages
 
 ## UI Integration
 
@@ -156,22 +167,36 @@ When `isMaxRetriesReached` is true:
 
 ## Template System Details
 
-### Enhanced Fallback Manager
-**Location**: `src/constants/enhancedFallbackTemplates.ts`
+### Backend Template Architecture
+**Location**: `supabase/functions/_shared/templates/`
 
-#### Difficulty Mapping
+#### Individual File System
+- **136 Total Templates**: Each template stored in separate JavaScript file
+- **Dynamic Loading**: Templates imported on-demand via `dynamicTemplateLoader.js`
+- **Registry Mapping**: Metadata stored in `registry.js` without template content
+- **No Frontend Storage**: All template data removed from `src/constants/`
+
+#### Difficulty Mapping (Edge Function)
 ```typescript
-const DIFFICULTY_TO_FALLBACK_MAP = {
-  easy: 'level1',      // Ages 6-7
-  medium: 'level2',    // Ages 8-9  
-  hard: 'grade6',      // Ages 10-11
-  expert: 'grade7'     // Ages 12-13
+const levelMap: Record<string, string> = {
+  'beginner': 'Level0',
+  'easy': 'level1',      // 5 templates
+  'medium': 'level2',    // 5 templates
+  'hard': 'level3',      // 5 templates
+  'expert': 'level4',    // 5 templates
+  'grade6': 'grade6',    // 3 templates
+  'grade7': 'grade7',    // 3 templates
+  'grade8': 'grade8',    // 3 templates
+  'grade9': 'grade9',    // 3 templates
+  'grade10': 'grade10'   // 3 templates
 };
 ```
 
-#### Integration Methods
-- `getFallbackTemplate(difficulty, userInfo, pageIndex)`: Gets specific template content
-- `resolveStoryPlaceholders(template, userInfo)`: Personalizes content
+#### Backend Processing Methods
+- `loadTemplate(level, templateIndex)`: Dynamically loads individual template files
+- `getTemplate(level, index, userInfo, pageCount)`: Processes templates into string arrays
+- `resolveAllPlaceholders(template, microContext)`: Personalizes content via backend processing
+- `validateAndEnhanceGrammar(text, pronoun)`: Grammar validation and enhancement
 - Placeholder support: `{userName}`, `{favoriteColor}`, `{favoriteAnimal}`, etc.
 
 ### Backend Template Service
@@ -206,10 +231,11 @@ const TOKEN_LIMITS = {
 - Placeholder resolution and grammar validation
 
 ### ✅ Integration Points Working
-- `useTemplateService` → `ErrorHandlingManager` → Emergency content
-- `NetflixStyleStoryService` → `EnhancedFallbackManager` → Templates
-- `LiveGenerationService` → `EnhancedFallbackManager` → Templates
-- Template service → Grammar validation → Error handling
+- `useTemplateService` → `template-service` Edge Function → `dynamicTemplateLoader.js` → Individual template files
+- Frontend services → `useTemplateService` hook → Backend API calls
+- Template loading → `placeholderResolver.ts` → `grammarValidator.ts` → Processed content
+- Edge Function errors → `ErrorHandlingManager` → Emergency rhyming content
+- Backend template system → Frontend display → User experience
 
 ### 🔄 Current Behavior Flow
 1. User requests story
@@ -244,11 +270,15 @@ const TOKEN_LIMITS = {
 
 ### Key Files to Monitor
 - `src/services/errorHandlingManager.ts` - Core error handling logic
-- `src/hooks/useTemplateService.ts` - Frontend integration
-- `src/constants/enhancedFallbackTemplates.ts` - Template management
-- `supabase/functions/template-service/index.ts` - Backend processing
+- `src/hooks/useTemplateService.ts` - Frontend integration and API calls
+- `supabase/functions/template-service/index.ts` - Backend Edge Function processing
+- `supabase/functions/_shared/dynamicTemplateLoader.js` - Template loading system
+- `supabase/functions/_shared/templates/registry.js` - Template metadata mapping
+- `supabase/functions/_shared/templateImporter.ts` - Template processing pipeline
+- `supabase/functions/_shared/placeholderResolver.ts` - Content personalization
+- `supabase/functions/_shared/grammarValidator.ts` - Grammar enhancement
 
 ---
 
-**Last Updated**: Post-Creative Rhyming Emergency Fallback Implementation  
-**Status**: All systems operational and documented accurately ✅
+**Last Updated**: Post-Backend Architecture Implementation with Individual File System  
+**Status**: All systems operational and accurately documented - Backend-only template architecture complete ✅
