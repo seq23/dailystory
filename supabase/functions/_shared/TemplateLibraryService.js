@@ -3376,57 +3376,170 @@ export const GRADE_8_FALLBACK_TEMPLATES = [
   {
     title: "The Environmental Justice Investigation",
     theme: "Environmental & Social Justice",
-    level: "Grade 8", 
+    level: "Grade 8",
     scenes: [
       {
-        text: "{userName} became increasingly concerned when they noticed that their school's environmental science class field trips always visited pristine parks and well-funded nature centers in affluent neighborhoods, while completely avoiding the industrial areas where many of their classmates actually lived - areas with factories, waste facilities, and significantly higher rates of asthma and other health problems that seemed mysteriously absent from their textbook's discussions of environmental issues and solutions.",
+        text: "Liam Rodriguez had never thought much about environmental inequality until he started walking home with his crush, Zara Patel, through the industrial district where she lived. While his neighborhood had tree-lined streets and pristine parks, Zara's route passed three factories, a waste processing plant, and air so thick you could taste the chemicals. 'Don't you ever wonder why our environmental science class only takes field trips to the nature preserve?' Zara asked, pulling her inhaler from her backpack. 'Half our class has asthma, but we never talk about why.' {userName} realized with growing shame that they'd never connected their comfortable suburban life with their classmates' daily exposure to environmental hazards.",
         pause: true,
-        hook: "How will {userName} address these environmental inequities?",
+        hook: "Will {userName} find the courage to investigate environmental inequality in their own community?",
         microVariants: {
-          text: "{userName} noticed that environmental education focused on pristine areas while ignoring industrial neighborhoods where classmates lived, revealing environmental justice issues absent from standard curriculum.",
-          alternatives: [
-            "Environmental science field trips to wealthy areas contrasted sharply with the industrial neighborhoods where many students lived, leading {userName} to question environmental education priorities."
-          ],
-          optionalDetails: ["Air quality monitors showed different readings across neighborhoods.", "Health data revealed concerning patterns by zip code.", "Some families couldn't afford to move away from pollution sources."]
+          text: "Walking through Zara's industrial neighborhood opened {userName}'s eyes to environmental injustices they'd never noticed from their suburban bubble.",
+          alternatives: ["The contrast between {userName}'s clean neighborhood and Zara's polluted area revealed uncomfortable truths about environmental inequality.", "Zara's casual mention of her inhaler while walking past factories made {userName} question everything about their environmental education."],
+          optionalDetails: ["The air quality difference was immediately noticeable", "Zara mentioned that three kids in their grade had been hospitalized for asthma attacks", "Liam felt guilty about complaining about his 'stuffy' bedroom"]
         }
       },
       {
-        text: "Through research and community interviews, {userName} discovered that environmental racism was a well-documented phenomenon where communities of color and low-income neighborhoods disproportionately bore the burden of pollution, toxic waste facilities, and industrial development, while having less political power to resist these placements and fewer resources to relocate - leading {userName} to organize a presentation that would educate their classmates about environmental justice and inspire action toward more equitable environmental policies.",
+        text: "At lunch the next day, {userName} couldn't stop thinking about Zara's question. When their best friend Marcus Chen suggested they partner up for their environmental science project, {userName} had an idea that terrified and excited them. 'What if we compared air quality between different neighborhoods in our city?' they proposed nervously. Marcus raised an eyebrow. 'That sounds... political. And awesome.' But it was Zara's reaction that mattered most. When {userName} approached her table (usually off-limits to suburban kids like them), her smile made their stomach flip. 'You're serious about this?' she asked. 'Because if you are, I know exactly where to start - and it's going to make some people very uncomfortable.'",
         pause: true,
-        hook: "What changes will {userName}'s research and advocacy efforts achieve?",
+        hook: "What environmental secrets will their investigation uncover?",
         microVariants: {
-          text: "Research revealed systematic environmental racism affecting their community, inspiring {userName} to educate peers and advocate for environmental justice through organized presentations and community engagement.",
-          alternatives: [
-            "Investigating environmental inequities, {userName} uncovered patterns of environmental racism and developed plans to raise awareness and promote policy changes for environmental justice."
-          ],
-          optionalDetails: ["Community members shared personal stories of environmental health impacts.", "Historical maps showed deliberate placement of polluting facilities.", "Students began connecting environmental and social justice issues."]
+          text: "Proposing an environmental justice project brought {userName} closer to Zara while opening doors to uncomfortable community truths.",
+          alternatives: ["Marcus's enthusiasm and Zara's expertise created the perfect team for investigating environmental inequality.", "The project became {userName}'s chance to work closely with Zara while addressing serious environmental issues."],
+          optionalDetails: ["Other students at Zara's table looked skeptical about suburban kids caring about their issues", "Marcus had access to his dad's air quality monitoring equipment", "The cafeteria felt divided along invisible environmental and economic lines"]
+        }
+      },
+      {
+        text: "Their first research session took place at Zara's apartment, where {userName} met her grandmother, Mrs. Patel, whose stories changed everything. 'When we moved here thirty years ago, this was a nice neighborhood,' she explained, showing them old photographs of tree-lined streets where factories now stood. 'But the companies came one by one, always promising jobs that never materialized for people like us.' As Mrs. Patel described watching neighbors develop cancer, children struggle with breathing problems, and property values plummet, {userName} felt sick with the realization that environmental racism wasn't just a textbook concept - it was happening in their own city, and had been for decades.",
+        pause: true,
+        hook: "How will learning about environmental racism change {userName}'s perspective and relationship with Zara?",
+        microVariants: {
+          text: "Mrs. Patel's personal stories about neighborhood environmental decline revealed the human cost of environmental racism.",
+          alternatives: ["Family photographs documenting environmental degradation over three decades provided heartbreaking evidence of systematic inequality.", "Zara's grandmother's testimony transformed abstract concepts into personal trauma that demanded action."],
+          optionalDetails: ["The apartment walls showed the history of their neighborhood's decline", "Mrs. Patel had kept newspaper clippings about every factory opening and health crisis", "Zara's eyes filled with tears as she translated some of her grandmother's stories from Gujarati"]
+        }
+      },
+      {
+        text: "Armed with Mrs. Patel's stories and Marcus's father's air quality data, their investigation gained momentum when they discovered that the city planning department had deliberately zoned industrial facilities away from affluent neighborhoods. But their research hit a roadblock when they tried to access public health records - until Zara suggested they talk to her older sister, Priya, a pre-med student at the local college. 'Environmental health disparities are my thesis topic,' Priya explained during their weekend meeting at the library. 'And I have access to databases you wouldn't believe.' As Priya pulled up charts showing childhood asthma rates by zip code, {userName} caught Zara watching them with something that looked like admiration. Maybe their privileged background could actually help for once.",
+        pause: true,
+        hook: "What shocking health disparities will the data reveal about their community?",
+        microVariants: {
+          text: "Priya's college resources and Zara's growing respect gave {userName} both data access and personal motivation to continue their investigation.",
+          alternatives: ["Academic connections through Zara's sister provided the scientific evidence needed to support their community observations.", "The library research session deepened both their environmental understanding and {userName}'s relationship with Zara."],
+          optionalDetails: ["Priya was impressed by their dedication to environmental justice", "The health data was even worse than they'd expected", "Zara had never brought suburban friends to meet her family before"]
+        }
+      },
+      {
+        text: "The data was devastating: children in Zara's neighborhood were five times more likely to have asthma than kids from {userName}'s area. Cancer rates were 300% higher. Life expectancy was seven years shorter. But what really shocked {userName} was discovering that their own family's company, Rodriguez Construction, had built two of the factories contributing to the pollution. 'I had no idea,' they confessed to Zara and Marcus during their next planning session, feeling like their entire identity was crumbling. 'My dad always talks about providing jobs for the community.' Zara's response surprised them: 'That's exactly why you need to be part of changing this. You have access and influence that we don't. The question is: will you use it?'",
+        pause: true,
+        hook: "How will {userName} confront their family's role in environmental injustice?",
+        microVariants: {
+          text: "Discovering their family's connection to local pollution forced {userName} to grapple with personal complicity in environmental racism.",
+          alternatives: ["The shocking revelation that {userName}'s family business contributed to environmental inequality created both guilt and opportunity for change.", "Zara's challenge about using privilege responsibly transformed {userName}'s guilt into determination for action."],
+          optionalDetails: ["Marcus was supportive but clearly uncomfortable with the family connection", "The construction company had built facilities in low-income areas for thirty years", "Zara's faith in {userName}'s potential for good meant everything"]
+        }
+      },
+      {
+        text: "Confronting their father about Rodriguez Construction's environmental impact led to the most difficult conversation of {userName}'s life. 'We follow all regulations,' Mr. Rodriguez insisted defensively. 'We're not doing anything illegal.' But when {userName} showed him Mrs. Patel's photographs and the health data Priya had compiled, something shifted in their father's expression. 'I didn't know it was this bad,' he admitted quietly. 'When you're focused on business and providing for your family, sometimes you don't see the bigger picture.' The conversation ended with a promise that made {userName}'s heart race: 'Show me what needs to change, and I'll see what we can do.' Zara was going to be so impressed when she heard about this breakthrough.",
+        pause: true,
+        hook: "What changes will {userName}'s family business make to address environmental inequality?",
+        microVariants: {
+          text: "The difficult family conversation created unexpected opportunities for corporate environmental responsibility and change.",
+          alternatives: ["Mr. Rodriguez's willingness to consider change gave {userName} hope that business practices could evolve toward environmental justice.", "Personal family dynamics intersected with environmental activism as {userName} discovered their power to influence corporate behavior."],
+          optionalDetails: ["The conversation revealed that Mr. Rodriguez had grown up in a neighborhood similar to Zara's", "Other construction companies were watching to see if Rodriguez Construction would change practices", "Zara had coached {userName} on how to approach the conversation effectively"]
+        }
+      },
+      {
+        text: "Their environmental justice presentation to the school board became the most nerve-wracking night of {userName}'s life, but having Zara and Marcus flanking them for support made it bearable. When they presented their data showing health disparities, neighborhood pollution maps, and historical evidence of environmental racism, the packed auditorium went completely silent. Mrs. Patel's testimony about watching her community's health decline brought several board members to tears. But the moment that changed everything was when {userName}'s father stood up from the audience. 'Rodriguez Construction commits to environmental justice standards that exceed city requirements,' he announced. 'And we'll partner with affected communities to remediate damage from past projects.' The standing ovation felt like victory, but Zara's proud smile was the real prize.",
+        pause: true,
+        hook: "How will the school board respond to their environmental justice presentation?",
+        microVariants: {
+          text: "The presentation combined personal testimony, scientific data, and corporate commitment to create a powerful case for environmental justice.",
+          alternatives: ["Community testimony and family business commitment transformed their school project into a catalyst for systematic environmental change.", "Public speaking alongside Zara and Marcus felt like the beginning of lifelong environmental advocacy partnerships."],
+          optionalDetails: ["Local news covered the presentation extensively", "Several board members had children with asthma and were visibly moved", "Other construction companies approached Mr. Rodriguez about similar commitments"]
+        }
+      },
+      {
+        text: "The school board's unanimous vote to implement environmental justice curriculum felt like a dream, but the real celebration happened afterward when Zara grabbed {userName}'s hand in the parking lot. 'You actually did it,' she said, her eyes shining under the streetlights. 'You used your privilege to fight for my community.' When she kissed {userName}'s cheek, they felt like their heart might explode. Marcus pretended to gag dramatically. 'Gross! But also, can we talk about how we just changed city environmental policy as eighth-graders?' The three of them spent the rest of the night at the 24-hour diner, planning how to expand their environmental justice work to other schools and dreaming about changing the world together.",
+        pause: true,
+        hook: "What romantic and environmental developments await their partnership?",
+        microVariants: {
+          text: "Victory celebration brought both romantic breakthrough and deeper commitment to environmental advocacy partnerships.",
+          alternatives: ["Success in environmental justice activism created the perfect moment for {userName} and Zara's first romantic connection.", "The diner planning session established their trio as serious environmental advocates while celebrating personal relationships."],
+          optionalDetails: ["The kiss was {userName}'s first real romantic moment", "Marcus was secretly texting his girlfriend about the environmental victory", "Other community members joined them at the diner to continue planning"]
+        }
+      },
+      {
+        text: "Spring semester brought new challenges when their environmental justice work attracted state-level attention. The Department of Environmental Protection invited them to testify at hearings about updating pollution standards, while Rodriguez Construction's new environmental practices were being studied as a model for other companies. But navigating their new relationship with Zara proved more complicated than environmental activism. 'I don't want people to think I'm only dating you because of the project,' {userName} worried during one of their research sessions in the library. Zara's response made them feel both relieved and terrified: 'Good thing our relationship started because you're cute and kind, and the environmental stuff just proved you're also brave and committed to justice.' Marcus fake-vomited again, but he was grinning.",
+        pause: true,
+        hook: "How will their relationship evolve alongside their expanding environmental advocacy?",
+        microVariants: {
+          text: "State-level recognition brought new opportunities while {userName} and Zara navigated the intersection of activism and romance.",
+          alternatives: ["Environmental success created platform for broader advocacy, but personal relationships required separate attention and care.", "Balancing romantic feelings with serious activist work taught them about integrating personal values with professional partnerships."],
+          optionalDetails: ["State officials were impressed by their age and sophistication", "Zara was getting college recruitment letters based on her environmental work", "The library had become their unofficial relationship headquarters"]
+        }
+      },
+      {
+        text: "The state environmental hearings took place in the capitol building, where {userName}, Zara, and Marcus found themselves testifying alongside PhD scientists and corporate executives. Standing at the podium before hundreds of adults, {userName} felt intimidated until they spotted Mrs. Patel in the audience, wearing her best sari and beaming with pride. 'Environmental racism isn't just policy failure,' {userName} told the packed chamber. 'It's a human rights crisis affecting families like the Patels, who've watched their neighborhood become a sacrifice zone for corporate profits.' When the new regulations passed with stronger protections for vulnerable communities, {userName} realized their eighth-grade environmental project had grown into something that would protect families for generations.",
+        pause: true,
+        hook: "What long-term impact will their advocacy have on environmental policy and their futures?",
+        microVariants: {
+          text: "Capitol testimony established them as credible youth advocates while creating lasting policy changes for environmental justice.",
+          alternatives: ["Speaking before state officials validated their expertise and transformed their activism from local project to statewide influence.", "Mrs. Patel's proud presence reminded them that successful advocacy meant real families would breathe cleaner air."],
+          optionalDetails: ["The new regulations would affect industrial permitting statewide", "Environmental groups offered them summer internships", "Zara was invited to speak at the national Environmental Justice Youth Summit"]
+        }
+      },
+      {
+        text: "Summer brought both romantic milestones and environmental victories when {userName} and Zara attended the National Environmental Justice Youth Summit together - their first trip as an official couple. Watching Zara present their research to delegates from forty states, {userName} felt proud of both her brilliance and their partnership. But the most meaningful moment came during a workshop on environmental activism when a girl from Texas approached them. 'Your story about family businesses changing practices gave me hope,' she said. 'My dad owns a chemical plant, and I've been trying to talk to him about environmental justice.' Realizing their work was inspiring other young people to challenge environmental racism in their own communities felt better than any romantic milestone.",
+        pause: true,
+        hook: "How will their model inspire environmental activism in other communities nationwide?",
+        microVariants: {
+          text: "The national summit established them as role models for youth environmental activism while deepening their romantic relationship.",
+          alternatives: ["Inspiring other teens to challenge environmental racism proved that their local work could create national change.", "The summit combined professional recognition with personal relationship development as they traveled together for the first time."],
+          optionalDetails: ["Delegates from rural and urban areas shared similar environmental justice stories", "Youth activism was gaining recognition from major environmental organizations", "Their relationship had become stronger through shared advocacy work"]
+        }
+      },
+      {
+        text: "Starting high school felt different when you'd already testified before state officials and been featured in national news for environmental activism. {userName} and Zara were recruited for the new Environmental Justice Club by their freshman counselor, while Marcus had been accepted to a prestigious STEM summer program based on their research. But the most exciting development came when Mrs. Rodriguez, {userName}'s mother, announced that she was running for city council on an environmental justice platform. 'You kids taught me that business success means nothing if it comes at the cost of community health,' she explained during a family dinner that included the Patels. Looking around the table at their blended families united by environmental advocacy, {userName} felt grateful that a simple walk home had changed everything.",
+        pause: true,
+        hook: "What environmental and political changes will their high school years bring?",
+        microVariants: {
+          text: "High school transition brought expanded opportunities while family political involvement demonstrated lasting impact of their activism.",
+          alternatives: ["Their parents' political engagement showed how youth environmental activism could influence adult decision-making and career choices.", "Starting high school as established environmental advocates created platform for even greater impact during their teenage years."],
+          optionalDetails: ["Rodriguez Construction had become a model for environmental responsibility", "The Patel and Rodriguez families had become close friends", "Environmental justice was now part of standard curriculum at their old middle school"]
+        }
+      },
+      {
+        text: "Two years later, {userName} stood in the renovated community center in Zara's neighborhood - the same building that had once housed a polluting factory, now converted through Rodriguez Construction's environmental remediation program. Watching Zara facilitate an environmental justice workshop for new middle schoolers, {userName} marveled at how much had changed since that first awkward walk through the industrial district. Mrs. Rodriguez had won her city council seat and authored the city's first environmental justice ordinance. Mrs. Patel's neighborhood now had the cleanest air quality in the city. And {userName}'s relationship with Zara had grown from environmental partnership into something that felt permanent and precious. 'Ready for the next project?' Zara asked, taking their hand as the workshop ended. {userName} grinned, knowing that fighting environmental racism with the person you love was the best possible way to spend a lifetime.",
+        pause: true,
+        hook: "How will their continued partnership address environmental challenges beyond their community?",
+        microVariants: {
+          text: "Community transformation and lasting relationship proved that environmental justice activism could create both policy change and personal fulfillment.",
+          alternatives: ["The remediated factory site symbolized how persistent advocacy could transform environmental racism into environmental healing.", "Their romantic and activist partnership had grown into a model for combining personal relationships with social justice work."],
+          optionalDetails: ["The community center hosted environmental programs for the entire region", "Other couples in their environmental group had formed similar romantic-activist partnerships", "College recruiters were specifically seeking students with environmental justice experience"]
+        }
+      },
+      {
+        text: "Graduation day brought full-circle reflection when {userName} delivered the valedictorian speech about environmental justice, with Zara (salutatorian) and Marcus (heading to MIT for environmental engineering) in the front row. 'Four years ago, a simple walk home opened my eyes to environmental racism in our own community,' {userName} told their classmates and families. 'Today, we graduate knowing that young people can create change when we combine passion with action, privilege with responsibility, and environmental science with social justice.' When Zara joined them on stage for the traditional valedictorian-salutatorian dance, {userName} felt grateful that environmental activism had brought them not just policy victories, but lifelong love and partnership. Their acceptance letters to the same environmental science program meant their work together was just beginning.",
+        pause: true,
+        hook: "What environmental justice legacy will their high school activism create for future students?",
+        microVariants: {
+          text: "Graduation celebration marked the beginning of lifelong environmental and romantic partnerships while recognizing their transformative impact on community policy.",
+          alternatives: ["Valedictorian recognition validated their integration of academic success with environmental activism and social justice advocacy.", "College plans together ensured their environmental justice partnership would continue expanding from local to national and global scales."],
+          optionalDetails: ["Their environmental justice curriculum was being adopted by schools nationwide", "The Rodriguez Construction environmental model was being replicated by companies across the state", "Mrs. Patel had been invited to speak at the environmental conference where it all started"]
         }
       }
     ],
     endings: [
       {
         type: 'triumphant',
-        text: "{userName}'s presentation to the school board led to curriculum changes that included environmental justice education, community partnerships with affected neighborhoods, and student involvement in local environmental advocacy - demonstrating that young people could effectively challenge systemic inequalities and create meaningful change in their educational institutions and communities.",
-        microVariants: [
-          "School board approval of {userName}'s environmental justice curriculum proposal led to lasting educational changes and increased student engagement in community environmental advocacy efforts."
-        ]
+        text: "Five years later, Dr. {userName} Rodriguez and Dr. Zara Rodriguez (they'd married after college and hyphenated their names) stood before the United Nations Environment Assembly, presenting their research on community-based environmental justice that had grown from their eighth-grade school project. Their work had influenced international policy, inspired hundreds of young activists, and proven that environmental racism could be dismantled through persistent advocacy and cross-community partnerships. In the audience, Marcus (now head of the EPA's Environmental Justice Division) and Mrs. Patel (representing the International Coalition of Environmental Justice Elders) beamed with pride as their former students addressed world leaders about protecting vulnerable communities from environmental harm.",
+        microVariants: ["Their middle school environmental project evolved into international environmental policy influence, proving that youth activism could create global change.", "From eighth-grade crush to married environmental advocates, their journey demonstrated how personal relationships and social justice work could reinforce each other."]
       },
       {
-        type: 'reflective', 
-        text: "Standing in the community garden that students had helped create in a previously polluted lot, {userName} reflected on how environmental issues were never just about nature, but about power, justice, and ensuring that all people have the right to clean air, water, and healthy communities. 'Real environmental protection means protecting all people,' they understood with new clarity, 'especially those who have been most harmed by environmental injustice.'",
-        microVariants: [
-          "Working in the community garden they'd helped establish, {userName} gained deep understanding of environmental justice as fundamentally about human rights and equitable protection for all communities."
-        ]
+        type: 'cozy',
+        text: "Every Earth Day, {userName} and Zara returned to Mrs. Patel's neighborhood - now a thriving green space with community gardens, solar panels, and the cleanest air in the region - to mentor new environmental justice advocates. Watching their own children play in the park that had once been an industrial waste site, they felt deep satisfaction knowing their teenage activism had created lasting protection for future generations. 'Remember when you were too nervous to walk me home?' Zara teased, adjusting their baby's sun hat while {userName} helped set up the annual Environmental Justice Festival. {userName} smiled, thinking of all the young couples they now mentored who were combining environmental activism with first love. 'Best decision I ever made,' they replied, 'except maybe asking you to marry me in that same community garden.'",
+        microVariants: ["Annual mentoring visits kept their environmental justice legacy alive while celebrating the family and community they'd built together.", "Their neighborhood transformation created safe, healthy space for their own children and demonstrated how persistent advocacy could heal environmental racism."]
       }
     ],
     reuse: {
       swappableElements: {
         "environmental_issues": ["air pollution", "water contamination", "toxic waste sites", "industrial emissions"],
-        "affected_communities": ["low-income neighborhoods", "communities of color", "rural areas", "urban industrial zones"], 
-        "advocacy_methods": ["research presentations", "community organizing", "policy proposals", "educational campaigns"]
+        "community_dynamics": ["family business connections", "neighborhood organizing", "intergenerational advocacy", "romantic partnerships"], 
+        "advocacy_strategies": ["research presentations", "community testimony", "policy development", "corporate engagement"]
       },
-      weatherVariants: ["research phase", "community meetings", "presentation day", "action planning"],
-      settingVariants: ["classroom", "community center", "school board meeting", "affected neighborhood"]
+      weatherVariants: ["research season", "community organizing", "policy advocacy", "celebration milestones"],
+      settingVariants: ["industrial neighborhoods", "school board meetings", "family businesses", "community centers"],
+      randomSeed: Math.floor(Math.random() * 10000)
     }
   },
   {
@@ -3435,66 +3548,157 @@ export const GRADE_8_FALLBACK_TEMPLATES = [
     level: "Grade 8",
     scenes: [
       {
-        text: "{userName} had always assumed that everyone had access to the same quality food until they began volunteering at a local food pantry and discovered that many families in their city lived in food deserts with limited access to fresh, affordable, nutritious options. Through conversations with food pantry clients, they learned that systemic issues like transportation barriers, income inequality, and the strategic placement of grocery stores created significant health disparities between different neighborhoods, with communities of color and low-income areas disproportionately affected by food insecurity and diet-related diseases.",
+        text: "Everything changed for {userName} Chen during their first volunteer shift at Hope Community Food Bank, when they met Aaliyah Williams. While {userName} awkwardly sorted canned goods, Aaliyah moved through the space with natural leadership, knowing every client's name and dietary restrictions. 'First time?' Aaliyah asked with a kind smile that made {userName}'s heart skip. 'It shows. Here, let me teach you how Ms. Johnson likes her groceries packed - she has diabetes and can't carry heavy bags.' As Aaliyah explained which neighborhoods had the longest commutes for fresh food, {userName} realized how little they understood about food access in their own city. 'I live ten minutes from three grocery stores,' they admitted embarrassedly. 'I never thought about people who don't.'",
         pause: true,
-        hook: "How will {userName} address the complex intersection of food access and social justice?",
+        hook: "What will {userName} learn about food inequality from Aaliyah and the community?",
         microVariants: {
-          text: "{userName} discovered food deserts and health disparities through food pantry volunteering, learning how systemic barriers affect community nutrition and health outcomes.",
-          alternatives: [
-            "Volunteer work revealed how transportation, income, and store placement create unequal food access, particularly affecting communities of color and low-income neighborhoods."
-          ],
-          optionalDetails: ["Some families traveled over an hour for fresh produce.", "Corner stores charged premium prices for basic necessities.", "Medical clinics saw high rates of diabetes and hypertension in affected areas."]
+          text: "Aaliyah's expertise at the food bank opened {userName}'s eyes to food access inequalities they'd never considered.",
+          alternatives: ["Meeting Aaliyah transformed {userName}'s volunteer experience from obligation to education about food justice.", "The food bank revealed how transportation and geography created food deserts that {userName} had never noticed."],
+          optionalDetails: ["Aaliyah had been volunteering since sixth grade when her family used the food bank", "Many clients traveled over an hour by bus for fresh produce", "The contrast between {userName}'s food abundance and client need was stark"]
         }
       },
       {
-        text: "Determined to understand the scope of food injustice in their region, {userName} conducted comprehensive research mapping food access patterns, grocery store locations, public transportation routes, and health outcome data. They discovered that food apartheid was not accidental but resulted from decades of discriminatory policies including redlining, urban planning decisions that prioritized certain neighborhoods, and corporate strategies that targeted profitable areas while abandoning others. This research revealed that food justice was fundamentally connected to housing policy, transportation equity, and economic development patterns.",
+        text: "Walking home with Aaliyah after their volunteer shift became {userName}'s favorite part of Saturdays, even though the route through her neighborhood was eye-opening. Where {userName}'s area had farmer's markets and organic grocery stores on every corner, Aaliyah's community had convenience stores charging premium prices for basic necessities. 'See that empty lot?' Aaliyah pointed to a weed-filled space between apartment buildings. 'That used to be a supermarket until they decided our neighborhood wasn't profitable enough.' When they stopped at a corner store for Aaliyah's grandmother's medication, {userName} was shocked by the prices: $8 for a gallon of milk that cost $3 in their neighborhood. 'Food apartheid,' Aaliyah explained matter-of-factly. 'That's what they call it when healthy food is systematically kept away from certain communities.'",
         pause: true,
-        hook: "What solutions will {userName} propose to address systematic food inequity?",
+        hook: "How will {userName} respond to learning about food apartheid in their city?",
         microVariants: {
-          text: "{userName} mapped food access patterns and discovered how historical discriminatory policies created systematic food apartheid affecting entire communities.",
-          alternatives: [
-            "Research revealed that food deserts resulted from deliberate policy choices including redlining and discriminatory urban planning rather than market forces alone."
-          ],
-          optionalDetails: ["Historical maps showed how segregation policies influenced food access.", "Transit routes often bypassed grocery stores in certain neighborhoods.", "Zoning laws made it difficult to open food businesses in some areas."]
+          text: "Walking through Aaliyah's neighborhood revealed the stark contrast in food access and pricing that defined food apartheid.",
+          alternatives: ["The corner store prices and empty supermarket lot demonstrated how geography determined food access and family budgets.", "Aaliyah's casual use of terms like 'food apartheid' showed how young people understood systematic inequality better than many adults."],
+          optionalDetails: ["The nearest full grocery store required two bus transfers", "Aaliyah's grandmother was diabetic but struggled to afford appropriate foods", "Many neighbors grew small gardens on fire escapes and windowsills"]
         }
       },
       {
-        text: "Working with community organizations, local farms, and policy advocates, {userName} developed a multi-pronged approach to food justice that included supporting mobile farmers markets, advocating for improved public transportation to grocery stores, and promoting policy changes that would incentivize grocery stores to open in underserved areas. They organized community meetings where residents could share their experiences and priorities, ensuring that solutions were developed with rather than for the affected communities. {userName} also researched successful food justice initiatives in other cities to identify replicable strategies.",
+        text: "Their friendship deepened when Aaliyah invited {userName} to help with her eighth-grade social studies project on food access. Sitting in the tiny apartment she shared with her grandmother and two younger siblings, {userName} felt both privileged and determined as they researched food desert statistics together. 'Look at this map,' Aaliyah said, pulling up data on her laptop. 'Every grocery store closure in the last decade happened in neighborhoods that are majority Black or Latino.' {userName} was amazed by Aaliyah's research skills and passion for justice, but when she asked about their family background, they felt embarrassed admitting their parents owned two restaurants in affluent neighborhoods. 'That's not something to be ashamed of,' Aaliyah said gently. 'That's something you can use to help change things.'",
         pause: true,
-        hook: "How will community members respond to {userName}'s collaborative approach to food justice?",
+        hook: "How will {userName}'s family restaurant connections help address food access inequality?",
         microVariants: {
-          text: "{userName} developed comprehensive food justice solutions through community collaboration, mobile markets, transit advocacy, and policy change initiatives.",
-          alternatives: [
-            "Partnering with communities, {userName} created multi-faceted approaches including farmers markets, transportation improvements, and policy advocacy for food equity."
-          ],
-          optionalDetails: ["Community members became co-researchers on food access issues.", "Local farmers were eager to expand market access.", "City council members attended community meetings."]
+          text: "Research collaboration revealed both the scope of food apartheid and {userName}'s potential to contribute family business resources to solutions.",
+          alternatives: ["Aaliyah's mapping project demonstrated systematic patterns while {userName} discovered how their family's success could support food justice.", "The apartment study session deepened their friendship while revealing opportunities to leverage restaurant industry connections for community benefit."],
+          optionalDetails: ["The Chen family restaurants sourced from local farms and food distributors", "Aaliyah's research had been featured in her school newspaper", "Her grandmother shared stories about neighborhood changes over thirty years"]
+        }
+      },
+      {
+        text: "The breakthrough came when {userName} convinced their parents to visit Hope Community Food Bank and meet Aaliyah's family. Mrs. Chen was visibly moved by Ms. Williams' stories about traveling two hours round-trip for groceries and rationing insulin due to food costs. 'We serve customers who spend fifty dollars on lunch,' Mrs. Chen said quietly, 'while families like yours struggle to afford basic nutrition.' When Mr. Chen learned that local food distributors charged higher prices to stores in low-income neighborhoods, his business instincts kicked in. 'What if restaurants could partner with community organizations to provide affordable, healthy meals?' he suggested. Aaliyah's eyes lit up with excitement. 'Like a sliding-scale community kitchen program?' The conversation that followed changed everything.",
+        pause: true,
+        hook: "What innovative food justice solutions will emerge from the restaurant-community partnership?",
+        microVariants: {
+          text: "The Chen family's business expertise combined with Aaliyah's community knowledge to create innovative approaches to food access problems.",
+          alternatives: ["Parent involvement transformed {userName} and Aaliyah's school project into real-world business solutions for food justice.", "The meeting between successful restaurant owners and food bank clients created empathy and practical partnerships for community change."],
+          optionalDetails: ["Mrs. Chen had grown up in a similar neighborhood before their restaurant success", "Aaliyah's policy research impressed the Chen parents with its sophistication", "Local food distributors were willing to negotiate better community pricing"]
+        }
+      },
+      {
+        text: "Spring semester brought the launch of 'Community Kitchens,' a partnership between Chen Family Restaurants and Hope Food Bank that served nutritious meals on a sliding fee scale based on family income. {userName} and Aaliyah worked together every weekend, coordinating volunteers and learning restaurant management while serving families from across the city. 'I can't believe we're actually running a social justice restaurant,' {userName} marveled during one busy Saturday service. Aaliyah grinned, flour in her hair from helping with the bread program. 'We're proving that food access doesn't have to be charity. It can be dignity and community.' When she grabbed {userName}'s hand to pull them toward a new volunteer, the touch sent electricity through their arm. Maybe their food justice partnership was becoming something more.",
+        pause: true,
+        hook: "How will their Community Kitchen success affect both food access and their growing relationship?",
+        microVariants: {
+          text: "The Community Kitchen project brought them closer together while demonstrating how business partnerships could address food justice with dignity.",
+          alternatives: ["Working side-by-side in food service created natural opportunities for romantic tension alongside their shared commitment to food equity.", "The success of their sliding-scale meal program proved that creative partnerships could address systematic inequality through sustainable business models."],
+          optionalDetails: ["Local news covered their innovative approach to food access", "Families traveled from neighboring counties to access affordable healthy meals", "The hand-holding moment felt natural but made both of them nervous"]
+        }
+      },
+      {
+        text: "The relationship question came to a head during the Community Kitchen's first fundraising dinner, where {userName} and Aaliyah presented their food justice research to potential donors and community leaders. Standing together at the podium in the {favoriteColor} dress shirt their mother had insisted they wear, {userName} felt confident explaining how food apartheid affected local families. But it was Aaliyah's testimony about her grandmother's diabetes management that brought the room to tears. After their presentation, as donors pledged enough funding to expand the program, {userName} found themselves alone with Aaliyah in the restaurant's garden patio. 'I really like working with you,' they said nervously. 'Like, really like it.' Aaliyah's smile was answer enough before she even said, 'Good, because I was hoping you'd ask me to be your girlfriend soon.'",
+        pause: true,
+        hook: "How will their new relationship dynamic enhance their food justice advocacy work?",
+        microVariants: {
+          text: "The fundraising success provided perfect timing for {userName} and Aaliyah to acknowledge their romantic feelings and official relationship status.",
+          alternatives: ["Public speaking about food justice created confidence that carried over to personal relationship conversations.", "The patio conversation transformed their partnership from friendship and collaboration to romantic commitment and deeper advocacy."],
+          optionalDetails: ["The fundraising dinner raised enough money to open two additional Community Kitchen locations", "Several donors offered internship opportunities to both students", "The garden setting felt romantic and private after the public presentation"]
+        }
+      },
+      {
+        text: "Summer brought both romantic milestones and food justice victories when {userName} and Aaliyah were selected for the National Youth Food Justice Coalition's leadership training program. Spending two weeks at college learning about policy advocacy, sustainable agriculture, and community organizing while navigating their first serious relationship felt both exciting and overwhelming. 'Are we weird for talking about food policy on dates?' {userName} asked during one of their evening walks around campus. Aaliyah laughed, taking their hand as they passed the demonstration garden. 'We're perfect for each other. Most couples don't get to change the world together while falling in love.' The program connected them with teen food activists from across the country, but their favorite part was presenting their Community Kitchen model to other young advocates.",
+        pause: true,
+        hook: "What national connections and opportunities will their food justice leadership create?",
+        microVariants: {
+          text: "The leadership program validated their work while providing national platform for sharing their Community Kitchen model with other teen activists.",
+          alternatives: ["Summer training combined professional development with relationship building as they learned to balance activism with romance.", "Meeting food justice advocates nationwide proved that their local work was part of a larger movement for food equity and community empowerment."],
+          optionalDetails: ["Three cities requested consultation on implementing Community Kitchen programs", "The college offered them full scholarships if they maintained their food justice work", "Their relationship had become stronger through shared learning and advocacy experiences"]
+        }
+      },
+      {
+        text: "Starting high school as established food justice advocates felt both empowering and daunting, especially when their story was featured in the regional newspaper as 'Teen Entrepreneurs Fighting Food Apartheid.' The attention brought new opportunities - speaking engagements, consulting requests, and college recruitment letters - but also pressure to represent their communities perfectly. During a particularly stressful week of interview requests and expansion planning, {userName} had a breakdown in the Community Kitchen office. 'What if we're just privileged kids playing activist?' they worried to Aaliyah. Her response was immediate and fierce: 'We're teens who used our privilege to create real change that feeds real families. Don't let impostor syndrome make you forget that our work matters.' The hug that followed reminded {userName} why partnership made everything possible.",
+        pause: true,
+        hook: "How will they handle the pressure of public recognition while maintaining authentic community connections?",
+        microVariants: {
+          text: "Media attention brought opportunities but also anxiety about authenticity and responsibility that Aaliyah's grounded perspective helped address.",
+          alternatives: ["High school transition with established activist reputations created both platform for greater impact and pressure to represent their communities perfectly.", "Aaliyah's emotional support during {userName}'s impostor syndrome moment demonstrated how romantic partnerships could provide stability during activist stress."],
+          optionalDetails: ["Community Kitchen was serving 300 families weekly across three locations", "High school guidance counselors were offering advanced placement courses based on their demonstrated project management skills", "Parents were proud but worried about balancing activism with typical teenage experiences"]
+        }
+      },
+      {
+        text: "The policy victory came during their sophomore year when the city council unanimously passed the 'Food Access Equity Ordinance' that {userName} and Aaliyah had helped draft with community lawyers and health advocates. Standing in the packed council chambers where they'd first testified as eighth-graders, {userName} felt amazed by how much had changed. The ordinance required grocery stores to provide healthy food options at consistent prices across all neighborhoods, funded transportation vouchers for food shopping, and supported community-led food programs like Community Kitchen. When Aaliyah was invited to sign the ordinance alongside the mayor, {userName} felt proud tears streaming down their face. Their girlfriend had just helped create law that would feed families for generations.",
+        pause: true,
+        hook: "What broader impact will their food justice policy work have on other cities and communities?",
+        microVariants: {
+          text: "The Food Access Equity Ordinance represented the culmination of their advocacy while establishing them as teen policy experts for other communities.",
+          alternatives: ["Aaliyah's signature on official city legislation proved that youth voices could create lasting institutional change for food justice.", "The ordinance success demonstrated how persistent community organizing could transform systematic inequality into protective policy for vulnerable families."],
+          optionalDetails: ["Five other cities requested copies of the ordinance for adaptation", "Food justice organizations offered them positions as youth policy consultants", "The signing ceremony included Ms. Williams and other community members who'd inspired their work"]
+        }
+      },
+      {
+        text: "Junior year brought college planning conversations that tested their relationship in new ways when {userName} was offered early admission to their dream school across the country while Aaliyah was recruited by local universities for their food policy programs. 'I don't want to hold you back from amazing opportunities,' Aaliyah said during one of their late-night planning sessions in the Community Kitchen office. 'But I also can't imagine doing this work without you.' The solution came from an unexpected source: Mrs. Chen, who had been quietly building relationships with food justice programs nationwide. 'What if you both applied to schools with strong food policy departments where you could continue working together?' she suggested. The research that followed revealed perfect programs that would let them expand their work while staying together.",
+        pause: true,
+        hook: "How will their college choices affect both their relationship and their food justice advocacy future?",
+        microVariants: {
+          text: "College planning required navigating the intersection of personal relationship goals with professional advocacy ambitions and academic opportunities.",
+          alternatives: ["The decision to prioritize both relationship and food justice career goals led to creative solutions for continuing their partnership.", "Mrs. Chen's networking in food policy circles provided options that satisfied both romantic and professional development needs."],
+          optionalDetails: ["Several universities offered joint admission packages for students working on collaborative projects", "Their Community Kitchen model was being studied by food policy researchers", "Long-distance relationship anxiety had brought them closer together as they planned their shared future"]
+        }
+      },
+      {
+        text: "Senior year culminated when {userName} and Aaliyah were invited to address the National Conference on Food Justice as the youngest keynote speakers in the event's history. Standing before 2,000 food advocates, policy makers, and community organizers, they shared their journey from eighth-grade volunteers to teen policy advocates whose Community Kitchen model was operating in twelve cities. 'Food justice isn't just about nutrition,' Aaliyah told the packed auditorium. 'It's about dignity, community power, and the revolutionary idea that everyone deserves access to food that nourishes both body and spirit.' {userName} added, 'And when young people partner with communities and businesses, we can create solutions that adults said were impossible.' The standing ovation felt like validation for four years of hard work and community building.",
+        pause: true,
+        hook: "What impact will their national platform have on expanding food justice work to additional communities?",
+        microVariants: {
+          text: "The keynote speech established them as national teen experts on food justice while demonstrating the scalability of their Community Kitchen model.",
+          alternatives: ["National conference recognition validated their approach while inspiring other young people to start similar food justice initiatives in their communities.", "Speaking to thousands of adults proved that teen voices could provide innovative solutions to systematic food access problems."],
+          optionalDetails: ["Twenty-five cities requested implementation support for Community Kitchen programs", "National food justice organizations offered them leadership positions after college", "The conference connected them with international food activists working on similar issues"]
+        }
+      },
+      {
+        text: "Graduation brought bittersweet reflection as {userName} and Aaliyah prepared to attend the same university's joint Food Policy and Social Justice program, the first of its kind designed specifically for student activists. During their final Community Kitchen service before leaving for college, surrounded by families they'd served for four years, {userName} felt grateful for the food pantry volunteer shift that had changed everything. 'Remember when you had to teach me how to pack groceries?' they asked Aaliyah while cleaning up after their farewell celebration. She grinned, loading leftover community garden vegetables into containers for regular clients. 'Now you're teaching food justice workshops to college students. Growth.' When Ms. Williams approached them with tears in her eyes to thank them for 'making healthy food accessible with dignity,' both teens knew their work had created lasting change.",
+        pause: true,
+        hook: "How will their college program prepare them for lifelong careers in food justice advocacy and policy?",
+        microVariants: {
+          text: "Graduation celebration with Community Kitchen families provided perfect closure while launching their transition to college-level food justice education.",
+          alternatives: ["The farewell service reminded them how far they'd traveled from nervous volunteers to confident advocates while maintaining connection to the community that inspired their work.", "Ms. Williams' gratitude represented the voices of hundreds of families whose food security had improved through their persistent advocacy and innovation."],
+          optionalDetails: ["Community Kitchen was financially sustainable and community-operated", "Their high school had created a permanent food justice curriculum based on their work", "College professors were excited to work with students who had real-world policy experience"]
+        }
+      },
+      {
+        text: "Five years later, {userName} and Aaliyah stood in the White House Rose Garden as President Martinez signed the National Food Access Act, legislation they'd helped draft as graduate students in the Congressional Food Policy Fellowship program. Their Community Kitchen model had grown into a nationwide network serving 50,000 families weekly, while their research on food apartheid had influenced federal nutrition policy. 'From sorting canned goods to signing federal legislation,' Aaliyah whispered to {userName} as cameras captured the historic moment. 'Not bad for a couple of eighth-grade volunteers.' {userName} squeezed their wife's hand (they'd married the summer after college), thinking of Ms. Johnson, Ms. Williams, and all the families whose stories had inspired their decade of advocacy. Their work had proven that food justice wasn't just possible - it was inevitable when communities and young people refused to accept inequality as permanent.",
+        pause: true,
+        hook: "What legacy will their food justice work create for future generations of community advocates?",
+        microVariants: {
+          text: "Federal legislation signing represented the culmination of their journey from teen volunteers to national policy leaders while honoring the community members who inspired their work.",
+          alternatives: ["The Rose Garden ceremony validated their belief that persistent community organizing could create systematic change for food access and dignity.", "Their marriage and professional partnership demonstrated how shared values and collaborative advocacy could create both personal fulfillment and social transformation."],
+          optionalDetails: ["The National Food Access Act would benefit over 10 million families nationwide", "Community Kitchen had become a standard model taught in social work and public policy programs", "They were already planning their next project: international food justice consulting"]
         }
       }
     ],
     endings: [
       {
-        type: 'reflective',
-        text: "Standing in the community garden that had been established on a previously vacant lot, {userName} watched neighbors harvest vegetables they had grown together while children played between the raised beds. The garden was more than a source of fresh food - it had become a gathering place where people shared recipes, stories, and strategies for community improvement. 'Food justice isn't just about groceries,' {userName} understood with deep clarity. 'It's about creating communities where everyone has the power to nourish themselves and each other with dignity and choice.'",
-        microVariants: [
-          "In the thriving community garden, {userName} recognized that food justice involved dignity, community power, and collective nourishment beyond individual nutrition."
-        ]
+        type: 'triumphant',
+        text: "Ten years after their first volunteer shift together, Dr. {userName} Chen-Williams and Dr. Aaliyah Chen-Williams (they'd hyphenated after marriage) opened the National Center for Food Justice at their alma mater, the first research institute dedicated to community-led food access solutions. Their work had influenced policy in thirty-seven countries, trained thousands of young food advocates, and proven that the most effective solutions to systematic inequality emerged from partnerships between communities, businesses, and passionate young people. Standing in the center's community kitchen - a replica of their original Hope Food Bank space - they watched new cohorts of student activists begin their own journeys toward food justice, knowing that their eighth-grade volunteer experience had grown into a legacy that would nourish communities for generations.",
+        microVariants: ["Their research center ensured that future generations of food activists would have resources and support to continue expanding access to nutritious, affordable food.", "From teen volunteers to international experts, their journey proved that authentic community partnership could create sustainable solutions to systematic food inequality."]
       },
       {
-        type: 'triumphant',
-        text: "The comprehensive food justice campaign resulted in three new grocery stores opening in previously underserved areas, expanded bus routes connecting neighborhoods to existing stores, and the establishment of a permanent community-supported agriculture program that provided fresh, local produce at affordable prices. {userName}'s research and advocacy work contributed to new city policies that required food access impact assessments for all urban development projects, ensuring that future planning would prioritize equitable food distribution across all neighborhoods.",
-        microVariants: [
-          "{userName}'s food justice work achieved new grocery stores, improved transportation, community agriculture programs, and policy changes requiring food access considerations in development."
-        ]
+        type: 'cozy',
+        text: "Every Saturday morning, {userName} and Aaliyah returned to Hope Community Food Bank with their own children, continuing the volunteer tradition that had brought them together fifteen years earlier. Watching their kids learn to pack groceries with the same care Aaliyah had once taught them, they felt grateful for the chance encounter that had changed both their lives and their city's approach to food access. Community Kitchen still operated across the street, now run entirely by community members and serving families who'd once depended on food pantries. 'Best first date location ever,' Aaliyah teased, adjusting their toddler's volunteer apron while {userName} helped elderly clients carry groceries. 'Even if we didn't know it was a date at the time.' {userName} smiled, watching their children naturally follow their parents' commitment to food justice and community care.",
+        microVariants: ["Family volunteering traditions kept their food justice values alive for the next generation while maintaining connection to the community that launched their advocacy.", "The transformation of food pantry clients into Community Kitchen operators demonstrated how their work had created lasting community empowerment and food sovereignty."]
       }
     ],
     reuse: {
       swappableElements: {
-        "food_barriers": ["transportation challenges", "price disparities", "store availability", "cultural food access"],
-        "community_solutions": ["mobile markets", "community gardens", "food cooperatives", "policy advocacy"],
-        "health_impacts": ["diabetes prevention", "nutrition education", "food security", "community wellness"]
+        "food_access_barriers": ["transportation challenges", "price disparities", "store availability", "cultural food access"],
+        "community_solutions": ["sliding-scale programs", "mobile markets", "community gardens", "policy advocacy"],
+        "relationship_dynamics": ["volunteer partnerships", "family business involvement", "romantic development", "professional collaboration"]
       },
-      weatherVariants: ["harvest season", "winter food security", "summer market season", "policy hearing period"],
-      settingVariants: ["community garden", "food pantry", "city council chambers", "neighborhood meeting space"]
+      weatherVariants: ["food bank service", "community organizing", "policy advocacy", "celebration milestones"],
+      settingVariants: ["community food spaces", "restaurant partnerships", "policy venues", "neighborhood organizations"],
+      randomSeed: Math.floor(Math.random() * 10000)
     }
   },
   {
