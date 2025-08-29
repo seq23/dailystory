@@ -391,10 +391,35 @@ GUARDRAILS: G-rated content only. No external personal data. No copyrighted cont
       throw new Error('AI generated empty content');
     }
     
-    console.log('EDGE SOURCE=ai', { readingLevel: normalizedReadingLevel, pagesCount: pages.length });
+    // Process pages through unified post-processing system
+    console.log('🔄 Sending pages to unified post-processor...');
+    const { data: processedResult, error: processingError } = await supabase.functions.invoke('process-story-content', {
+      body: {
+        pages: pages,
+        userInfo: {
+          name: userName,
+          avatar: { type: avatarType },
+          favoriteColor: ensureColorName(config?.favoriteColor),
+          favoriteAnimal: config?.favoriteAnimal || 'cat',
+          favoriteFood: config?.favoriteFood || 'cookies',
+          hobbies: config?.hobbies || 'playing outside',
+          specialRequest: config?.specialRequest || 'adventure'
+        }
+      }
+    });
+
+    let finalPages = pages; // fallback to original pages
+    if (processedResult && !processingError && processedResult.success) {
+      finalPages = processedResult.processedPages;
+      console.log('✅ Unified processing successful:', processedResult.processingMetadata);
+    } else {
+      console.warn('⚠️ Unified processing failed, using raw pages:', processingError);
+    }
+    
+    console.log('EDGE SOURCE=ai', { readingLevel: normalizedReadingLevel, pagesCount: finalPages.length });
     return new Response(JSON.stringify({
       source: 'ai',
-      pages: pages,
+      pages: finalPages,
       difficulty: normalizedReadingLevel,
       title: `${userName}'s Story`,
       isComplete: true

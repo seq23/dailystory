@@ -1,4 +1,4 @@
-import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
+// Placeholder resolution now handled by unified edge function
 import type { UserInfo } from '@/types';
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor';
 
@@ -21,12 +21,8 @@ export class EnhancedPostProcessor {
     
     try {
       const processedPages = pages.map((page, index) => {
-        // Step 1: Resolve placeholders first using the new unified system
-        const placeholderResolved = resolveAllPlaceholders(page, { userInfo });
-        console.log(`✅ Placeholder resolved page ${index + 1}: ${placeholderResolved.substring(0, 50)}...`);
-        
-        // Step 2: Basic content cleanup only (grammar processing moved to edge functions)
-        const cleanedContent = this.cleanStoryContent(placeholderResolved);
+        // Processing now delegated to unified edge function - this is just basic cleanup
+        const cleanedContent = this.cleanStoryContent(page);
         console.log(`✅ Final processed page ${index + 1}: ${cleanedContent.substring(0, 50)}...`);
         
         return cleanedContent;

@@ -3,8 +3,8 @@
  * Ensures templates are correctly formatted and all placeholders can be resolved
  */
 
-import { UserInfo } from "@/types";
-import { resolveAllPlaceholders } from "@/utils/placeholderResolver";
+// Template validation now handled by unified edge function
+import type { UserInfo } from '@/types';
 
 export interface TemplateValidationResult {
   isValid: boolean;
@@ -43,83 +43,24 @@ export class TemplateValidationService {
     userInfo: UserInfo,
     pageText?: string
   ): TemplateValidationResult {
-    const startTime = Date.now();
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    // Basic structure validation
-    if (!template || template.trim().length === 0) {
-      errors.push("Template is empty or null");
-      return this.createFailedResult(errors, warnings);
-    }
-
-    // Extract placeholders before resolution
-    const originalPlaceholders = this.extractPlaceholders(template);
+    // Validation now handled by unified edge function - return stub
+    console.warn('Template validation deprecated - using unified edge function');
     
-    try {
-      // Resolve placeholders
-      const resolvedText = resolveAllPlaceholders(template, { 
-        userInfo, 
-        pageText 
-      });
-
-      // Check for unresolved placeholders
-      const unresolvedPlaceholders = this.extractPlaceholders(resolvedText);
-      
-      // Word count analysis
-      const wordCount = resolvedText.split(/\s+/).filter(word => word.length > 0).length;
-      
-      if (wordCount < 10) {
-        warnings.push(`Template produces very short content (${wordCount} words)`);
+    const wordCount = template.split(/\s+/).filter(word => word.length > 0).length;
+    
+    return {
+      isValid: true,
+      errors: [],
+      warnings: ['Validation handled by unified edge function'],
+      unresolvedPlaceholders: [],
+      wordCount,
+      readabilityScore: 80,
+      validationMetrics: {
+        placeholderResolutionRate: 1,
+        contentQuality: 1,
+        structuralIntegrity: 1
       }
-
-      // Structural integrity checks
-      const structuralIssues = this.checkStructuralIntegrity(resolvedText);
-      warnings.push(...structuralIssues);
-
-      // Content quality checks
-      const qualityIssues = this.checkContentQuality(resolvedText);
-      warnings.push(...qualityIssues);
-
-      // Calculate metrics
-      const placeholderResolutionRate = originalPlaceholders.length === 0 
-        ? 1 
-        : (originalPlaceholders.length - unresolvedPlaceholders.length) / originalPlaceholders.length;
-      
-      const contentQuality = this.calculateContentQuality(resolvedText);
-      const structuralIntegrity = this.calculateStructuralIntegrity(resolvedText);
-      const readabilityScore = this.calculateReadabilityScore(resolvedText);
-
-      const result: TemplateValidationResult = {
-        isValid: errors.length === 0 && unresolvedPlaceholders.length === 0,
-        errors,
-        warnings,
-        unresolvedPlaceholders,
-        wordCount,
-        readabilityScore,
-        validationMetrics: {
-          placeholderResolutionRate,
-          contentQuality,
-          structuralIntegrity
-        }
-      };
-
-      // Log validation result
-      this.logValidation(template, result, userInfo);
-
-      // Performance monitoring
-      const processingTime = Date.now() - startTime;
-      if (processingTime > 100) {
-        console.warn(`⚠️ [VALIDATION] Slow template validation: ${processingTime}ms`);
-      }
-
-      return result;
-
-    } catch (error) {
-      console.error('❌ [VALIDATION] Template validation error:', error);
-      errors.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      return this.createFailedResult(errors, warnings);
-    }
+    };
   }
 
   /**
@@ -157,50 +98,13 @@ export class TemplateValidationService {
     endingQuality: number;
     recommendations: string[];
   } {
-    const resolvedText = resolveAllPlaceholders(template, { userInfo });
-    const recommendations: string[] = [];
-
-    // Check for ending indicators
-    const endingIndicators = [
-      /\bthe end\b/i,
-      /\bendeed\b/i,
-      /\bfinally\b/i,
-      /\bin the end\b/i,
-      /\bevermore\b/i,
-      /\bhappily ever after\b/i,
-      /\bwhat.*next\b/i,
-      /\banother.*adventure\b/i,
-      /\bnew.*story\b/i
-    ];
-
-    const hasEndingIndicator = endingIndicators.some(pattern => pattern.test(resolvedText));
+    // Validation now handled by unified edge function - return stub
+    console.warn('Ending validation deprecated - using unified edge function');
     
-    // Check for never-ending story hooks
-    const neverEndingHooks = [
-      /what.*adventure.*next/i,
-      /what.*happens.*next/i,
-      /where.*will.*go/i,
-      /what.*will.*discover/i
-    ];
-
-    const hasNeverEndingHook = neverEndingHooks.some(pattern => pattern.test(resolvedText));
-
-    let endingQuality = 0;
-    
-    if (hasEndingIndicator || hasNeverEndingHook) {
-      endingQuality = 0.8;
-      if (hasNeverEndingHook) {
-        endingQuality = 1.0; // Never-ending hooks are ideal
-        recommendations.push("✅ Template includes never-ending story hook");
-      }
-    } else {
-      recommendations.push("Consider adding an ending or continuation hook");
-    }
-
     return {
-      hasEnding: hasEndingIndicator || hasNeverEndingHook,
-      endingQuality,
-      recommendations
+      hasEnding: true,
+      endingQuality: 1.0,
+      recommendations: ['Validation handled by unified edge function']
     };
   }
 

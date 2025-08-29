@@ -2,7 +2,7 @@
 // Easy to update and modify without code changes
 
 import type { DifficultyLevel, ExpertGradeLevel, UserInfo } from '@/types';
-import { resolveAllPlaceholders } from '@/utils/placeholderResolver';
+// Placeholder resolution now handled by unified edge function
 import { extractThemeIntent } from '@/utils/themeIntent';
 
 import { getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
@@ -316,8 +316,8 @@ export function formatUserPrompt(template: string, userInfo: Partial<UserInfo>):
     template: template.slice(0, 100) + '...'
   });
   
-  // Start with basic placeholder resolution
-  let prompt = resolveAllPlaceholders(template, { userInfo: userInfo as UserInfo });
+  // Placeholder resolution now handled by unified edge function
+  let prompt = template; // Will be processed by unified edge function later
   
   // Extract theme intent with enhanced fallback system
   if (userInfo as UserInfo) {

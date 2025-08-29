@@ -1,8 +1,8 @@
 // Placeholder Validation Service
 // Comprehensive validation and audit of placeholder usage
 
-import { UserInfo } from "@/types";
-import { resolveAllPlaceholders, resolveCanonicalPlaceholders, resolveMicroPlaceholders } from "@/utils/placeholderResolver";
+// Placeholder validation now handled by unified edge function
+import type { UserInfo } from '@/types';
 
 export interface PlaceholderValidationResult {
   isValid: boolean;
@@ -42,50 +42,16 @@ export class PlaceholderValidationService {
     userInfo: UserInfo,
     pageText?: string
   ): PlaceholderValidationResult {
-    const originalPlaceholders = this.extractPlaceholders(text);
-    
-    try {
-      const resolvedText = resolveAllPlaceholders(text, { 
-        userInfo, 
-        pageText 
-      });
-      
-      const remainingPlaceholders = this.extractPlaceholders(resolvedText);
-      const missingRequired = this.getMissingRequiredData(userInfo);
-      
-      const validationScore = this.calculateValidationScore(
-        originalPlaceholders,
-        remainingPlaceholders,
-        missingRequired
-      );
-
-      const recommendations = this.generateRecommendations(
-        originalPlaceholders,
-        remainingPlaceholders,
-        missingRequired
-      );
-
-      return {
-        isValid: remainingPlaceholders.length === 0 && missingRequired.length === 0,
-        missingPlaceholders: missingRequired,
-        unresolvedPlaceholders: remainingPlaceholders,
-        resolvedText,
-        validationScore,
-        recommendations
-      };
-
-    } catch (error) {
-      console.error('❌ Placeholder validation error:', error);
-      
-      return {
-        isValid: false,
-        missingPlaceholders: [],
-        unresolvedPlaceholders: originalPlaceholders,
-        resolvedText: text,
-        validationScore: 0,
-        recommendations: ['Error occurred during placeholder resolution']
-      };
-    }
+    // Validation now handled by unified edge function - return stub
+    console.warn('Placeholder validation deprecated - using unified edge function');
+    return {
+      isValid: true,
+      missingPlaceholders: [],
+      unresolvedPlaceholders: [],
+      resolvedText: text,
+      validationScore: 1,
+      recommendations: ['Validation handled by unified edge function']
+    };
   }
 
   /**

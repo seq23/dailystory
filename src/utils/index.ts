@@ -4,4 +4,4 @@ export * from './tokenLimitValidator';
 export * from './errorHandling';
 export * from './diagnostics';
 export * from './inputSanitizer';
-export * from './placeholderResolver';
+// placeholderResolver removed - now handled by unified edge function
