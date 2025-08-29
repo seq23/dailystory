@@ -152,25 +152,35 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
       }
       
       if (selectedDetails.length > 0) {
-        // Smart integration: blend details naturally instead of listing
+        // Natural integration: integrate details seamlessly into the narrative flow
         const detailText = selectedDetails.length === 1 
           ? selectedDetails[0]
-          : `${selectedDetails[0]}, while ${selectedDetails[1]}`;
+          : `${selectedDetails[0]}. Additionally, ${selectedDetails[1]}`;
           
-        text = text.trim().endsWith('.') 
-          ? `${text.slice(0, -1)}, ${detailText}.`
-          : `${text} ${detailText.charAt(0).toUpperCase()}${detailText.slice(1)}.`;
+        // Integrate naturally at sentence boundaries
+        if (text.trim().endsWith('.')) {
+          // Add as new sentences after the main text
+          text = `${text} ${detailText.charAt(0).toUpperCase()}${detailText.slice(1)}.`;
+        } else {
+          // Complete the sentence first, then add details
+          text = `${text}. ${detailText.charAt(0).toUpperCase()}${detailText.slice(1)}.`;
+        }
         
-        console.log(`🎯 SMART SELECTION: Added ${selectedDetails.length} details (${addedWords} words) targeting ${targetWordCount}`);
+        console.log(`🎯 NATURAL INTEGRATION: Added ${selectedDetails.length} details (${addedWords} words) as complete sentences`);
       }
     } else if (!isHardOrExpert && wordsNeeded > 10) {
-      // Normal levels: selective single detail addition
+      // Normal levels: selective single detail addition as complete sentence
       const detail = pick(allDetails);
-      text = text.trim().endsWith('.') 
-        ? `${text.slice(0, -1)}, ${detail}.`
-        : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+      
+      if (text.trim().endsWith('.')) {
+        // Add as new sentence after the main text
+        text = `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+      } else {
+        // Complete the sentence first, then add detail
+        text = `${text}. ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+      }
         
-      console.log(`🎯 NORMAL: Added 1 detail (${detail.split(' ').length} words)`);
+      console.log(`🎯 NATURAL: Added 1 detail (${detail.split(' ').length} words) as complete sentence`);
     }
   }
   
@@ -195,12 +205,15 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
         text = longestAlternative;
         console.log(`🔄 REPLACED with longer alternative (${longestAlternative.split(' ').length} words)`);
       } else {
-        // Only add if we're significantly short
+        // Only add alternative as separate sentence if we're significantly short
         const wordsShort = targetWords - newFinalWordCount;
         if (wordsShort > 20) {
           const alternative = pick(scene.microVariants.alternatives);
-          text = `${text} ${alternative}`;
-          console.log(`🔧 Added alternative text (${alternative.split(' ').length} words)`);
+          // Add as separate sentence to avoid concatenation issues
+          text = text.trim().endsWith('.') 
+            ? `${text} ${alternative.charAt(0).toUpperCase()}${alternative.slice(1)}.`
+            : `${text}. ${alternative.charAt(0).toUpperCase()}${alternative.slice(1)}.`;
+          console.log(`🔧 Added alternative as separate sentence (${alternative.split(' ').length} words)`);
         }
       }
     }
@@ -442,9 +455,10 @@ function processSceneWithCycleVariation(
       const detailIndex = (cycleNumber % scene.microVariants.optionalDetails.length);
       const detail = scene.microVariants.optionalDetails[detailIndex];
       
+      // Add as separate sentence to avoid concatenation issues
       text = text.trim().endsWith('.') 
-        ? `${text.slice(0, -1)}, and ${detail}.`
-        : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+        ? `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`
+        : `${text}. ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
     }
   }
   

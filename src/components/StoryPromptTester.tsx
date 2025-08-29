@@ -155,6 +155,21 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'burgers',
     specialRequest: 'mythological adventures'
   },
+  grade7: {
+    name: 'Dakota',
+    age: 12,
+    grade: "6th+" as Grade,
+    nativeLanguage: "en" as LanguageCode,
+    learningGoal: "improve-english-reading" as LearningGoal,
+    avatar: { type: "boy", skinTone: "dark" },
+    difficultyLevel: 'expert',
+    expertGradeLevel: 'grade7' as ExpertGradeLevel,
+    favoriteColor: 'gold',
+    favoriteAnimal: 'falcon',
+    hobbies: 'astronomy',
+    favoriteFood: 'ramen',
+    specialRequest: 'space exploration'
+  },
   grade8: {
     name: 'River',
     age: 13,
@@ -169,6 +184,21 @@ const testUserProfiles: Record<string, UserInfo> = {
     hobbies: 'marine biology',
     favoriteFood: 'tacos',
     specialRequest: 'futuristic stories'
+  },
+  grade9: {
+    name: 'Sage',
+    age: 14,
+    grade: "6th+" as Grade,
+    nativeLanguage: "en" as LanguageCode,
+    learningGoal: "improve-english-reading" as LearningGoal,
+    avatar: { type: "girl", skinTone: "olive" },
+    difficultyLevel: 'expert',
+    expertGradeLevel: 'grade9' as ExpertGradeLevel,
+    favoriteColor: 'violet',
+    favoriteAnimal: 'raven',
+    hobbies: 'creative writing',
+    favoriteFood: 'curry',
+    specialRequest: 'psychological thrillers'
   },
   grade10: {
     name: 'Phoenix',
@@ -387,7 +417,9 @@ export function StoryPromptTester() {
       'hard': 75,
       'expert': 100,
       'grade6': 80,
-      'grade8': 90, 
+      'grade7': 85,
+      'grade8': 90,
+      'grade9': 95,
       'grade10': 100
     };
     
@@ -506,7 +538,9 @@ export function StoryPromptTester() {
       'hard': { min: 60, max: 300 },
       'expert': { min: 80, max: 400 },
       'grade6': { min: 70, max: 350 },
+      'grade7': { min: 75, max: 365 },
       'grade8': { min: 80, max: 380 },
+      'grade9': { min: 85, max: 390 },
       'grade10': { min: 90, max: 400 }
     };
 
