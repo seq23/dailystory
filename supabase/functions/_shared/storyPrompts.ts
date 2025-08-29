@@ -40,7 +40,8 @@ CRITICAL RULES:
 
 Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
-Maximum 48 tokens total. Max 6 words per page.
+GUEST USERS: Generate exactly 8 pages, 6 words each (users see 6 pages). 
+PREMIUM USERS: Generate 1 page, 6 words for never-ending continuation.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
@@ -297,17 +298,14 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 };
 
 /**
- * Get token limit for difficulty level
+ * Get token limit for difficulty level - HARDCODED for bulletproof reliability
  */
-export function getTokenLimitForDifficulty(difficulty: DifficultyLevel): number {
-  const limits: Record<DifficultyLevel, number> = {
-    beginner: 48,
-    easy: 350,
-    medium: 500,
-    hard: 650,
-    expert: 800
+export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const HARDCODED_LIMITS = {
+    beginner: 48, easy: 72, medium: 120, hard: 180, expert: 240,
+    '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
   };
-  return limits[difficulty];
+  return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback
 }
 
 /**
