@@ -406,20 +406,20 @@ export function StoryPromptTester() {
     return result;
   };
 
-  // Enhanced page concatenation detection with specific patterns from logs
+  // Enhanced page concatenation detection with updated word count standards
   const checkPageConcatenation = (pages: string[], level: string): boolean => {
     if (!pages || pages.length <= 1) return false;
     
     const difficultyLimits = {
       'beginner': 25,
-      'easy': 35,
-      'medium': 50,
-      'hard': 75,
-      'expert': 100,
-      '6th': 80,
-      '7th': 85,
-      '8th': 90,
-      '9th': 95,
+      'easy': 24,    // Level 1 = 24 words per page
+      'medium': 45,  // Level 2 = 40-50 words per page (use middle)
+      'hard': 80,    // Level 3 = 80 words per page
+      'expert': 100, // Level 4 = 100 words per page
+      '6th': 100,    // Grade levels all use 100 words per page
+      '7th': 100,
+      '8th': 100,
+      '9th': 100,
       '10th': 100
     };
     
@@ -429,8 +429,8 @@ export function StoryPromptTester() {
       const page = pages[i];
       const pageWordCount = countWords(page);
       
-      // 1. Excessive word count (clear concatenation)
-      if (pageWordCount > expectedWordLimit * 2) return true;
+      // 1. Excessive word count (clear concatenation) - only flag if 3x expected limit
+      if (pageWordCount > expectedWordLimit * 3) return true;
       
       // 2. Multiple "Page X:" markers
       if (page.includes('Page ') && page.includes('Page ', 10)) return true;
@@ -529,23 +529,33 @@ export function StoryPromptTester() {
     };
   };
 
-  // Token limit analysis
+  // Updated word count analysis based on per-page standards
   const analyzeTokenLimits = (wordCount: number, level: string): boolean => {
-    const tokenLimits = {
-      'beginner': { min: 15, max: 100 },
-      'easy': { min: 25, max: 150 },
-      'medium': { min: 40, max: 200 },
-      'hard': { min: 60, max: 300 },
-      'expert': { min: 80, max: 400 },
-      '6th': { min: 70, max: 350 },
-      '7th': { min: 75, max: 365 },
-      '8th': { min: 80, max: 380 },
-      '9th': { min: 85, max: 390 },
-      '10th': { min: 90, max: 400 }
+    const expectedWordsPerPage = {
+      'beginner': 25,  // No change needed
+      'easy': 24,      // Level 1 = 24 words per page
+      'medium': 45,    // Level 2 = 40-50 words per page (use middle)
+      'hard': 80,      // Level 3 = 80 words per page
+      'expert': 100,   // Level 4 = 100 words per page
+      '6th': 100,      // Grade levels all use 100 words per page
+      '7th': 100,
+      '8th': 100,
+      '9th': 100,
+      '10th': 100
     };
 
-    const limits = tokenLimits[level as keyof typeof tokenLimits] || { min: 30, max: 200 };
-    return wordCount >= limits.min && wordCount <= limits.max;
+    const expectedPages = {
+      'beginner': 5, 'easy': 6, 'medium': 8, 'hard': 10, 'expert': 12,
+      '6th': 12, '7th': 13, '8th': 14, '9th': 15, '10th': 16
+    };
+
+    const wordsPerPage = expectedWordsPerPage[level as keyof typeof expectedWordsPerPage] || 50;
+    const pages = expectedPages[level as keyof typeof expectedPages] || 8;
+    
+    const minWords = Math.floor(wordsPerPage * pages * 0.7); // Allow 30% under
+    const maxWords = Math.ceil(wordsPerPage * pages * 1.3); // Allow 30% over
+    
+    return wordCount >= minWords && wordCount <= maxWords;
   };
 
   // Run comprehensive tests

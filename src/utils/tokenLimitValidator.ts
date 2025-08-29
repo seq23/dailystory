@@ -22,69 +22,69 @@ export const TOKEN_LIMITS: Record<DifficultyLevel, TokenLimitConfig> = {
   },
   easy: {
     difficulty: 'easy',
-    maxTokens: 300,
+    maxTokens: 192, // 6 pages × 32 tokens per page (24 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 6,
-    tokensPerPage: 50
+    tokensPerPage: 32 // 24 words per page
   },
   medium: {
     difficulty: 'medium',
-    maxTokens: 400,
+    maxTokens: 427, // 8 pages × 53 tokens per page (40 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 8,
-    tokensPerPage: 50
+    tokensPerPage: 53 // 40 words per page
   },
   hard: {
     difficulty: 'hard',
-    maxTokens: 600,
+    maxTokens: 1067, // 10 pages × 107 tokens per page (80 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 10,
-    tokensPerPage: 60
+    tokensPerPage: 107 // 80 words per page
   },
   expert: {
     difficulty: 'expert',
-    maxTokens: 800,
+    maxTokens: 1600, // 12 pages × 133 tokens per page (100 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 12,
-    tokensPerPage: 65
+    tokensPerPage: 133 // 100 words per page
   }
 };
 
 export const EXPERT_TOKEN_LIMITS: Record<ExpertGradeLevel, TokenLimitConfig> = {
   '6th': {
     difficulty: '6th',
-    maxTokens: 1200, // 800-900 words
+    maxTokens: 1600, // 12 pages × 133 tokens per page (100 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 12,
-    tokensPerPage: 100
+    tokensPerPage: 133 // 100 words per page
   },
   '7th': {
     difficulty: '7th',
-    maxTokens: 1470, // 900-1100 words
+    maxTokens: 1732, // 13 pages × 133 tokens per page (100 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 13,
-    tokensPerPage: 113
+    tokensPerPage: 133 // 100 words per page
   },
   '8th': {
     difficulty: '8th',
-    maxTokens: 1600, // 1000-1200 words
+    maxTokens: 1864, // 14 pages × 133 tokens per page (100 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 14,
-    tokensPerPage: 114
+    tokensPerPage: 133 // 100 words per page
   },
   '9th': {
     difficulty: '9th',
-    maxTokens: 1730, // 1100-1300 words
+    maxTokens: 1996, // 15 pages × 133 tokens per page (100 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 15,
-    tokensPerPage: 115
+    tokensPerPage: 133 // 100 words per page
   },
   '10th': {
     difficulty: '10th',
-    maxTokens: 1870, // 1200-1400 words
+    maxTokens: 2128, // 16 pages × 133 tokens per page (100 words ÷ 0.75)
     wordsPerToken: 0.75,
     expectedPages: 16,
-    tokensPerPage: 117
+    tokensPerPage: 133 // 100 words per page
   }
 };
 
