@@ -20,6 +20,35 @@ interface StoryResult {
     mode?: string;
     targetWordDensity?: string;
   };
+  testingData?: {
+    templateStructure: {
+      title: string;
+      theme: string;
+      level: string;
+      totalScenes: number;
+      totalEndings: number;
+    };
+    sceneDetails: Array<{
+      index: number;
+      mainText: string;
+      alternatives: string[];
+      optionalDetails: string[];
+      hook: string;
+      pause: boolean;
+    }>;
+    endingDetails: Array<{
+      index: number;
+      type: string;
+      mainText: string;
+      variants: string[];
+    }>;
+    reusableElements: {
+      swappableElements: Record<string, string[]>;
+      weatherVariants: string[];
+      settingVariants: string[];
+      randomSeed?: number;
+    };
+  };
   error?: string;
 }
 
@@ -155,6 +184,208 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Testing Mode: Complete Template Structure */}
+      {result.testingData && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-accent" />
+                Template Structure Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{result.testingData.templateStructure.totalScenes}</div>
+                    <div className="text-sm text-muted-foreground">Total Scenes</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-secondary">{result.testingData.templateStructure.totalEndings}</div>
+                    <div className="text-sm text-muted-foreground">Total Endings</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-accent">{Object.keys(result.testingData.reusableElements.swappableElements).length}</div>
+                    <div className="text-sm text-muted-foreground">Swappable Elements</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-fun">{result.testingData.reusableElements.weatherVariants.length + result.testingData.reusableElements.settingVariants.length}</div>
+                    <div className="text-sm text-muted-foreground">Environment Variants</div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">Title: {result.testingData.templateStructure.title}</Badge>
+                    <Badge variant="secondary">Theme: {result.testingData.templateStructure.theme}</Badge>
+                    <Badge variant="outline">Level: {result.testingData.templateStructure.level}</Badge>
+                    {result.testingData.reusableElements.randomSeed && (
+                      <Badge variant="outline">Random Seed: {result.testingData.reusableElements.randomSeed}</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Scene Variants & Alternatives ({result.testingData.sceneDetails.length} scenes)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {result.testingData.sceneDetails.map((scene, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="mb-3">
+                      <Badge variant="outline">Scene {scene.index}</Badge>
+                      {scene.hook && <Badge variant="secondary" className="ml-2">Hook: {scene.hook}</Badge>}
+                      {scene.pause && <Badge variant="secondary" className="ml-2">Pause Point</Badge>}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm font-medium mb-2">Main Text ({scene.mainText.split(' ').length} words):</div>
+                        <div className="p-3 bg-muted rounded text-sm">{scene.mainText}</div>
+                      </div>
+                      
+                      {scene.alternatives.length > 0 && (
+                        <div>
+                          <div className="text-sm font-medium mb-2">Alternatives ({scene.alternatives.length}):</div>
+                          <div className="space-y-2">
+                            {scene.alternatives.map((alt, altIndex) => (
+                              <div key={altIndex} className="p-2 bg-muted/50 rounded text-sm">
+                                <Badge variant="outline" className="mr-2">Alt {altIndex + 1}</Badge>
+                                {alt} <span className="text-xs text-muted-foreground">({alt.split(' ').length} words)</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {scene.optionalDetails.length > 0 && (
+                        <div>
+                          <div className="text-sm font-medium mb-2">Optional Details ({scene.optionalDetails.length}):</div>
+                          <div className="space-y-2">
+                            {scene.optionalDetails.map((detail, detailIndex) => (
+                              <div key={detailIndex} className="p-2 bg-secondary/10 rounded text-sm">
+                                <Badge variant="secondary" className="mr-2">Detail {detailIndex + 1}</Badge>
+                                {detail}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-success" />
+                Ending Variations ({result.testingData.endingDetails.length} endings)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {result.testingData.endingDetails.map((ending, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="mb-3">
+                      <Badge variant="outline">Ending {ending.index}</Badge>
+                      <Badge variant="secondary" className="ml-2 capitalize">{ending.type}</Badge>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm font-medium mb-2">Main Ending ({ending.mainText.split(' ').length} words):</div>
+                        <div className="p-3 bg-muted rounded text-sm">{ending.mainText}</div>
+                      </div>
+                      
+                      {ending.variants.length > 0 && (
+                        <div>
+                          <div className="text-sm font-medium mb-2">Ending Variants ({ending.variants.length}):</div>
+                          <div className="space-y-2">
+                            {ending.variants.map((variant, variantIndex) => (
+                              <div key={variantIndex} className="p-2 bg-primary/10 rounded text-sm">
+                                <Badge variant="outline" className="mr-2">Variant {variantIndex + 1}</Badge>
+                                {variant} <span className="text-xs text-muted-foreground">({variant.split(' ').length} words)</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {(Object.keys(result.testingData.reusableElements.swappableElements).length > 0 || 
+            result.testingData.reusableElements.weatherVariants.length > 0 || 
+            result.testingData.reusableElements.settingVariants.length > 0) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Hash className="h-5 w-5 text-fun" />
+                  Reusable Template Elements
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {Object.keys(result.testingData.reusableElements.swappableElements).length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-2">Swappable Elements:</div>
+                      <div className="space-y-2">
+                        {Object.entries(result.testingData.reusableElements.swappableElements).map(([key, options]) => (
+                          <div key={key} className="p-3 bg-muted rounded">
+                            <div className="text-sm font-medium mb-1">{key}:</div>
+                            <div className="flex flex-wrap gap-1">
+                              {options.map((option, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">{option}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {result.testingData.reusableElements.weatherVariants.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-2">Weather Variants ({result.testingData.reusableElements.weatherVariants.length}):</div>
+                      <div className="flex flex-wrap gap-1">
+                        {result.testingData.reusableElements.weatherVariants.map((variant, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">{variant}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {result.testingData.reusableElements.settingVariants.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-2">Setting Variants ({result.testingData.reusableElements.settingVariants.length}):</div>
+                      <div className="flex flex-wrap gap-1">
+                        {result.testingData.reusableElements.settingVariants.map((variant, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">{variant}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
 
       {/* Technical Analysis */}
       <Card>

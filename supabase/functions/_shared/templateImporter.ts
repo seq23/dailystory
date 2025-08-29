@@ -105,7 +105,7 @@ export async function getTemplate(
   userInfo: UserInfo = {}, 
   pageCount: number = 5,
   mode: string = 'testing'
-): Promise<string[] | null> {
+): Promise<string[] | { pages: string[], testingData?: any } | null> {
   try {
     console.log(`📚 Getting template for ${level}, index: ${templateIndex}`);
     
@@ -121,15 +121,58 @@ export async function getTemplate(
     if (Array.isArray(storyTemplate)) {
       console.log(`✅ Found Level 0 template with ${storyTemplate.length} pages`);
       // Level 0 templates are already string arrays - return as-is (limited to pageCount)
-      return storyTemplate.slice(0, Math.min(pageCount, storyTemplate.length));
+      const level0Pages = storyTemplate.slice(0, Math.min(pageCount, storyTemplate.length));
+      
+      // For Level 0 templates, return enhanced structure in testing mode
+      if (mode === 'testing') {
+        return {
+          pages: level0Pages,
+          testingData: {
+            templateStructure: {
+              title: `Level 0 Template ${(templateIndex || 0) + 1}`,
+              theme: "Basic Learning",
+              level: "level0",
+              totalScenes: level0Pages.length,
+              totalEndings: 1
+            },
+            sceneDetails: level0Pages.map((page, index) => ({
+              index: index + 1,
+              mainText: page,
+              alternatives: [],
+              optionalDetails: [],
+              hook: "",
+              pause: false
+            })),
+            endingDetails: [{
+              index: 1,
+              type: "simple",
+              mainText: level0Pages[level0Pages.length - 1] || "",
+              variants: []
+            }],
+            reusableElements: {
+              swappableElements: {},
+              weatherVariants: [],
+              settingVariants: [],
+            }
+          }
+        };
+      }
+      
+      return level0Pages;
     } else {
       console.log(`✅ Found structured template: "${storyTemplate.title}"`);
       
       // Convert structured template to string array with mode support
-      const pages = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
+      const result = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
       
-      console.log(`📖 Converted to ${pages.length} pages`);
-      return pages;
+      // Handle both return types from convertStoryTemplateToStringArray
+      if (typeof result === 'object' && 'pages' in result) {
+        console.log(`📖 Converted to ${result.pages.length} pages with testing data`);
+        return result;
+      } else {
+        console.log(`📖 Converted to ${result.length} pages`);
+        return result;
+      }
     }
     
   } catch (error) {

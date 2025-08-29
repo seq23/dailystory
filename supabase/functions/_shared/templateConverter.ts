@@ -199,7 +199,7 @@ export function convertStoryTemplateToStringArray(
   userInfo: UserInfo = {}, 
   pageCount: number = 5,
   mode: string = 'testing'
-): string[] {
+): string[] | { pages: string[], testingData?: any } {
   console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages (${mode} mode)`);
   
   // TESTING MODE: Show complete template structure
@@ -270,6 +270,41 @@ export function convertStoryTemplateToStringArray(
   if (pages.length === 0) {
     console.log('🚨 EMERGENCY: No pages generated, creating fallback');
     return [`This is a fallback story page for template: ${template?.title || 'Unknown'}`];
+  }
+  
+  // TESTING MODE: Return enhanced data structure with complete template info
+  if (mode === 'testing') {
+    const testingData = {
+      templateStructure: {
+        title: template.title,
+        theme: template.theme,
+        level: template.level,
+        totalScenes: template.scenes.length,
+        totalEndings: template.endings.length
+      },
+      sceneDetails: template.scenes.map((scene, index) => ({
+        index: index + 1,
+        mainText: scene.text,
+        alternatives: scene.microVariants?.alternatives || [],
+        optionalDetails: scene.microVariants?.optionalDetails || [],
+        hook: scene.hook,
+        pause: scene.pause
+      })),
+      endingDetails: template.endings.map((ending, index) => ({
+        index: index + 1,
+        type: ending.type,
+        mainText: ending.text,
+        variants: ending.microVariants || []
+      })),
+      reusableElements: {
+        swappableElements: template.reuse.swappableElements || {},
+        weatherVariants: template.reuse.weatherVariants || [],
+        settingVariants: template.reuse.settingVariants || [],
+        randomSeed: template.reuse.randomSeed
+      }
+    };
+    
+    return { pages, testingData };
   }
   
   return pages;

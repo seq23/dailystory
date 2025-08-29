@@ -228,7 +228,12 @@ serve(async (req) => {
       });
     }
 
-    if (!pages || pages.length === 0) {
+    // Handle both simple pages array and enhanced testing data
+    const isTestingResult = pages && typeof pages === 'object' && 'pages' in pages;
+    const actualPages = isTestingResult ? pages.pages : pages;
+    const testingData = isTestingResult ? pages.testingData : null;
+
+    if (!actualPages || actualPages.length === 0) {
       console.log('❌ No pages generated for level:', templateLevel);
       return new Response(JSON.stringify({
         error: 'No templates available for this difficulty level',
@@ -241,14 +246,14 @@ serve(async (req) => {
       });
     }
 
-    console.log('📖 Story generated successfully with', pages.length, 'pages');
+    console.log('📖 Story generated successfully with', actualPages.length, 'pages');
     
     // EMERGENCY DIAGNOSTIC: Log response structure
     const responseData = {
       success: true,
-      pages: pages,
+      pages: actualPages,
       level: templateLevel,
-      pageCount: pages.length,
+      pageCount: actualPages.length,
       expectedPages: dynamicPageCount,
       metadata: {
         sourceSystem: 'Unified Dynamic Templates',
@@ -256,7 +261,8 @@ serve(async (req) => {
         selectedTemplate: templateIndex,
         mode: mode,
         targetWordDensity: 'Template-optimized'
-      }
+      },
+      ...(testingData && { testingData })
     };
     console.log('🔍 DIAGNOSTIC: Final response structure:', JSON.stringify(responseData, null, 2));
 
