@@ -6,26 +6,29 @@ This guide covers the complete story generation system, from initial user input 
 ## Generation Modes
 
 ### Premium AI Generation (Tier 1)
-**Service**: `LiveGenerationService`
+**Service**: `LiveGenerationService` and `NetflixStyleStoryService`
+**AI Model**: OpenAI `gpt-4o-mini` for optimal performance
 **Capabilities**:
-- Real-time AI story enhancement using OpenAI GPT-4
+- Real-time AI story enhancement via `generate-adaptive-story` Edge Function
+- No titles/chapters in AI output - clean story content only
+- Enhanced content splitting for non-beginner difficulty levels
 - Cultural context integration
 - Dynamic character development
 - Personalized narrative adaptation
-- Advanced image generation with Runware Flux models
+- Grade-level appropriate content (6th-10th grades)
 
 **Flow**:
 1. User provides story input and preferences
-2. `LiveGenerationService` processes request
-3. AI enhances story with cultural context
-4. Character consistency applied
-5. Premium image generation
+2. Service calls `generate-adaptive-story` Edge Function
+3. AI generates content without titles/chapters
+4. Content filtered and split appropriately
+5. Character consistency applied
 6. Grammar resolution pipeline
 7. Final story page delivered
 
 ### Template-Based Generation (Tier 2-4)
-**Service**: `EnhancedFallbackManager`
-**Library**: 135 total templates (100 Level 0 + 35 structured), 390+ pages, 140+ endings
+**Service**: `template-service` Edge Function with enhanced template processing
+**Library**: 136 total templates (100 Level 0 + 36 structured), 400+ pages, 144+ endings
 **Capabilities**:
 - Level 0: Simple sentence practice for early readers
 - Never-ending story generation for structured templates

@@ -42,23 +42,23 @@ supabase/functions/_shared/templates/
 │   ├── quantum-physics-discovery.js
 │   ├── social-media-justice-league.js
 │   └── virtual-reality-escape.js
-├── grade6/                             # 3 grade-level templates
+├── 6th/                                # 3 grade-level templates
 │   ├── biosphere-project.js
 │   ├── coding-for-change.js
 │   └── urban-farming-lab.js
-├── grade7/                             # 3 grade-level templates
+├── 7th/                                # 3 grade-level templates
 │   ├── cultural-heritage-research.js
 │   ├── digital-citizenship-dilemma.js
 │   └── mental-health-awareness.js
-├── grade8/                             # 3 grade-level templates
+├── 8th/                                # 3 grade-level templates
 │   ├── digital-privacy-rights.js
 │   ├── environmental-justice.js
 │   └── food-justice-research.js
-├── grade9/                             # 3 grade-level templates
+├── 9th/                                # 3 grade-level templates
 │   ├── criminal-justice-reform.js
 │   ├── educational-equity.js
 │   └── mental-health-advocacy.js
-├── grade10/                            # 3 grade-level templates
+├── 10th/                               # 3 grade-level templates
 │   ├── democratic-participation.js
 │   ├── global-climate-action.js
 │   └── global-health-equity.js
@@ -70,7 +70,7 @@ supabase/functions/_shared/templates/
 - **Total Templates**: 136 (100 Level 0 + 36 structured)
 - **Level 0**: 100 templates × 6 sentences = 600 sentences
 - **Levels 1-4**: 20 structured templates
-- **Grades 6-10**: 15 advanced templates
+- **Grades 6th-10th**: 15 advanced templates
 - **Total Content**: 400+ story pages
 - **File Organization**: Individual files for optimal loading
 

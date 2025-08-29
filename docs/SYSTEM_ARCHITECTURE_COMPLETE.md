@@ -1,30 +1,31 @@
-# Complete AI Story Generation System Architecture - Current Backend Implementation
+# Complete AI Story Generation System Architecture - Current Implementation
 
 ## Overview
-The AI Story Generation System is a sophisticated, multi-layered platform that creates personalized interactive stories for children. It features 38 Supabase Edge Functions, a backend-only template system with 136 individual template files providing 400+ pages of content, and advanced AI-powered story enhancement with dynamic loading architecture.
+The AI Story Generation System is a sophisticated, multi-layered platform that creates personalized interactive stories for children. It features AI-powered story enhancement via `generate-adaptive-story` Edge Function, a backend-only template system with 136 individual template files, and comprehensive fallback chains with creative error handling.
 
 ## System Statistics
-- **Backend Functions**: 38 Supabase Edge Functions
-- **Template Architecture**: Backend-only individual file system
+- **Primary AI Function**: `generate-adaptive-story/index.ts` using `gpt-4o-mini` model
+- **Template Architecture**: Backend-only individual file system with 136 templates
 - **Level 0 Templates**: 100 simple sentence templates for ages 3-5 (600 sentences)
-- **Structured Templates**: 36 individual template files across levels 1-4 and grades 6-10
+- **Structured Templates**: 36 individual template files across levels 1-4 and grades 6th-10th
 - **Total Content**: 400+ story pages (14-17 hours of reading)
 - **Endings Available**: 144+ unique story endings (4 per structured template)
-- **Supported Languages**: Multi-language with cultural context
+- **Grade Levels**: 6th, 7th, 8th, 9th, 10th grade support
 - **User Tiers**: 4-tier system with graceful degradation
 - **Template Storage**: `supabase/functions/_shared/templates/` directory structure
 
 ## Core Architecture Components
 
 ### 1. AI Story Enhancement Pipeline
-**Primary Function**: `ai-story-enhancer/index.ts`
-- **Purpose**: Central orchestrator for all story generation
+**Primary Function**: `generate-adaptive-story/index.ts`
+- **AI Model**: OpenAI `gpt-4o-mini` for optimal performance and cost
+- **Content Processing**: No titles/chapters in AI output, enhanced content splitting
 - **Capabilities**: 
-  - OpenAI GPT-4 integration for story enhancement
   - Cultural context integration
   - Character consistency management
-  - Difficulty level adaptation
+  - Difficulty level adaptation (6th-10th grades)
   - Real-time narrative processing
+  - Smart content filtering and validation
 
 ### 2. Image Generation Services (38 Functions)
 **Tier 1 - Premium AI Enhancement**:
@@ -57,11 +58,11 @@ supabase/functions/_shared/templates/
 ├── level2/                      # 5 individual template files  
 ├── level3/                      # 5 individual template files
 ├── level4/                      # 5 individual template files
-├── grade6/                      # 3 individual template files
-├── grade7/                      # 3 individual template files
-├── grade8/                      # 3 individual template files
-├── grade9/                      # 3 individual template files
-├── grade10/                     # 3 individual template files
+├── 6th/                         # 3 individual template files
+├── 7th/                         # 3 individual template files
+├── 8th/                         # 3 individual template files
+├── 9th/                         # 3 individual template files
+├── 10th/                        # 3 individual template files
 ├── registry.js                  # Metadata-only mapping
 └── dynamicTemplateLoader.js     # On-demand loading system
 ```
@@ -72,7 +73,7 @@ supabase/functions/_shared/templates/
 - **Level 2 (Ages 5-7)**: 5 individual template files, ~55 pages  
 - **Level 3 (Ages 7-9)**: 5 individual template files, ~65 pages
 - **Level 4 (Ages 9-12)**: 5 individual template files, ~75 pages
-- **Grades 6-10**: 15 individual template files (3 per grade), ~155 pages total
+- **Grades 6th-10th**: 15 individual template files (3 per grade), ~155 pages total
 
 **Template Features**:
 - Never-ending story capability

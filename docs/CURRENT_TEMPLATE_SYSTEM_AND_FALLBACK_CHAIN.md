@@ -184,11 +184,11 @@ const levelMap: Record<string, string> = {
   'medium': 'level2',    // 5 templates
   'hard': 'level3',      // 5 templates
   'expert': 'level4',    // 5 templates
-  'grade6': 'grade6',    // 3 templates
-  'grade7': 'grade7',    // 3 templates
-  'grade8': 'grade8',    // 3 templates
-  'grade9': 'grade9',    // 3 templates
-  'grade10': 'grade10'   // 3 templates
+  '6th': '6th',          // 3 templates
+  '7th': '7th',          // 3 templates
+  '8th': '8th',          // 3 templates
+  '9th': '9th',          // 3 templates
+  '10th': '10th'         // 3 templates
 };
 ```
 
