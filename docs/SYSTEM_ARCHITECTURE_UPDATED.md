@@ -1,46 +1,56 @@
 # AI Story Generation System Architecture - Updated
 
 ## Overview
-Simplified, consolidated approach with enhanced AI capabilities and aggressive cleanup with improved narrative processing.
+Comprehensive, optimized system with anti-flicker mechanisms, content-aware text sizing, universal difficulty management, and enhanced image loading capabilities.
 
 ## Core Architecture
 
 ### AI Story Enhancer
-- **Central AI Orchestration**: OpenAI GPT-4 based story enhancement
+- **Central AI Orchestration**: OpenAI GPT-4o-mini based story enhancement with anti-flicker coordination
 - **Cultural Context Integration**: Dynamic cultural profiling and context-aware generation
-- **Character Consistency**: Database-backed avatar identity management
-- **Difficulty Level Adaptation**: Age-appropriate content adjustment
+- **Character Consistency**: Database-backed avatar identity management with race condition prevention
+- **Universal Difficulty Adaptation**: Live difficulty updates for all users with template content protection
+- **Content-Aware Text Sizing**: Dynamic font sizing based on content length and viewport
+- **Story Stability Management**: Bulletproof state management with debounced updates
 
 ## Service Integration
 
-### Image Generation Services
-- **Runware Image Generator** (Tier 1): Premium AI-enhanced generation with WebSocket optimization
-- **OpenAI Image Generator** (Tier 3): Simplified nuclear fallback with direct DALL-E 3 calls
-- **Tier Progression**: Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4 (all users start at Tier 1)
+### Enhanced Image Loading Services
+- **Progressive Image Preloading**: 3-page-ahead preloading with duplicate prevention
+- **ImageWithFallback System**: Retry mechanisms with configurable attempts and delays
+- **ImageFallbackService**: CSP-aware fallback generation with story-specific placeholders
+- **Fallback Hierarchy**: Data URLs → Blob URLs → Simple SVG → Universal compatibility
+- **Story Stability Coordination**: Images load only when story content is stable
 
-### Enhancement Pipeline
-- **Tier 1**: Premium AI-enhanced pipeline with cultural intelligence and WebSocket optimization
-- **Tier 2**: Template-based fallback with structured generation
-- **Tier 3**: Simplified nuclear fallback - 12 culturally-aware avatar descriptions, direct DALL-E 3 calls
-- **Key Change**: Tier 3 now uses "beautiful illustration for children's book" style (not 3D Pixar)
+### Anti-Flicker Enhancement Pipeline
+- **Story Stability Management**: Debounced state management with 50ms delay prevention
+- **Minimum Loader Duration**: 1600ms consistent loading experience with bulletproof events
+- **Content Change Monitoring**: Rapid change detection with performance warnings
+- **Race Condition Prevention**: Coordinated story-image loading with stability events
+- **Smooth Transitions**: Professional fade-in effects with layout stability protection
 
 ## Support Services (Updated)
 
-### Character Consistency Service
-- **Database Cache**: Eliminates race conditions through centralized character storage
-- **Avatar Identity Management**: Consistent character representation across pages
-- **Error Resilience**: Comprehensive error handling and fallback mechanisms
+### Universal Difficulty Management Service
+- **All-User Live Updates**: Removed premium restrictions for immediate difficulty changes
+- **Template Content Protection**: Complete blocking with apologetic messaging
+- **Expert Grade Cycling**: 6th-10th grade progression within expert difficulty
+- **Page-Specific Application**: Current page preserved, future pages updated
+- **Persistent Preferences**: Local and Supabase profile synchronization
 
-### Frontend Intelligence
-- **User Interaction Analysis**: Behavioral pattern recognition
-- **Session Management**: Performance-optimized session state handling
-- **Real-time Optimization**: Dynamic performance adjustments
+### Content-Aware Text Sizing Service
+- **Dynamic Font Sizing**: Word count analysis with viewport dimension calculations
+- **Responsive Scaling**: 6-word sentences get large text, 100+ word stories get smaller text
+- **CSS Override System**: High-specificity styling with smooth transitions
+- **Container Adaptation**: Responsive container sizing for optimal reading experience
+- **Mobile Optimization**: Touch-friendly sizing with accessibility compliance
 
-### Real Context Collector (Enhanced)
-- **Story Continuity**: Cross-page narrative consistency
-- **Character Name Extraction**: Simple character identification for narrative coherence
-- **Visual Element Tracking**: Consistent object and setting management
-- **Context Quality Validation**: Ensures reliable story context
+### Testing & Diagnostic Systems
+- **StoryPromptTester**: Comprehensive 1,236-line testing suite with validation
+- **Template Testing Suite**: 6 specialized testing components for template validation
+- **RunwareConnectionTest**: WebSocket diagnostic with CSP detection
+- **Debug Parameters**: Query-based debugging (?storydebug, ?imagedebug)
+- **Performance Monitoring**: Real-time metrics with slow operation detection
 
 ### Session State Manager
 - **Clean Architecture**: No globalThis dependencies
@@ -83,14 +93,34 @@ Simplified, consolidated approach with enhanced AI capabilities and aggressive c
 5. **Better Performance**: Optimized database operations and indexing
 6. **Cleaner Codebase**: Reduced complexity and improved maintainability
 
-## Data Flow (Updated)
+## Enhanced Data Flow
 
-1. **Story Request** → **AI Story Enhancer** → **Image Generation Request**
-2. **Tier 1** → **AI-Enhanced Pipeline** (WebSocket optimized, cultural intelligence)
-3. **Tier 2** → **Template-Based Fallback** (structured generation)
-4. **Tier 3** → **Nuclear Fallback** (simplified: 12 avatars + full page text + DALL-E 3)
-5. **Tier 4** → **SVG Placeholder** (100% guaranteed success)
-6. **Character Consistency** ← **Database Cache** (race condition free)
-7. **Quality Assurance** → **Error Handling** → **Graceful Degradation**
+1. **Story Request** → **Story Stability Check** → **AI Story Enhancer** → **Content-Aware Text Sizing**
+2. **Story Generation** → **Anti-Flicker Coordination** → **Progressive Image Preloading**
+3. **Universal Difficulty Updates** → **Live Context Management** → **Template Content Protection**
+4. **Image Loading** → **Fallback Hierarchy** → **Story-Image Synchronization**
+5. **Testing Integration** → **Performance Monitoring** → **Debug Capabilities**
+6. **Error Handling** → **Graceful Degradation** → **User-Friendly Messaging**
+7. **Character Consistency** ← **Database Cache** → **Cross-Page Continuity**
 
-This architecture provides a robust, secure, and efficient story generation system with eliminated race conditions and improved performance characteristics.
+## New Architecture Benefits
+
+### 1. Professional User Experience
+- **No Visual Flicker**: Smooth, professional story loading with consistent timing
+- **Optimal Text Presentation**: Content-aware sizing for enhanced readability
+- **Seamless Image Loading**: Progressive preloading with elegant fallbacks
+- **Universal Access**: Advanced features available to all users
+
+### 2. Technical Excellence
+- **Race Condition Elimination**: Bulletproof state management with debounced updates
+- **Performance Optimization**: Efficient resource loading with intelligent preloading
+- **Comprehensive Testing**: Extensive validation and diagnostic capabilities
+- **Error Resilience**: Graceful degradation with helpful user messaging
+
+### 3. Developer Experience
+- **Rich Debugging**: Query-based debugging with structured console logging
+- **Performance Monitoring**: Real-time metrics and slow operation detection
+- **Maintainable Code**: Clean architecture with clear separation of concerns
+- **Comprehensive Documentation**: Detailed technical and user experience guides
+
+This enhanced architecture provides a world-class story generation system with professional user experience, technical excellence, and robust reliability across all scenarios and user types.
