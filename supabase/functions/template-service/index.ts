@@ -201,15 +201,22 @@ serve(async (req) => {
     let pages: string[] | null = null;
     
     try {
-      console.log('🔄 Loading template using unified dynamic system for:', templateLevel);
+      if (mode === 'testing') {
+        console.log('🔄 Loading template using unified dynamic system for:', templateLevel);
+      }
+      
       // Use unified dynamic template system for ALL levels including Level0
       pages = await getTemplate(templateLevel, templateIndex, userInfo || {}, dynamicPageCount, mode);
       
       if (pages) {
-        console.log('✅ Template converted to', pages.length, 'pages');
+        const pageCount = Array.isArray(pages) ? pages.length : pages.pages?.length || 0;
+        
+        if (mode === 'testing') {
+          console.log('✅ Template loaded with', pageCount, 'pages');
+        }
         
         // Apply additional processing for level0 templates (placeholder resolution only)
-        if (templateLevel === 'level0') {
+        if (templateLevel === 'level0' && Array.isArray(pages)) {
           pages = processStoryTemplate(pages, userInfo || {}, dynamicPageCount);
         }
       }
@@ -229,9 +236,20 @@ serve(async (req) => {
     }
 
     // Handle both simple pages array and enhanced testing data
-    const isTestingResult = pages && typeof pages === 'object' && 'pages' in pages;
+    const isTestingResult = pages && !Array.isArray(pages) && typeof pages === 'object' && 'pages' in pages && 'testingData' in pages;
     const actualPages = isTestingResult ? pages.pages : pages;
     const testingData = isTestingResult ? pages.testingData : null;
+
+    // Debug logging
+    if (mode === 'testing') {
+      console.log('🔍 Detection Result:', {
+        isTestingResult,
+        hasPages: !!(pages && Array.isArray(pages)),
+        hasTestingData: !!(testingData),
+        pageCount: actualPages?.length || 0,
+        dataStructure: isTestingResult ? 'Enhanced Object' : 'Simple Array'
+      });
+    }
 
     if (!actualPages || actualPages.length === 0) {
       console.log('❌ No pages generated for level:', templateLevel);
@@ -246,9 +264,15 @@ serve(async (req) => {
       });
     }
 
-    console.log('📖 Story generated successfully with', actualPages.length, 'pages');
+    // Log differently based on mode
+    if (mode === 'testing') {
+      console.log('📖 Story generated successfully with', actualPages.length, 'pages');
+      console.log('📊 Testing Data Available:', !!testingData);
+    } else {
+      console.log('📖 Converted to', actualPages.length, 'pages');
+    }
     
-    // EMERGENCY DIAGNOSTIC: Log response structure
+    // Build response structure
     const responseData = {
       success: true,
       pages: actualPages,
@@ -258,13 +282,16 @@ serve(async (req) => {
       metadata: {
         sourceSystem: 'Unified Dynamic Templates',
         templateLevel,
-        selectedTemplate: templateIndex,
         mode: mode,
         targetWordDensity: 'Template-optimized'
       },
       ...(testingData && { testingData })
     };
-    console.log('🔍 DIAGNOSTIC: Final response structure:', JSON.stringify(responseData, null, 2));
+    
+    // Diagnostic logging only in testing mode
+    if (mode === 'testing') {
+      console.log('🔍 DIAGNOSTIC: Final response structure:', JSON.stringify(responseData, null, 2));
+    }
 
     return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

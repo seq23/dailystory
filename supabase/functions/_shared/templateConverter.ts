@@ -200,7 +200,9 @@ export function convertStoryTemplateToStringArray(
   pageCount: number = 5,
   mode: string = 'testing'
 ): string[] | { pages: string[], testingData?: any } {
-  console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages (${mode} mode)`);
+  if (mode === 'testing') {
+    console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages (${mode} mode)`);
+  }
   
   // TESTING MODE: Show complete template structure
   if (mode === 'testing') {
@@ -259,12 +261,16 @@ export function convertStoryTemplateToStringArray(
     });
   }
   
-  console.log(`✅ Template converted to ${pages.length} pages`);
+  if (mode === 'testing') {
+    console.log(`✅ Template converted to ${pages.length} pages`);
+  }
   
-  // EMERGENCY DIAGNOSTIC: Log first few characters of each page
-  pages.forEach((page, index) => {
-    console.log(`📄 Page ${index + 1}: ${page ? page.substring(0, 50) + '...' : 'EMPTY'}`);
-  });
+  // TESTING MODE: Log first few characters of each page for validation
+  if (mode === 'testing') {
+    pages.forEach((page, index) => {
+      console.log(`📄 Page ${index + 1}: ${page ? page.substring(0, 50) + '...' : 'EMPTY'}`);
+    });
+  }
   
   // EMERGENCY FALLBACK: If no pages, create minimal content
   if (pages.length === 0) {

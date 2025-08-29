@@ -167,10 +167,14 @@ export async function getTemplate(
       
       // Handle both return types from convertStoryTemplateToStringArray
       if (typeof result === 'object' && 'pages' in result) {
-        console.log(`📖 Converted to ${result.pages.length} pages with testing data`);
+        if (mode === 'testing') {
+          console.log(`📖 Converted to ${result.pages.length} pages with testing data`);
+        }
         return result;
       } else {
-        console.log(`📖 Converted to ${result.length} pages`);
+        if (mode === 'testing') {
+          console.log(`📖 Converted to ${result.length} pages`);
+        }
         return result;
       }
     }
