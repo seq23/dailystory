@@ -168,6 +168,7 @@ export function StoryPromptTester() {
   const [activeTab, setActiveTab] = useState('netflix');
   const [testMode, setTestMode] = useState<'full' | 'ai-only' | 'template-only' | 'comparison'>('full');
   const [logs, setLogs] = useState<string[]>([]);
+  const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
 
   const templateService = useTemplateService();
 
@@ -446,7 +447,14 @@ export function StoryPromptTester() {
 
   // Render individual test result
   const renderTestResult = (result: TestResult) => {
-    const [isContentExpanded, setIsContentExpanded] = useState(false);
+    const resultKey = `${result.level}-${result.service}`;
+    const isContentExpanded = expandedContent[resultKey] || false;
+    const toggleContentExpanded = () => {
+      setExpandedContent(prev => ({
+        ...prev,
+        [resultKey]: !prev[resultKey]
+      }));
+    };
 
     return (
       <Card key={`${result.level}-${result.service}`} className="mb-4">
@@ -541,7 +549,7 @@ export function StoryPromptTester() {
 
         {/* Full Content Display */}
         {result.fullContent && result.fullContent.length > 0 && (
-          <Collapsible open={isContentExpanded} onOpenChange={setIsContentExpanded} className="mt-4">
+          <Collapsible open={isContentExpanded} onOpenChange={toggleContentExpanded} className="mt-4">
             <CollapsibleTrigger asChild>
               <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
                 <Eye className="w-4 h-4" />
