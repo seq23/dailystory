@@ -57,7 +57,6 @@ import { DiagnosticTool } from "@/utils/diagnostics";
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
-import { EnhancedPostProcessor } from "@/services/EnhancedPostProcessor";
 import { AudioFallbackNotification } from "@/components/AudioFallbackNotification";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -1280,22 +1279,33 @@ const initializeStory = async () => {
       // PHASE 1: STORY STABILIZATION LOADING STATE - Process in background, show loading until complete
       console.log('📝 PHASE 1: Processing story content in background - users will see loading state until complete...');
       
-      let processedPages = result.content;
+      // Basic content cleanup (full processing now handled by unified edge function)
+      const processedPages = result.content.map((page: string) => {
+        return page
+          .replace(/\s{2,}/g, ' ') // Multiple spaces to single space
+          .replace(/\s+([,.!?:;])/g, '$1') // Remove space before punctuation
+          .replace(/([.!?])\s*([a-z])/g, '$1 $2') // Ensure space after sentence endings
+          .trim();
+      });
+      
+      // Initialize character context directly
       try {
-        const { EnhancedPostProcessor } = await import('@/services/EnhancedPostProcessor');
-        processedPages = await EnhancedPostProcessor.processStoryContent(
-          result.content,
-          userInfo,
-          characterSessionId
+        const storyState = StoryVisualStateManager.getOrCreateStoryState(
+          characterSessionId,
+          processedPages.length,
+          'new',
+          false,
+          false
         );
-        console.log('✅ PHASE 1: Story fully processed in background - ready for stable display', {
-          processedFirstPage: processedPages[0]?.substring(0, 100),
-          stillHasPlaceholders: processedPages.some(page => page.includes('{'))
-        });
+        console.log(`✅ Initialized character context for ${userInfo.name} directly via StoryVisualStateManager`);
       } catch (error) {
-        console.warn('Failed to post-process story pages:', error);
-        processedPages = result.content;
+        console.warn('Failed to initialize character context:', error);
       }
+      
+      console.log('✅ PHASE 1: Story fully processed in background - ready for stable display', {
+        processedFirstPage: processedPages[0]?.substring(0, 100),
+        stillHasPlaceholders: processedPages.some((page: string) => page.includes('{'))
+      });
 
       StoryContentLogger.logStoryChange('free_complete_story', 'before', processedPages, {
         originalPageCount: result.content.length,
