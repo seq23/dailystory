@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Book, Layers, Palette } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Loader2, Book, Layers, Palette, ChevronDown, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TemplateInfo {
@@ -35,6 +37,8 @@ export function TemplateExplorer() {
   const [templateInfo, setTemplateInfo] = useState<TemplateInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
 
   const exploreTemplates = async (level: string) => {
     if (!level) return;
@@ -202,28 +206,95 @@ export function TemplateExplorer() {
                   <Layers className="h-4 w-4" />
                   Template Details
                 </h4>
-                {templateInfo.templates.map((template, index) => (
-                  <div 
-                    key={index}
-                    className="p-4 border rounded-lg bg-card"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h5 className="font-medium">{template.title}</h5>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Palette className="h-3 w-3" />
-                          {template.theme}
-                        </p>
+                
+                {templateInfo.level === 'level0' ? (
+                  // Special dropdown interface for Level 0 (100 templates)
+                  <Collapsible open={isTemplatesOpen} onOpenChange={setIsTemplatesOpen}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-4 border rounded-lg bg-card hover:bg-muted transition-colors">
+                      <span className="font-medium">Browse All {templateInfo.templateCount} Templates</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${isTemplatesOpen ? 'rotate-180' : ''}`} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-4 mt-3">
+                      {/* Search bar */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search templates..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
                       </div>
-                      <div className="flex gap-2">
-                        <Badge variant="outline">
-                          {template.scenes} {templateInfo.level === 'level0' ? 'pages' : 'scenes'}
-                        </Badge>
-                        <Badge variant="outline">{template.endings} endings</Badge>
+                      
+                      {/* Group templates by category */}
+                      {(() => {
+                        const filteredTemplates = templateInfo.templates.filter(template =>
+                          template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          template.theme.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                        
+                        const groupedTemplates = filteredTemplates.reduce((groups, template) => {
+                          if (!groups[template.theme]) groups[template.theme] = [];
+                          groups[template.theme].push(template);
+                          return groups;
+                        }, {} as Record<string, typeof templateInfo.templates>);
+
+                        return Object.entries(groupedTemplates).map(([category, templates]) => (
+                          <div key={category} className="space-y-2">
+                            <h5 className="font-medium text-sm text-muted-foreground bg-muted px-3 py-1 rounded">
+                              {category} ({templates.length})
+                            </h5>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {templates.map((template, index) => (
+                                <div key={`${category}-${index}`} className="p-3 border rounded bg-card/50 hover:bg-muted/50 transition-colors">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-sm">{template.title}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {template.scenes} pages
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                      
+                      {searchTerm && templateInfo.templates.filter(template =>
+                        template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        template.theme.toLowerCase().includes(searchTerm.toLowerCase())
+                      ).length === 0 && (
+                        <div className="text-center py-6 text-muted-foreground">
+                          No templates found matching "{searchTerm}"
+                        </div>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : (
+                  // Regular card display for other levels
+                  templateInfo.templates.map((template, index) => (
+                    <div 
+                      key={index}
+                      className="p-4 border rounded-lg bg-card"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h5 className="font-medium">{template.title}</h5>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Palette className="h-3 w-3" />
+                            {template.theme}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge variant="outline">
+                            {template.scenes} scenes
+                          </Badge>
+                          <Badge variant="outline">{template.endings} endings</Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </CardContent>
