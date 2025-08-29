@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 import { resolveCanonicalPlaceholders } from '../_shared/placeholderResolver.ts';
+import { getTokenLimitForDifficulty } from '../_shared/storyPrompts.ts';
 
 // Level 0 vocabulary for AI generation constraints
 const ENHANCED_LEVEL_0_VOCABULARY = new Set([
@@ -218,7 +219,9 @@ serve(async (req) => {
     
     let systemPrompt = `You are a children's story writer. Create age-appropriate, positive stories about a ${avatarGender} named ${userName}. Use the correct pronouns (${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'}) consistently throughout. DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.`;
     let userPrompt = `Create a personalized children's story about a ${avatarGender} named ${userName} at ${normalizedReadingLevel} reading level. The main character is a ${avatarGender}, so use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns. Do NOT include titles or chapter headers. Generate only the story content.`;
-    let maxTokens = 800;
+    
+    // Use dynamic token limits from getTokenLimitForDifficulty function
+    const maxTokens = getTokenLimitForDifficulty(normalizedReadingLevel);
     
     // Use Level 0 specific prompts for beginner difficulty with avatar gender
     if (normalizedReadingLevel === 'beginner') {
@@ -245,8 +248,6 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.`;
       
       userPrompt = `Create a never-ending children's story about a ${avatarGender} named ${userName}, age 3-5. The main character is a ${avatarGender}, so use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns consistently. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence. Do NOT include titles or chapter headers.`;
-      
-      maxTokens = 200; // Much shorter for Level 0
     }
     
     console.log('📝 Generating story with OpenAI...', { 

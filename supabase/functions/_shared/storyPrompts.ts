@@ -64,6 +64,8 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include narrative hooks for continuation
 
+Maximum 72 tokens total. Target 15-24 words per page.
+
 VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
@@ -89,6 +91,8 @@ RULES:
 - Past/present tense, varied sentence structures
 - Story continues infinitely unless user requests ending
 - Include narrative hooks and mild tension
+
+Maximum 120 tokens total. Target 50-70 words per page.
 
 VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY with flexibility.
 
@@ -116,6 +120,8 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include character development
 
+Maximum 180 tokens total. Target 80-120 words per page.
+
 VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY with flexibility.
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
@@ -140,6 +146,8 @@ RULES:
 - 120-200 words per page
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
+
+Maximum 240 tokens total. Target 120-200 words per page.
 
 VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY with flexibility.
 
@@ -178,6 +186,8 @@ GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handl
 
 FORMAT: Suggest 5-6 sentences per page with foundational complex sentence structures and literary vocabulary. Focus on character development and thematic exploration appropriate for 6th grade readers. Target 200-400 words per page.
 
+Maximum 900 tokens total. Target 200-400 words per page.
+
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
@@ -205,6 +215,8 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
 FORMAT: Suggest 6-7 sentences per page with increasingly sophisticated sentence structures and varied literary techniques. Develop complex themes and character relationships appropriate for 7th grade readers. Target 200-400 words per page.
+
+Maximum 1100 tokens total. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -234,6 +246,8 @@ GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handl
 
 FORMAT: Suggest 6-8 sentences per page with advanced grammatical structures, literary devices, and nuanced vocabulary. Explore mature themes with intellectual depth appropriate for 8th grade readers. Target 200-400 words per page.
 
+Maximum 1200 tokens total. Target 200-400 words per page.
+
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
@@ -262,6 +276,8 @@ GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handl
 
 FORMAT: Suggest 7-8 sentences per page with sophisticated prose, complex syntactic structures, and rich literary language. Develop intricate thematic content and psychological depth appropriate for 9th grade readers. Target 200-400 words per page.
 
+Maximum 1400 tokens total. Target 200-400 words per page.
+
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
@@ -289,6 +305,8 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 GUARDRAILS: Age-appropriate content for 10th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
 FORMAT: Suggest 8-9 sentences per page with masterful prose, intricate sentence construction, and elevated literary language. Develop complex philosophical themes and profound character depth appropriate for 10th grade readers. Target 200-400 words per page.
+
+Maximum 1600 tokens total. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
