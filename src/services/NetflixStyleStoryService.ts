@@ -93,6 +93,9 @@ export class NetflixStyleStoryService {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           } catch {}
 
+          // Emit story generation complete event
+          window.dispatchEvent(new CustomEvent('story:generation:complete'));
+
           return {
             content: cleanedPages,
             pageCount: cleanedPages.length,
@@ -145,6 +148,9 @@ export class NetflixStyleStoryService {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
 
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
+
       return {
         content: data.pages,
         pageCount: data.pages.length,
@@ -154,6 +160,9 @@ export class NetflixStyleStoryService {
       console.error('📺 Netflix: Fallback generation failed:', error);
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
+
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
       return {
         content: emergencyContent,

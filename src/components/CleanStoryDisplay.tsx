@@ -73,7 +73,6 @@ import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
-import { useHashCoordination } from '@/hooks/useHashCoordination';
 
 
 interface CleanStoryDisplayProps {
@@ -683,8 +682,16 @@ const [highlightSave, setHighlightSave] = useState(false);
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
 
-  // Enable hash coordination for image generation
-  useHashCoordination(contentHash);
+  // Event-based story stability - listen for actual completion
+  useEffect(() => {
+    const handleStoryComplete = () => {
+      console.log('📚 Story generation completed - setting stability immediately');
+      setIsStoryStable(true);
+    };
+
+    window.addEventListener('story:generation:complete', handleStoryComplete);
+    return () => window.removeEventListener('story:generation:complete', handleStoryComplete);
+  }, []);
 
   useEffect(() => {
     try { 
@@ -1394,18 +1401,14 @@ const initializeStory = async () => {
       setTimeout(() => {
         setIsLoading(false);
         // Debounced stability to prevent flickering
-        setTimeout(() => {
-          setIsStoryStable(true);
-          console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
-        }, 300);
+      setIsStoryStable(true);
+      console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
       }, storyRemaining);
     } else {
       setIsLoading(false);
       // Debounced stability to prevent flickering
-      setTimeout(() => {
         setIsStoryStable(true);
         console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
-      }, 300);
     }
   }
 };
@@ -1691,18 +1694,18 @@ const initializeStory = async () => {
       } else {
         console.log('❌ Failed to generate next page:', result.error);
         // DEBOUNCED: Re-stabilize on error with delay to prevent flickering
-        setTimeout(() => setIsStoryStable(true), 200);
+        setIsStoryStable(true);
       }
       setTimeout(() => setJustAdvanced(false), 600);
     } else if (currentPage < displayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
       // DEBOUNCED: Re-stabilize immediately for existing content
-      setTimeout(() => setIsStoryStable(true), 150);
+      setIsStoryStable(true);
     } else if (!isPremium && currentPage < 5 && displayedStory.length >= 5) {
       // Free user: allow advancement to page 6 (currentPage 5)
       setCurrentPage(currentPage + 1);
-      setTimeout(() => setIsStoryStable(true), 150);
+      setIsStoryStable(true);
     } else {
       // Last page reached
       if (isPremium) {
@@ -2271,10 +2274,8 @@ const handleRestartTimer = () => {
       setIsGeneratingNewStory(false);
       setIsGeneratingRewrite(false);
       // DEBOUNCED: Restore story stability after generation
-      setTimeout(() => {
         setIsStoryStable(true);
         console.log(`✅ [STORY DEBUG ${callId}] Story stability restored after generation`);
-      }, 400);
     }
   };
   // Open special request dialog for premium users, or generate immediately for free

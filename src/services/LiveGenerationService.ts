@@ -122,6 +122,9 @@ export class LiveGenerationService {
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
+      
       return {
         content,
         isComplete: false,
@@ -217,6 +220,9 @@ export class LiveGenerationService {
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
       
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
+      
       return {
         content,
         isComplete: shouldConclude,
@@ -294,6 +300,9 @@ export class LiveGenerationService {
         (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
       } catch {}
 
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
+
       return {
         content,
         isComplete: true,
@@ -360,6 +369,9 @@ export class LiveGenerationService {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
+
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
       return {
         content,
@@ -443,6 +455,9 @@ export class LiveGenerationService {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
       console.log('🧭 PAGE_SOURCE', { page: pageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
+
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
       return {
         content,
