@@ -687,6 +687,9 @@ const [highlightSave, setHighlightSave] = useState(false);
     const handleStoryComplete = () => {
       console.log('📚 Story generation completed - setting stability immediately');
       setIsStoryStable(true);
+      // Relay to image generation system
+      console.log('🔗 Relaying story:generation:complete → story:stabilized');
+      window.dispatchEvent(new CustomEvent('story:stabilized'));
     };
 
     window.addEventListener('story:generation:complete', handleStoryComplete);
