@@ -687,14 +687,33 @@ const [highlightSave, setHighlightSave] = useState(false);
     const handleStoryComplete = () => {
       console.log('📚 Story generation completed - setting stability immediately');
       setIsStoryStable(true);
-      // Relay to image generation system
-      console.log('🔗 Relaying story:generation:complete → story:stabilized');
-      window.dispatchEvent(new CustomEvent('story:stabilized'));
+      // NOTE: Removed immediate story:stabilized dispatch to fix race condition
+      // story:stabilized will be dispatched by the story-state-aware useEffect below
     };
 
     window.addEventListener('story:generation:complete', handleStoryComplete);
     return () => window.removeEventListener('story:generation:complete', handleStoryComplete);
   }, []);
+
+  // ✅ BULLETPROOF: Story-state-aware useEffect with debounce
+  // Only dispatch story:stabilized when BOTH conditions are met:
+  // 1. isStoryStable === true (preserves flicker prevention)
+  // 2. story.length > 0 (proves setStory() has completed and updated React state)
+  useEffect(() => {
+    if (!isStoryStable || story.length === 0) {
+      return; // Wait for both conditions
+    }
+
+    console.log('🎯 BULLETPROOF: Both conditions met - isStoryStable=true AND story.length=' + story.length);
+    
+    // Debounce for rapid updates (100ms)
+    const timeoutId = setTimeout(() => {
+      console.log('🔗 BULLETPROOF: Dispatching story:stabilized with fresh story data');
+      window.dispatchEvent(new CustomEvent('story:stabilized'));
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [isStoryStable, story.length]); // Watch both state variables
 
   useEffect(() => {
     try { 
@@ -914,16 +933,8 @@ useEffect(() => {
       });
     }
     
-    if (layout !== "classic" && story.length > 0 && currentPage < story.length && !pageImages[currentPage] && isStoryStable) {
-      if (isDebug) {
-        console.log('🖼️ Triggering image generation for page', currentPage, '- story is stable');
-      }
-      generateImageForCurrentPage();
-    } else if (!isStoryStable && story.length > 0) {
-      if (isDebug) {
-        console.log('🖼️ Waiting for story to stabilize before generating images');
-      }
-    }
+    // ✅ BULLETPROOF: Removed duplicate image generation system
+    // ImageGenerationTrigger now handles ALL layouts via story:stabilized events
   }, [currentPage, story, pageImages, layout, isStoryStable]);
 
 // Timer countdown effect
