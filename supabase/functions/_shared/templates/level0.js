@@ -801,62 +801,62 @@ export const LEVEL_0_TEMPLATES = [
   
   // Template 79: Birthday Party
   [
-    "My birthday party.", // 3 words
+    "It's my birthday.", // 3 words
     "I am one year older.", // 5 words
     "The cake is so good.", // 5 words
     "All my friends come today.", // 5 words
-    "Make wish.", // 2 words
-    "Birthdays are fun." // 3 words
+    "Make a wish.", // 3 words
+    "I am happy." // 3 words
   ],
   
   // Template 80: Holiday Fun
   [
-    "Holiday time now.", // 3 words
+    "It's holiday time.", // 3 words
     "The family comes over.", // 4 words
     "I help make good food.", // 5 words
     "The holiday is so fun.", // 5 words
     "Have fun.", // 2 words
-    "Holidays are fun." // 3 words
+    "I love holidays." // 3 words
   ],
   
   // Template 81: Gift Giving
   [
     "I give gifts.", // 3 words
-    "I have gift for {friend}.", // 5 words
+    "I have a gift for {friend}.", // 6 words
     "The gift makes {friend} happy.", // 5 words
     "Giving gifts makes me happy.", // 5 words
     "Give more.", // 2 words
-    "Gifts make people happy." // 4 words
+    "I love giving." // 3 words
   ],
   
   // Template 82: New Year
   [
-    "New year here.", // 3 words
+    "The new year is here.", // 5 words
     "The old year is done.", // 5 words
     "I try new things now.", // 5 words
     "The new year is good.", // 5 words
     "Start new.", // 2 words
-    "New years are good." // 4 words
+    "I am excited." // 3 words
   ],
   
   // Template 83: Valentine's Day
   [
-    "Valentine's Day here.", // 3 words
+    "It's Valentine's Day.", // 3 words
     "I love my family today.", // 5 words
     "The day is about love.", // 5 words
     "Love makes all people happy.", // 5 words
     "Show love.", // 2 words
-    "Love makes people happy." // 4 words
+    "Love is good." // 3 words
   ],
   
   // Template 84: Halloween Fun
   [
-    "Halloween time now.", // 3 words
+    "It's Halloween time.", // 3 words
     "Put on a fun costume.", // 5 words
-    "I dress up so fun.", // 5 words
+    "I dress up for fun.", // 5 words
     "The costume looks so good.", // 5 words
     "Look fun.", // 2 words
-    "Costumes are fun." // 3 words
+    "I love Halloween." // 3 words
   ],
   
   // Template 85: Thanksgiving
@@ -866,17 +866,17 @@ export const LEVEL_0_TEMPLATES = [
     "The family eats together today.", // 5 words
     "Thanksgiving is about being happy.", // 5 words
     "Feel happy.", // 2 words
-    "Thanks for good things." // 4 words
+    "I am thankful." // 3 words
   ],
   
   // Template 86: First Day
   [
-    "My first day.", // 3 words
+    "It's my first day.", // 4 words
     "Today is my first day.", // 5 words
     "I try to do well.", // 5 words
     "The first day is good.", // 5 words
     "Do well.", // 2 words
-    "First days are good." // 4 words
+    "I feel good." // 3 words
   ],
   
   // Template 87: Graduation
@@ -886,59 +886,59 @@ export const LEVEL_0_TEMPLATES = [
     "The graduation makes me happy.", // 5 words
     "All the family is there.", // 5 words
     "Feel proud.", // 2 words
-    "Graduation is about doing well." // 5 words
+    "I am proud." // 3 words
   ],
   
   // Template 88: Summer Fun
   [
-    "Summer time here.", // 3 words
+    "It's summer time.", // 3 words
     "The sun is out today.", // 5 words
     "I play outside all day.", // 5 words
     "Summer time is good.", // 4 words
     "Play outside.", // 2 words
-    "Summer is for play." // 4 words
+    "I love summer." // 3 words
   ],
   
   // Template 89: Winter Fun
   [
-    "Winter time here.", // 3 words
+    "It's winter time.", // 3 words
     "The snow is on ground.", // 5 words
     "I play in the snow.", // 5 words
     "Winter time is good.", // 4 words
-    "Play snow.", // 2 words
-    "Winter is for snow." // 4 words
+    "Play in snow.", // 3 words
+    "I love winter." // 3 words
   ],
   
   // Template 90: Spring Time
   [
-    "Spring time here.", // 3 words
+    "It's spring time.", // 3 words
     "The flowers come out now.", // 5 words
     "I see all the flowers.", // 5 words
     "Spring time brings flowers.", // 4 words
     "See flowers.", // 2 words
-    "Spring brings flowers." // 3 words
+    "Flowers are pretty." // 3 words
   ],
   
   // Nature & Animals Templates (10)
   
   // Template 91: Pet Care
   [
-    "I feed pet.", // 3 words
+    "I feed my pet.", // 4 words
     "My {favoriteAnimal} needs good food.", // 5 words
     "I give my pet water.", // 5 words
     "The pet is happy today.", // 5 words
-    "Pet happy.", // 2 words
-    "Pets need food." // 3 words
+    "Pet is happy.", // 3 words
+    "I love pets." // 3 words
   ],
   
   // Template 92: Garden Time
   [
     "I plant flowers.", // 3 words
-    "Put the seeds in dirt.", // 5 words
+    "Put seeds in the dirt.", // 5 words
     "I water the pretty flowers.", // 5 words
     "The flowers grow so big.", // 5 words
     "Grow big.", // 2 words
-    "Gardens need water." // 3 words
+    "I love gardens." // 3 words
   ],
   
   // Template 93: Bird Watching
@@ -948,7 +948,7 @@ export const LEVEL_0_TEMPLATES = [
     "I look for pretty birds.", // 5 words
     "The birds sing good songs.", // 5 words
     "Hear songs.", // 2 words
-    "Birds sing pretty songs." // 4 words
+    "Birds are pretty." // 3 words
   ],
   
   // Template 94: Nature Walk
@@ -958,17 +958,17 @@ export const LEVEL_0_TEMPLATES = [
     "I look at all nature.", // 5 words
     "The walk shows me trees.", // 5 words
     "Look around.", // 2 words
-    "Nature walks show things." // 4 words
+    "Nature is pretty." // 3 words
   ],
   
   // Template 95: Rain Day
   [
     "The rain falls.", // 3 words
-    "The water comes from sky.", // 5 words
+    "The water comes from the sky.", // 6 words
     "I watch the rain fall.", // 5 words
     "The rain makes plants grow.", // 5 words
     "Watch rain.", // 2 words
-    "Rain helps plants grow." // 4 words
+    "I like rain." // 3 words
   ],
   
   // Template 96: Sunny Day
@@ -978,7 +978,7 @@ export const LEVEL_0_TEMPLATES = [
     "I play in the sun.", // 5 words
     "The sun makes me warm.", // 5 words
     "Feel warm.", // 2 words
-    "Sun makes things warm." // 4 words
+    "I love sunshine." // 3 words
   ],
   
   // Template 97: Animal Friends
