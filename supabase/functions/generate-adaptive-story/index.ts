@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
+import { resolveCanonicalPlaceholders } from '../_shared/placeholderResolver.ts';
 
 // Level 0 vocabulary for AI generation constraints
 const ENHANCED_LEVEL_0_VOCABULARY = new Set([
@@ -254,6 +255,32 @@ GUARDRAILS: G-rated content only. No external personal data. No copyrighted cont
       maxTokens 
     });
     
+    // CRITICAL FIX: Resolve canonical placeholders BEFORE sending to OpenAI
+    const userInfo = {
+      name: userName,
+      favoriteColor: ensureColorName(config?.favoriteColor),
+      favoriteAnimal: config?.favoriteAnimal || 'cat',
+      favoriteFood: config?.favoriteFood || 'cookies',
+      hobbies: config?.hobbies || 'playing outside',
+      specialRequest: config?.specialRequest || 'adventure'
+    };
+    
+    console.log('🔍 BEFORE placeholder resolution:', {
+      systemPromptPreview: systemPrompt.substring(0, 150) + '...',
+      userPromptPreview: userPrompt.substring(0, 150) + '...',
+      userInfo
+    });
+    
+    // Resolve placeholders in both prompts
+    const resolvedSystemPrompt = resolveCanonicalPlaceholders(systemPrompt, userInfo);
+    const resolvedUserPrompt = resolveCanonicalPlaceholders(userPrompt, userInfo);
+    
+    console.log('✅ AFTER placeholder resolution:', {
+      systemPromptPreview: resolvedSystemPrompt.substring(0, 150) + '...',
+      userPromptPreview: resolvedUserPrompt.substring(0, 150) + '...',
+      placeholdersResolved: true
+    });
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -263,8 +290,8 @@ GUARDRAILS: G-rated content only. No external personal data. No copyrighted cont
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'system', content: resolvedSystemPrompt },
+          { role: 'user', content: resolvedUserPrompt }
         ],
         max_completion_tokens: maxTokens
       }),
