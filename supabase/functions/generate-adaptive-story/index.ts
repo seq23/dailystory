@@ -34,6 +34,7 @@ CRITICAL RULES:
 - Always allow {userName}, user inputs
 - Story continues infinitely unless user requests ending
 - Try to incorporate a narrative with a natural hook for continuation
+- DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.
 
 Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
@@ -43,7 +44,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.`;
 
-const LEVEL_0_USER_PROMPT = 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence.';
+const LEVEL_0_USER_PROMPT = 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence. Do NOT include titles or chapter headers.';
 
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(
@@ -203,8 +204,8 @@ serve(async (req) => {
     const userName = NameFormatter.capitalize(config?.userName || 'the child');
     const normalizedReadingLevel = DifficultyLevelMapper.normalizeLevel(readingLevel || 'easy');
     
-    let systemPrompt = 'You are a children\'s story writer. Create age-appropriate, positive stories.';
-    let userPrompt = `Create a personalized children's story for ${userName} at ${normalizedReadingLevel} reading level.`;
+    let systemPrompt = 'You are a children\'s story writer. Create age-appropriate, positive stories. DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.';
+    let userPrompt = `Create a personalized children's story for ${userName} at ${normalizedReadingLevel} reading level. Do NOT include titles or chapter headers. Generate only the story content.`;
     let maxTokens = 800;
     
     // Use Level 0 specific prompts for beginner difficulty
@@ -249,7 +250,14 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const storyText = data.choices[0].message.content;
+    let storyText = data.choices[0].message.content;
+    
+    // Remove any title/chapter patterns that may have slipped through
+    storyText = storyText.replace(/\*\*Title:.*?\*\*/gi, '')
+                        .replace(/\*\*Chapter.*?\*\*/gi, '')
+                        .replace(/^Title:.*?\n/gmi, '')
+                        .replace(/^Chapter.*?\n/gmi, '')
+                        .trim();
     
     // Enhanced logging for debugging
     console.log('🔍 Raw OpenAI Response:', {
@@ -325,8 +333,30 @@ serve(async (req) => {
       });
       
     } else {
-      // Other levels: use paragraph splitting (unchanged)
-      pages = storyText.split(/\n\n+/).filter(p => p.trim()).slice(0, 8);
+      // Other levels: improved content splitting to prevent concatenation
+      let rawPages = storyText.split(/\n\n+/).filter(p => p.trim());
+      
+      // If pages are too long, split them further
+      pages = [];
+      for (const rawPage of rawPages) {
+        const sentences = rawPage.match(/[^.!?]*[.!?]+/g) || [rawPage];
+        const wordCount = rawPage.split(/\s+/).length;
+        
+        if (wordCount > 80) {
+          // Split long paragraphs into smaller chunks
+          const midpoint = Math.floor(sentences.length / 2);
+          if (sentences.length > 1) {
+            pages.push(sentences.slice(0, midpoint).join(' ').trim());
+            pages.push(sentences.slice(midpoint).join(' ').trim());
+          } else {
+            pages.push(rawPage);
+          }
+        } else {
+          pages.push(rawPage);
+        }
+      }
+      
+      pages = pages.slice(0, 8);
       console.log('📖 Other level processing:', { level: normalizedReadingLevel, pagesFound: pages.length });
     }
     

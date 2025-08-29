@@ -148,7 +148,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "light" },
     difficultyLevel: 'expert',
-    expertGradeLevel: 'grade6' as ExpertGradeLevel,
+    expertGradeLevel: '6th' as ExpertGradeLevel,
     favoriteColor: 'orange',
     favoriteAnimal: 'tiger',
     hobbies: 'martial arts',
@@ -163,7 +163,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "dark" },
     difficultyLevel: 'expert',
-    expertGradeLevel: 'grade7' as ExpertGradeLevel,
+    expertGradeLevel: '7th' as ExpertGradeLevel,
     favoriteColor: 'gold',
     favoriteAnimal: 'falcon',
     hobbies: 'astronomy',
@@ -178,7 +178,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "medium" },
     difficultyLevel: 'expert',
-    expertGradeLevel: 'grade8' as ExpertGradeLevel,
+    expertGradeLevel: '8th' as ExpertGradeLevel,
     favoriteColor: 'teal',
     favoriteAnimal: 'whale',
     hobbies: 'marine biology',
@@ -193,7 +193,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "olive" },
     difficultyLevel: 'expert',
-    expertGradeLevel: 'grade9' as ExpertGradeLevel,
+    expertGradeLevel: '9th' as ExpertGradeLevel,
     favoriteColor: 'violet',
     favoriteAnimal: 'raven',
     hobbies: 'creative writing',
@@ -208,7 +208,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "olive" },
     difficultyLevel: 'expert',
-    expertGradeLevel: 'grade10' as ExpertGradeLevel,
+    expertGradeLevel: '10th' as ExpertGradeLevel,
     favoriteColor: 'crimson',
     favoriteAnimal: 'phoenix',
     hobbies: 'mythology research',
@@ -416,11 +416,11 @@ export function StoryPromptTester() {
       'medium': 50,
       'hard': 75,
       'expert': 100,
-      'grade6': 80,
-      'grade7': 85,
-      'grade8': 90,
-      'grade9': 95,
-      'grade10': 100
+      '6th': 80,
+      '7th': 85,
+      '8th': 90,
+      '9th': 95,
+      '10th': 100
     };
     
     const expectedWordLimit = difficultyLimits[level as keyof typeof difficultyLimits] || 50;
@@ -537,11 +537,11 @@ export function StoryPromptTester() {
       'medium': { min: 40, max: 200 },
       'hard': { min: 60, max: 300 },
       'expert': { min: 80, max: 400 },
-      'grade6': { min: 70, max: 350 },
-      'grade7': { min: 75, max: 365 },
-      'grade8': { min: 80, max: 380 },
-      'grade9': { min: 85, max: 390 },
-      'grade10': { min: 90, max: 400 }
+      '6th': { min: 70, max: 350 },
+      '7th': { min: 75, max: 365 },
+      '8th': { min: 80, max: 380 },
+      '9th': { min: 85, max: 390 },
+      '10th': { min: 90, max: 400 }
     };
 
     const limits = tokenLimits[level as keyof typeof tokenLimits] || { min: 30, max: 200 };
