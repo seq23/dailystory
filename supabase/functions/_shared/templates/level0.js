@@ -14,7 +14,7 @@ export const LEVEL_0_TEMPLATES = [
     "Time to get up.", // 4 words
     "I eat good food.", // 4 words
     "Get up now.", // 3 words
-    "Ready to play." // 3 words
+    "I am ready." // 3 words
   ],
   
   // Template 2: Bedtime Story
@@ -24,7 +24,7 @@ export const LEVEL_0_TEMPLATES = [
     "The {favoriteColor} bed is soft.", // 5 words
     "{userName} is in bed.", // 4 words
     "Good night.", // 2 words
-    "I go to sleep." // 4 words
+    "Sleep is nice." // 3 words
   ],
   
   // Template 3: Meal Time
@@ -34,7 +34,7 @@ export const LEVEL_0_TEMPLATES = [
     "The food is good.", // 4 words
     "I eat it up.", // 4 words
     "So good.", // 2 words
-    "All done now." // 3 words
+    "I am full." // 3 words
   ],
   
   // Template 4: Getting Dressed
@@ -44,7 +44,7 @@ export const LEVEL_0_TEMPLATES = [
     "The {favoriteColor} shirt is pretty.", // 5 words
     "I can do it.", // 4 words
     "All done.", // 2 words
-    "I look good." // 3 words
+    "I look pretty." // 3 words
   ],
   
   // Template 5: Cleaning Up
@@ -54,7 +54,7 @@ export const LEVEL_0_TEMPLATES = [
     "The room gets clean.", // 4 words
     "I help make it clean.", // 5 words
     "Good job.", // 2 words
-    "All clean now." // 3 words
+    "I like clean." // 3 words
   ],
   
   // Template 6: Bath Time
@@ -64,7 +64,7 @@ export const LEVEL_0_TEMPLATES = [
     "The water is warm.", // 4 words
     "I play in the water.", // 5 words
     "So fun.", // 2 words
-    "Now I am clean." // 4 words
+    "I am clean." // 3 words
   ],
   
   // Template 7: Cooking Together
@@ -74,7 +74,7 @@ export const LEVEL_0_TEMPLATES = [
     "We make good food.", // 4 words
     "I can help make food.", // 5 words
     "It smells good.", // 3 words
-    "Food is ready now." // 4 words
+    "We eat together." // 3 words
   ],
   
   // Template 8: Family Time
@@ -84,7 +84,7 @@ export const LEVEL_0_TEMPLATES = [
     "{userName} and {friend} play.", // 4 words
     "We have fun all day.", // 5 words
     "So happy.", // 2 words
-    "Family is good." // 3 words
+    "I love them." // 3 words
   ],
   
   // Template 9: Chores
@@ -94,7 +94,7 @@ export const LEVEL_0_TEMPLATES = [
     "I help at home.", // 4 words
     "The home looks good now.", // 5 words
     "Good helper.", // 2 words
-    "All done now." // 3 words
+    "I like helping." // 3 words
   ],
   
   // Template 10: Shopping
@@ -104,7 +104,7 @@ export const LEVEL_0_TEMPLATES = [
     "We get good food.", // 4 words
     "I help pick out food.", // 5 words
     "Fill the cart.", // 3 words
-    "We go home now." // 4 words
+    "Shopping is fun." // 3 words
   ],
   
   // Template 11: Phone Call
@@ -114,7 +114,7 @@ export const LEVEL_0_TEMPLATES = [
     "I say hello first.", // 4 words
     "{Friend} talks to me too.", // 5 words
     "So fun.", // 2 words
-    "Good to talk." // 3 words
+    "I like talking." // 3 words
   ],
   
   // Template 12: Reading Time
@@ -124,7 +124,7 @@ export const LEVEL_0_TEMPLATES = [
     "I look at words.", // 4 words
     "The {favoriteColor} book is pretty.", // 5 words
     "I read it.", // 3 words
-    "Books are good." // 3 words
+    "Books are fun." // 3 words
   ],
   
   // Template 13: Snack Time
@@ -134,7 +134,7 @@ export const LEVEL_0_TEMPLATES = [
     "I am so hungry.", // 4 words
     "The snack is so good.", // 5 words
     "I eat up.", // 3 words
-    "Good snack time." // 3 words
+    "Now I'm happy." // 3 words
   ],
   
   // Template 14: Waking Up
@@ -144,7 +144,7 @@ export const LEVEL_0_TEMPLATES = [
     "I start my day.", // 4 words
     "The new day is fun.", // 5 words
     "Good morning.", // 2 words
-    "Day is here." // 3 words
+    "Today is good." // 3 words
   ],
   
   // Template 15: House Work
@@ -154,7 +154,7 @@ export const LEVEL_0_TEMPLATES = [
     "I do good work.", // 4 words
     "The house looks good now.", // 5 words
     "Work hard.", // 2 words
-    "Good job done." // 3 words
+    "I like working." // 3 words
   ],
   
   // Template 16: Getting Ready
@@ -164,7 +164,7 @@ export const LEVEL_0_TEMPLATES = [
     "I am ready now.", // 4 words
     "Time to go out now.", // 5 words
     "All set.", // 2 words
-    "Ready to go." // 3 words
+    "Let's go now." // 3 words
   ],
   
   // Template 17: Dinner Time
@@ -174,7 +174,7 @@ export const LEVEL_0_TEMPLATES = [
     "I eat with family.", // 4 words
     "The dinner is so good.", // 5 words
     "So good.", // 2 words
-    "Happy dinner time." // 3 words
+    "We eat together." // 3 words
   ],
   
   // Template 18: Quiet Time
@@ -184,7 +184,7 @@ export const LEVEL_0_TEMPLATES = [
     "I am very quiet.", // 4 words
     "The quiet time is good.", // 5 words
     "So quiet.", // 2 words
-    "Rest is good." // 3 words
+    "I feel calm." // 3 words
   ],
   
   // Template 19: Helper
@@ -194,7 +194,7 @@ export const LEVEL_0_TEMPLATES = [
     "I can help you.", // 4 words
     "The work gets done well.", // 5 words
     "Good helper.", // 2 words
-    "Help is good." // 3 words
+    "I like helping." // 3 words
   ],
   
   // Template 20: Going to Bed
@@ -204,29 +204,29 @@ export const LEVEL_0_TEMPLATES = [
     "I sleep all night.", // 4 words
     "The bed is warm now.", // 5 words
     "Sleep well.", // 2 words
-    "Good night time." // 3 words
+    "Sweet dreams come." // 3 words
   ],
   
   // Healthcare Templates (10)
   
   // Template 21: Doctor Visit
   [
-    "I see doctor.", // 3 words
+    "I see the doctor.", // 4 words
     "Go to doctor today.", // 4 words
     "The doctor helps me.", // 4 words
     "I am good at doctor.", // 5 words
     "Feel good.", // 2 words
-    "Doctor helps me." // 3 words
+    "I feel better." // 3 words
   ],
   
   // Template 22: Dentist Visit
   [
-    "I see dentist.", // 3 words
+    "I see the dentist.", // 4 words
     "Open mouth for dentist.", // 4 words
     "The dentist cleans teeth.", // 4 words
     "I have clean white teeth.", // 5 words
     "Good teeth.", // 2 words
-    "Clean teeth are good." // 4 words
+    "My teeth shine." // 3 words
   ],
   
   // Template 23: Feeling Sick
@@ -236,22 +236,22 @@ export const LEVEL_0_TEMPLATES = [
     "I get well soon.", // 4 words
     "{Friend} helps me feel good.", // 5 words
     "Rest time.", // 2 words
-    "I feel good." // 3 words
+    "Now I'm well." // 3 words
   ],
   
   // Template 24: Taking Medicine
   [
     "I take medicine.", // 3 words
-    "Medicine helps me good.", // 4 words
+    "Medicine helps me.", // 3 words
     "I take it now.", // 4 words
     "The medicine makes me well.", // 5 words
     "Feel good.", // 2 words
-    "Medicine helps me." // 3 words
+    "I feel good." // 3 words
   ],
   
   // Template 25: Checkup
   [
-    "I get checkup.", // 3 words
+    "I get a checkup.", // 4 words
     "Go see doctor today.", // 4 words
     "The doctor looks at me.", // 5 words
     "I am good and strong.", // 5 words
@@ -263,7 +263,7 @@ export const LEVEL_0_TEMPLATES = [
   [
     "I wash hands.", // 3 words
     "Use water and soap.", // 4 words
-    "I clean my hands good.", // 5 words
+    "I clean my hands well.", // 5 words
     "The hands are clean now.", // 5 words
     "All clean.", // 2 words
     "Clean hands are good." // 4 words
@@ -276,7 +276,7 @@ export const LEVEL_0_TEMPLATES = [
     "I eat it up.", // 4 words
     "The food makes me strong.", // 5 words
     "Stay strong.", // 2 words
-    "Good food helps." // 3 words
+    "I feel strong." // 3 words
   ],
   
   // Template 28: Exercise
@@ -286,17 +286,17 @@ export const LEVEL_0_TEMPLATES = [
     "I move and play.", // 4 words
     "The play makes me strong.", // 5 words
     "Feel strong.", // 2 words
-    "Move and play." // 3 words
+    "I am strong." // 3 words
   ],
   
   // Template 29: Bandage
   [
-    "I need bandage.", // 3 words
+    "I need a bandage.", // 4 words
     "Put it on cut.", // 4 words
     "The bandage helps me.", // 4 words
     "I feel good with it.", // 5 words
     "All better.", // 2 words
-    "Bandage helps me." // 3 words
+    "Now I'm better." // 3 words
   ],
   
   // Template 30: Sleep Well
@@ -306,29 +306,29 @@ export const LEVEL_0_TEMPLATES = [
     "I sleep all night.", // 4 words
     "The sleep makes me strong.", // 5 words
     "Rest well.", // 2 words
-    "Good sleep helps." // 3 words
+    "I feel good." // 3 words
   ],
   
   // Educational Templates (15)
   
   // Template 31: School Day
   [
-    "I go school.", // 3 words
-    "See new things today.", // 4 words
     "I go to school.", // 4 words
+    "See new things today.", // 4 words
+    "I learn at school.", // 4 words
     "The school is fun today.", // 5 words
     "Learn lots.", // 2 words
-    "School is good." // 3 words
+    "I love school." // 3 words
   ],
   
   // Template 32: Reading Book
   [
-    "I read book.", // 3 words
+    "I read books.", // 3 words
     "Look at the words.", // 4 words
     "I read this book.", // 4 words
     "The book has good words.", // 5 words
     "Good words.", // 2 words
-    "Books help me." // 3 words
+    "Reading is fun." // 3 words
   ],
   
   // Template 33: Writing
@@ -338,27 +338,27 @@ export const LEVEL_0_TEMPLATES = [
     "I write my name.", // 4 words
     "The writing looks good now.", // 5 words
     "Write more.", // 2 words
-    "Good at writing." // 3 words
+    "I like writing." // 3 words
   ],
   
   // Template 34: Counting
   [
     "I count things.", // 3 words
     "One, two, three, four.", // 4 words
-    "I can count to ten.", // 5 words
+    "I can count high.", // 4 words
     "The numbers help me learn.", // 5 words
     "Count high.", // 2 words
-    "Good at counting." // 3 words
+    "Counting is fun." // 3 words
   ],
   
   // Template 35: Library Visit
   [
-    "I go library.", // 3 words
+    "I go to library.", // 4 words
     "Get books to read.", // 4 words
     "I find good books.", // 4 words
     "The library has many books.", // 5 words
     "Pick books.", // 2 words
-    "Books are here." // 3 words
+    "So many books." // 3 words
   ],
   
   // Template 36: Art Time
@@ -368,7 +368,7 @@ export const LEVEL_0_TEMPLATES = [
     "I make pretty art.", // 4 words
     "The art looks good now.", // 5 words
     "So pretty.", // 2 words
-    "Art is fun." // 3 words
+    "I love art." // 3 words
   ],
   
   // Template 37: Music Class
@@ -378,7 +378,7 @@ export const LEVEL_0_TEMPLATES = [
     "I sing and dance.", // 4 words
     "The music is fun today.", // 5 words
     "Sing loud.", // 2 words
-    "Music is fun." // 3 words
+    "I love music." // 3 words
   ],
   
   // Template 38: Learning Colors
@@ -388,7 +388,7 @@ export const LEVEL_0_TEMPLATES = [
     "I can see all colors.", // 5 words
     "The colors look pretty today.", // 5 words
     "Pretty colors.", // 2 words
-    "Colors are here." // 3 words
+    "Colors are pretty." // 3 words
   ],
   
   // Template 39: Show and Tell
@@ -398,7 +398,7 @@ export const LEVEL_0_TEMPLATES = [
     "I show this today.", // 4 words
     "The class sees my {object}.", // 5 words
     "Look here.", // 2 words
-    "Show and tell." // 3 words
+    "This is fun." // 3 words
   ],
   
   // Template 40: Science Fun
@@ -408,27 +408,27 @@ export const LEVEL_0_TEMPLATES = [
     "I try new things.", // 4 words
     "The science is fun today.", // 5 words
     "Try this.", // 2 words
-    "Science is fun." // 3 words
+    "I love science." // 3 words
   ],
   
   // Template 41: Puzzle Time
   [
-    "I do puzzle.", // 3 words
+    "I do puzzles.", // 3 words
     "Put pieces all together.", // 4 words
-    "I make the puzzle.", // 4 words
+    "I make it work.", // 4 words
     "The puzzle is done now.", // 5 words
     "Fits good.", // 2 words
-    "Puzzle is done." // 3 words
+    "Puzzles are fun." // 3 words
   ],
   
   // Template 42: Computer Time
   [
-    "I use computer.", // 3 words
+    "I use the computer.", // 4 words
     "Look at the pretty screen.", // 5 words
     "I learn on computer.", // 4 words
     "The computer helps me learn.", // 5 words
     "Type words.", // 2 words
-    "Computer helps me." // 3 words
+    "Computers are cool." // 3 words
   ],
   
   // Template 43: Alphabet
@@ -438,7 +438,7 @@ export const LEVEL_0_TEMPLATES = [
     "I know all my letters.", // 5 words
     "The letters make good words.", // 5 words
     "Say letters.", // 2 words
-    "Letters make words." // 3 words
+    "Letters are fun." // 3 words
   ],
   
   // Template 44: Math Fun
@@ -448,34 +448,34 @@ export const LEVEL_0_TEMPLATES = [
     "I can add big numbers.", // 5 words
     "The math helps me learn.", // 5 words
     "Count up.", // 2 words
-    "Math is fun." // 3 words
+    "I love math." // 3 words
   ],
   
   // Template 45: Learning Shapes
   [
     "I see shapes.", // 3 words
     "Circle, square, triangle here.", // 4 words
-    "I can see all shapes.", // 5 words
+    "I can find all shapes.", // 5 words
     "The shapes are all around.", // 5 words
     "Point out.", // 2 words
-    "Shapes are here." // 3 words
+    "Shapes are cool." // 3 words
   ],
 
   // Play & Recreation Templates (15)
   
   // Template 46: Playground Fun
   [
-    "I go playground.", // 3 words
+    "I go to playground.", // 4 words
     "Swing high on the swing.", // 5 words
     "I play all day.", // 4 words
     "The playground is so fun.", // 5 words
     "Play more.", // 2 words
-    "Playground is fun." // 3 words
+    "I love playing." // 3 words
   ],
   
   // Template 47: Ball Game
   [
-    "I Play ball.", // 3 words
+    "I play ball.", // 3 words
     "Throw the {favoriteColor} ball.", // 4 words
     "I catch the ball.", // 4 words
     "The ball goes so high.", // 5 words
@@ -490,27 +490,27 @@ export const LEVEL_0_TEMPLATES = [
     "I find a spot.", // 4 words
     "{Friend} tries to find me.", // 5 words
     "Find me.", // 2 words
-    "Hide and seek fun." // 4 words
+    "This is fun." // 3 words
   ],
   
   // Template 49: Bike Ride
   [
-    "I ride bike.", // 3 words
+    "I ride a bike.", // 4 words
     "Go fast on my bike.", // 5 words
     "I ride to the park.", // 5 words
     "The bike goes so fast.", // 5 words
     "Go fast.", // 2 words
-    "Bike rides are fun." // 4 words
+    "I love bikes." // 3 words
   ],
   
   // Template 50: Swimming
   [
-    "I go swim.", // 3 words
+    "I go swimming.", // 3 words
     "Jump in the water now.", // 5 words
     "I splash and play.", // 4 words
     "The water is so fun.", // 5 words
     "Splash more.", // 2 words
-    "Swimming is fun." // 3 words
+    "Water is fun." // 3 words
   ],
   
   // Template 51: Tag Game
@@ -520,17 +520,17 @@ export const LEVEL_0_TEMPLATES = [
     "I run and run.", // 4 words
     "{Friend} tries to tag me.", // 5 words
     "Run fast.", // 2 words
-    "Tag games are fun." // 4 words
+    "Running is fun." // 3 words
   ],
   
   // Template 52: Toy Cars
   [
-    "I play cars.", // 3 words
+    "I play with cars.", // 4 words
     "The {favoriteColor} car goes fast.", // 5 words
     "I make car sounds.", // 4 words
     "The cars go all around.", // 5 words
     "Vroom vroom.", // 2 words
-    "Cars are fun." // 3 words
+    "Cars are cool." // 3 words
   ],
   
   // Template 53: Building Blocks
@@ -540,7 +540,7 @@ export const LEVEL_0_TEMPLATES = [
     "I build it high.", // 4 words
     "The blocks make good things.", // 5 words
     "Stack up.", // 2 words
-    "Building is fun." // 3 words
+    "I love building." // 3 words
   ],
   
   // Template 54: Dancing
@@ -550,7 +550,7 @@ export const LEVEL_0_TEMPLATES = [
     "I dance and spin.", // 4 words
     "The dancing is so fun.", // 5 words
     "Spin around.", // 2 words
-    "Dancing is fun." // 3 words
+    "I love dancing." // 3 words
   ],
   
   // Template 55: Jump Rope
@@ -565,17 +565,17 @@ export const LEVEL_0_TEMPLATES = [
   
   // Template 56: Sandbox
   [
-    "I play sand.", // 3 words
+    "I play in sand.", // 4 words
     "Make a big sand castle.", // 5 words
     "I dig in sand.", // 4 words
     "The sand makes good things.", // 5 words
     "Dig more.", // 2 words
-    "Sand play is fun." // 4 words
+    "Sand is fun." // 3 words
   ],
   
   // Template 57: Slide Fun
   [
-    "I go slide.", // 3 words
+    "I go on slide.", // 4 words
     "Climb up the big slide.", // 5 words
     "I go down fast.", // 4 words
     "The slide is so fun.", // 5 words
@@ -585,7 +585,7 @@ export const LEVEL_0_TEMPLATES = [
   
   // Template 58: Tricycle
   [
-    "I ride tricycle.", // 3 words
+    "I ride a tricycle.", // 4 words
     "Go around the big yard.", // 5 words
     "I pedal so fast.", // 4 words
     "The tricycle goes all around.", // 5 words
@@ -605,7 +605,7 @@ export const LEVEL_0_TEMPLATES = [
   
   // Template 60: Seesaw
   [
-    "I use seesaw.", // 3 words
+    "I use the seesaw.", // 4 words
     "Go up and down fast.", // 5 words
     "I sit with {friend}.", // 4 words
     "The seesaw goes up down.", // 5 words
@@ -617,12 +617,12 @@ export const LEVEL_0_TEMPLATES = [
   
   // Template 61: Store Visit
   [
-    "We go store.", // 3 words
+    "We go to store.", // 4 words
     "Buy {favoriteFood} at the store.", // 5 words
     "I help {friend} shop.", // 4 words
     "The store has good things.", // 5 words
     "Pick out.", // 2 words
-    "Stores have good things." // 4 words
+    "Shopping is fun." // 3 words
   ],
   
   // Template 62: Fire Station
@@ -632,17 +632,17 @@ export const LEVEL_0_TEMPLATES = [
     "I meet the firefighters.", // 4 words
     "The firefighters help all people.", // 5 words
     "Help people.", // 2 words
-    "Firefighters help us." // 3 words
+    "Firefighters are brave." // 3 words
   ],
   
   // Template 63: Police Officer
   [
-    "I meet police.", // 3 words
+    "I meet the police.", // 4 words
     "The police help keep safe.", // 5 words
     "I wave to police.", // 4 words
     "The police officer is nice.", // 5 words
     "Stay safe.", // 2 words
-    "Police help us." // 3 words
+    "Police are nice." // 3 words
   ],
   
   // Template 64: Post Office
@@ -652,37 +652,37 @@ export const LEVEL_0_TEMPLATES = [
     "I send a letter.", // 4 words
     "The mail goes far away.", // 5 words
     "Send mail.", // 2 words
-    "Mail goes around." // 3 words
+    "Mail is fun." // 3 words
   ],
   
   // Template 65: Library
   [
-    "I visit library.", // 3 words
+    "I visit the library.", // 4 words
     "Get books to read today.", // 5 words
     "I find good books.", // 4 words
     "The library has many books.", // 5 words
     "Read lots.", // 2 words
-    "Libraries have books." // 3 words
+    "I love libraries." // 3 words
   ],
   
   // Template 66: Bank Visit
   [
-    "I go bank.", // 3 words
+    "I go to bank.", // 4 words
     "See where money is kept.", // 5 words
     "I learn about money.", // 4 words
     "The bank keeps all money.", // 5 words
     "Save money.", // 2 words
-    "Banks help with money." // 4 words
+    "Banks are big." // 3 words
   ],
   
   // Template 67: Barber Shop
   [
-    "I cut hair.", // 3 words
+    "I get a haircut.", // 4 words
     "Go to get hair cut.", // 5 words
     "I sit very still.", // 4 words
     "The barber cuts my hair.", // 5 words
     "Look good.", // 2 words
-    "Hair cuts look good." // 4 words
+    "I look good." // 3 words
   ],
   
   // Template 68: Restaurant
@@ -692,12 +692,12 @@ export const LEVEL_0_TEMPLATES = [
     "I order good food.", // 4 words
     "The restaurant has good food.", // 5 words
     "Order food.", // 2 words
-    "Restaurants have food." // 3 words
+    "Eating out is fun." // 4 words
   ],
   
   // Template 69: Park Walk
   [
-    "I walk park.", // 3 words
+    "I walk in park.", // 4 words
     "See all the pretty flowers.", // 5 words
     "I walk with {friend}.", // 4 words
     "The park is so pretty.", // 5 words
@@ -712,39 +712,39 @@ export const LEVEL_0_TEMPLATES = [
     "I help pick food.", // 4 words
     "The store has good food.", // 5 words
     "Fill cart.", // 2 words
-    "Stores have food." // 3 words
+    "Food shopping is fun." // 4 words
   ],
   
   // Transportation Templates (8)
   
   // Template 71: Car Ride
   [
-    "I ride car.", // 3 words
+    "I ride in car.", // 4 words
     "Go fast in the car.", // 5 words
-    "I sit in car.", // 4 words
+    "I sit in the car.", // 5 words
     "The car takes us places.", // 5 words
     "Go fast.", // 2 words
-    "Cars take us places." // 4 words
+    "I love cars." // 3 words
   ],
   
   // Template 72: Bus Trip
   [
-    "I ride bus.", // 3 words
+    "I ride the bus.", // 4 words
     "The big bus comes now.", // 5 words
-    "I get on bus.", // 4 words
+    "I get on the bus.", // 5 words
     "The bus takes us there.", // 5 words
     "Get on.", // 2 words
-    "Buses take us places." // 4 words
+    "Buses are big." // 3 words
   ],
   
   // Template 73: Train Ride
   [
-    "I ride train.", // 3 words
+    "I ride the train.", // 4 words
     "The long train goes fast.", // 5 words
-    "I sit on train.", // 4 words
+    "I sit on the train.", // 5 words
     "The train goes far away.", // 5 words
     "Go far.", // 2 words
-    "Trains go far." // 3 words
+    "Trains are long." // 3 words
   ],
   
   // Template 74: Walking
@@ -754,47 +754,47 @@ export const LEVEL_0_TEMPLATES = [
     "I walk to the park.", // 5 words
     "Walking gets me there today.", // 5 words
     "Walk fast.", // 2 words
-    "Walking is good." // 3 words
+    "I love walking." // 3 words
   ],
   
   // Template 75: Airplane
   [
-    "I fly airplane.", // 3 words
+    "I fly in airplane.", // 4 words
     "The big plane goes high.", // 5 words
     "I fly in the sky.", // 5 words
     "The airplane goes way up.", // 5 words
     "Up high.", // 2 words
-    "Airplanes fly high." // 3 words
+    "Flying is fun." // 3 words
   ],
   
   // Template 76: Boat Ride
   [
-    "I ride boat.", // 3 words
+    "I ride the boat.", // 4 words
     "The boat goes on water.", // 5 words
     "I sail on the water.", // 5 words
-    "The boat goes on water.", // 5 words
+    "The boat moves so nice.", // 5 words
     "Sail away.", // 2 words
-    "Boats go on water." // 4 words
+    "Boats are fun." // 3 words
   ],
   
   // Template 77: Bicycle
   [
-    "I ride bicycle.", // 3 words
+    "I ride a bicycle.", // 4 words
     "Pedal fast to go places.", // 5 words
     "I ride my red bicycle.", // 5 words
     "The bicycle takes me there.", // 5 words
     "Pedal fast.", // 2 words
-    "Bicycles are fun." // 3 words
+    "I love bikes." // 3 words
   ],
   
   // Template 78: Scooter
   [
-    "I ride scooter.", // 3 words
+    "I ride a scooter.", // 4 words
     "Push with foot to go.", // 5 words
     "I ride the fast scooter.", // 5 words
     "The scooter goes so fast.", // 5 words
     "Push fast.", // 2 words
-    "Scooters are fun." // 3 words
+    "Scooters are cool." // 3 words
   ],
   
   // Special Occasions Templates (12)
@@ -993,22 +993,22 @@ export const LEVEL_0_TEMPLATES = [
   
   // Template 98: Beach Day
   [
-    "We go beach.", // 3 words
+    "We go to beach.", // 4 words
     "The sand is warm today.", // 5 words
     "I play in the sand.", // 5 words
-    "The beach has sand.", // 4 words
+    "The beach has warm sand.", // 5 words
     "Dig sand.", // 2 words
-    "Beaches have sand." // 3 words
+    "Beaches are fun." // 3 words
   ],
   
   // Template 99: Forest Walk
   [
-    "I walk forest.", // 3 words
+    "I walk in forest.", // 4 words
     "The tall trees grow here.", // 5 words
     "I see all the trees.", // 5 words
-    "The forest has many trees.", // 5 words
+    "So many trees here.", // 4 words
     "Big trees.", // 2 words
-    "Forests have trees." // 3 words
+    "Trees are pretty." // 3 words
   ],
   
   // Template 100: Star Night
@@ -1018,7 +1018,7 @@ export const LEVEL_0_TEMPLATES = [
     "I look up at stars.", // 5 words
     "The stars shine all night.", // 5 words
     "Look up.", // 2 words
-    "Stars shine at night." // 4 words
+    "Stars are pretty." // 3 words
   ]
 ];
 
