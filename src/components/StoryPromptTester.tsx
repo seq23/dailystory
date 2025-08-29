@@ -232,6 +232,14 @@ export function StoryPromptTester() {
         result.source = response.source || 'unknown';
         result.pages = response.pageCount || response.pages?.length || 0;
         
+        // Enhanced logging for source detection debugging
+        console.log(`🔍 Netflix Service Result for ${level}:`, {
+          source: response.source,
+          hasPages: !!response.pages,
+          pageCount: response.pages?.length || 0,
+          contentPreview: response.pages?.[0]?.substring(0, 50) + '...'
+        });
+        
         if (response.pages && Array.isArray(response.pages)) {
           result.wordCount = countWords(response.pages);
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
@@ -258,6 +266,14 @@ export function StoryPromptTester() {
         result.source = globalSource || 'unknown';
         result.pages = 1; // Live service generates one page at a time
         
+        // Enhanced logging for source detection debugging
+        console.log(`🔍 Live Service Result for ${level}:`, {
+          source: globalSource,
+          hasContent: !!response.content,
+          contentLength: response.content?.length || 0,
+          contentPreview: response.content?.substring(0, 50) + '...'
+        });
+        
         if (response.content) {
           result.wordCount = countWords(response.content);
           result.contentPreview = response.content.substring(0, 100) + '...';
@@ -277,6 +293,15 @@ export function StoryPromptTester() {
         response = await templateService.generateStory(userInfo, 'testing');
         result.source = response.success ? 'fallback' : 'emergency'; // Templates are fallback, emergency if they fail
         result.pages = response.pageCount || response.pages?.length || 0;
+        
+        // Enhanced logging for source detection debugging
+        console.log(`🔍 Template Service Result for ${level}:`, {
+          source: response.success ? 'fallback' : 'emergency',
+          success: response.success,
+          hasPages: !!response.pages,
+          pageCount: response.pages?.length || 0,
+          contentPreview: response.pages?.[0]?.substring(0, 50) + '...'
+        });
         
         if (response.pages && Array.isArray(response.pages)) {
           result.wordCount = countWords(response.pages);
@@ -637,6 +662,13 @@ export function StoryPromptTester() {
                 <XCircle className="w-5 h-5 text-red-500" />
               )}
               {renderSourceBadge(result.source, result.emergencyContentUsed)}
+              
+              {/* Concatenation Detection Status */}
+              {result.hasPageConcatenation !== undefined && (
+                <Badge variant={result.hasPageConcatenation ? 'destructive' : 'default'} className="ml-2">
+                  {result.hasPageConcatenation ? 'Concatenation Detected' : 'No Concatenation'}
+                </Badge>
+              )}
             </div>
           </div>
         </CardHeader>

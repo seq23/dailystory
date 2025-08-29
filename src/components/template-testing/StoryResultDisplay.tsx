@@ -4,6 +4,27 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Clock, FileText, Hash, BookOpen, Zap, CheckCircle } from 'lucide-react';
 
+// Robust word counting function - consistent with StoryPromptTester
+const countWords = (content: string | string[]): number => {
+  if (!content) return 0;
+  
+  // Handle array of pages
+  if (Array.isArray(content)) {
+    return content.reduce((total, page) => total + countWords(page), 0);
+  }
+  
+  // Handle single string
+  if (typeof content === 'string') {
+    return content
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0)
+      .length;
+  }
+  
+  return 0;
+};
+
 interface StoryResult {
   success: boolean;
   level?: string;
@@ -102,7 +123,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
             
             <div className="text-center">
               <div className="text-2xl font-bold text-secondary">
-                {pages.join(' ').split(' ').length}
+                {countWords(pages)}
               </div>
               <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                 <Hash className="h-3 w-3" />
@@ -172,7 +193,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline">Page {index + 1}</Badge>
                   <span className="text-sm text-muted-foreground">
-                    {page.split(' ').length} words
+                    {countWords(page)} words
                   </span>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
@@ -249,7 +270,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
                     
                     <div className="space-y-3">
                       <div>
-                        <div className="text-sm font-medium mb-2">Main Text ({scene.mainText.split(' ').length} words):</div>
+                        <div className="text-sm font-medium mb-2">Main Text ({countWords(scene.mainText)} words):</div>
                         <div className="p-3 bg-muted rounded text-sm">{scene.mainText}</div>
                       </div>
                       
@@ -260,7 +281,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
                             {scene.alternatives.map((alt, altIndex) => (
                               <div key={altIndex} className="p-2 bg-muted/50 rounded text-sm">
                                 <Badge variant="outline" className="mr-2">Alt {altIndex + 1}</Badge>
-                                {alt} <span className="text-xs text-muted-foreground">({alt.split(' ').length} words)</span>
+                                {alt} <span className="text-xs text-muted-foreground">({countWords(alt)} words)</span>
                               </div>
                             ))}
                           </div>
@@ -305,7 +326,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
                     
                     <div className="space-y-3">
                       <div>
-                        <div className="text-sm font-medium mb-2">Main Ending ({ending.mainText.split(' ').length} words):</div>
+                        <div className="text-sm font-medium mb-2">Main Ending ({countWords(ending.mainText)} words):</div>
                         <div className="p-3 bg-muted rounded text-sm">{ending.mainText}</div>
                       </div>
                       
@@ -316,7 +337,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
                             {ending.variants.map((variant, variantIndex) => (
                               <div key={variantIndex} className="p-2 bg-primary/10 rounded text-sm">
                                 <Badge variant="outline" className="mr-2">Variant {variantIndex + 1}</Badge>
-                                {variant} <span className="text-xs text-muted-foreground">({variant.split(' ').length} words)</span>
+                                {variant} <span className="text-xs text-muted-foreground">({countWords(variant)} words)</span>
                               </div>
                             ))}
                           </div>
@@ -400,7 +421,7 @@ export function StoryResultDisplay({ result }: StoryResultDisplayProps) {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Average words per page:</span>
               <span className="font-medium">
-                {pages.length > 0 ? Math.round(pages.join(' ').split(' ').length / pages.length) : 0}
+                {pages.length > 0 ? Math.round(countWords(pages) / pages.length) : 0}
                 {metadata?.targetWordDensity === 'Template-optimized' && (
                   <span className="text-xs text-muted-foreground ml-1">(Template density)</span>
                 )}
