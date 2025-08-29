@@ -190,7 +190,9 @@ export function TemplateExplorer() {
                 <div className="text-2xl font-bold text-accent">
                   {templateInfo.templates?.reduce((sum, t) => sum + t.scenes, 0) || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Scenes</div>
+                <div className="text-sm text-muted-foreground">
+                  {templateInfo.level === 'level0' ? 'Total Pages (6 per template)' : 'Total Scenes'}
+                </div>
               </div>
             </div>
 
@@ -214,7 +216,9 @@ export function TemplateExplorer() {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <Badge variant="outline">{template.scenes} scenes</Badge>
+                        <Badge variant="outline">
+                          {template.scenes} {templateInfo.level === 'level0' ? 'pages' : 'scenes'}
+                        </Badge>
                         <Badge variant="outline">{template.endings} endings</Badge>
                       </div>
                     </div>

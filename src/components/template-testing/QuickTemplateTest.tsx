@@ -21,7 +21,7 @@ export function QuickTemplateTest() {
 
   // Generate dynamic options based on template counts
   const difficultyOptions = [
-    { value: 'beginner', label: 'Beginner', description: `Level 0 - ${counts.beginner || 100} templates` },
+    { value: 'beginner', label: 'Beginner', description: `Level 0 - ${counts.beginner || 100} templates (600 pages total, 6 pages per template)` },
     { value: 'easy', label: 'Easy', description: `Level 1 - ${counts.easy || 5} templates` },
     { value: 'medium', label: 'Medium', description: `Level 2 - ${counts.medium || 5} templates` },
     { value: 'hard', label: 'Hard', description: `Level 3 - ${counts.hard || 5} templates` },
