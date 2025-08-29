@@ -7,6 +7,7 @@ import { AdvancedTemplateTest } from '@/components/template-testing/AdvancedTemp
 import { BatchTemplateTest } from '@/components/template-testing/BatchTemplateTest';
 import { TemplateExplorer } from '@/components/template-testing/TemplateExplorer';
 import { TemplateSystemMonitor } from '@/components/template-testing/TemplateSystemMonitor';
+import { SystematicWordCountTest } from '@/components/template-testing/SystematicWordCountTest';
 
 export default function TemplateTestingPage() {
   return (
@@ -31,8 +32,9 @@ export default function TemplateTestingPage() {
         </div>
 
         <Tabs defaultValue="quick" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="quick">Quick Test</TabsTrigger>
+            <TabsTrigger value="wordcount">Word Count Test</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
             <TabsTrigger value="batch">Batch Test</TabsTrigger>
             <TabsTrigger value="explorer">Explorer</TabsTrigger>
@@ -41,6 +43,10 @@ export default function TemplateTestingPage() {
 
           <TabsContent value="quick" className="mt-6">
             <QuickTemplateTest />
+          </TabsContent>
+          
+          <TabsContent value="wordcount" className="mt-6">
+            <SystematicWordCountTest />
           </TabsContent>
 
           <TabsContent value="advanced" className="mt-6">
