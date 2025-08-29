@@ -40,8 +40,7 @@ CRITICAL RULES:
 
 Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
-GUEST USERS: Generate exactly 8 pages, 6 words each (users see 6 pages). 
-PREMIUM USERS: Generate 1 page, 6 words for never-ending continuation.
+Maximum 48 tokens total. Max 6 words per page.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
