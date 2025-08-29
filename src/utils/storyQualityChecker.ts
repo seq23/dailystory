@@ -1,5 +1,5 @@
 // Story quality checker to ensure consistent quality standards
-import { GrammarValidator } from './grammarValidator';
+// Grammar validation removed - now handled by edge functions using sophisticated validateAndEnhanceGrammar system
 
 interface QualityIssue {
   type: 'grammar' | 'flow' | 'structure' | 'readability';
@@ -12,7 +12,7 @@ interface QualityIssue {
 export class StoryQualityChecker {
   
   /**
-   * Comprehensive quality check for story pages
+   * Comprehensive quality check for story pages (grammar validation moved to edge functions)
    */
   static checkStoryQuality(pages: string[], difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): {
     isValid: boolean;
@@ -21,21 +21,7 @@ export class StoryQualityChecker {
   } {
     const issues: QualityIssue[] = [];
     
-    // 1. Grammar validation
-    const grammarValidation = GrammarValidator.validateStoryPages(pages);
-    if (!grammarValidation.isValid) {
-      grammarValidation.pageErrors.forEach(pageError => {
-        pageError.errors.forEach(error => {
-          issues.push({
-            type: 'grammar',
-            severity: 'error',
-            message: error,
-            pageIndex: pageError.pageIndex,
-            suggestion: 'Check subject-verb agreement and punctuation'
-          });
-        });
-      });
-    }
+    // 1. Grammar validation moved to edge functions for consistency
     
     // 2. Story flow validation
     const flowIssues = this.checkStoryFlow(pages);

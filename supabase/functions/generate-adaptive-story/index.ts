@@ -200,25 +200,50 @@ serve(async (req) => {
       }
     }
 
-    // Create age-appropriate prompt
+    // Create age-appropriate prompt with avatar gender context
     const userName = NameFormatter.capitalize(config?.userName || 'the child');
     const normalizedReadingLevel = DifficultyLevelMapper.normalizeLevel(readingLevel || 'easy');
     
-    let systemPrompt = 'You are a children\'s story writer. Create age-appropriate, positive stories. DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.';
-    let userPrompt = `Create a personalized children's story for ${userName} at ${normalizedReadingLevel} reading level. Do NOT include titles or chapter headers. Generate only the story content.`;
+    // Extract avatar gender for correct pronoun usage in AI generation
+    const avatarType = config?.userInfo?.avatar?.type || config?.avatar?.type || 'prefer-not-to-answer';
+    const avatarGender = avatarType === 'girl' ? 'girl' : avatarType === 'boy' ? 'boy' : 'child';
+    
+    console.log('🎭 Avatar Context for AI Generation:', { 
+      avatarType, 
+      avatarGender, 
+      userName,
+      normalizedReadingLevel 
+    });
+    
+    let systemPrompt = `You are a children's story writer. Create age-appropriate, positive stories about a ${avatarGender} named ${userName}. Use the correct pronouns (${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'}) consistently throughout. DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.`;
+    let userPrompt = `Create a personalized children's story about a ${avatarGender} named ${userName} at ${normalizedReadingLevel} reading level. The main character is a ${avatarGender}, so use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns. Do NOT include titles or chapter headers. Generate only the story content.`;
     let maxTokens = 800;
     
-    // Use Level 0 specific prompts for beginner difficulty
+    // Use Level 0 specific prompts for beginner difficulty with avatar gender
     if (normalizedReadingLevel === 'beginner') {
-      systemPrompt = LEVEL_0_SYSTEM_PROMPT
-        .replace('{userName}', userName)
-        .replace('{favoriteColor}', config?.favoriteColor || 'blue')
-        .replace('{favoriteAnimal}', config?.favoriteAnimal || 'cat')
-        .replace('{favoriteFood}', config?.favoriteFood || 'apple')
-        .replace('{hobbies}', config?.hobbies || 'playing');
+      systemPrompt = `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
+
+CRITICAL RULES:
+- Generate ONLY one sentence per page (the current page content)
+- Use "Page X:" markers to separate each page of content
+- Use subject-verb OR subject-verb-object as sentence structure
+- Use a mix of 2-, 3-, and 4- letter words
+- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
+- Use Simple present tense
+- The main character is a ${avatarGender} named ${userName} - use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns consistently
+- Story continues infinitely unless user requests ending
+- Try to incorporate a narrative with a natural hook for continuation
+- DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.
+
+Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
+
+Maximum 200 tokens total. One sentence per page for Level 0.
+
+USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
+
+GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.`;
       
-      userPrompt = LEVEL_0_USER_PROMPT
-        .replace('{userName}', userName);
+      userPrompt = `Create a never-ending children's story about a ${avatarGender} named ${userName}, age 3-5. The main character is a ${avatarGender}, so use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns consistently. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence. Do NOT include titles or chapter headers.`;
       
       maxTokens = 200; // Much shorter for Level 0
     }

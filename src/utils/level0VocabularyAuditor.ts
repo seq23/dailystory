@@ -34,13 +34,7 @@ export class Level0VocabularyAuditor {
           totalViolations++;
         });
         
-        // Add grammar violations
-        if (validation.grammarErrors && validation.grammarErrors.length > 0) {
-          validation.grammarErrors.forEach(error => {
-            violations.push(`[${context}] Sentence ${index + 1}: Grammar - ${error}`);
-            totalViolations++;
-          });
-        }
+        // Grammar validation moved to edge functions for consistency
       }
     });
     
@@ -110,16 +104,15 @@ export class Level0VocabularyAuditor {
   }
 
   /**
-   * Quick validation for single sentences with 50% compliance
+   * Quick validation for single sentences with 50% compliance (grammar validation moved to edge functions)
    */
-  static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; grammarErrors: string[]; compliancePercentage: number } {
+  static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; compliancePercentage: number } {
     const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
     const auditResult = this.auditText(sentence, 'single-sentence', userName);
     
     return {
       isValid: auditResult.compliancePercentage >= 50,
       invalidWords: validation.invalidWords,
-      grammarErrors: validation.grammarErrors || [],
       compliancePercentage: auditResult.compliancePercentage
     };
   }

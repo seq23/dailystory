@@ -25,15 +25,11 @@ export class EnhancedPostProcessor {
         const placeholderResolved = resolveAllPlaceholders(page, { userInfo });
         console.log(`✅ Placeholder resolved page ${index + 1}: ${placeholderResolved.substring(0, 50)}...`);
         
-        // Step 2: Apply comprehensive grammar fixes 
-        const grammarFixed = this.applyGrammarFixes(placeholderResolved);
-        console.log(`✅ Grammar fixed page ${index + 1}: ${grammarFixed.substring(0, 50)}...`);
+        // Step 2: Basic content cleanup only (grammar processing moved to edge functions)
+        const cleanedContent = this.cleanStoryContent(placeholderResolved);
+        console.log(`✅ Final processed page ${index + 1}: ${cleanedContent.substring(0, 50)}...`);
         
-        // Step 3: Apply pronoun corrections (after grammar fixes)
-        const pronounCorrected = this.correctPronouns(grammarFixed, userInfo.avatar?.type || 'prefer-not-to-answer');
-        console.log(`✅ Final processed page ${index + 1}: ${pronounCorrected.substring(0, 50)}...`);
-        
-        return pronounCorrected;
+        return cleanedContent;
       });
 
       // Store character context if session exists
@@ -124,60 +120,7 @@ export class EnhancedPostProcessor {
     }
   }
 
-  /**
-   * Correct pronouns based on avatar type to ensure consistency
-   */
-  static correctPronouns(content: string, avatarType: string): string {
-    const correctPronouns = this.getPronounsForAvatar(avatarType);
-    let correctedContent = content;
-    
-    // Comprehensive pronoun replacement maps for all avatar types
-    const pronounMaps = {
-      girl: {
-        'he': 'she', 'him': 'her', 'his': 'her',
-        'He': 'She', 'Him': 'Her', 'His': 'Her',
-        'himself': 'herself', 'Himself': 'Herself',
-        'they': 'she', 'them': 'her', 'their': 'her', 'theirs': 'hers',
-        'They': 'She', 'Them': 'Her', 'Their': 'Her', 'Theirs': 'Hers',
-        'themselves': 'herself', 'Themselves': 'Herself'
-      },
-      boy: {
-        'she': 'he', 'her': 'him', 'hers': 'his',
-        'She': 'He', 'Her': 'Him', 'Hers': 'His',
-        'herself': 'himself', 'Herself': 'Himself',
-        'they': 'he', 'them': 'him', 'their': 'his', 'theirs': 'his',
-        'They': 'He', 'Them': 'Him', 'Their': 'His', 'Theirs': 'His',
-        'themselves': 'himself', 'Themselves': 'Himself'
-      }
-    };
-
-    const pronounMap = pronounMaps[avatarType] || pronounMaps.boy;
-    
-    // Apply pronoun corrections with word boundaries
-    Object.entries(pronounMap).forEach(([incorrect, correct]) => {
-      const regex = new RegExp(`\\b${incorrect}\\b`, 'g');
-      correctedContent = correctedContent.replace(regex, correct as string);
-    });
-    
-    return correctedContent;
-  }
-
-  /**
-   * Get correct pronouns for avatar type
-   */
-  private static getPronounsForAvatar(avatarType: string): {
-    subject: string;
-    object: string;
-    possessive: string;
-  } {
-    switch (avatarType) {
-      case 'girl':
-        return { subject: 'she', object: 'her', possessive: 'her' };
-      case 'boy':
-      default:
-        return { subject: 'he', object: 'him', possessive: 'his' };
-    }
-  }
+  // Pronoun correction methods removed - now handled by edge functions using sophisticated grammar system
 
   /**
    * Extract story elements for image generation alignment
@@ -213,44 +156,7 @@ export class EnhancedPostProcessor {
     };
   }
 
-  /**
-   * Apply comprehensive grammar fixes for common errors in Level 0 content
-   */
-  static applyGrammarFixes(content: string): string {
-    let fixed = content;
-    
-    // Fix basic subject-verb agreement
-    fixed = fixed.replace(/\bI are\b/g, 'I am');
-    fixed = fixed.replace(/\bhe are\b/g, 'he is');
-    fixed = fixed.replace(/\bshe are\b/g, 'she is'); 
-    fixed = fixed.replace(/\bit are\b/g, 'it is');
-    
-    // Fix have/has agreement for all pronouns
-    fixed = fixed.replace(/\bhe have\b/g, 'he has');
-    fixed = fixed.replace(/\bshe have\b/g, 'she has');
-    fixed = fixed.replace(/\bit have\b/g, 'it has');
-    fixed = fixed.replace(/\bI has\b/g, 'I have');
-    fixed = fixed.replace(/\byou has\b/g, 'you have');
-    fixed = fixed.replace(/\bwe has\b/g, 'we have');
-    
-    // Fix verb forms with they
-    fixed = fixed.replace(/\bthey is\b/g, 'they are');
-    fixed = fixed.replace(/\bthey was\b/g, 'they were');
-    fixed = fixed.replace(/\bthey has\b/g, 'they have');
-    
-    // Fix do/does agreement
-    fixed = fixed.replace(/\bhe do\b/g, 'he does');
-    fixed = fixed.replace(/\bshe do\b/g, 'she does');
-    fixed = fixed.replace(/\bit do\b/g, 'it does');
-    
-    // Fix double articles or missing words patterns - CRITICAL FIX
-    fixed = fixed.replace(/\bthe\s+is\b/gi, 'child is'); // "The is happy" -> "child is happy"
-    fixed = fixed.replace(/\bthe\s+are\b/gi, 'they are'); // "The are happy" -> "They are happy"
-    fixed = fixed.replace(/\bthe\s+have\b/gi, 'they have'); // "The have fun" -> "They have fun"
-    fixed = fixed.replace(/\bthe\s+has\b/gi, 'child has'); // "The has fun" -> "child has fun"
-    
-    return fixed;
-  }
+  // Grammar fixing methods removed - now handled by edge functions using sophisticated validateAndEnhanceGrammar system
 
   /**
    * Clean and enhance story content for better readability
