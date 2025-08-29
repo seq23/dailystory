@@ -144,7 +144,7 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
     out = applyHeShePronounFixes(out);
   }
   
-  return cleanup(out);
+  return out; // Don't cleanup yet - let resolveAllPlaceholders handle final cleanup
 }
 
 export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): string {
@@ -153,5 +153,5 @@ export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): st
     result = resolveCanonicalPlaceholders(result, ctx.userInfo);
   }
   result = resolveMicroPlaceholders(result, ctx);
-  return result;
+  return cleanup(result); // Only NOW do we cleanup, after all placeholders are resolved
 }
