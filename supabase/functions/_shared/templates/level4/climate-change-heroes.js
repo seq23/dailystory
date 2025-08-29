@@ -7,11 +7,11 @@ export const template = {
     {
       text: "{userName} lives in a coastal town where rising sea levels have already flooded three neighborhoods in the past year. When their school announces a climate action competition, {userName} teams up with Maya, whose family immigrated after drought destroyed their farm, and Alex, whose {favoriteAnimal} rescue center keeps receiving animals displaced by extreme weather.",
       pause: true,
-      hook: "How can three teenagers tackle a global crisis that adults have failed to solve?",
+      hook: "During their first team meeting, sirens wail as another neighborhood evacuation begins - time is running out!",
       microVariants: {
         text: "{userName} witnesses climate impacts firsthand and joins classmates whose families have been directly affected by environmental changes.",
         alternatives: ["Personal experience with climate change motivates {userName} to collaborate with peers facing similar environmental challenges."],
-        optionalDetails: ["flood barriers protect the school but not all homes", "drought refugees arrive weekly in their community"]
+        optionalDetails: ["flood barriers protect the school but not all homes, creating visible inequality as wealthy families can afford elevation while others lose everything repeatedly", "drought refugees arrive weekly in their community, bringing stories of failed crops, abandoned towns, and environmental devastation that make climate change feel urgent and personal rather than abstract"]
       }
     },
     {

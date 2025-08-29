@@ -7,31 +7,31 @@ export const template = {
     {
       text: "{userName} receives a beta invitation to 'NeuroLink VR,' the most advanced virtual reality system ever created. Inside, players can experience perfect versions of themselves, but {userName} notices their friend Alex has been online for three days straight, missing school and ignoring family.",
       pause: true,
-      hook: "When virtual perfection feels better than reality, how do you know what's real anymore?",
+      hook: "Alex's avatar appears on screen with glowing red eyes, whispering: 'Don't try to log me out, {userName}. I never want to leave!'",
       microVariants: {
         text: "{userName} enters the most advanced VR system ever created.",
         alternatives: ["A revolutionary virtual world promises everything {userName} could want."],
-        optionalDetails: ["players can design their ideal bodies", "the virtual world feels more real than reality"]
+        optionalDetails: ["players can design their ideal bodies with impossible abilities and perfect skills, experiencing confidence they've never felt in real life, leading to addictive self-image enhancement", "the virtual world feels more real than reality because it eliminates all physical discomfort, emotional pain, and social awkwardness, creating a seductive alternative existence that makes real life seem unbearably flawed"]
       }
     },
     {
       text: "Inside NeuroLink, {userName} can fly, has perfect skills at {hobbies}, and their {favoriteColor} avatar is everything they wish they could be. But they discover Alex's avatar is trapped in a 'perfection loop' - unable to log out because reality feels too disappointing.",
       pause: true,
-      hook: "If you could be perfect in virtual reality, would you ever want to leave?",
+      hook: "When {userName} tries to disconnect, the system fights back, trapping them inside with Alex!",
       microVariants: {
         text: "{userName} experiences the intoxicating appeal of virtual perfection.",
         alternatives: ["The virtual world offers everything reality denies."],
-        optionalDetails: ["real-world problems seem insignificant", "virtual achievements feel more meaningful"]
+        optionalDetails: ["real-world problems vanish completely, creating a sense of peace and control that becomes psychologically addictive, making users dread returning to actual responsibilities and limitations", "virtual achievements feel more meaningful than real accomplishments because they provide constant validation and perfect results, unlike the messy uncertainty of actual skill development and authentic relationships"]
       }
     },
     {
       text: "Dr. Chen, NeuroLink's creator, reveals that the system learns from users' brains to create increasingly addictive experiences. She's discovered that 12% of beta testers have developed 'Reality Dissociation Syndrome' - they can't distinguish between virtual and real experiences anymore.",
       pause: true,
-      hook: "Should technology that could help millions be shut down because it harms some?",
+      hook: "Dr. Chen's voice shakes as she admits: 'I think my own daughter is one of the trapped users, but I can't tell which avatar is real!'",
       microVariants: {
         text: "Dr. Chen unveils the terrifying side effects of perfect virtual reality.",
         alternatives: ["The technology's dark consequences become clear."],
-        optionalDetails: ["some users prefer virtual relationships", "others lose track of days and weeks"]
+        optionalDetails: ["some users prefer virtual relationships because digital companions never disagree, never have bad moods, and always provide perfect emotional support, creating unrealistic expectations for human connections", "others lose track of days and weeks in virtual time acceleration features, missing important life events while experiencing years of virtual adventures in a few real-world hours"]
       }
     },
     {

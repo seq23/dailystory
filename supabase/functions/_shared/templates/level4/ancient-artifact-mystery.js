@@ -7,21 +7,21 @@ export const template = {
     {
       text: "{userName} discovers a mysterious {favoriteColor} stone tablet while volunteering at the museum's archaeology department. The artifact contains symbols that don't match any known language, and Dr. Martinez warns that some discoveries are meant to stay buried.",
       pause: true,
-      hook: "What ancient secrets could this artifact reveal, and why does Dr. Martinez seem afraid?",
+      hook: "The tablet grows warm at {userName}'s touch and ancient symbols begin glowing ominously in the dark storage room!",
       microVariants: {
         text: "{userName} discovers a mysterious artifact at the museum.",
         alternatives: ["An ancient tablet catches {userName}'s attention during volunteer work."],
-        optionalDetails: ["the tablet feels unnaturally warm to the touch", "strange symbols seem to shimmer in the light"]
+        optionalDetails: ["the tablet feels unnaturally warm to the touch and emits a subtle humming sound that seems to resonate with {userName}'s heartbeat, creating an unsettling connection", "strange symbols seem to shimmer and change in the light, appearing to rearrange themselves when no one is looking directly at them, suggesting some form of active intelligence"]
       }
     },
     {
       text: "Against Dr. Martinez's warnings, {userName} begins researching the symbols with their friend Maya. They discover the tablet might be connected to a lost civilization that possessed advanced knowledge about {favoriteAnimal} communication and natural disasters.",
       pause: true,
-      hook: "Should they continue their research despite the growing dangers they uncover?",
+      hook: "Late at night in the library, {userName} and Maya hear strange sounds coming from the ancient artifact locked in {userName}'s backpack!",
       microVariants: {
         text: "{userName} and Maya research the mysterious symbols together.",
         alternatives: ["The two friends dive deeper into the ancient mystery."],
-        optionalDetails: ["ancient texts mention catastrophic warnings", "the symbols appear in forbidden archaeological sites"]
+        optionalDetails: ["ancient texts mention catastrophic warnings written in blood-red ink that matches the tablet's glowing symbols, suggesting a connection to apocalyptic predictions", "the symbols appear in forbidden archaeological sites around the world, but every expedition that found them has mysteriously disappeared without explanation, leaving only cryptic journal entries"]
       }
     },
     {
