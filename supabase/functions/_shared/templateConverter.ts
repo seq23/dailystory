@@ -117,16 +117,30 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // TESTING MODE: Always use full scene content for complete validation
   let text = scene.text; // Use full scene content (60-120+ words) instead of microVariants summary
   
-  // In real-user mode, occasionally add optional details for variety
-  const shouldAddDetail = (mode === 'real-user') ? Math.random() < 0.4 : false;
+  // Enhanced content selection for Hard and Expert levels
+  const isHardOrExpert = template.level === 'level3' || template.level === 'level4';
   
-  // Add optional detail (only in real-user mode for variety)
+  // In real-user mode, add optional details more frequently for Hard/Expert levels
+  const baseDetailChance = (mode === 'real-user') ? 0.4 : 0;
+  const enhancedDetailChance = isHardOrExpert ? 0.8 : baseDetailChance;
+  const shouldAddDetail = Math.random() < enhancedDetailChance;
+  
+  // Add optional detail (enhanced for Hard/Expert levels)
   if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
     const detail = pick(scene.microVariants.optionalDetails);
-    // Simple sentence combination
-    text = text.trim().endsWith('.') 
-      ? `${text.slice(0, -1)}, and ${detail}.`
-      : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+    
+    // For Hard/Expert levels, try to add multiple details if available
+    if (isHardOrExpert && scene.microVariants.optionalDetails.length > 1 && Math.random() < 0.5) {
+      const secondDetail = pick(scene.microVariants.optionalDetails.filter(d => d !== detail));
+      text = text.trim().endsWith('.') 
+        ? `${text.slice(0, -1)}, ${detail}, and ${secondDetail}.`
+        : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}, and ${secondDetail}.`;
+    } else {
+      // Single detail addition
+      text = text.trim().endsWith('.') 
+        ? `${text.slice(0, -1)}, and ${detail}.`
+        : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+    }
   }
   
   // TESTING MODE: Show all content for validation
