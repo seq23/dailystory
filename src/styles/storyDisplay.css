@@ -298,3 +298,10 @@
   border-radius: 0.75rem;
   margin: 0 !important;
 }
+
+/* Content-aware sizing overrides difficulty-based font sizes */
+.story-content--content-aware[data-difficulty] {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+}

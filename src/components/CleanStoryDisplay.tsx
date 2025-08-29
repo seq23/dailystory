@@ -42,6 +42,7 @@ import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
+import { useContentAwareTextSize, useContentAwareContainer } from "@/hooks/useContentAwareTextSize";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
@@ -2426,6 +2427,16 @@ const handleRestartTimer = () => {
     }, 5000);
   };
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
+    // Block difficulty changes on template content (AI service unavailable)
+    if (storySource === 'fallback') {
+      toast({ 
+        title: "Sorry, difficulty adjustments aren't available right now", 
+        description: "Our AI story service is temporarily unavailable. Please start a new story to access different difficulty template content.",
+        duration: 5000 
+      });
+      return;
+    }
+
     // Respect parent guardrails for premium users
     if (isPremium) {
       if (lockDifficulty) {
@@ -2520,8 +2531,8 @@ const handleRestartTimer = () => {
           console.warn('Could not persist difficulty preference', e);
         }
         
-        // Update live context for premium users
-        if (isPremium && liveContext) {
+        // Update live context for all users (universal live difficulty updates)
+        if (liveContext) {
           setLiveContext(prev => prev ? {
             ...prev, 
             difficulty: newDifficulty,
@@ -2532,8 +2543,8 @@ const handleRestartTimer = () => {
         // Animate badge change
         setTimeout(() => setChangeDirection('badge'), 200);
       } else if (currentDifficulty === 'expert') {
-        // Update live context for expert grade level changes
-        if (isPremium && liveContext) {
+        // Update live context for expert grade level changes (universal updates)
+        if (liveContext) {
           setLiveContext(prev => prev ? {...prev, expertGradeLevel: newGradeLevel} : null);
         }
         // Persist last expert grade
@@ -2569,9 +2580,10 @@ const handleRestartTimer = () => {
   };
 
 
-  // Get mobile-optimized text configuration
-  const mobileTextConfig = getMobileTextConfig(currentDifficulty);
-  const mobileContainerConfig = getMobileStoryContainer(currentDifficulty);
+  // Get content-aware text configuration based on actual page content
+  const contentAwareTextConfig = useContentAwareTextSize(currentStoryText || "", isMobile);
+  const wordCount = (currentStoryText || "").trim().split(/\s+/).filter(word => word.length > 0).length;
+  const contentAwareContainerConfig = useContentAwareContainer(wordCount);
 
   const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const currentImage = pageImages[currentPage];
@@ -2888,8 +2900,13 @@ const handleRestartTimer = () => {
                     )}
                     <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")}>
                       <div 
-                        className={cn("story-content storybook-frame w-full", justAdvanced && "animate-enter")}
+                        className={cn("story-content storybook-frame story-content--content-aware w-full", justAdvanced && "animate-enter", contentAwareContainerConfig)}
                         data-difficulty={currentDifficulty}
+                        style={{
+                          fontSize: contentAwareTextConfig.fontSize,
+                          lineHeight: contentAwareTextConfig.lineHeight,
+                          letterSpacing: contentAwareTextConfig.letterSpacing
+                        }}
                       >
                         {displayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
                           processTextWithConsistentFlow({
@@ -2987,8 +3004,13 @@ const handleRestartTimer = () => {
                       )}
                       <div className={cn("h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
                         <div 
-                          className={cn("story-content story-content--compact w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter")}
+                          className={cn("story-content story-content--compact story-content--content-aware w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter", contentAwareContainerConfig)}
                           data-difficulty={currentDifficulty}
+                          style={{
+                            fontSize: contentAwareTextConfig.fontSize,
+                            lineHeight: contentAwareTextConfig.lineHeight,
+                            letterSpacing: contentAwareTextConfig.letterSpacing
+                          }}
                         >
                           {displayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
                             processTextWithConsistentFlow({
