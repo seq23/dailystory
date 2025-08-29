@@ -108,7 +108,7 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
       out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
     }
   }
-  return out;
+  return out; // Don't cleanup here - micro placeholders still need processing
 }
 
 export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): string {

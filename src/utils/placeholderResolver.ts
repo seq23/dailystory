@@ -285,7 +285,7 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
     console.warn('⚠️ [VALIDATION] Template validation failed:', validation.errors);
   }
 
-  return cleanup(out);
+  return out; // Don't cleanup yet - micro placeholders still need to be processed!
 }
 
 // Simplified pronoun handling - just return the base pronoun
@@ -408,7 +408,8 @@ export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): st
       console.warn('⚠️ [FINAL] Unresolved placeholders remain:', finalValidation.unresolvedPlaceholders);
     }
     
-    return out;
+    // Only NOW do we cleanup, after all placeholders are resolved
+    return cleanup(out);
   } catch (error) {
     console.error('❌ [ERROR] Complete placeholder resolution failed:', error);
     // Emergency fallback - clean everything
