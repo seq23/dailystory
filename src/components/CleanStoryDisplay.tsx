@@ -167,6 +167,17 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
   
+  // ImageGenerationTrigger lifecycle management
+  useEffect(() => {
+    ImageGenerationTrigger.startMonitoring();
+    console.log('🖼️ ImageGenerationTrigger monitoring started');
+    
+    return () => {
+      ImageGenerationTrigger.stopMonitoring();
+      console.log('🖼️ ImageGenerationTrigger monitoring stopped');
+    };
+  }, []);
+  
   // SESSION PERSISTENCE & RESUME MECHANISM OR SAVED STORY LOADING
   // Automatically restores user sessions across page refreshes and browser restarts
   // Maintains story progress, timer state, and generation history for seamless experience
@@ -2138,8 +2149,8 @@ const handleRestartTimer = () => {
       SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
     }
     
-    // DEBOUNCED: Mark story as unstable during generation
-    setTimeout(() => setIsStoryStable(false), 50);
+    // FIXED: Keep story stable to allow continuous auto-image generation
+    // Removed setTimeout that was blocking image generation on pages 2+
     
     if (isRewrite) {
       setIsGeneratingRewrite(true);
@@ -2868,19 +2879,11 @@ const handleRestartTimer = () => {
                       </div>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <Button
-                          onClick={generateImageForCurrentPage}
-                           disabled={isGeneratingImage}
-                          size="lg"
-                          aria-label="Generate illustration"
-                        >
-                          {isGeneratingImage ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          ) : (
-                            <Wand className="w-4 h-4 mr-2" />
-                          )}
-                          Generate illustration
-                        </Button>
+                        <div className="text-center">
+                          <Sparkles className="w-8 h-8 text-primary mx-auto mb-2 animate-pulse" />
+                          <p className="text-sm text-muted-foreground">Illustration incoming...</p>
+                          <p className="text-xs text-muted-foreground mt-1">Auto-generating based on story</p>
+                        </div>
                       </div>
                     )}
                   </div>
