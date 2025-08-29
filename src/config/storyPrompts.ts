@@ -85,7 +85,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     systemPrompt: `Generate ONE PAGE of a chapter book story for readers aged 7-9.
 
 RULES:
-- 2-3 sentences per page, Use "Page X:" markers to separate each page of content
+- Suggest 2-3 sentences per page. Use compound sentences with coordinating conjunctions (and, but, so). Mix simple and compound sentence structures for natural narrative flow. Use "Page X:" markers to separate each page of content
 - 3-7 letter words, 5-12 word sentences (max 15 words)
 - Past/present tense, varied sentence structures
 - Story continues infinitely unless user requests ending
@@ -110,7 +110,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     systemPrompt: `Generate ONE PAGE of an intermediate story for readers aged 9-11.
 
 RULES:
-- 3-4 sentences per page, Use "Page X:" markers to separate each page of content
+- Suggest 3-4 sentences per page. Use complex sentences with dependent clauses. Vary sentence beginnings and lengths. Include descriptive language and sophisticated vocabulary for engaging storytelling. Use "Page X:" markers to separate each page of content
 - 4-9 letter words, varied sentence lengths (max 20 words)
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
@@ -135,7 +135,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     systemPrompt: `Generate ONE PAGE of an advanced story for readers aged 11-13.
 
 RULES:
-- 4-5 sentences per page, Use "Page X:" markers to separate each page of content
+- Suggest 4-5 sentences per page. Use sophisticated sentence structures with multiple clauses. Employ literary devices and advanced vocabulary. Focus on nuanced character development and thematic depth. Use "Page X:" markers to separate each page of content
 - Advanced vocabulary, sophisticated structures
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
@@ -175,7 +175,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Page 1: [5-6 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Suggest 5-6 sentences per page with foundational complex sentence structures and literary vocabulary. Focus on character development and thematic exploration appropriate for 6th grade readers.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -203,7 +203,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Page 1: [6-7 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Suggest 6-7 sentences per page with increasingly sophisticated sentence structures and varied literary techniques. Develop complex themes and character relationships appropriate for 7th grade readers.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -231,7 +231,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Page 1: [6-8 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Suggest 6-8 sentences per page with advanced grammatical structures, literary devices, and nuanced vocabulary. Explore mature themes with intellectual depth appropriate for 8th grade readers.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -259,7 +259,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Page 1: [7-8 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Suggest 7-8 sentences per page with sophisticated prose, complex syntactic structures, and rich literary language. Develop intricate thematic content and psychological depth appropriate for 9th grade readers.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -287,7 +287,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 10th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Page 1: [7-9 sentences]. Each subsequent page should maintain similar length and complexity.
+FORMAT: Suggest 8-9 sentences per page with masterful prose, intricate sentence construction, and elevated literary language. Develop complex philosophical themes and profound character depth appropriate for 10th grade readers.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
