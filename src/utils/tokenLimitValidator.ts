@@ -15,10 +15,10 @@ export interface TokenLimitConfig {
 export const TOKEN_LIMITS: Record<DifficultyLevel, TokenLimitConfig> = {
   beginner: {
     difficulty: 'beginner',
-    maxTokens: 200,
+    maxTokens: 48, // 6 pages × 6 words ÷ 0.75 tokens per word
     wordsPerToken: 0.75, // Simple words are often shorter tokens
-    expectedPages: 5,
-    tokensPerPage: 40
+    expectedPages: 6,
+    tokensPerPage: 8 // 6 words per page
   },
   easy: {
     difficulty: 'easy',

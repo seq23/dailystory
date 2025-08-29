@@ -40,7 +40,7 @@ CRITICAL RULES:
 
 Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
-Maximum 200 tokens total. One sentence per page for Level 0.
+Maximum 48 tokens total. Max 6 words per page.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
@@ -301,7 +301,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
  */
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel): number {
   const limits: Record<DifficultyLevel, number> = {
-    beginner: 200,
+    beginner: 48,
     easy: 350,
     medium: 500,
     hard: 650,

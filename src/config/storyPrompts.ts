@@ -43,7 +43,7 @@ CRITICAL RULES:
 
 Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
 
-Maximum 200 tokens total. One sentence per page for Level 0.
+Maximum 48 tokens total. Max 6 words per page.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
