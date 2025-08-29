@@ -7,6 +7,7 @@ import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config
 import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DiagnosticTool } from '@/utils/diagnostics';
+import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 
@@ -151,18 +152,12 @@ export class NetflixStyleStoryService {
       };
     } catch (error) {
       console.error('📺 Netflix: Fallback generation failed:', error);
-      // Emergency fallback with simple story
-      const emergencyStory = [
-        `${userInfo.name} started a wonderful day.`,
-        `${userInfo.name} discovered something amazing.`,
-        `It was the most exciting adventure ever.`,
-        `${userInfo.name} felt very happy about the discovery.`,
-        `The adventure ended perfectly, and ${userInfo.name} smiled.`
-      ];
+      // Emergency fallback with rhyming educational content
+      const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
 
       return {
-        content: emergencyStory,
-        pageCount: emergencyStory.length,
+        content: emergencyContent,
+        pageCount: emergencyContent.length,
         source: 'fallback'
       };
     }

@@ -6,6 +6,7 @@ import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '@/config/storyPrompts';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
+import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 
@@ -367,8 +368,9 @@ export class LiveGenerationService {
       };
     } catch (error) {
       console.error('🚀 Fallback failed:', error);
-      // Emergency fallback with simple template
-      const content = `${userInfo.name} began a wonderful adventure.`;
+      // Emergency fallback with rhyming educational content
+      const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
+      const content = emergencyContent[0] || `${userInfo.name} began a wonderful adventure.`;
       
       let promptConfig: any;
       if (difficulty === 'expert') {
@@ -449,10 +451,11 @@ export class LiveGenerationService {
       };
     } catch (error) {
       console.error('🚀 Fallback failed:', error);
-      // Emergency fallback with simple template
+      // Emergency fallback with rhyming educational content
+      const emergencyContent = await ErrorHandlingManager.getEmergencyContent(context.userInfo);
       const content = isLastPage ? 
-        `${context.userInfo.name} had a great day. The end.` : 
-        `${context.userInfo.name} continued the adventure.`;
+        (emergencyContent[0] || `${context.userInfo.name} had a great day. The end.`) : 
+        (emergencyContent[0] || `${context.userInfo.name} continued the adventure.`);
       
       const updatedContext: LiveGenerationContext = {
         ...context,
