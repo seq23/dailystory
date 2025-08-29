@@ -107,14 +107,15 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // TESTING MODE: Show organized console output and always use main text
   if (mode === 'testing') {
     console.log(`\n🔍 SCENE ANALYSIS:`);
-    console.log(`📝 Main Text (${scene.microVariants.text.split(' ').length} words): ${scene.microVariants.text.substring(0, 100)}...`);
+    console.log(`📝 Full Scene Text (${scene.text.split(' ').length} words): ${scene.text.substring(0, 100)}...`);
+    console.log(`📝 Summary Text (${scene.microVariants.text.split(' ').length} words): ${scene.microVariants.text.substring(0, 100)}...`);
     console.log(`🔄 Alternatives (${scene.microVariants.alternatives.length}):`, scene.microVariants.alternatives.map(alt => `"${alt.substring(0, 50)}..." (${alt.split(' ').length} words)`));
     console.log(`📎 Optional Details (${scene.microVariants.optionalDetails.length}):`, scene.microVariants.optionalDetails.map(detail => `"${detail.substring(0, 40)}..."`));
   }
   
-  // REAL USER MODE: Always use main text (not short alternatives)
-  // TESTING MODE: Always use main text for complete validation
-  let text = scene.microVariants.text; // Always use main scene text for proper user experience
+  // REAL USER MODE: Always use full scene content (not short summaries)
+  // TESTING MODE: Always use full scene content for complete validation
+  let text = scene.text; // Use full scene content (60-120+ words) instead of microVariants summary
   
   // In real-user mode, occasionally add optional details for variety
   const shouldAddDetail = (mode === 'real-user') ? Math.random() < 0.4 : false;
@@ -345,8 +346,8 @@ function processSceneWithCycleVariation(
   cycleNumber: number = 0,
   mode: string = 'testing'
 ): string {
-  // Always use main text for proper user experience (not short alternatives)
-  let text = scene.microVariants.text;
+  // Always use full scene content for proper user experience (not short summaries) 
+  let text = scene.text;
   
   // In real-user mode, add variation with cycle awareness
   if (mode === 'real-user') {
