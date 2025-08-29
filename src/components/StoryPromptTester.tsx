@@ -14,6 +14,27 @@ import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/uti
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
+// Robust word counting function
+const countWords = (content: string | string[]): number => {
+  if (!content) return 0;
+  
+  // Handle array of pages
+  if (Array.isArray(content)) {
+    return content.reduce((total, page) => total + countWords(page), 0);
+  }
+  
+  // Handle single string
+  if (typeof content === 'string') {
+    return content
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0)
+      .length;
+  }
+  
+  return 0;
+};
+
 interface TestResult {
   level: string;
   service: 'netflix' | 'live' | 'template';
@@ -212,7 +233,7 @@ export function StoryPromptTester() {
         result.pages = response.pageCount || response.pages?.length || 0;
         
         if (response.pages && Array.isArray(response.pages)) {
-          result.wordCount = response.pages.join(' ').split(' ').length;
+          result.wordCount = countWords(response.pages);
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.pages;
           result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
@@ -238,7 +259,7 @@ export function StoryPromptTester() {
         result.pages = 1; // Live service generates one page at a time
         
         if (response.content) {
-          result.wordCount = response.content.split(' ').length;
+          result.wordCount = countWords(response.content);
           result.contentPreview = response.content.substring(0, 100) + '...';
           result.fullContent = [response.content];
           result.hasPageConcatenation = false; // Single page, no concatenation possible
@@ -258,7 +279,7 @@ export function StoryPromptTester() {
         result.pages = response.pageCount || response.pages?.length || 0;
         
         if (response.pages && Array.isArray(response.pages)) {
-          result.wordCount = response.pages.join(' ').split(' ').length;
+          result.wordCount = countWords(response.pages);
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.pages;
           result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
@@ -349,7 +370,7 @@ export function StoryPromptTester() {
     
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
-      const pageWordCount = page.split(' ').length;
+      const pageWordCount = countWords(page);
       
       // 1. Excessive word count (clear concatenation)
       if (pageWordCount > expectedWordLimit * 2) return true;
@@ -429,7 +450,7 @@ export function StoryPromptTester() {
       });
 
       // Word count issues
-      const wordCount = page.split(/\s+/).length;
+      const wordCount = countWords(page);
       if (wordCount > 200) {
         issues.push(`Page ${index + 1}: Excessive length (${wordCount} words)`);
         score -= 10;
@@ -806,7 +827,7 @@ export function StoryPromptTester() {
                 
                 <div className="space-y-4">
                   {result.fullContent.map((page, index) => {
-                    const pageWordCount = page ? page.split(' ').length : 0;
+                    const pageWordCount = countWords(page);
                     const isEmergencyPage = page && (page.includes('story machine took a little rest') || 
                                            page.includes('story elves went to play') ||
                                            page.includes('Try Again'));
