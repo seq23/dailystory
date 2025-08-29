@@ -29,7 +29,6 @@ import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 import { StoryContentLogger } from "@/utils/StoryContentLogger";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
-import { useStoryContentBuffer } from '@/hooks/useStoryContentBuffer';
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
 import { hashText } from "@/utils/tokenize";
 import { defaultAudioConfig } from "@/config/audioConfig";
@@ -133,12 +132,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       shouldShowImages: layout !== 'classic' || window.innerWidth >= 1280
     });
   }, [layout, lowEnd, reason]);
-  
-  // Enhanced story content buffer (prevents flickering)
-  const storyBuffer = useStoryContentBuffer({
-    stabilityDebounceMs: 800,
-    loadingDebounceMs: 150
-  });
   
   // Legacy state - keeping during migration
   const [story, setStory] = useState<string[]>([]);
@@ -2273,7 +2266,6 @@ const handleRestartTimer = () => {
         console.log(`✅ [STORY DEBUG ${callId}] Story stability restored after generation`);
       }, 400);
     }
-    }
   };
   // Open special request dialog for premium users, or generate immediately for free
   const handleNewStoryClick = () => {
@@ -2395,7 +2387,6 @@ const handleRestartTimer = () => {
     }
   };
 
-export default CleanStoryDisplay;
   // Manual End Session (Premium): 5s celebration with music then stats
   const handleManualEndSession = async () => {
     setShowManualCelebration(true);
