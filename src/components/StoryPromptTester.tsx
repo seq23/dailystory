@@ -235,19 +235,19 @@ export function StoryPromptTester() {
         // Enhanced logging for source detection debugging
         console.log(`🔍 Netflix Service Result for ${level}:`, {
           source: response.source,
-          hasPages: !!response.pages,
-          pageCount: response.pages?.length || 0,
-          contentPreview: response.pages?.[0]?.substring(0, 50) + '...'
+          hasContent: !!response.content,
+          pageCount: response.content?.length || 0,
+          contentPreview: response.content?.[0]?.substring(0, 50) + '...'
         });
         
-        if (response.pages && Array.isArray(response.pages)) {
-          result.wordCount = countWords(response.pages);
-          result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
-          result.fullContent = response.pages;
-          result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
+        if (response.content && Array.isArray(response.content)) {
+          result.wordCount = countWords(response.content);
+          result.contentPreview = response.content[0]?.substring(0, 100) + '...' || '';
+          result.fullContent = response.content;
+          result.hasPageConcatenation = checkPageConcatenation(response.content, level);
           
           // Check for emergency content (rhyming educational content)
-          const firstPage = response.pages[0] || '';
+          const firstPage = response.content[0] || '';
           if (firstPage.includes('story machine took a little rest') || 
               firstPage.includes('story elves went to play') ||
               firstPage.includes('Try Again')) {
