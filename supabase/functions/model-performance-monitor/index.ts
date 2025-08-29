@@ -30,7 +30,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, timeRange = '24h', models = ['gpt-5-mini-2025-08-07', 'gpt-5-2025-08-07'] } = await req.json();
+    const { action, timeRange = '24h', models = ['gpt-4o-mini', 'gpt-4o'] } = await req.json();
 
     console.log(`📊 Model Performance Monitor: ${action} for ${timeRange}`);
 
@@ -291,7 +291,7 @@ function determineRecommendedModel(comparisons: ModelComparison[]): string {
     score: (c.successRate * 0.4) + ((5000 - Math.min(c.avgResponseTime, 5000)) / 5000 * 0.3) + ((100 - c.avgCost) / 100 * 0.3)
   }));
   
-  return scored.sort((a, b) => b.score - a.score)[0]?.model || 'gpt-5-mini-2025-08-07';
+  return scored.sort((a, b) => b.score - a.score)[0]?.model || 'gpt-4o-mini';
 }
 
 function calculateQualityDifference(comparisons: ModelComparison[]): number {

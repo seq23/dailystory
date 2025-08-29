@@ -157,8 +157,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let requestBody = null;
+  
   try {
-    const requestBody = await req.json();
+    requestBody = await req.json();
     
     // Diagnostic mode check
     if (requestBody.diagnostic === true) {
@@ -233,7 +235,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
