@@ -21,7 +21,7 @@ interface TokenLimitConfig {
 }
 
 const TOKEN_LIMITS: Record<string, TokenLimitConfig> = {
-  beginner: { difficulty: 'beginner', maxTokens: 200, wordsPerToken: 0.75, expectedPages: 5, tokensPerPage: 40 },
+  beginner: { difficulty: 'beginner', maxTokens: 240, wordsPerToken: 0.75, expectedPages: 6, tokensPerPage: 40 },
   easy: { difficulty: 'easy', maxTokens: 300, wordsPerToken: 0.75, expectedPages: 6, tokensPerPage: 50 },
   medium: { difficulty: 'medium', maxTokens: 400, wordsPerToken: 0.75, expectedPages: 8, tokensPerPage: 50 },
   hard: { difficulty: 'hard', maxTokens: 600, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 60 },
