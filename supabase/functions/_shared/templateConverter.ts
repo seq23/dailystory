@@ -120,32 +120,72 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // Enhanced content selection for Hard and Expert levels
   const isHardOrExpert = template.level === 'level3' || template.level === 'level4';
   
-  // In real-user mode, add optional details more frequently for Hard/Expert levels
-  const baseDetailChance = (mode === 'real-user') ? 0.4 : 0;
-  const enhancedDetailChance = isHardOrExpert ? 0.8 : baseDetailChance;
-  const shouldAddDetail = Math.random() < enhancedDetailChance;
+  // AGGRESSIVE content selection for Hard/Expert levels - ALWAYS add content
+  let shouldAddDetail = false;
+  if (isHardOrExpert) {
+    shouldAddDetail = true; // 100% chance for Hard/Expert
+  } else {
+    const baseDetailChance = (mode === 'real-user') ? 0.4 : 0;
+    shouldAddDetail = Math.random() < baseDetailChance;
+  }
   
-  // Add optional detail (enhanced for Hard/Expert levels)
+  // Add optional details (AGGRESSIVE for Hard/Expert levels)
   if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
-    const detail = pick(scene.microVariants.optionalDetails);
+    const allDetails = scene.microVariants.optionalDetails;
     
-    // For Hard/Expert levels, try to add multiple details if available
-    if (isHardOrExpert && scene.microVariants.optionalDetails.length > 1 && Math.random() < 0.5) {
-      const secondDetail = pick(scene.microVariants.optionalDetails.filter(d => d !== detail));
-      text = text.trim().endsWith('.') 
-        ? `${text.slice(0, -1)}, ${detail}, and ${secondDetail}.`
-        : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}, and ${secondDetail}.`;
+    if (isHardOrExpert) {
+      // For Hard/Expert: ALWAYS add multiple details when available
+      if (allDetails.length >= 2) {
+        // Add 2 details for guaranteed richness
+        const detail1 = allDetails[0];
+        const detail2 = allDetails[1];
+        text = text.trim().endsWith('.') 
+          ? `${text.slice(0, -1)}, ${detail1}, and ${detail2}.`
+          : `${text} ${detail1.charAt(0).toUpperCase()}${detail1.slice(1)}, and ${detail2}.`;
+        
+        console.log(`🎯 HARD/EXPERT: Added 2 details (${detail1.split(' ').length + detail2.split(' ').length} extra words)`);
+      } else {
+        // Add single detail if only one available
+        const detail = allDetails[0];
+        text = text.trim().endsWith('.') 
+          ? `${text.slice(0, -1)}, and ${detail}.`
+          : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+        
+        console.log(`🎯 HARD/EXPERT: Added 1 detail (${detail.split(' ').length} extra words)`);
+      }
     } else {
-      // Single detail addition
+      // Normal levels: single detail addition
+      const detail = pick(allDetails);
       text = text.trim().endsWith('.') 
         ? `${text.slice(0, -1)}, and ${detail}.`
         : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
     }
   }
   
-  // TESTING MODE: Show all content for validation
+  // Word count validation and minimum enforcement
+  const finalWordCount = text.split(' ').length;
+  const targetWords = isHardOrExpert ? (template.level === 'level3' ? 80 : 100) : 50;
+  
+  // MINIMUM WORD COUNT ENFORCEMENT for Hard/Expert
+  if (isHardOrExpert && finalWordCount < targetWords) {
+    console.log(`⚠️ WORD COUNT TOO LOW: ${finalWordCount} words (target: ${targetWords})`);
+    
+    // Add more content if we have alternatives
+    if (scene.microVariants.alternatives.length > 0) {
+      const alternative = pick(scene.microVariants.alternatives);
+      text = `${text} ${alternative}`;
+      console.log(`🔧 Added alternative text (${alternative.split(' ').length} words)`);
+    }
+  }
+  
+  // TESTING MODE: Show detailed word count analysis
   if (mode === 'testing') {
-    console.log(`✅ Selected Text (${text.split(' ').length} words): ${text.substring(0, 150)}...`);
+    const finalCount = text.split(' ').length;
+    console.log(`✅ Selected Text (${finalCount} words): ${text.substring(0, 150)}...`);
+    if (isHardOrExpert) {
+      const status = finalCount >= targetWords ? '✅ MEETS TARGET' : '❌ BELOW TARGET';
+      console.log(`📊 Word Count Analysis: ${finalCount}/${targetWords} words ${status}`);
+    }
   }
   
   // Process swappable elements and seed data for Grades 6-10

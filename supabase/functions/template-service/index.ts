@@ -86,6 +86,12 @@ serve(async (req) => {
       explore,
       mode
     });
+    
+    // Log Hard/Expert level targets
+    if (effectiveDifficulty === 'hard' || effectiveDifficulty === 'expert') {
+      const targetWords = effectiveDifficulty === 'hard' ? 80 : 100;
+      console.log(`🎯 HARD/EXPERT TARGET: ${targetWords}+ words per page for ${dynamicPageCount} pages`);
+    }
 
     // Difficulty mapping
     const levelMap: Record<string, string> = {
