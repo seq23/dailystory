@@ -117,15 +117,16 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // TESTING MODE: Always use full scene content for complete validation
   let text = scene.text; // Use full scene content (60-120+ words) instead of microVariants summary
   
-  // Enhanced content selection for Hard and Expert levels
-  const isHardOrExpert = template.level === 'level3' || template.level === 'level4';
+  // Enhanced content selection for Hard and Expert levels (FIXED: Level detection)
+  const isHardOrExpert = template.level === 'Level 3' || template.level === 'Level 4';
   
   // AGGRESSIVE content selection for Hard/Expert levels - ALWAYS add content
   let shouldAddDetail = false;
   if (isHardOrExpert) {
     shouldAddDetail = true; // 100% chance for Hard/Expert
   } else {
-    const baseDetailChance = (mode === 'real-user') ? 0.4 : 0;
+    // FIXED: Testing mode gets 100% detail chance, real-user gets 40%
+    const baseDetailChance = (mode === 'testing') ? 1.0 : 0.4;
     shouldAddDetail = Math.random() < baseDetailChance;
   }
   
@@ -162,9 +163,9 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
     }
   }
   
-  // Word count validation and minimum enforcement
+  // Word count validation and minimum enforcement (FIXED: Level detection)
   const finalWordCount = text.split(' ').length;
-  const targetWords = isHardOrExpert ? (template.level === 'level3' ? 80 : 100) : 50;
+  const targetWords = isHardOrExpert ? (template.level === 'Level 3' ? 80 : 100) : 50;
   
   // MINIMUM WORD COUNT ENFORCEMENT for Hard/Expert
   if (isHardOrExpert && finalWordCount < targetWords) {
