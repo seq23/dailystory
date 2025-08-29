@@ -59,6 +59,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 RULES:
 - 1-2 sentences per page, Use "Page X:" markers to separate each page of content
 - 3-6 letter words, 4-8 word sentences (max 12 words)
+- 15-24 words per page
 - Simple present/past tense, subject-verb-object structure
 - Story continues infinitely unless user requests ending
 - Include narrative hooks for continuation
@@ -84,6 +85,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 RULES:
 - Suggest 2-3 sentences per page. Use compound sentences with coordinating conjunctions (and, but, so). Mix simple and compound sentence structures for natural narrative flow. Use "Page X:" markers to separate each page of content
 - 3-7 letter words, 5-12 word sentences (max 15 words)
+- 50-70 words per page
 - Past/present tense, varied sentence structures
 - Story continues infinitely unless user requests ending
 - Include narrative hooks and mild tension
@@ -109,6 +111,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 RULES:
 - Suggest 3-4 sentences per page. Use complex sentences with dependent clauses. Vary sentence beginnings and lengths. Include descriptive language and sophisticated vocabulary for engaging storytelling. Use "Page X:" markers to separate each page of content
 - 4-9 letter words, varied sentence lengths (max 20 words)
+- 80-120 words per page
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
 - Include character development
@@ -134,6 +137,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 RULES:
 - Suggest 4-5 sentences per page. Use sophisticated sentence structures with multiple clauses. Employ literary devices and advanced vocabulary. Focus on nuanced character development and thematic depth. Use "Page X:" markers to separate each page of content
 - Advanced vocabulary, sophisticated structures
+- 120-200 words per page
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
 
@@ -172,7 +176,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Suggest 5-6 sentences per page with foundational complex sentence structures and literary vocabulary. Focus on character development and thematic exploration appropriate for 6th grade readers.
+FORMAT: Suggest 5-6 sentences per page with foundational complex sentence structures and literary vocabulary. Focus on character development and thematic exploration appropriate for 6th grade readers. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -180,7 +184,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 900,
     expectedPages: 12,
-    wordCount: "800-900 words"
+    wordCount: "200-400 words per page"
   },
 
   "7th": {
@@ -200,7 +204,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Suggest 6-7 sentences per page with increasingly sophisticated sentence structures and varied literary techniques. Develop complex themes and character relationships appropriate for 7th grade readers.
+FORMAT: Suggest 6-7 sentences per page with increasingly sophisticated sentence structures and varied literary techniques. Develop complex themes and character relationships appropriate for 7th grade readers. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -208,7 +212,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1100,
     expectedPages: 13,
-    wordCount: "900-1100 words"
+    wordCount: "200-400 words per page"
   },
 
   "8th": {
@@ -228,7 +232,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Suggest 6-8 sentences per page with advanced grammatical structures, literary devices, and nuanced vocabulary. Explore mature themes with intellectual depth appropriate for 8th grade readers.
+FORMAT: Suggest 6-8 sentences per page with advanced grammatical structures, literary devices, and nuanced vocabulary. Explore mature themes with intellectual depth appropriate for 8th grade readers. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -236,7 +240,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1200,
     expectedPages: 14,
-    wordCount: "1000-1200 words"
+    wordCount: "200-400 words per page"
   },
 
   "9th": {
@@ -256,7 +260,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Suggest 7-8 sentences per page with sophisticated prose, complex syntactic structures, and rich literary language. Develop intricate thematic content and psychological depth appropriate for 9th grade readers.
+FORMAT: Suggest 7-8 sentences per page with sophisticated prose, complex syntactic structures, and rich literary language. Develop intricate thematic content and psychological depth appropriate for 9th grade readers. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -264,7 +268,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1300,
     expectedPages: 15,
-    wordCount: "1100-1300 words"
+    wordCount: "200-400 words per page"
   },
 
   "10th": {
@@ -284,7 +288,7 @@ AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) fo
 
 GUARDRAILS: Age-appropriate content for 10th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
-FORMAT: Suggest 8-9 sentences per page with masterful prose, intricate sentence construction, and elevated literary language. Develop complex philosophical themes and profound character depth appropriate for 10th grade readers.
+FORMAT: Suggest 8-9 sentences per page with masterful prose, intricate sentence construction, and elevated literary language. Develop complex philosophical themes and profound character depth appropriate for 10th grade readers. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -292,7 +296,7 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 10th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     maxLength: 1400,
     expectedPages: 16,
-    wordCount: "1200-1400 words"
+    wordCount: "200-400 words per page"
   }
 };
 
