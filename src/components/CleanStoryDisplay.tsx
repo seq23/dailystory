@@ -29,6 +29,7 @@ import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 import { StoryContentLogger } from "@/utils/StoryContentLogger";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
+import { useStoryContentBuffer } from '@/hooks/useStoryContentBuffer';
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
 import { hashText } from "@/utils/tokenize";
 import { defaultAudioConfig } from "@/config/audioConfig";
@@ -133,19 +134,25 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     });
   }, [layout, lowEnd, reason]);
   
-  // Story state
+  // Enhanced story content buffer (prevents flickering)
+  const storyBuffer = useStoryContentBuffer({
+    stabilityDebounceMs: 800,
+    loadingDebounceMs: 150
+  });
+  
+  // Legacy state - keeping during migration
   const [story, setStory] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-
-  // For free users, limit displayed pages to 6 maximum
-  const displayedStory = !isPremium ? story.slice(0, 6) : story;
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
   const [justAdvanced, setJustAdvanced] = useState(false);
   const [storyTitle, setStoryTitle] = useState('');
+  const [isStoryStable, setIsStoryStable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastImageError, setLastImageError] = useState<string | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
+  // For free users, limit displayed pages to 6 maximum
+  const displayedStory = !isPremium ? story.slice(0, 6) : story;
 
 
   useEffect(() => {
@@ -267,7 +274,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Premium live generation state
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
   const [isStoryComplete, setIsStoryComplete] = useState(false);
-  const [isStoryStable, setIsStoryStable] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
   
@@ -1304,10 +1310,14 @@ const initializeStory = async () => {
         storyTitle: `Story for ${effectiveUser.name}`,
         storySource: (window as any).__LAST_STORY_SOURCE__ || 'unknown'
       });
+      
+      // BUFFERED UPDATE: Prevent flickering by updating in single batch
+      console.log('📚 Setting story content via buffer to prevent flickering...');
       setStory(processedPages);
       setStoryTitle(`Story for ${effectiveUser.name}`);
       setIsStoryComplete(true);
       const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      
       StoryContentLogger.logStoryChange('free_complete_story', 'after', processedPages, {
         isComplete: true,
         finalSource: srcFree,
@@ -1367,16 +1377,32 @@ const initializeStory = async () => {
     
     console.log('✅ Story generation completed successfully');
     
-    if (remaining > 0) {
+    // DEBOUNCED STABILITY: Prevent rapid toggling that causes flickering
+    const storyElapsed = Date.now() - loaderStartRef.current;
+    const storyRemaining = Math.max(0, LOADER_MIN_MS - storyElapsed);
+    console.log('✅ initializeStory finished', { 
+      elapsed: storyElapsed, 
+      remaining: storyRemaining, 
+      LOADER_MIN_MS, 
+      storyPagesGenerated: story.length 
+    });
+    
+    if (storyRemaining > 0) {
       setTimeout(() => {
         setIsLoading(false);
-        setIsStoryStable(true);
-        console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
-      }, remaining);
+        // Debounced stability to prevent flickering
+        setTimeout(() => {
+          setIsStoryStable(true);
+          console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+        }, 300);
+      }, storyRemaining);
     } else {
       setIsLoading(false);
-      setIsStoryStable(true);
-      console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+      // Debounced stability to prevent flickering
+      setTimeout(() => {
+        setIsStoryStable(true);
+        console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+      }, 300);
     }
   }
 };
@@ -1624,7 +1650,8 @@ const initializeStory = async () => {
     clearHighlighting();
     
     // Set story as unstable during navigation to prevent image generation conflicts
-    setIsStoryStable(false);
+    // DEBOUNCED: Prevent rapid stability changes that cause flickering
+    setTimeout(() => setIsStoryStable(false), 50);
 
     // Count words for the page we're leaving (once per page)
     if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
@@ -1658,25 +1685,21 @@ const initializeStory = async () => {
         setIsStoryComplete(result.isComplete);
         setCurrentPage(prev => prev + 1);
         
-        // Stabilize story content after generation with delay to prevent flickering
-        setTimeout(() => {
-          setIsStoryStable(true);
-          console.log('📚 Story stabilized after next page generation');
-        }, 500);
       } else {
-        // Re-stabilize on error
-        setIsStoryStable(true);
+        console.log('❌ Failed to generate next page:', result.error);
+        // DEBOUNCED: Re-stabilize on error with delay to prevent flickering
+        setTimeout(() => setIsStoryStable(true), 200);
       }
       setTimeout(() => setJustAdvanced(false), 600);
     } else if (currentPage < displayedStory.length - 1) {
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
-      // Re-stabilize immediately for existing content
-      setTimeout(() => setIsStoryStable(true), 100);
+      // DEBOUNCED: Re-stabilize immediately for existing content
+      setTimeout(() => setIsStoryStable(true), 150);
     } else if (!isPremium && currentPage < 5 && displayedStory.length >= 5) {
       // Free user: allow advancement to page 6 (currentPage 5)
       setCurrentPage(currentPage + 1);
-      setTimeout(() => setIsStoryStable(true), 100);
+      setTimeout(() => setIsStoryStable(true), 150);
     } else {
       // Last page reached
       if (isPremium) {
@@ -2095,7 +2118,8 @@ const handleRestartTimer = () => {
       SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
     }
     
-    setIsStoryStable(false);
+    // DEBOUNCED: Mark story as unstable during generation
+    setTimeout(() => setIsStoryStable(false), 50);
     
     if (isRewrite) {
       setIsGeneratingRewrite(true);
@@ -2243,8 +2267,12 @@ const handleRestartTimer = () => {
     } finally {
       setIsGeneratingNewStory(false);
       setIsGeneratingRewrite(false);
-      setIsStoryStable(true); // CRITICAL FIX: Restore story stability after generation
-      console.log(`✅ [STORY DEBUG ${callId}] Story stability restored after generation`);
+      // DEBOUNCED: Restore story stability after generation
+      setTimeout(() => {
+        setIsStoryStable(true);
+        console.log(`✅ [STORY DEBUG ${callId}] Story stability restored after generation`);
+      }, 400);
+    }
     }
   };
   // Open special request dialog for premium users, or generate immediately for free
@@ -2366,6 +2394,8 @@ const handleRestartTimer = () => {
       setIsGeneratingEnding(false);
     }
   };
+
+export default CleanStoryDisplay;
   // Manual End Session (Premium): 5s celebration with music then stats
   const handleManualEndSession = async () => {
     setShowManualCelebration(true);
