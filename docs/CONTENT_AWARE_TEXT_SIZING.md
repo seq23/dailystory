@@ -1,246 +1,143 @@
 # Content-Aware Text Sizing System Documentation
 
 ## Overview
-The Content-Aware Text Sizing System dynamically adjusts text presentation based on content length and viewport dimensions, optimizing readability across all story types and devices.
+The Content-Aware Text Sizing System dynamically adjusts text presentation based on content length, viewport dimensions, and image presence to optimize readability and space utilization.
 
 ## Core Components
 
 ### 1. useContentAwareTextSize Hook
 ```typescript
-const contentAwareTextConfig = useContentAwareTextSize(currentStoryText || "", isMobile);
+const { fontSize, lineHeight, letterSpacing } = useContentAwareTextSize(text, isMobile, hasImage);
 ```
 
-**Algorithm:**
-- **Word Count Analysis**: Counts words in current page content
-- **Viewport Detection**: Mobile vs desktop optimization
-- **Dynamic Scaling**: Responsive font sizing based on content density
-- **Responsive Calculations**: Optimal text density for reading experience
+**Features:**
+- **Word Count Analysis**: Analyzes text content to determine optimal sizing
+- **Mobile Optimization**: Responsive adaptations for mobile viewports  
+- **Image-Aware Scaling**: Increases text size by 20-30% when images are present
+- **Smart Typography**: Adjusts line height, letter spacing, and paragraph spacing
 
-**Return Configuration:**
-```typescript
-interface ContentAwareTextConfig {
-  fontSize: string;        // CSS font-size value
-  lineHeight: string;      // CSS line-height value
-  letterSpacing: string;   // CSS letter-spacing value
-  paragraphSpacing: string;// CSS margin-bottom for paragraphs
-  maxWordsPerLine: number; // Optimal words per line for readability
-}
-```
+**Parameters:**
+- `text`: The story content to analyze
+- `isMobile`: Boolean indicating mobile viewport
+- `hasImage`: Boolean indicating if an image is present on the current page
 
-### 2. Content-Aware Sizing Algorithm
+**Returned Configuration:**
+- `fontSize`: Responsive font size using clamp() for fluid scaling
+- `lineHeight`: Line height optimized for word count and image presence
+- `letterSpacing`: Character spacing for optimal readability
+- `paragraphSpacing`: Spacing between paragraphs
+- `maxWordsPerLine`: Optimal words per line for reading flow
 
-#### Word Count Thresholds
-```typescript
-// Dynamic font sizing based on word count
-if (wordCount <= 6) {
-  // Very short content - large, prominent text
-  fontSize = isMobile ? "1.75rem" : "2rem";
-  lineHeight = "1.3";
-} else if (wordCount <= 15) {
-  // Short content - medium-large text
-  fontSize = isMobile ? "1.5rem" : "1.75rem";
-  lineHeight = "1.4";
-} else if (wordCount <= 30) {
-  // Medium content - balanced sizing
-  fontSize = isMobile ? "1.25rem" : "1.5rem";
-  lineHeight = "1.5";
-} else if (wordCount <= 60) {
-  // Longer content - comfortable reading size
-  fontSize = isMobile ? "1.125rem" : "1.25rem";
-  lineHeight = "1.6";
-} else {
-  // Very long content - compact but readable
-  fontSize = isMobile ? "1rem" : "1.125rem";
-  lineHeight = "1.7";
-}
-```
+### 2. Image-Aware Text Scaling Algorithm
 
-#### Responsive Viewport Adaptations
-- **Mobile Optimization**: Larger base font sizes for touch devices
-- **Desktop Enhancement**: Refined typography with more spacing
-- **Tablet Considerations**: Balanced approach between mobile and desktop
+**Short Content (≤15 words):**
+- Without image: `clamp(1.5rem, 3vw, 2.5rem)` (desktop)
+- With image: `clamp(1.875rem, 3.75vw, 3.125rem)` (desktop)
+- Line height increases from 1.6 to 1.7 with images
+
+**Medium Content (16-50 words):**
+- Without image: `clamp(1.25rem, 2.5vw, 1.75rem)` (desktop)
+- With image: `clamp(1.5625rem, 3.125vw, 2.1875rem)` (desktop)
+- Adjusts max words per line from 12 to 10 with images
+
+**Long Content (51-100 words):**
+- Text scaling maintains readability while accommodating images
+- Container width expands when images are present
+
+**Very Long Content (100+ words):**
+- Optimized for density while ensuring larger text with images
+- Full-width containers when images are present
 
 ### 3. useContentAwareContainer Hook
 ```typescript
-const contentAwareContainerConfig = useContentAwareContainer(wordCount);
+const containerClasses = useContentAwareContainer(wordCount, hasImage);
 ```
 
-**Container Adaptations:**
-- **Short Content**: Wider containers for impact
-- **Medium Content**: Balanced container width
-- **Long Content**: Narrower containers for better reading flow
-- **Responsive Breakpoints**: Adapts to screen size changes
+**Image-Aware Container Sizing:**
+- Expands container width when images are present for better text distribution
+- Short content: `max-w-4xl` → `max-w-5xl` with images
+- Long content: `max-w-7xl` → `w-full` with images
 
-**CSS Class Generation:**
+## Integration with Story Display System
+
+### 4. CleanStoryDisplay Integration
 ```typescript
-// Returns optimized container classes
-return cn(
-  "transition-all duration-300",
-  wordCount <= 20 ? "max-w-2xl" : "max-w-4xl",
-  wordCount <= 10 ? "px-8" : "px-6"
+// Detect current page image presence
+const currentImage = pageImages[currentPage];
+const hasCurrentImage = !!currentImage;
+
+// Apply image-aware text sizing
+const contentAwareTextConfig = useContentAwareTextSize(
+  currentStoryText || "", 
+  isMobile, 
+  hasCurrentImage
+);
+
+const contentAwareContainerConfig = useContentAwareContainer(
+  wordCount, 
+  hasCurrentImage
 );
 ```
 
-## CSS Integration
+**Dynamic Behavior:**
+- Text size automatically increases when images are present
+- Container width expands to accommodate larger text with images
+- Smooth transitions between pages with different image states
+- Maintains optimal reading experience across all scenarios
 
-### Content-Aware Styling Override
-```css
-.story-content--content-aware {
-  /* High specificity for inline style priority */
-  font-size: var(--content-aware-font-size) !important;
-  line-height: var(--content-aware-line-height) !important;
-  letter-spacing: var(--content-aware-letter-spacing) !important;
-}
+### 5. Story Stability & Auto-Generation System
 
-.story-content--content-aware p {
-  margin-bottom: var(--content-aware-paragraph-spacing) !important;
-}
-```
+**Fixed Issues:**
+- ✅ **Story Stability**: Removed `setIsStoryStable(false)` during navigation
+- ✅ **Auto-Generation**: Images now generate automatically on all pages when story is stable
+- ✅ **Generate Button**: Removed manual "Generate illustration" button
+- ✅ **Desktop Width**: Removed `max-w-[98vw]` constraint for full-width text
 
-**CSS Custom Properties:**
-- Dynamic CSS variables set based on content analysis
-- Smooth transitions between different sizing configurations
-- Override system ensures content-aware sizing takes precedence
-
-### Transition Animations
-```css
-.story-content--content-aware * {
-  transition: font-size 0.3s ease, line-height 0.3s ease, letter-spacing 0.3s ease;
-}
-```
-
-**Smooth Transitions:**
-- 300ms easing between size changes
-- Prevents jarring font size jumps
-- Professional, polished appearance
-
-## Implementation in CleanStoryDisplay
-
-### Real-Time Content Analysis
+**Image Generation Flow:**
 ```typescript
-// Get content-aware text configuration based on actual page content
-const contentAwareTextConfig = useContentAwareTextSize(currentStoryText || "", isMobile);
-const wordCount = (currentStoryText || "").trim().split(/\s+/).filter(word => word.length > 0).length;
-const contentAwareContainerConfig = useContentAwareContainer(wordCount);
-```
-
-### Dynamic Style Application
-```typescript
-// Apply content-aware sizing to story text
-<div 
-  className={cn("story-content--content-aware", contentAwareContainerConfig)}
-  style={{
-    '--content-aware-font-size': contentAwareTextConfig.fontSize,
-    '--content-aware-line-height': contentAwareTextConfig.lineHeight,
-    '--content-aware-letter-spacing': contentAwareTextConfig.letterSpacing,
-    '--content-aware-paragraph-spacing': contentAwareTextConfig.paragraphSpacing
-  }}
->
-  {currentStoryText}
-</div>
+// Story remains stable during navigation
+if (isStoryStable && story.length > 0) {
+  // Auto-trigger image generation for all pages
+  window.dispatchEvent(new CustomEvent('story:stabilized'));
+}
 ```
 
 ## Reading Experience Optimization
 
-### 1. Short Content Enhancement (≤6 words)
-- **Large, Impact Text**: 2rem desktop, 1.75rem mobile
-- **Tight Line Height**: 1.3 for visual impact
-- **Wide Containers**: Maximum visual presence
-- **Perfect for**: Simple sentences, chapter titles, dramatic moments
+### Mobile Devices
+- Responsive font scaling with image awareness
+- Touch-optimized spacing and line heights
+- Optimal container widths for thumb-friendly reading
 
-### 2. Medium Content Balance (7-30 words)
-- **Comfortable Reading**: 1.5-1.75rem range
-- **Balanced Spacing**: 1.4-1.5 line height
-- **Optimal Flow**: Natural reading rhythm
-- **Perfect for**: Most story content, dialogue, descriptions
+### Desktop Devices  
+- Full-width text utilization when no width constraints
+- Larger text scaling when images are present (up to 30% increase)
+- Split-screen layout with optimized text column usage
 
-### 3. Long Content Optimization (60+ words)
-- **Readable Density**: 1rem-1.125rem font size
-- **Generous Spacing**: 1.7 line height for comprehension
-- **Narrow Containers**: Optimal line length for reading
-- **Perfect for**: Detailed descriptions, complex narratives
+### Image-Text Coordination
+- **Without Images**: Text uses full available width with standard sizing
+- **With Images**: Text scales up 20-30% and uses expanded container width
+- **Transitions**: Smooth scaling when navigating between pages with different image states
 
-## Responsive Behavior
+## Performance Optimizations
 
-### Mobile Optimizations
-- **Touch-Friendly Sizing**: Larger base font sizes
-- **Finger-Friendly Spacing**: Generous line heights
-- **Portrait Orientation**: Optimized for vertical reading
-- **Accessibility**: Meets mobile accessibility guidelines
-
-### Desktop Enhancements
-- **Refined Typography**: Precise font sizing and spacing
-- **Wider Layouts**: Takes advantage of screen real estate
-- **High DPI Support**: Crisp text rendering on high-resolution displays
-- **Reading Comfort**: Optimized for extended reading sessions
-
-## Integration with Other Systems
-
-### 1. Anti-Flicker Coordination
-- **Stable Rendering**: Text sizing applied after story stabilization
-- **Smooth Transitions**: Coordinated with content loading
-- **No Layout Shifts**: Content-aware sizing prevents jumps
-
-### 2. Universal Difficulty System
-- **Page-Specific Application**: Text sizing updates only when content changes
-- **Difficulty Independence**: Sizing based on content, not difficulty level
-- **Consistent Experience**: Same sizing algorithm across all difficulty levels
-
-### 3. Template vs AI Content
-- **Universal Application**: Works with both template and AI-generated content
-- **Content Agnostic**: Analyzes actual text regardless of source
-- **Consistent Presentation**: Uniform reading experience across content types
-
-## Performance Characteristics
-
-### Efficient Calculations
-- **Word Count Caching**: Avoids repeated calculations
-- **Viewport Detection**: Cached mobile/desktop state
-- **CSS Variable Updates**: Minimal DOM manipulation
-- **Smooth Transitions**: GPU-accelerated CSS animations
-
-### Memory Optimization
-- **Lightweight Algorithm**: Simple word counting and thresholding
-- **No Complex Dependencies**: Pure calculation-based approach
-- **Efficient Re-renders**: Only updates when content changes
-
-## Debug and Monitoring
-
-### Console Logging
-```typescript
-console.log('📖 Content-Aware Text Sizing:', {
-  wordCount,
-  fontSize: contentAwareTextConfig.fontSize,
-  isMobile,
-  containerConfig: contentAwareContainerConfig
-});
-```
-
-### Visual Debugging
-- Shows content analysis results
-- Displays applied font sizes and spacing
-- Container adaptation logging
+- **Memoized Calculations**: All sizing calculations are memoized to prevent unnecessary re-renders
+- **Efficient Re-renders**: Only recalculates when text content, viewport, or image presence changes
+- **CSS Clamp**: Uses modern CSS clamp() for fluid, performant responsive scaling
+- **Container Queries**: Leverages container-based sizing for optimal layout adaptation
 
 ## Benefits
 
-### 1. Enhanced Readability
-- **Optimal Font Sizes**: Perfect sizing for content length
-- **Improved Comprehension**: Better text density for different content types
-- **Reduced Eye Strain**: Appropriate sizing reduces reading fatigue
+### User Experience
+- **Consistent Readability**: Text always fills available space optimally
+- **Image-Text Balance**: Larger text compensates for reduced reading area when images are present
+- **Responsive Design**: Seamless experience across all device sizes
+- **Automatic Adaptation**: No manual adjustments needed - system responds to content and layout
 
-### 2. Professional Presentation
-- **Consistent Typography**: Uniform approach across all content
-- **Polished Appearance**: Professional, book-like presentation
-- **Responsive Design**: Adapts beautifully to all devices
+### Developer Experience  
+- **Simple Integration**: Single hook provides complete text sizing configuration
+- **Flexible Configuration**: Easy to customize scaling factors and breakpoints
+- **Type Safety**: Full TypeScript support with clear interfaces
+- **Performance Focused**: Memoized and optimized for minimal re-renders
 
-### 3. User Experience
-- **Automatic Optimization**: No user intervention required
-- **Smooth Transitions**: Seamless size changes
-- **Universal Benefits**: Enhances reading for all users
-
-### 4. Technical Excellence
-- **Performance Optimized**: Efficient, lightweight implementation
-- **Maintainable Code**: Simple, clear algorithm
-- **Extensible Design**: Easy to enhance and customize
-
-This content-aware text sizing system ensures optimal reading experience across all story types, devices, and user scenarios while maintaining professional presentation and technical excellence.
+This comprehensive system ensures optimal text presentation regardless of content length, device type, or image presence, providing a superior reading experience across all scenarios.

@@ -1670,9 +1670,8 @@ const initializeStory = async () => {
     setIsAudioPlaying(false);
     clearHighlighting();
     
-    // Set story as unstable during navigation to prevent image generation conflicts
-    // DEBOUNCED: Prevent rapid stability changes that cause flickering
-    setTimeout(() => setIsStoryStable(false), 50);
+    // Story stability maintained during navigation - no need to set unstable
+    // Images can continue to generate on upcoming pages
 
     // Count words for the page we're leaving (once per page)
     if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
@@ -2580,13 +2579,14 @@ const handleRestartTimer = () => {
   };
 
 
-  // Get content-aware text configuration based on actual page content
-  const contentAwareTextConfig = useContentAwareTextSize(currentStoryText || "", isMobile);
+  // Get content-aware text configuration based on actual page content and image presence
+  const currentImage = pageImages[currentPage];
+  const hasCurrentImage = !!currentImage;
+  const contentAwareTextConfig = useContentAwareTextSize(currentStoryText || "", isMobile, hasCurrentImage);
   const wordCount = (currentStoryText || "").trim().split(/\s+/).filter(word => word.length > 0).length;
-  const contentAwareContainerConfig = useContentAwareContainer(wordCount);
+  const contentAwareContainerConfig = useContentAwareContainer(wordCount, hasCurrentImage);
 
   const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
-  const currentImage = pageImages[currentPage];
   const isShortPage = countWords(currentStoryText || "") <= 8;
   const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
 
@@ -2717,7 +2717,7 @@ const handleRestartTimer = () => {
 
         {/* Main Content - Full Width Layout */}
         <main className="w-full px-2 md:px-4 lg:px-6 xl:px-8 flex-1 min-h-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-8">
-        <div className="w-full max-w-[98vw] mx-auto">
+        <div className="w-full mx-auto">
           <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border border-white/70 mobile-text-fixed flex flex-col h-full min-h-0 overflow-hidden">
             <CardContent className="p-2 lg:p-8 h-full flex flex-col min-h-0">
               {/* Progress Bar + Centered Navigation */}
@@ -2968,21 +2968,23 @@ const handleRestartTimer = () => {
                               <p className="text-sm text-muted-foreground">Creating illustration...</p>
                             </div>
                           </div>
+                        ) : isStoryStable ? (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center">
+                              <div className="w-8 h-8 animate-pulse text-primary mx-auto mb-2">
+                                <Sparkles className="w-8 h-8" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">Illustration incoming...</p>
+                            </div>
+                          </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Button
-                              onClick={generateImageForCurrentPage}
-                              disabled={isGeneratingImage}
-                              size="lg"
-                              aria-label="Generate illustration"
-                            >
-                              {isGeneratingImage ? (
-                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                              ) : (
-                                <Wand className="w-4 h-4 mr-2" />
-                              )}
-                              Generate illustration
-                            </Button>
+                            <div className="text-center">
+                              <div className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2">
+                                <BookOpen className="w-8 h-8" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">Story loading...</p>
+                            </div>
                           </div>
                         )}
                       </div>
