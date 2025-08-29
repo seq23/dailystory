@@ -5,11 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle } from 'lucide-react';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
+import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
 interface TestResult {
@@ -28,6 +30,11 @@ interface TestResult {
   fallbackReason?: string;
   generationPath?: string[];
   emergencyContentUsed?: boolean;
+  // Enhanced validation fields
+  placeholderValidation?: any;
+  contentIssues?: string[];
+  tokenValidation?: any;
+  hasEmptyContent?: boolean;
 }
 
 interface ServiceComparison {
@@ -271,6 +278,30 @@ export function StoryPromptTester() {
       result.responseTime = Date.now() - startTime;
       result.success = true;
       result.withinTokenLimits = analyzeTokenLimits(result.wordCount, level);
+      
+      // Enhanced validation - check for placeholder and content issues
+      if (result.fullContent && result.fullContent.length > 0) {
+        result.placeholderValidation = validatePlaceholders(result.fullContent);
+        result.contentIssues = checkForPlaceholderIssues(result.fullContent);
+        result.tokenValidation = validatePageTokenDistribution(
+          result.fullContent, 
+          level as DifficultyLevel, 
+          result.source === 'ai' ? 'ai' : 'template'
+        );
+        result.hasEmptyContent = result.wordCount === 0 || result.fullContent.every(page => page.trim().length === 0);
+        
+        // If we have empty content, mark as failed
+        if (result.hasEmptyContent) {
+          result.success = false;
+          result.error = 'Content generation resulted in empty pages - likely placeholder resolution failure';
+          result.generationPath.push('❌ Content validation failed: Empty pages detected');
+        }
+        
+        // Add placeholder validation to generation path
+        if (!result.placeholderValidation.isValid) {
+          result.generationPath.push(`⚠️ Placeholder issues: ${result.placeholderValidation.unresolvedPlaceholders.join(', ')}`);
+        }
+      }
       
       // Determine fallback reason for non-AI sources
       if (result.source === 'fallback') {
@@ -547,8 +578,89 @@ export function StoryPromptTester() {
           </div>
         )}
 
+        {/* Enhanced Content Validation Results */}
+        {result.success && result.fullContent && result.fullContent.length > 0 && (result.placeholderValidation || result.tokenValidation) && (
+          <div className="mt-4 space-y-3">
+            {/* Placeholder Validation */}
+            {result.placeholderValidation && (
+              <div className={`p-3 rounded-lg border ${result.placeholderValidation.isValid ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {result.placeholderValidation.isValid ? (
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                  )}
+                  <span className="text-sm font-medium">Placeholder Resolution</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {getPlaceholderValidationMessage(result.placeholderValidation)}
+                </p>
+                {result.contentIssues && result.contentIssues.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs font-medium text-yellow-800">Content Issues:</p>
+                    {result.contentIssues.map((issue, index) => (
+                      <p key={index} className="text-xs text-muted-foreground">• {issue}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Token Validation */}
+            {result.tokenValidation && (
+              <div className={`p-3 rounded-lg border ${result.tokenValidation.isValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {result.tokenValidation.isValid ? (
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-600" />
+                  )}
+                  <span className="text-sm font-medium">Token Validation</span>
+                </div>
+                <div className="flex items-center gap-4 text-sm">
+                  <span>
+                    {result.tokenValidation.actualTokens} / {result.tokenValidation.maxAllowed} tokens
+                  </span>
+                  {result.tokenValidation.templateMode && (
+                    <Badge variant="outline" className="text-xs">Template Mode</Badge>
+                  )}
+                </div>
+                {result.tokenValidation.warnings && result.tokenValidation.warnings.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {result.tokenValidation.warnings.map((warning, index) => (
+                      <p key={index} className="text-xs text-muted-foreground">• {warning}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Empty Content Alert */}
+        {result.hasEmptyContent && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              <span className="font-medium text-red-800">Empty Content Detected</span>
+            </div>
+            <p className="text-sm text-red-700 mb-3">
+              This usually indicates placeholder resolution failure. The template returned {result.pages} pages but with 0 words total.
+            </p>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-red-800">Possible causes:</p>
+              <ul className="text-xs text-red-700 space-y-1 ml-4">
+                <li>• Missing userInfo data (name, favoriteColor, etc.)</li>
+                <li>• Placeholder cleanup function removing all content</li>
+                <li>• Template placeholders not matching resolver expectations</li>
+                <li>• Fallback values not being applied properly</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
         {/* Full Content Display */}
-        {result.fullContent && result.fullContent.length > 0 && (
+        {result.fullContent && result.fullContent.length > 0 && !result.hasEmptyContent && (
           <Collapsible open={isContentExpanded} onOpenChange={toggleContentExpanded} className="mt-4">
             <CollapsibleTrigger asChild>
               <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
