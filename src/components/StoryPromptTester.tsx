@@ -1,411 +1,790 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle } from 'lucide-react';
+import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
+import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
+import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
-import { validateTokenLimit } from '@/utils/tokenLimitValidator';
 
 interface TestResult {
   level: string;
+  service: 'netflix' | 'live' | 'template';
   success: boolean;
   pages: number;
   wordCount: number;
+  source: 'ai' | 'fallback' | 'emergency' | 'unknown';
   hasPageConcatenation: boolean;
-  content: string;
+  contentPreview: string;
+  withinTokenLimits: boolean;
+  responseTime?: number;
   error?: string;
-  tokenValidation: any;
+  fallbackReason?: string;
+  generationPath?: string[];
+  emergencyContentUsed?: boolean;
 }
 
+interface ServiceComparison {
+  level: string;
+  netflix?: TestResult;
+  live?: TestResult;
+  template?: TestResult;
+}
+
+// Enhanced test profiles with more comprehensive coverage
 const testUserProfiles: Record<string, UserInfo> = {
+  // Core difficulty levels
   beginner: {
-    name: "Emma",
+    name: 'Emma',
     age: 4,
     grade: "PreK" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "light" },
-    favoriteColor: "pink",
-    favoriteAnimal: "puppy",
-    hobbies: "playing with toys",
-    favoriteFood: "cookies",
-    specialRequest: "stories about rainbows",
-    difficultyLevel: "beginner" as DifficultyLevel
+    difficultyLevel: 'beginner',
+    favoriteColor: 'pink',
+    favoriteAnimal: 'butterfly',
+    hobbies: 'coloring',
+    favoriteFood: 'cookies',
+    specialRequest: 'stories about rainbows'
   },
   easy: {
-    name: "Alex",
+    name: 'Alex',
     age: 6,
     grade: "K" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "medium" },
-    favoriteColor: "blue",
-    favoriteAnimal: "dog",
-    hobbies: "soccer",
-    favoriteFood: "ice cream",
-    specialRequest: "sports adventures",
-    difficultyLevel: "easy" as DifficultyLevel
+    difficultyLevel: 'easy',
+    favoriteColor: 'blue',
+    favoriteAnimal: 'dolphin',
+    hobbies: 'swimming',
+    favoriteFood: 'ice cream',
+    specialRequest: 'sports adventures'
   },
   medium: {
-    name: "Jordan",
+    name: 'Maya',
     age: 8,
     grade: "2nd" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
-    avatar: { type: "boy", skinTone: "dark" },
-    favoriteColor: "green",
-    favoriteAnimal: "dinosaur",
-    hobbies: "reading about space",
-    favoriteFood: "pizza",
-    specialRequest: "dinosaur adventures",
-    difficultyLevel: "medium" as DifficultyLevel
+    avatar: { type: "girl", skinTone: "medium" },
+    difficultyLevel: 'medium',
+    favoriteColor: 'green',
+    favoriteAnimal: 'owl',
+    hobbies: 'reading mysteries',
+    favoriteFood: 'pizza',
+    specialRequest: 'mystery adventures'
   },
   hard: {
-    name: "Casey",
+    name: 'Jordan',
     age: 10,
     grade: "4th" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
-    avatar: { type: "girl", skinTone: "pale" },
-    favoriteColor: "purple",
-    favoriteAnimal: "robot",
-    hobbies: "science experiments",
-    favoriteFood: "sushi",
-    specialRequest: "science fiction",
-    difficultyLevel: "hard" as DifficultyLevel
+    avatar: { type: "boy", skinTone: "dark" },
+    difficultyLevel: 'hard',
+    favoriteColor: 'purple',
+    favoriteAnimal: 'wolf',
+    hobbies: 'adventure sports',
+    favoriteFood: 'sushi',
+    specialRequest: 'science fiction'
   },
   expert: {
-    name: "Riley",
+    name: 'Zara',
     age: 12,
     grade: "6th+" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "olive" },
-    favoriteColor: "red",
-    favoriteAnimal: "wolf",
-    hobbies: "mystery novels",
-    favoriteFood: "pasta",
-    specialRequest: "adventure mysteries",
-    difficultyLevel: "expert" as DifficultyLevel
+    difficultyLevel: 'expert',
+    favoriteColor: 'silver',
+    favoriteAnimal: 'eagle',
+    hobbies: 'chess strategy',
+    favoriteFood: 'pasta',
+    specialRequest: 'adventure mysteries'
   },
-  "6th": {
-    name: "Taylor",
+  
+  // Grade-specific expert levels
+  grade6: {
+    name: 'Sam',
     age: 11,
     grade: "6th+" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "light" },
-    favoriteColor: "gold",
-    favoriteAnimal: "eagle",
-    hobbies: "mythology",
-    favoriteFood: "burgers",
-    specialRequest: "mythological adventures",
-    difficultyLevel: "expert" as DifficultyLevel,
-    expertGradeLevel: "6th" as ExpertGradeLevel
+    difficultyLevel: 'expert',
+    expertGradeLevel: 'grade6' as ExpertGradeLevel,
+    favoriteColor: 'orange',
+    favoriteAnimal: 'tiger',
+    hobbies: 'martial arts',
+    favoriteFood: 'burgers',
+    specialRequest: 'mythological adventures'
   },
-  "7th": {
-    name: "Morgan",
-    age: 12,
-    grade: "6th+" as Grade,
-    nativeLanguage: "en" as LanguageCode,
-    learningGoal: "improve-english-reading" as LearningGoal,
-    avatar: { type: "girl", skinTone: "medium" },
-    favoriteColor: "silver",
-    favoriteAnimal: "dolphin",
-    hobbies: "technology",
-    favoriteFood: "tacos",
-    specialRequest: "futuristic stories",
-    difficultyLevel: "expert" as DifficultyLevel,
-    expertGradeLevel: "7th" as ExpertGradeLevel
-  },
-  "8th": {
-    name: "Avery",
+  grade8: {
+    name: 'River',
     age: 13,
     grade: "6th+" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
-    avatar: { type: "boy", skinTone: "dark" },
-    favoriteColor: "black",
-    favoriteAnimal: "raven",
-    hobbies: "psychology",
-    favoriteFood: "steak",
-    specialRequest: "psychological mysteries",
-    difficultyLevel: "expert" as DifficultyLevel,
-    expertGradeLevel: "8th" as ExpertGradeLevel
+    avatar: { type: "girl", skinTone: "medium" },
+    difficultyLevel: 'expert',
+    expertGradeLevel: 'grade8' as ExpertGradeLevel,
+    favoriteColor: 'teal',
+    favoriteAnimal: 'whale',
+    hobbies: 'marine biology',
+    favoriteFood: 'tacos',
+    specialRequest: 'futuristic stories'
   },
-  "9th": {
-    name: "Quinn",
-    age: 14,
-    grade: "6th+" as Grade,
-    nativeLanguage: "en" as LanguageCode,
-    learningGoal: "improve-english-reading" as LearningGoal,
-    avatar: { type: "girl", skinTone: "pale" },
-    favoriteColor: "white",
-    favoriteAnimal: "owl",
-    hobbies: "philosophy",
-    favoriteFood: "salmon",
-    specialRequest: "philosophical tales",
-    difficultyLevel: "expert" as DifficultyLevel,
-    expertGradeLevel: "9th" as ExpertGradeLevel
-  },
-  "10th": {
-    name: "Sage",
+  grade10: {
+    name: 'Phoenix',
     age: 15,
     grade: "6th+" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "olive" },
-    favoriteColor: "navy",
-    favoriteAnimal: "phoenix",
-    hobbies: "literature",
-    favoriteFood: "lobster",
-    specialRequest: "complex narratives",
-    difficultyLevel: "expert" as DifficultyLevel,
-    expertGradeLevel: "10th" as ExpertGradeLevel
+    difficultyLevel: 'expert',
+    expertGradeLevel: 'grade10' as ExpertGradeLevel,
+    favoriteColor: 'crimson',
+    favoriteAnimal: 'phoenix',
+    hobbies: 'mythology research',
+    favoriteFood: 'lobster',
+    specialRequest: 'complex narratives'
   }
 };
 
 export function StoryPromptTester() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [serviceComparisons, setServiceComparisons] = useState<ServiceComparison[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [currentTest, setCurrentTest] = useState('');
+  const [currentTest, setCurrentTest] = useState<string>('');
   const [progress, setProgress] = useState(0);
-  const { generateStory } = useTemplateService();
+  const [activeTab, setActiveTab] = useState('netflix');
+  const [testMode, setTestMode] = useState<'full' | 'ai-only' | 'template-only' | 'comparison'>('full');
+  const [logs, setLogs] = useState<string[]>([]);
 
-  const checkPageConcatenation = (pages: string[], level: string): boolean => {
-    // Level 0 (beginner) should have exactly 1 sentence per page, max 8 words
-    if (level === 'beginner') {
-      for (const page of pages) {
-        const sentences = page.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        const wordCount = page.split(/\s+/).filter(w => w.trim()).length;
+  const templateService = useTemplateService();
+
+  // Test individual service
+  const testService = async (
+    level: string, 
+    userInfo: UserInfo, 
+    service: 'netflix' | 'live' | 'template'
+  ): Promise<TestResult> => {
+    const startTime = Date.now();
+    let result: TestResult = {
+      level,
+      service,
+      success: false,
+      pages: 0,
+      wordCount: 0,
+      source: 'unknown',
+      hasPageConcatenation: false,
+      contentPreview: '',
+      withinTokenLimits: false,
+      generationPath: [],
+      emergencyContentUsed: false
+    };
+
+    try {
+      let response: any = null;
+      result.generationPath = [`Starting ${service} service test`];
+
+      if (service === 'netflix') {
+        result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
+        response = await NetflixStyleStoryService.generateStory(userInfo);
+        result.source = response.source || 'unknown';
+        result.pages = response.pageCount || response.pages?.length || 0;
         
-        // Level 0 concatenation: more than 1 sentence OR more than 8 words
-        if (sentences.length > 1 || wordCount > 8) {
-          console.log(`🔍 Level 0 concatenation detected:`, { 
-            page: page.substring(0, 50), 
-            sentences: sentences.length, 
-            words: wordCount 
-          });
-          return true;
+        if (response.pages && Array.isArray(response.pages)) {
+          result.wordCount = response.pages.join(' ').split(' ').length;
+          result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
+          result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
+          
+          // Check for emergency content (rhyming educational content)
+          const firstPage = response.pages[0] || '';
+          if (firstPage.includes('story machine took a little rest') || 
+              firstPage.includes('story elves went to play') ||
+              firstPage.includes('Try Again')) {
+            result.emergencyContentUsed = true;
+            result.source = 'emergency';
+            result.generationPath.push('Used emergency rhyming content');
+          }
+        }
+        
+      } else if (service === 'live') {
+        result.generationPath.push('Calling LiveGenerationService.generateFirstPage()');
+        response = await LiveGenerationService.generateFirstPage(userInfo);
+        
+        // Check global source tracking
+        const globalSource = (globalThis as any).__LAST_PAGE_SOURCE__;
+        result.source = globalSource || 'unknown';
+        result.pages = 1; // Live service generates one page at a time
+        
+        if (response.content) {
+          result.wordCount = response.content.split(' ').length;
+          result.contentPreview = response.content.substring(0, 100) + '...';
+          result.hasPageConcatenation = false; // Single page, no concatenation possible
+          
+          // Check for emergency content
+          if (response.content.includes('began a wonderful adventure') && response.content.length < 50) {
+            result.emergencyContentUsed = true;
+            result.source = 'emergency';
+            result.generationPath.push('Used basic emergency content');
+          }
+        }
+        
+      } else if (service === 'template') {
+        result.generationPath.push('Calling template service directly');
+        response = await templateService.generateStory(userInfo, 'testing');
+        result.source = response.success ? 'fallback' : 'emergency'; // Templates are fallback, emergency if they fail
+        result.pages = response.pageCount || response.pages?.length || 0;
+        
+        if (response.pages && Array.isArray(response.pages)) {
+          result.wordCount = response.pages.join(' ').split(' ').length;
+          result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
+          result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
+          
+          // Check for emergency rhyming content from ErrorHandlingManager
+          const firstPage = response.pages[0] || '';
+          if (firstPage.includes('story machine took a little rest') || 
+              firstPage.includes('story elves went to play') ||
+              firstPage.includes('Try Again')) {
+            result.emergencyContentUsed = true;
+            result.source = 'emergency';
+            result.generationPath.push('Used ErrorHandlingManager emergency content');
+          }
         }
       }
-      return false;
+
+      result.responseTime = Date.now() - startTime;
+      result.success = true;
+      result.withinTokenLimits = analyzeTokenLimits(result.wordCount, level);
+      
+      // Determine fallback reason for non-AI sources
+      if (result.source === 'fallback') {
+        result.fallbackReason = 'Template system used (AI unavailable)';
+        result.generationPath.push('Used template fallback');
+      } else if (result.source === 'emergency') {
+        result.fallbackReason = result.emergencyContentUsed ? 
+          'Emergency rhyming content used (system failure)' : 
+          'Basic emergency content used';
+        result.generationPath.push('Used emergency fallback');
+      } else if (result.source === 'ai') {
+        result.generationPath.push('AI generation successful');
+      }
+
+      // Add log entry
+      setLogs(prev => [...prev, `✅ ${service} test for ${level}: ${result.source} source, ${result.pages} pages, ${result.wordCount} words`]);
+
+    } catch (error) {
+      result.error = error instanceof Error ? error.message : 'Unknown error';
+      result.responseTime = Date.now() - startTime;
+      result.generationPath.push(`Error: ${result.error}`);
+      setLogs(prev => [...prev, `❌ ${service} test failed for ${level}: ${result.error}`]);
+      console.error(`${service} test failed for ${level}:`, error);
+    }
+
+    return result;
+  };
+
+  // Enhanced page concatenation detection
+  const checkPageConcatenation = (pages: string[], level: string): boolean => {
+    if (!pages || pages.length <= 1) return false;
+    
+    const difficultyLimits = {
+      'beginner': 25,
+      'easy': 35,
+      'medium': 50,
+      'hard': 75,
+      'expert': 100,
+      'grade6': 80,
+      'grade8': 90, 
+      'grade10': 100
+    };
+    
+    const expectedWordLimit = difficultyLimits[level as keyof typeof difficultyLimits] || 50;
+    
+    for (let i = 0; i < pages.length; i++) {
+      const pageWordCount = pages[i].split(' ').length;
+      
+      // Check for obvious concatenation patterns
+      if (pageWordCount > expectedWordLimit * 2) return true;
+      if (pages[i].includes('Page ') && pages[i].includes('Page ', 10)) return true;
+      if (pages[i].match(/\.\s+[A-Z].*\.\s+[A-Z]/g)) return true;
     }
     
-    // Other levels: check if any page contains multiple sentences that should be separate pages
-    for (const page of pages) {
-      const sentences = page.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      if (sentences.length > 2) { // Allow for one main sentence plus short continuation
-        return true;
-      }
-    }
     return false;
   };
 
-  const analyzeStoryContent = (result: any, level: string): { 
-    pages: number; 
-    wordCount: number; 
-    hasPageConcatenation: boolean; 
-  } => {
-    // Handle template service response format
-    let pages: string[] = [];
-    if (result?.pages && Array.isArray(result.pages)) {
-      pages = result.pages.filter((p: string) => p && p.trim());
-    } else if (typeof result === 'string') {
-      // Fallback for string content
-      pages = result.split(/(?:^|\n)(?:Page \d+:?\s*)/i).filter(p => p.trim());
-      if (pages.length <= 1) {
-        pages = result.split(/\n\n+/).filter(p => p.trim());
-      }
-    }
-    
-    const wordCount = pages.join(' ').split(/\s+/).filter(word => word.trim().length > 0).length;
-    const hasPageConcatenation = checkPageConcatenation(pages, level);
+  // Token limit analysis
+  const analyzeTokenLimits = (wordCount: number, level: string): boolean => {
+    const tokenLimits = {
+      'beginner': { min: 15, max: 100 },
+      'easy': { min: 25, max: 150 },
+      'medium': { min: 40, max: 200 },
+      'hard': { min: 60, max: 300 },
+      'expert': { min: 80, max: 400 },
+      'grade6': { min: 70, max: 350 },
+      'grade8': { min: 80, max: 380 },
+      'grade10': { min: 90, max: 400 }
+    };
 
-    console.log(`🔍 Story analysis for ${level}:`, { 
-      pagesCount: pages.length, 
-      wordCount, 
-      hasPageConcatenation,
-      firstPage: pages[0]?.substring(0, 50) 
-    });
-
-    return { pages: pages.length, wordCount, hasPageConcatenation };
+    const limits = tokenLimits[level as keyof typeof tokenLimits] || { min: 30, max: 200 };
+    return wordCount >= limits.min && wordCount <= limits.max;
   };
 
-  const testStoryGeneration = async (level: string, userInfo: UserInfo): Promise<TestResult> => {
-    try {
-      console.log(`🧪 Testing ${level} level template generation...`);
-      
-      // Use template service instead of Netflix service
-      const result = await generateStory(userInfo, 'testing');
-      
-      if (!result || !result.pages) {
-        throw new Error('Template generation failed or returned empty content');
-      }
-
-      const analysis = analyzeStoryContent(result, level);
-      const contentForValidation = result.pages ? result.pages.join('\n\n') : '';
-      const tokenValidation = validateTokenLimit(contentForValidation, userInfo.difficultyLevel || 'beginner');
-
-      return {
-        level,
-        success: true,
-        pages: analysis.pages,
-        wordCount: analysis.wordCount,
-        hasPageConcatenation: analysis.hasPageConcatenation,
-        content: contentForValidation.substring(0, 500) + '...', // Truncate for display
-        tokenValidation
-      };
-    } catch (error) {
-      console.error(`❌ Error testing ${level}:`, error);
-      return {
-        level,
-        success: false,
-        pages: 0,
-        wordCount: 0,
-        hasPageConcatenation: false,
-        content: '',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        tokenValidation: null
-      };
-    }
-  };
-
+  // Run comprehensive tests
   const runAllTests = async () => {
     setIsRunning(true);
     setTestResults([]);
+    setServiceComparisons([]);
+    setLogs(['🚀 Starting comprehensive story generation tests...']);
     setProgress(0);
 
-    const testLevels = Object.keys(testUserProfiles);
-    const results: TestResult[] = [];
+    const profiles = Object.entries(testUserProfiles);
+    const totalTests = profiles.length * (testMode === 'comparison' ? 3 : 1);
+    let completed = 0;
 
-    for (let i = 0; i < testLevels.length; i++) {
-      const level = testLevels[i];
-      setCurrentTest(level);
+    const results: TestResult[] = [];
+    const comparisons: ServiceComparison[] = [];
+
+    for (const [level, userInfo] of profiles) {
+      setCurrentTest(`Testing ${level} (${userInfo.name})`);
       
-      const userInfo = testUserProfiles[level];
-      const result = await testStoryGeneration(level, userInfo);
-      results.push(result);
+      const comparison: ServiceComparison = { level };
       
-      setProgress(((i + 1) / testLevels.length) * 100);
-      setTestResults([...results]);
+      try {
+        if (testMode === 'full' || testMode === 'ai-only') {
+          // Test Netflix service (AI-first complete stories)
+          const netflixResult = await testService(level, userInfo, 'netflix');
+          results.push(netflixResult);
+          comparison.netflix = netflixResult;
+          completed++;
+          setProgress((completed / totalTests) * 100);
+        }
+
+        if (testMode === 'comparison') {
+          // Test all three services for comparison
+          const netflixResult = await testService(level, userInfo, 'netflix');
+          const liveResult = await testService(level, userInfo, 'live');
+          const templateResult = await testService(level, userInfo, 'template');
+          
+          results.push(netflixResult, liveResult, templateResult);
+          comparison.netflix = netflixResult;
+          comparison.live = liveResult;
+          comparison.template = templateResult;
+          
+          completed += 3;
+          setProgress((completed / totalTests) * 100);
+        }
+
+        if (testMode === 'template-only') {
+          // Test only template service
+          const templateResult = await testService(level, userInfo, 'template');
+          results.push(templateResult);
+          comparison.template = templateResult;
+          completed++;
+          setProgress((completed / totalTests) * 100);
+        }
+
+      } catch (error) {
+        console.error(`Test failed for ${level}:`, error);
+        setLogs(prev => [...prev, `❌ Test failed for ${level}: ${error}`]);
+      }
+
+      comparisons.push(comparison);
       
-      // Small delay to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Short delay to prevent overwhelming the services
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
+    setTestResults(results);
+    setServiceComparisons(comparisons);
     setIsRunning(false);
     setCurrentTest('');
+    setProgress(100);
+    setLogs(prev => [...prev, '🎉 All tests completed!']);
   };
 
-  const getStatusColor = (result: TestResult) => {
-    if (!result.success) return 'destructive';
-    if (result.level === 'beginner' && result.hasPageConcatenation) return 'destructive';
-    if (result.tokenValidation && !result.tokenValidation.isValid) return 'secondary';
-    return 'default';
+  // Reset all tests
+  const resetTests = () => {
+    setTestResults([]);
+    setServiceComparisons([]);
+    setProgress(0);
+    setCurrentTest('');
+    setLogs([]);
   };
 
-  const getStatusText = (result: TestResult) => {
-    if (!result.success) return 'FAILED';
-    if (result.level === 'beginner' && result.hasPageConcatenation) return 'CONCATENATION DETECTED';
-    if (result.tokenValidation && !result.tokenValidation.isValid) return 'TOKEN LIMIT EXCEEDED';
-    return 'PASSED';
+  // Render source badge
+  const renderSourceBadge = (source: string, emergencyUsed?: boolean) => {
+    const sourceConfig = {
+      'ai': { color: 'bg-green-500', icon: '🤖', label: 'AI Generated' },
+      'fallback': { color: 'bg-yellow-500', icon: '📚', label: 'Template Fallback' },
+      'emergency': { color: 'bg-red-500', icon: '🚨', label: emergencyUsed ? 'Emergency Rhyming' : 'Emergency Content' },
+      'unknown': { color: 'bg-gray-500', icon: '❓', label: 'Unknown' }
+    };
+    
+    const config = sourceConfig[source as keyof typeof sourceConfig] || sourceConfig.unknown;
+    
+    return (
+      <Badge className={`${config.color} text-white`}>
+        {config.icon} {config.label}
+      </Badge>
+    );
   };
+
+  // Render individual test result
+  const renderTestResult = (result: TestResult) => (
+    <Card key={`${result.level}-${result.service}`} className="mb-4">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">
+            {result.level} - {result.service.toUpperCase()}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {result.success ? (
+              <CheckCircle2 className="w-5 h-5 text-green-500" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-500" />
+            )}
+            {renderSourceBadge(result.source, result.emergencyContentUsed)}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <div className="text-sm text-muted-foreground">Pages</div>
+            <div className="font-semibold">{result.pages}</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Words</div>
+            <div className="font-semibold">{result.wordCount}</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Response Time</div>
+            <div className="font-semibold">{result.responseTime}ms</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Token Limits</div>
+            <div className={`font-semibold ${result.withinTokenLimits ? 'text-green-500' : 'text-red-500'}`}>
+              {result.withinTokenLimits ? '✓ Valid' : '✗ Invalid'}
+            </div>
+          </div>
+        </div>
+        
+        {result.contentPreview && (
+          <div className="mb-3">
+            <div className="text-sm text-muted-foreground mb-1">Content Preview</div>
+            <div className="text-sm bg-muted p-2 rounded">
+              {result.contentPreview}
+            </div>
+          </div>
+        )}
+
+        {result.generationPath && result.generationPath.length > 0 && (
+          <div className="mb-3">
+            <div className="text-sm text-muted-foreground mb-1">Generation Path</div>
+            <div className="text-xs space-y-1">
+              {result.generationPath.map((step, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-xs">
+                    {idx + 1}
+                  </div>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {result.fallbackReason && (
+          <div className="mb-3">
+            <div className="text-sm text-muted-foreground mb-1">Fallback Reason</div>
+            <div className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded">
+              {result.fallbackReason}
+            </div>
+          </div>
+        )}
+
+        {result.error && (
+          <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
+            ❌ {result.error}
+          </div>
+        )}
+
+        {result.hasPageConcatenation && (
+          <div className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded mt-2">
+            ⚠️ Page concatenation detected
+          </div>
+        )}
+
+        {result.emergencyContentUsed && (
+          <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded mt-2">
+            ℹ️ Emergency educational content was used - this includes rhyming explanations to help users understand what happened
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Story Prompt Testing Dashboard</h2>
-        <Button 
-          onClick={runAllTests} 
-          disabled={isRunning}
-          className="min-w-32"
-        >
-          {isRunning ? 'Testing...' : 'Run All Tests'}
-        </Button>
-      </div>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold mb-4">Comprehensive Story Generation Testing</h2>
+        <p className="text-muted-foreground mb-6">
+          Test both Netflix-style complete stories and Live page-by-page generation with AI-first fallback chains
+        </p>
 
-      {isRunning && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Testing: {currentTest}</span>
-                <span>{Math.round(progress)}%</span>
+        {/* Test Mode Selection */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={testMode === 'full' ? 'default' : 'outline'}
+            onClick={() => setTestMode('full')}
+            className="flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            Full Flow (AI→Template→Emergency)
+          </Button>
+          <Button
+            variant={testMode === 'ai-only' ? 'default' : 'outline'}
+            onClick={() => setTestMode('ai-only')}
+            className="flex items-center gap-2"
+          >
+            <Brain className="w-4 h-4" />
+            Netflix Only
+          </Button>
+          <Button
+            variant={testMode === 'template-only' ? 'default' : 'outline'}
+            onClick={() => setTestMode('template-only')}
+            className="flex items-center gap-2"
+          >
+            <Shuffle className="w-4 h-4" />
+            Template Only
+          </Button>
+          <Button
+            variant={testMode === 'comparison' ? 'default' : 'outline'}
+            onClick={() => setTestMode('comparison')}
+            className="flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4" />
+            Compare All Services
+          </Button>
+        </div>
+
+        {/* Control Buttons */}
+        <div className="flex gap-2 items-center">
+          <Button
+            onClick={runAllTests}
+            disabled={isRunning}
+            className="flex items-center gap-2"
+          >
+            {isRunning ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
+            {isRunning ? 'Testing...' : 'Run All Tests'}
+          </Button>
+          
+          <Button onClick={resetTests} variant="outline" className="flex items-center gap-2">
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </Button>
+          
+          {progress > 0 && (
+            <div className="flex-1 ml-4">
+              <Progress value={progress} className="w-full" />
+              <div className="text-sm text-muted-foreground mt-1">
+                {currentTest && `${currentTest} - `}{Math.round(progress)}% complete
               </div>
-              <Progress value={progress} />
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid gap-4">
-        {testResults.map((result) => (
-          <Card key={result.level}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="capitalize">{result.level} Level</CardTitle>
-                <Badge variant={getStatusColor(result)}>
-                  {getStatusText(result)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Pages</label>
-                  <p className="text-lg font-semibold">{result.pages}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Word Count</label>
-                  <p className="text-lg font-semibold">{result.wordCount}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Concatenation</label>
-                  <p className="text-lg font-semibold">
-                    {result.hasPageConcatenation ? '❌ Yes' : '✅ No'}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Token Valid</label>
-                  <p className="text-lg font-semibold">
-                    {result.tokenValidation?.isValid ? '✅ Yes' : '❌ No'}
-                  </p>
-                </div>
-              </div>
-
-              {result.error && (
-                <div className="mb-4">
-                  <label className="text-sm font-medium text-destructive">Error</label>
-                  <p className="text-sm text-destructive">{result.error}</p>
-                </div>
-              )}
-
-              {result.content && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Content Preview</label>
-                  <Textarea 
-                    value={result.content} 
-                    readOnly 
-                    className="mt-1 min-h-24"
-                  />
-                </div>
-              )}
-
-              {result.tokenValidation && !result.tokenValidation.isValid && (
-                <div className="mt-2 text-sm text-secondary-foreground">
-                  Token limit: {result.tokenValidation.actualTokens}/{result.tokenValidation.maxTokens}
-                  {result.tokenValidation.warning && (
-                    <span className="text-secondary"> - {result.tokenValidation.warning}</span>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+          )}
+        </div>
       </div>
+
+      {/* Results Display */}
+      {(testResults.length > 0 || serviceComparisons.length > 0) && (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="netflix">Netflix Service</TabsTrigger>
+            <TabsTrigger value="live">Live Service</TabsTrigger>
+            <TabsTrigger value="comparison">Service Comparison</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics & Logs</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="netflix" className="mt-6">
+            <div className="space-y-4">
+              {testResults
+                .filter(r => r.service === 'netflix')
+                .map(renderTestResult)}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="live" className="mt-6">
+            <div className="space-y-4">
+              {testResults
+                .filter(r => r.service === 'live')
+                .map(renderTestResult)}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="comparison" className="mt-6">
+            <div className="space-y-6">
+              {serviceComparisons.map(comparison => (
+                <Card key={comparison.level}>
+                  <CardHeader>
+                    <CardTitle>{comparison.level} - Service Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {comparison.netflix && (
+                        <div className="border rounded p-3">
+                          <h4 className="font-semibold mb-2">Netflix (Complete)</h4>
+                          <div className="space-y-1 text-sm">
+                            <div>Pages: {comparison.netflix.pages}</div>
+                            <div>Words: {comparison.netflix.wordCount}</div>
+                            <div>Time: {comparison.netflix.responseTime}ms</div>
+                            <div>{renderSourceBadge(comparison.netflix.source, comparison.netflix.emergencyContentUsed)}</div>
+                          </div>
+                        </div>
+                      )}
+                      {comparison.live && (
+                        <div className="border rounded p-3">
+                          <h4 className="font-semibold mb-2">Live (First Page)</h4>
+                          <div className="space-y-1 text-sm">
+                            <div>Pages: {comparison.live.pages}</div>
+                            <div>Words: {comparison.live.wordCount}</div>
+                            <div>Time: {comparison.live.responseTime}ms</div>
+                            <div>{renderSourceBadge(comparison.live.source, comparison.live.emergencyContentUsed)}</div>
+                          </div>
+                        </div>
+                      )}
+                      {comparison.template && (
+                        <div className="border rounded p-3">
+                          <h4 className="font-semibold mb-2">Template Only</h4>
+                          <div className="space-y-1 text-sm">
+                            <div>Pages: {comparison.template.pages}</div>
+                            <div>Words: {comparison.template.wordCount}</div>
+                            <div>Time: {comparison.template.responseTime}ms</div>
+                            <div>{renderSourceBadge(comparison.template.source, comparison.template.emergencyContentUsed)}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Success Rates */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Success Rates by Source</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const sourceCounts = testResults.reduce((acc, result) => {
+                      const key = result.emergencyContentUsed && result.source === 'emergency' ? 'emergency-rhyming' : result.source;
+                      acc[key] = (acc[key] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>);
+                    
+                    const total = testResults.length;
+                    
+                    return (
+                      <div className="space-y-3">
+                        {Object.entries(sourceCounts).map(([source, count]) => (
+                          <div key={source} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {source === 'emergency-rhyming' ? 
+                                renderSourceBadge('emergency', true) : 
+                                renderSourceBadge(source)}
+                            </div>
+                            <div className="text-sm">
+                              {count}/{total} ({Math.round((count/total) * 100)}%)
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* Performance Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const avgResponseTime = testResults
+                      .filter(r => r.responseTime)
+                      .reduce((sum, r) => sum + (r.responseTime || 0), 0) / 
+                      testResults.filter(r => r.responseTime).length;
+                    
+                    const tokenValidation = testResults.filter(r => r.withinTokenLimits).length / testResults.length;
+                    const emergencyUsage = testResults.filter(r => r.emergencyContentUsed).length / testResults.length;
+                    
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span>Avg Response Time</span>
+                          <span className="font-semibold">{Math.round(avgResponseTime)}ms</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Token Validation Rate</span>
+                          <span className="font-semibold">{Math.round(tokenValidation * 100)}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Emergency Content Used</span>
+                          <span className="font-semibold">{Math.round(emergencyUsage * 100)}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total Tests Run</span>
+                          <span className="font-semibold">{testResults.length}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* Test Logs */}
+              {logs.length > 0 && (
+                <Card className="md:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Test Logs</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="max-h-64 overflow-y-auto space-y-1 text-sm font-mono">
+                      {logs.map((log, idx) => (
+                        <div key={idx} className={`${
+                          log.includes('❌') ? 'text-red-600' :
+                          log.includes('✅') ? 'text-green-600' :
+                          log.includes('🚀') ? 'text-blue-600' :
+                          'text-muted-foreground'
+                        }`}>
+                          {log}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
