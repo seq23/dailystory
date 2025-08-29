@@ -68,6 +68,34 @@ export async function getTemplateCount(level: string): Promise<number> {
 }
 
 /**
+ * Get raw template without processing (for exploration mode)
+ * Returns the original template structure with scenes/endings intact
+ */
+export async function getRawTemplate(
+  level: string, 
+  templateIndex?: number
+): Promise<any> {
+  try {
+    console.log(`📚 Getting raw template for ${level}, index: ${templateIndex}`);
+    
+    // Use dynamic template loader to get the raw template
+    const rawTemplate = await loadTemplate(level, templateIndex);
+    
+    if (!rawTemplate) {
+      console.log(`❌ No raw template found for ${level} at index ${templateIndex}`);
+      return null;
+    }
+    
+    console.log(`✅ Found raw template for ${level}`);
+    return rawTemplate;
+    
+  } catch (error) {
+    console.error(`❌ Error getting raw template for ${level}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Get and convert a template to string array
  * Now uses dynamic template system for all levels including Level 0
  */

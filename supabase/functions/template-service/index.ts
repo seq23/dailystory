@@ -5,7 +5,7 @@ import { corsHeaders } from '../_shared/cors.ts';
 // Template service now uses dynamic loading only
 
 // Import dynamic template system
-import { getTemplate, getTemplateCount } from '../_shared/templateImporter.ts';
+import { getTemplate, getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
 
 // Import sophisticated placeholder resolution and grammar validation
 import { resolveAllPlaceholders, MicroContext, UserInfo } from '../_shared/placeholderResolver.ts';
@@ -114,25 +114,28 @@ serve(async (req) => {
       // Get actual template details for better exploration
       let templateDetails = [];
       try {
-        // Try to load one template as sample to get real structure
-        const sampleTemplate = await getTemplate(templateLevel, 0);
-        if (sampleTemplate) {
-          templateDetails.push({
-            title: sampleTemplate.title || "Template Title",
-            theme: sampleTemplate.theme || "Adventure", 
-            scenes: sampleTemplate.scenes?.length || 5,
-            endings: sampleTemplate.endings?.length || 2
-          });
-        }
-        
-        // Fill with realistic placeholder data for remaining count
-        for (let i = 1; i < Math.min(templateCount, 5); i++) {
-          templateDetails.push({
-            title: `Template ${i + 1}`,
-            theme: ["Adventure", "Mystery", "Science Fiction", "Fantasy"][i % 4],
-            scenes: Math.floor(Math.random() * 3) + 4, // 4-6 scenes
-            endings: Math.floor(Math.random() * 2) + 2  // 2-3 endings
-          });
+        // Load multiple raw templates to get real structure details
+        for (let i = 0; i < Math.min(templateCount, 5); i++) {
+          const rawTemplate = await getRawTemplate(templateLevel, i);
+          if (rawTemplate) {
+            // Handle Level 0 templates (string arrays) vs structured templates
+            if (Array.isArray(rawTemplate)) {
+              templateDetails.push({
+                title: `Level 0 Template ${i + 1}`,
+                theme: "Simple Story",
+                scenes: rawTemplate.length, // For Level 0, pages count as scenes
+                endings: 1 // Level 0 templates have implicit endings
+              });
+            } else {
+              // Structured template with proper metadata
+              templateDetails.push({
+                title: rawTemplate.title || `Template ${i + 1}`,
+                theme: rawTemplate.theme || "Adventure",
+                scenes: rawTemplate.scenes?.length || 0,
+                endings: rawTemplate.endings?.length || 0
+              });
+            }
+          }
         }
       } catch (error) {
         console.log('Could not load template details, using defaults');
