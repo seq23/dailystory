@@ -321,6 +321,28 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 /**
  * Get token limit for difficulty level - HARDCODED for bulletproof reliability
  */
+// Helper functions for accessing prompts
+export function getStoryPrompt(difficulty: DifficultyLevel) {
+  return STORY_PROMPTS[difficulty];
+}
+
+export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel) {
+  return EXPERT_STORY_PROMPTS[gradeLevel];
+}
+
+export function formatUserPrompt(template: string, userInfo: any): string {
+  return template
+    .replace(/\{userName\}/g, userInfo.name || 'Reader')
+    .replace(/\{favoriteColor\}/g, userInfo.favoriteColor || 'blue')
+    .replace(/\{favoriteAnimal\}/g, userInfo.favoriteAnimal || 'cat')
+    .replace(/\{favoriteFood\}/g, userInfo.favoriteFood || 'cookies')
+    .replace(/\{hobbies\}/g, userInfo.hobbies || 'playing outside')
+    .replace(/\{age\}/g, userInfo.age?.toString() || '8');
+}
+
+/**
+ * Get token limit for difficulty level - HARDCODED for bulletproof reliability
+ */
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   const HARDCODED_LIMITS = {
     beginner: 48, easy: 72, medium: 120, hard: 180, expert: 240,

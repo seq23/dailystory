@@ -3,50 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 import { resolveCanonicalPlaceholders } from '../_shared/placeholderResolver.ts';
-import { getTokenLimitForDifficulty } from '../_shared/storyPrompts.ts';
-
-// Level 0 vocabulary for AI generation constraints
-const ENHANCED_LEVEL_0_VOCABULARY = new Set([
-  // Dolch Pre-Primer (40 words)
-  'a', 'and', 'away', 'big', 'blue', 'can', 'come', 'down', 'find', 'for',
-  'funny', 'go', 'help', 'here', 'I', 'in', 'is', 'it', 'jump', 'little',
-  'look', 'make', 'me', 'my', 'not', 'one', 'play', 'red', 'run', 'said',
-  'see', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you',
-  // Dolch Primer (52 words)
-  'all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came',
-  'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like',
-  'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran',
-  'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this',
-  'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will',
-  'with', 'yes',
-  // Additional 8 Fry words for total 100
-  'of', 'his', 'her', 'has', 'had', 'him', 'been', 'water'
-]);
-
-// Level 0 Story Prompts
-const LEVEL_0_SYSTEM_PROMPT = `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
-
-CRITICAL RULES:
-- Generate ONLY one sentence per page (the current page content)
-- Use "Page X:" markers to separate each page of content
-- Use subject-verb OR subject-verb-object as sentence structure
-- Use a mix of 2-, 3-, and 4- letter words
-- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
-- Use Simple present tense
-- Always allow {userName}, user inputs
-- Story continues infinitely unless user requests ending
-- Try to incorporate a narrative with a natural hook for continuation
-- DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.
-
-Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
-
-Maximum 200 tokens total. One sentence per page for Level 0.
-
-USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
-
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.`;
-
-const LEVEL_0_USER_PROMPT = 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence. Do NOT include titles or chapter headers.';
+import { getTokenLimitForDifficulty, STORY_PROMPTS, EXPERT_STORY_PROMPTS } from '../_shared/storyPrompts.ts';
+import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(
