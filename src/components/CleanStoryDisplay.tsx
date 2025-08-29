@@ -2847,6 +2847,13 @@ const handleRestartTimer = () => {
           onFallbackUsed={handleImageFallbackUsed}
                         />
                       </>
+                    ) : isGeneratingImage ? (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Creating illustration...</p>
+                        </div>
+                      </div>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Button
