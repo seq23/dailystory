@@ -173,7 +173,7 @@ export function StoryPromptTester() {
   const [currentTest, setCurrentTest] = useState<string>('');
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('netflix');
-  const [testMode, setTestMode] = useState<'full' | 'ai-only' | 'template-only' | 'comparison'>('full');
+  const [testMode, setTestMode] = useState<'full' | 'ai-only' | 'live-only' | 'template-only' | 'comparison'>('full');
   const [logs, setLogs] = useState<string[]>([]);
   const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
 
@@ -477,7 +477,8 @@ export function StoryPromptTester() {
     setProgress(0);
 
     const profiles = Object.entries(testUserProfiles);
-    const totalTests = profiles.length * (testMode === 'comparison' ? 3 : 1);
+    const servicesCount = testMode === 'comparison' ? 3 : testMode === 'full' ? 2 : 1;
+    const totalTests = profiles.length * servicesCount;
     let completed = 0;
 
     const results: TestResult[] = [];
@@ -489,11 +490,33 @@ export function StoryPromptTester() {
       const comparison: ServiceComparison = { level };
       
       try {
-        if (testMode === 'full' || testMode === 'ai-only') {
-          // Test Netflix service (AI-first complete stories)
+        if (testMode === 'full') {
+          // Test both Netflix and Live services for comprehensive testing
+          const netflixResult = await testService(level, userInfo, 'netflix');
+          const liveResult = await testService(level, userInfo, 'live');
+          
+          results.push(netflixResult, liveResult);
+          comparison.netflix = netflixResult;
+          comparison.live = liveResult;
+          
+          completed += 2;
+          setProgress((completed / totalTests) * 100);
+        }
+
+        if (testMode === 'ai-only') {
+          // Test Netflix service only (AI-first complete stories)
           const netflixResult = await testService(level, userInfo, 'netflix');
           results.push(netflixResult);
           comparison.netflix = netflixResult;
+          completed++;
+          setProgress((completed / totalTests) * 100);
+        }
+
+        if (testMode === 'live-only') {
+          // Test Live service only (page-by-page generation)
+          const liveResult = await testService(level, userInfo, 'live');
+          results.push(liveResult);
+          comparison.live = liveResult;
           completed++;
           setProgress((completed / totalTests) * 100);
         }
@@ -751,13 +774,16 @@ export function StoryPromptTester() {
           </div>
         )}
 
-        {/* Full Content Display */}
-        {result.fullContent && result.fullContent.length > 0 && !result.hasEmptyContent && (
+        {/* Full Content Display - Always show for debugging, even when empty */}
+        {result.fullContent && result.fullContent.length > 0 && (
           <Collapsible open={isContentExpanded} onOpenChange={toggleContentExpanded} className="mt-4">
             <CollapsibleTrigger asChild>
               <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
                 <Eye className="w-4 h-4" />
-                {isContentExpanded ? 'Hide Full Content' : 'View Full Content'}
+                {result.hasEmptyContent ? 
+                  (isContentExpanded ? 'Hide Debug Info' : 'View Debug Info (Empty Content)') :
+                  (isContentExpanded ? 'Hide Full Content' : 'View Full Content')
+                }
                 {isContentExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
@@ -780,24 +806,32 @@ export function StoryPromptTester() {
                 
                 <div className="space-y-4">
                   {result.fullContent.map((page, index) => {
-                    const pageWordCount = page.split(' ').length;
-                    const isEmergencyPage = page.includes('story machine took a little rest') || 
+                    const pageWordCount = page ? page.split(' ').length : 0;
+                    const isEmergencyPage = page && (page.includes('story machine took a little rest') || 
                                            page.includes('story elves went to play') ||
-                                           page.includes('Try Again');
+                                           page.includes('Try Again'));
+                    const isEmpty = !page || page.trim().length === 0;
                     
                     return (
-                      <div key={index} className={`border-l-2 pl-4 ${isEmergencyPage ? 'border-red-300 bg-red-50' : 'border-primary/30'}`}>
+                      <div key={index} className={`border-l-2 pl-4 ${
+                        isEmpty ? 'border-red-500 bg-red-50' : 
+                        isEmergencyPage ? 'border-red-300 bg-red-50' : 'border-primary/30'
+                      }`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="font-medium text-sm">
                             Page {index + 1}
+                            {isEmpty && <span className="ml-2 text-red-600 text-xs">[EMPTY PAGE]</span>}
                             {isEmergencyPage && <span className="ml-2 text-red-600 text-xs">[Emergency Content]</span>}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {pageWordCount} word{pageWordCount !== 1 ? 's' : ''}
                           </div>
                         </div>
-                        <div className={`text-sm leading-6 ${isEmergencyPage ? 'text-red-800' : 'text-foreground'}`}>
-                          {page}
+                        <div className={`text-sm leading-6 ${
+                          isEmpty ? 'text-red-800 italic' :
+                          isEmergencyPage ? 'text-red-800' : 'text-foreground'
+                        }`}>
+                          {isEmpty ? '(No content generated - likely placeholder resolution failure)' : page}
                         </div>
                       </div>
                     );
@@ -855,13 +889,21 @@ export function StoryPromptTester() {
             <Zap className="w-4 h-4" />
             Full Flow (AI→Template→Emergency)
           </Button>
-          <Button
+            <Button
             variant={testMode === 'ai-only' ? 'default' : 'outline'}
             onClick={() => setTestMode('ai-only')}
             className="flex items-center gap-2"
           >
             <Brain className="w-4 h-4" />
             Netflix Only
+          </Button>
+          <Button
+            variant={testMode === 'live-only' ? 'default' : 'outline'}
+            onClick={() => setTestMode('live-only')}
+            className="flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            Live Only
           </Button>
           <Button
             variant={testMode === 'template-only' ? 'default' : 'outline'}
@@ -932,9 +974,22 @@ export function StoryPromptTester() {
 
           <TabsContent value="live" className="mt-6">
             <div className="space-y-4">
-              {testResults
-                .filter(r => r.service === 'live')
-                .map(renderTestResult)}
+              {(() => {
+                const liveResults = testResults.filter(r => r.service === 'live');
+                if (liveResults.length === 0) {
+                  return (
+                    <Card className="p-6 text-center">
+                      <div className="text-muted-foreground mb-2">No Live Generation results found</div>
+                      <div className="text-sm text-muted-foreground">
+                        Live service is tested in 'Full Flow', 'Live Only', and 'Compare All Services' modes.
+                        <br />
+                        Current mode: <strong>{testMode}</strong>
+                      </div>
+                    </Card>
+                  );
+                }
+                return liveResults.map(renderTestResult);
+              })()}
             </div>
           </TabsContent>
 
