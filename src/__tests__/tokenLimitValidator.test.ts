@@ -4,9 +4,7 @@ import {
   validateTokenLimit,
   validatePageTokenDistribution,
   getTokenLimitForDifficulty,
-  getRecommendedWordsForDifficulty,
-  TOKEN_LIMITS,
-  EXPERT_TOKEN_LIMITS
+  getRecommendedWordsForDifficulty
 } from '@/utils/tokenLimitValidator';
 
 describe('Token Limit Validator', () => {
@@ -41,8 +39,8 @@ describe('Token Limit Validator', () => {
       const result = validateTokenLimit(text, 'beginner');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(TOKEN_LIMITS.beginner.maxTokens);
-      expect(result.maxAllowed).toBe(TOKEN_LIMITS.beginner.maxTokens);
+      expect(result.actualTokens).toBeLessThanOrEqual(48);
+      expect(result.maxAllowed).toBe(48);
     });
 
     it('detects text exceeding limits', () => {
@@ -55,12 +53,12 @@ describe('Token Limit Validator', () => {
     });
 
     it('warns when approaching limit', () => {
-      // Create text that's around 90% of beginner limit (180 tokens)
-      const nearLimitText = "The quick brown fox jumps over the lazy dog. ".repeat(15);
+      // Create text that's around 90% of beginner limit (48 tokens)
+      const nearLimitText = "The quick brown fox jumps over the lazy dog. ".repeat(3);
       const result = validateTokenLimit(nearLimitText, 'beginner');
       
       // Should be valid but with warning
-      if (result.actualTokens >= TOKEN_LIMITS.beginner.maxTokens * 0.9 && result.actualTokens <= TOKEN_LIMITS.beginner.maxTokens) {
+      if (result.actualTokens >= 48 * 0.9 && result.actualTokens <= 48) {
         expect(result.isValid).toBe(true);
         expect(result.warnings).toContain(expect.stringContaining('approaching token limit'));
       }
@@ -71,7 +69,7 @@ describe('Token Limit Validator', () => {
       const result = validateTokenLimit(text, '6th');
       
       expect(result.isValid).toBe(true);
-      expect(result.maxAllowed).toBe(EXPERT_TOKEN_LIMITS['6th'].maxTokens);
+      expect(result.maxAllowed).toBe(900);
     });
 
     it('handles unknown difficulty levels', () => {
@@ -96,7 +94,7 @@ describe('Token Limit Validator', () => {
       const result = validatePageTokenDistribution(pages, 'beginner');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(TOKEN_LIMITS.beginner.maxTokens);
+      expect(result.actualTokens).toBeLessThanOrEqual(48);
     });
 
     it('detects pages that are too long', () => {
@@ -113,24 +111,24 @@ describe('Token Limit Validator', () => {
   });
 
   describe('getTokenLimitForDifficulty', () => {
-    it('returns correct limits for all difficulty levels', () => {
-      expect(getTokenLimitForDifficulty('beginner')).toBe(200);
-      expect(getTokenLimitForDifficulty('easy')).toBe(300);
-      expect(getTokenLimitForDifficulty('medium')).toBe(400);
-      expect(getTokenLimitForDifficulty('hard')).toBe(600);
-      expect(getTokenLimitForDifficulty('expert')).toBe(800);
+    it('returns correct hardcoded limits for all difficulty levels', () => {
+      expect(getTokenLimitForDifficulty('beginner')).toBe(48);
+      expect(getTokenLimitForDifficulty('easy')).toBe(72);
+      expect(getTokenLimitForDifficulty('medium')).toBe(120);
+      expect(getTokenLimitForDifficulty('hard')).toBe(180);
+      expect(getTokenLimitForDifficulty('expert')).toBe(240);
     });
 
-    it('returns correct limits for expert grade levels', () => {
-      expect(getTokenLimitForDifficulty('6th')).toBe(1200);
-      expect(getTokenLimitForDifficulty('7th')).toBe(1470);
-      expect(getTokenLimitForDifficulty('8th')).toBe(1600);
-      expect(getTokenLimitForDifficulty('9th')).toBe(1730);
-      expect(getTokenLimitForDifficulty('10th')).toBe(1870);
+    it('returns correct hardcoded limits for expert grade levels', () => {
+      expect(getTokenLimitForDifficulty('6th')).toBe(900);
+      expect(getTokenLimitForDifficulty('7th')).toBe(1100);
+      expect(getTokenLimitForDifficulty('8th')).toBe(1200);
+      expect(getTokenLimitForDifficulty('9th')).toBe(1400);
+      expect(getTokenLimitForDifficulty('10th')).toBe(1600);
     });
 
     it('returns fallback for unknown difficulty', () => {
-      expect(getTokenLimitForDifficulty('unknown' as any)).toBe(800);
+      expect(getTokenLimitForDifficulty('unknown' as any)).toBe(48);
     });
   });
 
@@ -146,25 +144,25 @@ describe('Token Limit Validator', () => {
   });
 
   describe('token limit consistency', () => {
-    it('has consistent token limits across difficulty levels', () => {
-      const difficulties: (keyof typeof TOKEN_LIMITS)[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    it('has consistent hardcoded token limits across difficulty levels', () => {
+      const difficulties = ['beginner', 'easy', 'medium', 'hard', 'expert'] as const;
       
       for (let i = 1; i < difficulties.length; i++) {
-        const current = TOKEN_LIMITS[difficulties[i]];
-        const previous = TOKEN_LIMITS[difficulties[i - 1]];
+        const current = getTokenLimitForDifficulty(difficulties[i]);
+        const previous = getTokenLimitForDifficulty(difficulties[i - 1]);
         
-        expect(current.maxTokens).toBeGreaterThan(previous.maxTokens);
+        expect(current).toBeGreaterThan(previous);
       }
     });
 
-    it('has consistent token limits across expert grade levels', () => {
-      const grades: (keyof typeof EXPERT_TOKEN_LIMITS)[] = ['6th', '7th', '8th', '9th', '10th'];
+    it('has consistent hardcoded token limits across expert grade levels', () => {
+      const grades = ['6th', '7th', '8th', '9th', '10th'] as const;
       
       for (let i = 1; i < grades.length; i++) {
-        const current = EXPERT_TOKEN_LIMITS[grades[i]];
-        const previous = EXPERT_TOKEN_LIMITS[grades[i - 1]];
+        const current = getTokenLimitForDifficulty(grades[i]);
+        const previous = getTokenLimitForDifficulty(grades[i - 1]);
         
-        expect(current.maxTokens).toBeGreaterThan(previous.maxTokens);
+        expect(current).toBeGreaterThan(previous);
       }
     });
   });

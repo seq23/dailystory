@@ -11,81 +11,27 @@ export interface TokenLimitConfig {
   tokensPerPage?: number;
 }
 
-// Standardized token limits based on difficulty and reading level
-export const TOKEN_LIMITS: Record<DifficultyLevel, TokenLimitConfig> = {
-  beginner: {
-    difficulty: 'beginner',
-    maxTokens: 48, // 6 pages × 6 words ÷ 0.75 tokens per word
-    wordsPerToken: 0.75, // Simple words are often shorter tokens
-    expectedPages: 6,
-    tokensPerPage: 8 // 6 words per page
-  },
-  easy: {
-    difficulty: 'easy',
-    maxTokens: 192, // 6 pages × 32 tokens per page (24 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 6,
-    tokensPerPage: 32 // 24 words per page
-  },
-  medium: {
-    difficulty: 'medium',
-    maxTokens: 427, // 8 pages × 53 tokens per page (40 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 8,
-    tokensPerPage: 53 // 40 words per page
-  },
-  hard: {
-    difficulty: 'hard',
-    maxTokens: 1067, // 10 pages × 107 tokens per page (80 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 10,
-    tokensPerPage: 107 // 80 words per page
-  },
-  expert: {
-    difficulty: 'expert',
-    maxTokens: 1600, // 12 pages × 133 tokens per page (100 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 12,
-    tokensPerPage: 133 // 100 words per page
-  }
-};
+// Hardcoded token limits for stable validation across all systems
+export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const HARDCODED_LIMITS = {
+    beginner: 48, easy: 72, medium: 120, hard: 180, expert: 240,
+    '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
+  };
+  return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback
+}
 
-export const EXPERT_TOKEN_LIMITS: Record<ExpertGradeLevel, TokenLimitConfig> = {
-  '6th': {
-    difficulty: '6th',
-    maxTokens: 1600, // 12 pages × 133 tokens per page (100 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 12,
-    tokensPerPage: 133 // 100 words per page
-  },
-  '7th': {
-    difficulty: '7th',
-    maxTokens: 1732, // 13 pages × 133 tokens per page (100 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 13,
-    tokensPerPage: 133 // 100 words per page
-  },
-  '8th': {
-    difficulty: '8th',
-    maxTokens: 1864, // 14 pages × 133 tokens per page (100 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 14,
-    tokensPerPage: 133 // 100 words per page
-  },
-  '9th': {
-    difficulty: '9th',
-    maxTokens: 1996, // 15 pages × 133 tokens per page (100 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 15,
-    tokensPerPage: 133 // 100 words per page
-  },
-  '10th': {
-    difficulty: '10th',
-    maxTokens: 2128, // 16 pages × 133 tokens per page (100 words ÷ 0.75)
-    wordsPerToken: 0.75,
-    expectedPages: 16,
-    tokensPerPage: 133 // 100 words per page
-  }
+// Simplified configuration for page calculations
+export const PAGE_CONFIG = {
+  beginner: { expectedPages: 8, tokensPerPage: 6 },
+  easy: { expectedPages: 6, tokensPerPage: 12 },
+  medium: { expectedPages: 8, tokensPerPage: 15 },
+  hard: { expectedPages: 10, tokensPerPage: 18 },
+  expert: { expectedPages: 12, tokensPerPage: 20 },
+  '6th': { expectedPages: 12, tokensPerPage: 75 },
+  '7th': { expectedPages: 13, tokensPerPage: 85 },
+  '8th': { expectedPages: 14, tokensPerPage: 86 },
+  '9th': { expectedPages: 15, tokensPerPage: 93 },
+  '10th': { expectedPages: 16, tokensPerPage: 100 }
 };
 
 export interface TokenValidationResult {
@@ -112,10 +58,10 @@ export function validateTokenLimit(
   mode: 'ai' | 'template' = 'ai'
 ): TokenValidationResult {
   const actualTokens = estimateTokenCount(text);
-  const config = TOKEN_LIMITS[difficulty as DifficultyLevel] || 
-                  EXPERT_TOKEN_LIMITS[difficulty as ExpertGradeLevel];
+  const maxTokens = getTokenLimitForDifficulty(difficulty);
+  const pageConfig = PAGE_CONFIG[difficulty];
   
-  if (!config) {
+  if (!pageConfig) {
     return {
       isValid: false,
       actualTokens,
@@ -124,10 +70,10 @@ export function validateTokenLimit(
     };
   }
   
-  // Phase 6: Enhanced validation with template vs AI mode detection
+  // Enhanced validation with template vs AI mode detection
   const isTemplateMode = mode === 'template';
-  const templateMultiplier = isTemplateMode && difficulty !== 'beginner' ? 1.8 : 1.0; // Accept higher density for Level 1+ templates
-  const effectiveMaxTokens = Math.floor(config.maxTokens * templateMultiplier);
+  const templateMultiplier = isTemplateMode && difficulty !== 'beginner' ? 1.8 : 1.0;
+  const effectiveMaxTokens = Math.floor(maxTokens * templateMultiplier);
   
   const isValid = actualTokens <= effectiveMaxTokens;
   const warnings: string[] = [];
@@ -146,13 +92,6 @@ export function validateTokenLimit(
     );
   }
   
-  // Template mode specific warnings
-  if (isTemplateMode && difficulty !== 'beginner') {
-    warnings.push(
-      `Template mode: higher word density accepted (${Math.round(templateMultiplier * 100)}% of AI limit)`
-    );
-  }
-  
   return {
     isValid,
     actualTokens,
@@ -160,7 +99,7 @@ export function validateTokenLimit(
     exceededBy: isValid ? undefined : actualTokens - effectiveMaxTokens,
     warnings,
     templateMode: isTemplateMode,
-    expectedPages: config.expectedPages
+    expectedPages: pageConfig.expectedPages
   };
 }
 
@@ -172,10 +111,9 @@ export function validatePageTokenDistribution(
   const totalText = pages.join(' ');
   const totalValidation = validateTokenLimit(totalText, difficulty, mode);
   
-  const config = TOKEN_LIMITS[difficulty as DifficultyLevel] || 
-                  EXPERT_TOKEN_LIMITS[difficulty as ExpertGradeLevel];
+  const pageConfig = PAGE_CONFIG[difficulty];
   
-  if (!config || !config.tokensPerPage) {
+  if (!pageConfig) {
     return totalValidation;
   }
   
@@ -184,7 +122,7 @@ export function validatePageTokenDistribution(
   // Check individual page token distribution
   for (let i = 0; i < pages.length; i++) {
     const pageTokens = estimateTokenCount(pages[i]);
-    const maxPageTokens = config.tokensPerPage * 1.5; // Allow 50% variance per page
+    const maxPageTokens = pageConfig.tokensPerPage * 1.5; // Allow 50% variance per page
     
     if (pageTokens > maxPageTokens) {
       warnings.push(
@@ -200,14 +138,7 @@ export function validatePageTokenDistribution(
   };
 }
 
-export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const config = TOKEN_LIMITS[difficulty as DifficultyLevel] || 
-                  EXPERT_TOKEN_LIMITS[difficulty as ExpertGradeLevel];
-  return config?.maxTokens || 800; // Default fallback
-}
-
 export function getRecommendedWordsForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const config = TOKEN_LIMITS[difficulty as DifficultyLevel] || 
-                  EXPERT_TOKEN_LIMITS[difficulty as ExpertGradeLevel];
-  return config ? Math.floor(config.maxTokens * config.wordsPerToken) : 600;
+  const maxTokens = getTokenLimitForDifficulty(difficulty);
+  return Math.floor(maxTokens * 0.75); // Conservative token-to-word conversion
 }
