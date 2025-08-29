@@ -188,7 +188,7 @@ export function TemplateExplorer() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-accent">
-                  {templateInfo.templates?.reduce((sum, t) => sum + t.scenes, 0) || 0}
+                  {templateInfo.level === 'level0' ? 600 : templateInfo.templates?.reduce((sum, t) => sum + t.scenes, 0) || 0}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {templateInfo.level === 'level0' ? 'Total Pages (6 per template)' : 'Total Scenes'}

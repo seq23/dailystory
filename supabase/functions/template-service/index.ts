@@ -103,7 +103,7 @@ serve(async (req) => {
 
     const templateLevel = levelMap[effectiveDifficulty] || 'level0';
 
-    // Handle exploration requests
+      // Handle exploration requests
     if (explore) {
       console.log('🔍 Exploration mode for level:', templateLevel);
       console.log(`📊 Getting template count for ${templateLevel}`);
@@ -111,18 +111,56 @@ serve(async (req) => {
       const templateCount = await getTemplateCount(templateLevel);
       console.log(`✅ Found ${templateCount} templates for ${templateLevel}`);
       
+      // Helper function to extract Level 0 template titles from comments
+      const extractLevel0Title = (templateIndex: number): string => {
+        // Level 0 template titles based on comment structure in level0.js
+        const titles = [
+          "Morning Routine", "Bedtime Story", "Meal Time", "Getting Dressed", "Cleaning Up",
+          "Playground Fun", "Library Visit", "Art Time", "Music Time", "Helping Mom",
+          "Walking the Dog", "Grocery Store", "Cooking Together", "Bath Time", "Story Time",
+          "Garden Work", "Car Ride", "Park Visit", "Friend Visit", "TV Time",
+          "Doctor Visit", "Dental Checkup", "Getting a Shot", "Taking Medicine", "Hospital Visit",
+          "Feeling Better", "Hand Washing", "Exercise Time", "Check-up Day", "Healthy Food",
+          "ABC Learning", "Counting Fun", "Color Names", "Shape Game", "Size Learning",
+          "Weather Talk", "Days of Week", "Month Names", "Number Practice", "Letter Sounds",
+          "Reading Time", "Writing Practice", "School Day", "Teacher Help", "Learning Colors",
+          "Hide and Seek", "Tag Game", "Ball Play", "Swing Time", "Slide Fun",
+          "Sandbox Play", "Bike Ride", "Running Fast", "Jump Rope", "Dance Time",
+          "Toy Sharing", "Building Blocks", "Puzzle Time", "Game Playing", "Fun Together",
+          "Helper Day", "Store Visit", "Post Office", "Fire Station", "Police Visit",
+          "Community Walk", "Neighbor Hello", "Park Clean", "Helping Others", "Being Kind",
+          "Bus Ride", "Car Trip", "Train Ride", "Airplane Fun", "Boat Ride",
+          "Walking Trip", "Scooter Ride", "Bike Path",
+          "Birthday Party", "Holiday Fun", "Gift Giving", "Celebration Time", "Family Day",
+          "Special Meal", "Dress Up", "Party Games", "Cake Time", "Happy Day", "Thank You Day",
+          "Pet Care", "Bird Watching", "Bug Hunt", "Tree Climbing", "Flower Picking",
+          "Beach Day", "Mountain Trip", "River Play", "Forest Walk", "Animal Friends"
+        ];
+        return titles[templateIndex] || `Template ${templateIndex + 1}`;
+      };
+
       // Get actual template details for better exploration
       let templateDetails = [];
       try {
-        // Load multiple raw templates to get real structure details
-        for (let i = 0; i < Math.min(templateCount, 5); i++) {
+        // For Level 0, load ALL 100 templates to show complete dropdown
+        const templatesToLoad = templateLevel === 'level0' ? templateCount : Math.min(templateCount, 5);
+        
+        console.log(`🔄 Loading ${templatesToLoad} templates for exploration`);
+        
+        for (let i = 0; i < templatesToLoad; i++) {
           const rawTemplate = await getRawTemplate(templateLevel, i);
           if (rawTemplate) {
             // Handle Level 0 templates (string arrays) vs structured templates
             if (Array.isArray(rawTemplate)) {
               templateDetails.push({
-                title: `Level 0 Template ${i + 1}`,
-                theme: "Simple Story",
+                title: extractLevel0Title(i),
+                theme: i < 20 ? "Daily Life" : 
+                       i < 30 ? "Healthcare" : 
+                       i < 45 ? "Educational" : 
+                       i < 60 ? "Play & Recreation" : 
+                       i < 70 ? "Community" : 
+                       i < 78 ? "Transportation" : 
+                       i < 91 ? "Special Occasions" : "Nature & Animals",
                 scenes: 6, // Level 0 templates always show 6 pages per template
                 endings: 1 // Level 0 templates have implicit endings
               });
