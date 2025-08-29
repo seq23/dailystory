@@ -103,21 +103,34 @@ function applyRandomSeedSelection(template: StoryTemplate, userInfo: UserInfo): 
 
 
 // Process scene with microVariants and sophisticated placeholder resolution
-function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemplate): string {
-  const shouldUseAlternative = Math.random() < 0.3; // 30% chance for variety
-  const shouldAddDetail = Math.random() < 0.4; // 40% chance for detail
+function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing'): string {
+  // TESTING MODE: Show organized console output and always use main text
+  if (mode === 'testing') {
+    console.log(`\n🔍 SCENE ANALYSIS:`);
+    console.log(`📝 Main Text (${scene.microVariants.text.split(' ').length} words): ${scene.microVariants.text.substring(0, 100)}...`);
+    console.log(`🔄 Alternatives (${scene.microVariants.alternatives.length}):`, scene.microVariants.alternatives.map(alt => `"${alt.substring(0, 50)}..." (${alt.split(' ').length} words)`));
+    console.log(`📎 Optional Details (${scene.microVariants.optionalDetails.length}):`, scene.microVariants.optionalDetails.map(detail => `"${detail.substring(0, 40)}..."`));
+  }
   
-  let text = shouldUseAlternative && scene.microVariants.alternatives.length > 0
-    ? pick(scene.microVariants.alternatives)
-    : scene.microVariants.text;
+  // REAL USER MODE: Always use main text (not short alternatives)
+  // TESTING MODE: Always use main text for complete validation
+  let text = scene.microVariants.text; // Always use main scene text for proper user experience
   
-  // Add optional detail
+  // In real-user mode, occasionally add optional details for variety
+  const shouldAddDetail = (mode === 'real-user') ? Math.random() < 0.4 : false;
+  
+  // Add optional detail (only in real-user mode for variety)
   if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
     const detail = pick(scene.microVariants.optionalDetails);
     // Simple sentence combination
     text = text.trim().endsWith('.') 
       ? `${text.slice(0, -1)}, and ${detail}.`
       : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+  }
+  
+  // TESTING MODE: Show all content for validation
+  if (mode === 'testing') {
+    console.log(`✅ Selected Text (${text.split(' ').length} words): ${text.substring(0, 150)}...`);
   }
   
   // Process swappable elements and seed data for Grades 6-10
@@ -147,7 +160,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
 }
 
 // Process ending with sophisticated grammar validation (PHASE 4)
-function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate): string {
+function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing'): string {
   if (endings.length === 0) return "And they lived happily ever after.";
   
   const ending = pick(endings);
@@ -189,6 +202,16 @@ export function convertStoryTemplateToStringArray(
 ): string[] {
   console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages (${mode} mode)`);
   
+  // TESTING MODE: Show complete template structure
+  if (mode === 'testing') {
+    console.log(`\n🎭 TEMPLATE ANALYSIS: "${template.title}"`);
+    console.log(`📚 Level: ${template.level} | Theme: ${template.theme}`);
+    console.log(`🎬 Scenes: ${template.scenes.length} | 🎯 Endings: ${template.endings.length}`);
+    console.log(`🔄 Reusable Elements:`, Object.keys(template.reuse.swappableElements || {}));
+    console.log(`🌤️ Weather Variants: ${template.reuse.weatherVariants?.length || 0}`);
+    console.log(`🏠 Setting Variants: ${template.reuse.settingVariants?.length || 0}`);
+  }
+  
   const pages: string[] = [];
   
   if (mode === 'real-user' && pageCount === 1) {
@@ -200,7 +223,7 @@ export function convertStoryTemplateToStringArray(
   if (template.scenes.length >= pageCount - 1) {
     // Enough scenes for direct mapping
     for (let i = 0; i < pageCount - 1; i++) {
-      const processedScene = processScene(template.scenes[i], userInfo, template);
+      const processedScene = processScene(template.scenes[i], userInfo, template, mode);
       pages.push(processedScene);
     }
   } else {
@@ -216,15 +239,25 @@ export function convertStoryTemplateToStringArray(
         template.scenes[sceneIndex], 
         userInfo, 
         template, 
-        cycleNumber
+        cycleNumber,
+        mode
       );
       pages.push(processedScene);
     }
   }
   
   // Always add ending
-  const ending = processEnding(template.endings, userInfo, template);
+  const ending = processEnding(template.endings, userInfo, template, mode);
   pages.push(ending);
+  
+  // TESTING MODE: Show all endings for validation
+  if (mode === 'testing') {
+    console.log(`\n🎬 ENDINGS ANALYSIS:`);
+    template.endings.forEach((ending, i) => {
+      console.log(`🎯 Ending ${i + 1} (${ending.type}): "${ending.text.substring(0, 100)}..." (${ending.text.split(' ').length} words)`);
+      console.log(`🔄 Micro Variants (${ending.microVariants.length}):`, ending.microVariants.map(variant => `"${variant.substring(0, 50)}..." (${variant.split(' ').length} words)`));
+    });
+  }
   
   console.log(`✅ Template converted to ${pages.length} pages`);
   
@@ -268,26 +301,27 @@ function processSceneWithCycleVariation(
   scene: StoryScene, 
   userInfo: UserInfo, 
   template: StoryTemplate, 
-  cycleNumber: number = 0
+  cycleNumber: number = 0,
+  mode: string = 'testing'
 ): string {
-  // Increase variation probability with cycle number
-  const variationBoost = Math.min(cycleNumber * 0.15, 0.6); // Up to 60% boost
-  const shouldUseAlternative = Math.random() < (0.3 + variationBoost);
-  const shouldAddDetail = Math.random() < (0.4 + variationBoost);
+  // Always use main text for proper user experience (not short alternatives)
+  let text = scene.microVariants.text;
   
-  let text = shouldUseAlternative && scene.microVariants.alternatives.length > 0
-    ? pick(scene.microVariants.alternatives)
-    : scene.microVariants.text;
+  // In real-user mode, add variation with cycle awareness
+  if (mode === 'real-user') {
+    const variationBoost = Math.min(cycleNumber * 0.15, 0.6); // Up to 60% boost
+    const shouldAddDetail = Math.random() < (0.4 + variationBoost);
   
-  // Enhanced detail addition with cycle awareness
-  if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
-    // Use cycle number to ensure different details over time
-    const detailIndex = (cycleNumber % scene.microVariants.optionalDetails.length);
-    const detail = scene.microVariants.optionalDetails[detailIndex];
-    
-    text = text.trim().endsWith('.') 
-      ? `${text.slice(0, -1)}, and ${detail}.`
-      : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+    // Enhanced detail addition with cycle awareness (real-user mode only)
+    if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
+      // Use cycle number to ensure different details over time
+      const detailIndex = (cycleNumber % scene.microVariants.optionalDetails.length);
+      const detail = scene.microVariants.optionalDetails[detailIndex];
+      
+      text = text.trim().endsWith('.') 
+        ? `${text.slice(0, -1)}, and ${detail}.`
+        : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+    }
   }
   
   // Process swappable elements with cycle variation

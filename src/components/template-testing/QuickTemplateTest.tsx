@@ -140,12 +140,12 @@ export function QuickTemplateTest() {
               </Label>
               <p className="text-xs text-muted-foreground">
                 {testingMode === 'testing' 
-                  ? 'Generate complete stories with dynamic page counts for validation' 
-                  : 'Generate single pages for never-ending story simulation'}
+                  ? 'Shows complete template content (main text + alternatives + endings) with organized console output for validation' 
+                  : 'Shows exactly what users see - uses main scene text with proper token limits and page flow'}
               </p>
             </div>
             <Badge variant={testingMode === 'testing' ? 'default' : 'secondary'}>
-              {testingMode === 'testing' ? 'Complete Story' : 'Single Page'}
+              {testingMode === 'testing' ? 'Full Validation' : 'User Experience'}
             </Badge>
           </div>
 

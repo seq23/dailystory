@@ -123,7 +123,7 @@ serve(async (req) => {
               templateDetails.push({
                 title: `Level 0 Template ${i + 1}`,
                 theme: "Simple Story",
-                scenes: rawTemplate.length, // For Level 0, pages count as scenes
+                scenes: 6, // Level 0 templates always show 6 pages per template
                 endings: 1 // Level 0 templates have implicit endings
               });
             } else {

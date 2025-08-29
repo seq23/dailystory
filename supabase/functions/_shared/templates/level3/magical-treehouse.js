@@ -75,6 +75,16 @@ export const template = {
       }
     },
     {
+      text: "Inspired by their environmental success, {userName} and their friend decide to experience another story about friendship and problem-solving. They find themselves in a medieval village where a young inventor needs help convincing skeptical adults that their {favoriteColor} windmill design can solve the village's water shortage. Working together, they learn that persistence and teamwork can overcome doubt and resistance to change.",
+      pause: true,
+      hook: "What other valuable lessons await them in the magical library's infinite stories?",
+      microVariants: {
+        text: "A medieval village story teaches {userName} about innovation, persistence, and overcoming adult skepticism through teamwork and determination.",
+        alternatives: ["The friendship story shows {userName} how collaboration and persistence can convince others to embrace helpful new ideas."],
+        optionalDetails: ["villagers initially laugh at the unusual windmill design", "the successful water project changes everyone's mind about young inventors"]
+      }
+    },
+    {
       text: "After experiencing several story adventures, {userName} realizes the dragon has been lonely for centuries, serving as the library's guardian with no one to share stories with. {userName} and their friend propose establishing regular visits where they can read together and discuss the lessons learned from different tales. The dragon gratefully accepts, explaining that sharing stories makes them even more meaningful and educational.",
       pause: true,
       hook: "What wonderful friendship will develop through their shared love of stories?",

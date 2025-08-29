@@ -105,6 +105,16 @@ export const template = {
       }
     },
     {
+      text: "Two years into running the International Youth Climate Justice Network, {userName} faces the challenge of maintaining momentum as initial enthusiasm wanes and the daily work of environmental organizing becomes routine. Some regional coordinators burn out from the pressure, while others struggle with limited funding for community projects. {userName} learns that sustainable activism requires building systems that support long-term commitment rather than relying on short-term inspiration.",
+      pause: true,
+      hook: "How do environmental movements sustain themselves beyond initial enthusiasm and media attention?",
+      microVariants: {
+        text: "Long-term network management teaches {userName} about the practical challenges of sustaining global environmental movements through ordinary work periods.",  
+        alternatives: ["The reality of ongoing climate organization reveals how successful movements must evolve beyond initial excitement to support sustained community engagement."],
+        optionalDetails: ["regional groups develop different approaches to maintaining volunteer energy", "funding challenges require innovative resource-sharing between communities"]
+      }
+    },
+    {
       text: "Three years after their initial presentation, {userName} reflects on how their local regenerative mining project has evolved into a global movement for community-controlled environmental technology. They understand that climate heroism isn't about individual recognition, but about creating systems that empower communities to develop their own environmental solutions.",
       pause: true,
       hook: "What lasting impact do young environmental leaders create when they prioritize community empowerment over personal recognition?",

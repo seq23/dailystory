@@ -65,6 +65,16 @@ export const template = {
       }
     },
     {
+      text: "After three successful club meetings, {userName} notices that Tommy has grown more confident and now helps newer members find books they'll enjoy. The quiet boy who once hid under the stairs now eagerly recommends his favorite {favoriteAnimal} stories to anyone who will listen. Mrs. Chen smiles watching Tommy help a kindergartner sound out difficult words.",
+      pause: true,
+      hook: "How has Tommy's transformation inspired other shy students?",
+      microVariants: {
+        text: "After three successful club meetings, {userName} notices that Tommy has grown more confident and now helps newer members find books they'll enjoy. The quiet boy who once hid under the stairs now eagerly recommends his favorite {favoriteAnimal} stories to anyone who will listen. Mrs. Chen smiles watching Tommy help a kindergartner sound out difficult words.",
+        alternatives: ["Tommy's confidence blossoms as he becomes a reading mentor to other students who need encouragement.", "The shy book hider transforms into an enthusiastic reading guide, helping others discover the joy of animal stories."],
+        optionalDetails: ["Tommy wears a {favoriteColor} reading buddy badge with pride", "other students specifically ask for Tommy's book recommendations"]
+      }
+    },
+    {
       text: "As the club grows bigger each week, {userName} realizes that solving mysteries isn't just about finding missing things - it's about helping people feel understood and included. The reading club becomes so popular that Mrs. Chen asks {userName} to help start similar clubs for students with other interests like {hobbies}.",
       pause: true,
       hook: "What other mysteries might {userName} solve through kindness and understanding?",
