@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
@@ -20,6 +21,7 @@ interface TestResult {
   source: 'ai' | 'fallback' | 'emergency' | 'unknown';
   hasPageConcatenation: boolean;
   contentPreview: string;
+  fullContent: string[];
   withinTokenLimits: boolean;
   responseTime?: number;
   error?: string;
@@ -185,6 +187,7 @@ export function StoryPromptTester() {
       source: 'unknown',
       hasPageConcatenation: false,
       contentPreview: '',
+      fullContent: [],
       withinTokenLimits: false,
       generationPath: [],
       emergencyContentUsed: false
@@ -203,6 +206,7 @@ export function StoryPromptTester() {
         if (response.pages && Array.isArray(response.pages)) {
           result.wordCount = response.pages.join(' ').split(' ').length;
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
+          result.fullContent = response.pages;
           result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
           
           // Check for emergency content (rhyming educational content)
@@ -228,6 +232,7 @@ export function StoryPromptTester() {
         if (response.content) {
           result.wordCount = response.content.split(' ').length;
           result.contentPreview = response.content.substring(0, 100) + '...';
+          result.fullContent = [response.content];
           result.hasPageConcatenation = false; // Single page, no concatenation possible
           
           // Check for emergency content
@@ -247,6 +252,7 @@ export function StoryPromptTester() {
         if (response.pages && Array.isArray(response.pages)) {
           result.wordCount = response.pages.join(' ').split(' ').length;
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
+          result.fullContent = response.pages;
           result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
           
           // Check for emergency rhyming content from ErrorHandlingManager
@@ -439,24 +445,27 @@ export function StoryPromptTester() {
   };
 
   // Render individual test result
-  const renderTestResult = (result: TestResult) => (
-    <Card key={`${result.level}-${result.service}`} className="mb-4">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
-            {result.level} - {result.service.toUpperCase()}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            {result.success ? (
-              <CheckCircle2 className="w-5 h-5 text-green-500" />
-            ) : (
-              <XCircle className="w-5 h-5 text-red-500" />
-            )}
-            {renderSourceBadge(result.source, result.emergencyContentUsed)}
+  const renderTestResult = (result: TestResult) => {
+    const [isContentExpanded, setIsContentExpanded] = useState(false);
+
+    return (
+      <Card key={`${result.level}-${result.service}`} className="mb-4">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">
+              {result.level} - {result.service.toUpperCase()}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {result.success ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              ) : (
+                <XCircle className="w-5 h-5 text-red-500" />
+              )}
+              {renderSourceBadge(result.source, result.emergencyContentUsed)}
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+        </CardHeader>
+        <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div>
             <div className="text-sm text-muted-foreground">Pages</div>
@@ -529,9 +538,92 @@ export function StoryPromptTester() {
             ℹ️ Emergency educational content was used - this includes rhyming explanations to help users understand what happened
           </div>
         )}
+
+        {/* Full Content Display */}
+        {result.fullContent && result.fullContent.length > 0 && (
+          <Collapsible open={isContentExpanded} onOpenChange={setIsContentExpanded} className="mt-4">
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
+                <Eye className="w-4 h-4" />
+                {isContentExpanded ? 'Hide Full Content' : 'View Full Content'}
+                {isContentExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
+                  <span>Complete Story Content ({result.pages} page{result.pages !== 1 ? 's' : ''})</span>
+                  <span>Total: {result.wordCount} words</span>
+                </div>
+                
+                {result.emergencyContentUsed && (
+                  <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-200 rounded">
+                    <div className="text-sm font-medium text-red-800 mb-1">🚨 Emergency Content Alert</div>
+                    <div className="text-sm text-red-700">
+                      This content was generated using emergency fallback systems. It includes educational rhyming content 
+                      to help explain technical issues to users.
+                    </div>
+                  </div>
+                )}
+                
+                <div className="space-y-4">
+                  {result.fullContent.map((page, index) => {
+                    const pageWordCount = page.split(' ').length;
+                    const isEmergencyPage = page.includes('story machine took a little rest') || 
+                                           page.includes('story elves went to play') ||
+                                           page.includes('Try Again');
+                    
+                    return (
+                      <div key={index} className={`border-l-2 pl-4 ${isEmergencyPage ? 'border-red-300 bg-red-50' : 'border-primary/30'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-medium text-sm">
+                            Page {index + 1}
+                            {isEmergencyPage && <span className="ml-2 text-red-600 text-xs">[Emergency Content]</span>}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {pageWordCount} word{pageWordCount !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                        <div className={`text-sm leading-6 ${isEmergencyPage ? 'text-red-800' : 'text-foreground'}`}>
+                          {page}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Content Analysis */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="text-sm font-medium text-muted-foreground mb-2">Content Analysis</div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                    <div>
+                      <div className="text-muted-foreground">Avg Words/Page</div>
+                      <div className="font-medium">{Math.round(result.wordCount / result.pages)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Source Type</div>
+                      <div className="font-medium">{result.emergencyContentUsed ? 'Emergency' : result.source.toUpperCase()}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Generation Time</div>
+                      <div className="font-medium">{result.responseTime}ms</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Quality</div>
+                      <div className={`font-medium ${result.withinTokenLimits ? 'text-green-600' : 'text-red-600'}`}>
+                        {result.withinTokenLimits ? 'Valid' : 'Invalid'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </CardContent>
     </Card>
   );
+};
 
   return (
     <div className="max-w-6xl mx-auto p-6">
