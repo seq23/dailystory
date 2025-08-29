@@ -118,6 +118,16 @@ export const template = {
         alternatives: ["Taking responsibility for the ongoing biosphere project, {userName} becomes a mentor for future students tackling similar challenges.", "The successful biosphere becomes {userName}'s lasting contribution to the classroom, inspiring future environmental scientists."],
         optionalDetails: ["they create a detailed maintenance manual", "the biosphere is now in its sixth month of stable operation", "Mrs. Rodriguez nominates {userName} for the school's science award"]
       }
+    },
+    {
+      text: "One year after their initial success, {userName} presents their biosphere project to a regional middle school science conference, where they demonstrate how student-led ecosystem research can contribute to real environmental solutions. The presentation attracts attention from high school biology teachers who invite {userName} to mentor their advanced students in ecosystem design. As they reflect on their journey from confused beginning student to confident scientific mentor, {userName} understands that the most important discovery wasn't how to create a thriving biosphere, but how to share their passion for understanding the intricate connections that sustain all life on Earth.",
+      pause: true,
+      hook: "What lasting impact will {userName}'s mentoring and scientific communication have on the next generation of environmental scientists?",
+      microVariants: {
+        text: "Regional science conference presentation establishes {userName} as a young expert whose successful project inspires advanced high school students to pursue ecosystem research.",
+        alternatives: ["Sharing biosphere expertise across grade levels demonstrates how {userName}'s project has grown from individual achievement to broader educational impact."],
+        optionalDetails: ["high school students begin collaborating with {userName} on more complex ecosystem projects", "the presentation is recorded and shared with science teachers nationwide"]
+      }
     }
   ],
   endings: [

@@ -93,6 +93,16 @@ export const template = {
         alternatives: ["The annual celebration establishes {userName}'s legacy of transforming personal differences into community strengths through enhanced collaboration."],
         optionalDetails: ["younger students eagerly anticipate their own opportunities to contribute to academy traditions", "the celebration attracts visitors from other superhero academies seeking similar collaborative approaches"]
       }
+    },
+    {
+      text: "Years later, as {userName} prepares to graduate from the academy, they reflect on how their enhancement power has evolved beyond amplifying others' abilities to creating lasting systems that help people discover their own potential. The mentorship programs they established continue to flourish, with former students now teaching new generations that true heroism comes from lifting others up. {userName} understands that their greatest superpower isn't what they can do for others, but what they can inspire others to do for themselves and their communities.",
+      pause: true,
+      hook: "How will {userName}'s legacy continue to shape heroes long after they leave the academy?",
+      microVariants: {
+        text: "Graduation reflection reveals how {userName}'s enhancement power created sustainable systems for helping future students discover their own heroic potential.",
+        alternatives: ["The lasting impact of mentorship programs demonstrates that {userName}'s true superpower was inspiring self-discovery and community building in others."],
+        optionalDetails: ["former students send letters describing how the mentorship programs changed their lives", "the academy's collaborative approach has been adopted by superhero schools worldwide"]
+      }
     }
   ],
   endings: [

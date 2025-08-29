@@ -93,6 +93,16 @@ export const template = {
         alternatives: ["The success model spreads internationally as {userName} helps establish environmental partnerships between surface and underwater communities worldwide."],
         optionalDetails: ["each magical seashell resonates with a unique {favoriteColor} frequency", "international environmental conferences now include underwater delegates"]
       }
+    },
+    {
+      text: "Years later, when {userName} receives the prestigious Young Environmental Hero award for their inter-realm conservation work, they invite Marina and King Neptune to attend the ceremony via magical communication. As they accept the award, {userName} reflects on how their childhood discovery of a glowing seashell grew into a global movement that proved environmental protection requires both scientific knowledge and respect for all living creatures. The network of underwater kingdoms continues to thrive, working alongside surface communities to heal the oceans and build a sustainable future for all Earth's inhabitants.",
+      pause: true,
+      hook: "What lasting legacy will {userName}'s environmental partnership create for future generations?",
+      microVariants: {
+        text: "The Young Environmental Hero award recognizes how {userName}'s childhood discovery grew into a global movement connecting surface and underwater communities.",
+        alternatives: ["Reflecting on their journey from seashell discovery to global environmental leadership, {userName} sees how inter-species cooperation creates lasting change."],
+        optionalDetails: ["marine life populations have recovered significantly in partner regions", "the environmental partnership model is taught in schools worldwide"]
+      }
     }
   ],
   endings: [

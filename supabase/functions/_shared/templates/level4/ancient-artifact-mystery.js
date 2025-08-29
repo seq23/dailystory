@@ -113,6 +113,16 @@ export const template = {
         alternatives: ["The complexities of environmental justice require {userName} to understand how authentic allyship supports rather than overshadows traditional communities."],
         optionalDetails: ["traditional communities lead the project while {userName} provides administrative and advocacy support", "indigenous environmental technologies prove more sophisticated than modern alternatives"]
       }
+    },
+    {
+      text: "Five years after their initial artifact discovery, {userName} stands before an international assembly of indigenous knowledge keepers, scientists, and policy makers as they help ratify the Global Traditional Knowledge Protection Treaty. This groundbreaking agreement ensures that traditional communities maintain ownership and control over their environmental wisdom while benefiting from any applications of their knowledge. {userName} realizes their role has evolved from curious student to bridge-builder between ancient wisdom and modern environmental policy, helping create a more equitable future where all forms of knowledge are valued and protected.",
+      pause: true,
+      hook: "What lasting impact will this treaty have on protecting both cultural heritage and environmental wisdom for future generations?",
+      microVariants: {
+        text: "The Global Traditional Knowledge Protection Treaty represents the culmination of {userName}'s journey from archaeological discovery to environmental justice advocacy.",
+        alternatives: ["International recognition of traditional knowledge rights establishes {userName}'s lasting legacy in protecting cultural heritage and environmental wisdom."],
+        optionalDetails: ["the treaty becomes a model for other international agreements protecting indigenous rights", "traditional communities worldwide celebrate this recognition of their environmental expertise"]
+      }
     }
   ],
   endings: [

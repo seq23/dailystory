@@ -93,6 +93,16 @@ export const template = {
         alternatives: ["The Medieval investigation reveals a network of time criminals that requires careful historical detective work to defeat."],
         optionalDetails: ["they meet surprisingly familiar faces in different time periods", "historical figures prove more perceptive than expected about temporal anomalies"]
       }
+    },
+    {
+      text: "Back in their own time period, {userName} establishes the Secret Time Guardian Academy, where they train other young people with time-travel abilities to protect historical accuracy while learning from the past. Kira and Marcus become co-instructors, teaching students from their respective eras about ancient wisdom and historical problem-solving techniques. The academy operates across multiple time periods simultaneously, creating a network of young guardians who ensure that history remains truthful and that the lessons of the past can guide humanity toward a better future.",
+      pause: true,
+      hook: "How will the Time Guardian Academy shape the relationship between past, present, and future?",
+      microVariants: {
+        text: "The Time Guardian Academy creates a multi-temporal network of young protectors who ensure historical accuracy while learning from the wisdom of different eras.",
+        alternatives: ["Training future time guardians across multiple time periods builds a lasting system for protecting historical truth and learning from the past."],
+        optionalDetails: ["students from different centuries share knowledge and perspectives", "the academy prevents historical tampering while fostering cross-temporal understanding"]
+      }
     }
   ],
   endings: [

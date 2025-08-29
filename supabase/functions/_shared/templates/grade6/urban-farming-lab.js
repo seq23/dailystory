@@ -135,6 +135,16 @@ export const template = {
         ],
         optionalDetails: ["they create standardized training materials for new sites", "the Youth Environmental Advisory Committee meets monthly at city hall", "local universities offer {userName} early admission interviews"]
       }
+    },
+    {
+      text: "Three years after discovering their neighborhood was a food desert, {userName} addresses the National Youth Climate Summit as the youngest speaker ever invited to present on 'Urban Agriculture and Environmental Justice.' Standing before an audience of young environmental leaders from around the world, they share how their rooftop garden project demonstrated that food justice and climate action are inseparably connected. As they conclude their presentation, {userName} reflects on Mrs. Thompson's words about their generation giving her hope - and realizes that the seeds they planted weren't just vegetables, but the foundations of a movement that proves young people can cultivate systemic change through patient work, innovative thinking, and unwavering commitment to community wellbeing.",
+      pause: true,
+      hook: "What global impact will {userName}'s environmental justice leadership have on the next generation of climate activists?",
+      microVariants: {
+        text: "National Youth Climate Summit keynote establishes {userName} as a global voice connecting urban agriculture with environmental justice and community empowerment.",
+        alternatives: ["International recognition demonstrates how {userName}'s local food justice work has grown into a model for youth-led environmental action worldwide."],
+        optionalDetails: ["the presentation is live-streamed to thousands of young environmental activists globally", "Mrs. Thompson watches proudly from the rooftop garden, surrounded by thriving vegetables that represent lasting change"]
+      }
     }
   ],
   endings: [

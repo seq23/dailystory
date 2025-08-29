@@ -113,6 +113,16 @@ export const template = {
         alternatives: ["The evolution from individual protection to community empowerment demonstrates how effective digital activism creates lasting change through systematic rather than reactive approaches."],
         optionalDetails: ["communities worldwide use the Coalition's tools to protect themselves from various forms of digital exploitation", "the infrastructure supports democratic participation and economic opportunity alongside harassment protection"]
       }
+    },
+    {
+      text: "Five years after Jordan's initial harassment sparked their activism, {userName} addresses the United Nations Digital Rights Assembly as the youngest-ever keynote speaker. Their presentation on 'Community-Led Digital Protection' outlines how grassroots technological solutions can be more effective than top-down regulation in protecting vulnerable populations online. As they look out at delegates from 195 countries, {userName} remembers Jordan - now a successful digital rights lawyer who helped draft international cyberbullying prevention laws. Together, they've proven that young people can transform personal experiences of injustice into global movements for digital democracy and community empowerment.",
+      pause: true,
+      hook: "What lasting global impact will {userName}'s digital rights advocacy create for future generations of internet users?",
+      microVariants: {
+        text: "UN keynote address represents the global recognition of {userName}'s evolution from harassment witness to international digital rights leader advocating for community empowerment.",
+        alternatives: ["International leadership in digital rights demonstrates how personal experiences of injustice can inspire lasting systemic changes that protect vulnerable populations worldwide."],
+        optionalDetails: ["Jordan attends the UN assembly as a legal advisor specializing in youth-developed cyberbullying prevention frameworks", "195 countries vote to adopt community-led digital protection standards based on {userName}'s grassroots model"]
+      }
     }
   ],
   endings: [

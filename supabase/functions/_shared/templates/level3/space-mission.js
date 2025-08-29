@@ -93,6 +93,16 @@ export const template = {
         alternatives: ["Personal achievement transforms into community impact as {userName} realizes that sharing scientific passion creates broader educational opportunities."],
         optionalDetails: ["the museum offers summer internships for interested students", "other schools request guidance for organizing similar science fairs"]
       }
+    },
+    {
+      text: "Months later, when {userName} receives their acceptance letter to NASA's advanced youth astronaut program, they understand that their space journey began not with rockets or technology, but with curiosity and the willingness to solve problems creatively. The Junior Space Scientists Club continues to thrive, with new members conducting their own experiments and sharing their discoveries with the community. {userName} realizes that the most important space exploration happens right here on Earth, as young minds reach for the stars while keeping their feet firmly planted in helping others learn and grow.",
+      pause: true,
+      hook: "What lasting legacy will {userName} create as they prepare for their next space adventure?",
+      microVariants: {
+        text: "Acceptance to NASA's youth program validates {userName}'s growth from curious student to scientific leader who inspires others to explore space and science.",
+        alternatives: ["The journey from space camp to NASA acceptance demonstrates how curiosity, problem-solving, and community leadership create lasting impact beyond individual achievement."],
+        optionalDetails: ["the club members organize a celebration party for {userName}'s acceptance", "younger students express excitement about following {userName}'s path to space exploration"]
+      }
     }
   ],
   endings: [

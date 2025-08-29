@@ -135,6 +135,16 @@ export const template = {
         ],
         optionalDetails: ["they create a 'coding for good' curriculum", "Mrs. Chen bakes cookies for the new coding club members", "three other schools want to implement similar programs"]
       }
+    },
+    {
+      text: "Two years after meeting Mrs. Chen, {userName} stands before a national conference of young technologists as the keynote speaker on 'Community-Centered App Development.' Their Community Care App now serves over 200 elderly residents across five cities, with {userName} as its youngest lead developer. During their presentation, they emphasize that the most successful technology solutions begin not with coding skills, but with genuine relationships and careful listening to community needs. As they conclude their speech to thunderous applause, {userName} spots Mrs. Chen in the audience via video call, proudly showing off the {favoriteColor} scarf she knitted during her newly active social life - a perfect reminder that technology's greatest achievement is helping people flourish in their real-world relationships and communities.",
+      pause: true,
+      hook: "How will {userName}'s national platform influence the next generation of community-focused technologists?",
+      microVariants: {
+        text: "National keynote speech establishes {userName} as a young leader in community-centered technology, with Mrs. Chen proudly watching their success unfold.",
+        alternatives: ["The conference presentation demonstrates how {userName}'s local community project has grown into a national model for ethical technology development."],
+        optionalDetails: ["universities begin offering courses based on {userName}'s community-centered development approach", "Mrs. Chen's video appearance receives a standing ovation from the tech conference audience"]
+      }
     }
   ],
   endings: [

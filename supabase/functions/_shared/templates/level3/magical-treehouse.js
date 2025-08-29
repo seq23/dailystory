@@ -103,6 +103,16 @@ export const template = {
         alternatives: ["The dragon's gift ensures {userName} maintains their connection to meaningful learning through the magical bookmarks."],
         optionalDetails: ["the bookmarks shimmer with {favoriteColor} light when learning occurs", "other children notice {userName}'s improved reading enthusiasm"]
       }
+    },
+    {
+      text: "Back home, {userName} and their friend discover the magic bookmarks work with any book, helping them understand difficult subjects at school and making reading more enjoyable than ever before. When they share stories about the magical library with other children, some don't believe them until they notice how the bookmarks help everyone become better readers. {userName} starts a neighborhood reading club where children gather to share books and discuss the important lessons they learn, creating their own community of curious minds.",
+      pause: true,
+      hook: "How will {userName}'s reading club spread the magic of learning throughout their community?",
+      microVariants: {
+        text: "The magical bookmarks help {userName} create a neighborhood reading club where children share books and important lessons from their reading adventures.",
+        alternatives: ["Using the bookmarks' magic, {userName} helps other children discover the joy of reading while building a community of learners."],
+        optionalDetails: ["the reading club meets under {userName}'s favorite tree every week", "parents notice their children's improved enthusiasm for reading and learning"]
+      }
     }
   ],
   endings: [
