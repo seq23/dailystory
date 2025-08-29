@@ -330,7 +330,7 @@ export function StoryPromptTester() {
     return result;
   };
 
-  // Enhanced page concatenation detection
+  // Enhanced page concatenation detection with specific patterns from logs
   const checkPageConcatenation = (pages: string[], level: string): boolean => {
     if (!pages || pages.length <= 1) return false;
     
@@ -348,15 +348,107 @@ export function StoryPromptTester() {
     const expectedWordLimit = difficultyLimits[level as keyof typeof difficultyLimits] || 50;
     
     for (let i = 0; i < pages.length; i++) {
-      const pageWordCount = pages[i].split(' ').length;
+      const page = pages[i];
+      const pageWordCount = page.split(' ').length;
       
-      // Check for obvious concatenation patterns
+      // 1. Excessive word count (clear concatenation)
       if (pageWordCount > expectedWordLimit * 2) return true;
-      if (pages[i].includes('Page ') && pages[i].includes('Page ', 10)) return true;
-      if (pages[i].match(/\.\s+[A-Z].*\.\s+[A-Z]/g)) return true;
+      
+      // 2. Multiple "Page X:" markers
+      if (page.includes('Page ') && page.includes('Page ', 10)) return true;
+      
+      // 3. Multiple disconnected sentences (3+ full sentences ending abruptly)
+      if (page.match(/\.\s+[A-Z].*\.\s+[A-Z].*\.\s+[A-Z]/g)) return true;
+      
+      // 4. Specific concatenation patterns from logs
+      if (page.match(/, and [a-z]/g)) return true; // ", and lowercase" unnatural grammar
+      if (page.match(/technology begins behaving.*artifact/i)) return true; // Specific pattern
+      if (page.match(/ancient texts mention.*expedition that found/i)) return true; // Another pattern
+      if (page.match(/\. [A-Z][^.]{20,}\. [A-Z][^.]{20,}\. [A-Z]/)) return true; // Long fragments
+      
+      // 5. Excessive comma usage (often indicates concatenated details)
+      const commaCount = (page.match(/,/g) || []).length;
+      if (commaCount > 6 && pageWordCount < 150) return true; // High comma density
+      
+      // 6. Awkward conjunctions indicating forced connections
+      if (page.match(/, while .*, and /g)) return true; // Complex nested connectors
+      if (page.match(/, suggesting .*, and /g)) return true; // Another concatenation pattern
     }
     
     return false;
+  };
+
+  // Enhanced content validation
+  const validateContentQuality = (pages: string[]): { 
+    score: number;
+    issues: string[];
+    concatenationDetails: string[];
+    grammarIssues: string[];
+  } => {
+    const issues: string[] = [];
+    const concatenationDetails: string[] = [];
+    const grammarIssues: string[] = [];
+    let score = 100;
+
+    pages.forEach((page, index) => {
+      if (!page || typeof page !== 'string') {
+        issues.push(`Page ${index + 1}: Invalid content type`);
+        score -= 20;
+        return;
+      }
+
+      // Concatenation detection with details
+      const concatenationPatterns = [
+        { pattern: /, and [a-z]/, description: "Unnatural lowercase conjunction" },
+        { pattern: /\. [A-Z][^.]{20,}\. [A-Z][^.]{20,}/, description: "Multiple long disconnected sentences" },
+        { pattern: /, while .*, and /, description: "Complex nested connectors" },
+        { pattern: /technology begins behaving.*artifact/i, description: "Specific template concatenation" },
+        { pattern: /ancient texts mention.*expedition/i, description: "Another template concatenation" }
+      ];
+
+      concatenationPatterns.forEach(({ pattern, description }) => {
+        if (pattern.test(page)) {
+          concatenationDetails.push(`Page ${index + 1}: ${description}`);
+          score -= 15;
+        }
+      });
+
+      // Grammar issues
+      const grammarPatterns = [
+        { pattern: /\ba\s+([aeiouAEIOU])/, description: "Should use 'an' before vowel" },
+        { pattern: /\ban\s+([^aeiouAEIOU])/, description: "Should use 'a' before consonant" },
+        { pattern: /\s{2,}/, description: "Multiple spaces" },
+        { pattern: /\.\s*\./, description: "Double periods" }
+      ];
+
+      grammarPatterns.forEach(({ pattern, description }) => {
+        if (pattern.test(page)) {
+          grammarIssues.push(`Page ${index + 1}: ${description}`);
+          score -= 5;
+        }
+      });
+
+      // Word count issues
+      const wordCount = page.split(/\s+/).length;
+      if (wordCount > 200) {
+        issues.push(`Page ${index + 1}: Excessive length (${wordCount} words)`);
+        score -= 10;
+      }
+
+      // Comma density (indication of concatenation)
+      const commaCount = (page.match(/,/g) || []).length;
+      if (commaCount > 6 && wordCount < 150) {
+        concatenationDetails.push(`Page ${index + 1}: High comma density (${commaCount} commas in ${wordCount} words)`);
+        score -= 10;
+      }
+    });
+
+    return { 
+      score: Math.max(0, score), 
+      issues, 
+      concatenationDetails, 
+      grammarIssues 
+    };
   };
 
   // Token limit analysis

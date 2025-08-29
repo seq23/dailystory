@@ -130,36 +130,47 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
     shouldAddDetail = Math.random() < baseDetailChance;
   }
   
-  // Add optional details (AGGRESSIVE for Hard/Expert levels)
+  // FIXED: Smart content selection instead of aggressive concatenation
   if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
     const allDetails = scene.microVariants.optionalDetails;
+    const currentWordCount = text.split(' ').length;
+    const targetWordCount = isHardOrExpert ? (template.level === 'Level 3' ? 80 : 100) : 50;
+    const wordsNeeded = targetWordCount - currentWordCount;
     
-    if (isHardOrExpert) {
-      // For Hard/Expert: ALWAYS add multiple details when available
-      if (allDetails.length >= 2) {
-        // Add 2 details for guaranteed richness
-        const detail1 = allDetails[0];
-        const detail2 = allDetails[1];
-        text = text.trim().endsWith('.') 
-          ? `${text.slice(0, -1)}, ${detail1}, and ${detail2}.`
-          : `${text} ${detail1.charAt(0).toUpperCase()}${detail1.slice(1)}, and ${detail2}.`;
-        
-        console.log(`🎯 HARD/EXPERT: Added 2 details (${detail1.split(' ').length + detail2.split(' ').length} extra words)`);
-      } else {
-        // Add single detail if only one available
-        const detail = allDetails[0];
-        text = text.trim().endsWith('.') 
-          ? `${text.slice(0, -1)}, and ${detail}.`
-          : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
-        
-        console.log(`🎯 HARD/EXPERT: Added 1 detail (${detail.split(' ').length} extra words)`);
+    if (isHardOrExpert && wordsNeeded > 20) {
+      // For Hard/Expert: Add details only if we need more content, intelligently select
+      const selectedDetails: string[] = [];
+      let addedWords = 0;
+      
+      // Select details that fit within our word budget
+      for (const detail of allDetails) {
+        const detailWords = detail.split(' ').length;
+        if (addedWords + detailWords <= wordsNeeded && selectedDetails.length < 2) {
+          selectedDetails.push(detail);
+          addedWords += detailWords;
+        }
       }
-    } else {
-      // Normal levels: single detail addition
+      
+      if (selectedDetails.length > 0) {
+        // Smart integration: blend details naturally instead of listing
+        const detailText = selectedDetails.length === 1 
+          ? selectedDetails[0]
+          : `${selectedDetails[0]}, while ${selectedDetails[1]}`;
+          
+        text = text.trim().endsWith('.') 
+          ? `${text.slice(0, -1)}, ${detailText}.`
+          : `${text} ${detailText.charAt(0).toUpperCase()}${detailText.slice(1)}.`;
+        
+        console.log(`🎯 SMART SELECTION: Added ${selectedDetails.length} details (${addedWords} words) targeting ${targetWordCount}`);
+      }
+    } else if (!isHardOrExpert && wordsNeeded > 10) {
+      // Normal levels: selective single detail addition
       const detail = pick(allDetails);
       text = text.trim().endsWith('.') 
-        ? `${text.slice(0, -1)}, and ${detail}.`
+        ? `${text.slice(0, -1)}, ${detail}.`
         : `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+        
+      console.log(`🎯 NORMAL: Added 1 detail (${detail.split(' ').length} words)`);
     }
   }
   
@@ -167,15 +178,31 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   const finalWordCount = text.split(' ').length;
   const targetWords = isHardOrExpert ? (template.level === 'Level 3' ? 80 : 100) : 50;
   
-  // MINIMUM WORD COUNT ENFORCEMENT for Hard/Expert
-  if (isHardOrExpert && finalWordCount < targetWords) {
-    console.log(`⚠️ WORD COUNT TOO LOW: ${finalWordCount} words (target: ${targetWords})`);
+  // SMARTER WORD COUNT ENFORCEMENT: Use alternatives as replacements, not additions
+  const newFinalWordCount = text.split(' ').length;
+  if (isHardOrExpert && newFinalWordCount < targetWords) {
+    console.log(`⚠️ WORD COUNT STILL LOW: ${newFinalWordCount} words (target: ${targetWords})`);
     
-    // Add more content if we have alternatives
+    // Use alternative as REPLACEMENT if it's longer than current text
     if (scene.microVariants.alternatives.length > 0) {
-      const alternative = pick(scene.microVariants.alternatives);
-      text = `${text} ${alternative}`;
-      console.log(`🔧 Added alternative text (${alternative.split(' ').length} words)`);
+      const longestAlternative = scene.microVariants.alternatives
+        .reduce((longest, current) => 
+          current.split(' ').length > longest.split(' ').length ? current : longest
+        );
+      
+      if (longestAlternative.split(' ').length > scene.text.split(' ').length) {
+        // Replace with longer alternative
+        text = longestAlternative;
+        console.log(`🔄 REPLACED with longer alternative (${longestAlternative.split(' ').length} words)`);
+      } else {
+        // Only add if we're significantly short
+        const wordsShort = targetWords - newFinalWordCount;
+        if (wordsShort > 20) {
+          const alternative = pick(scene.microVariants.alternatives);
+          text = `${text} ${alternative}`;
+          console.log(`🔧 Added alternative text (${alternative.split(' ').length} words)`);
+        }
+      }
     }
   }
   

@@ -22,13 +22,14 @@ export interface PlaceholderValidationResult {
   unresolvedPlaceholders: string[];
 }
 
-export interface SafeUserInfo extends Partial<UserInfo> {
+export interface SafeUserInfo {
   name: string;
   favoriteColor: string;
   favoriteAnimal: string;
   favoriteFood: string;
   hobbies: string;
   specialRequest: string;
+  age: string; // String for template compatibility
 }
 
 const FALLBACK_POOLS = {
@@ -54,7 +55,8 @@ const SAFE_DEFAULTS: SafeUserInfo = {
   favoriteAnimal: "puppy",
   favoriteFood: "cookies",
   hobbies: "playing",
-  specialRequest: "fun adventure"
+  specialRequest: "fun adventure",
+  age: "10"
 };
 
 // Article agreement for a/an placement
@@ -88,7 +90,8 @@ export function validateAndSanitizeUserInfo(userInfo?: Partial<UserInfo>): SafeU
     favoriteAnimal: sanitizeString(userInfo.favoriteAnimal) || SAFE_DEFAULTS.favoriteAnimal,
     favoriteFood: sanitizeString(userInfo.favoriteFood) || SAFE_DEFAULTS.favoriteFood,
     hobbies: sanitizeString(userInfo.hobbies) || SAFE_DEFAULTS.hobbies,
-    specialRequest: sanitizeString(userInfo.specialRequest) || SAFE_DEFAULTS.specialRequest
+    specialRequest: sanitizeString(userInfo.specialRequest) || SAFE_DEFAULTS.specialRequest,
+    age: userInfo.age ? userInfo.age.toString() : SAFE_DEFAULTS.age
   };
 
   if (errors.length > 0) {
@@ -222,7 +225,7 @@ function scanForAnimalFromText(text?: string): string | undefined {
 export function validateTemplateStructure(text: string): PlaceholderValidationResult {
   const placeholders = text.match(/\{[^}]+\}/g) || [];
   const knownPlaceholders = new Set([
-    'userName', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest',
+    'userName', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest', 'age',
     'animal', 'friend', 'setting', 'adjective', 'object', 'action', 'pronoun', 'food', 'color',
     'forestType', 'weatherType', 'placeType'
   ]);
@@ -258,7 +261,8 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
     favoriteAnimal: safeUserInfo.favoriteAnimal,
     favoriteFood: safeUserInfo.favoriteFood,
     hobbies: safeUserInfo.hobbies,
-    specialRequest: safeUserInfo.specialRequest
+    specialRequest: safeUserInfo.specialRequest,
+    age: safeUserInfo.age || SAFE_DEFAULTS.age
   };
 
   console.log('🔍 [DEBUG] Canonical placeholder resolution:', { 
