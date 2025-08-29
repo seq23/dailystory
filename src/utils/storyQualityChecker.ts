@@ -171,22 +171,22 @@ export class StoryQualityChecker {
   private static checkReadabilityLevel(pages: string[], difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): QualityIssue[] {
     const issues: QualityIssue[] = [];
     
-    // Ideal word count ranges (what we aim for)
+    // Upper-end target word count ranges (what we aim for)
     const idealWordCounts = {
-      beginner: { min: 1, max: 6 }, // Ages 3-5: Ultra-simple pre-reading vocabulary
-      easy: { min: 3, max: 6 },    // Ages 6-8: Complete simple sentences for TTS
-      medium: { min: 6, max: 12 }, // Ages 5-7: Slightly longer sentences  
-      hard: { min: 10, max: 18 },  // Ages 7-9: More complex sentences
-      expert: { min: 15, max: 25 } // Ages 9-11+: Advanced vocabulary and complexity
+      beginner: { min: 5, max: 6 }, // 1 sentence × 2-6 words = target 6 words
+      easy: { min: 20, max: 24 },   // 1-2 sentences × 4-12 words = target 24 words
+      medium: { min: 40, max: 45 }, // 2-3 sentences × 5-15 words = target 45 words
+      hard: { min: 75, max: 80 },   // 3-4 sentences × variable = target 80 words
+      expert: { min: 95, max: 100 } // 4-5 sentences × advanced = target 100+ words
     };
     
     // Flexible ranges with margin of error for natural flow
     const flexibleWordCounts = {
-      beginner: { min: 1, max: 6 }, // Strict for pre-readers - no flexibility
-      easy: { min: 2, max: 8 },     // 25% margin of error
-      medium: { min: 4, max: 15 },   // 25% margin of error
-      hard: { min: 8, max: 22 },     // 25% margin of error  
-      expert: { min: 12, max: 30 }   // 25% margin of error
+      beginner: { min: 4, max: 8 },   // Small margin around 6-word target
+      easy: { min: 18, max: 30 },     // Margin around 24-word target
+      medium: { min: 35, max: 55 },   // Margin around 45-word target
+      hard: { min: 65, max: 95 },     // Margin around 80-word target
+      expert: { min: 85, max: 120 }   // Margin around 100+ word target
     };
     
     const ideal = idealWordCounts[difficulty] || idealWordCounts.easy;

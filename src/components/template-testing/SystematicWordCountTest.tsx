@@ -21,10 +21,11 @@ interface TestResult {
 }
 
 const LEVELS_TO_TEST = [
-  { value: 'easy', label: 'Level 1 (Easy)', expectedWords: '60-80' },
-  { value: 'medium', label: 'Level 2 (Medium)', expectedWords: '70-90' },
-  { value: 'hard', label: 'Level 3 (Hard)', expectedWords: '80-120' },
-  { value: 'expert', label: 'Level 4 (Expert)', expectedWords: '90-150' }
+  { value: 'beginner', label: 'Beginner', expectedWords: '6' },
+  { value: 'easy', label: 'Easy', expectedWords: '24' },
+  { value: 'medium', label: 'Medium', expectedWords: '45' },
+  { value: 'hard', label: 'Hard', expectedWords: '80' },
+  { value: 'expert', label: 'Expert', expectedWords: '100+' }
 ];
 
 const MODES_TO_TEST: Array<'testing' | 'real-user'> = ['testing', 'real-user'];
@@ -61,12 +62,21 @@ export function SystematicWordCountTest() {
     ));
   };
 
-  const analyzeWordCounts = (pages: string[]): { wordCounts: number[], averageWords: number, isValid: boolean } => {
+  const analyzeWordCounts = (pages: string[], level: string): { wordCounts: number[], averageWords: number, isValid: boolean } => {
     const wordCounts = pages.map(page => page.split(' ').length);
     const averageWords = Math.round(wordCounts.reduce((sum, count) => sum + count, 0) / wordCounts.length);
     
-    // Check if average is within expected range for structured templates (60+ words)
-    const isValid = averageWords >= 60;
+    // Upper-end target validation based on level
+    const targets = {
+      beginner: 6,
+      easy: 24,
+      medium: 45,
+      hard: 80,
+      expert: 100
+    };
+    
+    const target = targets[level] || targets.easy;
+    const isValid = averageWords >= target * 0.8; // Allow 20% tolerance
     
     return { wordCounts, averageWords, isValid };
   };
@@ -94,7 +104,7 @@ export function SystematicWordCountTest() {
       const result = await generateStory(testUserInfo, mode);
       
       if (result.success && result.pages) {
-        const analysis = analyzeWordCounts(result.pages);
+        const analysis = analyzeWordCounts(result.pages, level);
         updateTestResult(level, mode, {
           status: 'success',
           result,
@@ -152,16 +162,40 @@ export function SystematicWordCountTest() {
   const getWordCountStatus = (result: TestResult) => {
     if (!result.averageWords) return null;
     
-    const isGood = result.averageWords >= 60;
+    const targets = {
+      beginner: 6,
+      easy: 24, 
+      medium: 45,
+      hard: 80,
+      expert: 100
+    };
+    
+    const target = targets[result.level] || targets.easy;
+    const isGood = result.averageWords >= target * 0.8;
+    
     return (
       <Badge variant={isGood ? 'default' : 'destructive'}>
-        {result.averageWords} avg words
+        {result.averageWords} avg words (target: {target})
       </Badge>
     );
   };
 
-  const failedTests = testResults.filter(r => r.status === 'failed' || (r.averageWords && r.averageWords < 60));
-  const successfulTests = testResults.filter(r => r.status === 'success' && r.averageWords && r.averageWords >= 60);
+  const failedTests = testResults.filter(r => {
+    if (r.status === 'failed') return true;
+    if (r.averageWords && r.level) {
+      const targets = { beginner: 6, easy: 24, medium: 45, hard: 80, expert: 100 };
+      const target = targets[r.level] || targets.easy;
+      return r.averageWords < target * 0.8;
+    }
+    return false;
+  });
+  
+  const successfulTests = testResults.filter(r => {
+    if (r.status !== 'success' || !r.averageWords || !r.level) return false;
+    const targets = { beginner: 6, easy: 24, medium: 45, hard: 80, expert: 100 };
+    const target = targets[r.level] || targets.easy;
+    return r.averageWords >= target * 0.8;
+  });
 
   return (
     <div className="space-y-6">
@@ -169,7 +203,7 @@ export function SystematicWordCountTest() {
         <CardHeader>
           <CardTitle className="font-fun">Systematic Word Count Test</CardTitle>
           <CardDescription>
-            Test all levels (1-4) in both modes to verify proper word counts (should be 60-120+ words per page)
+            Test all levels in both modes to verify upper-end word count targets (Beginner: 6, Easy: 24, Medium: 45, Hard: 80, Expert: 100+ words per page)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -197,7 +231,7 @@ export function SystematicWordCountTest() {
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>{successfulTests.length}</strong> tests passed with proper word counts (60+ words)
+                  <strong>{successfulTests.length}</strong> tests passed with target word counts
                 </AlertDescription>
               </Alert>
               
@@ -256,15 +290,19 @@ export function SystematicWordCountTest() {
                             </span>
                           </div>
                           
-                          {result.averageWords && result.averageWords < 60 && (
-                            <Alert variant="destructive" className="mt-2">
-                              <AlertTriangle className="h-4 w-4" />
-                              <AlertDescription className="text-xs">
-                                Content too short! Should be 60-120+ words per page, but averaging {result.averageWords} words.
-                                This indicates the template converter is still using microVariants.text instead of scene.text.
-                              </AlertDescription>
-                            </Alert>
-                          )}
+                          {result.averageWords && result.level && (() => {
+                            const targets = { beginner: 6, easy: 24, medium: 45, hard: 80, expert: 100 };
+                            const target = targets[result.level] || targets.easy;
+                            return result.averageWords < target * 0.8 && (
+                              <Alert variant="destructive" className="mt-2">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription className="text-xs">
+                                  Content below target! Should be ~{target} words per page, but averaging {result.averageWords} words.
+                                  Target is upper-end of sentence-based range.
+                                </AlertDescription>
+                              </Alert>
+                            );
+                          })()}
                         </div>
                       )}
 
