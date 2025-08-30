@@ -101,8 +101,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   currentStory,
   onPageImagesUpdate, // CRITICAL: Extract callback for image updates
 }) => {
-  console.log(`🚀 DEBUG: CleanStoryDisplay MOUNTED - Build timestamp: ${Date.now()}`);
-  console.log(`🐛 DEBUG: Component props - isPremium: ${isPremium}, userInfo:`, userInfo);
   const { t } = useTranslation();
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
@@ -363,7 +361,6 @@ const handleImageRegeneration = useCallback(async () => {
   }
   
   console.log(`🖼️ Page ${currentPage}: Starting image regeneration...`);
-  console.log(`🐛 DEBUG: Setting isGeneratingImage=true, isPreparingImage=true`);
   setIsGeneratingImage(true);
   setIsPreparingImage(true);
   
@@ -384,7 +381,6 @@ const handleImageRegeneration = useCallback(async () => {
   } catch (error) {
     console.warn(`Failed to regenerate image for page ${currentPage}:`, error);
   } finally {
-    console.log(`🐛 DEBUG: Setting isGeneratingImage=false, isPreparingImage=false`);
     setIsGeneratingImage(false);
     setIsPreparingImage(false);
   }
@@ -1706,7 +1702,7 @@ const initializeStory = async () => {
       return;
     }
     
-    console.log(`🐛 DEBUG: Manual image generation - Setting isGeneratingImage=true, isPreparingImage=true`);
+    
     setIsGeneratingImage(true);
     setIsPreparingImage(true);
     
@@ -1764,7 +1760,6 @@ const initializeStory = async () => {
     } catch (error) {
       console.log('Image generation failed, continuing without image:', error);
     } finally {
-      console.log(`🐛 DEBUG: Manual image generation complete - Setting isGeneratingImage=false, isPreparingImage=false`);
       setIsGeneratingImage(false);
       setIsPreparingImage(false);
     }
@@ -3085,28 +3080,23 @@ const handleRestartTimer = () => {
         />
                       </>
                     ) : (isGeneratingImage || isPreparingImage) ? (
-                      (() => {
-                        console.log(`🐛 DEBUG MOBILE: Showing ImageMixingLoading - isGeneratingImage=${isGeneratingImage}, isPreparingImage=${isPreparingImage}`);
-                        return (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <ImageMixingLoading />
-                          </div>
-                        );
-                      })()
+                       (() => {
+                         return (
+                           <div className="absolute inset-0 flex items-center justify-center">
+                             <ImageMixingLoading />
+                           </div>
+                         );
+                       })()
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <Sparkles className="w-8 h-8 text-primary mx-auto mb-2 animate-pulse" />
-                          <p className="text-sm text-muted-foreground">Illustration incoming...</p>
-                          <p className="text-xs text-muted-foreground mt-1">Auto-generating based on story</p>
-                        </div>
+                        <ImageMixingLoading />
                       </div>
                     )}
                   </div>
                   {/* Image Status moved to main content area */}
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className={cn("min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative", currentImage ? "flex-[0.3]" : "flex-[0.85]")} style={{border: '2px solid red'}} onClick={() => console.log(`🐛 DEBUG MOBILE: Story card clicked - currentImage=${!!currentImage}, flex class=${currentImage ? "flex-[0.3]" : "flex-[0.85]"}`)}>
+                  <div className={cn("min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative", currentImage ? "flex-[0.3]" : "flex-[0.85]")}>
                     {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
@@ -3181,32 +3171,9 @@ const handleRestartTimer = () => {
             onFallbackUsed={handleImageFallbackUsed}
             onRetry={handleImageRetry}
           />
-                        ) : (isGeneratingImage || isPreparingImage) ? (
-                          (() => {
-                            console.log(`🐛 DEBUG DESKTOP: Showing ImageMixingLoading - isGeneratingImage=${isGeneratingImage}, isPreparingImage=${isPreparingImage}`);
-                            return (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <ImageMixingLoading />
-                              </div>
-                            );
-                          })()
-                        ) : isStoryStable ? (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="w-8 h-8 animate-pulse text-primary mx-auto mb-2">
-                                <Sparkles className="w-8 h-8" />
-                              </div>
-                              <p className="text-sm text-muted-foreground">Illustration incoming...</p>
-                            </div>
-                          </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2">
-                                <BookOpen className="w-8 h-8" />
-                              </div>
-                              <p className="text-sm text-muted-foreground">Story loading...</p>
-                            </div>
+                            <ImageMixingLoading />
                           </div>
                         )}
                       </div>
