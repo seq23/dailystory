@@ -48,23 +48,18 @@ const PRONOUN_FIXES = {
 };
 
 const ARTICLE_FIXES = [
-  // Fix incorrect articles with plural nouns
+  // Fix incorrect articles with plural nouns - more conservative approach
   { pattern: /\b(a|an)\s+(children|feet|geese|men|women|teeth|mice|people|sheep|deer|fish)\b/gi, replacement: '$2' },
-  { pattern: /\b(a|an)\s+([a-zA-Z]*s)\b/gi, replacement: '$2' },
-  // Fix missing articles (only if not already preceded by an article)
-  { pattern: /\b(?<!(a|an|the)\s)(cat|dog|bird|rabbit|duck|pig|cow|horse|bear|book|ball|car|toy|tree)\b/gi, replacement: 'a $1' },
   // Fix double articles - enhanced patterns
   { pattern: /\b(a|an)\s+(a|an)\s+(\w+)/gi, replacement: '$1 $3' },
   { pattern: /\b(a|an)\s+(a|an)\s+/gi, replacement: '$1 ' },
-  // Fix specific double article patterns like "a blue a cat"
+  // Fix specific double article patterns like "a blue a cat" and possessive + article errors
   { pattern: /\b(a|an)\s+([\w]+)\s+(a|an)\s+(\w+)/gi, replacement: '$1 $2 $4' },
+  { pattern: /\b(his|her)\s+(a|an)\s+(\w+)/gi, replacement: '$1 $3' },
 ];
 
 const VERB_CONJUGATION_FIXES = [
-  // Subject-verb agreement
-  { pattern: /\b([A-Z][a-z]+)\s+(are)\b/g, replacement: '$1 is' },
-  { pattern: /\b(The\s+[a-z]+)\s+(are)\b/g, replacement: '$1 is' },
-  // Common verb corrections
+  // Common verb corrections only - removed problematic subject-verb rules
   { pattern: /\bgoing to went\b/gi, replacement: 'going to go' },
   { pattern: /\bwill went\b/gi, replacement: 'will go' },
 ];

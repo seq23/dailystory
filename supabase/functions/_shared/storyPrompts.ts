@@ -29,9 +29,12 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
 
 CRITICAL RULES:
 - ONE SENTENCE PER PAGE. 
-- Generate a continuous narrative that naturally breaks
+- Generate a continuous narrative that naturally breaks 
 - Do NOT include page numbers, page markers, or page headers in your content
-- Use subject-verb OR subject-verb-object as sentence structure
+- No plurals: Explicitly instruct to use only singular nouns
+- Limit pronouns: Use only "I/you/ me / we / they/it" + simple verbs
+- No possessive constructions: Avoid "his/her" + article combinations
+- Ultra-simple structure: Only "Name + verb" or "Name + verb + noun"
 - Word vocabulary: Enhanced Level 0 + user inputs + 1-4 letter filler words
 - Sentence structure: 2-4 words per sentence, maximum 6 words
 - Use Simple present tense
