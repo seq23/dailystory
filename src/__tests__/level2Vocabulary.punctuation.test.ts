@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isLevel2Word, validateLevel2Sentence } from '@/constants/gradeBased/level2Vocabulary';
+import { isLevel2Word, validateLevel2Sentence } from '@/constants/gradeBased';
 
 describe('Level 2 vocabulary punctuation normalization', () => {
   it('treats "don\'t" and "dont" as valid Level 2 words', () => {

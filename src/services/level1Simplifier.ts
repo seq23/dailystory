@@ -4,7 +4,7 @@
 import { 
   isLevel1Word, 
   validateLevel1Sentence 
-} from '@/constants/gradeBased/level1Vocabulary';
+} from '@/constants/gradeBased';
 
 export interface SimplificationResult {
   text: string;

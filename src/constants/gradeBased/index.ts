@@ -2,44 +2,38 @@
 // This replaces all previous vocabulary systems with a unified grade-based approach
 
 import { 
-  FREE_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY, 
-  validateLevel0SentenceByUserType 
-} from '../dolchPrePrimer';
+  ENHANCED_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY, 
+  validateLevel0Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/dolchPrePrimer';
 
 // Legacy wrapper for backward compatibility
 function isLevel0Word(word: string): boolean {
   return LEVEL_0_VOCABULARY.has(word.toLowerCase());
 }
 
-// Legacy wrapper for backward compatibility
-function validateLevel0Sentence(sentence: string, userName?: string): { 
-  isValid: boolean; 
-  invalidWords: string[];
-} {
-  const result = validateLevel0SentenceByUserType(sentence, 'free', userName);
-  return {
-    isValid: result.isValid,
-    invalidWords: result.invalidWords
-  };
-}
-
 import { 
   LEVEL_1_VOCABULARY, 
   isLevel1Word, 
   validateLevel1Sentence 
-} from './level1Vocabulary';
+} from '../../../supabase/functions/_shared/vocabulary/level1Vocabulary';
 
 import { 
   LEVEL_2_VOCABULARY, 
   isLevel2Word, 
   validateLevel2Sentence 
-} from './level2Vocabulary';
+} from '../../../supabase/functions/_shared/vocabulary/level2Vocabulary';
 
 import { 
   LEVEL_3_VOCABULARY, 
   isLevel3Word, 
   validateLevel3Sentence 
-} from './level3Vocabulary';
+} from '../../../supabase/functions/_shared/vocabulary/level3Vocabulary';
+
+import { 
+  LEVEL_4_VOCABULARY, 
+  isLevel4Word, 
+  validateLevel4Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/level4Vocabulary';
 
 // Note: Level 4 vocabulary exists for reference but Expert difficulty 
 // bypasses vocabulary simplification and uses grade-based progression instead
@@ -55,18 +49,17 @@ export {
   LEVEL_1_VOCABULARY, 
   LEVEL_2_VOCABULARY,
   LEVEL_3_VOCABULARY,
-  // Level 4 exports commented out - Expert uses grade-based system
-  // LEVEL_4_VOCABULARY,
+  LEVEL_4_VOCABULARY,
   isLevel0Word,
   isLevel1Word,
   isLevel2Word,
   isLevel3Word,
-  // isLevel4Word,
+  isLevel4Word,
   validateLevel0Sentence,
   validateLevel1Sentence,
   validateLevel2Sentence,
-  validateLevel3Sentence
-  // validateLevel4Sentence
+  validateLevel3Sentence,
+  validateLevel4Sentence
 };
 
 // Difficulty Level to Grade Level mapping
@@ -102,7 +95,7 @@ export function isValidWord(word: string, gradeLevel: GradeLevel): boolean {
     case 1: return isLevel1Word(word);
     case 2: return isLevel2Word(word);
     case 3: return isLevel3Word(word);
-    case 4: return true; // Expert level - no vocabulary restrictions
+    case 4: return isLevel4Word(word);
     default: return isLevel0Word(word);
   }
 }
@@ -119,7 +112,7 @@ export function validateSentence(
     case 1: return validateLevel1Sentence(sentence, userName);
     case 2: return validateLevel2Sentence(sentence, userName);
     case 3: return validateLevel3Sentence(sentence, userName);
-    case 4: return { isValid: true, invalidWords: [] }; // Expert level - no validation
+    case 4: return validateLevel4Sentence(sentence, userName);
     default: return validateLevel0Sentence(sentence, userName);
   }
 }
@@ -132,7 +125,7 @@ export function getVocabularySet(gradeLevel: GradeLevel): Set<string> {
     case 1: return LEVEL_1_VOCABULARY;
     case 2: return LEVEL_2_VOCABULARY;
     case 3: return LEVEL_3_VOCABULARY;
-    case 4: return new Set(); // Expert level - no vocabulary restrictions
+    case 4: return LEVEL_4_VOCABULARY;
     default: return LEVEL_0_VOCABULARY;
   }
 }

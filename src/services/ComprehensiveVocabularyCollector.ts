@@ -1,11 +1,13 @@
 // Comprehensive Vocabulary Collector - Merges all vocabulary sources
 // Provides unified access to all words used across the application
 
-import { ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
-import { LEVEL_1_VOCABULARY } from '@/constants/gradeBased/level1Vocabulary';
-import { LEVEL_2_VOCABULARY } from '@/constants/gradeBased/level2Vocabulary';
-import { LEVEL_3_VOCABULARY } from '@/constants/gradeBased/level3Vocabulary';
-import { LEVEL_4_VOCABULARY } from '@/constants/gradeBased/level4Vocabulary';
+import { 
+  LEVEL_0_VOCABULARY, 
+  LEVEL_1_VOCABULARY, 
+  LEVEL_2_VOCABULARY, 
+  LEVEL_3_VOCABULARY, 
+  LEVEL_4_VOCABULARY 
+} from '@/constants/gradeBased';
 import { phoneticDictionary } from '@/utils/phoneticDictionary';
 import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
@@ -33,7 +35,7 @@ export class ComprehensiveVocabularyCollector {
     const allWords = new Set<string>();
     
     // Add all vocabulary levels
-    for (const word of ENHANCED_LEVEL_0_VOCABULARY) allWords.add(String(word).toLowerCase());
+    for (const word of LEVEL_0_VOCABULARY) allWords.add(String(word).toLowerCase());
     for (const word of LEVEL_1_VOCABULARY) allWords.add(String(word).toLowerCase());
     for (const word of LEVEL_2_VOCABULARY) allWords.add(String(word).toLowerCase());
     for (const word of LEVEL_3_VOCABULARY) allWords.add(String(word).toLowerCase());
@@ -88,7 +90,7 @@ export class ComprehensiveVocabularyCollector {
     };
 
     // Add all vocabulary levels
-    ENHANCED_LEVEL_0_VOCABULARY.forEach(word => addWord(String(word), 0, 'level0'));
+    LEVEL_0_VOCABULARY.forEach(word => addWord(String(word), 0, 'level0'));
     LEVEL_1_VOCABULARY.forEach(word => addWord(String(word), 1, 'level1'));
     LEVEL_2_VOCABULARY.forEach(word => addWord(String(word), 2, 'level2'));
     LEVEL_3_VOCABULARY.forEach(word => addWord(String(word), 3, 'level3'));

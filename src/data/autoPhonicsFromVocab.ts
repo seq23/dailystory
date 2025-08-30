@@ -1,10 +1,10 @@
 // Auto-generated base phonics mapping from vocabulary sets
 // This creates deterministic, kid-friendly chunks using a simple heuristic
 
-import { ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
-import { LEVEL_1_VOCABULARY } from '@/constants/gradeBased/level1Vocabulary';
-import { LEVEL_2_VOCABULARY } from '@/constants/gradeBased/level2Vocabulary';
-import { LEVEL_3_VOCABULARY } from '@/constants/gradeBased/level3Vocabulary';
+import { LEVEL_0_VOCABULARY } from '@/constants/gradeBased';
+import { LEVEL_1_VOCABULARY } from '@/constants/gradeBased';
+import { LEVEL_2_VOCABULARY } from '@/constants/gradeBased';
+import { LEVEL_3_VOCABULARY } from '@/constants/gradeBased';
 
 // Minimal deterministic splitter (subset of the main engine heuristics, no deps)
 function splitWordSimple(word: string): string[] {
@@ -60,7 +60,7 @@ function splitWordSimple(word: string): string[] {
 
 function buildWordSet(): Set<string> {
   const s = new Set<string>();
-  for (const w of ENHANCED_LEVEL_0_VOCABULARY) s.add(String(w));
+  for (const w of LEVEL_0_VOCABULARY) s.add(String(w));
   for (const w of LEVEL_1_VOCABULARY) s.add(String(w));
   for (const w of LEVEL_2_VOCABULARY) s.add(String(w));
   for (const w of LEVEL_3_VOCABULARY) s.add(String(w));

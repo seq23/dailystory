@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeCoverage } from '@/utils/vocabCoverage';
-import { validateLevel2Sentence } from '@/constants/gradeBased/level2Vocabulary';
+import { validateLevel2Sentence } from '@/constants/gradeBased';
 
 describe('computeCoverage', () => {
   it('normalizes punctuation and matches Level 2 contractions', () => {

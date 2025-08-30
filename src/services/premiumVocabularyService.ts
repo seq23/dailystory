@@ -1,6 +1,5 @@
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
-import { LEVEL_1_VOCABULARY } from '../constants/gradeBased/level1Vocabulary';
-import { LEVEL_2_VOCABULARY } from '../constants/gradeBased/level2Vocabulary';
+import { LEVEL_1_VOCABULARY, LEVEL_2_VOCABULARY } from '@/constants/gradeBased';
 // Temporarily disabled - service removed
 // import { ThemedSessionManager } from './themedSessionManager';
 import { ProgressiveRevelationSystem } from './progressiveRevelationSystem';

@@ -3,8 +3,8 @@
  * This tool helps identify any remaining vocabulary violations in Level 0 content
  */
 
-import { ENHANCED_LEVEL_0_VOCABULARY } from '@/constants/dolchPrePrimer';
-import { validateLevel0SentenceByUserType } from '../constants/dolchPrePrimer';
+import { LEVEL_0_VOCABULARY } from '@/constants/gradeBased';
+import { validateLevel0Sentence } from '@/constants/gradeBased';
 
 export interface VocabularyAuditResult {
   isCompliant: boolean;
@@ -26,7 +26,7 @@ export class Level0VocabularyAuditor {
     const violations: string[] = [];
     
     sentences.forEach((sentence, index) => {
-      const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
+        const validation = validateLevel0Sentence(sentence, userName);
       if (!validation.isValid) {
         // Add vocabulary violations
         validation.invalidWords.forEach(word => {
@@ -93,7 +93,7 @@ export class Level0VocabularyAuditor {
       });
       report.push('');
       report.push('📚 Reminder: Level 0 allows 50% compliance with these 100 Enhanced Level 0 words:');
-      report.push(Array.from(ENHANCED_LEVEL_0_VOCABULARY).sort().join(', '));
+      report.push(Array.from(LEVEL_0_VOCABULARY).sort().join(', '));
       report.push('');
       report.push('🎯 50% of words can be story-specific, user inputs, or slightly advanced vocabulary.');
     } else {
@@ -107,7 +107,7 @@ export class Level0VocabularyAuditor {
    * Quick validation for single sentences with 50% compliance (grammar validation moved to edge functions)
    */
   static validateSentence(sentence: string, userName?: string): { isValid: boolean; invalidWords: string[]; compliancePercentage: number } {
-    const validation = validateLevel0SentenceByUserType(sentence, 'free', userName);
+    const validation = validateLevel0Sentence(sentence, userName);
     const auditResult = this.auditText(sentence, 'single-sentence', userName);
     
     return {
@@ -130,7 +130,7 @@ export class Level0VocabularyAuditor {
     }
 
     // With 50% compliance, individual words are more flexible
-    return ENHANCED_LEVEL_0_VOCABULARY.has(cleanWord);
+    return LEVEL_0_VOCABULARY.has(cleanWord);
   }
 
   /**
