@@ -22,8 +22,8 @@ export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertG
 
 // Simplified configuration for page calculations
 export const PAGE_CONFIG = {
-  beginner: { expectedPages: 8, tokensPerPage: 6 },
-  easy: { expectedPages: 6, tokensPerPage: 12 },
+  beginner: { expectedPages: 6, tokensPerPage: 6 },
+  easy: { expectedPages: 8, tokensPerPage: 12 },
   medium: { expectedPages: 8, tokensPerPage: 100 },
   hard: { expectedPages: 10, tokensPerPage: 120 },
   expert: { expectedPages: 12, tokensPerPage: 133 },

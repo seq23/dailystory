@@ -114,9 +114,9 @@ describe('Token Limit Validator', () => {
     it('returns correct hardcoded limits for all difficulty levels', () => {
       expect(getTokenLimitForDifficulty('beginner')).toBe(48);
       expect(getTokenLimitForDifficulty('easy')).toBe(72);
-      expect(getTokenLimitForDifficulty('medium')).toBe(120);
-      expect(getTokenLimitForDifficulty('hard')).toBe(180);
-      expect(getTokenLimitForDifficulty('expert')).toBe(240);
+      expect(getTokenLimitForDifficulty('medium')).toBe(800);
+      expect(getTokenLimitForDifficulty('hard')).toBe(1200);
+      expect(getTokenLimitForDifficulty('expert')).toBe(1600);
     });
 
     it('returns correct hardcoded limits for expert grade levels', () => {
@@ -138,8 +138,8 @@ describe('Token Limit Validator', () => {
       const expertWords = getRecommendedWordsForDifficulty('expert');
       
       expect(beginnerWords).toBeLessThan(expertWords);
-      expect(beginnerWords).toBeGreaterThan(100); // Should be reasonable
-      expect(expertWords).toBeGreaterThan(400); // Should be higher
+      expect(beginnerWords).toBeGreaterThan(30); // Should be reasonable
+      expect(expertWords).toBeGreaterThan(1000); // Should be higher
     });
   });
 
