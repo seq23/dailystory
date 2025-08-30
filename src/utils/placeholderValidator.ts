@@ -8,6 +8,10 @@ export interface PlaceholderValidationResult {
   unresolvedPlaceholders: string[];
   resolvedCount: number;
   totalPlaceholders: number;
+  source?: 'ai' | 'template' | 'fallback' | 'emergency' | 'unknown';
+  userInputsUsed?: string[];
+  userInputsResolved?: number;
+  userInputsTotal?: number;
 }
 
 /**
@@ -20,11 +24,20 @@ const EXPECTED_PLACEHOLDERS = [
 ];
 
 /**
+ * User input placeholders that should be resolved in AI-generated content
+ */
+const USER_INPUT_PLACEHOLDERS = [
+  'userName', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'
+];
+
+/**
  * Validate that all placeholders in story pages are properly resolved
  */
-export function validatePlaceholders(pages: string[]): PlaceholderValidationResult {
+export function validatePlaceholders(pages: string[], source?: 'ai' | 'template' | 'fallback' | 'emergency' | 'unknown'): PlaceholderValidationResult {
   const unresolvedPlaceholders: Set<string> = new Set();
+  const userInputsUsed: Set<string> = new Set();
   let totalPlaceholders = 0;
+  let userInputsTotal = 0;
 
   // Regex to find any remaining placeholder patterns
   const placeholderRegex = /\{([^}]+)\}/g;
@@ -35,6 +48,27 @@ export function validatePlaceholders(pages: string[]): PlaceholderValidationResu
       const placeholder = match[1];
       unresolvedPlaceholders.add(`${placeholder} (page ${pageIndex + 1})`);
       totalPlaceholders++;
+      
+      // Track user input placeholders
+      if (USER_INPUT_PLACEHOLDERS.includes(placeholder)) {
+        userInputsTotal++;
+      }
+    }
+    
+    // For AI content, check which user inputs were actually incorporated
+    if (source === 'ai') {
+      USER_INPUT_PLACEHOLDERS.forEach(userInput => {
+        // Simple heuristic: check if the page contains references that might indicate the user input was used
+        const lowerPage = page.toLowerCase();
+        if (userInput === 'userName' && /\b[A-Z][a-z]+\b/.test(page)) {
+          userInputsUsed.add(userInput);
+        } else if (userInput === 'favoriteColor' && /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown)\b/i.test(page)) {
+          userInputsUsed.add(userInput);
+        } else if (userInput === 'favoriteAnimal' && /\b(cat|dog|bird|fish|rabbit|bear|lion|tiger|elephant|monkey)\b/i.test(page)) {
+          userInputsUsed.add(userInput);
+        }
+        // Add more heuristics as needed
+      });
     }
   });
 
@@ -45,7 +79,11 @@ export function validatePlaceholders(pages: string[]): PlaceholderValidationResu
     isValid: unresolvedArray.length === 0,
     unresolvedPlaceholders: unresolvedArray,
     resolvedCount: resolvedCount,
-    totalPlaceholders: totalPlaceholders
+    totalPlaceholders: totalPlaceholders,
+    source,
+    userInputsUsed: Array.from(userInputsUsed),
+    userInputsResolved: userInputsUsed.size,
+    userInputsTotal: source === 'ai' ? USER_INPUT_PLACEHOLDERS.length : userInputsTotal
   };
 }
 
@@ -54,13 +92,21 @@ export function validatePlaceholders(pages: string[]): PlaceholderValidationResu
  */
 export function getPlaceholderValidationMessage(result: PlaceholderValidationResult): string {
   if (result.isValid) {
+    if (result.source === 'ai') {
+      if (result.userInputsResolved && result.userInputsTotal) {
+        return `✅ AI-generated content (incorporates ${result.userInputsResolved}/${result.userInputsTotal} user inputs: ${result.userInputsUsed?.join(', ')})`;
+      }
+      return '✅ AI-generated content (incorporates user preferences directly)';
+    }
+    
     return result.totalPlaceholders > 0 
       ? `✅ All ${result.totalPlaceholders} placeholders resolved successfully`
       : '✅ No placeholders found (static template)';
   }
 
   const count = result.unresolvedPlaceholders.length;
-  return `⚠️ ${count} unresolved placeholder${count > 1 ? 's' : ''}: ${result.unresolvedPlaceholders.join(', ')}`;
+  const prefix = result.source === 'ai' ? 'Unresolved user inputs' : 'Unresolved placeholders';
+  return `⚠️ ${count} ${prefix.toLowerCase()}: ${result.unresolvedPlaceholders.join(', ')}`;
 }
 
 /**

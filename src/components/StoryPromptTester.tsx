@@ -364,7 +364,8 @@ export function StoryPromptTester() {
       
       // Enhanced validation - check for placeholder and content issues
       if (result.fullContent && result.fullContent.length > 0) {
-        result.placeholderValidation = validatePlaceholders(result.fullContent);
+        const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
+        result.placeholderValidation = getPlaceholderValidationMessage(placeholderValidation);
         result.contentIssues = checkForPlaceholderIssues(result.fullContent);
         result.tokenValidation = validatePageTokenDistribution(
           result.fullContent, 
