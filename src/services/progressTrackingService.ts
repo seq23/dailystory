@@ -173,7 +173,7 @@ export class ProgressTrackingService {
         grade: '6th+',
         nativeLanguage: 'en',
         learningGoal: 'improve-english-reading',
-        avatar: { type: 'boy', skinTone: 'medium' },
+        avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
         favoriteColor: '',
         favoriteAnimal: '',
         hobbies: '',

@@ -47,7 +47,7 @@ export function QuickTemplateTest() {
       grade: '3rd' as const,
       nativeLanguage: 'en' as const,
       learningGoal: 'improve-english-reading' as const,
-      avatar: { type: 'boy' as const, skinTone: 'medium' as const },
+      avatar: { type: 'prefer-not-to-answer' as const, skinTone: 'medium' as const },
       favoriteColor: 'blue',
       favoriteAnimal: 'dragon',
       hobbies: 'playing games',

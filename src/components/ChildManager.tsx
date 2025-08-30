@@ -36,7 +36,7 @@ export function ChildManager() {
     grade: "", 
     birthMonth: null as number | null, 
     birthYear: null as number | null,
-    avatar: { type: "boy" as AvatarType, skinTone: "medium" as SkinTone },
+    avatar: { type: "prefer-not-to-answer" as AvatarType, skinTone: "medium" as SkinTone },
     favoriteColor: "",
     favoriteAnimal: "",
     favoriteFood: "",
@@ -59,7 +59,7 @@ export function ChildManager() {
     grade: "", 
     birthMonth: null,
     birthYear: null,
-    avatar: { type: "boy", skinTone: "medium" },
+    avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
     favoriteColor: "",
     favoriteAnimal: "",
     favoriteFood: "",
@@ -94,7 +94,7 @@ export function ChildManager() {
         grade: "", 
         birthMonth: null,
         birthYear: null,
-        avatar: { type: "boy", skinTone: "medium" },
+        avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
         favoriteColor: "",
         favoriteAnimal: "",
         favoriteFood: "",
@@ -112,7 +112,7 @@ export function ChildManager() {
     const c = children.find((x) => x.id === id);
     if (!c) return;
     setEditingId(id);
-    const currentAvatar = c.avatar || { type: "boy", skinTone: "medium" };
+    const currentAvatar = c.avatar || { type: "prefer-not-to-answer", skinTone: "medium" };
     setEditDraft({ 
       name: c.display_name, 
       grade: c.grade_level || "", 

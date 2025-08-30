@@ -176,7 +176,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           difficultyLevel: (profile as any).difficulty_level || profile.reading_level || 'beginner',
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
-          avatar: typeof (profile as any).avatar === 'string' ? JSON.parse((profile as any).avatar) : ((profile as any).avatar || { type: 'boy', skinTone: 'medium' }),
+          avatar: typeof (profile as any).avatar === 'string' ? JSON.parse((profile as any).avatar) : ((profile as any).avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }),
           favoriteColor: (profile as any).favorite_color || 'blue',
           favoriteAnimal: (profile as any).favorite_animal || 'cat',
           hobbies: (profile as any).hobbies || '',

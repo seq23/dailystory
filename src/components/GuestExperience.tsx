@@ -106,7 +106,7 @@ const handleFormSubmit = (info: UserInfo) => {
   if (!info.avatar || !info.avatar.type) {
     console.warn('⚠️ [DEBUG] Avatar data missing or corrupted, applying fallback');
     console.log('🔍 [DEBUG] BEFORE fallback - avatar:', info.avatar);
-    info.avatar = { type: "boy", skinTone: "medium" };
+    info.avatar = { type: "prefer-not-to-answer", skinTone: "medium" };
     console.log('🔍 [DEBUG] AFTER fallback - avatar:', info.avatar);
   } else {
     console.log('✅ [DEBUG] Avatar validation passed - no fallback needed');

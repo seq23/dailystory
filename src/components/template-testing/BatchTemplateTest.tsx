@@ -41,7 +41,7 @@ export function BatchTemplateTest() {
     grade: '3rd',
     nativeLanguage: 'en',
     learningGoal: 'improve-english-reading',
-    avatar: { type: 'boy', skinTone: 'medium' },
+    avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
     favoriteColor: 'blue',
     favoriteAnimal: 'dragon',
     hobbies: 'playing games',

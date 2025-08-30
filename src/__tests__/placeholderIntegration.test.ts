@@ -11,7 +11,7 @@ function createTestUser(overrides: Partial<UserInfo> = {}): UserInfo {
     grade: "3rd",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
-    avatar: { type: "girl", skinTone: "light" },
+    avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
     favoriteColor: "purple",
     favoriteAnimal: "butterfly",
     hobbies: "painting and dancing",
