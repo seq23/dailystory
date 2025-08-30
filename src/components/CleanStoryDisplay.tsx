@@ -1114,7 +1114,7 @@ useEffect(() => {
   const checkCacheAndGenerate = async () => {
     try {
       const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
-      const sessionId = isPremium ? 'premium' : 'guest';
+      const sessionId = isPremium ? 'premium' : `guest_${Date.now()}`;
       const storyHash = story.join('|').substring(0, 50);
       const pageContent = story[currentPage] || '';
       

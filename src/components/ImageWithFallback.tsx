@@ -1,6 +1,7 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
+import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
 
 interface ImageWithFallbackProps {
   src?: string;
@@ -80,15 +81,17 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
       )}
       {(error || (isUsingFallback && src)) && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <button
+          <MobileOptimizedButton
             onClick={handleRetry}
             disabled={isManualRetry}
-            className="bg-background/90 hover:bg-background border border-border rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium text-foreground transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="outline"
+            size="sm"
+            className="bg-background/90 hover:bg-background border border-border shadow-lg"
             aria-label="Retry loading image"
           >
             <RefreshCw className={`h-4 w-4 ${isManualRetry ? 'animate-spin' : ''}`} />
             {isManualRetry ? 'Retrying...' : 'Retry'}
-          </button>
+          </MobileOptimizedButton>
         </div>
       )}
     </div>
