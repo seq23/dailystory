@@ -36,7 +36,7 @@ CRITICAL RULES:
 - Story continues infinitely unless user requests ending
 - Try to incorporate a narrative with a natural hook for continuation
 
-Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
+Use only Dolch Pre-Primer + Primer sight words (100 basic words). 80% compliance required. Avoid pronouns as much as possible to help kids see their name more often. However, these pronouns are allowed for flexibility: 'I', 'we', 'me', 'they', 'us', 'them', 'you'. 
 
 Maximum 48 tokens per page. Max 6 words per page.
 
@@ -64,7 +64,7 @@ RULES:
 
 Maximum 72 tokens per page. Target 15-24 words per page.
 
-VOCABULARY: Use ENHANCED_LEVEL_1_VOCABULARY preferentially, allow flexibility for flow.
+VOCABULARY: Prioritize Level 0 + Dolch 1st Grade words (133 total). 70% compliance expected.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
@@ -92,7 +92,7 @@ RULES:
 
 Maximum 120 tokens per page. Target 50-70 words per page.
 
-VOCABULARY: Use ENHANCED_LEVEL_2_VOCABULARY with flexibility.
+VOCABULARY: Use Level 1 + Dolch 2nd Grade words (179 total). 60% compliance expected.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
@@ -120,7 +120,7 @@ RULES:
 
 Maximum 180 tokens per page. Target 80-120 words per page.
 
-VOCABULARY: Use ENHANCED_LEVEL_3_VOCABULARY with flexibility.
+VOCABULARY: Use sophisticated 4th grade vocabulary with academic terms. 50% compliance expected.
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -147,7 +147,7 @@ RULES:
 
 Maximum 240 tokens per page. Target 120-200 words per page.
 
-VOCABULARY: Use ENHANCED_LEVEL_4_VOCABULARY with flexibility.
+VOCABULARY: Use advanced vocabulary with literary terms. 50% compliance expected.
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
