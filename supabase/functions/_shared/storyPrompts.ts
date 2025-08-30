@@ -31,14 +31,12 @@ CRITICAL RULES:
 - ONE SENTENCE PER PAGE. GENERATE CONTENT AS A CONTINUOUS NARRATIVE THAT NATURALLY BREAKS INTO DISTINCT SCENES
 - Do NOT include page numbers, page markers, or page headers in your content
 - Use subject-verb OR subject-verb-object as sentence structure
-- Use Enhanced Level 0 vocabulary (100 Dolch + Fry words) + user inputs + any other words must be 1-4 letters only
-- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
+- Word vocabulary: Enhanced Level 0 + user inputs + 1-4 letter filler words
+- Sentence structure: 2-4 words per sentence, maximum 6 words
 - Use Simple present tense
 - Always allow {userName}, user inputs
 - Story continues infinitely unless user requests ending
 - Try to incorporate a narrative with a natural hook for continuation
-
-Use Enhanced Level 0 vocabulary (100 Dolch + Fry words) + user inputs + simple 1-4 letter filler words. Avoid pronouns as much as possible to help kids see their name more often. However, these pronouns are allowed for flexibility: 'I', 'we', 'me', 'they', 'us', 'them', 'you'. 
 
 Maximum 48 tokens per page. Max 6 words per page.
 
