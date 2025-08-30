@@ -233,15 +233,27 @@ serve(async (req) => {
       systemPrompt = systemPrompt.replace('Always allow {userName}', `${genderPrompt}Always allow {userName}`);
     }
     
-    // Format user prompt with placeholders
+    // Format user prompt with placeholders - FIXED: Access nested userInfo
     const userInfo = {
       name: userName,
-      favoriteColor: ensureColorName(config?.favoriteColor),
-      favoriteAnimal: config?.favoriteAnimal || 'cat',
-      favoriteFood: config?.favoriteFood || 'cookies',
-      hobbies: config?.hobbies || 'playing outside',
-      specialRequest: config?.specialRequest || 'adventure'
+      favoriteColor: ensureColorName(config?.userInfo?.favoriteColor),
+      favoriteAnimal: config?.userInfo?.favoriteAnimal || 'cat',
+      favoriteFood: config?.userInfo?.favoriteFood || 'cookies',
+      hobbies: config?.userInfo?.hobbies || 'playing outside',
+      specialRequest: config?.userInfo?.specialRequest || 'adventure'
     };
+    
+    console.log('🔍 USER PREFERENCES DEBUG:', {
+      requestedPreferences: config?.userInfo,
+      resolvedUserInfo: userInfo,
+      isUsingDefaults: {
+        favoriteColor: !config?.userInfo?.favoriteColor,
+        favoriteAnimal: !config?.userInfo?.favoriteAnimal,
+        favoriteFood: !config?.userInfo?.favoriteFood,
+        hobbies: !config?.userInfo?.hobbies,
+        specialRequest: !config?.userInfo?.specialRequest
+      }
+    });
     
     let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
     

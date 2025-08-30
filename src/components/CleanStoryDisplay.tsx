@@ -1096,6 +1096,76 @@ useEffect(() => {
   }
   prevIsGeneratingEndingRef.current = isGeneratingEnding;
 }, [isGeneratingEnding, isPremium]);
+
+// CRITICAL FIX: Page navigation image generation - check cache first, generate if missing
+useEffect(() => {
+  if (!isStoryStable || !story?.length || currentPage === null || isGeneratingImage) return;
+  
+  // Check if current page needs an image
+  const hasCurrentPageImage = pageImages[currentPage];
+  if (hasCurrentPageImage) {
+    console.log(`🖼️ Page ${currentPage}: Image already exists, skipping generation`);
+    return;
+  }
+  
+  console.log(`🖼️ Page ${currentPage}: No image found, checking cache then generating...`);
+  
+  // Check cache first - import dynamically to avoid module issues
+  const checkCacheAndGenerate = async () => {
+    try {
+      const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+      const sessionId = isPremium ? 'premium' : 'guest';
+      const storyHash = story.join('|').substring(0, 50);
+      const pageContent = story[currentPage] || '';
+      
+      // Extract avatar info for cache validation
+      const avatarType = userInfo?.avatar?.type || 'child';
+      const skinTone = userInfo?.avatar?.skinTone;
+      
+      // Try to get cached image
+      const cachedImageUrl = EnhancedImageCache.getCachedImage(
+        pageContent,
+        sessionId,
+        currentPage,
+        storyHash,
+        undefined, // contextualMarkers
+        avatarType,
+        skinTone
+      );
+      
+      if (cachedImageUrl) {
+        console.log(`🖼️ Page ${currentPage}: Found cached image, using it`);
+        setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
+        onPageImagesUpdate?.({ ...pageImages, [currentPage]: cachedImageUrl });
+        return;
+      }
+      
+      // No cached image, trigger generation if page is within allowed range
+      const maxAllowedPage = isPremium ? (story.length - 1) : 5; // Premium: all pages, Guest: pages 0-5
+      if (currentPage <= maxAllowedPage) {
+        console.log(`🖼️ Page ${currentPage}: No cached image, triggering generation`);
+        const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
+        ImageGenerationTrigger.triggerAutoGeneration({
+          currentPage: currentPage,
+          totalPages: story.length,
+          hasCurrentImage: false,
+          allImages: Object.values(pageImages),
+          isNetworkAvailable: navigator.onLine,
+          userInfo,
+          storyTitle: storyTitle || 'Adventure',
+          pageText: pageContent,
+          sessionId,
+          isGuestUser: !isPremium
+        });
+      }
+    } catch (error) {
+      console.warn(`Failed to check cache/generate for page ${currentPage}:`, error);
+    }
+  };
+  
+  checkCacheAndGenerate();
+}, [currentPage, story, pageImages, isStoryStable, isGeneratingImage, isPremium, userInfo, storyTitle]);
+
 // Trigger finish story flash + sparkle every 5 completed pages
 useEffect(() => {
   const completed = pagesCompleted.size;
@@ -1200,6 +1270,17 @@ const initializeStory = async () => {
             setLiveContext(ctx);
             const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
             setStorySource(srcPremium);
+            
+            // CRITICAL FIX: Add missing image restoration for premium users
+            const convertedImages = convertImagesToRecord(cached.images, 'Premium cache restoration');
+            if (convertedImages && Object.keys(convertedImages).length > 0) {
+              setPageImages(convertedImages);
+              onPageImagesUpdate?.(convertedImages);
+              console.log('🖼️ Premium cache restoration: Images loaded from session cache', convertedImages);
+            } else {
+              console.log('🖼️ Premium cache restoration: No cached images found, will generate new ones');
+            }
+            
             setIsStoryStable(true);
             return; // Early return
           }
