@@ -2,8 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
-import { resolveCanonicalPlaceholders } from '../_shared/placeholderResolver.ts';
-import { getTokenLimitForDifficulty, STORY_PROMPTS, EXPERT_STORY_PROMPTS } from '../_shared/storyPrompts.ts';
+import { getTokenLimitForDifficulty, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 
 // Initialize Supabase client for service-to-service communication
@@ -175,46 +174,23 @@ serve(async (req) => {
       normalizedReadingLevel 
     });
     
-    let systemPrompt = `You are a children's story writer. Create age-appropriate, positive stories about a ${avatarGender} named ${userName}. Use the correct pronouns (${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'}) consistently throughout. DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.`;
-    let userPrompt = `Create a personalized children's story about a ${avatarGender} named ${userName} at ${normalizedReadingLevel} reading level. The main character is a ${avatarGender}, so use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns. Do NOT include titles or chapter headers. Generate only the story content.`;
+    // Get prompt configuration from shared prompt system
+    const promptConfig = getStoryPrompt(normalizedReadingLevel);
     
     // Use dynamic token limits from getTokenLimitForDifficulty function
     const maxTokens = getTokenLimitForDifficulty(normalizedReadingLevel);
     
-    // Use Level 0 specific prompts for beginner difficulty with avatar gender
-    if (normalizedReadingLevel === 'beginner') {
-      systemPrompt = `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
-
-CRITICAL RULES:
-- Generate ONLY one sentence per page (the current page content)
-- Use "Page X:" markers to separate each page of content
-- Use subject-verb OR subject-verb-object as sentence structure
-- Use a mix of 2-, 3-, and 4- letter words
-- Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
-- Use Simple present tense
-- The main character is a ${avatarGender} named ${userName} - use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns consistently
-- Story continues infinitely unless user requests ending
-- Try to incorporate a narrative with a natural hook for continuation
-- DO NOT include titles, chapter headers, or **Title:** markers. Generate only pure story content.
-
-Enhanced Level 0 vocabulary (ENHANCED_LEVEL_0_VOCABULARY) STRONGLY PREFERRED, but be flexible for flow. Pronouns and the word "I" can be used. 
-
-Maximum 200 tokens total. One sentence per page for Level 0.
-
-USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
-
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.`;
-      
-      userPrompt = `Create a never-ending children's story about a ${avatarGender} named ${userName}, age 3-5. The main character is a ${avatarGender}, so use ${avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them'} pronouns consistently. The story continues forever unless the user requests an ending. Use simple vocabulary and create 5-8 pages with ONLY 1 sentence per page. Use ONLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6 words). Each page should be exactly one simple sentence. Do NOT include titles or chapter headers.`;
+    // Inject avatar gender and pronouns into shared prompts
+    const pronouns = avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them';
+    const genderPrompt = `The main character is a ${avatarGender} named {userName} - use ${pronouns} pronouns consistently throughout. `;
+    
+    // Inject gender context into system prompt
+    let systemPrompt = promptConfig.systemPrompt;
+    if (!systemPrompt.includes('main character is a')) {
+      systemPrompt = systemPrompt.replace('Always allow {userName}', `${genderPrompt}Always allow {userName}`);
     }
     
-    console.log('📝 Generating story with OpenAI...', { 
-      level: normalizedReadingLevel, 
-      isLevel0: normalizedReadingLevel === 'beginner',
-      maxTokens 
-    });
-    
-    // CRITICAL FIX: Resolve canonical placeholders BEFORE sending to OpenAI
+    // Format user prompt with placeholders
     const userInfo = {
       name: userName,
       favoriteColor: ensureColorName(config?.favoriteColor),
@@ -224,15 +200,26 @@ GUARDRAILS: G-rated content only. No external personal data. No copyrighted cont
       specialRequest: config?.specialRequest || 'adventure'
     };
     
+    let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
+    
+    // Add gender context to user prompt for clarity
+    userPrompt = `${genderPrompt}${userPrompt}`;
+    
+    console.log('📝 Generating story with OpenAI...', { 
+      level: normalizedReadingLevel, 
+      isLevel0: normalizedReadingLevel === 'beginner',
+      maxTokens 
+    });
+    
     console.log('🔍 BEFORE placeholder resolution:', {
       systemPromptPreview: systemPrompt.substring(0, 150) + '...',
       userPromptPreview: userPrompt.substring(0, 150) + '...',
       userInfo
     });
     
-    // Resolve placeholders in both prompts
-    const resolvedSystemPrompt = resolveCanonicalPlaceholders(systemPrompt, userInfo);
-    const resolvedUserPrompt = resolveCanonicalPlaceholders(userPrompt, userInfo);
+    // Resolve placeholders using shared prompt system
+    const resolvedSystemPrompt = resolvePromptPlaceholders(systemPrompt, userInfo);
+    const resolvedUserPrompt = resolvePromptPlaceholders(userPrompt, userInfo);
     
     console.log('✅ AFTER placeholder resolution:', {
       systemPromptPreview: resolvedSystemPrompt.substring(0, 150) + '...',
