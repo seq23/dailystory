@@ -53,6 +53,7 @@ import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/Ne
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
 import { DiagnosticTool } from "@/utils/diagnostics";
+import { validateGuestStoryTokens, validatePremiumPageTokens } from "@/utils/tokenLimitValidator";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
@@ -1549,6 +1550,21 @@ const initializeStory = async () => {
       
       // BUFFERED UPDATE: Prevent flickering by updating in single batch
       console.log('📚 Setting story content via buffer to prevent flickering...');
+      
+      // Token validation for guest users (6-page story limit)
+      if (!isPremium) {
+        const fullStoryText = processedPages.join(' ');
+        const validation = validateGuestStoryTokens(fullStoryText, currentDifficulty);
+        if (!validation.isValid) {
+          console.warn('⚠️ Guest story exceeds token limits:', validation);
+          toast({
+            title: "Story Length Notice",
+            description: `Story is within limits but on the longer side for ${currentDifficulty} level.`,
+            variant: "default"
+          });
+        }
+      }
+      
       setStory(processedPages);
       setStoryTitle(`Story for ${effectiveUser.name}`);
       setIsStoryComplete(true);
@@ -1914,6 +1930,20 @@ const initializeStory = async () => {
           hasNextContext: !!result.nextContext,
           isComplete: result.isComplete
         });
+        
+        // Token validation for premium users (per-page limit)
+        if (isPremium) {
+          const validation = validatePremiumPageTokens(result.content, currentDifficulty);
+          if (!validation.isValid) {
+            console.warn('⚠️ Premium page exceeds token limits:', validation);
+            toast({
+              title: "Page Length Notice", 
+              description: `This page is a bit long for ${currentDifficulty} level, but that's okay!`,
+              variant: "default"
+            });
+          }
+        }
+        
         setStory(prev => [...prev, result.content]);
         StoryContentLogger.logStoryChange('premium_next_page', 'after', [...story, result.content], {
           newCurrentPage: currentPage + 1,
@@ -2598,6 +2628,18 @@ const handleRestartTimer = () => {
           currentStoryLength: story.length,
           hasLiveContext: !!liveContext
         });
+        
+        // Token validation for premium ending page
+        const validation = validatePremiumPageTokens(result.content, currentDifficulty);
+        if (!validation.isValid) {
+          console.warn('⚠️ Premium ending page exceeds token limits:', validation);
+          toast({
+            title: "Ending Page Notice", 
+            description: `The ending is a bit long for ${currentDifficulty} level, but that's perfectly fine!`,
+            variant: "default"
+          });
+        }
+        
         setStory(prev => [...prev, result.content]);
         StoryContentLogger.logStoryChange('premium_ending_page', 'after', [...story, result.content], {
           endingPageIndex: story.length,
