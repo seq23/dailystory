@@ -3079,14 +3079,6 @@ const handleRestartTimer = () => {
           onRetry={handleImageRetry}
         />
                       </>
-                    ) : (isGeneratingImage || isPreparingImage) ? (
-                       (() => {
-                         return (
-                           <div className="absolute inset-0 flex items-center justify-center">
-                             <ImageMixingLoading />
-                           </div>
-                         );
-                       })()
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <ImageMixingLoading />
