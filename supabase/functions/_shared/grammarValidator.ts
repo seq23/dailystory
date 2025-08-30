@@ -52,7 +52,7 @@ const ARTICLE_FIXES = [
   { pattern: /\b(a|an)\s+(children|feet|geese|men|women|teeth|mice|people|sheep|deer|fish)\b/gi, replacement: '$2' },
   { pattern: /\b(a|an)\s+([a-zA-Z]*s)\b/gi, replacement: '$2' },
   // Fix missing articles (only if not already preceded by an article)
-  { pattern: /\b(?<!(a|an|the)\s)(cat|dog|bird|rabbit|duck|pig|cow|horse|bear|book|ball|car|toy|tree)\b/gi, replacement: 'a $2' },
+  { pattern: /\b(?<!(a|an|the)\s)(cat|dog|bird|rabbit|duck|pig|cow|horse|bear|book|ball|car|toy|tree)\b/gi, replacement: 'a $1' },
   // Fix double articles
   { pattern: /\b(a|an)\s+(a|an)\s+/gi, replacement: '$1 ' },
 ];
