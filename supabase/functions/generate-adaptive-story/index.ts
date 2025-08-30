@@ -271,20 +271,20 @@ serve(async (req) => {
     if (normalizedReadingLevel === 'beginner') {
       console.log('🎯 Processing Level 0 (beginner) content...');
       
-      // Tier 1: Try "Page X:" marker splitting (current method)
-      let initialPages = storyText.split(/Page \d+:?\s*/i)
+      // Tier 1: Split by double line breaks (paragraph separation)
+      let initialPages = storyText.split(/\n\n+/)
         .filter(p => p.trim())
         .map(p => p.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' '));
       
-      console.log('📄 Tier 1 (Page markers):', { found: initialPages.length, hasContent: initialPages.some(p => p.length > 0) });
+      console.log('📄 Tier 1 (Paragraph splits):', { found: initialPages.length, hasContent: initialPages.some(p => p.length > 0) });
       
-      // Tier 2: Fallback to sentence-based splitting if no "Page X:" markers found
+      // Tier 2: Fallback to sentence-based splitting if no paragraphs found
       if (initialPages.length === 0 || !initialPages.some(p => p.length > 0)) {
         console.log('🔄 Tier 2: Using sentence-based splitting fallback...');
         initialPages = storyText.split(/[.!?]+/)
           .filter(s => s.trim())
           .map(s => s.trim() + '.')
-          .slice(0, 8);
+          .slice(0, 12);
         console.log('📝 Tier 2 (Sentences):', { found: initialPages.length });
       }
       
@@ -293,7 +293,7 @@ serve(async (req) => {
         console.log('🔄 Tier 3: Using word-count based splitting...');
         const words = storyText.replace(/[.!?]+/g, '').split(/\s+/).filter(w => w.trim());
         initialPages = [];
-        for (let i = 0; i < Math.min(words.length, 40); i += 5) {
+        for (let i = 0; i < Math.min(words.length, 60); i += 5) {
           const pageWords = words.slice(i, i + 5);
           if (pageWords.length > 0) {
             initialPages.push(pageWords.join(' ') + '.');
@@ -304,7 +304,7 @@ serve(async (req) => {
       
       // Final validation and processing for Level 0
       pages = initialPages
-        .slice(0, 8)
+        .slice(0, 12)
         .map(page => {
           // Ensure each page is exactly one sentence
           const sentences = page.split(/[.!?]+/).filter(s => s.trim());
@@ -331,8 +331,21 @@ serve(async (req) => {
       });
       
     } else {
-      // Other levels: improved content splitting to prevent concatenation
+      // Other levels: improved content splitting to prevent concatenation  
       let rawPages = storyText.split(/\n\n+/).filter(p => p.trim());
+      
+      // Enhanced page cleaning to remove page markers
+      rawPages = rawPages.map(page => 
+        page
+          .replace(/^\*\*Page\s*\d+\*\*:?\s*/i, '')       // **Page 1:** or **Page 1**
+          .replace(/^Page\s*\d+\s*:\s*/i, '')              // Page 1: 
+          .replace(/^Page\s*\d+\s*/i, '')                  // Page 1
+          .replace(/^\d+\.\s*/i, '')                       // 1. 
+          .replace(/^Page\s*(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten)\s*:?\s*/i, '') // Page One:
+          .replace(/^Chapter\s*\d+\s*:?\s*/i, '')          // Chapter 1:
+          .replace(/^\*\*\d+\*\*\s*:?\s*/i, '')           // **1**:
+          .trim()
+      ).filter(p => p.length > 10);
       
       // If pages are too long, split them further
       pages = [];
@@ -354,7 +367,7 @@ serve(async (req) => {
         }
       }
       
-      pages = pages.slice(0, 8);
+      pages = pages.slice(0, 12);
       console.log('📖 Other level processing:', { level: normalizedReadingLevel, pagesFound: pages.length });
     }
     

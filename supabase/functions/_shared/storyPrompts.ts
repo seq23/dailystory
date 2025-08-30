@@ -18,16 +18,18 @@ export interface ExpertStoryPromptConfig {
   systemPrompt: string;
   userPromptTemplate: string;
   wordCount: string;
+  expectedPages?: number; // Add expectedPages for business logic
 }
 
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    systemPrompt: `You are generating ONE PAGE of a never-ending picture book story for pre-readers aged 3-5.
+    expectedPages: 10,
+    systemPrompt: `You are generating a never-ending picture book story for pre-readers aged 3-5.
 
 CRITICAL RULES:
-- Generate ONLY one sentence per page (the current page content)
-- Use "Page X:" markers to separate each page of content
+- Generate content as a continuous narrative that naturally breaks into distinct scenes
+- Do NOT include page numbers, page markers, or page headers in your content
 - Use subject-verb OR subject-verb-object as sentence structure
 - Use a mix of 2-, 3-, and 4- letter words
 - Use a mix of 2-, 3-, and 4- word sentences (max 6 words)
@@ -52,10 +54,12 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   easy: {
     difficulty: 'easy',
-    systemPrompt: `Generate ONE PAGE of a picture book story for early readers aged 5-7.
+    expectedPages: 10,
+    systemPrompt: `Generate a picture book story for early readers aged 5-7.
 
 RULES:
-- 1-2 sentences per page, Use "Page X:" markers to separate each page of content
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
 - 3-6 letter words, 4-8 word sentences (max 12 words)
 - 15-24 words per page
 - Simple present/past tense, subject-verb-object structure
@@ -80,10 +84,13 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   medium: {
     difficulty: 'medium',
-    systemPrompt: `Generate ONE PAGE of a chapter book story for readers aged 7-9.
+    expectedPages: 10,
+    systemPrompt: `Generate a chapter book story for readers aged 7-9.
 
 RULES:
-- Suggest 2-3 sentences per page. Use compound sentences with coordinating conjunctions (and, but, so). Mix simple and compound sentence structures for natural narrative flow. Use "Page X:" markers to separate each page of content
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments  
+- Do NOT include page numbers, page markers, or page headers in your content
+- Suggest 2-3 sentences per page. Use compound sentences with coordinating conjunctions (and, but, so). Mix simple and compound sentence structures for natural narrative flow
 - 3-7 letter words, 5-12 word sentences (max 15 words)
 - 50-70 words per page
 - Past/present tense, varied sentence structures
@@ -108,10 +115,13 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   hard: {
     difficulty: 'hard',
-    systemPrompt: `Generate ONE PAGE of an intermediate story for readers aged 9-11.
+    expectedPages: 10,
+    systemPrompt: `Generate an intermediate story for readers aged 9-11.
 
 RULES:
-- Suggest 3-4 sentences per page. Use complex sentences with dependent clauses. Vary sentence beginnings and lengths. Include descriptive language and sophisticated vocabulary for engaging storytelling. Use "Page X:" markers to separate each page of content
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
+- Suggest 3-4 sentences per page. Use complex sentences with dependent clauses. Vary sentence beginnings and lengths. Include descriptive language and sophisticated vocabulary for engaging storytelling
 - 4-9 letter words, varied sentence lengths (max 20 words)
 - 80-120 words per page
 - Multiple tenses, complex sentence structures
@@ -136,10 +146,13 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   expert: {
     difficulty: 'expert',
-    systemPrompt: `Generate ONE PAGE of an advanced story for readers aged 11-13.
+    expectedPages: 10,
+    systemPrompt: `Generate an advanced story for readers aged 11-13.
 
 RULES:
-- Suggest 4-5 sentences per page. Use sophisticated sentence structures with multiple clauses. Employ literary devices and advanced vocabulary. Focus on nuanced character development and thematic depth. Use "Page X:" markers to separate each page of content
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
+- Suggest 4-5 sentences per page. Use sophisticated sentence structures with multiple clauses. Employ literary devices and advanced vocabulary. Focus on nuanced character development and thematic depth
 - Advanced vocabulary, sophisticated structures
 - 120-200 words per page
 - Multiple tenses, complex sentence structures
@@ -167,12 +180,15 @@ export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptCon
   
   "6th": {
     gradeLevel: "6th",
+    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 6th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -195,12 +211,15 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   "7th": {
     gradeLevel: "7th",
+    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 7th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -223,12 +242,15 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   "8th": {
     gradeLevel: "8th",
+    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 8th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -251,12 +273,15 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   "9th": {
     gradeLevel: "9th",
+    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 9th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -279,12 +304,15 @@ Use seed={seed} to vary story elements: settings (home/park/forest/city), activi
 
   "10th": {
     gradeLevel: "10th",
+    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 10th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
 - Story continues indefinitely unless user explicitly requests an ending
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
+- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
+- Do NOT include page numbers, page markers, or page headers in your content
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 

@@ -48,7 +48,7 @@ export class NetflixStyleStoryService {
 
       const systemPrompt = `${promptConfig.systemPrompt}
 
-      IMPORTANT: Generate a complete ${promptConfig.expectedPages}-page story.
+      IMPORTANT: Generate a complete ${promptConfig.expectedPages || 10}-page story.
       - Each page should be a complete scene or chapter segment
       - Maintain consistent character development throughout
       - Ensure age-appropriate content for ${difficulty} level
@@ -82,9 +82,24 @@ export class NetflixStyleStoryService {
       }
 
       if (data?.pages && Array.isArray(data.pages) && data.pages.length > 0) {
-        // Clean pages by removing any page markers
+        // Enhanced page cleaning to remove ALL page number variations
         const cleanedPages = data.pages.map((page: string) => 
-          page.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim()
+          page
+            .replace(/^\*\*Page\s*\d+\*\*:?\s*/i, '')       // **Page 1:** or **Page 1**
+            .replace(/^Page\s*\d+\s*:\s*/i, '')              // Page 1: 
+            .replace(/^Page\s*\d+\s*/i, '')                  // Page 1
+            .replace(/^\d+\.\s*/i, '')                       // 1. 
+            .replace(/^Page\s*One\s*:?\s*/i, '')             // Page One:
+            .replace(/^Page\s*Two\s*:?\s*/i, '')             // Page Two:
+            .replace(/^Page\s*Three\s*:?\s*/i, '')           // Page Three:
+            .replace(/^Page\s*Four\s*:?\s*/i, '')            // Page Four:
+            .replace(/^Page\s*Five\s*:?\s*/i, '')            // Page Five:
+            .replace(/^Page\s*Six\s*:?\s*/i, '')             // Page Six:
+            .replace(/^Page\s*Seven\s*:?\s*/i, '')           // Page Seven:
+            .replace(/^Page\s*Eight\s*:?\s*/i, '')           // Page Eight:
+            .replace(/^Chapter\s*\d+\s*:?\s*/i, '')          // Chapter 1:
+            .replace(/^\*\*\d+\*\*\s*:?\s*/i, '')           // **1**:
+            .trim()
         ).filter((page: string) => page.length > 10);
 
         if (cleanedPages.length >= 3) {
