@@ -327,7 +327,7 @@ export const FormStep3Personalization = ({
                   {t("formStep3.avatar", "Choose Your Avatar")}
                 </Label>
                 <AvatarPicker
-                  value={formData.avatar || { type: 'boy', skinTone: 'light' }}
+                  value={formData.avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }}
                   onChange={(avatar) => handleInputChange('avatar', avatar)}
                   className="w-full"
                 />

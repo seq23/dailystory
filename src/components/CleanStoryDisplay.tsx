@@ -3186,7 +3186,7 @@ const handleRestartTimer = () => {
                       )}
                       <div className={cn("h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
                         <div 
-                          className={cn("story-content story-content--compact story-content--difficulty-aware w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
+                          className={cn("story-content story-content--compact story-content--difficulty-aware w-full", (isPremium && isShortPage || currentDifficulty === 'easy') && "text-center", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                           data-difficulty={currentDifficulty}
                           style={{
                             fontSize: difficultyBasedTextConfig.fontSize,

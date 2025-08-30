@@ -55,7 +55,9 @@ export const MultiStepUserForm = ({ onSubmit, onBack, isPremium = false }: Multi
   const handleQuickSubmit = () => {
     if (canSubmitForm) {
       const finalData = submitForm();
-      onSubmit(finalData);
+      if (finalData) {
+        onSubmit(finalData);
+      }
     }
   };
 

@@ -139,7 +139,7 @@ export const getDifficultyBasedTextConfig = (difficulty: DifficultyLevel, isMobi
     case 'easy': // Level 1 - 15-24 words per page - NO SCROLLING
       return {
         ...baseConfig,
-        fontSize: isMobile ? 'clamp(1.75rem, 6vw, 3rem)' : 'clamp(1.5rem, 4vw, 2.5rem)',
+        fontSize: isMobile ? 'clamp(2rem, 7vw, 3.5rem)' : 'clamp(1.5rem, 4vw, 2.5rem)',
         lineHeight: 'leading-relaxed',
         letterSpacing: 'tracking-normal',
         paragraphSpacing: 'mb-5',

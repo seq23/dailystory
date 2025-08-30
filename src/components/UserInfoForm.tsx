@@ -49,13 +49,13 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
   const { validationState, validateFormOnSubmit, resetValidation } = useValidationOnSubmit();
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
-    age: 7, // Default age for compatibility
+    age: 5, // Default age for compatibility
     grade: "PreK",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
     avatar: {
-      type: "boy",
-      skinTone: "light"
+      type: "prefer-not-to-answer",
+      skinTone: "medium"
     },
     favoriteColor: "",
     favoriteAnimal: "",
@@ -349,11 +349,11 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     
     // Avatar validation is less critical - provide defaults if missing
     if (!formData.avatar?.type) {
-      formData.avatar = { ...formData.avatar, type: 'boy' };
+      formData.avatar = { ...formData.avatar, type: 'prefer-not-to-answer' };
     }
     
     if (!formData.avatar?.skinTone) {
-      formData.avatar = { ...formData.avatar, skinTone: 'light' };
+      formData.avatar = { ...formData.avatar, skinTone: 'medium' };
     }
     
     return errors;

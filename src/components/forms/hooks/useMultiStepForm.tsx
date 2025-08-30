@@ -11,13 +11,13 @@ export const useMultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [formData, setFormData] = useState<UserInfo>({
     name: "",
-    age: 7,
+    age: 5,
     grade: "PreK",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
     avatar: {
-      type: "boy",
-      skinTone: "light"
+      type: "prefer-not-to-answer",
+      skinTone: "medium"
     },
     favoriteColor: "",
     favoriteAnimal: "",
