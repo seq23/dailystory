@@ -5,7 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle, User, Settings } from 'lucide-react';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
@@ -229,6 +233,24 @@ export function StoryPromptTester() {
   const [testMode, setTestMode] = useState<'full' | 'ai-only' | 'live-only' | 'template-only' | 'comparison'>('full');
   const [logs, setLogs] = useState<string[]>([]);
   const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
+  
+  // Custom user preferences state
+  const [useCustomPreferences, setUseCustomPreferences] = useState(false);
+  const [customUserPrefs, setCustomUserPrefs] = useState<UserInfo>({
+    name: 'Test User',
+    age: 8,
+    grade: "2nd" as Grade,
+    nativeLanguage: "en" as LanguageCode,
+    learningGoal: "improve-english-reading" as LearningGoal,
+    avatar: { type: "boy", skinTone: "medium" },
+    difficultyLevel: 'medium',
+    favoriteColor: 'blue',
+    favoriteAnimal: 'dog',
+    hobbies: 'playing games',
+    favoriteFood: 'pizza',
+    specialRequest: 'adventure stories'
+  });
+  const [customFormExpanded, setCustomFormExpanded] = useState(false);
 
   const templateService = useTemplateService();
 
@@ -562,7 +584,11 @@ export function StoryPromptTester() {
     setLogs(['🚀 Starting comprehensive story generation tests...']);
     setProgress(0);
 
-    const profiles = Object.entries(testUserProfiles);
+    // Use custom preferences if enabled, otherwise use predefined profiles
+    const profiles: [string, UserInfo][] = useCustomPreferences 
+      ? [['custom', customUserPrefs] as [string, UserInfo]] 
+      : Object.entries(testUserProfiles);
+    
     const servicesCount = testMode === 'comparison' ? 3 : testMode === 'full' ? 2 : 1;
     const totalTests = profiles.length * servicesCount;
     let completed = 0;
@@ -981,6 +1007,169 @@ export function StoryPromptTester() {
         <p className="text-muted-foreground mb-6">
           Test both Netflix-style complete stories and Live page-by-page generation with AI-first fallback chains
         </p>
+
+        {/* Custom User Preferences Form */}
+        <Card className="mb-6">
+          <Collapsible open={customFormExpanded} onOpenChange={setCustomFormExpanded}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    <CardTitle className="text-lg">Custom User Preferences</CardTitle>
+                    <Badge variant={useCustomPreferences ? "default" : "secondary"}>
+                      {useCustomPreferences ? "Active" : "Predefined Profiles"}
+                    </Badge>
+                  </div>
+                  {customFormExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <CardContent>
+                <div className="flex items-center gap-2 mb-4">
+                  <Button
+                    variant={useCustomPreferences ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setUseCustomPreferences(!useCustomPreferences)}
+                    className="flex items-center gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    {useCustomPreferences ? "Using Custom Preferences" : "Switch to Custom"}
+                  </Button>
+                  {useCustomPreferences && (
+                    <div className="text-sm text-muted-foreground">
+                      Testing with custom user: {customUserPrefs.name}
+                    </div>
+                  )}
+                </div>
+
+                {useCustomPreferences && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
+                        value={customUserPrefs.name}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Enter user name"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        min="3"
+                        max="18"
+                        value={customUserPrefs.age}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, age: parseInt(e.target.value) || 6 }))}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="grade">Grade</Label>
+                      <Select
+                        value={customUserPrefs.grade}
+                        onValueChange={(value: Grade) => setCustomUserPrefs(prev => ({ ...prev, grade: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PreK">PreK</SelectItem>
+                          <SelectItem value="K">Kindergarten</SelectItem>
+                          <SelectItem value="1st">1st Grade</SelectItem>
+                          <SelectItem value="2nd">2nd Grade</SelectItem>
+                          <SelectItem value="3rd">3rd Grade</SelectItem>
+                          <SelectItem value="4th">4th Grade</SelectItem>
+                          <SelectItem value="5th">5th Grade</SelectItem>
+                          <SelectItem value="6th+">6th+ Grade</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="difficulty">Difficulty Level</Label>
+                      <Select
+                        value={customUserPrefs.difficultyLevel}
+                        onValueChange={(value: DifficultyLevel) => setCustomUserPrefs(prev => ({ ...prev, difficultyLevel: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="beginner">Beginner</SelectItem>
+                          <SelectItem value="easy">Easy</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="hard">Hard</SelectItem>
+                          <SelectItem value="expert">Expert</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="favoriteColor">Favorite Color</Label>
+                      <Input
+                        id="favoriteColor"
+                        value={customUserPrefs.favoriteColor || ''}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteColor: e.target.value }))}
+                        placeholder="e.g., blue, red, green"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="favoriteAnimal">Favorite Animal</Label>
+                      <Input
+                        id="favoriteAnimal"
+                        value={customUserPrefs.favoriteAnimal || ''}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteAnimal: e.target.value }))}
+                        placeholder="e.g., dog, cat, elephant"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="hobbies">Hobbies</Label>
+                      <Input
+                        id="hobbies"
+                        value={customUserPrefs.hobbies || ''}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, hobbies: e.target.value }))}
+                        placeholder="e.g., reading, sports, art"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="favoriteFood">Favorite Food</Label>
+                      <Input
+                        id="favoriteFood"
+                        value={customUserPrefs.favoriteFood || ''}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteFood: e.target.value }))}
+                        placeholder="e.g., pizza, ice cream, tacos"
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="specialRequest">Special Request</Label>
+                      <Textarea
+                        id="specialRequest"
+                        value={customUserPrefs.specialRequest || ''}
+                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, specialRequest: e.target.value }))}
+                        placeholder="e.g., adventure stories, mystery themes, sci-fi elements"
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
 
         {/* Test Mode Selection */}
         <div className="flex gap-2 mb-4">
