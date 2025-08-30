@@ -75,6 +75,37 @@ import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 
+// Unified image conversion utility - handles both array and Record formats
+const convertImagesToRecord = (images: any, source: string): Record<number, string> | null => {
+  if (!images) {
+    console.log(`🐛 DEBUG: No images provided from ${source}`);
+    return null;
+  }
+
+  console.log(`🐛 DEBUG: Converting images from ${source}:`, images);
+  
+  // Handle array format from cached stories/sessions
+  if (Array.isArray(images)) {
+    const convertedImages: Record<number, string> = {};
+    images.forEach((item, index) => {
+      if (item?.url) {
+        convertedImages[index] = item.url;
+      }
+    });
+    console.log(`🐛 DEBUG: ${source} - Converted array to Record:`, convertedImages);
+    return convertedImages;
+  } 
+  
+  // Handle Record format (backward compatibility)
+  if (typeof images === 'object' && images !== null) {
+    console.log(`🐛 DEBUG: ${source} - Using Record format directly:`, images);
+    return images;
+  }
+  
+  console.warn(`🐛 DEBUG: ${source} - Unsupported image format:`, typeof images, images);
+  return null;
+};
+
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -203,26 +234,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setIsStoryComplete(true);
         setStoryTitle(currentStory.title || `${userInfo.name}'s Story`);
         
-        // Load cached images if available - convert array to Record format
-        if (currentStory.cachedImages) {
-          console.log('🐛 DEBUG: Raw cachedImages:', currentStory.cachedImages);
-          
-          // Handle array format from cached stories
-          if (Array.isArray(currentStory.cachedImages)) {
-            const convertedImages: Record<number, string> = {};
-            currentStory.cachedImages.forEach((item, index) => {
-              if (item?.url) {
-                convertedImages[index] = item.url;
-              }
-            });
-            console.log('🐛 DEBUG: Converted pageImages:', convertedImages);
-            setPageImages(convertedImages);
-          } 
-          // Handle Record format (backward compatibility)
-          else if (typeof currentStory.cachedImages === 'object') {
-            console.log('🐛 DEBUG: Using Record format directly:', currentStory.cachedImages);
-            setPageImages(currentStory.cachedImages);
-          }
+        // Load cached images using unified conversion logic
+        const convertedImages = convertImagesToRecord(currentStory.cachedImages, 'Saved story');
+        if (convertedImages && Object.keys(convertedImages).length > 0) {
+          setPageImages(convertedImages);
         }
         
         setIsLoading(false);
@@ -1266,6 +1281,11 @@ const initializeStory = async () => {
             setIsStoryComplete(true);
             setStorySource('unknown');
             
+            // Load cached images using unified conversion logic
+            const convertedImages = convertImagesToRecord(cached.images, 'Free mode cache');
+            if (convertedImages && Object.keys(convertedImages).length > 0) {
+              setPageImages(convertedImages);
+            }
             
             setIsStoryStable(true);
             return; // Early return - NO FALLBACK TO REGENERATION
