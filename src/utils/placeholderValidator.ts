@@ -105,9 +105,10 @@ export function getPlaceholderValidationMessage(result: PlaceholderValidationRes
       : '✅ No placeholders found (static template)';
   }
 
-  const count = result.unresolvedPlaceholders.length;
+  const unresolvedList = result.unresolvedPlaceholders || [];
+  const count = unresolvedList.length;
   const prefix = result.source === 'ai' ? 'Unresolved user inputs' : 'Unresolved placeholders';
-  return `⚠️ ${count} ${prefix.toLowerCase()}: ${result.unresolvedPlaceholders.join(', ')}`;
+  return `⚠️ ${count} ${prefix.toLowerCase()}: ${unresolvedList.join(', ')}`;
 }
 
 /**
