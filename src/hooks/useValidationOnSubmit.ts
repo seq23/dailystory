@@ -64,8 +64,15 @@ export const useValidationOnSubmit = () => {
     let hasCoppaViolation = false;
     const coppaViolationsByField: Record<string, string[]> = {};
 
+    // Skip structured data fields that don't need COPPA text validation
+    const STRUCTURED_DATA_FIELDS = ['avatar', 'age', 'gradeLevel'];
+
     // Validate each field in the form
     for (const [key, value] of Object.entries(formData)) {
+      // Skip structured data fields
+      if (STRUCTURED_DATA_FIELDS.includes(key)) {
+        continue;
+      }
       if (value) {
         const context = key === 'displayName' ? 'name' : 
                       key === 'interests' || key === 'hobbies' ? 'interest' :
