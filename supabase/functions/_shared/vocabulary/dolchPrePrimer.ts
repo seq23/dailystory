@@ -61,7 +61,18 @@ export function validateLevel0Sentence(sentence: string, userName?: string, user
       return false;
     }
     
-    return !ENHANCED_LEVEL_0_VOCABULARY.has(word);
+    // Allow Enhanced Level 0 vocabulary
+    if (ENHANCED_LEVEL_0_VOCABULARY.has(word)) {
+      return false;
+    }
+    
+    // Allow simple 1-4 letter filler words
+    if (word.length >= 1 && word.length <= 4) {
+      return false;
+    }
+    
+    // Reject all other words
+    return true;
   });
   
   return {
