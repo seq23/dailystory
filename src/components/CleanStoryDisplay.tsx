@@ -3095,7 +3095,7 @@ const handleRestartTimer = () => {
                   {/* Image Status moved to main content area */}
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className={cn("min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative", currentImage ? "flex-[0.45]" : "flex-[0.85]")}>
+                  <div className={cn("min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative", currentImage ? "flex-[0.3]" : "flex-[0.85]")}>
                     {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
@@ -3131,7 +3131,7 @@ const handleRestartTimer = () => {
                           <div className="flex items-center justify-center h-32">
                             <div className="text-center">
                               <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Loading story content...</p>
+                              <p className="text-sm text-muted-foreground">Weaving more story magic...</p>
                             </div>
                           </div>
                         )}
