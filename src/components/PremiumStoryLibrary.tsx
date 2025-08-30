@@ -20,12 +20,14 @@ interface PremiumStoryLibraryProps {
   onLoadStory: (story: Story) => void;
   onStartNewStory: () => void;
   currentStory?: Story;
+  pageImages?: Record<number, string>; // CRITICAL: Add pageImages prop for saving
 }
 
 export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
   onLoadStory,
   onStartNewStory,
-  currentStory
+  currentStory,
+  pageImages = {} // CRITICAL: Extract pageImages prop
 }) => {
   const [savedStories, setSavedStories] = useState<SavedStory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,10 +165,10 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         specialRequest: ''
       };
 
-      // CRITICAL FIX: Use pageImages state, not non-existent cachedImages property
+      // CRITICAL FIX: Use pageImages prop instead of empty object
       const storyToSave = {
         ...currentStory,
-        imageCacheMetadata: {} // Will be updated to use pageImages when prop is available
+        imageCacheMetadata: pageImages // Use actual current images from CleanStoryDisplay
       };
 
       await PremiumStoryManager.saveStory(storyToSave, userInfo, ['recent'], false);

@@ -22,36 +22,7 @@ import { Button } from "@/components/ui/button";
 import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
-// Unified image conversion utility - handles both array and Record formats
-const convertImagesToRecord = (images: any, source: string): Record<number, string> | null => {
-  if (!images) {
-    console.log(`🐛 DEBUG: No images provided from ${source}`);
-    return null;
-  }
-
-  console.log(`🐛 DEBUG: Converting images from ${source}:`, images);
-  
-  // Handle array format from cached stories/sessions
-  if (Array.isArray(images)) {
-    const convertedImages: Record<number, string> = {};
-    images.forEach((item, index) => {
-      if (item?.url) {
-        convertedImages[index] = item.url;
-      }
-    });
-    console.log(`🐛 DEBUG: ${source} - Converted array to Record:`, convertedImages);
-    return convertedImages;
-  } 
-  
-  // Handle Record format (backward compatibility)
-  if (typeof images === 'object' && images !== null) {
-    console.log(`🐛 DEBUG: ${source} - Using Record format directly:`, images);
-    return images;
-  }
-  
-  console.warn(`🐛 DEBUG: ${source} - Unsupported image format:`, typeof images, images);
-  return null;
-};
+import { convertImagesToRecord } from "@/utils/imageUtils";
 
 interface AuthenticatedAppProps {
   user: User;
@@ -70,6 +41,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [devTestMode, setDevTestMode] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [currentStory, setCurrentStory] = useState<any>(null);
+  const [currentPageImages, setCurrentPageImages] = useState<Record<number, string>>({});
   
   useEffect(() => {
     console.log('👤 AuthenticatedApp loading state:', loading);
@@ -443,66 +415,67 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                           <p className="text-muted-foreground">Manage your saved stories and collections</p>
                         </div>
                       </div>
-                      <PremiumStoryLibrary
-                        onLoadStory={async (story) => {
-                          try {
-                            // CRITICAL FIX: Load images from saved story metadata instead of hash-based lookup
-                            let cachedImages = null;
-                            
-                             // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
-                             if ((story as any).imageCacheMetadata) {
-                               console.log('🖼️ Loading images from story imageCacheMetadata');
-                               cachedImages = convertImagesToRecord((story as any).imageCacheMetadata, 'Story metadata');
-                             }
-                             // Priority 2: Load from legacy image_cache_metadata field
-                             else if ((story as any).image_cache_metadata) {
-                               console.log('🖼️ Loading images from legacy image_cache_metadata');
-                               cachedImages = convertImagesToRecord((story as any).image_cache_metadata, 'Legacy metadata');
+                       <PremiumStoryLibrary
+                         onLoadStory={async (story) => {
+                           try {
+                             // CRITICAL FIX: Load images from saved story metadata instead of hash-based lookup
+                             let cachedImages = null;
+                             
+                              // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
+                              if ((story as any).imageCacheMetadata) {
+                                console.log('🖼️ Loading images from story imageCacheMetadata');
+                                cachedImages = convertImagesToRecord((story as any).imageCacheMetadata, 'Story metadata');
+                              }
+                              // Priority 2: Load from legacy image_cache_metadata field
+                              else if ((story as any).image_cache_metadata) {
+                                console.log('🖼️ Loading images from legacy image_cache_metadata');
+                                cachedImages = convertImagesToRecord((story as any).image_cache_metadata, 'Legacy metadata');
+                              }
+                              
+                              // Validate loaded images
+                              if (cachedImages) {
+                                const validatedImages: Record<number, string> = {};
+                                for (const [index, url] of Object.entries(cachedImages)) {
+                                  try {
+                                    if (typeof url === 'string') {
+                                      new URL(url); // Basic URL validation
+                                      validatedImages[parseInt(index)] = url;
+                                    }
+                                  } catch {
+                                    console.warn(`🖼️ Invalid image URL for page ${index}:`, url);
+                                  }
+                                }
+                                cachedImages = Object.keys(validatedImages).length > 0 ? validatedImages : null;
+                              }
+                             // Fallback: Attempt hash-based lookup (for backward compatibility)
+                             else {
+                               console.log('🖼️ Attempting hash-based image lookup as fallback');
+                               const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
+                               const storyPages = story.segments?.map(s => s.text) || [];
+                               if (storyPages.length > 0) {
+                                 const storyHash = StoryCacheIntegration.generateStoryHash(storyPages);
+                                 const hashImages = await StoryCacheIntegration.loadStoryImages(storyHash, storyPages.length);
+                                 cachedImages = Object.keys(hashImages).length > 0 ? hashImages : null;
+                               }
                              }
                              
-                             // Validate loaded images
-                             if (cachedImages) {
-                               const validatedImages: Record<number, string> = {};
-                               for (const [index, url] of Object.entries(cachedImages)) {
-                                 try {
-                                   if (typeof url === 'string') {
-                                     new URL(url); // Basic URL validation
-                                     validatedImages[parseInt(index)] = url;
-                                   }
-                                 } catch {
-                                   console.warn(`🖼️ Invalid image URL for page ${index}:`, url);
-                                 }
-                               }
-                               cachedImages = Object.keys(validatedImages).length > 0 ? validatedImages : null;
-                             }
-                            // Fallback: Attempt hash-based lookup (for backward compatibility)
-                            else {
-                              console.log('🖼️ Attempting hash-based image lookup as fallback');
-                              const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
-                              const storyPages = story.segments?.map(s => s.text) || [];
-                              if (storyPages.length > 0) {
-                                const storyHash = StoryCacheIntegration.generateStoryHash(storyPages);
-                                const hashImages = await StoryCacheIntegration.loadStoryImages(storyHash, storyPages.length);
-                                cachedImages = Object.keys(hashImages).length > 0 ? hashImages : null;
-                              }
-                            }
-                            
-                            // Set current story with loaded images
-                            setCurrentStory({
-                              ...story,
-                              cachedImages: cachedImages || {},
-                              isFromSavedStory: true // Flag to prevent regeneration
-                            });
-                            setCurrentView("reading");
-                          } catch (error) {
-                            console.error('Failed to load story:', error);
-                            setCurrentStory(story);
-                            setCurrentView("reading");
-                          }
-                        }}
-                        onStartNewStory={() => setCurrentView("stories")}
-                        currentStory={currentStory}
-                      />
+                             // Set current story with loaded images
+                             setCurrentStory({
+                               ...story,
+                               cachedImages: cachedImages || {},
+                               isFromSavedStory: true // Flag to prevent regeneration
+                             });
+                             setCurrentView("reading");
+                           } catch (error) {
+                             console.error('Failed to load story:', error);
+                             setCurrentStory(story);
+                             setCurrentView("reading");
+                           }
+                         }}
+                         onStartNewStory={() => setCurrentView("stories")}
+                         currentStory={currentStory}
+                         pageImages={currentPageImages}
+                       />
                     </div>
                   )}
 
@@ -546,18 +519,19 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                           <p className="text-muted-foreground">Reading saved story</p>
                         </div>
                       </div>
-                      <CleanStoryDisplay
-                        userInfo={userInfo}
-                        isPremium={isPremium}
-                        currentStory={currentStory}
-                        onSessionEnded={(stats) => {
-                          console.log('Story session ended:', stats);
-                          setCurrentView("library");
-                        }}
-                        onHome={() => setCurrentView("stories")}
-                        onUpgrade={() => setCurrentView("account")}
-                        onNewStory={() => setCurrentView("stories")}
-                      />
+                       <CleanStoryDisplay
+                         userInfo={userInfo}
+                         isPremium={isPremium}
+                         currentStory={currentStory}
+                         onSessionEnded={(stats) => {
+                           console.log('Story session ended:', stats);
+                           setCurrentView("library");
+                         }}
+                         onHome={() => setCurrentView("stories")}
+                         onUpgrade={() => setCurrentView("account")}
+                         onNewStory={() => setCurrentView("stories")}
+                         onPageImagesUpdate={(images) => setCurrentPageImages(images)}
+                       />
                     </div>
                   )}
 

@@ -75,37 +75,7 @@ import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 
-// Unified image conversion utility - handles both array and Record formats
-const convertImagesToRecord = (images: any, source: string): Record<number, string> | null => {
-  if (!images) {
-    console.log(`🐛 DEBUG: No images provided from ${source}`);
-    return null;
-  }
-
-  console.log(`🐛 DEBUG: Converting images from ${source}:`, images);
-  
-  // Handle array format from cached stories/sessions
-  if (Array.isArray(images)) {
-    const convertedImages: Record<number, string> = {};
-    images.forEach((item, index) => {
-      if (item?.url) {
-        convertedImages[index] = item.url;
-      }
-    });
-    console.log(`🐛 DEBUG: ${source} - Converted array to Record:`, convertedImages);
-    return convertedImages;
-  } 
-  
-  // Handle Record format (backward compatibility)
-  if (typeof images === 'object' && images !== null) {
-    console.log(`🐛 DEBUG: ${source} - Using Record format directly:`, images);
-    return images;
-  }
-  
-  console.warn(`🐛 DEBUG: ${source} - Unsupported image format:`, typeof images, images);
-  return null;
-};
-
+import { convertImagesToRecord } from "@/utils/imageUtils";
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -116,6 +86,7 @@ interface CleanStoryDisplayProps {
   onNewStory?: () => void;
   readingAsName?: string;
   currentStory?: any; // For saved stories - contains cachedImages and isFromSavedStory
+  onPageImagesUpdate?: (images: Record<number, string>) => void; // CRITICAL: Callback to provide current images
 }
 
 const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
@@ -126,7 +97,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   onUpgrade,
   onNewStory,
   readingAsName,
-  currentStory
+  currentStory,
+  onPageImagesUpdate, // CRITICAL: Extract callback for image updates
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -252,6 +224,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           
           if (Object.keys(validatedImages).length > 0) {
             setPageImages(validatedImages);
+            onPageImagesUpdate?.(validatedImages); // CRITICAL: Notify parent of image updates
             console.log('✅ Saved story: Valid images loaded', validatedImages);
           }
         }
@@ -838,37 +811,39 @@ useEffect(() => {
   };
 }, [currentStory, contentHash]);
 
-  // Listen for auto-generated images
+  // Listen for auto-generated images - FIXED ASYNC RACE CONDITION
   useEffect(() => {
-    const handleImageGenerated = (event: CustomEvent) => {
+    const handleImageGenerated = async (event: CustomEvent) => {
       const { pageIndex, imageUrl } = event.detail;
       console.log('🖼️ Auto-generated image received:', { pageIndex, imageUrl });
       
       setPageImages(prev => {
         const updated = { ...prev, [pageIndex]: imageUrl };
         
-        // Persist to cache with current values (not stale closure)
-        setTimeout(() => {
+        // CRITICAL FIX: Notify parent about image updates for premium saving
+        onPageImagesUpdate?.(updated);
+        
+        // CRITICAL FIX: Perform async operations BEFORE returning from setPageImages
+        (async () => {
           try {
             if (isPremium) {
-              supabase.auth.getUser().then(({ data: { user } }) => {
-                if (user?.id && story) {
-                  const avatarType = userInfo?.avatar?.type;
-                  const imageArray = Object.entries(updated).map(([index, url]) => ({
-                    url,
-                    prompt: `Page ${parseInt(index) + 1} illustration`
-                  }));
-                  
-                  StorySessionCache.updatePages(
-                    user.id,
-                    story,
-                    currentPage,
-                    imageArray,
-                    avatarType
-                  );
-                  console.log('✅ Premium image cached:', { pageIndex, userId: user.id });
-                }
-              });
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user?.id && story) {
+                const avatarType = userInfo?.avatar?.type;
+                const imageArray = Object.entries(updated).map(([index, url]) => ({
+                  url,
+                  prompt: `Page ${parseInt(index) + 1} illustration`
+                }));
+                
+                StorySessionCache.updatePages(
+                  user.id,
+                  story,
+                  currentPage,
+                  imageArray,
+                  avatarType
+                );
+                console.log('✅ Premium image cached:', { pageIndex, userId: user.id });
+              }
             } else if (story && userInfo) {
               const avatarType = userInfo.avatar?.type;
               const imageArray = Object.entries(updated).map(([index, url]) => ({
@@ -882,7 +857,7 @@ useEffect(() => {
           } catch (error) {
             console.error('❌ Cache persistence failed:', error);
           }
-        }, 0);
+        })();
         
         return updated;
       });
@@ -890,7 +865,7 @@ useEffect(() => {
     
     window.addEventListener('image:generated', handleImageGenerated as EventListener);
     return () => window.removeEventListener('image:generated', handleImageGenerated as EventListener);
-  }, [isPremium, userInfo, story, currentPage]); // CRITICAL: Add all dependencies
+  }, [isPremium, userInfo, story, currentPage, supabase]); // CRITICAL: Add all dependencies including supabase
 
   // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte) and auto-resume narration
   useEffect(() => {
@@ -1336,6 +1311,7 @@ const initializeStory = async () => {
             const convertedImages = convertImagesToRecord(cached.images, 'Cache restoration');
             if (convertedImages && Object.keys(convertedImages).length > 0) {
               setPageImages(convertedImages);
+              onPageImagesUpdate?.(convertedImages); // CRITICAL: Notify parent of cache restoration
               console.log('🖼️ Premium cache restoration: Images loaded from session cache', convertedImages);
             } else {
               console.log('🖼️ Premium cache restoration: No cached images found, will generate new ones');
@@ -1606,10 +1582,14 @@ const initializeStory = async () => {
       );
       
       if (result.success && result.url) {
-        setPageImages(prev => ({
-          ...prev,
-          [currentPage]: result.url
-        }));
+        setPageImages(prev => {
+          const updatedImages = {
+            ...prev,
+            [currentPage]: result.url
+          };
+          onPageImagesUpdate?.(updatedImages); // CRITICAL: Notify parent of new image
+          return updatedImages;
+        });
         
         // Cache with story continuity markers to prevent re-generation
         try {
