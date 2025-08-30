@@ -608,11 +608,11 @@ serve(async (req) => {
         userInfo: {
           name: userName,
           avatar: { type: avatarType },
-          favoriteColor: ensureColorName(config?.favoriteColor),
-          favoriteAnimal: config?.favoriteAnimal || 'cat',
-          favoriteFood: config?.favoriteFood || 'cookies',
-          hobbies: config?.hobbies || 'playing outside',
-          specialRequest: config?.specialRequest || 'adventure'
+          favoriteColor: ensureColorName(config?.userInfo?.favoriteColor),
+          favoriteAnimal: config?.userInfo?.favoriteAnimal || 'cat',
+          favoriteFood: config?.userInfo?.favoriteFood || 'cookies',
+          hobbies: config?.userInfo?.hobbies || 'playing outside',
+          specialRequest: config?.userInfo?.specialRequest || 'adventure'
         }
       }
     });

@@ -1144,19 +1144,23 @@ useEffect(() => {
       const maxAllowedPage = isPremium ? (story.length - 1) : 5; // Premium: all pages, Guest: pages 0-5
       if (currentPage <= maxAllowedPage) {
         console.log(`🖼️ Page ${currentPage}: No cached image, triggering generation`);
-        const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
-        ImageGenerationTrigger.triggerAutoGeneration({
-          currentPage: currentPage,
-          totalPages: story.length,
-          hasCurrentImage: false,
-          allImages: Object.values(pageImages),
-          isNetworkAvailable: navigator.onLine,
-          userInfo,
-          storyTitle: storyTitle || 'Adventure',
-          pageText: pageContent,
-          sessionId,
-          isGuestUser: !isPremium
-        });
+        try {
+          const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
+          ImageGenerationTrigger.triggerAutoGeneration({
+            currentPage: currentPage,
+            totalPages: story.length,
+            hasCurrentImage: false,
+            allImages: Object.values(pageImages),
+            isNetworkAvailable: navigator.onLine,
+            userInfo,
+            storyTitle: storyTitle || 'Adventure',
+            pageText: pageContent,
+            sessionId,
+            isGuestUser: !isPremium
+          });
+        } catch (error) {
+          console.warn(`Failed to generate image for page ${currentPage}:`, error);
+        }
       }
     } catch (error) {
       console.warn(`Failed to check cache/generate for page ${currentPage}:`, error);
