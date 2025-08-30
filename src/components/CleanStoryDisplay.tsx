@@ -203,9 +203,26 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setIsStoryComplete(true);
         setStoryTitle(currentStory.title || `${userInfo.name}'s Story`);
         
-        // Load cached images if available
+        // Load cached images if available - convert array to Record format
         if (currentStory.cachedImages) {
-          setPageImages(currentStory.cachedImages);
+          console.log('🐛 DEBUG: Raw cachedImages:', currentStory.cachedImages);
+          
+          // Handle array format from cached stories
+          if (Array.isArray(currentStory.cachedImages)) {
+            const convertedImages: Record<number, string> = {};
+            currentStory.cachedImages.forEach((item, index) => {
+              if (item?.url) {
+                convertedImages[index] = item.url;
+              }
+            });
+            console.log('🐛 DEBUG: Converted pageImages:', convertedImages);
+            setPageImages(convertedImages);
+          } 
+          // Handle Record format (backward compatibility)
+          else if (typeof currentStory.cachedImages === 'object') {
+            console.log('🐛 DEBUG: Using Record format directly:', currentStory.cachedImages);
+            setPageImages(currentStory.cachedImages);
+          }
         }
         
         setIsLoading(false);
