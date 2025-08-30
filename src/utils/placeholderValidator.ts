@@ -1,3 +1,4 @@
+
 /**
  * Placeholder Validation Utility
  * Verifies that all placeholders are properly resolved in generated content
@@ -93,8 +94,8 @@ export function validatePlaceholders(pages: string[], source?: 'ai' | 'template'
 export function getPlaceholderValidationMessage(result: PlaceholderValidationResult): string {
   if (result.isValid) {
     if (result.source === 'ai') {
-      if (result.userInputsResolved && result.userInputsTotal) {
-        return `✅ AI-generated content (incorporates ${result.userInputsResolved}/${result.userInputsTotal} user inputs: ${result.userInputsUsed?.join(', ')})`;
+      if (result.userInputsResolved && result.userInputsTotal && result.userInputsUsed) {
+        return `✅ AI-generated content (incorporates ${result.userInputsResolved}/${result.userInputsTotal} user inputs: ${result.userInputsUsed.join(', ')})`;
       }
       return '✅ AI-generated content (incorporates user preferences directly)';
     }
