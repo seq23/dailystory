@@ -5,7 +5,11 @@ import {
   validatePageTokenDistribution,
   getTokenLimitForDifficulty,
   getTokenLimitForSinglePage,
-  getRecommendedWordsForDifficulty
+  getRecommendedWordsForDifficulty,
+  validateGuestStoryTokens,
+  validatePremiumPageTokens,
+  getPerPageTokenLimit,
+  getTotalStoryTokensForGuests
 } from '@/utils/tokenLimitValidator';
 
 describe('Token Limit Validator', () => {
@@ -40,8 +44,8 @@ describe('Token Limit Validator', () => {
       const result = validateTokenLimit(text, 'beginner');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(48);
-      expect(result.maxAllowed).toBe(48);
+      expect(result.actualTokens).toBeLessThanOrEqual(80); // Netflix total tokens for beginner
+      expect(result.maxAllowed).toBe(80); // 8 tokens per page * 10 pages
     });
 
     it('detects text exceeding limits', () => {
@@ -54,12 +58,12 @@ describe('Token Limit Validator', () => {
     });
 
     it('warns when approaching limit', () => {
-      // Create text that's around 90% of beginner limit (48 tokens)
+      // Create text that's around 90% of beginner Netflix limit (80 tokens)
       const nearLimitText = "The quick brown fox jumps over the lazy dog. ".repeat(3);
       const result = validateTokenLimit(nearLimitText, 'beginner');
       
       // Should be valid but with warning
-      if (result.actualTokens >= 48 * 0.9 && result.actualTokens <= 48) {
+      if (result.actualTokens >= 80 * 0.9 && result.actualTokens <= 80) {
         expect(result.isValid).toBe(true);
         expect(result.warnings).toContain(expect.stringContaining('approaching token limit'));
       }
@@ -70,7 +74,7 @@ describe('Token Limit Validator', () => {
       const result = validateTokenLimit(text, '6th');
       
       expect(result.isValid).toBe(true);
-      expect(result.maxAllowed).toBe(900);
+      expect(result.actualTokens).toBeLessThanOrEqual(4800); // 6th grade Netflix total
     });
 
     it('handles unknown difficulty levels', () => {
@@ -95,7 +99,7 @@ describe('Token Limit Validator', () => {
       const result = validatePageTokenDistribution(pages, 'beginner');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(48);
+      expect(result.actualTokens).toBeLessThanOrEqual(80); // Netflix total for beginner
     });
 
     it('detects pages that are too long', () => {
@@ -112,24 +116,24 @@ describe('Token Limit Validator', () => {
   });
 
   describe('getTokenLimitForDifficulty', () => {
-    it('returns correct hardcoded limits for all difficulty levels', () => {
-      expect(getTokenLimitForDifficulty('beginner')).toBe(48);
-      expect(getTokenLimitForDifficulty('easy')).toBe(72);
-      expect(getTokenLimitForDifficulty('medium')).toBe(800);
-      expect(getTokenLimitForDifficulty('hard')).toBe(1200);
-      expect(getTokenLimitForDifficulty('expert')).toBe(1600);
+    it('returns correct Netflix total limits for all difficulty levels', () => {
+      expect(getTokenLimitForDifficulty('beginner')).toBe(80);  // 8 * 10 pages
+      expect(getTokenLimitForDifficulty('easy')).toBe(320);     // 32 * 10 pages
+      expect(getTokenLimitForDifficulty('medium')).toBe(930);   // 93 * 10 pages
+      expect(getTokenLimitForDifficulty('hard')).toBe(1600);    // 160 * 10 pages
+      expect(getTokenLimitForDifficulty('expert')).toBe(2670);  // 267 * 10 pages
     });
 
-    it('returns correct hardcoded limits for expert grade levels', () => {
-      expect(getTokenLimitForDifficulty('6th')).toBe(900);
-      expect(getTokenLimitForDifficulty('7th')).toBe(1100);
-      expect(getTokenLimitForDifficulty('8th')).toBe(1200);
-      expect(getTokenLimitForDifficulty('9th')).toBe(1400);
-      expect(getTokenLimitForDifficulty('10th')).toBe(1600);
+    it('returns correct Netflix total limits for expert grade levels', () => {
+      expect(getTokenLimitForDifficulty('6th')).toBe(4800);   // 400 * 12 pages
+      expect(getTokenLimitForDifficulty('7th')).toBe(5124);   // 427 * 12 pages
+      expect(getTokenLimitForDifficulty('8th')).toBe(5436);   // 453 * 12 pages
+      expect(getTokenLimitForDifficulty('9th')).toBe(5760);   // 480 * 12 pages
+      expect(getTokenLimitForDifficulty('10th')).toBe(6396);  // 533 * 12 pages
     });
 
     it('returns fallback for unknown difficulty', () => {
-      expect(getTokenLimitForDifficulty('unknown' as any)).toBe(48);
+      expect(getTokenLimitForDifficulty('unknown' as any)).toBe(80); // 8 * 10 fallback
     });
   });
 
@@ -139,8 +143,8 @@ describe('Token Limit Validator', () => {
       const expertWords = getRecommendedWordsForDifficulty('expert');
       
       expect(beginnerWords).toBeLessThan(expertWords);
-      expect(beginnerWords).toBeGreaterThan(30); // Should be reasonable
-      expect(expertWords).toBeGreaterThan(1000); // Should be higher
+      expect(beginnerWords).toBeGreaterThan(50); // Should be reasonable (80 * 0.75)
+      expect(expertWords).toBeGreaterThan(2000); // Should be higher (2670 * 0.75)
     });
   });
 
@@ -170,11 +174,11 @@ describe('Token Limit Validator', () => {
 
   describe('getTokenLimitForSinglePage', () => {
     it('returns correct single-page token limits', () => {
-      expect(getTokenLimitForSinglePage('beginner')).toBe(8); // 48÷6
-      expect(getTokenLimitForSinglePage('easy')).toBe(9); // 72÷8
-      expect(getTokenLimitForSinglePage('medium')).toBe(100); // 800÷8
-      expect(getTokenLimitForSinglePage('hard')).toBe(120); // 1200÷10
-      expect(getTokenLimitForSinglePage('expert')).toBe(134); // 1600÷12 (rounded up)
+      expect(getTokenLimitForSinglePage('beginner')).toBe(8);   // From system prompt
+      expect(getTokenLimitForSinglePage('easy')).toBe(32);      // From system prompt
+      expect(getTokenLimitForSinglePage('medium')).toBe(93);    // From system prompt
+      expect(getTokenLimitForSinglePage('hard')).toBe(160);     // From system prompt
+      expect(getTokenLimitForSinglePage('expert')).toBe(267);   // From system prompt
     });
 
     it('returns fallback for unknown difficulty', () => {
@@ -190,7 +194,62 @@ describe('Token Limit Validator', () => {
       
       expect(liveResult.maxAllowed).toBeLessThan(netflixResult.maxAllowed);
       expect(liveResult.maxAllowed).toBe(8); // Single page limit
-      expect(netflixResult.maxAllowed).toBe(48); // Full story limit
+      expect(netflixResult.maxAllowed).toBe(80); // Full story limit (8 * 10)
+    });
+  });
+
+  describe('Guest vs Premium validation functions', () => {
+    describe('validateGuestStoryTokens', () => {
+      it('validates guest story within 6-page limit', () => {
+        const shortText = "The cat runs fast.";
+        const result = validateGuestStoryTokens(shortText, 'beginner');
+        
+        expect(result.isValid).toBe(true);
+        expect(result.maxAllowed).toBe(48); // 8 tokens per page * 6 pages for guests
+      });
+
+      it('detects guest story exceeding 6-page limit', () => {
+        const longText = "Lorem ipsum dolor sit amet ".repeat(50);
+        const result = validateGuestStoryTokens(longText, 'beginner');
+        
+        expect(result.isValid).toBe(false);
+        expect(result.warnings).toContain(expect.stringContaining('Guest story exceeds 6-page limit'));
+      });
+    });
+
+    describe('validatePremiumPageTokens', () => {
+      it('validates premium page within per-page limit', () => {
+        const pageText = "The cat runs.";
+        const result = validatePremiumPageTokens(pageText, 'beginner');
+        
+        expect(result.isValid).toBe(true);
+        expect(result.maxAllowed).toBe(8); // Per page limit from system prompt
+      });
+
+      it('detects premium page exceeding per-page limit', () => {
+        const longPageText = "This is a very long page that should exceed the beginner per-page token limit for premium users and trigger validation warnings.";
+        const result = validatePremiumPageTokens(longPageText, 'beginner');
+        
+        expect(result.isValid).toBe(false);
+        expect(result.warnings).toContain(expect.stringContaining('Page exceeds limit'));
+      });
+    });
+
+    describe('getTotalStoryTokensForGuests', () => {
+      it('returns correct guest story limits (6 pages)', () => {
+        expect(getTotalStoryTokensForGuests('beginner')).toBe(48);  // 8 * 6 pages
+        expect(getTotalStoryTokensForGuests('easy')).toBe(192);     // 32 * 6 pages
+        expect(getTotalStoryTokensForGuests('medium')).toBe(558);   // 93 * 6 pages
+      });
+    });
+
+    describe('getPerPageTokenLimit', () => {
+      it('returns correct per-page limits from system prompts', () => {
+        expect(getPerPageTokenLimit('beginner')).toBe(8);
+        expect(getPerPageTokenLimit('easy')).toBe(32);
+        expect(getPerPageTokenLimit('medium')).toBe(93);
+        expect(getPerPageTokenLimit('6th')).toBe(400);
+      });
     });
   });
 });

@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
-import { getTokenLimitForDifficulty, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
+import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 
 // Initialize Supabase client for service-to-service communication
@@ -207,8 +207,8 @@ serve(async (req) => {
     // Get prompt configuration from shared prompt system
     const promptConfig = getStoryPrompt(normalizedReadingLevel);
     
-    // Use dynamic token limits from getTokenLimitForDifficulty function
-    const maxTokens = getTokenLimitForDifficulty(normalizedReadingLevel);
+    // Use dynamic token limits from system prompts (single source of truth)
+    const maxTokens = getPerPageTokenLimit(normalizedReadingLevel);
     
     // Inject avatar gender and pronouns into shared prompts
     const pronouns = avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them';

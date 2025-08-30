@@ -1,7 +1,47 @@
-// Token Limit Validation Utility
+// Token Limit Validation Utility - NOW USES SYSTEM PROMPTS AS SINGLE SOURCE OF TRUTH
 // Ensures consistent token limits across prompt configurations
 
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
+
+// System prompt token limits - extracted directly from actual system prompts
+const SYSTEM_PROMPT_TOKEN_LIMITS = {
+  beginner: 8, // "Maximum 8 tokens per page. Max 6 words per page"
+  easy: 32,    // "Maximum 32 tokens per page. Target 15-24 words per page"
+  medium: 93,  // "Maximum 93 tokens per page. Target 50-70 words per page"
+  hard: 160,   // "Maximum 160 tokens per page. Target 80-120 words per page"
+  expert: 267, // "Maximum 267 tokens per page. Target 120-200 words per page"
+  '6th': 400,  // "Maximum 400 tokens per page. Target 200-400 words per page"
+  '7th': 427,  // "Maximum 427 tokens per page. Target 200-400 words per page"
+  '8th': 453,  // "Maximum 453 tokens per page. Target 200-400 words per page"
+  '9th': 480,  // "Maximum 480 tokens per page. Target 200-400 words per page"
+  '10th': 533  // "Maximum 533 tokens per page. Target 200-400 words per page"
+} as const;
+
+// Get per-page token limit from system prompts (for live generation)
+export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  return SYSTEM_PROMPT_TOKEN_LIMITS[difficulty] || 8; // Safe fallback
+}
+
+// Get total story tokens for guests (6 pages of consistent difficulty)
+export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
+}
+
+// Get total Netflix generation tokens (10-12 pages depending on difficulty)
+export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const perPageTokens = getPerPageTokenLimit(difficulty);
+  const pages = getExpectedPages(difficulty);
+  return perPageTokens * pages;
+}
+
+// Get expected pages for difficulty level
+function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  // Basic levels generate 10 pages, grade levels generate 12 pages
+  if (['6th', '7th', '8th', '9th', '10th'].includes(difficulty)) {
+    return 12;
+  }
+  return 10;
+}
 
 export interface TokenLimitConfig {
   difficulty: DifficultyLevel | ExpertGradeLevel;
@@ -11,37 +51,28 @@ export interface TokenLimitConfig {
   tokensPerPage?: number;
 }
 
-// Hardcoded token limits for stable validation across all systems
-// These are for FULL STORIES (Netflix-style multi-page generation)
+// Token limits now come from system prompts - single source of truth
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const HARDCODED_LIMITS = {
-    beginner: 48, easy: 72, medium: 800, hard: 1200, expert: 1600,
-    '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
-  };
-  return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback
+  return getTotalNetflixTokens(difficulty); // For Netflix generation (total story)
 }
 
 // Token limits for SINGLE PAGE generation (Live Generation service)
 export function getTokenLimitForSinglePage(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const pageConfig = PAGE_CONFIG[difficulty];
-  if (!pageConfig) return 8; // Safe fallback
-  
-  // Calculate tokens per page based on total tokens divided by expected pages
-  return Math.ceil(getTokenLimitForDifficulty(difficulty) / pageConfig.expectedPages);
+  return getPerPageTokenLimit(difficulty); // From system prompts
 }
 
-// Simplified configuration for page calculations
+// Realistic page configuration based on business logic and system prompts
 export const PAGE_CONFIG = {
-  beginner: { expectedPages: 6, tokensPerPage: 6 },
-  easy: { expectedPages: 8, tokensPerPage: 12 },
-  medium: { expectedPages: 8, tokensPerPage: 100 },
-  hard: { expectedPages: 10, tokensPerPage: 120 },
-  expert: { expectedPages: 12, tokensPerPage: 133 },
-  '6th': { expectedPages: 12, tokensPerPage: 75 },
-  '7th': { expectedPages: 13, tokensPerPage: 85 },
-  '8th': { expectedPages: 14, tokensPerPage: 86 },
-  '9th': { expectedPages: 15, tokensPerPage: 93 },
-  '10th': { expectedPages: 16, tokensPerPage: 100 }
+  beginner: { expectedPages: 10, tokensPerPage: 8 }, // Netflix generates 10, guests see 6
+  easy: { expectedPages: 10, tokensPerPage: 32 },
+  medium: { expectedPages: 10, tokensPerPage: 93 },
+  hard: { expectedPages: 10, tokensPerPage: 160 },
+  expert: { expectedPages: 10, tokensPerPage: 267 },
+  '6th': { expectedPages: 12, tokensPerPage: 400 }, // Grade levels generate 12 pages
+  '7th': { expectedPages: 12, tokensPerPage: 427 },
+  '8th': { expectedPages: 12, tokensPerPage: 453 },
+  '9th': { expectedPages: 12, tokensPerPage: 480 },
+  '10th': { expectedPages: 12, tokensPerPage: 533 }
 };
 
 export interface TokenValidationResult {
@@ -156,4 +187,32 @@ export function validatePageTokenDistribution(
 export function getRecommendedWordsForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   const maxTokens = getTokenLimitForDifficulty(difficulty);
   return Math.floor(maxTokens * 0.75); // Conservative token-to-word conversion
+}
+
+// GUEST USER VALIDATION: Validate total 6-page story experience
+export function validateGuestStoryTokens(text: string, difficulty: DifficultyLevel | ExpertGradeLevel): TokenValidationResult {
+  const actualTokens = estimateTokenCount(text);
+  const maxTokens = getTotalStoryTokensForGuests(difficulty); // 6 pages worth
+  
+  return {
+    isValid: actualTokens <= maxTokens,
+    actualTokens,
+    maxAllowed: maxTokens,
+    exceededBy: actualTokens > maxTokens ? actualTokens - maxTokens : undefined,
+    warnings: actualTokens > maxTokens ? [`Guest story exceeds 6-page limit: ${actualTokens}/${maxTokens} tokens`] : []
+  };
+}
+
+// PREMIUM USER VALIDATION: Validate individual page
+export function validatePremiumPageTokens(text: string, difficulty: DifficultyLevel | ExpertGradeLevel): TokenValidationResult {
+  const actualTokens = estimateTokenCount(text);
+  const maxTokens = getPerPageTokenLimit(difficulty); // Per page
+  
+  return {
+    isValid: actualTokens <= maxTokens,
+    actualTokens,
+    maxAllowed: maxTokens,
+    exceededBy: actualTokens > maxTokens ? actualTokens - maxTokens : undefined,
+    warnings: actualTokens > maxTokens ? [`Page exceeds limit: ${actualTokens}/${maxTokens} tokens`] : []
+  };
 }

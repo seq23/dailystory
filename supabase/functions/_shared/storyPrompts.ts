@@ -42,7 +42,7 @@ CRITICAL RULES:
 - Story continues infinitely unless user requests ending
 - Try to incorporate a narrative with a natural hook for continuation
 
-Maximum 48 tokens per page. Max 6 words per page.
+Maximum 8 tokens per page. Max 6 words per page.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
 
@@ -68,7 +68,7 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include narrative hooks for continuation
 
-Maximum 72 tokens per page. Target 15-24 words per page.
+Maximum 32 tokens per page. Target 15-24 words per page.
 
 VOCABULARY: Prioritize Level 0 + Dolch 1st Grade words (133 total). 70% compliance expected.
 
@@ -99,7 +99,7 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include narrative hooks and mild tension
 
-Maximum 800 tokens per page. Target 50-70 words per page.
+Maximum 93 tokens per page. Target 50-70 words per page.
 
 VOCABULARY: Use Level 1 + Dolch 2nd Grade words (179 total). 60% compliance expected.
 
@@ -130,7 +130,7 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include character development
 
-Maximum 1200 tokens per page. Target 80-120 words per page.
+Maximum 160 tokens per page. Target 80-120 words per page.
 
 VOCABULARY: Use sophisticated 4th grade vocabulary with academic terms. 50% compliance expected.
 
@@ -160,7 +160,7 @@ RULES:
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
 
-Maximum 1600 tokens per page. Target 120-200 words per page.
+Maximum 267 tokens per page. Target 120-200 words per page.
 
 VOCABULARY: Use advanced vocabulary with literary terms. 50% compliance expected.
 
@@ -202,7 +202,7 @@ GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handl
 
 FORMAT: Suggest 5-6 sentences per page with foundational complex sentence structures and literary vocabulary. Focus on character development and thematic exploration appropriate for 6th grade readers. Target 200-400 words per page.
 
-Maximum 900 tokens per page. Target 200-400 words per page.
+Maximum 400 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -233,7 +233,7 @@ GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handl
 
 FORMAT: Suggest 6-7 sentences per page with increasingly sophisticated sentence structures and varied literary techniques. Develop complex themes and character relationships appropriate for 7th grade readers. Target 200-400 words per page.
 
-Maximum 1100 tokens per page. Target 200-400 words per page.
+Maximum 427 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -264,7 +264,7 @@ GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handl
 
 FORMAT: Suggest 6-8 sentences per page with advanced grammatical structures, literary devices, and nuanced vocabulary. Explore mature themes with intellectual depth appropriate for 8th grade readers. Target 200-400 words per page.
 
-Maximum 1200 tokens per page. Target 200-400 words per page.
+Maximum 453 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -295,7 +295,7 @@ GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handl
 
 FORMAT: Suggest 7-8 sentences per page with sophisticated prose, complex syntactic structures, and rich literary language. Develop intricate thematic content and psychological depth appropriate for 9th grade readers. Target 200-400 words per page.
 
-Maximum 1400 tokens per page. Target 200-400 words per page.
+Maximum 480 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -326,7 +326,7 @@ GUARDRAILS: Age-appropriate content for 10th grade level with mature themes hand
 
 FORMAT: Suggest 8-9 sentences per page with masterful prose, intricate sentence construction, and elevated literary language. Develop complex philosophical themes and profound character depth appropriate for 10th grade readers. Target 200-400 words per page.
 
-Maximum 1600 tokens per page. Target 200-400 words per page.
+Maximum 533 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
@@ -359,14 +359,60 @@ export function formatUserPrompt(template: string, userInfo: any): string {
 }
 
 /**
- * Get token limit for difficulty level - HARDCODED for bulletproof reliability
+ * Extract token limit directly from system prompt - SINGLE SOURCE OF TRUTH
+ */
+export function extractTokenLimitFromPrompt(systemPrompt: string): number {
+  const match = systemPrompt.match(/Maximum (\d+) tokens per page/);
+  return match ? parseInt(match[1]) : 8; // Safe fallback
+}
+
+/**
+ * Get per-page token limit from system prompts (for live generation)
+ */
+export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  if (Object.keys(STORY_PROMPTS).includes(difficulty as DifficultyLevel)) {
+    return extractTokenLimitFromPrompt(STORY_PROMPTS[difficulty as DifficultyLevel].systemPrompt);
+  }
+  if (Object.keys(EXPERT_STORY_PROMPTS).includes(difficulty as ExpertGradeLevel)) {
+    return extractTokenLimitFromPrompt(EXPERT_STORY_PROMPTS[difficulty as ExpertGradeLevel].systemPrompt);
+  }
+  return 8; // Safe fallback
+}
+
+/**
+ * Get total story tokens for guests (6 pages of consistent difficulty)
+ */
+export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
+}
+
+/**
+ * Get total Netflix generation tokens (10-12 pages depending on difficulty)
+ */
+export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const perPageTokens = getPerPageTokenLimit(difficulty);
+  const pages = getExpectedPages(difficulty);
+  return perPageTokens * pages;
+}
+
+/**
+ * Get expected pages for difficulty level
+ */
+function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  if (Object.keys(STORY_PROMPTS).includes(difficulty as DifficultyLevel)) {
+    return STORY_PROMPTS[difficulty as DifficultyLevel].expectedPages || 10;
+  }
+  if (Object.keys(EXPERT_STORY_PROMPTS).includes(difficulty as ExpertGradeLevel)) {
+    return EXPERT_STORY_PROMPTS[difficulty as ExpertGradeLevel].expectedPages || 12;
+  }
+  return 10;
+}
+
+/**
+ * Get token limit for difficulty level - NOW USES SYSTEM PROMPTS AS SOURCE OF TRUTH
  */
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const HARDCODED_LIMITS = {
-    beginner: 48, easy: 72, medium: 800, hard: 1200, expert: 1600,
-    '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
-  };
-  return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback
+  return getTotalNetflixTokens(difficulty); // For Netflix generation (total story)
 }
 
 /**
