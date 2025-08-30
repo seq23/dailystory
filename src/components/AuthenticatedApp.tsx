@@ -22,6 +22,37 @@ import { Button } from "@/components/ui/button";
 import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
+// Unified image conversion utility - handles both array and Record formats
+const convertImagesToRecord = (images: any, source: string): Record<number, string> | null => {
+  if (!images) {
+    console.log(`🐛 DEBUG: No images provided from ${source}`);
+    return null;
+  }
+
+  console.log(`🐛 DEBUG: Converting images from ${source}:`, images);
+  
+  // Handle array format from cached stories/sessions
+  if (Array.isArray(images)) {
+    const convertedImages: Record<number, string> = {};
+    images.forEach((item, index) => {
+      if (item?.url) {
+        convertedImages[index] = item.url;
+      }
+    });
+    console.log(`🐛 DEBUG: ${source} - Converted array to Record:`, convertedImages);
+    return convertedImages;
+  } 
+  
+  // Handle Record format (backward compatibility)
+  if (typeof images === 'object' && images !== null) {
+    console.log(`🐛 DEBUG: ${source} - Using Record format directly:`, images);
+    return images;
+  }
+  
+  console.warn(`🐛 DEBUG: ${source} - Unsupported image format:`, typeof images, images);
+  return null;
+};
+
 interface AuthenticatedAppProps {
   user: User;
 }
@@ -415,24 +446,35 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                       <PremiumStoryLibrary
                         onLoadStory={async (story) => {
                           try {
-                            // Import StoryCacheIntegration service
-                            const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
+                            // CRITICAL FIX: Load images from saved story metadata instead of hash-based lookup
+                            let cachedImages = null;
                             
-                            // Extract story segments
-                            const storyPages = story.segments?.map(s => s.text) || [];
-                            const storyHash = StoryCacheIntegration.generateStoryHash(storyPages);
+                             // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
+                             if ((story as any).imageCacheMetadata) {
+                               console.log('🖼️ Loading images from story imageCacheMetadata');
+                               cachedImages = convertImagesToRecord((story as any).imageCacheMetadata, 'Story metadata');
+                             }
+                             // Priority 2: Load from legacy image_cache_metadata field
+                             else if ((story as any).image_cache_metadata) {
+                               console.log('🖼️ Loading images from legacy image_cache_metadata');
+                               cachedImages = convertImagesToRecord((story as any).image_cache_metadata, 'Legacy metadata');
+                             }
+                            // Fallback: Attempt hash-based lookup (for backward compatibility)
+                            else {
+                              console.log('🖼️ Attempting hash-based image lookup as fallback');
+                              const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
+                              const storyPages = story.segments?.map(s => s.text) || [];
+                              if (storyPages.length > 0) {
+                                const storyHash = StoryCacheIntegration.generateStoryHash(storyPages);
+                                const hashImages = await StoryCacheIntegration.loadStoryImages(storyHash, storyPages.length);
+                                cachedImages = Object.keys(hashImages).length > 0 ? hashImages : null;
+                              }
+                            }
                             
-                            // Load cached images for the story
-                            const cachedImages = await StoryCacheIntegration.loadStoryImages(
-                              storyHash,
-                              storyPages.length
-                            );
-                            
-                            // Set current story with loaded images - ensuring saved stories use cached content
+                            // Set current story with loaded images
                             setCurrentStory({
                               ...story,
-                              cachedImages,
-                              storyHash,
+                              cachedImages: cachedImages || {},
                               isFromSavedStory: true // Flag to prevent regeneration
                             });
                             setCurrentView("reading");

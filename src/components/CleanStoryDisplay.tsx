@@ -828,10 +828,62 @@ useEffect(() => {
       const { pageIndex, imageUrl } = event.detail;
       console.log('🖼️ Auto-generated image received:', { pageIndex, imageUrl });
       
-      setPageImages(prev => ({
-        ...prev,
-        [pageIndex]: imageUrl
-      }));
+      setPageImages(prev => {
+        const updated = {
+          ...prev,
+          [pageIndex]: imageUrl
+        };
+        
+        // CRITICAL FIX: Persist image to cache for both guest and premium users
+        try {
+          if (isPremium) {
+            // For premium users, get user ID from Supabase auth
+            supabase.auth.getUser().then(({ data: { user } }) => {
+              if (user?.id) {
+                const avatarType = userInfo.avatar?.type || undefined;
+                const imageArray = Object.entries(updated).map(([index, url]) => ({
+                  url,
+                  prompt: `Page ${parseInt(index) + 1} illustration`
+                }));
+                
+                // Update cache with new image data
+                StorySessionCache.updatePages(
+                  user.id,
+                  story, // Keep existing pages
+                  currentPage,
+                  imageArray,
+                  avatarType
+                );
+                
+                console.log('🖼️ Image persisted to premium cache:', { pageIndex, imageUrl, userId: user.id });
+              }
+            }).catch(error => {
+              console.error('❌ Failed to get user for premium cache:', error);
+            });
+          } else {
+            // For guest users, update with avatar-aware caching
+            const avatarType = userInfo?.avatar?.type;
+            const imageArray = Object.entries(updated).map(([index, url]) => ({
+              url,
+              prompt: `Page ${parseInt(index) + 1} illustration`
+            }));
+            
+            StorySessionCache.updatePages(
+              'guest',
+              story,
+              currentPage,
+              imageArray,
+              avatarType
+            );
+            
+            console.log('🖼️ Image persisted to guest cache:', { pageIndex, imageUrl, avatarType });
+          }
+        } catch (error) {
+          console.error('❌ Failed to persist image to cache:', error);
+        }
+        
+        return updated;
+      });
     };
     
     window.addEventListener('image:generated', handleImageGenerated as EventListener);
@@ -1282,9 +1334,12 @@ const initializeStory = async () => {
             setStorySource('unknown');
             
             // Load cached images using unified conversion logic
-            const convertedImages = convertImagesToRecord(cached.images, 'Free mode cache');
+            const convertedImages = convertImagesToRecord(cached.images, 'Cache restoration');
             if (convertedImages && Object.keys(convertedImages).length > 0) {
               setPageImages(convertedImages);
+              console.log('🖼️ Premium cache restoration: Images loaded from session cache', convertedImages);
+            } else {
+              console.log('🖼️ Premium cache restoration: No cached images found, will generate new ones');
             }
             
             setIsStoryStable(true);

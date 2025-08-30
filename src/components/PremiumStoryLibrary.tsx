@@ -163,7 +163,13 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         specialRequest: ''
       };
 
-      await PremiumStoryManager.saveStory(currentStory, userInfo, ['recent'], false);
+      // CRITICAL FIX: Capture current pageImages and attach to story for saving
+      const storyToSave = {
+        ...currentStory,
+        imageCacheMetadata: (currentStory as any)?.cachedImages || {} // Ensure images are preserved in save
+      };
+
+      await PremiumStoryManager.saveStory(storyToSave, userInfo, ['recent'], false);
       
       toast({
         title: 'Success',
