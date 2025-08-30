@@ -1166,7 +1166,7 @@ export function StoryPromptTester() {
                                 renderSourceBadge(source)}
                             </div>
                             <div className="text-sm">
-                              {count}/{total} ({Math.round((count/total) * 100)}%)
+                              {count}/{total} ({total > 0 ? Math.round((count/total) * 100) : 0}%)
                             </div>
                           </div>
                         ))}
@@ -1183,27 +1183,37 @@ export function StoryPromptTester() {
                 </CardHeader>
                 <CardContent>
                   {(() => {
-                    const avgResponseTime = testResults
-                      .filter(r => r.responseTime)
-                      .reduce((sum, r) => sum + (r.responseTime || 0), 0) / 
-                      testResults.filter(r => r.responseTime).length;
+                    const responseTimeResults = testResults.filter(r => r.responseTime);
+                    const avgResponseTime = responseTimeResults.length > 0 
+                      ? responseTimeResults.reduce((sum, r) => sum + (r.responseTime || 0), 0) / responseTimeResults.length
+                      : 0;
                     
-                    const tokenValidation = testResults.filter(r => r.withinTokenLimits).length / testResults.length;
-                    const emergencyUsage = testResults.filter(r => r.emergencyContentUsed).length / testResults.length;
+                    const tokenValidation = testResults.length > 0 
+                      ? testResults.filter(r => r.withinTokenLimits).length / testResults.length
+                      : 0;
+                    const emergencyUsage = testResults.length > 0 
+                      ? testResults.filter(r => r.emergencyContentUsed).length / testResults.length
+                      : 0;
                     
                     return (
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span>Avg Response Time</span>
-                          <span className="font-semibold">{Math.round(avgResponseTime)}ms</span>
+                          <span className="font-semibold">
+                            {isNaN(avgResponseTime) ? "No data" : Math.round(avgResponseTime)}ms
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Token Validation Rate</span>
-                          <span className="font-semibold">{Math.round(tokenValidation * 100)}%</span>
+                          <span className="font-semibold">
+                            {isNaN(tokenValidation) ? "No data" : Math.round(tokenValidation * 100)}%
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Emergency Content Used</span>
-                          <span className="font-semibold">{Math.round(emergencyUsage * 100)}%</span>
+                          <span className="font-semibold">
+                            {isNaN(emergencyUsage) ? "No data" : Math.round(emergencyUsage * 100)}%
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Total Tests Run</span>
