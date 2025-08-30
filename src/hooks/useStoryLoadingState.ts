@@ -17,9 +17,8 @@ export function useStoryLoadingState(options: UseStoryLoadingStateOptions = {}) 
   const {
     debounceMs = 1000,
     loadingMessages = [
-      'Story Loading...',
-      'Creating your personalized story...',
-      'Adding your favorite things...',
+      'Crafting your story...',
+      'Adding magical details...',
       'Almost ready...'
     ]
   } = options;

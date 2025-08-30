@@ -58,6 +58,7 @@ import { DiagnosticTool } from "@/utils/diagnostics";
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import { ImageMixingLoading } from "@/components/ImageMixingLoading";
 import { AudioFallbackNotification } from "@/components/AudioFallbackNotification";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -304,6 +305,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isPreparingImage, setIsPreparingImage] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<number, boolean>>({});
   const [fallbackStates, setFallbackStates] = useState<Record<number, boolean>>({});
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
@@ -360,6 +362,7 @@ const handleImageRegeneration = useCallback(async () => {
   
   console.log(`🖼️ Page ${currentPage}: Starting image regeneration...`);
   setIsGeneratingImage(true);
+  setIsPreparingImage(true);
   
   try {
     const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
@@ -379,6 +382,7 @@ const handleImageRegeneration = useCallback(async () => {
     console.warn(`Failed to regenerate image for page ${currentPage}:`, error);
   } finally {
     setIsGeneratingImage(false);
+    setIsPreparingImage(false);
   }
 }, [currentPage, story, pageImages, isStoryStable, isGeneratingImage, isPremium, userInfo, storyTitle, stableSessionId]);
 
@@ -1699,6 +1703,7 @@ const initializeStory = async () => {
     }
     
     setIsGeneratingImage(true);
+    setIsPreparingImage(true);
     
     try {
       const result = await SimpleImageService.generateStoryImage(
@@ -1755,6 +1760,7 @@ const initializeStory = async () => {
       console.log('Image generation failed, continuing without image:', error);
     } finally {
       setIsGeneratingImage(false);
+      setIsPreparingImage(false);
     }
   };
 
@@ -3032,7 +3038,7 @@ const handleRestartTimer = () => {
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image */}
-                  <div className="relative flex-[0.62] min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="relative flex-1 min-h-0 w-full rounded-2xl overflow-hidden shadow-2xl">
                     {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                       <div className="absolute top-3 right-3 z-20">
                           <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
@@ -3072,12 +3078,9 @@ const handleRestartTimer = () => {
           onRetry={handleImageRetry}
         />
                       </>
-                    ) : isGeneratingImage ? (
+                    ) : (isGeneratingImage || isPreparingImage) ? (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">Creating illustration...</p>
-                        </div>
+                        <ImageMixingLoading />
                       </div>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -3167,12 +3170,9 @@ const handleRestartTimer = () => {
             onFallbackUsed={handleImageFallbackUsed}
             onRetry={handleImageRetry}
           />
-                        ) : isGeneratingImage ? (
+                        ) : (isGeneratingImage || isPreparingImage) ? (
                           <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center">
-                              <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-                              <p className="text-sm text-muted-foreground">Creating illustration...</p>
-                            </div>
+                            <ImageMixingLoading />
                           </div>
                         ) : isStoryStable ? (
                           <div className="w-full h-full flex items-center justify-center">
@@ -3235,7 +3235,7 @@ const handleRestartTimer = () => {
                              <div className="flex items-center justify-center h-32">
                                <div className="text-center">
                                  <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mb-2" />
-                                 <p className="text-sm text-muted-foreground">Loading story content...</p>
+                                  <p className="text-sm text-muted-foreground">Weaving more story magic...</p>
                                </div>
                              </div>
                             )}
