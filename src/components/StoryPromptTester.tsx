@@ -10,7 +10,7 @@ import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
-import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
+import { validatePageTokenDistribution, getTokenLimitForDifficulty, validateTokenLimit, estimateTokenCount } from '@/utils/tokenLimitValidator';
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
@@ -41,6 +41,8 @@ interface TestResult {
   success: boolean;
   pages: number;
   wordCount: number;
+  tokenCount?: number;
+  maxTokensAllowed?: number;
   source: 'ai' | 'fallback' | 'emergency' | 'unknown';
   hasPageConcatenation: boolean;
   contentPreview: string;
@@ -353,7 +355,12 @@ export function StoryPromptTester() {
 
       result.responseTime = Date.now() - startTime;
       result.success = true;
-      result.withinTokenLimits = analyzeTokenLimits(result.wordCount, level);
+      
+      // Use proper token validation with the full content
+      const tokenAnalysis = analyzeTokenLimits(result.fullContent, level);
+      result.withinTokenLimits = tokenAnalysis.isValid;
+      result.tokenCount = tokenAnalysis.tokenCount;
+      result.maxTokensAllowed = tokenAnalysis.maxTokens;
       
       // Enhanced validation - check for placeholder and content issues
       if (result.fullContent && result.fullContent.length > 0) {
@@ -529,33 +536,21 @@ export function StoryPromptTester() {
     };
   };
 
-  // Updated word count analysis based on per-page standards
-  const analyzeTokenLimits = (wordCount: number, level: string): boolean => {
-    const expectedWordsPerPage = {
-      'beginner': 25,  // No change needed
-      'easy': 24,      // Level 1 = 24 words per page
-      'medium': 45,    // Level 2 = 40-50 words per page (use middle)
-      'hard': 80,      // Level 3 = 80 words per page
-      'expert': 100,   // Level 4 = 100 words per page
-      '6th': 100,      // Grade levels all use 100 words per page
-      '7th': 100,
-      '8th': 100,
-      '9th': 100,
-      '10th': 100
-    };
-
-    const expectedPages = {
-      'beginner': 5, 'easy': 6, 'medium': 8, 'hard': 10, 'expert': 12,
-      '6th': 12, '7th': 13, '8th': 14, '9th': 15, '10th': 16
-    };
-
-    const wordsPerPage = expectedWordsPerPage[level as keyof typeof expectedWordsPerPage] || 50;
-    const pages = expectedPages[level as keyof typeof expectedPages] || 8;
+  // Token validation using the proper tokenLimitValidator system
+  const analyzeTokenLimits = (content: string[], level: string): { isValid: boolean; tokenCount: number; wordCount: number; maxTokens: number } => {
+    const fullText = content.join(' ');
+    const wordCount = countWords(fullText);
+    const tokenCount = estimateTokenCount(fullText);
     
-    const minWords = Math.floor(wordsPerPage * pages * 0.7); // Allow 30% under
-    const maxWords = Math.ceil(wordsPerPage * pages * 1.3); // Allow 30% over
+    // Use the proper validation function from tokenLimitValidator
+    const validation = validateTokenLimit(fullText, level as DifficultyLevel, 'ai');
     
-    return wordCount >= minWords && wordCount <= maxWords;
+    return {
+      isValid: validation.isValid,
+      tokenCount,
+      wordCount,
+      maxTokens: validation.maxAllowed
+    };
   };
 
   // Run comprehensive tests
@@ -734,6 +729,11 @@ export function StoryPromptTester() {
             <div className="text-sm text-muted-foreground">Token Limits</div>
             <div className={`font-semibold ${result.withinTokenLimits ? 'text-green-500' : 'text-red-500'}`}>
               {result.withinTokenLimits ? '✓ Valid' : '✗ Invalid'}
+              {result.tokenCount && result.maxTokensAllowed && (
+                <div className="text-xs text-muted-foreground">
+                  {result.tokenCount}/{result.maxTokensAllowed} tokens
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -955,6 +955,11 @@ export function StoryPromptTester() {
                       <div className="text-muted-foreground">Quality</div>
                       <div className={`font-medium ${result.withinTokenLimits ? 'text-green-600' : 'text-red-600'}`}>
                         {result.withinTokenLimits ? 'Valid' : 'Invalid'}
+                        {result.tokenCount && result.maxTokensAllowed && (
+                          <div className="text-xs text-muted-foreground">
+                            {result.tokenCount}/{result.maxTokensAllowed} tokens
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
