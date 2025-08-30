@@ -104,6 +104,21 @@ function ensureColorName(color: string | undefined): string {
   return colorName || 'blue';
 }
 
+// Hair color mapping for English speakers only
+function getHairColorForSkinTone(skinTone: string | undefined): string | null {
+  if (!skinTone) return null;
+  
+  const hairColorMap: Record<string, string> = {
+    'pale': 'red hair',
+    'light': 'blonde hair', 
+    'medium': 'brown hair',
+    'olive': 'black hair',
+    'dark': 'textured natural African American hair'
+  };
+  
+  return hairColorMap[skinTone] || null;
+}
+
 // All template arrays removed - moved to template-service edge function
 // This saves ~900 lines of hardcoded template data
 
@@ -167,11 +182,26 @@ serve(async (req) => {
     const avatarType = config?.userInfo?.avatar?.type || config?.avatar?.type || 'prefer-not-to-answer';
     const avatarGender = avatarType === 'girl' ? 'girl' : avatarType === 'boy' ? 'boy' : 'child';
     
+    // Extract skin tone for hair color mapping (English speakers only)
+    const skinTone = config?.userInfo?.avatar?.skinTone || config?.avatar?.skinTone;
+    const nativeLanguage = config?.userInfo?.nativeLanguage || config?.nativeLanguage || 'en';
+    const isEnglishSpeaker = nativeLanguage === 'en';
+    
+    // Get hair color for English speakers only
+    let hairColor: string | null = null;
+    if (isEnglishSpeaker && skinTone) {
+      hairColor = getHairColorForSkinTone(skinTone);
+    }
+    
     console.log('🎭 Avatar Context for AI Generation:', { 
       avatarType, 
       avatarGender, 
       userName,
-      normalizedReadingLevel 
+      normalizedReadingLevel,
+      skinTone,
+      nativeLanguage,
+      isEnglishSpeaker,
+      hairColor: hairColor || 'none (non-English or no skin tone)'
     });
     
     // Get prompt configuration from shared prompt system
@@ -182,7 +212,20 @@ serve(async (req) => {
     
     // Inject avatar gender and pronouns into shared prompts
     const pronouns = avatarGender === 'girl' ? 'she/her' : avatarGender === 'boy' ? 'he/him' : 'they/them';
-    const genderPrompt = `The main character is a ${avatarGender} named {userName} - use ${pronouns} pronouns consistently throughout. `;
+    
+    // Create gender prompt with optional hair color for English speakers
+    let genderPrompt = `The main character is a ${avatarGender} named {userName}`;
+    if (hairColor) {
+      genderPrompt += ` with ${hairColor}`;
+    }
+    genderPrompt += ` - use ${pronouns} pronouns consistently throughout. `;
+    
+    console.log('💇 Hair Color Integration:', {
+      isEnglishSpeaker,
+      skinTone,
+      hairColor,
+      genderPromptWithHair: hairColor ? 'included' : 'not included'
+    });
     
     // Inject gender context into system prompt
     let systemPrompt = promptConfig.systemPrompt;
