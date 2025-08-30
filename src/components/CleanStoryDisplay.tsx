@@ -317,6 +317,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Story-specific identifier for cache isolation
   const [storyId, setStoryId] = useState(() => `story_${Date.now()}_${Math.random().toString(36).substring(2)}`);
   
+  // PHASE 1 FIX: Stable session ID for consistent image caching across the entire story session
+  const [stableSessionId] = useState(() => isPremium ? `premium_${Date.now()}` : `guest_${Date.now()}`);
+  
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -342,6 +345,47 @@ const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
     fallbackToClassic('image-error');
   }
 }, [currentPage, pageImages, fallbackToClassic]);
+
+// PHASE 2 FIX: Image retry handler that actually regenerates images
+const handleImageRegeneration = useCallback(async () => {
+  if (isGeneratingImage || !isStoryStable || !story?.length) return;
+  
+  const pageContent = story[currentPage] || '';
+  const maxAllowedPage = isPremium ? (story.length - 1) : 5;
+  
+  if (currentPage > maxAllowedPage) {
+    console.log(`🖼️ Page ${currentPage}: Beyond allowed generation limit`);
+    return;
+  }
+  
+  console.log(`🖼️ Page ${currentPage}: Starting image regeneration...`);
+  setIsGeneratingImage(true);
+  
+  try {
+    const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
+    await ImageGenerationTrigger.triggerAutoGeneration({
+      currentPage: currentPage,
+      totalPages: story.length,
+      hasCurrentImage: false,
+      allImages: Object.values(pageImages),
+      isNetworkAvailable: navigator.onLine,
+      userInfo,
+      storyTitle: storyTitle || 'Adventure',
+      pageText: pageContent,
+      sessionId: stableSessionId,
+      isGuestUser: !isPremium
+    });
+  } catch (error) {
+    console.warn(`Failed to regenerate image for page ${currentPage}:`, error);
+  } finally {
+    setIsGeneratingImage(false);
+  }
+}, [currentPage, story, pageImages, isStoryStable, isGeneratingImage, isPremium, userInfo, storyTitle, stableSessionId]);
+
+const handleImageRetry = useCallback(() => {
+  console.log(`🔄 Image retry requested for page ${currentPage}`);
+  handleImageRegeneration();
+}, [currentPage, handleImageRegeneration]);
 
 // Audio engine instance for direct control
 const audioEngineRef = useRef(SimplifiedAudioEngine.getInstance());
@@ -486,8 +530,8 @@ useEffect(() => {
       userInfo: userInfo,
       storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
       pageText: pageText,
-      sessionId: characterSessionId,
-      isGuestUser: !isPremium
+            sessionId: stableSessionId,
+            isGuestUser: !isPremium
     });
   };
   
@@ -1114,7 +1158,8 @@ useEffect(() => {
   const checkCacheAndGenerate = async () => {
     try {
       const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
-      const sessionId = isPremium ? 'premium' : `guest_${Date.now()}`;
+      // PHASE 1 FIX: Use stable session ID for consistent caching
+      const sessionId = stableSessionId;
       const storyHash = story.join('|').substring(0, 50);
       const pageContent = story[currentPage] || '';
       
@@ -1155,7 +1200,7 @@ useEffect(() => {
             userInfo,
             storyTitle: storyTitle || 'Adventure',
             pageText: pageContent,
-            sessionId,
+            sessionId: stableSessionId,
             isGuestUser: !isPremium
           });
         } catch (error) {
@@ -3017,14 +3062,15 @@ const handleRestartTimer = () => {
                           }}
                         />
                         {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
-                        <ImageWithFallback
-                          src={currentImage}
+        <ImageWithFallback
+          src={currentImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
           className="relative z-10 h-full w-full object-contain"
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
           onFallbackUsed={handleImageFallbackUsed}
-                        />
+          onRetry={handleImageRetry}
+        />
                       </>
                     ) : isGeneratingImage ? (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -3112,14 +3158,15 @@ const handleRestartTimer = () => {
                           </div>
                         )}
                         {currentImage ? (
-                          <ImageWithFallback
-                            src={currentImage} 
-                            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-                            className="w-full h-full object-cover"
-                            fallbackText={`📖 Page ${currentPage + 1}`}
-                            onLoadingChange={handleImageLoadingChange}
-                            onFallbackUsed={handleImageFallbackUsed}
-                          />
+          <ImageWithFallback
+            src={currentImage} 
+            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+            className="w-full h-full object-cover"
+            fallbackText={`📖 Page ${currentPage + 1}`}
+            onLoadingChange={handleImageLoadingChange}
+            onFallbackUsed={handleImageFallbackUsed}
+            onRetry={handleImageRetry}
+          />
                         ) : isGeneratingImage ? (
                           <div className="w-full h-full flex items-center justify-center">
                             <div className="text-center">
