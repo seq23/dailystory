@@ -12,12 +12,22 @@ export interface TokenLimitConfig {
 }
 
 // Hardcoded token limits for stable validation across all systems
+// These are for FULL STORIES (Netflix-style multi-page generation)
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   const HARDCODED_LIMITS = {
     beginner: 48, easy: 72, medium: 800, hard: 1200, expert: 1600,
     '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
   };
   return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback
+}
+
+// Token limits for SINGLE PAGE generation (Live Generation service)
+export function getTokenLimitForSinglePage(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const pageConfig = PAGE_CONFIG[difficulty];
+  if (!pageConfig) return 8; // Safe fallback
+  
+  // Calculate tokens per page based on total tokens divided by expected pages
+  return Math.ceil(getTokenLimitForDifficulty(difficulty) / pageConfig.expectedPages);
 }
 
 // Simplified configuration for page calculations
@@ -55,10 +65,15 @@ export function estimateTokenCount(text: string): number {
 export function validateTokenLimit(
   text: string, 
   difficulty: DifficultyLevel | ExpertGradeLevel,
-  mode: 'ai' | 'template' = 'ai'
+  mode: 'ai' | 'template' | 'live' | 'netflix' = 'ai'
 ): TokenValidationResult {
   const actualTokens = estimateTokenCount(text);
-  const maxTokens = getTokenLimitForDifficulty(difficulty);
+  
+  // Use appropriate token limit based on generation mode
+  const maxTokens = mode === 'live' ? 
+    getTokenLimitForSinglePage(difficulty) : 
+    getTokenLimitForDifficulty(difficulty);
+    
   const pageConfig = PAGE_CONFIG[difficulty];
   
   if (!pageConfig) {
@@ -106,7 +121,7 @@ export function validateTokenLimit(
 export function validatePageTokenDistribution(
   pages: string[], 
   difficulty: DifficultyLevel | ExpertGradeLevel,
-  mode: 'ai' | 'template' = 'ai'
+  mode: 'ai' | 'template' | 'live' | 'netflix' = 'ai'
 ): TokenValidationResult {
   const totalText = pages.join(' ');
   const totalValidation = validateTokenLimit(totalText, difficulty, mode);

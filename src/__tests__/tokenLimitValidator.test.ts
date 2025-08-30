@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import {
-  estimateTokenCount,
-  validateTokenLimit,
+import { 
+  estimateTokenCount, 
+  validateTokenLimit, 
   validatePageTokenDistribution,
   getTokenLimitForDifficulty,
+  getTokenLimitForSinglePage,
   getRecommendedWordsForDifficulty
 } from '@/utils/tokenLimitValidator';
 
@@ -164,6 +165,32 @@ describe('Token Limit Validator', () => {
         
         expect(current).toBeGreaterThan(previous);
       }
+    });
+  });
+
+  describe('getTokenLimitForSinglePage', () => {
+    it('returns correct single-page token limits', () => {
+      expect(getTokenLimitForSinglePage('beginner')).toBe(8); // 48÷6
+      expect(getTokenLimitForSinglePage('easy')).toBe(9); // 72÷8
+      expect(getTokenLimitForSinglePage('medium')).toBe(100); // 800÷8
+      expect(getTokenLimitForSinglePage('hard')).toBe(120); // 1200÷10
+      expect(getTokenLimitForSinglePage('expert')).toBe(134); // 1600÷12 (rounded up)
+    });
+
+    it('returns fallback for unknown difficulty', () => {
+      expect(getTokenLimitForSinglePage('unknown' as any)).toBe(8);
+    });
+  });
+
+  describe('Live vs Netflix token validation modes', () => {
+    it('uses single-page limits for live mode', () => {
+      const text = 'This is a test story content that might be a single page.';
+      const liveResult = validateTokenLimit(text, 'beginner', 'live');
+      const netflixResult = validateTokenLimit(text, 'beginner', 'netflix');
+      
+      expect(liveResult.maxAllowed).toBeLessThan(netflixResult.maxAllowed);
+      expect(liveResult.maxAllowed).toBe(8); // Single page limit
+      expect(netflixResult.maxAllowed).toBe(48); // Full story limit
     });
   });
 });
