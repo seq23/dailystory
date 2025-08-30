@@ -400,18 +400,45 @@ serve(async (req) => {
         console.log('📝 Tier 2 (Sentences):', { found: initialPages.length });
       }
       
-      // Tier 3: Word-count based splitting if sentences are too long
+      // Tier 3: Sentence-aware splitting for long sentences
       if (initialPages.some(page => page.split(' ').length > 8)) {
-        console.log('🔄 Tier 3: Using word-count based splitting...');
-        const words = storyText.replace(/[.!?]+/g, '').split(/\s+/).filter(w => w.trim());
+        console.log('🔄 Tier 3: Using sentence-aware splitting...');
+        
+        // Parse complete sentences first
+        const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 0);
         initialPages = [];
-        for (let i = 0; i < Math.min(words.length, 60); i += 5) {
-          const pageWords = words.slice(i, i + 5);
-          if (pageWords.length > 0) {
-            initialPages.push(pageWords.join(' ') + '.');
+        
+        for (const sentence of sentences) {
+          const words = sentence.trim().split(/\s+/).filter(w => w.trim());
+          
+          // If sentence fits in target range (2-6 words for level0), keep it whole
+          if (words.length <= 6) {
+            initialPages.push(sentence.trim() + '.');
+          } else {
+            // Split long sentences at logical points, preserving articles with nouns
+            let currentPage = [];
+            for (let i = 0; i < words.length; i++) {
+              const word = words[i];
+              const nextWord = words[i + 1];
+              
+              currentPage.push(word);
+              
+              // If we're at ideal length (4-5 words) and not splitting article from noun
+              if (currentPage.length >= 4 && 
+                  !(word.toLowerCase() === 'a' || word.toLowerCase() === 'an' || word.toLowerCase() === 'the')) {
+                initialPages.push(currentPage.join(' ') + '.');
+                currentPage = [];
+              }
+            }
+            
+            // Add remaining words if any
+            if (currentPage.length > 0) {
+              initialPages.push(currentPage.join(' ') + '.');
+            }
           }
         }
-        console.log('📊 Tier 3 (Word-count):', { found: initialPages.length });
+        
+        console.log('📊 Tier 3 (Sentence-aware):', { found: initialPages.length });
       }
       
       // Final validation and processing for Level 0
