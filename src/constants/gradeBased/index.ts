@@ -3,29 +3,45 @@
 
 import { 
   ENHANCED_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY, 
-  validateLevel0Sentence,
-  isLevel0Word,
+  validateLevel0Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/dolchPrePrimer';
+
+// Legacy wrapper for backward compatibility
+function isLevel0Word(word: string): boolean {
+  return LEVEL_0_VOCABULARY.has(word.toLowerCase());
+}
+
+import { 
   LEVEL_1_VOCABULARY, 
   isLevel1Word, 
-  validateLevel1Sentence,
+  validateLevel1Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/level1Vocabulary';
+
+import { 
   LEVEL_2_VOCABULARY, 
   isLevel2Word, 
-  validateLevel2Sentence,
+  validateLevel2Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/level2Vocabulary';
+
+import { 
   LEVEL_3_VOCABULARY, 
   isLevel3Word, 
-  validateLevel3Sentence,
+  validateLevel3Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/level3Vocabulary';
+
+import { 
   LEVEL_4_VOCABULARY, 
   isLevel4Word, 
-  validateLevel4Sentence,
-  type GradeLevel,
-  getVocabularyByGrade,
-  validateSentence as validateSentenceFromShared
-} from '@/shared/vocabulary';
+  validateLevel4Sentence 
+} from '../../../supabase/functions/_shared/vocabulary/level4Vocabulary';
+
+// Note: Level 4 vocabulary exists for reference but Expert difficulty 
+// bypasses vocabulary simplification and uses grade-based progression instead
 
 import { DifficultyLevel } from '@/types';
 
-// Re-export the GradeLevel type
-export type { GradeLevel };
+// Type for grade levels
+export type GradeLevel = 0 | 1 | 2 | 3 | 4;
 
 // Export all vocabularies
 export {
