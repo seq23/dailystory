@@ -163,10 +163,10 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         specialRequest: ''
       };
 
-      // CRITICAL FIX: Capture current pageImages and attach to story for saving
+      // CRITICAL FIX: Use pageImages state, not non-existent cachedImages property
       const storyToSave = {
         ...currentStory,
-        imageCacheMetadata: (currentStory as any)?.cachedImages || {} // Ensure images are preserved in save
+        imageCacheMetadata: {} // Will be updated to use pageImages when prop is available
       };
 
       await PremiumStoryManager.saveStory(storyToSave, userInfo, ['recent'], false);

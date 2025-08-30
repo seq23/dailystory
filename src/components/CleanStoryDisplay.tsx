@@ -234,10 +234,26 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setIsStoryComplete(true);
         setStoryTitle(currentStory.title || `${userInfo.name}'s Story`);
         
-        // Load cached images using unified conversion logic
+        // Load cached images using unified conversion logic with validation
         const convertedImages = convertImagesToRecord(currentStory.cachedImages, 'Saved story');
         if (convertedImages && Object.keys(convertedImages).length > 0) {
-          setPageImages(convertedImages);
+          // Validate image URLs before setting
+          const validatedImages: Record<number, string> = {};
+          for (const [index, url] of Object.entries(convertedImages)) {
+            try {
+              if (typeof url === 'string') {
+                new URL(url); // Basic URL validation
+                validatedImages[parseInt(index)] = url;
+              }
+            } catch {
+              console.warn(`🖼️ Invalid cached image URL for page ${index}:`, url);
+            }
+          }
+          
+          if (Object.keys(validatedImages).length > 0) {
+            setPageImages(validatedImages);
+            console.log('✅ Saved story: Valid images loaded', validatedImages);
+          }
         }
         
         setIsLoading(false);
@@ -829,69 +845,52 @@ useEffect(() => {
       console.log('🖼️ Auto-generated image received:', { pageIndex, imageUrl });
       
       setPageImages(prev => {
-        const updated = {
-          ...prev,
-          [pageIndex]: imageUrl
-        };
+        const updated = { ...prev, [pageIndex]: imageUrl };
         
-        // CRITICAL FIX: Persist image to cache for both guest and premium users
-        try {
-          if (isPremium) {
-            // For premium users, get user ID from Supabase auth
-            supabase.auth.getUser().then(({ data: { user } }) => {
-              if (user?.id) {
-                const avatarType = userInfo.avatar?.type || undefined;
-                const imageArray = Object.entries(updated).map(([index, url]) => ({
-                  url,
-                  prompt: `Page ${parseInt(index) + 1} illustration`
-                }));
-                
-                // Update cache with new image data
-                StorySessionCache.updatePages(
-                  user.id,
-                  story, // Keep existing pages
-                  currentPage,
-                  imageArray,
-                  avatarType
-                );
-                
-                console.log('🖼️ Image persisted to premium cache:', { pageIndex, imageUrl, userId: user.id });
-              }
-            }).catch(error => {
-              console.error('❌ Failed to get user for premium cache:', error);
-            });
-          } else {
-            // For guest users, update with avatar-aware caching
-            const avatarType = userInfo?.avatar?.type;
-            const imageArray = Object.entries(updated).map(([index, url]) => ({
-              url,
-              prompt: `Page ${parseInt(index) + 1} illustration`
-            }));
-            
-            StorySessionCache.updatePages(
-              'guest',
-              story,
-              currentPage,
-              imageArray,
-              avatarType
-            );
-            
-            console.log('🖼️ Image persisted to guest cache:', { pageIndex, imageUrl, avatarType });
+        // Persist to cache with current values (not stale closure)
+        setTimeout(() => {
+          try {
+            if (isPremium) {
+              supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user?.id && story) {
+                  const avatarType = userInfo?.avatar?.type;
+                  const imageArray = Object.entries(updated).map(([index, url]) => ({
+                    url,
+                    prompt: `Page ${parseInt(index) + 1} illustration`
+                  }));
+                  
+                  StorySessionCache.updatePages(
+                    user.id,
+                    story,
+                    currentPage,
+                    imageArray,
+                    avatarType
+                  );
+                  console.log('✅ Premium image cached:', { pageIndex, userId: user.id });
+                }
+              });
+            } else if (story && userInfo) {
+              const avatarType = userInfo.avatar?.type;
+              const imageArray = Object.entries(updated).map(([index, url]) => ({
+                url,
+                prompt: `Page ${parseInt(index) + 1} illustration`
+              }));
+              
+              StorySessionCache.updatePages('guest', story, currentPage, imageArray, avatarType);
+              console.log('✅ Guest image cached:', { pageIndex, avatarType });
+            }
+          } catch (error) {
+            console.error('❌ Cache persistence failed:', error);
           }
-        } catch (error) {
-          console.error('❌ Failed to persist image to cache:', error);
-        }
+        }, 0);
         
         return updated;
       });
     };
     
     window.addEventListener('image:generated', handleImageGenerated as EventListener);
-    
-    return () => {
-      window.removeEventListener('image:generated', handleImageGenerated as EventListener);
-    };
-  }, []);
+    return () => window.removeEventListener('image:generated', handleImageGenerated as EventListener);
+  }, [isPremium, userInfo, story, currentPage]); // CRITICAL: Add all dependencies
 
   // Voice word help: on "What is this word?" play Hear it -> Explain it -> Syllables (Charlotte) and auto-resume narration
   useEffect(() => {

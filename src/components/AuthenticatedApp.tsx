@@ -459,6 +459,22 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                                console.log('🖼️ Loading images from legacy image_cache_metadata');
                                cachedImages = convertImagesToRecord((story as any).image_cache_metadata, 'Legacy metadata');
                              }
+                             
+                             // Validate loaded images
+                             if (cachedImages) {
+                               const validatedImages: Record<number, string> = {};
+                               for (const [index, url] of Object.entries(cachedImages)) {
+                                 try {
+                                   if (typeof url === 'string') {
+                                     new URL(url); // Basic URL validation
+                                     validatedImages[parseInt(index)] = url;
+                                   }
+                                 } catch {
+                                   console.warn(`🖼️ Invalid image URL for page ${index}:`, url);
+                                 }
+                               }
+                               cachedImages = Object.keys(validatedImages).length > 0 ? validatedImages : null;
+                             }
                             // Fallback: Attempt hash-based lookup (for backward compatibility)
                             else {
                               console.log('🖼️ Attempting hash-based image lookup as fallback');
