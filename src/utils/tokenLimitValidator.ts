@@ -14,7 +14,7 @@ export interface TokenLimitConfig {
 // Hardcoded token limits for stable validation across all systems
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   const HARDCODED_LIMITS = {
-    beginner: 48, easy: 72, medium: 120, hard: 180, expert: 240,
+    beginner: 48, easy: 72, medium: 800, hard: 1200, expert: 1600,
     '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
   };
   return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback
@@ -24,9 +24,9 @@ export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertG
 export const PAGE_CONFIG = {
   beginner: { expectedPages: 8, tokensPerPage: 6 },
   easy: { expectedPages: 6, tokensPerPage: 12 },
-  medium: { expectedPages: 8, tokensPerPage: 15 },
-  hard: { expectedPages: 10, tokensPerPage: 18 },
-  expert: { expectedPages: 12, tokensPerPage: 20 },
+  medium: { expectedPages: 8, tokensPerPage: 100 },
+  hard: { expectedPages: 10, tokensPerPage: 120 },
+  expert: { expectedPages: 12, tokensPerPage: 133 },
   '6th': { expectedPages: 12, tokensPerPage: 75 },
   '7th': { expectedPages: 13, tokensPerPage: 85 },
   '8th': { expectedPages: 14, tokensPerPage: 86 },

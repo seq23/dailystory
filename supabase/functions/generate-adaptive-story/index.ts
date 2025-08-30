@@ -270,35 +270,104 @@ serve(async (req) => {
       placeholdersResolved: true
     });
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: resolvedSystemPrompt },
-          { role: 'user', content: resolvedUserPrompt }
-        ],
-        max_completion_tokens: maxTokens
-      }),
+    console.log('🎯 Pre-AI Generation Configuration:', { 
+      level: normalizedReadingLevel, 
+      maxTokens,
+      tokenLimitsExpected: `Medium:800 Hard:1200 Expert:1600`,
+      hairColorEnabled: hairColor ? 'yes' : 'no'
     });
-
-    if (!response.ok) {
-      throw new Error(`AI generation failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    let storyText = data.choices[0].message.content;
     
-    // Remove any title/chapter patterns that may have slipped through
-    storyText = storyText.replace(/\*\*Title:.*?\*\*/gi, '')
-                        .replace(/\*\*Chapter.*?\*\*/gi, '')
-                        .replace(/^Title:.*?\n/gmi, '')
-                        .replace(/^Chapter.*?\n/gmi, '')
-                        .trim();
+    // AI Generation with Retry Logic
+    let storyText = '';
+    let attempt = 1;
+    const maxAttempts = 2;
+    
+    while (attempt <= maxAttempts && !storyText) {
+      try {
+        console.log(`🤖 AI Attempt ${attempt}/${maxAttempts}:`, { 
+          level: normalizedReadingLevel,
+          tokenBudget: maxTokens,
+          retryMode: attempt > 1 ? 'enhanced-prompt' : 'standard'
+        });
+        
+        // Enhanced prompt for retry attempts
+        let retrySystemContent = resolvedSystemPrompt;
+        let retryUserContent = resolvedUserPrompt;
+        
+        if (attempt > 1) {
+          console.log('🔄 Applying enhanced retry prompts with stronger instructions...');
+          retrySystemContent += `\n\nCRITICAL RETRY INSTRUCTIONS:
+- Do NOT include ANY page numbers, titles, or chapter markers in your output
+- Write flowing narrative content without numbered sections
+- Generate natural story content that breaks cleanly into scenes
+- Remove ALL formatting markers like **bold** or *italic*
+- Each paragraph should be a complete scene or moment`;
+          
+          retryUserContent += ` IMPORTANT: Write clean story content without page numbers or formatting markers. Focus on natural narrative flow.`;
+        }
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: retrySystemContent },
+              { role: 'user', content: retryUserContent }
+            ],
+            max_completion_tokens: maxTokens
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`AI generation failed: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        storyText = data.choices[0].message.content;
+        
+        if (storyText && storyText.trim()) {
+          console.log(`✅ AI Attempt ${attempt} SUCCESS:`, { 
+            contentLength: storyText.length,
+            hasContent: !!storyText.trim()
+          });
+          break;
+        } else {
+          console.log(`❌ AI Attempt ${attempt} produced empty content`);
+          storyText = '';
+        }
+        
+      } catch (error) {
+        console.error(`❌ AI Attempt ${attempt} ERROR:`, error);
+        storyText = '';
+      }
+      
+      attempt++;
+    }
+    
+    // If both AI attempts failed, proceed to fallback
+    if (!storyText) {
+      console.error('❌ Both AI attempts failed - will trigger fallback');
+      throw new Error('AI generation failed after retry attempts');
+    }
+    
+    // Enhanced comprehensive page number removal  
+    storyText = storyText
+      .replace(/\*\*Title:.*?\*\*/gi, '')
+      .replace(/\*\*Chapter.*?\*\*/gi, '')
+      .replace(/^Title:.*?\n/gmi, '')
+      .replace(/^Chapter.*?\n/gmi, '')
+      .replace(/^First page:.*?\n/gmi, '')
+      .replace(/^Second page:.*?\n/gmi, '')
+      .replace(/^Next:.*?\n/gmi, '')
+      .replace(/^Finally:.*?\n/gmi, '')
+      .replace(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)\./gmi, '')  // Roman numerals
+      .replace(/^(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th):/gmi, '')  // Ordinals
+      .replace(/^(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten):/gmi, '')  // Word numbers
+      .trim();
     
     // Enhanced logging for debugging
     console.log('🔍 Raw OpenAI Response:', {
@@ -374,11 +443,51 @@ serve(async (req) => {
       });
       
     } else {
-      // Other levels: improved content splitting to prevent concatenation  
-      let rawPages = storyText.split(/\n\n+/).filter(p => p.trim());
+      // Level-Appropriate 3-Tier Processing for Medium/Hard/Expert
+      console.log(`🎯 Processing ${normalizedReadingLevel} content with adaptive 3-tier logic...`);
       
-      // Enhanced page cleaning to remove page markers
-      rawPages = rawPages.map(page => 
+      // Tier 1: Paragraph-based splitting (same as beginner approach)
+      let initialPages = storyText.split(/\n\n+/)
+        .filter(p => p.trim())
+        .map(p => p.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' '));
+      
+      console.log('📄 Tier 1 (Paragraph splits):', { found: initialPages.length, hasContent: initialPages.some(p => p.length > 0) });
+      
+      // Tier 2: Adaptive sentence-based fallback (level-appropriate)
+      if (initialPages.length === 0 || !initialPages.some(p => p.length > 0)) {
+        console.log('🔄 Tier 2: Using adaptive sentence-based splitting...');
+        initialPages = storyText.split(/[.!?]+/)
+          .filter(s => s.trim())
+          .map(s => s.trim() + '.')
+          .slice(0, 12);
+        console.log('📝 Tier 2 (Sentences):', { found: initialPages.length });
+      }
+      
+      // Tier 3: Level-appropriate smart word-chunking  
+      const targetWordCounts = {
+        medium: { min: 40, max: 80, chunkSize: 55 },
+        hard: { min: 60, max: 120, chunkSize: 90 },
+        expert: { min: 80, max: 150, chunkSize: 115 }
+      };
+      
+      const currentLevelConfig = targetWordCounts[normalizedReadingLevel as keyof typeof targetWordCounts] || targetWordCounts.medium;
+      
+      if (initialPages.some(page => page.split(' ').length > currentLevelConfig.max * 1.5)) {
+        console.log(`🔄 Tier 3: Using smart word-chunking for ${normalizedReadingLevel} level...`);
+        const words = storyText.replace(/[.!?]+/g, '').split(/\s+/).filter(w => w.trim());
+        initialPages = [];
+        
+        for (let i = 0; i < Math.min(words.length, currentLevelConfig.chunkSize * 12); i += currentLevelConfig.chunkSize) {
+          const pageWords = words.slice(i, i + currentLevelConfig.chunkSize);
+          if (pageWords.length > 0) {
+            initialPages.push(pageWords.join(' ') + '.');
+          }
+        }
+        console.log(`📊 Tier 3 (${normalizedReadingLevel} word-chunks):`, { found: initialPages.length, chunkSize: currentLevelConfig.chunkSize });
+      }
+      
+      // Enhanced page cleaning with comprehensive pattern removal
+      let cleanedPages = initialPages.map(page => 
         page
           .replace(/^\*\*Page\s*\d+\*\*:?\s*/i, '')       // **Page 1:** or **Page 1**
           .replace(/^Page\s*\d+\s*:\s*/i, '')              // Page 1: 
@@ -387,38 +496,70 @@ serve(async (req) => {
           .replace(/^Page\s*(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten)\s*:?\s*/i, '') // Page One:
           .replace(/^Chapter\s*\d+\s*:?\s*/i, '')          // Chapter 1:
           .replace(/^\*\*\d+\*\*\s*:?\s*/i, '')           // **1**:
+          .replace(/^First page:.*?\n/gmi, '')             // First page:
+          .replace(/^Second page:.*?\n/gmi, '')            // Second page:
+          .replace(/^Next:.*?\n/gmi, '')                   // Next:
+          .replace(/^Finally:.*?\n/gmi, '')                // Finally:
+          .replace(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)\./i, '') // Roman numerals
+          .replace(/^(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th):/i, '') // Ordinals
+          .replace(/^(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten):/i, '') // Word numbers
           .trim()
       ).filter(p => p.length > 10);
       
-      // If pages are too long, split them further
+      // Level-appropriate content validation and adjustment
       pages = [];
-      for (const rawPage of rawPages) {
+      for (const rawPage of cleanedPages) {
         const sentences = rawPage.match(/[^.!?]*[.!?]+/g) || [rawPage];
         const wordCount = rawPage.split(/\s+/).length;
         
-        if (wordCount > 80) {
-          // Split long paragraphs into smaller chunks
-          const midpoint = Math.floor(sentences.length / 2);
-          if (sentences.length > 1) {
-            pages.push(sentences.slice(0, midpoint).join(' ').trim());
-            pages.push(sentences.slice(midpoint).join(' ').trim());
+        // Level-appropriate splitting logic
+        if (wordCount > currentLevelConfig.max * 1.2) {
+          // Split oversized content appropriately for each level
+          const targetSentences = normalizedReadingLevel === 'medium' ? 2 : 
+                                 normalizedReadingLevel === 'hard' ? 3 : 4;
+          
+          if (sentences.length > targetSentences) {
+            const sentenceChunks = [];
+            for (let i = 0; i < sentences.length; i += targetSentences) {
+              sentenceChunks.push(sentences.slice(i, i + targetSentences).join(' ').trim());
+            }
+            pages.push(...sentenceChunks);
           } else {
             pages.push(rawPage);
           }
-        } else {
+        } else if (wordCount >= currentLevelConfig.min) {
           pages.push(rawPage);
         }
+        // Skip pages that are too short for the level
       }
       
       pages = pages.slice(0, 12);
-      console.log('📖 Other level processing:', { level: normalizedReadingLevel, pagesFound: pages.length });
+      
+      console.log(`✅ ${normalizedReadingLevel} 3-tier processing complete:`, { 
+        level: normalizedReadingLevel,
+        pagesFound: pages.length, 
+        avgWordCount: pages.length > 0 ? Math.round(pages.reduce((acc, p) => acc + p.split(' ').length, 0) / pages.length) : 0,
+        targetRange: `${currentLevelConfig.min}-${currentLevelConfig.max} words`,
+        samplesPreview: pages.slice(0, 2).map(p => `${p.split(' ').length} words`)
+      });
     }
     
-    // Content validation before returning
+    // Final content validation and enhanced logging
     if (pages.length === 0) {
       console.error('❌ No pages generated from AI response - will trigger fallback');
       throw new Error('AI generated empty content');
     }
+    
+    // Enhanced success logging with performance metrics
+    console.log('🎉 AI Generation SUCCESS - Final Results:', {
+      level: normalizedReadingLevel,
+      finalPageCount: pages.length,
+      avgWordsPerPage: Math.round(pages.reduce((acc, p) => acc + p.split(' ').length, 0) / pages.length),
+      totalWords: pages.reduce((acc, p) => acc + p.split(' ').length, 0),
+      hairdColorUsed: hairColor ? 'yes' : 'no',
+      pagesSample: pages.slice(0, 1).map((p, i) => `Page ${i+1}: ${p.substring(0, 50)}...`),
+      processingTier: normalizedReadingLevel === 'beginner' ? 'beginner-3tier' : 'adaptive-3tier'
+    });
     
     // Process pages through unified post-processing system
     console.log('🔄 Sending pages to unified post-processor...');

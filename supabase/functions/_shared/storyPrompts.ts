@@ -97,7 +97,7 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include narrative hooks and mild tension
 
-Maximum 120 tokens per page. Target 50-70 words per page.
+Maximum 800 tokens per page. Target 50-70 words per page.
 
 VOCABULARY: Use Level 1 + Dolch 2nd Grade words (179 total). 60% compliance expected.
 
@@ -128,7 +128,7 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include character development
 
-Maximum 180 tokens per page. Target 80-120 words per page.
+Maximum 1200 tokens per page. Target 80-120 words per page.
 
 VOCABULARY: Use sophisticated 4th grade vocabulary with academic terms. 50% compliance expected.
 
@@ -158,7 +158,7 @@ RULES:
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
 
-Maximum 240 tokens per page. Target 120-200 words per page.
+Maximum 1600 tokens per page. Target 120-200 words per page.
 
 VOCABULARY: Use advanced vocabulary with literary terms. 50% compliance expected.
 
@@ -361,7 +361,7 @@ export function formatUserPrompt(template: string, userInfo: any): string {
  */
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   const HARDCODED_LIMITS = {
-    beginner: 48, easy: 72, medium: 120, hard: 180, expert: 240,
+    beginner: 48, easy: 72, medium: 800, hard: 1200, expert: 1600,
     '6th': 900, '7th': 1100, '8th': 1200, '9th': 1400, '10th': 1600
   };
   return HARDCODED_LIMITS[difficulty] || 48; // bulletproof fallback

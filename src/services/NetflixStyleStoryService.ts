@@ -89,16 +89,16 @@ export class NetflixStyleStoryService {
             .replace(/^Page\s*\d+\s*:\s*/i, '')              // Page 1: 
             .replace(/^Page\s*\d+\s*/i, '')                  // Page 1
             .replace(/^\d+\.\s*/i, '')                       // 1. 
-            .replace(/^Page\s*One\s*:?\s*/i, '')             // Page One:
-            .replace(/^Page\s*Two\s*:?\s*/i, '')             // Page Two:
-            .replace(/^Page\s*Three\s*:?\s*/i, '')           // Page Three:
-            .replace(/^Page\s*Four\s*:?\s*/i, '')            // Page Four:
-            .replace(/^Page\s*Five\s*:?\s*/i, '')            // Page Five:
-            .replace(/^Page\s*Six\s*:?\s*/i, '')             // Page Six:
-            .replace(/^Page\s*Seven\s*:?\s*/i, '')           // Page Seven:
-            .replace(/^Page\s*Eight\s*:?\s*/i, '')           // Page Eight:
+            .replace(/^Page\s*(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten)\s*:?\s*/i, '') // Page One:
             .replace(/^Chapter\s*\d+\s*:?\s*/i, '')          // Chapter 1:
             .replace(/^\*\*\d+\*\*\s*:?\s*/i, '')           // **1**:
+            .replace(/^First page:.*?\n/gmi, '')             // First page:
+            .replace(/^Second page:.*?\n/gmi, '')            // Second page:
+            .replace(/^Next:.*?\n/gmi, '')                   // Next:
+            .replace(/^Finally:.*?\n/gmi, '')                // Finally:
+            .replace(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)\./i, '') // Roman numerals
+            .replace(/^(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th):/i, '') // Ordinals
+            .replace(/^(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten):/i, '') // Word numbers
             .trim()
         ).filter((page: string) => page.length > 10);
 
