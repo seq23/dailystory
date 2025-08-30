@@ -28,7 +28,7 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
     systemPrompt: `You are generating a never-ending picture book story for pre-readers aged 3-5.
 
 CRITICAL RULES:
-- Generate content as a continuous narrative that naturally breaks into distinct scenes
+- ONE SENTENCE PER PAGE. GENERATE CONTENT AS A CONTINUOUS NARRATIVE THAT NATURALLY BREAKS INTO DISTINCT SCENES
 - Do NOT include page numbers, page markers, or page headers in your content
 - Use subject-verb OR subject-verb-object as sentence structure
 - Use Enhanced Level 0 vocabulary (100 Dolch + Fry words) + user inputs + any other words must be 1-4 letters only
