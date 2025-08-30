@@ -41,8 +41,7 @@ import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getMobileTextConfig, getMobileStoryContainer } from "@/utils/mobileTextOptimizations";
-import { useContentAwareTextSize, useContentAwareContainer } from "@/hooks/useContentAwareTextSize";
+import { getMobileTextConfig, getMobileStoryContainer, getDifficultyBasedTextConfig, getDifficultyBasedContainer } from "@/utils/mobileTextOptimizations";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 import { cn } from "@/lib/utils";
@@ -2798,12 +2797,12 @@ const handleRestartTimer = () => {
   };
 
 
-  // Get content-aware text configuration based on actual page content and image presence
+  // Get difficulty-based text configuration optimized for each reading level
   const currentImage = pageImages[currentPage];
   const hasCurrentImage = !!currentImage;
-  const contentAwareTextConfig = useContentAwareTextSize(currentStoryText || "", isMobile, hasCurrentImage);
+  const difficultyBasedTextConfig = getDifficultyBasedTextConfig(currentDifficulty, isMobile);
   const wordCount = (currentStoryText || "").trim().split(/\s+/).filter(word => word.length > 0).length;
-  const contentAwareContainerConfig = useContentAwareContainer(wordCount, hasCurrentImage);
+  const difficultyBasedContainerConfig = getDifficultyBasedContainer(currentDifficulty);
 
   const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const isShortPage = countWords(currentStoryText || "") <= 8;
@@ -3038,8 +3037,8 @@ const handleRestartTimer = () => {
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
-                  {/* Top Half: Image */}
-                  <div className="relative flex-1 min-h-[200px] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
+                  {/* Top Half: Image - Fixed aspect ratio to prevent layout shifts */}
+                  <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
                     {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                       <div className="absolute top-3 right-3 z-20">
                           <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
@@ -3087,8 +3086,8 @@ const handleRestartTimer = () => {
                   </div>
                   {/* Image Status moved to main content area */}
 
-                  {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className={cn("min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative", currentImage ? "flex-[0.3]" : "flex-[0.85]")}>
+                  {/* Bottom Half: Text - Fixed size to prevent layout shifts */}
+                  <div className="flex-[0.4] w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
                     {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
@@ -3101,12 +3100,12 @@ const handleRestartTimer = () => {
                     )}
                     <div className={cn("flex-1 min-h-0 overflow-y-auto px-4 md:px-6 pb-4")}>
                       <div 
-                        className={cn("story-content storybook-frame story-content--content-aware w-full", justAdvanced && "animate-enter", contentAwareContainerConfig)}
+                        className={cn("story-content storybook-frame story-content--difficulty-aware w-full", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                         data-difficulty={currentDifficulty}
                         style={{
-                          fontSize: contentAwareTextConfig.fontSize,
-                          lineHeight: contentAwareTextConfig.lineHeight,
-                          letterSpacing: contentAwareTextConfig.letterSpacing
+                          fontSize: difficultyBasedTextConfig.fontSize,
+                          lineHeight: difficultyBasedTextConfig.lineHeight,
+                          letterSpacing: difficultyBasedTextConfig.letterSpacing
                         }}
                       >
                         {displayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (
@@ -3139,7 +3138,7 @@ const handleRestartTimer = () => {
                   {/* DESKTOP IMAGE FIX: Always show images on desktop (xl breakpoint already filters) */}
                   {(
                     <div className="xl:order-1 h-full min-h-0">
-                      <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                      <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                           <div className="absolute top-3 right-3 z-20">
                             <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
@@ -3187,12 +3186,12 @@ const handleRestartTimer = () => {
                       )}
                       <div className={cn("h-full overflow-y-auto overflow-x-hidden p-3 md:p-4", isShortPage && "flex items-center justify-center")}> 
                         <div 
-                          className={cn("story-content story-content--compact story-content--content-aware w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter", contentAwareContainerConfig)}
+                          className={cn("story-content story-content--compact story-content--difficulty-aware w-full", isPremium && isShortPage && "text-center", justAdvanced && "animate-enter", difficultyBasedContainerConfig)}
                           data-difficulty={currentDifficulty}
                           style={{
-                            fontSize: contentAwareTextConfig.fontSize,
-                            lineHeight: contentAwareTextConfig.lineHeight,
-                            letterSpacing: contentAwareTextConfig.letterSpacing
+                            fontSize: difficultyBasedTextConfig.fontSize,
+                            lineHeight: difficultyBasedTextConfig.lineHeight,
+                            letterSpacing: difficultyBasedTextConfig.letterSpacing
                           }}
                         >
                           {displayedStory.length > 0 && currentStoryText && currentStoryText.trim().length > 0 ? (

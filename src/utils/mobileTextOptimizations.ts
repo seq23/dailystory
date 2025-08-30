@@ -115,6 +115,93 @@ export interface MobileReadingPreferences {
 }
 
 /**
+ * Enhanced text configuration based on difficulty level and word count per page
+ * Optimizes for no scrolling on levels 0-2 and allows scrolling for higher levels
+ */
+export const getDifficultyBasedTextConfig = (difficulty: DifficultyLevel, isMobile: boolean = true): MobileTextConfig => {
+  const baseConfig = {
+    letterSpacing: 'tracking-normal',
+    paragraphSpacing: 'mb-4',
+    maxWordsPerLine: 10
+  };
+
+  switch (difficulty) {
+    case 'beginner': // Level 0 - 6 words per page - NO SCROLLING
+      return {
+        ...baseConfig,
+        fontSize: isMobile ? 'clamp(2.5rem, 8vw, 4rem)' : 'clamp(2rem, 6vw, 3.5rem)',
+        lineHeight: 'leading-loose',
+        letterSpacing: 'tracking-wide',
+        paragraphSpacing: 'mb-6',
+        maxWordsPerLine: 4
+      };
+      
+    case 'easy': // Level 1 - 15-24 words per page - NO SCROLLING
+      return {
+        ...baseConfig,
+        fontSize: isMobile ? 'clamp(1.75rem, 6vw, 3rem)' : 'clamp(1.5rem, 4vw, 2.5rem)',
+        lineHeight: 'leading-relaxed',
+        letterSpacing: 'tracking-normal',
+        paragraphSpacing: 'mb-5',
+        maxWordsPerLine: 6
+      };
+      
+    case 'medium': // Level 2 - 50-70 words per page - NO SCROLLING
+      return {
+        ...baseConfig,
+        fontSize: isMobile ? 'clamp(1.25rem, 4vw, 2rem)' : 'clamp(1.125rem, 3vw, 1.75rem)',
+        lineHeight: 'leading-normal',
+        letterSpacing: 'tracking-normal',
+        paragraphSpacing: 'mb-4',
+        maxWordsPerLine: 8
+      };
+      
+    case 'hard': // Level 3 - 80-120 words per page - Scrolling allowed
+      return {
+        ...baseConfig,
+        fontSize: isMobile ? 'clamp(1rem, 3vw, 1.5rem)' : 'clamp(0.95rem, 2.5vw, 1.35rem)',
+        lineHeight: 'leading-normal',
+        letterSpacing: 'tracking-normal',
+        paragraphSpacing: 'mb-3',
+        maxWordsPerLine: 12
+      };
+      
+    case 'expert': // Level 4 - 120-200 words per page - Scrolling allowed
+      return {
+        ...baseConfig,
+        fontSize: isMobile ? 'clamp(0.875rem, 2.5vw, 1.25rem)' : 'clamp(0.825rem, 2vw, 1.15rem)',
+        lineHeight: 'leading-snug',
+        letterSpacing: 'tracking-normal',
+        paragraphSpacing: 'mb-3',
+        maxWordsPerLine: 15
+      };
+      
+    default:
+      return getDifficultyBasedTextConfig('medium', isMobile);
+  }
+};
+
+/**
+ * Get enhanced difficulty-aware container classes
+ */
+export const getDifficultyBasedContainer = (difficulty: DifficultyLevel): string => {
+  const baseClasses = 'max-w-full mx-auto px-4';
+  
+  switch (difficulty) {
+    case 'beginner':
+    case 'easy':
+      return `${baseClasses} max-w-lg`;
+    case 'medium':
+      return `${baseClasses} max-w-xl`;
+    case 'hard':
+    case 'expert':
+      return `${baseClasses} max-w-2xl`;
+    default:
+      return `${baseClasses} max-w-xl`;
+  }
+};
+
+/**
  * Apply user preferences to text configuration
  */
 export const applyUserPreferences = (
