@@ -94,7 +94,7 @@ export function validatePlaceholders(pages: string[], source?: 'ai' | 'template'
 export function getPlaceholderValidationMessage(result: PlaceholderValidationResult): string {
   if (result.isValid) {
     if (result.source === 'ai') {
-      if (result.userInputsResolved && result.userInputsTotal && result.userInputsUsed) {
+      if (result.userInputsResolved && result.userInputsTotal && result.userInputsUsed && result.userInputsUsed.length > 0) {
         return `✅ AI-generated content (incorporates ${result.userInputsResolved}/${result.userInputsTotal} user inputs: ${result.userInputsUsed.join(', ')})`;
       }
       return '✅ AI-generated content (incorporates user preferences directly)';

@@ -53,8 +53,11 @@ const ARTICLE_FIXES = [
   { pattern: /\b(a|an)\s+([a-zA-Z]*s)\b/gi, replacement: '$2' },
   // Fix missing articles (only if not already preceded by an article)
   { pattern: /\b(?<!(a|an|the)\s)(cat|dog|bird|rabbit|duck|pig|cow|horse|bear|book|ball|car|toy|tree)\b/gi, replacement: 'a $1' },
-  // Fix double articles
+  // Fix double articles - enhanced patterns
+  { pattern: /\b(a|an)\s+(a|an)\s+(\w+)/gi, replacement: '$1 $3' },
   { pattern: /\b(a|an)\s+(a|an)\s+/gi, replacement: '$1 ' },
+  // Fix specific double article patterns like "a blue a cat"
+  { pattern: /\b(a|an)\s+([\w]+)\s+(a|an)\s+(\w+)/gi, replacement: '$1 $2 $4' },
 ];
 
 const VERB_CONJUGATION_FIXES = [
@@ -181,18 +184,31 @@ function advancedCleanup(text: string): string {
  * Main grammar validation function
  */
 export function validateAndEnhanceGrammar(text: string, pronoun: string = 'they'): string {
+  console.log(`🔧 Grammar validation starting for text: "${text.substring(0, 100)}..."`);
+  
   if (!SERVER_CONFIG.grammar.enableAdvancedValidation) {
+    console.log('⚠️ Advanced grammar validation disabled, using basic cleanup only');
     return advancedCleanup(text);
   }
   
   let result = text;
+  console.log(`📝 Original text: "${result}"`);
   
   // Apply grammar fixes in sequence
   result = applyPronounFixes(result, pronoun);
+  console.log(`👥 After pronoun fixes: "${result}"`);
+  
   result = applyArticleFixes(result);
+  console.log(`📰 After article fixes: "${result}"`);
+  
   result = applyVerbFixes(result);
+  console.log(`🔤 After verb fixes: "${result}"`);
+  
   result = applySentenceStructureFixes(result);
+  console.log(`📚 After structure fixes: "${result}"`);
+  
   result = advancedCleanup(result);
+  console.log(`🧹 Final result after cleanup: "${result}"`);
   
   return result;
 }

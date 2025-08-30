@@ -2890,7 +2890,7 @@ const handleRestartTimer = () => {
                   {/* Image Status moved to main content area */}
 
                   {/* Bottom Half: Text (scrollable) + audio controls */}
-                  <div className="flex-[0.42] min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
+                  <div className={cn("min-h-0 w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative", currentImage ? "flex-[0.45]" : "flex-[0.85]")}>
                     {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
