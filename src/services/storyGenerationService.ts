@@ -110,6 +110,7 @@ export class StoryGenerationService {
             transitions: ["What happens next?"],
             closing: "The adventure continues..."
           },
+          characteristics: ["Safe narrative voice"],
           themeAlignment: ["friendship"]
         };
       }
@@ -168,8 +169,17 @@ export class StoryGenerationService {
   ): string {
     
     // LAYER 1 - User Inputs (Highest Priority)
+    // Smart name handling with corruption detection
+    const userName = userInfo.name?.trim() 
+      ? userInfo.name 
+      : 'the child whose name no one knew how to say';
+    
+    if (!userInfo.name?.trim()) {
+      console.warn('🚨 USER DATA CORRUPTION: Missing name in userInfo form');
+    }
+    
     const userLayer = {
-      userName: userInfo.name || '[AI_DETERMINE_NAME]',
+      userName,
       favoriteColor: userInfo.favoriteColor || '[AI_DETERMINE_COLOR]',
       favoriteAnimal: userInfo.favoriteAnimal || '[AI_DETERMINE_ANIMAL]',
       favoriteFood: userInfo.favoriteFood || '[AI_DETERMINE_FOOD]',

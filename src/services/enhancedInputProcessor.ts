@@ -72,7 +72,7 @@ export class EnhancedInputProcessor {
         ...culturalContext.culturalElements
       ],
       skillBasedTraits: skillTraits,
-      interestThemes: Array.from(new Set([...(interestThemes || []), ...(themeIntent.themes || [])]))
+      interestThemes: Array.from(new Set([...(interestThemes || []), ...(themeIntent.theme || [])]))
     };
   }
 

@@ -51,6 +51,26 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
         "What a beautiful day {pronoun} had become!",
         "Now {pronoun} was no longer hungry.",
         "The end of a perfect day."
+      ],
+      plotTwists: [
+        "Suddenly, the {animal} revealed a secret!",
+        "The {color} path led to an amazing discovery!",
+        "Something magical happened to {userName}!"
+      ],
+      continuations: [
+        "Tomorrow brings a new adventure...",
+        "The story continues with {userName}...",
+        "What happens next? Let's see..."
+      ],
+      pauses: [
+        "Take a gentle breath...",
+        "Pause and imagine...",
+        "Rest for a moment..."
+      ],
+      hooks: [
+        "A sparkle catches {userName}'s eye...",
+        "Something rustles in the leaves...",
+        "A gentle sound calls to {userName}..."
       ]
     },
     characteristics: ["simple repetition", "nature themes", "transformation", "growth"],
@@ -94,6 +114,26 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
         "And {userName} was very, very happy.",
         "What a silly, wonderful day!",
         "Time for a snack and a nap!"
+      ],
+      plotTwists: [
+        "Surprise! The {animal} can dance too!",
+        "Whoops! {userName} started a giggle parade!",
+        "Oh my! Everyone wants to join the fun!"
+      ],
+      continuations: [
+        "More silly fun awaits...",
+        "The giggles never stop...",
+        "Round two of silliness begins..."
+      ],
+      pauses: [
+        "Giggle break time!",
+        "Catch your breath from laughing!",
+        "Wiggle pause!"
+      ],
+      hooks: [
+        "A funny sound makes {userName} giggle...",
+        "Something bouncy catches {userName}'s eye...",
+        "A silly song starts playing..."
       ]
     },
     characteristics: ["silly", "bouncy", "animals", "humor", "rhyming"],
@@ -137,6 +177,26 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
         "That is what friendship is all about.",
         "Tomorrow would bring new adventures.",
         "Being different makes life special."
+      ],
+      plotTwists: [
+        "The problem turned into a gift!",
+        "A friend appeared just when needed!",
+        "The solution was hiding in plain sight!"
+      ],
+      continuations: [
+        "The friendship grows stronger...",
+        "New challenges await...",
+        "The next day brings hope..."
+      ],
+      pauses: [
+        "Take a deep breath together...",
+        "Think about what matters most...",
+        "Feel the friendship in your heart..."
+      ],
+      hooks: [
+        "A gentle voice calls {userName}'s name...",
+        "Something warm touches {userName}'s heart...",
+        "A friend's eyes sparkle with understanding..."
       ]
     },
     characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"],
@@ -180,6 +240,26 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
         "They spent the rest of the day enjoying each other's company.",
         "That evening, they felt grateful for their friendship.",
         "Some things are better when shared with a friend."
+      ],
+      plotTwists: [
+        "The seasons brought an unexpected gift!",
+        "A quiet moment revealed something beautiful!",
+        "The simple became extraordinary!"
+      ],
+      continuations: [
+        "The seasons turn, the friendship remains...",
+        "Tomorrow holds gentle surprises...",
+        "The friendship grows with each season..."
+      ],
+      pauses: [
+        "Listen to the gentle breeze...",
+        "Notice the changing light...",
+        "Feel the warmth of friendship..."
+      ],
+      hooks: [
+        "A soft whisper in the wind...",
+        "Gentle footsteps on the path...",
+        "A quiet knock at the door..."
       ]
     },
     characteristics: ["gentle wisdom", "friendship", "seasonal themes", "quiet adventures"],
@@ -223,6 +303,26 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
         "Sometimes the best adventures are the unexpected ones.",
         "Life with family is never boring.",
         "And {userName} couldn't wait for tomorrow's adventure."
+      ],
+      plotTwists: [
+        "The mistake turned into the best part!",
+        "Family came to the rescue in an unexpected way!",
+        "The boring day became an amazing adventure!"
+      ],
+      continuations: [
+        "Tomorrow's plan is already forming...",
+        "The family adventure continues...",
+        "Next week holds new possibilities..."
+      ],
+      pauses: [
+        "Take a moment to appreciate family...",
+        "Think about what you've learned...",
+        "Consider all the possibilities..."
+      ],
+      hooks: [
+        "The phone rings with news...",
+        "Mom calls from the kitchen...",
+        "A new plan starts forming..."
       ]
     },
     characteristics: ["realistic", "family life", "humor", "relatability", "everyday adventures"],
@@ -266,6 +366,26 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
         "It was the most splendidly ridiculous day anyone could imagine.",
         "The grown-ups learned to never underestimate {userName} again.",
         "And that, dear reader, is how {userName} changed everything."
+      ],
+      plotTwists: [
+        "The impossible became gloriously possible!",
+        "The adults discovered {userName}'s magnificent secret!",
+        "Everything turned wonderfully upside down!"
+      ],
+      continuations: [
+        "The extraordinary adventures multiply...",
+        "More magnificent mischief awaits...",
+        "The next impossible thing beckons..."
+      ],
+      pauses: [
+        "Savor this delicious moment...",
+        "Let the wonder sink in...",
+        "Feel the magic in the air..."
+      ],
+      hooks: [
+        "A peculiar shimmer catches the light...",
+        "Something extraordinary stirs...",
+        "The impossible whispers {userName}'s name..."
       ]
     },
     characteristics: ["imaginative", "dark humor", "quirky", "empowering"],

@@ -18,17 +18,17 @@ const makeUser = (overrides: Partial<UserInfo> = {}): UserInfo => ({
 });
 
 describe("themeIntent", () => {
-  it("extracts themes and tone from specialRequest", () => {
+  it("extracts themes from specialRequest", () => {
     const user = makeUser();
     const ti = extractThemeIntent(user);
-    expect(ti.themes).toEqual(expect.arrayContaining(["courage", "kindness"]));
-    expect(ti.tone).toEqual(expect.arrayContaining(["playful", "gentle"]));
+    expect(ti.theme).toEqual(expect.arrayContaining(["courage", "kindness"]));
+    expect(ti.keywords).toEqual(expect.arrayContaining(["playful", "gentle"]));
   });
 
   it("returns empty themes when no explicit themes in specialRequest", () => {
     const user = makeUser({ specialRequest: "", hobbies: "science club" });
     const ti = extractThemeIntent(user);
-    expect(ti.themes).toEqual([]);
+    expect(ti.theme).toEqual([]);
   });
 
   it("filters inappropriate themes for safety", () => {
@@ -39,8 +39,8 @@ describe("themeIntent", () => {
     const ti = extractThemeIntent(youngUser);
     
     // Should filter out inappropriate themes but keep safe ones
-    expect(ti.themes).toContain("friendship");
-    expect(ti.themes).not.toContain("monsters"); // Filtered out as inappropriate
+    expect(ti.theme).toContain("friendship");
+    expect(ti.theme).not.toContain("monsters"); // Filtered out as inappropriate
   });
 
   it("includes validation information when requested", () => {
@@ -52,8 +52,8 @@ describe("themeIntent", () => {
     
     expect(tiWithValidation.validation).toBeDefined();
     expect(tiWithValidation.validation.rejectedThemes.length).toBeGreaterThan(0);
-    expect(tiWithValidation.themes).toContain("mystery");
-    expect(tiWithValidation.themes).not.toContain("dangerous"); // Should be filtered
+    expect(tiWithValidation.theme).toContain("mystery");
+    expect(tiWithValidation.theme).not.toContain("dangerous"); // Should be filtered
   });
 
   it("handles complex theme requests with appropriate filtering", () => {
@@ -64,10 +64,10 @@ describe("themeIntent", () => {
     const ti = extractThemeIntent(user);
     
     // Should filter inappropriate themes but keep safe ones
-    expect(ti.themes).toEqual(expect.arrayContaining(["friendship", "adventure"]));
-    expect(ti.themes).not.toContain("romance"); // Filtered for children
-    expect(ti.themes).not.toContain("monsters"); // Filtered as potentially scary
-    expect(ti.tone).toContain("exciting");
+    expect(ti.theme).toEqual(expect.arrayContaining(["friendship", "adventure"]));
+    expect(ti.theme).not.toContain("romance"); // Filtered for children
+    expect(ti.theme).not.toContain("monsters"); // Filtered as potentially scary
+    expect(ti.keywords).toContain("exciting");
   });
 
   it("does not add themes from hobbies/interests automatically", () => {
@@ -81,6 +81,6 @@ describe("themeIntent", () => {
     const ti = extractThemeIntent(user);
     
     // Should not automatically add themes like creativity, discovery, nature, identity, family
-    expect(ti.themes).toEqual([]);
+    expect(ti.theme).toEqual([]);
   });
 });
