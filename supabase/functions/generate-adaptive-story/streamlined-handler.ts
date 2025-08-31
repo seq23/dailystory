@@ -123,7 +123,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   // Model progression for quality optimization
   const modelProgression = [
     { model: 'gpt-4.1-2025-04-14', description: 'enhanced quality', paramName: 'max_completion_tokens' }, 
-    { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens' }
+    { model: 'gpt-5-mini-2025-08-07', description: 'fast & reliable', paramName: 'max_completion_tokens' }
   ];
 
   // Apply to BOTH attempts
