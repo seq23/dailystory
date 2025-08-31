@@ -1341,8 +1341,7 @@ const initializeStory = async () => {
               storyContext: [...cached.pages],
               currentPage: cached.currentPage || 0,
               totalExpectedPages: Math.max(cached.pages.length + 1, 6),
-              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-              openEnded: true,
+              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
             };
             setLiveContext(ctx);
             const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
@@ -2006,8 +2005,7 @@ const initializeStory = async () => {
               storyContext: [...story],
               currentPage: story.length,
               totalExpectedPages: Math.max(story.length + 1, 6),
-              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-              openEnded: true,
+              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
             };
             const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData);
             if (result && !result.error) {
@@ -2632,8 +2630,7 @@ const handleRestartTimer = () => {
       storyContext: [...story],
       currentPage: story.length,
       totalExpectedPages: Math.max(story.length + 1, 6),
-      characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-      openEnded: true,
+      characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
     };
     setLiveContext(newContext);
     setIsStoryComplete(false);

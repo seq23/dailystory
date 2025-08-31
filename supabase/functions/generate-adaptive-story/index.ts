@@ -304,10 +304,15 @@ serve(async (req) => {
     
     while (attempt <= maxAttempts && !storyText) {
       try {
-        console.log(`🤖 AI Attempt ${attempt}/${maxAttempts}:`, { 
+        // Model progression: gpt-4.1-2025-04-14 → gpt-4o-mini
+        const model = attempt === 1 ? 'gpt-4.1-2025-04-14' : 'gpt-4o-mini';
+        const isNewerModel = attempt === 1;
+        
+        console.log(`🎯 Quality-First AI Attempt ${attempt}/${maxAttempts}:`, { 
+          model,
           level: normalizedReadingLevel,
           tokenBudget: maxTokens,
-          retryMode: attempt > 1 ? 'enhanced-prompt' : 'standard'
+          strategy: attempt === 1 ? 'premium-quality' : 'reliability-focused'
         });
         
         // Enhanced prompt for retry attempts
@@ -315,15 +320,37 @@ serve(async (req) => {
         let retryUserContent = resolvedUserPrompt;
         
         if (attempt > 1) {
-          console.log('🔄 Applying enhanced retry prompts with stronger instructions...');
-          retrySystemContent += `\n\nCRITICAL RETRY INSTRUCTIONS:
+          console.log('🔄 Applying reliability-focused enhanced prompts...');
+          retrySystemContent += `
+
+CRITICAL RELIABILITY INSTRUCTIONS (Attempt 2):
+- Base instructions are ABSOLUTE requirements, not suggestions
 - Do NOT include ANY page numbers, titles, or chapter markers in your output
 - Write flowing narrative content without numbered sections
 - Generate natural story content that breaks cleanly into scenes
 - Remove ALL formatting markers like **bold** or *italic*
-- Each paragraph should be a complete scene or moment`;
+- Each paragraph should be a complete scene or moment
+- Prioritize consistent, reliable output over creative flourishes`;
           
-          retryUserContent += ` IMPORTANT: Write clean story content without page numbers or formatting markers. Focus on natural narrative flow.`;
+          retryUserContent += ` RELIABILITY EMPHASIS: Write clean story content without page numbers or formatting markers. Focus on natural narrative flow and consistent quality.`;
+        }
+        
+        // Build request body with model-specific parameters
+        const requestBody: any = {
+          model,
+          messages: [
+            { role: 'system', content: retrySystemContent },
+            { role: 'user', content: retryUserContent }
+          ]
+        };
+        
+        // Use appropriate token parameter for each model
+        if (isNewerModel) {
+          requestBody.max_completion_tokens = maxTokens;
+          // Note: temperature not supported for newer models
+        } else {
+          requestBody.max_tokens = maxTokens;
+          requestBody.temperature = 0.7;
         }
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -332,31 +359,30 @@ serve(async (req) => {
             'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: retrySystemContent },
-              { role: 'user', content: retryUserContent }
-            ],
-            max_completion_tokens: maxTokens
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
-          throw new Error(`AI generation failed: ${response.status} ${response.statusText}`);
+          throw new Error(`AI generation failed (${model}): ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
         storyText = data.choices[0].message.content;
         
+        // Enhanced logging with vocabulary tracking
         if (storyText && storyText.trim()) {
-          console.log(`✅ AI Attempt ${attempt} SUCCESS:`, { 
+          const vocabularyUsed = vocabularyData?.words ? 
+            vocabularyData.words.filter((word: string) => 
+              storyText.toLowerCase().includes(word.toLowerCase())
+            ) : [];
+          console.log(`✅ ${model} Success:`, { 
             contentLength: storyText.length,
-            hasContent: !!storyText.trim()
+            vocabularyWordsUsed: vocabularyUsed.length,
+            vocabularyPreview: vocabularyUsed.slice(0, 5)
           });
           break;
         } else {
-          console.log(`❌ AI Attempt ${attempt} produced empty content`);
+          console.log(`❌ ${model} produced empty content`);
           storyText = '';
         }
         

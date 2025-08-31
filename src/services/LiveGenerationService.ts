@@ -18,7 +18,6 @@ export interface LiveGenerationContext {
   currentPage: number;
   totalExpectedPages: number;
   characters: string[];
-  openEnded?: boolean;
 }
 
 export interface LivePageResult {
@@ -113,8 +112,7 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999, // Use high number for unlimited stories
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-        openEnded: !promptConfig.expectedPages // Open-ended if no expected pages set
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
       console.log('🚀 Live Generation: First page generated and validated successfully');
@@ -143,14 +141,13 @@ export class LiveGenerationService {
     }
   }
 
-  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any): Promise<LivePageResult> {
+  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any, userRequestedEnding?: boolean): Promise<LivePageResult> {
     try {
       const nextPageNumber = context.currentPage + 1;
-      const reachedEnd = nextPageNumber >= context.totalExpectedPages;
-      const openEnded = !!context.openEnded;
-      const shouldConclude = !openEnded && reachedEnd;
+      // Never auto-conclude stories - only conclude if user explicitly requests ending
+      const shouldConclude = !!userRequestedEnding;
       
-      console.log(`🚀 Live Generation: Generating page ${nextPageNumber}/${context.totalExpectedPages} (openEnded=${openEnded})`);
+      console.log(`🚀 Live Generation: Generating page ${nextPageNumber} (never-ending story, userRequestedEnding=${!!userRequestedEnding})`);
       
       let promptConfig: any;
       if (context.difficulty === 'expert' && context.expertGradeLevel) {
@@ -160,10 +157,13 @@ export class LiveGenerationService {
       }
       
       const systemPrompt = `${promptConfig.systemPrompt}
-      
-      IMPORTANT: You are generating page ${nextPageNumber} of a ${openEnded ? 'continuous' : context.totalExpectedPages + '-page'} story.
-      - Continue the story naturally from the previous pages
-      - ${shouldConclude ? 'This is the FINAL page - provide a satisfying conclusion' : 'End with a small hook/cliffhanger. Do NOT conclude the entire story.'}
+
+      CRITICAL NEVER-ENDING STORY RULES:
+      - You are generating page ${nextPageNumber} of a NEVER-ENDING story
+      - Stories should NEVER naturally conclude on their own
+      - Always continue the adventure with new discoveries, challenges, or mysteries
+      - ${shouldConclude ? 'USER REQUESTED ENDING: Provide a satisfying conclusion to this adventure' : 'NEVER end the story - always leave room for more adventures'}
+      - End each page with intrigue, discovery, or new possibilities
       - Maintain consistency with characters and themes
       - Return ONLY the page content, no page numbers or formatting
       
@@ -172,7 +172,7 @@ export class LiveGenerationService {
       
       // Use configured prompts from storyPrompts.ts only - append page context
       let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
-      const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${shouldConclude ? 'Bring the story to a satisfying and uplifting conclusion.' : 'Keep momentum and end with an engaging teaser for what happens next.'}`;
+      const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${shouldConclude ? 'The user has requested to end this adventure - bring the story to a satisfying and uplifting conclusion.' : 'Continue the never-ending adventure with new discoveries and possibilities. End with intrigue that makes the reader want to continue.'}`;
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -195,7 +195,7 @@ export class LiveGenerationService {
 
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate page:', error);
-        return this.generateFallbackNextPage(context, nextPageNumber, shouldConclude, 'api_error');
+        return this.generateFallbackNextPage(context, nextPageNumber, 'api_error', userRequestedEnding);
       }
 
       // Extract first page from the pages array and strip any page markers
@@ -205,15 +205,15 @@ export class LiveGenerationService {
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
         console.log(`❌ Page ${nextPageNumber} too short, using fallback`);
-        return this.generateFallbackNextPage(context, nextPageNumber, shouldConclude, 'content_too_short');
+        return this.generateFallbackNextPage(context, nextPageNumber, 'content_too_short', userRequestedEnding);
       }
       
-      // Update context for next page
+      // Update context for next page (never-ending stories grow dynamically)
       const updatedContext: LiveGenerationContext = {
         ...context,
         storyContext: [...context.storyContext, content],
         currentPage: nextPageNumber,
-        totalExpectedPages: openEnded && reachedEnd ? context.totalExpectedPages + 1 : context.totalExpectedPages
+        totalExpectedPages: context.totalExpectedPages // Keep original expectation
       };
 
       console.log(`🚀 Live Generation: Page ${nextPageNumber} generated and validated successfully`);
@@ -235,10 +235,8 @@ export class LiveGenerationService {
     } catch (error) {
       console.error('🚀 Live Generation: Error generating next page:', error);
       const nextPageNumber = context.currentPage + 1;
-      const reachedEnd = nextPageNumber >= context.totalExpectedPages;
-      const shouldConclude = !context.openEnded && reachedEnd;
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateNextPage');
-      return this.generateFallbackNextPage(context, nextPageNumber, shouldConclude, 'generation_error');
+      return this.generateFallbackNextPage(context, nextPageNumber, 'generation_error', false);
     }
   }
 
@@ -287,14 +285,14 @@ export class LiveGenerationService {
       if (error || !data?.pages) {
         console.error('🚀 Live Generation: Failed to generate ending page:', error);
         // Fallback: use next-page fallback with isLastPage true
-        return this.generateFallbackNextPage(context, nextPageNumber, true, 'api_error_conclusion');
+        return this.generateFallbackNextPage(context, nextPageNumber, 'api_error_conclusion', true);
       }
 
       // Strip page markers from ending page content
       const rawContent = (data.pages[0] || '').trim();
       const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
       if (!content || content.length < 10) {
-        return this.generateFallbackNextPage(context, nextPageNumber, true, 'content_too_short_conclusion');
+        return this.generateFallbackNextPage(context, nextPageNumber, 'content_too_short_conclusion', true);
       }
 
       console.log('🚀 Live Generation: Ending page generated successfully');
@@ -363,8 +361,7 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999, // Preserve unlimited behavior
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-        openEnded: !promptConfig.expectedPages
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
       try {
@@ -400,8 +397,7 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999,
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
-        openEnded: !promptConfig.expectedPages
+        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
       return {
@@ -415,10 +411,12 @@ export class LiveGenerationService {
   private static async generateFallbackNextPage(
     context: LiveGenerationContext, 
     pageNumber: number, 
-    isLastPage: boolean,
-    reason: string
+    reason: string,
+    userRequestedEnding?: boolean
   ): Promise<LivePageResult> {
     console.log(`🚀 Live Generation: Using fallback page ${pageNumber} (reason: ${reason})`);
+    
+    const isLastPage = !!userRequestedEnding;
     
     // Show toast notification for template usage
     toast({

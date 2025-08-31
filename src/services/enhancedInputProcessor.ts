@@ -87,48 +87,114 @@ export class EnhancedInputProcessor {
       return this.culturalContextCache.get(language)!;
     }
 
+    // Helper method for random selection
+    const randomPick = (arr: string[]): string => arr[Math.floor(Math.random() * arr.length)];
+    
     const culturalMappings = {
       'en': {
         language: 'en' as LanguageCode,
-        culturalElements: ['community helpers', 'school traditions', 'neighborhood festivals'],
-        narrativeStyles: ['curious and friendly', 'collaborative and helpful'],
-        familyStructures: ['family dinner traditions', 'weekend activities', 'holiday celebrations']
+        culturalElements: [
+          // Foods
+          'apple pie', 'grilled cheese sandwiches', 'pancakes with maple syrup', 'hot dogs at baseball games',
+          // Celebrations  
+          'Fourth of July fireworks', 'Thanksgiving dinner', 'Halloween trick-or-treating', 'Christmas morning',
+          // Activities
+          'Little League baseball', 'school field trips', 'neighborhood block parties', 'camping trips',
+          // Settings
+          'suburban neighborhoods', 'public libraries', 'community parks', 'school cafeterias'
+        ],
+        narrativeStyles: ['curious and friendly', 'collaborative and helpful', 'adventurous and optimistic'],
+        familyStructures: ['nuclear family dynamics', 'weekend family activities', 'holiday traditions', 'extended family visits']
       },
       'es': {
         language: 'es' as LanguageCode,
-        culturalElements: ['familia grande', 'fiestas comunitarias', 'tradiciones culturales'],
-        narrativeStyles: ['warm and expressive', 'family-centered storytelling'],
-        familyStructures: ['extended family gatherings', 'cultural celebrations', 'community unity']
+        culturalElements: [
+          // Foods
+          'empanadas caseras', 'arroz con leche', 'tacos familiares', 'dulce de leche',
+          // Celebrations
+          'Día de los Muertos altares', 'quinceañeras', 'Nochebuena cenas', 'fiestas patronales',
+          // Activities  
+          'fútbol en el parque', 'mercados dominicales', 'serenatas familiares', 'bailes tradicionales',
+          // Settings
+          'plazas centrales', 'casas de abuelos', 'iglesias comunitarias', 'patios familiares'
+        ],
+        narrativeStyles: ['warm and expressive', 'family-centered storytelling', 'rhythmic and musical'],
+        familyStructures: ['extended family gatherings', 'multi-generational homes', 'godparent relationships', 'community celebrations']
       },
       'ar': {
         language: 'ar' as LanguageCode,
-        culturalElements: ['community respect', 'learning traditions', 'hospitality customs'],
-        narrativeStyles: ['respectful and thoughtful', 'wisdom-seeking'],
-        familyStructures: ['family wisdom', 'elder respect', 'community learning']
+        culturalElements: [
+          // Foods
+          'ma\'amoul cookies', 'mansaf sharing', 'Ramadan iftar', 'Arabic coffee hospitality',
+          // Celebrations
+          'Eid celebrations', 'wedding henna nights', 'graduation honors', 'religious holidays',
+          // Activities
+          'calligraphy learning', 'poetry recitation', 'mosque community', 'elder storytelling',
+          // Settings
+          'family courtyards', 'community mosques', 'traditional markets', 'hospitality rooms'
+        ],
+        narrativeStyles: ['respectful and thoughtful', 'wisdom-seeking', 'hospitality-focused'],
+        familyStructures: ['extended family respect', 'elder guidance', 'community support', 'traditional values']
       },
       'zh': {
         language: 'zh' as LanguageCode,
-        culturalElements: ['harmony with nature', 'educational achievement', 'cultural heritage'],
-        narrativeStyles: ['diligent and respectful', 'balance-seeking'],
-        familyStructures: ['family honor', 'educational support', 'cultural traditions']
+        culturalElements: [
+          // Foods
+          'mooncakes sharing', 'dumplings making', 'hot pot gatherings', 'tea ceremony',
+          // Celebrations
+          'Spring Festival reunions', 'Mid-Autumn Festival', 'Dragon Boat racing', 'Lantern Festival',
+          // Activities
+          'calligraphy practice', 'martial arts training', 'ancestral respect', 'academic achievement',
+          // Settings
+          'traditional courtyards', 'temple visits', 'family study rooms', 'community gardens'
+        ],
+        narrativeStyles: ['diligent and respectful', 'balance-seeking', 'harmony-focused'],
+        familyStructures: ['multi-generational wisdom', 'educational support', 'cultural preservation', 'family honor']
       },
       'hi': {
         language: 'hi' as LanguageCode,
-        culturalElements: ['diversity celebration', 'ancient wisdom', 'colorful festivals'],
-        narrativeStyles: ['vibrant and diverse', 'wisdom-respecting'],
-        familyStructures: ['joint family values', 'cultural festivals', 'spiritual learning']
+        culturalElements: [
+          // Foods
+          'masala chai sharing', 'festival sweets', 'family thali meals', 'street food adventures',
+          // Celebrations
+          'Diwali lights', 'Holi colors', 'Dussehra celebrations', 'wedding festivities',
+          // Activities
+          'classical dance learning', 'cricket playing', 'temple visits', 'storytelling traditions',
+          // Settings
+          'joint family homes', 'local temples', 'festival grounds', 'community courtyards'
+        ],
+        narrativeStyles: ['vibrant and diverse', 'wisdom-respecting', 'celebration-focused'],
+        familyStructures: ['joint family values', 'multi-generational living', 'cultural festivals', 'spiritual learning']
       },
       'pt': {
         language: 'pt' as LanguageCode,
-        culturalElements: ['joyful celebrations', 'nature appreciation', 'music and dance'],
-        narrativeStyles: ['joyful and rhythmic', 'nature-connected'],
-        familyStructures: ['festive gatherings', 'musical traditions', 'outdoor activities']
+        culturalElements: [
+          // Foods
+          'feijoada weekends', 'açaí bowls', 'pão de açúcar', 'churrasco gatherings',
+          // Celebrations
+          'Carnaval parades', 'Festa Junina', 'Copa celebrations', 'beach New Year',
+          // Activities
+          'capoeira circles', 'samba dancing', 'beach volleyball', 'music circles',
+          // Settings
+          'beach communities', 'favela solidarity', 'music venues', 'outdoor gatherings'
+        ],
+        narrativeStyles: ['joyful and rhythmic', 'nature-connected', 'music-infused'],
+        familyStructures: ['festive gatherings', 'musical traditions', 'outdoor activities', 'community bonds']
       },
       'fr': {
         language: 'fr' as LanguageCode,
-        culturalElements: ['artistic appreciation', 'culinary traditions', 'intellectual curiosity'],
-        narrativeStyles: ['refined and curious', 'aesthetically aware'],
-        familyStructures: ['family meals', 'cultural discussions', 'artistic pursuits']
+        culturalElements: [
+          // Foods
+          'croissant mornings', 'family cheese courses', 'market fresh bread', 'Sunday lunches',
+          // Celebrations
+          'Bastille Day', 'Christmas réveillon', 'harvest festivals', 'art gallery openings',
+          // Activities
+          'museum visits', 'countryside walks', 'café conversations', 'artistic pursuits',
+          // Settings
+          'countryside châteaux', 'Parisian cafés', 'village markets', 'family dining rooms'
+        ],
+        narrativeStyles: ['refined and curious', 'aesthetically aware', 'intellectually engaging'],
+        familyStructures: ['family meals importance', 'cultural discussions', 'artistic appreciation', 'intellectual curiosity']
       }
     };
 
