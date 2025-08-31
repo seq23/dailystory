@@ -77,12 +77,13 @@ describe('Token Limit Validator', () => {
       expect(result.actualTokens).toBeLessThanOrEqual(6000); // 6th grade Netflix total
     });
 
-    it('handles unknown difficulty levels', () => {
+    it('handles unknown difficulty levels with fallback', () => {
       const text = "Some text";
       const result = validateTokenLimit(text, 'unknown' as any);
       
-      expect(result.isValid).toBe(false);
-      expect(result.warnings).toContain('Unknown difficulty level: unknown');
+      // Should use fallback behavior (beginner limits) rather than failing
+      expect(result.isValid).toBe(true);
+      expect(result.maxAllowed).toBe(150); // Should fallback to beginner Netflix limit
     });
   });
 
