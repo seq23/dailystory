@@ -1,26 +1,38 @@
-// Token Limit Validation Utility - NOW USES SYSTEM PROMPTS AS SINGLE SOURCE OF TRUTH
+// Token Limit Validation Utility - USES HARDCODED LIMITS MATCHING SYSTEM PROMPTS
 // Ensures consistent token limits across prompt configurations
 
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
-import { 
-  getPerPageTokenLimit as getPerPageTokenLimitFromPrompts, 
-  getTotalStoryTokensForGuests as getTotalStoryTokensForGuestsFromPrompts,
-  getTotalNetflixTokens as getTotalNetflixTokensFromPrompts 
-} from '../../supabase/functions/_shared/storyPrompts';
 
-// Get per-page token limit from system prompts (for live generation)
+// Hardcoded token limits matching system prompt values
+const TOKEN_LIMITS: Record<string, number> = {
+  'beginner': 15,
+  'easy': 32,
+  'medium': 150,
+  'hard': 200,
+  'expert': 500,
+  '6th': 500,
+  '7th': 500,
+  '8th': 500,
+  '9th': 500,
+  '10th': 500
+};
+
+// Get per-page token limit (for live generation)
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getPerPageTokenLimitFromPrompts(difficulty);
+  const normalized = normalizeGradeLevel(difficulty);
+  return TOKEN_LIMITS[normalized] || TOKEN_LIMITS['medium']; // Default to medium
 }
 
 // Get total story tokens for guests (6 pages of consistent difficulty)
 export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getTotalStoryTokensForGuestsFromPrompts(difficulty);
+  return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
 }
 
 // Get total Netflix generation tokens (10-12 pages depending on difficulty)
 export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getTotalNetflixTokensFromPrompts(difficulty);
+  const tokensPerPage = getPerPageTokenLimit(difficulty);
+  const expectedPages = isExpertGradeLevel(difficulty) ? 12 : 10;
+  return tokensPerPage * expectedPages;
 }
 
 /**
