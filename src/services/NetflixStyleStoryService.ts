@@ -68,7 +68,7 @@ export class NetflixStyleStoryService {
         
         // For expert levels, also validate total word count for quality
         const totalWordCount = isExpertLevel ? 
-          cleanedPages.join(' ').split(/\s+/).filter(word => word.length > 0).length : 0;
+          (cleanedPages || []).join(' ').split(/\s+/).filter(word => word.length > 0).length : 0;
         const minWordsForExpert = 500; // Minimum words for expert content
         
         const isValidContent = isExpertLevel ? 

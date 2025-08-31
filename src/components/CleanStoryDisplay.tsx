@@ -994,7 +994,7 @@ useEffect(() => {
         // 3) Syllables (comma-separated for clean pacing)
         const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(target);
         const adjusted = toAudioFriendlySyllables(target, raw);
-        const syllText = adjusted.join(', ');
+        const syllText = (adjusted || []).join(', ');
         await playTTS(syllText);
       } catch (e) {
         console.warn('voice:wordHelp sequence failed', e);
@@ -1188,7 +1188,7 @@ useEffect(() => {
       const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
       // PHASE 1 FIX: Use stable session ID for consistent caching
       const sessionId = stableSessionId;
-      const storyHash = story.join('|').substring(0, 50);
+      const storyHash = (story || []).join('|').substring(0, 50);
       const pageContent = story[currentPage] || '';
       
       // Extract avatar info for cache validation
@@ -1576,7 +1576,7 @@ const initializeStory = async () => {
       
       // Token validation for guest users (6-page story limit)
       if (!isPremium) {
-        const fullStoryText = processedPages.join(' ');
+        const fullStoryText = (processedPages || []).join(' ');
         const validation = validateGuestStoryTokens(fullStoryText, currentDifficulty);
         if (!validation.isValid) {
           console.warn('⚠️ Guest story exceeds token limits:', validation);
@@ -2244,7 +2244,7 @@ const handleDockCoach = () => {
     try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
     // Persist essentials for SessionEnded fallback across reloads
     try { sessionStorage.setItem('last_user_info', JSON.stringify(userInfo)); } catch {}
-    try { sessionStorage.setItem('last_story_text', story.join(' ')); } catch {} // Keep full story for upgrades
+    try { sessionStorage.setItem('last_story_text', (story || []).join(' ')); } catch {} // Keep full story for upgrades
     onSessionEnded(sessionStats);
   };
 
@@ -2350,7 +2350,7 @@ const handleRestartTimer = () => {
         .map((w) => typeof w === 'string' ? w.trim() : '')
         .filter(Boolean)
         .slice(0, 20);
-      return cleaned.length ? cleaned.join(', ') : null;
+      return cleaned.length ? (cleaned || []).join(', ') : null;
     } catch (e) {
       console.warn('Teacher words fetch error', e);
       return null;

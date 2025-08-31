@@ -154,7 +154,7 @@ export class LiveGenerationService {
       - Return ONLY the page content, no page numbers or formatting
       
       Previous story context:
-      ${context.storyContext.join('\n\n')}`;
+      ${(context.storyContext || []).join('\n\n')}`;
       
       // Use configured prompts from storyPrompts.ts only - append page context
       let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
@@ -171,7 +171,7 @@ export class LiveGenerationService {
       const result = await StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
-        existingStory: context.storyContext.join('\n\n')
+        existingStory: (context.storyContext || []).join('\n\n')
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -191,7 +191,7 @@ export class LiveGenerationService {
       // Update context for next page (never-ending stories grow dynamically)
       const updatedContext: LiveGenerationContext = {
         ...context,
-        storyContext: [...context.storyContext, content],
+        storyContext: [...(context.storyContext || []), content],
         currentPage: nextPageNumber,
         totalExpectedPages: context.totalExpectedPages // Keep original expectation
       };
@@ -239,7 +239,7 @@ export class LiveGenerationService {
       - Return ONLY the page content, no page numbers or formatting
 
       Previous story context:
-      ${context.storyContext.join('\n\n')}`;
+      ${(context.storyContext || []).join('\n\n')}`;
 
       let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
       const userPrompt = `${baseUserPrompt} Create a concluding page that ties the adventure together warmly and clearly indicates the story has reached a nice ending.`;
@@ -255,7 +255,7 @@ export class LiveGenerationService {
       const result = await StoryGenerationService.generateStory(endingUserInfo, {
         sessionType: 'premium', 
         pageNumber: nextPageNumber,
-        existingStory: context.storyContext.join('\n\n')
+        existingStory: (context.storyContext || []).join('\n\n')
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {

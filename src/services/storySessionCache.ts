@@ -67,7 +67,7 @@ export class StorySessionCache {
       characterSessionId,
       sessionType,
       metadata: {
-        wordCount: pages.join(' ').split(' ').length,
+        wordCount: (pages || []).join(' ').split(' ').length,
         sessionStartTime: Date.now(),
         timeSpent: 0,
         isPremium: false,
@@ -173,7 +173,7 @@ export class StorySessionCache {
         currentPage: typeof currentPage === 'number' ? currentPage : existing.currentPage,
         metadata: {
           ...existing.metadata,
-          wordCount: pages.join(' ').split(' ').length,
+          wordCount: (pages || []).join(' ').split(' ').length,
         },
         timestamp: Date.now(),
       } : {
@@ -185,7 +185,7 @@ export class StorySessionCache {
         currentPage: currentPage || 0,
         timestamp: Date.now(),
         isComplete: false,
-        metadata: { wordCount: pages.join(' ').split(' ').length, sessionStartTime: Date.now(), timeSpent: 0, isPremium: false }
+        metadata: { wordCount: (pages || []).join(' ').split(' ').length, sessionStartTime: Date.now(), timeSpent: 0, isPremium: false }
       };
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
     } catch (error) {
