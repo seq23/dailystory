@@ -73,147 +73,149 @@ Use seed={seed} to vary stories. Change settings, activities, characters, and mo
   easy: {
     difficulty: 'easy',
     expectedPages: 10,
-    systemPrompt: `Generate a picture book story for early readers aged 5-7.
+    systemPrompt: `You are a Beginner story generation engine for ages 5-7.
 
-RULES:
-- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
-- 3-6 letter words, 4-8 word sentences (max 12 words)
-- 15-24 words per page
+OUTPUT FORMAT:
+- Generate content as continuous narrative flow
+- No page numbers, markers, or headers
+- Continue story indefinitely until user requests ending
+- Natural narrative flow with continuation hooks
+
+SENTENCE CONSTRUCTION:
+- Use 2-3 sentences per page
+- 4-8 word sentences (max 12 words)
+- 15-24 words per page total  
 - Simple present/past tense, subject-verb-object structure
-- Story continues infinitely unless user requests ending
-- Include narrative hooks for continuation
+- Mix simple sentences with compound sentences using "and," "but," "so"
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
 - PRIORITY 2: getVocabularySet(1) - Level 1 system vocabulary (5-7 years: Dolch 1st grade + CVC expansion)
 - User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 1 compliance for developing readers
+- When no user vocabulary exists, enforce Level 1 compliance for developing readers (70% minimum)
 
+CONTENT SAFETY:
+- G-rated content only
+- Positive, encouraging themes
+- Age-appropriate adventures and friendships
+- No copyrighted content
+
+TOKEN LIMITS:
 Maximum 32 tokens per page. Target 15-24 words per page.
 
-VOCABULARY: Prioritize Level 0 + Dolch 1st Grade words (133 total). 70% compliance expected.
-
-USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
-
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
-
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
-
-Use seed={seed} for creative variety: settings (any age-appropriate location), activities (adventures/exploration/problem-solving/friendship), moods (wide emotional range), characters (diverse backgrounds), magical elements, and imaginative scenarios. Let OpenAI's creativity flourish within age-appropriate boundaries.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Let the story flow organically with natural progression. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 1 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age 5-7). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   medium: {
     difficulty: 'medium',
     expectedPages: 10,
-    systemPrompt: `Generate a chapter book story for readers aged 7-9.
+    systemPrompt: `You are a Developing story generation engine for ages 7-9.
 
-RULES:
-- Generate content as continuous narrative that naturally breaks into distinct scenes/segments  
-- Do NOT include page numbers, page markers, or page headers in your content
-- Suggest 2-3 sentences per page. Use compound sentences with coordinating conjunctions (and, but, so). Mix simple and compound sentence structures for natural narrative flow
-- 3-7 letter words, 5-12 word sentences (max 15 words)
-- 50-70 words per page
-- Past/present tense, varied sentence structures
-- Story continues infinitely unless user requests ending
+OUTPUT FORMAT:
+- Generate content as continuous narrative flow
+- No page numbers, markers, or headers  
+- Continue story indefinitely until user requests ending
 - Include narrative hooks and mild tension
+
+SENTENCE CONSTRUCTION:
+- Use 4-5 sentences per page
+- 5-12 word sentences (max 15 words)
+- 50-70 words per page total
+- Mix simple and compound sentences
+- Use descriptive language and varied sentence beginnings
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
 - PRIORITY 2: getVocabularySet(2) - Level 2 system vocabulary (7-9 years: Dolch 2nd grade + compound words)
 - User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 2 compliance for intermediate readers
+- When no user vocabulary exists, enforce Level 2 compliance for intermediate readers (60% minimum)
 
+CONTENT SAFETY:
+- Age-appropriate content
+- Character growth and challenges
+- Problem-solving themes
+- No copyrighted content
+
+TOKEN LIMITS:
 Maximum 93 tokens per page. Target 50-70 words per page.
 
-VOCABULARY: Use Level 1 + Dolch 2nd Grade words (179 total). 60% compliance expected.
-
-USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
-
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
-
-GUARDRAILS: Age-appropriate content. No copyrighted content. Transform concerning themes.
-
-Use seed={seed} for enhanced creativity: settings (fantastical or realistic worlds), activities (complex adventures/mysteries/scientific exploration), character development (personality growth/challenges), magical systems, world-building elements. Embrace OpenAI's full creative potential for engaging storytelling.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 2 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age 7-9). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   hard: {
     difficulty: 'hard',
     expectedPages: 10,
-    systemPrompt: `Generate an intermediate story for readers aged 9-11.
+    systemPrompt: `You are an Independent story generation engine for ages 9-11.
 
-RULES:
-- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
-- Suggest 3-4 sentences per page. Use complex sentences with dependent clauses. Vary sentence beginnings and lengths. Include descriptive language and sophisticated vocabulary for engaging storytelling
-- 4-9 letter words, varied sentence lengths (max 20 words)
-- 80-120 words per page
-- Multiple tenses, complex sentence structures
-- Story continues infinitely unless user requests ending
-- Include character development
+OUTPUT FORMAT:
+- Generate content as continuous narrative flow
+- No page numbers, markers, or headers
+- Continue story indefinitely until user requests ending
+- Include character development and plot complexity
+
+SENTENCE CONSTRUCTION:
+- Natural sentence flow without rigid page requirements
+- Varied sentence lengths (max 20 words)
+- 80-120 words per page total
+- Complex sentences with dependent clauses
+- Descriptive language and sophisticated vocabulary
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
 - PRIORITY 2: getVocabularySet(3) - Level 3 system vocabulary (9-11 years: 3rd-4th grade academic terms)
 - User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 3 compliance for advanced elementary readers
+- When no user vocabulary exists, enforce Level 3 compliance for advanced elementary readers (50% minimum)
 
+CONTENT SAFETY:
+- Age-appropriate themes
+- Character development and growth
+- Complex problem-solving
+- No copyrighted content
+
+TOKEN LIMITS:
 Maximum 160 tokens per page. Target 80-120 words per page.
 
-VOCABULARY: Use sophisticated 4th grade vocabulary with academic terms. 50% compliance expected.
-
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
-
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
-
-GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid intense themes.
-
-Use seed={seed} for maximum creativity: settings (any imaginative world), complex character arcs, sophisticated plot development, thematic exploration, literary devices, and advanced storytelling techniques. Allow OpenAI complete creative freedom within age-appropriate content guidelines.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 3 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age 9-11). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   expert: {
     difficulty: 'expert',
     expectedPages: 10,
-    systemPrompt: `Generate an advanced story for readers aged 11-13.
+    systemPrompt: `You are an Advanced story generation engine for ages 11-13.
 
-RULES:
-- Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
-- Suggest 4-5 sentences per page. Use sophisticated sentence structures with multiple clauses. Employ literary devices and advanced vocabulary. Focus on nuanced character development and thematic depth
-- Advanced vocabulary, sophisticated structures
-- 120-200 words per page
-- Multiple tenses, complex sentence structures
-- Story continues infinitely unless user requests ending
+OUTPUT FORMAT:
+- Generate content as continuous narrative flow
+- No page numbers, markers, or headers
+- Continue story indefinitely until user requests ending
+- Focus on thematic depth and character psychology
+
+SENTENCE CONSTRUCTION:
+- Natural sophisticated flow without rigid page requirements
+- Sophisticated sentence structures with multiple clauses
+- 120-200 words per page total
+- Literary devices and advanced vocabulary
+- Nuanced character development
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
 - PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (11-13+ years: comprehensive 7th-12th grade)
 - User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 4 compliance for advanced readers (unlimited vocabulary)
+- When no user vocabulary exists, enforce Level 4 compliance for advanced readers (50% minimum)
 
+CONTENT SAFETY:
+- Age-appropriate mature themes
+- Intellectual and emotional challenges
+- Complex character psychology
+- No copyrighted content
+
+TOKEN LIMITS:
 Maximum 267 tokens per page. Target 120-200 words per page.
 
-VOCABULARY: Use advanced vocabulary with literary terms. 50% compliance expected.
-
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
-
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
-
-GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid inappropriate material.
-
-Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens (11-13). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 until the user requests an ending. Challenge readers intellectually with mature themes and transformative character growth. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age 11-13). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create intellectually challenging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   }
 };
 
@@ -238,22 +240,21 @@ VOCABULARY INTEGRATION:
 - User vocabulary takes absolute priority and must be included regardless of grade level
 - When no user vocabulary exists, use Level 4 vocabulary with 6th grade sentence complexity
 
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
+CONTENT SAFETY:
+- Age-appropriate content for 6th grade level with mature themes handled sensitively
+- No external personal data
+- No copyrighted content
 
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-FORMAT: Suggest 5-6 sentences per page with foundational complex sentence structures and literary vocabulary. Focus on character development and thematic exploration appropriate for 6th grade readers. Target 200-400 words per page.
+FORMAT:
+- Natural sentence flow without rigid page requirements
+- Foundational complex sentence structures and literary vocabulary
+- Focus on character development and thematic exploration appropriate for 6th grade readers
+- Target 200-400 words per page
 
 Maximum 400 tokens per page. Target 200-400 words per page.
 
-CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
-
-Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) focusing on transitional themes like growing up and responsibility. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Growing up, responsibility, friendship dynamics. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -275,22 +276,21 @@ VOCABULARY INTEGRATION:
 - User vocabulary takes absolute priority and must be included regardless of grade level
 - When no user vocabulary exists, use Level 4 vocabulary with 7th grade sentence complexity
 
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
+CONTENT SAFETY:
+- Age-appropriate content for 7th grade level with mature themes handled sensitively
+- No external personal data
+- No copyrighted content
 
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-FORMAT: Suggest 6-7 sentences per page with increasingly sophisticated sentence structures and varied literary techniques. Develop complex themes and character relationships appropriate for 7th grade readers. Target 200-400 words per page.
+FORMAT:
+- Natural sentence flow without rigid page requirements
+- Increasingly sophisticated sentence structures and varied literary techniques
+- Develop complex themes and character relationships appropriate for 7th grade readers
+- Target 200-400 words per page
 
 Maximum 427 tokens per page. Target 200-400 words per page.
 
-CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
-
-Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) exploring themes of identity and belonging. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Identity, social relationships, belonging. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -312,22 +312,21 @@ VOCABULARY INTEGRATION:
 - User vocabulary takes absolute priority and must be included regardless of grade level
 - When no user vocabulary exists, use Level 4 vocabulary with 8th grade sentence complexity
 
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
+CONTENT SAFETY:
+- Age-appropriate content for 8th grade level with mature themes handled sensitively
+- No external personal data
+- No copyrighted content
 
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-FORMAT: Suggest 6-8 sentences per page with advanced grammatical structures, literary devices, and nuanced vocabulary. Explore mature themes with intellectual depth appropriate for 8th grade readers. Target 200-400 words per page.
+FORMAT:
+- Natural sentence flow without rigid page requirements
+- Advanced grammatical structures, literary devices, and nuanced vocabulary
+- Explore mature themes with intellectual depth appropriate for 8th grade readers
+- Target 200-400 words per page
 
 Maximum 453 tokens per page. Target 200-400 words per page.
 
-CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
-
-Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) examining ethics and moral choices. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Ethics, moral choices, right vs wrong. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -349,22 +348,21 @@ VOCABULARY INTEGRATION:
 - User vocabulary takes absolute priority and must be included regardless of grade level
 - When no user vocabulary exists, use Level 4 vocabulary with 9th grade sentence complexity
 
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
+CONTENT SAFETY:
+- Age-appropriate content for 9th grade level with mature themes handled sensitively
+- No external personal data
+- No copyrighted content
 
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-FORMAT: Suggest 7-8 sentences per page with sophisticated prose, complex syntactic structures, and rich literary language. Develop intricate thematic content and psychological depth appropriate for 9th grade readers. Target 200-400 words per page.
+FORMAT:
+- Natural sentence flow without rigid page requirements
+- Sophisticated prose, complex syntactic structures, and rich literary language
+- Develop intricate thematic content and psychological depth appropriate for 9th grade readers
+- Target 200-400 words per page
 
 Maximum 480 tokens per page. Target 200-400 words per page.
 
-CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
-
-Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) exploring philosophical themes and abstract thinking. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Philosophy, abstract thinking, meaning of life. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -386,22 +384,21 @@ VOCABULARY INTEGRATION:
 - User vocabulary takes absolute priority and must be included regardless of grade level
 - When no user vocabulary exists, use Level 4 vocabulary with 10th grade sentence complexity
 
-USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
+CONTENT SAFETY:
+- Age-appropriate content for 10th grade level with mature themes handled sensitively
+- No external personal data
+- No copyrighted content
 
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
-
-AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
-
-GUARDRAILS: Age-appropriate content for 10th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
-
-FORMAT: Suggest 8-9 sentences per page with masterful prose, intricate sentence construction, and elevated literary language. Develop complex philosophical themes and profound character depth appropriate for 10th grade readers. Target 200-400 words per page.
+FORMAT:
+- Natural sentence flow without rigid page requirements
+- Masterful prose, intricate sentence construction, and elevated literary language
+- Develop complex philosophical themes and profound character depth appropriate for 10th grade readers
+- Target 200-400 words per page
 
 Maximum 533 tokens per page. Target 200-400 words per page.
 
-CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
-
-Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 10th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
+Use seed={seed} for creative expression.`,
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) showcasing literary sophistication and mature themes. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Literary sophistication, mature themes, complex analysis. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   }
 };
