@@ -32,9 +32,9 @@ export const ApiKeyDiagnostic: React.FC = () => {
     addResult('warning', '🔍 Starting comprehensive API key diagnostics...');
     
     try {
-      // Test 1: Basic API key validation
+      // Test 1: Basic API key validation via AI Story Enhancer
       addResult('warning', '🔧 Testing basic API key validation...');
-      const { data: keyValidation, error: keyError } = await supabase.functions.invoke('generate-adaptive-story', {
+      const { data: keyValidation, error: keyError } = await supabase.functions.invoke('ai-story-enhancer', {
         body: { test: true, diagnostic: 'key_validation' }
       });
       

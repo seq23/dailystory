@@ -26,9 +26,9 @@ export class DiagnosticTool {
     try {
       console.log('🔍 DIAGNOSTIC: Testing edge function accessibility...');
       
-      // Test if the edge function exists and is accessible
-      const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
-        body: { test: true }
+      // Test if the AI Story Enhancer edge function exists and is accessible
+      const { data, error } = await supabase.functions.invoke('ai-story-enhancer', {
+        body: { test: true, diagnostic: 'health_check' }
       });
       
       console.log('🔍 DIAGNOSTIC: Edge function test result:', { 

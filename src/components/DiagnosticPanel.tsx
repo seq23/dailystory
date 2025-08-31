@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DiagnosticTool } from '@/utils/diagnostics';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
+import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo } from '@/types';
 
 interface DiagnosticPanelProps {
@@ -23,11 +24,20 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({ userInfo }) =>
       await DiagnosticTool.runFullDiagnostic();
       setResults(prev => [...prev, '✅ Full diagnostic completed']);
 
-      // Test 2: Direct story generation
-      console.log('🔍 Testing direct story generation...');
-      const storyResult = await NetflixStyleStoryService.generateCompleteStory(userInfo);
-      setResults(prev => [...prev, `📖 Story generation result: ${storyResult.content.length} pages`]);
-      setResults(prev => [...prev, `📝 First page: ${storyResult.content[0]?.substring(0, 100)}...`]);
+      // Test 2: Template service accessibility  
+      console.log('🔍 Testing template service...');
+      const { data: templateTest, error: templateError } = await supabase.functions.invoke('template-service', {
+        body: { 
+          explore: true,
+          difficulty: 'beginner'
+        }
+      });
+      
+      if (templateError) {
+        setResults(prev => [...prev, `⚠️ Template service error: ${templateError.message}`]);
+      } else {
+        setResults(prev => [...prev, `✅ Template service accessible: ${templateTest?.templates?.length || 0} templates`]);
+      }
 
     } catch (error) {
       console.error('Diagnostic failed:', error);
