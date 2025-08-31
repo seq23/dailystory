@@ -1,5 +1,11 @@
-// Inspirational Voice Service - AI Story Generation Inspiration
-// Provides thematically appropriate author voices for AI storytelling guidance
+// Author Voice Service - AI Inspiration System
+// 
+// ⚠️ IMPORTANT: This service is now used ONLY as an AI inspiration reference.
+// The AI dynamically references these patterns when needed for story generation.
+// No algorithmic selection happens - AI chooses appropriate voice elements based on story context.
+//
+// Usage: AI references available patterns in storyPrompts.ts via:
+// "Draw inspiration from available author voice patterns in authorVoiceService.ts"
 
 import type { DifficultyLevel } from "@/types";
 

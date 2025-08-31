@@ -76,7 +76,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
@@ -107,7 +107,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Transform concerning themes.
 
@@ -138,7 +138,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid intense themes.
 
@@ -168,7 +168,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty) for stylistic direction - use as creative inspiration, not constraints.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed for story theme and difficulty.
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid inappropriate material.
 
@@ -196,7 +196,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 6th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
@@ -227,7 +227,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 7th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
@@ -258,7 +258,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 8th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
@@ -289,7 +289,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 9th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 
@@ -320,7 +320,7 @@ USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor},
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
 
-AUTHOR'S STYLE: Apply styling from getColorVoiceForUser(userInfo, difficulty) for literary sophistication, thematic depth, and advanced narrative techniques. Author voice is secondary to {specialRequest} when themes conflict.
+AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorVoiceService.ts for literary sophistication, thematic depth, and advanced narrative techniques. Use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Author voice is secondary to {specialRequest} when themes conflict.
 
 GUARDRAILS: Age-appropriate content for 10th grade level with mature themes handled sensitively. No external personal data. No copyrighted content.
 

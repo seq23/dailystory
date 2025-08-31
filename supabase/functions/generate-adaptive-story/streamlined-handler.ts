@@ -1,21 +1,11 @@
 // Streamlined Story Generation Handler
-// Processes pre-processed bundles from frontend services
-// Focuses ONLY on AI generation with minimal processing
+// Processes pre-processed bundles from frontend services  
+// Uses existing prompts from storyPrompts.ts - LEAN & DRY
+
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 
 interface StreamlinedBundle {
   storyContent: string;
-  authorVoice: {
-    voice: {
-      name: string;
-      styleSummary: string;
-      characteristics: string[];
-    };
-    selectedPatterns: {
-      opening: string;
-      transitions: string[];
-      closing: string;
-    };
-  };
   userVocabulary: string[];
   systemSettings: {
     gradeLevel: number;
@@ -32,11 +22,18 @@ interface StreamlinedConfig {
 export async function handleStreamlinedGeneration(requestBody: any) {
   const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig } = requestBody;
   
-  console.log('🎯 STREAMLINED: Processing pre-processed bundle');
+  console.log('🎯 STREAMLINED: Processing lean bundle');
   
   try {
-    // Build AI prompt from pre-processed content
-    const aiPrompt = buildStreamlinedPrompt(bundle, config);
+    // Use existing prompts from storyPrompts.ts
+    const difficulty = mapGradeLevelToDifficulty(bundle.systemSettings.gradeLevel);
+    const promptConfig = getStoryPrompt(difficulty);
+    
+    // Build AI prompt using existing system
+    const aiPrompt = {
+      systemPrompt: promptConfig.systemPrompt,
+      userPrompt: resolvePromptPlaceholders(bundle.storyContent)
+    };
     
     // Generate story with OpenAI
     const storyText = await generateWithOpenAI(aiPrompt, bundle.systemSettings.gradeLevel);
@@ -51,10 +48,9 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       pages: pages,
       vocabCompliance: 1.0, // Frontend handles validation
       metadata: {
-        authorVoice: bundle.authorVoice.voice.name,
+        processingMode: 'streamlined-lean',
         userVocabularyCount: bundle.userVocabulary.length,
-        gradeLevel: bundle.systemSettings.gradeLevel,
-        processingMode: 'streamlined'
+        gradeLevel: bundle.systemSettings.gradeLevel
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -72,29 +68,12 @@ export async function handleStreamlinedGeneration(requestBody: any) {
   }
 }
 
-function buildStreamlinedPrompt(bundle: StreamlinedBundle, config: StreamlinedConfig): {
-  systemPrompt: string;
-  userPrompt: string;
-} {
-  // Simplified system prompt - no vocabulary validation needed
-  const systemPrompt = `You are a children's story writer using the "${bundle.authorVoice.voice.name}" voice.
-
-STYLE: ${bundle.authorVoice.voice.styleSummary}
-CHARACTERISTICS: ${bundle.authorVoice.voice.characteristics.join(', ')}
-
-STORY PATTERNS:
-- Opening style: ${bundle.authorVoice.selectedPatterns.opening}
-- Transition examples: ${bundle.authorVoice.selectedPatterns.transitions.slice(0, 2).join(' / ')}
-- Closing style: ${bundle.authorVoice.selectedPatterns.closing}
-
-Generate ${config.sessionType === 'free' ? '6 pages maximum' : 'continuing story pages'}.
-Write clean narrative without page numbers or formatting.
-${bundle.userVocabulary.length > 0 ? `INCLUDE these priority words naturally: ${bundle.userVocabulary.join(', ')}` : ''}`;
-
-  // Simplified user prompt - content already processed
-  const userPrompt = bundle.storyContent;
-
-  return { systemPrompt, userPrompt };
+function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
+  if (gradeLevel === 0) return 'beginner';
+  if (gradeLevel === 1) return 'easy';
+  if (gradeLevel === 2) return 'medium';
+  if (gradeLevel === 3) return 'hard';
+  return 'expert';
 }
 
 async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number): Promise<string> {
