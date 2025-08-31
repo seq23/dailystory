@@ -12,7 +12,6 @@ const corsHeaders = {
 
 interface StreamlinedBundle {
   storyContent: string;
-  userVocabulary: string[];
   systemSettings: {
     gradeLevel: number;
     complianceTarget: number;
@@ -81,7 +80,6 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       vocabCompliance: 1.0, // Frontend handles validation
       metadata: {
         processingMode: 'streamlined-lean',
-        userVocabularyCount: bundle.userVocabulary.length,
         gradeLevel: bundle.systemSettings.gradeLevel
       }
     }), {
