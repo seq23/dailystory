@@ -3,9 +3,10 @@ import { InputSanitizer } from './inputSanitizer';
 
 // COPPA-compliant blacklists for children's content
 const BLACKLISTED_THEMES = [
-  // Violence/adult content
+  // Violence/adult content  
   'violence', 'violent', 'fight', 'fighting', 'war', 'weapon', 'gun', 'sword', 'blood', 'death', 'kill', 'murder',
-  'scary', 'horror', 'terror', 'nightmare', 'demon', 'devil', 'ghost', 'zombie', 'vampire', 'assault', 'abuse', 'rape', 'torture', 'suicide',
+  'horror', 'terror', 'nightmare', 'assault', 'abuse', 'rape', 'torture', 'suicide',
+  // Magic/fantasy themes are now allowed for full AI creative control
   
   // Adult themes
   'romance', 'dating', 'kiss', 'kissing', 'love', 'boyfriend', 'girlfriend', 'wedding', 'marriage',

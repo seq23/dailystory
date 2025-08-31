@@ -12,7 +12,7 @@ describe("Theme Validation System", () => {
       const validThemes = [
         "adventure", "friendship", "animals", "magic", 
         "nature", "discovery", "creativity", "teamwork",
-        "monsters", "dragon", "unicorn" // monsters should now be allowed
+        "monsters", "dragon", "unicorn", "ghost", "vampire", "demon", "devil", "zombie", "scary" // fantasy themes now allowed
       ];
       
       validThemes.forEach(theme => {
@@ -184,13 +184,13 @@ describe("Theme Validation System", () => {
       });
     });
 
-    it("still blocks truly scary supernatural themes", () => {
-      const scaryThemes = ["demon", "devil", "ghost", "zombie", "vampire"];
+    it("allows fantasy supernatural themes for creative control", () => {
+      const fantasyThemes = ["demon", "devil", "ghost", "zombie", "vampire", "scary"];
       
-      scaryThemes.forEach(theme => {
+      fantasyThemes.forEach(theme => {
         const result = validateTheme(theme);
-        expect(result.valid).toBe(false);
-        expect(result.errors[0]).toContain("inappropriate content");
+        expect(result.valid).toBe(true);
+        expect(result.sanitized).toBe(theme);
       });
     });
   });
