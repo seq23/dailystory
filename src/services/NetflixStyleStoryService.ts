@@ -22,7 +22,7 @@ export class NetflixStyleStoryService {
   /**
    * Generate a complete story with AI-first preference
    */
-  static async generateStory(userInfo: UserInfo): Promise<NetflixStoryResult> {
+  static async generateStory(userInfo: UserInfo, vocabularyData?: any): Promise<NetflixStoryResult> {
     console.log('📺 Netflix: Starting story generation for', userInfo.name);
     
     // Use user-selected difficulty (no automatic overrides)
@@ -62,6 +62,7 @@ export class NetflixStyleStoryService {
         body: {
           readingLevel: difficulty,
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
+          vocabularyData: vocabularyData, // Pass pre-fetched vocabulary data
           config: {
             userName: userInfo.name,
             age: userInfo.age,

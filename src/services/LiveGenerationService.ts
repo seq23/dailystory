@@ -33,8 +33,9 @@ export class LiveGenerationService {
    * Generate the first page of a story for premium users
    * @param userInfo - User information
    * @param sessionType - Optional session type for context isolation ('new' | 'continuation' | 'rewrite')
+   * @param vocabularyData - Pre-fetched vocabulary data for integration
    */
-  static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite'): Promise<LivePageResult> {
+  static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any): Promise<LivePageResult> {
     try {
       console.log('🚀 Live Generation: Starting first page for', userInfo.name);
       
@@ -74,6 +75,7 @@ export class LiveGenerationService {
           readingLevel: difficulty,
           interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
           sessionType, // Pass sessionType for context isolation
+          vocabularyData: vocabularyData, // Pass pre-fetched vocabulary data
           config: {
             userName: userInfo.name,
             age: userInfo.age,
@@ -141,7 +143,7 @@ export class LiveGenerationService {
     }
   }
 
-  static async generateNextPage(context: LiveGenerationContext): Promise<LivePageResult> {
+  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any): Promise<LivePageResult> {
     try {
       const nextPageNumber = context.currentPage + 1;
       const reachedEnd = nextPageNumber >= context.totalExpectedPages;
@@ -176,6 +178,7 @@ export class LiveGenerationService {
         body: {
           readingLevel: context.difficulty,
           interests: [context.userInfo.favoriteAnimal, context.userInfo.favoriteColor].filter(Boolean),
+          vocabularyData: vocabularyData, // Pass pre-fetched vocabulary data
           config: {
             userName: context.userInfo.name,
             age: context.userInfo.age,

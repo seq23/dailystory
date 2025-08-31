@@ -42,6 +42,12 @@ CRITICAL RULES:
 - Story continues infinitely unless user requests ending
 - Try to incorporate a narrative with a natural hook for continuation
 
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
+
 Maximum 8 tokens per page. Max 6 words per page.
 
 USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
@@ -67,6 +73,12 @@ RULES:
 - Simple present/past tense, subject-verb-object structure
 - Story continues infinitely unless user requests ending
 - Include narrative hooks for continuation
+
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
 
 Maximum 32 tokens per page. Target 15-24 words per page.
 
@@ -99,6 +111,12 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include narrative hooks and mild tension
 
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
+
 Maximum 93 tokens per page. Target 50-70 words per page.
 
 VOCABULARY: Use Level 1 + Dolch 2nd Grade words (179 total). 60% compliance expected.
@@ -130,6 +148,12 @@ RULES:
 - Story continues infinitely unless user requests ending
 - Include character development
 
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
+
 Maximum 160 tokens per page. Target 80-120 words per page.
 
 VOCABULARY: Use sophisticated 4th grade vocabulary with academic terms. 50% compliance expected.
@@ -159,6 +183,12 @@ RULES:
 - 120-200 words per page
 - Multiple tenses, complex sentence structures
 - Story continues infinitely unless user requests ending
+
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
 
 Maximum 267 tokens per page. Target 120-200 words per page.
 
@@ -192,6 +222,12 @@ CRITICAL RULES:
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
 - Do NOT include page numbers, page markers, or page headers in your content
 
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
+
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
@@ -222,6 +258,12 @@ CRITICAL RULES:
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
 - Do NOT include page numbers, page markers, or page headers in your content
+
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -254,6 +296,12 @@ CRITICAL RULES:
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
 - Do NOT include page numbers, page markers, or page headers in your content
 
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
+
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
@@ -285,6 +333,12 @@ CRITICAL RULES:
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
 - Do NOT include page numbers, page markers, or page headers in your content
 
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
+
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
 {specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
@@ -315,6 +369,12 @@ CRITICAL RULES:
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
 - Do NOT include page numbers, page markers, or page headers in your content
+
+VOCABULARY INTEGRATION:
+- Prioritize user-specified vocabulary words when provided in the request body
+- Adapt vocabulary complexity to match the reading level and user preferences
+- Ensure vocabulary compliance meets the specified target levels
+- Include educational vocabulary naturally within the story context
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 

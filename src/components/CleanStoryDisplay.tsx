@@ -29,6 +29,7 @@ import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 import { StoryContentLogger } from "@/utils/StoryContentLogger";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
+import { VocabularyService, type VocabularyIntegration } from "@/services/vocabularyService";
 import { processTextWithConsistentFlow } from "@/utils/unifiedTextProcessor";
 import { hashText } from "@/utils/tokenize";
 import { defaultAudioConfig } from "@/config/audioConfig";
@@ -182,6 +183,26 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
   
+  // Pre-fetch vocabulary data on component mount for unified integration
+  useEffect(() => {
+    (async () => {
+      try {
+        console.log('📚 Pre-fetching vocabulary data for', userInfo.name);
+        const vocabData = await VocabularyService.fetchAllVocabulary(userInfo);
+        setVocabularyData(vocabData);
+        console.log('✅ Vocabulary data pre-fetched successfully:', vocabData);
+      } catch (error) {
+        console.warn('⚠️ Failed to pre-fetch vocabulary data:', error);
+        // Set empty vocabulary data as fallback
+        setVocabularyData({
+          userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
+          systemVocabulary: { level: 2, complianceTarget: 0.7 },
+          metadata: { totalUserWords: 0, priorityInstructions: '', sources: [] }
+        });
+      }
+    })();
+  }, [userInfo]);
+
   // SESSION PERSISTENCE & RESUME MECHANISM OR SAVED STORY LOADING
   // Automatically restores user sessions across page refreshes and browser restarts
   // Maintains story progress, timer state, and generation history for seamless experience
@@ -331,6 +352,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
+  
+  // Vocabulary pre-fetch state
+  const [vocabularyData, setVocabularyData] = useState<VocabularyIntegration | null>(null);
 
 // Voice integration for desktop
 const { status: voiceStatus, isSpeaking, handleVoiceToggle, isConnected, isConnecting } = useVoiceIntegration();
@@ -1347,7 +1371,7 @@ const initializeStory = async () => {
 
       // Premium: Live generation - start with first page
       console.log('🎯 Premium user: Starting live generation');
-      const result = await LiveGenerationService.generateFirstPage(effectiveUser);
+      const result = await LiveGenerationService.generateFirstPage(effectiveUser, undefined, vocabularyData);
       
       if (result.error) {
         setError(result.error);
@@ -1659,7 +1683,7 @@ const initializeStory = async () => {
     if (!isPremium || !liveContext || isLoadingNextPage) return;
     setIsLoadingNextPage(true);
     try {
-      const result = await LiveGenerationService.generateNextPage(liveContext);
+      const result = await LiveGenerationService.generateNextPage(liveContext, vocabularyData);
       if (result.error) {
         setError(result.error);
         return;
@@ -1985,7 +2009,7 @@ const initializeStory = async () => {
               characters: [userInfo.name, userInfo.favoriteAnimal || 'friend'],
               openEnded: true,
             };
-            const result = await LiveGenerationService.generateNextPage(newContext);
+            const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData);
             if (result && !result.error) {
               StoryContentLogger.logStoryChange('premium_sequel_generation', 'before', [...story, result.content], {
                 sequelContext: 'continuation',
@@ -2473,7 +2497,7 @@ const handleRestartTimer = () => {
         } as UserInfo;
         const sessionTypeParam = isRewrite ? 'rewrite' : 'new';
         console.log(`🔄 Premium rewrite: Passing sessionType '${sessionTypeParam}' to LiveGenerationService`);
-        const first = await LiveGenerationService.generateFirstPage(effectiveUser, sessionTypeParam);
+        const first = await LiveGenerationService.generateFirstPage(effectiveUser, sessionTypeParam, vocabularyData);
         if ((first as any).error) {
           throw new Error((first as any).error);
         }
