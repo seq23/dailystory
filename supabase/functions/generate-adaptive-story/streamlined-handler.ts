@@ -44,14 +44,24 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     const difficulty = mapGradeLevelToDifficulty(bundle.systemSettings.gradeLevel);
     const promptConfig = getStoryPrompt(difficulty);
     
-    // Build AI prompt using existing system
+    // Extract userInfo from already-resolved bundle
+    let userInfo = {};
+    try {
+      const matches = bundle.storyContent.match(/Character Info: ({.*})/);
+      if (matches) {
+        userInfo = JSON.parse(matches[1]);
+      }
+    } catch (e) {
+      console.warn('Could not extract userInfo from bundle, using defaults');
+    }
+
+    // Bundle already contains resolved natural language - use directly
     const aiPrompt = {
       systemPrompt: promptConfig.systemPrompt,
-      userPrompt: resolvePromptPlaceholders(bundle.storyContent)
+      userPrompt: bundle.storyContent // Already resolved by 4-tier system
     };
     
-    // Generate story with OpenAI (pass userInfo for hair mapping)
-    const userInfo = JSON.parse(bundle.storyContent).userInfo || {};
+    // Generate story with OpenAI
     const storyText = await generateWithOpenAI(aiPrompt, bundle.systemSettings.gradeLevel, userInfo);
     
     // Parse into pages (simplified)

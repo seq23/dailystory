@@ -42,66 +42,25 @@ export class NetflixStyleStoryService {
       promptConfig = getStoryPrompt(difficulty);
     }
 
-    // AI Generation First
+    // Route through unified 4-tier system
     try {
-      console.log('🤖 Netflix: Attempting AI generation first');
-
-      const systemPrompt = `${promptConfig.systemPrompt}
-
-      IMPORTANT: Generate a complete ${promptConfig.expectedPages || 10}-page story.
-      - Each page should be a complete scene or chapter segment
-      - Maintain consistent character development throughout
-      - Ensure age-appropriate content for ${difficulty} level
-      - Return pages as an array, no page numbers in content
-      - Focus on engaging storytelling and emotional connection`;
-
-      // Use configured prompts from storyPrompts.ts only
-      const userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
-
-      const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
-        body: {
-          readingLevel: difficulty,
-          interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
-          vocabularyData: vocabularyData, // Pass pre-fetched vocabulary data
-          config: {
-            userName: userInfo.name,
-            age: userInfo.age,
-            systemPrompt,
-            userPrompt,
-            pageCount: promptConfig.expectedPages,
-            isComplete: true,
-            expertGrade: expertGradeLevel,
-            userInfo: userInfo
-          }
-        }
+      console.log('🤖 Netflix: Using unified 4-tier generation system');
+      
+      const { StoryGenerationService } = await import('./storyGenerationService');
+      
+      const result = await StoryGenerationService.generateStory(userInfo, {
+        sessionType: 'free',
+        pageNumber: 1
       });
 
-      if (error) {
-        console.error('📺 Netflix: AI generation failed:', error);
-        console.log(`🎯 Netflix API Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
-        return this.generateFallbackStory(userInfo, difficulty, 'ai_error');
+      if (!result.success || !result.pages || result.pages.length === 0) {
+        console.error('📺 Netflix: 4-tier generation failed:', result.error);
+        return this.generateFallbackStory(userInfo, difficulty, 'unified_system_error');
       }
 
-      if (data?.pages && Array.isArray(data.pages) && data.pages.length > 0) {
-        // Enhanced page cleaning to remove ALL page number variations
-        const cleanedPages = data.pages.map((page: string) => 
-          page
-            .replace(/^\*\*Page\s*\d+\*\*:?\s*/i, '')       // **Page 1:** or **Page 1**
-            .replace(/^Page\s*\d+\s*:\s*/i, '')              // Page 1: 
-            .replace(/^Page\s*\d+\s*/i, '')                  // Page 1
-            .replace(/^\d+\.\s*/i, '')                       // 1. 
-            .replace(/^Page\s*(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten)\s*:?\s*/i, '') // Page One:
-            .replace(/^Chapter\s*\d+\s*:?\s*/i, '')          // Chapter 1:
-            .replace(/^\*\*\d+\*\*\s*:?\s*/i, '')           // **1**:
-            .replace(/^First page:.*?\n/gmi, '')             // First page:
-            .replace(/^Second page:.*?\n/gmi, '')            // Second page:
-            .replace(/^Next:.*?\n/gmi, '')                   // Next:
-            .replace(/^Finally:.*?\n/gmi, '')                // Finally:
-            .replace(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)\./i, '') // Roman numerals
-            .replace(/^(1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th):/i, '') // Ordinals
-            .replace(/^(One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten):/i, '') // Word numbers
-            .trim()
-        ).filter((page: string) => page.length > 10);
+      if (result.pages && Array.isArray(result.pages) && result.pages.length > 0) {
+        // Pages already cleaned by unified system
+        const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
         if (cleanedPages.length >= 3) {
           console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages`);

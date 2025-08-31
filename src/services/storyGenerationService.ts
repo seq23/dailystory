@@ -115,14 +115,19 @@ export class StoryGenerationService {
     themeIntent: ThemeIntent
   ): string {
     
-    // LAYER 1 - Essential User Info Only (for AI efficiency)
+    // LAYER 1 - Essential User Info Only (null-safe, no forced defaults for preferences)
     const essentialUserInfo = {
       name: userInfo.name || "Child whose name no one could say",
       age: userInfo.age || 5,
       avatar: userInfo.avatar, // Needed for hair mapping in edge function
       nativeLanguage: userInfo.nativeLanguage || 'en', // Needed for hair mapping logic
       difficultyLevel: userInfo.difficultyLevel, // Needed for story complexity
-      gradeLevel: userInfo.gradeLevel || 'PreK' // Needed for vocabulary/complexity
+      gradeLevel: userInfo.gradeLevel || 'PreK', // Needed for vocabulary/complexity
+      // USER PREFERENCES - only include if they exist, don't force defaults
+      ...(userInfo.favoriteColor && { favoriteColor: userInfo.favoriteColor }),
+      ...(userInfo.favoriteAnimal && { favoriteAnimal: userInfo.favoriteAnimal }),
+      ...(userInfo.favoriteFood && { favoriteFood: userInfo.favoriteFood }),
+      ...(userInfo.hobbies && { hobbies: userInfo.hobbies })
     };
 
     // LAYER 2 - Theme Intent Analysis (pulls from Layer 1 specialRequest only)
@@ -168,12 +173,21 @@ export class StoryGenerationService {
         ).join('; ')}`
       : 'AI determines creative elements organically';
 
-    // 4-Layer Story Template (Essential Info Only)
-    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}.
-User Info: ${JSON.stringify(essentialUserInfo)}
-Theme Request: ${specialRequestContent}
-Vocabulary: ${vocabularyInstructions}
-${creativeGuidance}`;
+    // Enhanced Natural Language Template (more AI-friendly)
+    let userPreferences = '';
+    if (essentialUserInfo.favoriteColor || essentialUserInfo.favoriteAnimal || 
+        essentialUserInfo.favoriteFood || essentialUserInfo.hobbies) {
+      const preferences = [];
+      if (essentialUserInfo.favoriteColor) preferences.push(`favorite color: ${essentialUserInfo.favoriteColor}`);
+      if (essentialUserInfo.favoriteAnimal) preferences.push(`favorite animal: ${essentialUserInfo.favoriteAnimal}`);
+      if (essentialUserInfo.favoriteFood) preferences.push(`favorite food: ${essentialUserInfo.favoriteFood}`);
+      if (essentialUserInfo.hobbies) preferences.push(`hobbies: ${essentialUserInfo.hobbies}`);
+      userPreferences = `User preferences: ${preferences.join(', ')}. `;
+    }
+
+    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. Vocabulary: ${vocabularyInstructions}. ${creativeGuidance}
+
+Character Info: ${JSON.stringify(essentialUserInfo)}`;
 
     return STORY_TEMPLATE.trim();
   }

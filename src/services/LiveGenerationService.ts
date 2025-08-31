@@ -67,36 +67,22 @@ export class LiveGenerationService {
       // Use configured prompts from storyPrompts.ts only
       let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       
-      console.log(`🔄 Live Generation: Calling generate-adaptive-story with sessionType: ${sessionType || 'default'}`);
+      console.log('🔄 Live Generation: Using unified 4-tier system');
       
-      const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
-        body: {
-          readingLevel: difficulty,
-          interests: [userInfo.favoriteAnimal, userInfo.favoriteColor].filter(Boolean),
-          sessionType, // Pass sessionType for context isolation
-          vocabularyData: vocabularyData, // Pass pre-fetched vocabulary data
-          config: {
-            userName: userInfo.name,
-            age: userInfo.age,
-            systemPrompt,
-            userPrompt,
-            pageNumber: 1,
-            isFirstPage: true,
-            expertGrade: expertGradeLevel,
-            userInfo: userInfo // Pass complete userInfo including avatar
-          }
-        }
+      const { StoryGenerationService } = await import('./storyGenerationService');
+      
+      const result = await StoryGenerationService.generateStory(userInfo, {
+        sessionType: 'premium',
+        pageNumber: 1
       });
 
-      if (error || !data?.pages) {
-        console.error('🚀 Live Generation: Failed to generate first page:', error);
-        console.log(`🎯 Live Generation API Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
-        return this.generateFallbackFirstPage(userInfo, difficulty, 'api_error');
+      if (!result.success || !result.pages || result.pages.length === 0) {
+        console.error('🚀 Live Generation: 4-tier system failed:', result.error);
+        return this.generateFallbackFirstPage(userInfo, difficulty, 'unified_system_error');
       }
 
-      // Extract first page from the pages array and strip any page markers
-      const rawContent = (data.pages[0] || '').trim();
-      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+      // Extract first page from unified system
+      const content = result.pages[0] || '';
       
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
@@ -117,10 +103,10 @@ export class LiveGenerationService {
 
       console.log('🚀 Live Generation: First page generated and validated successfully');
       try {
-        (globalThis as any).__LAST_PAGE_SOURCE__ = (data as any)?.source || 'ai';
-        (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
+        (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
       } catch {}
-      console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
+      console.log('🧭 PAGE_SOURCE', { page: 1, source: 'ai', service: 'Live' });
       
       // Emit story generation complete event
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -174,33 +160,27 @@ export class LiveGenerationService {
       let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
       const userPrompt = `${baseUserPrompt} This is page ${nextPageNumber}. ${shouldConclude ? 'The user has requested to end this adventure - bring the story to a satisfying and uplifting conclusion.' : 'Continue the never-ending adventure with new discoveries and possibilities. End with intrigue that makes the reader want to continue.'}`;
       
-      const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
-        body: {
-          readingLevel: context.difficulty,
-          interests: [context.userInfo.favoriteAnimal, context.userInfo.favoriteColor].filter(Boolean),
-          vocabularyData: vocabularyData, // Pass pre-fetched vocabulary data
-          config: {
-            userName: context.userInfo.name,
-            age: context.userInfo.age,
-            systemPrompt,
-            userPrompt,
-            pageNumber: nextPageNumber,
-            isLastPage: shouldConclude,
-            storyContext: context.storyContext,
-            expertGrade: context.expertGradeLevel,
-            userInfo: context.userInfo // Pass complete userInfo including avatar
-          }
-        }
+      const { StoryGenerationService } = await import('./storyGenerationService');
+      
+      // Create enhanced userInfo with story context for continuation
+      const contextualUserInfo = {
+        ...context.userInfo,
+        specialRequest: `${context.userInfo.specialRequest || 'adventure'} (continuing from: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...)`
+      };
+      
+      const result = await StoryGenerationService.generateStory(contextualUserInfo, {
+        sessionType: 'premium',
+        pageNumber: nextPageNumber,
+        existingStory: context.storyContext.join('\n\n')
       });
 
-      if (error || !data?.pages) {
-        console.error('🚀 Live Generation: Failed to generate page:', error);
-        return this.generateFallbackNextPage(context, nextPageNumber, 'api_error', userRequestedEnding);
+      if (!result.success || !result.pages || result.pages.length === 0) {
+        console.error('🚀 Live Generation: 4-tier continuation failed:', result.error);
+        return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', userRequestedEnding);
       }
 
-      // Extract first page from the pages array and strip any page markers
-      const rawContent = (data.pages[0] || '').trim();
-      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+      // Extract first page from unified system
+      const content = result.pages[0] || '';
       
       // Simple validation - just check if content exists and has reasonable length
       if (!content || content.length < 10) {
@@ -218,10 +198,10 @@ export class LiveGenerationService {
 
       console.log(`🚀 Live Generation: Page ${nextPageNumber} generated and validated successfully`);
       try {
-        (globalThis as any).__LAST_PAGE_SOURCE__ = (data as any)?.source || 'ai';
-        (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
+        (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
       } catch {}
-      console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
+      console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: 'ai', service: 'Live' });
       
       // Emit story generation complete event
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -264,41 +244,35 @@ export class LiveGenerationService {
       let baseUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, context.userInfo);
       const userPrompt = `${baseUserPrompt} Create a concluding page that ties the adventure together warmly and clearly indicates the story has reached a nice ending.`;
 
-      const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
-        body: {
-          readingLevel: context.difficulty,
-          interests: [context.userInfo.favoriteAnimal, context.userInfo.favoriteColor].filter(Boolean),
-          config: {
-            userName: context.userInfo.name,
-            age: context.userInfo.age,
-            systemPrompt,
-            userPrompt,
-            pageNumber: nextPageNumber,
-            isLastPage: true,
-            storyContext: context.storyContext,
-            expertGrade: context.expertGradeLevel,
-            userInfo: context.userInfo // Pass complete userInfo including avatar
-          }
-        }
+      const { StoryGenerationService } = await import('./storyGenerationService');
+      
+      // Create ending-focused userInfo
+      const endingUserInfo = {
+        ...context.userInfo,
+        specialRequest: `Provide a satisfying conclusion to this adventure: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`
+      };
+      
+      const result = await StoryGenerationService.generateStory(endingUserInfo, {
+        sessionType: 'premium', 
+        pageNumber: nextPageNumber,
+        existingStory: context.storyContext.join('\n\n')
       });
 
-      if (error || !data?.pages) {
-        console.error('🚀 Live Generation: Failed to generate ending page:', error);
-        // Fallback: use next-page fallback with isLastPage true
-        return this.generateFallbackNextPage(context, nextPageNumber, 'api_error_conclusion', true);
+      if (!result.success || !result.pages || result.pages.length === 0) {
+        console.error('🚀 Live Generation: 4-tier ending failed:', result.error);
+        return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', true);
       }
 
-      // Strip page markers from ending page content
-      const rawContent = (data.pages[0] || '').trim();
-      const content = rawContent.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+      // Extract content from unified system
+      const content = result.pages[0] || '';
       if (!content || content.length < 10) {
         return this.generateFallbackNextPage(context, nextPageNumber, 'content_too_short_conclusion', true);
       }
 
       console.log('🚀 Live Generation: Ending page generated successfully');
       try {
-        (globalThis as any).__LAST_PAGE_SOURCE__ = (data as any)?.source || 'ai';
-        (globalThis as any).__LAST_STORY_SOURCE__ = (globalThis as any).__LAST_PAGE_SOURCE__;
+        (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
       } catch {}
 
       // Emit story generation complete event
