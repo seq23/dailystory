@@ -58,7 +58,7 @@ interface TestResult {
   generationPath?: string[];
   emergencyContentUsed?: boolean;
   // Enhanced validation fields
-  placeholderValidation?: any;
+  placeholderValidation?: import('@/utils/placeholderValidator').PlaceholderValidationResult;
   contentIssues?: string[];
   tokenValidation?: any;
   hasEmptyContent?: boolean;
@@ -387,7 +387,7 @@ export function StoryPromptTester() {
       // Enhanced validation - check for placeholder and content issues
       if (result.fullContent && result.fullContent.length > 0) {
         const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
-        result.placeholderValidation = getPlaceholderValidationMessage(placeholderValidation);
+        result.placeholderValidation = placeholderValidation;
         result.contentIssues = checkForPlaceholderIssues(result.fullContent);
         result.tokenValidation = validatePageTokenDistribution(
           result.fullContent, 
@@ -404,8 +404,8 @@ export function StoryPromptTester() {
         }
         
         // Add placeholder validation to generation path
-        if (!result.placeholderValidation.isValid) {
-          result.generationPath.push(`⚠️ Placeholder issues: ${result.placeholderValidation.unresolvedPlaceholders.join(', ')}`);
+        if (result.placeholderValidation && !result.placeholderValidation.isValid) {
+          result.generationPath.push(`⚠️ Placeholder issues: ${result.placeholderValidation.unresolvedPlaceholders?.join(', ') || 'Unknown'}`);
         }
       }
       
