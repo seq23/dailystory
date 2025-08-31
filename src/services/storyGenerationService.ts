@@ -1,4 +1,4 @@
-// Unified Story Generation Service with Simplified 3-Layer Priority System
+// Unified Story Generation Service with 4-Layer Priority System
 // Removed author voice processing - AI chooses voice inspiration dynamically
 // Sends fully resolved bundles to streamlined edge function
 
@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { UserInfo, DifficultyLevel } from "@/types";
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
+import { generateCreativeSeeds } from './inputEnhancementEngine';
 
 export interface StoryGenerationBundle {
   storyContent: string;           // Fully resolved story requirements
@@ -29,7 +30,7 @@ export interface StoryGenerationResult {
 
 export class StoryGenerationService {
   /**
-   * Generate story using simplified 3-layer priority system
+   * Generate story using 4-layer priority system
    */
   static async generateStory(
     userInfo: UserInfo,
@@ -40,7 +41,7 @@ export class StoryGenerationService {
     }
   ): Promise<StoryGenerationResult> {
     try {
-      console.log('🚀 Starting simplified 3-layer story generation pipeline');
+      console.log('🚀 Starting 4-layer story generation pipeline');
       
       // PROCESSING PIPELINE (simplified to 5 steps)
       
@@ -74,7 +75,7 @@ export class StoryGenerationService {
         };
       }
       
-      // Step 4: PlaceholderResolution with simplified 3-layer priority
+      // Step 4: PlaceholderResolution with 4-layer priority
       const resolvedStoryContent = this.resolveAllPlaceholders(
         userInfo,
         vocabularyIntegration,
@@ -106,7 +107,7 @@ export class StoryGenerationService {
   }
 
   /**
-   * Simplified 3-Layer Priority System (removed author voice processing)
+   * 4-Layer Priority System (removed author voice processing)
    */
   private static resolveAllPlaceholders(
     userInfo: UserInfo,
@@ -114,60 +115,67 @@ export class StoryGenerationService {
     themeIntent: ThemeIntent
   ): string {
     
-    // LAYER 1 - User Inputs (Highest Priority)
-    const userName = userInfo.name?.trim() 
-      ? userInfo.name 
-      : 'the child whose name no one knew how to say';
-    
-    if (!userInfo.name?.trim()) {
-      console.warn('🚨 USER DATA CORRUPTION: Missing name in userInfo form');
-    }
-    
-    const userLayer = {
-      userName,
-      favoriteColor: userInfo.favoriteColor || '[AI_DETERMINE_COLOR]',
-      favoriteAnimal: userInfo.favoriteAnimal || '[AI_DETERMINE_ANIMAL]',
-      favoriteFood: userInfo.favoriteFood || '[AI_DETERMINE_FOOD]',
-      hobbies: userInfo.hobbies || '[AI_DETERMINE_HOBBIES]',
-      age: userInfo.age?.toString() || '[AI_DETERMINE_AGE]'
+    // LAYER 1 - Essential User Info Only (for AI efficiency)
+    const essentialUserInfo = {
+      name: userInfo.name || "Child whose name no one could say",
+      age: userInfo.age || 5,
+      avatar: userInfo.avatar, // Needed for hair mapping in edge function
+      nativeLanguage: userInfo.nativeLanguage || 'en', // Needed for hair mapping logic
+      difficultyLevel: userInfo.difficultyLevel, // Needed for story complexity
+      gradeLevel: userInfo.gradeLevel || 'PreK' // Needed for vocabulary/complexity
     };
 
-    // LAYER 2 - Theme Intent (Structured Creative Elements)
-    let specialRequest: string;
-    if (themeIntent.theme.length > 0 || themeIntent.characters.length > 0 || themeIntent.setting.length > 0) {
-      const parts = [];
-      if (themeIntent.theme.length > 0) parts.push(`Themes: ${themeIntent.theme.join(', ')}`);
-      if (themeIntent.characters.length > 0) parts.push(`Characters: ${themeIntent.characters.join(', ')}`);
-      if (themeIntent.setting.length > 0) parts.push(`Settings: ${themeIntent.setting.join(', ')}`);
-      if (themeIntent.keywords.length > 0) parts.push(`Keywords: ${themeIntent.keywords.join(', ')}`);
-      specialRequest = parts.join('. ');
-    } else if (themeIntent.rawInput?.trim()) {
-      specialRequest = `Use these as creative inspiration: ${themeIntent.rawInput}`;
+    // LAYER 2 - Theme Intent Analysis (pulls from Layer 1 specialRequest only)
+    let specialRequestContent = '';
+    if (themeIntent.theme.length > 0 || themeIntent.setting.length > 0 || 
+        themeIntent.characters.length > 0 || themeIntent.keywords.length > 0) {
+      // Structured theme intent found
+      const themeElements = [];
+      if (themeIntent.theme.length > 0) themeElements.push(`themes: ${themeIntent.theme.join(', ')}`);
+      if (themeIntent.setting.length > 0) themeElements.push(`settings: ${themeIntent.setting.join(', ')}`);
+      if (themeIntent.characters.length > 0) themeElements.push(`characters: ${themeIntent.characters.join(', ')}`);
+      if (themeIntent.keywords.length > 0) themeElements.push(`keywords: ${themeIntent.keywords.join(', ')}`);
+      specialRequestContent = themeElements.join('; ');
+    } else if (themeIntent.rawInput) {
+      // Fallback to raw specialRequest - let AI determine all creative elements
+      specialRequestContent = themeIntent.rawInput;
     } else {
-      specialRequest = '[AI_DETERMINE_THEME]';
+      // Ultimate fallback
+      specialRequestContent = userInfo.specialRequest || 'AI determines appropriate themes';
     }
 
-    // LAYER 3 - Vocabulary (Educational Integration)
-    const vocabularyInstructions = vocabularyIntegration.userSpecified.formWords.length > 0 || 
-                           vocabularyIntegration.userSpecified.specialRequestWords.length > 0 || 
-                           vocabularyIntegration.userSpecified.teacherWords.length > 0
-      ? `MUST incorporate: ${VocabularyService.getUserVocabulary(vocabularyIntegration).join(', ')}`
-      : '[AI_DETERMINE_VOCAB_LEVEL]';
-
-    // Simplified template - AI chooses author voice inspiration dynamically
-    const STORY_TEMPLATE = `Create a never-ending story for {userName}, age {age}. 
-{specialRequest}
-{vocabularyInstructions}`;
-
-    // Resolve placeholders
-    let resolvedTemplate = STORY_TEMPLATE;
-    const allPlaceholders = { specialRequest, vocabularyInstructions, ...userLayer };
+    // LAYER 3 - Vocabulary Requirements (pulls from ALL vocabulary sources)
+    const allUserVocabWords = VocabularyService.getUserVocabulary(vocabularyIntegration);
+    const systemSettings = VocabularyService.getSystemSettings(vocabularyIntegration);
     
-    for (const [key, value] of Object.entries(allPlaceholders)) {
-      resolvedTemplate = resolvedTemplate.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value));
+    let vocabularyInstructions = '';
+    if (allUserVocabWords.length > 0) {
+      const vocabSources = [];
+      if (vocabularyIntegration.userSpecified.formWords.length > 0) vocabSources.push('form input');
+      if (vocabularyIntegration.userSpecified.specialRequestWords.length > 0) vocabSources.push('special request');
+      if (vocabularyIntegration.userSpecified.teacherWords.length > 0) vocabSources.push('teacher words');
+      
+      vocabularyInstructions = `MUST incorporate these vocabulary words: ${allUserVocabWords.join(', ')} (from: ${vocabSources.join(', ')})`;
+    } else {
+      vocabularyInstructions = `Use grade level ${systemSettings.gradeLevel} appropriate vocabulary based on difficulty level ${essentialUserInfo.difficultyLevel}`;
     }
 
-    return resolvedTemplate;
+    // LAYER 4 - Creative Seeds (handles favoriteColor/Animal/Food/hobbies exclusively)
+    const creativeSeeds = generateCreativeSeeds(userInfo);
+    const creativeGuidance = creativeSeeds.length > 0 
+      ? `Creative Guidance (use as inspiration, not requirements): ${creativeSeeds.map(seed => 
+          `Consider: ${seed.storyPossibilities.join(' OR ')}`
+        ).join('; ')}`
+      : 'AI determines creative elements organically';
+
+    // 4-Layer Story Template (Essential Info Only)
+    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}.
+User Info: ${JSON.stringify(essentialUserInfo)}
+Theme Request: ${specialRequestContent}
+Vocabulary: ${vocabularyInstructions}
+${creativeGuidance}`;
+
+    return STORY_TEMPLATE.trim();
   }
 
   /**

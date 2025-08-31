@@ -40,62 +40,67 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
   const seeds: CreativeStorySeed[] = [];
   const userName = userInfo?.name || 'the child';
 
-  // Color Integration - These are example integrations; AI can create unique variations
+  // Color Integration - Natural atmospheric and meaningful object guidance
   if (userInfo?.favoriteColor) {
     seeds.push({
       input: userInfo.favoriteColor,
       inputType: 'color',
       storyPossibilities: [
-        `${userName} discovers something magical that glows with ${userInfo.favoriteColor} light`,
-        `a ${userInfo.favoriteColor} object that becomes important to the adventure`,
-        `${userInfo.favoriteColor} elements that help ${userName} solve problems`,
-        `a ${userInfo.favoriteColor} world where ${userName} feels at home`
+        `A beautiful ${userInfo.favoriteColor} object appears in the story`,
+        `${userInfo.favoriteColor} themed elements enhance the adventure`,
+        `The ${userInfo.favoriteColor} surroundings create a special atmosphere`,
+        `Important story elements feature the color ${userInfo.favoriteColor}`
       ]
     });
   }
 
-  // Animal Integration - Examples for AI to expand upon creatively
+  // Animal Integration - Realistic animal encounters and relationships
   if (userInfo?.favoriteAnimal) {
     seeds.push({
       input: userInfo.favoriteAnimal,
       inputType: 'animal',
       storyPossibilities: [
-        `${userName} befriends a wise ${userInfo.favoriteAnimal} who becomes their guide`,
-        `${userName} discovers they can communicate with ${userInfo.favoriteAnimal}s`,
-        `${userName} finds a magical ${userInfo.favoriteAnimal} who needs their help`,
-        `${userName} learns important lessons from a gentle ${userInfo.favoriteAnimal}`
+        `A friendly ${userInfo.favoriteAnimal} appears to help during the adventure`,
+        `${userInfo.favoriteAnimal} companions play an important role`,
+        `The story features ${userInfo.favoriteAnimal}s in meaningful ways`,
+        `Encounters with ${userInfo.favoriteAnimal}s add excitement to the tale`
       ]
     });
   }
 
-  // Hobby Integration - Creative starting points for AI interpretation
+  // Hobby Integration - Practical skill applications and problem-solving
   if (userInfo?.hobbies) {
+    const hobby = userInfo.hobbies.toLowerCase().split(',')[0]?.trim() || 'playing';
     seeds.push({
-      input: userInfo.hobbies,
+      input: hobby,
       inputType: 'hobby',
       storyPossibilities: [
-        `${userName} uses their love of ${userInfo.hobbies} to solve magical problems`,
-        `${userName} discovers that ${userInfo.hobbies} has special powers in this world`,
-        `${userName} teaches others about ${userInfo.hobbies} and makes new friends`,
-        `${userName} finds that ${userInfo.hobbies} is the key to their adventure`
+        `${userName} uses ${hobby} skills to solve challenges`,
+        `Knowledge from ${hobby} helps navigate the situation`,
+        `${hobby} experience provides useful abilities`,
+        `The skills learned from ${hobby} become important to the story`
       ]
     });
   }
 
-  // Food Integration - Guidance examples for AI creative expansion
+  // Food Integration - Natural story moments and celebrations
   if (userInfo?.favoriteFood) {
     seeds.push({
       input: userInfo.favoriteFood,
       inputType: 'food',
       storyPossibilities: [
-        `${userName} discovers magical ${userInfo.favoriteFood} that grants special abilities`,
-        `${userName} learns to make ${userInfo.favoriteFood} with enchanted ingredients`,
-        `${userName} uses ${userInfo.favoriteFood} to bring comfort and joy to others`,
-        `${userName} finds that sharing ${userInfo.favoriteFood} creates lasting friendships`
+        `${userInfo.favoriteFood} appears as a welcome treat during the journey`,
+        `Sharing ${userInfo.favoriteFood} creates friendship moments`,
+        `${userInfo.favoriteFood} becomes part of a celebration or gathering`,
+        `The story includes ${userInfo.favoriteFood} in meaningful ways`
       ]
     });
   }
 
+  // These seeds provide creative guidance and inspiration for AI story generation.
+  // AI should feel free to adapt, combine, or create entirely new possibilities
+  // that naturally incorporate the user's interests into engaging, age-appropriate stories.
+  
   // Return seeds as creative foundation - AI should build upon these examples
   return seeds;
 }

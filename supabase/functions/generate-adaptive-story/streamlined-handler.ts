@@ -19,6 +19,21 @@ interface StreamlinedConfig {
   existingStory?: string;
 }
 
+// Hair color mapping for English speakers only (moved from main handler)
+function getHairColorForSkinTone(skinTone: string | undefined): string | null {
+  if (!skinTone) return null;
+  
+  const hairColorMap: Record<string, string> = {
+    'pale': 'red hair',
+    'light': 'blonde hair', 
+    'medium': 'brown hair',
+    'olive': 'black hair',
+    'dark': 'dark curly hair'
+  };
+  
+  return hairColorMap[skinTone] || null;
+}
+
 export async function handleStreamlinedGeneration(requestBody: any) {
   const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig } = requestBody;
   
@@ -35,8 +50,9 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       userPrompt: resolvePromptPlaceholders(bundle.storyContent)
     };
     
-    // Generate story with OpenAI
-    const storyText = await generateWithOpenAI(aiPrompt, bundle.systemSettings.gradeLevel);
+    // Generate story with OpenAI (pass userInfo for hair mapping)
+    const userInfo = JSON.parse(bundle.storyContent).userInfo || {};
+    const storyText = await generateWithOpenAI(aiPrompt, bundle.systemSettings.gradeLevel, userInfo);
     
     // Parse into pages (simplified)
     const pages = parseIntoPages(storyText, bundle.systemSettings.gradeLevel);
@@ -76,8 +92,17 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
   return 'expert';
 }
 
-async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number): Promise<string> {
+async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any): Promise<string> {
   const maxTokens = getTokensForGrade(gradeLevel);
+  
+  // Add hair color mapping for English speakers
+  let enhancedUserPrompt = prompt.userPrompt;
+  if (userInfo?.avatar?.skinTone && userInfo?.nativeLanguage === 'en') {
+    const hairColor = getHairColorForSkinTone(userInfo.avatar.skinTone);
+    if (hairColor) {
+      enhancedUserPrompt += `\nCharacter appearance: ${userInfo.name} has ${hairColor}.`;
+    }
+  }
   
   console.log('🤖 STREAMLINED: Calling OpenAI', { gradeLevel, maxTokens });
   
@@ -91,7 +116,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: prompt.systemPrompt },
-        { role: 'user', content: prompt.userPrompt }
+        { role: 'user', content: enhancedUserPrompt }
       ],
       max_completion_tokens: maxTokens
     }),
