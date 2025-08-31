@@ -40,16 +40,52 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 }
 
 export async function handleStreamlinedGeneration(requestBody: any) {
-  const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig } = requestBody;
+  const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig & { expertGradeLevel?: string; difficulty?: string } } = requestBody;
   
   console.log('🎯 STREAMLINED: Processing lean bundle');
+  console.log('🔍 STREAMLINED: Config received:', {
+    expertGradeLevel: config.expertGradeLevel,
+    difficulty: config.difficulty,
+    gradeLevel: bundle.systemSettings.gradeLevel
+  });
   
   try {
+    // PRIORITY: Use expertGradeLevel or difficulty from config if provided
+    let effectiveDifficulty: DifficultyLevel | ExpertGradeLevel;
+    let expertGrade: ExpertGradeLevel | null = null;
+    
+    if (config.expertGradeLevel) {
+      // Direct expert grade level passed from Netflix service
+      expertGrade = config.expertGradeLevel as ExpertGradeLevel;
+      effectiveDifficulty = expertGrade;
+      console.log(`🎓 STREAMLINED: Using direct expert grade level: ${expertGrade}`);
+    } else if (config.difficulty) {
+      // Direct difficulty passed from Netflix service
+      effectiveDifficulty = config.difficulty as DifficultyLevel;
+      // Check if it's actually an expert grade in disguise
+      if (['grade6', 'grade7', 'grade8', 'grade9', 'grade10'].includes(config.difficulty)) {
+        expertGrade = config.difficulty as ExpertGradeLevel;
+        console.log(`🎓 STREAMLINED: Detected expert grade in difficulty: ${expertGrade}`);
+      } else {
+        console.log(`📚 STREAMLINED: Using regular difficulty: ${effectiveDifficulty}`);
+      }
+    } else {
+      // Fallback to system grade level mapping
+      expertGrade = mapGradeToExpertLevel(bundle.systemSettings.gradeLevel);
+      effectiveDifficulty = expertGrade || mapGradeLevelToDifficulty(bundle.systemSettings.gradeLevel);
+      console.log(`🔄 STREAMLINED: Fallback mapping - Grade ${bundle.systemSettings.gradeLevel} → ${effectiveDifficulty}`);
+    }
+    
     // Use existing prompts from storyPrompts.ts - handle expert grades (6-10) separately
-    const expertGrade = mapGradeToExpertLevel(bundle.systemSettings.gradeLevel);
     const promptConfig = expertGrade 
       ? getExpertStoryPrompt(expertGrade)
-      : getStoryPrompt(mapGradeLevelToDifficulty(bundle.systemSettings.gradeLevel));
+      : getStoryPrompt(effectiveDifficulty as DifficultyLevel);
+      
+    console.log(`🎯 STREAMLINED: Selected prompt config for ${expertGrade || effectiveDifficulty}:`, {
+      hasSystemPrompt: !!promptConfig.systemPrompt,
+      tokens: promptConfig.tokens,
+      expectedPages: promptConfig.expectedPages
+    });
     
     // Extract userInfo from already-resolved bundle
     let userInfo = {};
@@ -68,11 +104,16 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       userPrompt: bundle.storyContent // Already resolved by 4-tier system
     };
     
-    // Generate story with OpenAI
-    const storyText = await generateWithOpenAI(aiPrompt, bundle.systemSettings.gradeLevel, userInfo);
+    // Generate story with OpenAI - pass the effective grade level for token calculation
+    const effectiveGradeLevel = expertGrade ? 
+      (parseInt(expertGrade.replace('grade', '')) || bundle.systemSettings.gradeLevel) : 
+      bundle.systemSettings.gradeLevel;
     
-    // Parse into pages (simplified)
-    const pages = parseIntoPages(storyText, bundle.systemSettings.gradeLevel);
+    console.log(`🤖 STREAMLINED: Calling OpenAI with grade level ${effectiveGradeLevel} for ${expertGrade || effectiveDifficulty}`);
+    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo);
+    
+    // Parse into pages (simplified) - use effective grade level
+    const pages = parseIntoPages(storyText, effectiveGradeLevel);
     
     // Return streamlined response
     return new Response(JSON.stringify({

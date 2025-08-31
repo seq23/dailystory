@@ -48,9 +48,18 @@ export class NetflixStyleStoryService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
+      console.log(`🔍 Netflix: Calling unified system with:`, {
+        difficulty,
+        expertGradeLevel,
+        promptTokens: promptConfig?.tokens || 'unknown',
+        expectedPages: promptConfig?.expectedPages || 'unknown'
+      });
+      
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'free',
-        pageNumber: 1
+        pageNumber: 1,
+        expertGradeLevel, // Pass expert grade level to unified system
+        difficulty // Also pass the original difficulty
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -113,6 +122,14 @@ export class NetflixStyleStoryService {
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
       console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}, Unique: ${Math.round(uniqueContentRatio * 100)}%`);
+      console.log(`🔍 Netflix: Detailed validation breakdown:`, {
+        hasSubstantialContent: cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= 400,
+        pageCount: cleanedPages.length,
+        minRequired: minPagesRequired,
+        tokenCount: tokenValidation.actualTokens,
+        hasUniqueContent: uniqueContentRatio >= 0.6,
+        uniqueRatio: Math.round(uniqueContentRatio * 100)
+      });
       return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
 
     } catch (error) {
@@ -138,6 +155,8 @@ export class NetflixStyleStoryService {
 
     try {
       // Use template service for fallback
+      console.log(`🔧 Netflix: Calling template service with difficulty: ${difficulty}, pageCount: 5`);
+      
       const { data, error } = await supabase.functions.invoke('template-service', {
         body: {
           difficulty: difficulty,
@@ -147,8 +166,32 @@ export class NetflixStyleStoryService {
         }
       });
 
-      if (error || !data?.pages?.length) {
-        throw new Error('Template service failed');
+      console.log(`🔧 Netflix: Template service response:`, {
+        hasError: !!error,
+        hasData: !!data,
+        dataStructure: data ? Object.keys(data) : 'no data',
+        pagesLength: data?.pages?.length || 0,
+        success: data?.success
+      });
+
+      if (error) {
+        console.error('🔧 Netflix: Template service error:', error);
+        throw new Error(`Template service error: ${error.message || error}`);
+      }
+
+      if (!data) {
+        console.error('🔧 Netflix: No data returned from template service');
+        throw new Error('Template service returned no data');
+      }
+
+      if (!data.pages || !Array.isArray(data.pages) || data.pages.length === 0) {    
+        console.error('🔧 Netflix: Invalid pages data:', {
+          hasPages: !!data.pages,
+          isArray: Array.isArray(data.pages),
+          length: data.pages?.length || 0,
+          pages: data.pages
+        });
+        throw new Error('Template service returned invalid pages data');
       }
 
       console.log(`📺 Netflix: Fallback template generated - ${data.pages.length} pages`);

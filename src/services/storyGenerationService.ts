@@ -38,10 +38,19 @@ export class StoryGenerationService {
       sessionType?: 'free' | 'premium';
       pageNumber?: number;
       existingStory?: string;
+      expertGradeLevel?: string;
+      difficulty?: string;
     }
   ): Promise<StoryGenerationResult> {
     try {
       console.log('🚀 Starting 4-layer story generation pipeline');
+      console.log('🔍 Config received:', {
+        sessionType: config.sessionType,
+        pageNumber: config.pageNumber,
+        expertGradeLevel: config.expertGradeLevel,
+        difficulty: config.difficulty,
+        userDifficultyLevel: userInfo.difficultyLevel
+      });
       
       // PROCESSING PIPELINE (simplified to 5 steps)
       
@@ -211,7 +220,9 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
           config: {
             sessionType: config.sessionType || 'free',
             pageNumber: config.pageNumber || 1,
-            existingStory: config.existingStory
+            existingStory: config.existingStory,
+            expertGradeLevel: config.expertGradeLevel,
+            difficulty: config.difficulty
           }
         }
       });
