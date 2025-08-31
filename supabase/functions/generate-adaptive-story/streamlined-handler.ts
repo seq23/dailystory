@@ -2,7 +2,7 @@
 // Processes pre-processed bundles from frontend services  
 // Uses existing prompts from storyPrompts.ts - LEAN & DRY
 
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
@@ -253,8 +253,11 @@ function cleanStoryText(text: string): string {
 }
 
 function parseIntoPages(storyText: string, gradeLevel: number): string[] {
-  // For beginner level (grade 0), use sentence-based parsing but limit to 10 for Netflix
-  if (gradeLevel === 0) {
+  const difficulty = mapGradeLevelToDifficulty(gradeLevel);
+  const expectedPages = getExpectedPages(difficulty);
+  
+  // For beginner and easy levels, use sentence-based parsing and limit to expected pages
+  if (gradeLevel === 0 || gradeLevel === 1) {
     // Split by sentence breaks (double line breaks or sentence endings)
     const sentences = storyText
       .split(/\n\n+|\.\s*\n|\.\s*$/)
@@ -262,12 +265,12 @@ function parseIntoPages(storyText: string, gradeLevel: number): string[] {
       .filter(s => s.length > 0)
       .map(s => s.endsWith('.') ? s : s + '.');
     
-    // For Netflix mode, limit to first 10 sentences
-    return sentences.slice(0, 10);
+    // For Netflix mode, limit to expected pages
+    return sentences.slice(0, expectedPages);
   }
   
   // For other levels, use word-count approach
-  const targetWordsPerPage = gradeLevel === 1 ? 24 : gradeLevel <= 2 ? 30 : 60;
+  const targetWordsPerPage = gradeLevel <= 2 ? 30 : 60;
   
   // Simple paragraph-based splitting
   const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
