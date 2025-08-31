@@ -9,6 +9,10 @@ export interface ColorVoice {
     openings: string[];
     transitions: string[];
     closings: string[];
+    plotTwists: string[];      // NEW
+    continuations: string[];   // NEW
+    pauses: string[];         // NEW
+    hooks: string[];          // NEW
   };
   characteristics: string[];
   preferredThemes?: string[];

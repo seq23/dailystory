@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { StoryGenerationService, type StoryGenerationResult } from '@/services/storyGenerationService';
 import { VocabularyService } from '@/services/vocabularyService';
 import { AuthorVoiceService } from '@/services/authorVoiceService';
-import { CreativeElementsProcessor } from '@/services/creativeElementsProcessor';
+import { generateCreativeSeeds } from '@/services/inputEnhancementEngine';
 import type { UserInfo } from '@/types';
 
 export interface UseUnifiedStoryGenerationResult {
@@ -18,7 +18,7 @@ export interface UseUnifiedStoryGenerationResult {
   error: string | null;
   vocabularyIntegration: any;
   authorVoice: any;
-  creativeBundle: any;
+  creativeSeeds: any;
 }
 
 export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => {
@@ -26,34 +26,46 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
   const [error, setError] = useState<string | null>(null);
   const [vocabularyIntegration, setVocabularyIntegration] = useState(null);
   const [authorVoice, setAuthorVoice] = useState(null);
-  const [creativeBundle, setCreativeBundle] = useState(null);
+  const [creativeSeeds, setCreativeSeeds] = useState(null);
 
   const generateStory = useCallback(async (userInfo: UserInfo, config = {}) => {
     setIsGenerating(true);
     setError(null);
 
     try {
-      console.log('🚀 Using unified story generation pipeline');
+      console.log('🚀 Using 5-layer story generation pipeline');
 
       // Process vocabulary (for debugging/display purposes)
-      const vocabIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
-      setVocabularyIntegration(vocabIntegration);
+      try {
+        const vocabIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
+        setVocabularyIntegration(vocabIntegration);
+      } catch (error) {
+        console.warn('⚠️ Vocabulary processing failed in hook:', error);
+      }
       
       // Process author voice (for debugging/display purposes)
-      const voiceBundle = AuthorVoiceService.createVoiceBundle(
-        userInfo.favoriteColor, 
-        userInfo.difficultyLevel || 'easy'
-      );
-      setAuthorVoice(voiceBundle);
+      try {
+        const voiceBundle = AuthorVoiceService.createVoiceBundle(
+          userInfo.favoriteColor, 
+          userInfo.difficultyLevel || 'easy'
+        );
+        setAuthorVoice(voiceBundle);
+      } catch (error) {
+        console.warn('⚠️ Author voice processing failed in hook:', error);
+      }
       
-      // Process creative elements (for debugging/display purposes)
-      const creative = CreativeElementsProcessor.processUserInputs(userInfo);
-      setCreativeBundle(creative);
+      // Process creative seeds (for debugging/display purposes)
+      try {
+        const seeds = generateCreativeSeeds(userInfo);
+        setCreativeSeeds(seeds);
+      } catch (error) {
+        console.warn('⚠️ Creative seeds processing failed in hook:', error);
+      }
 
-      // Generate story using unified service
+      // Generate story using unified service (handles all failures internally)
       const result = await StoryGenerationService.generateStory(userInfo, config);
       
-      console.log('✅ Unified generation complete:', {
+      console.log('✅ 5-layer generation complete:', {
         success: result.success,
         pagesGenerated: result.pages?.length || 0,
         authorVoice: result.metadata?.authorVoice,
@@ -82,6 +94,6 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
     error,
     vocabularyIntegration,
     authorVoice,
-    creativeBundle
+    creativeSeeds
   };
 };

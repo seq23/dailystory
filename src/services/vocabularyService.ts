@@ -30,10 +30,11 @@ export class VocabularyService {
    * Priority Order: User Inputs (HIGHEST) → System Vocabulary (validation only)
    */
   static async fetchAllVocabulary(userInfo: UserInfo): Promise<VocabularyIntegration> {
-    const sources: string[] = [];
-    const formWords: string[] = [];
-    const specialRequestWords: string[] = [];
-    const teacherWords: string[] = [];
+    try {
+      const sources: string[] = [];
+      const formWords: string[] = [];
+      const specialRequestWords: string[] = [];
+      const teacherWords: string[] = [];
 
     // SOURCE 1: Direct form input (targetVocabulary) - HIGHEST PRIORITY
     if (userInfo.targetVocabulary) {
@@ -102,22 +103,30 @@ export class VocabularyService {
     const totalUserWords = formWords.length + specialRequestWords.length + teacherWords.length;
     const priorityInstructions = this.generatePriorityInstructions(totalUserWords, sources);
 
-    return {
-      userSpecified: {
-        formWords: Array.from(new Set(formWords)).slice(0, 10),
-        specialRequestWords: Array.from(new Set(specialRequestWords)).slice(0, 10),
-        teacherWords: Array.from(new Set(teacherWords)).slice(0, 20)
-      },
-      systemVocabulary: {
-        level: gradeLevel,
-        complianceTarget
-      },
-      metadata: {
-        totalUserWords,
-        priorityInstructions,
-        sources
-      }
-    };
+      return {
+        userSpecified: {
+          formWords: Array.from(new Set(formWords)).slice(0, 10),
+          specialRequestWords: Array.from(new Set(specialRequestWords)).slice(0, 10),
+          teacherWords: Array.from(new Set(teacherWords)).slice(0, 20)
+        },
+        systemVocabulary: {
+          level: gradeLevel,
+          complianceTarget
+        },
+        metadata: {
+          totalUserWords,
+          priorityInstructions,
+          sources
+        }
+      };
+    } catch (error) {
+      console.warn('⚠️ VocabularyService failed silently:', error);
+      return {
+        userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
+        systemVocabulary: { level: 2, complianceTarget: 0.7 },
+        metadata: { totalUserWords: 0, priorityInstructions: 'Safe defaults due to error', sources: [] }
+      };
+    }
   }
 
   private static mapDifficultyToGrade(difficulty: DifficultyLevel): GradeLevel {
