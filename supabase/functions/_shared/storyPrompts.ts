@@ -528,13 +528,13 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
     return tokens;
   }
   
-  // High-quality expert grade fallbacks
+  // High-quality expert grade fallbacks - updated to match system prompts
   const expertFallbacks: Record<string, number> = {
-    '6th': 467,   // ~350 words
-    '7th': 533,   // ~400 words  
-    '8th': 600,   // ~450 words
-    '9th': 667,   // ~500 words
-    '10th': 733,  // ~550 words
+    '6th': 500,   // Updated to match system prompt "Maximum 500 tokens per page"
+    '7th': 500,   // Updated to match system prompt "Maximum 500 tokens per page"
+    '8th': 500,   // Updated to match system prompt "Maximum 500 tokens per page"
+    '9th': 500,   // Updated to match system prompt "Maximum 500 tokens per page"
+    '10th': 500,  // Updated to match system prompt "Maximum 500 tokens per page"
   };
   
   // Use normalized format for fallback lookup
@@ -544,13 +544,13 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
     return tokens;
   }
   
-  // Regular difficulty fallbacks
+  // Regular difficulty fallbacks - updated to match system prompts
   const regularFallbacks: Record<string, number> = {
-    'beginner': 67,   // ~50 words
-    'easy': 100,      // ~75 words
-    'medium': 133,    // ~100 words
-    'hard': 200,      // ~150 words
-    'expert': 467,    // Default expert level (6th grade equivalent)
+    'beginner': 15,   // Updated to match system prompt "Maximum 15 tokens per page"
+    'easy': 32,       // Updated to match system prompt "Maximum 32 tokens per page"
+    'medium': 150,    // Updated to match system prompt "Maximum 150 tokens per page"
+    'hard': 200,      // Updated to match system prompt "Maximum 200 tokens per page"
+    'expert': 500,    // Updated to match system prompt "Maximum 500 tokens per page"
   };
   
   if (regularFallbacks[difficulty]) {
@@ -560,7 +560,7 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
   }
   
   console.error(`🚨 Unknown difficulty: ${difficulty}, using expert fallback`);
-  return 467; // Default to 6th grade expert level
+  return 500; // Updated to match system prompts
 }
 
 /**

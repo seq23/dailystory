@@ -2,7 +2,7 @@
 // Processes pre-processed bundles from frontend services  
 // Uses existing prompts from storyPrompts.ts - LEAN & DRY
 
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
@@ -346,12 +346,15 @@ function parseIntoPages(storyText: string, gradeLevel: number): string[] {
 }
 
 function getTokensForGrade(gradeLevel: number): number {
-  const tokenMap: Record<number, number> = {
-    0: 400,  // PreK
-    1: 600,  // 1st
-    2: 1200,  // 2nd (Medium: 150 tokens/page × 10 pages)
-    3: 1600, // 3rd (Hard: 200 tokens/page × 10 pages)
-    4: 6000  // 4th+ (Expert: 500 tokens/page × 12 pages)
-  };
-  return tokenMap[gradeLevel] || 1200;
+  // Use system prompts as single source of truth for token limits
+  const expertGrade = mapGradeToExpertLevel(gradeLevel);
+  const difficulty = expertGrade || mapGradeLevelToDifficulty(gradeLevel);
+  
+  const perPageTokens = getPerPageTokenLimit(difficulty);
+  const expectedPages = getExpectedPages(difficulty);
+  const totalTokens = perPageTokens * expectedPages;
+  
+  console.log(`🎯 Token calculation for grade ${gradeLevel}: ${perPageTokens} tokens/page × ${expectedPages} pages = ${totalTokens} total tokens`);
+  
+  return totalTokens;
 }
