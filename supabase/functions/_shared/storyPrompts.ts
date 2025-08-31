@@ -480,7 +480,7 @@ export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeL
 /**
  * Get expected pages for difficulty level
  */
-function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+export function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   if (Object.keys(STORY_PROMPTS).includes(difficulty as DifficultyLevel)) {
     return STORY_PROMPTS[difficulty as DifficultyLevel].expectedPages || 10;
   }
@@ -524,3 +524,11 @@ export function resolvePromptPlaceholders(
   
   return resolved;
 }
+
+// Map numeric grade to expert grade level for grades 6-10
+export const mapGradeToExpertLevel = (gradeLevel: number): ExpertGradeLevel | null => {
+  if (gradeLevel >= 6 && gradeLevel <= 10) {
+    return `${gradeLevel}th` as ExpertGradeLevel;
+  }
+  return null;
+};

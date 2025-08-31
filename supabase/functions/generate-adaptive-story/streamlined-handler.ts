@@ -2,7 +2,7 @@
 // Processes pre-processed bundles from frontend services  
 // Uses existing prompts from storyPrompts.ts - LEAN & DRY
 
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
@@ -45,9 +45,11 @@ export async function handleStreamlinedGeneration(requestBody: any) {
   console.log('🎯 STREAMLINED: Processing lean bundle');
   
   try {
-    // Use existing prompts from storyPrompts.ts
-    const difficulty = mapGradeLevelToDifficulty(bundle.systemSettings.gradeLevel);
-    const promptConfig = getStoryPrompt(difficulty);
+    // Use existing prompts from storyPrompts.ts - handle expert grades (6-10) separately
+    const expertGrade = mapGradeToExpertLevel(bundle.systemSettings.gradeLevel);
+    const promptConfig = expertGrade 
+      ? getExpertStoryPrompt(expertGrade)
+      : getStoryPrompt(mapGradeLevelToDifficulty(bundle.systemSettings.gradeLevel));
     
     // Extract userInfo from already-resolved bundle
     let userInfo = {};
@@ -253,8 +255,9 @@ function cleanStoryText(text: string): string {
 }
 
 function parseIntoPages(storyText: string, gradeLevel: number): string[] {
-  const difficulty = mapGradeLevelToDifficulty(gradeLevel);
-  const expectedPages = getExpectedPages(difficulty);
+  const expertGrade = mapGradeToExpertLevel(gradeLevel);
+  const level = expertGrade || mapGradeLevelToDifficulty(gradeLevel);
+  const expectedPages = getExpectedPages(level);
   
   // For beginner and easy levels, use sentence-based parsing and limit to expected pages
   if (gradeLevel === 0 || gradeLevel === 1) {
