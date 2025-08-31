@@ -254,6 +254,10 @@ function cleanStoryText(text: string): string {
     .trim();
 }
 
+function cleanPageBreakMarkers(text: string): string {
+  return text.replace(/\s*\*\*\*\s*/g, '').trim();
+}
+
 /**
  * Get correct word count range per page based on grade level
  */
@@ -276,16 +280,28 @@ function parseIntoPages(storyText: string, gradeLevel: number): string[] {
   const level = expertGrade || mapGradeLevelToDifficulty(gradeLevel);
   const expectedPages = getExpectedPages(level);
   
+  // First try to split by ' *** ' markers
+  if (storyText.includes(' *** ')) {
+    const pages = storyText
+      .split(' *** ')
+      .map(page => cleanPageBreakMarkers(page))
+      .filter(page => page.trim().length > 0)
+      .slice(0, expectedPages);
+    
+    if (pages.length > 0) {
+      return pages;
+    }
+  }
+  
+  // Fallback to existing word-count logic if no markers found
   // For beginner and easy levels, use sentence-based parsing
   if (gradeLevel === 0 || gradeLevel === 1) {
-    // Split by sentence breaks (double line breaks or sentence endings)
     const sentences = storyText
       .split(/\n\n+|\.\s*\n|\.\s*$/)
       .map(s => s.trim())
       .filter(s => s.length > 0)
       .map(s => s.endsWith('.') ? s : s + '.');
     
-    // Always limit to expected pages
     return sentences.slice(0, expectedPages);
   }
   

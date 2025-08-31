@@ -29,7 +29,7 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
 
 OUTPUT FORMAT:
 - Generate one sentence per page only
-- No page numbers, markers, or headers
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 - Continue story infinitely until user requests ending
 - Natural narrative flow with continuation hooks
 
@@ -79,8 +79,6 @@ WRONG EXAMPLES (TOO LONG):
 
 Put each sentence on its own line with double line breaks for clear separation.
 
-Generate exactly 10 sentences for the complete story.
-
 Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
     userPromptTemplate: 'Create a never-ending pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
   },
@@ -92,7 +90,7 @@ Use seed={seed} to vary stories. Change settings, activities, characters, and mo
 
 OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, markers, or headers
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 - Continue story indefinitely until user requests ending
 - Natural narrative flow with continuation hooks
 
@@ -129,7 +127,7 @@ Use seed={seed} for creative expression.`,
 
 OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, markers, or headers  
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 - Continue story indefinitely until user requests ending
 - Include narrative hooks and mild tension
 
@@ -166,7 +164,7 @@ Use seed={seed} for creative expression.`,
 
 OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, markers, or headers
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 - Continue story indefinitely until user requests ending
 - Include character development and plot complexity
 
@@ -203,7 +201,7 @@ Use seed={seed} for creative expression.`,
 
 OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, markers, or headers
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 - Continue story indefinitely until user requests ending
 - Focus on thematic depth and character psychology
 
@@ -247,7 +245,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -283,7 +281,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -319,7 +317,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -355,7 +353,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -391,7 +389,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- Do NOT include page numbers, page markers, or page headers in your content
+- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
