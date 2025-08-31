@@ -59,12 +59,25 @@ TOKEN LIMITS:
 Maximum 15 tokens per page. Target 8-12 tokens per page.
 
 EXAMPLE OUTPUT (Sample user: Sam, blue, cat, cake, run):
-Page 1: "Sam sees a blue cat." (5 words)
-Page 2: "The cat runs fast." (4 words)
-Page 3: "Sam and cat find cake." (5 words)
-Page 4: "They eat cake together." (4 words)
-Page 5: "The blue cat purrs." (4 words)
-Page 6: "Sam's cat wants to play more." (6 words)
+"Sam sees cat." (3 words)
+
+"Cat runs." (2 words)
+
+"Sam finds cake." (3 words)
+
+"They eat." (2 words)
+
+"Cat purrs." (2 words)
+
+"Sam plays." (2 words)
+
+WRONG EXAMPLES (TOO LONG):
+❌ "Sam sees a blue cat outside." (6 words)
+❌ "The little cat runs very fast today." (7 words)
+✅ "Cat runs fast." (3 words)
+✅ "Sam loves cats." (3 words)
+
+Put each sentence on its own line with double line breaks for clear separation.
 
 Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
     userPromptTemplate: 'Create a never-ending pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',

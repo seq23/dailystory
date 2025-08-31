@@ -253,7 +253,21 @@ function cleanStoryText(text: string): string {
 }
 
 function parseIntoPages(storyText: string, gradeLevel: number): string[] {
-  const targetWordsPerPage = gradeLevel === 0 ? 15 : gradeLevel <= 2 ? 30 : 60;
+  // Special handling for beginner level (grade 0) - split by sentences
+  if (gradeLevel === 0) {
+    // Split by sentence breaks (double line breaks or sentence endings)
+    const sentences = storyText
+      .split(/\n\n+|\.\s*\n|\.\s*$/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(s => s.endsWith('.') ? s : s + '.');
+    
+    // Each sentence becomes one page
+    return sentences.length > 0 ? sentences : [storyText];
+  }
+  
+  // Original logic for other grade levels
+  const targetWordsPerPage = gradeLevel <= 2 ? 30 : 60;
   
   // Simple paragraph-based splitting
   const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
