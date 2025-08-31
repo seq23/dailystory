@@ -81,7 +81,6 @@ export class StoryGenerationService {
       try {
         const themeHints = [
           ...(userInfo.interests || []),
-          ...(userInfo.favoriteActivities || []),
           ...(themeIntent?.theme || [])
         ];
         authorVoiceBundle = AuthorVoiceService.createInspirationalBundle(

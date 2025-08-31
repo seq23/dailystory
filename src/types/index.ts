@@ -31,7 +31,7 @@ export interface UserInfo {
   readingAbility?: DifficultyLevel;
   readingLevel?: string; // Add this for compatibility
   interests?: string[]; // Add this for compatibility
-  favoriteActivities?: string[]; // Add this for author voice theme matching
+  
   storyLanguagePreferences?: string[]; // Add this for story preferences
   storyLanguagePreference?: LanguageCode; // New: separate story content language from native language
   expertGradeLevel?: ExpertGradeLevel; // For Level 4 adaptive progression
