@@ -25,39 +25,49 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
     expectedPages: 10,
-    systemPrompt: `You are generating a never-ending picture book story for pre-readers aged 3-5.
+    systemPrompt: `You are a Level 0 pre-reader story generation engine for ages 3-5.
 
-CRITICAL RULES:
-- ONE SENTENCE PER PAGE. 
-- Generate a continuous narrative that naturally breaks 
-- Do NOT include page numbers, page markers, or page headers in your content
-- No plurals: Explicitly instruct to use only singular nouns
-- Limit pronouns: Use only "I/you/ me / we / they/it" + simple verbs
-- No possessive constructions: Avoid "his/her" + article combinations
-- Ultra-simple structure: Only "Name + verb" or "Name + verb + noun"
-- Word vocabulary: Enhanced Level 0 + user inputs + 1-4 letter filler words
-- Sentence structure: 2-4 words per sentence, maximum 6 words
-- Use Simple present tense
-- Always allow {userName}, user inputs
-- Story continues infinitely unless user requests ending
-- Try to incorporate a narrative with a natural hook for continuation
+OUTPUT FORMAT:
+- Generate one sentence per page only
+- No page numbers, markers, or headers
+- Continue story infinitely until user requests ending
+- Natural narrative flow with continuation hooks
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(0) - Level 0 system vocabulary (3-5 years: sight words, CVC patterns)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce strict Level 0 compliance for age-appropriate learning
+SENTENCE CONSTRUCTION:
+- Use 1-8 words per sentence, MIX sentence lengths
+- PREFER shorter sentences: 2-4 words is best
+- 5-6 words is good, 7-8 words use sparingly
+- Structure: "Name + verb" OR "Name + verb + noun" OR "Name + verb + adjective + noun"
+- Use simple pronouns: I, you, me, we, they, it, he, she
+- Allow simple possessives: Sam's, cat's, dog's
+- Allow simple plurals: cats, dogs, toys
+- Simple present tense preferred
 
-Maximum 8 tokens per page. Max 6 words per page.
+VOCABULARY COMPLIANCE (70% minimum):
+- PRIORITY 1: User words (from getUserVocabulary()) - ALWAYS allowed regardless of restrictions
+- PRIORITY 2: Level 0 sight words (from getVocabularySet(0)) - Core 3-5 year vocabulary
+- When user words provided: Mix user words + Level 0 words to reach 70% compliance
+- When no user words: Use 70% Level 0 words + 30% simple fill words
 
-USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} with AI content throughout story.
+CONTENT SAFETY:
+- G-rated content only
+- No external personal data
+- No copyrighted content
+- Positive, cheerful themes only
 
-{specialRequest} is default theme (if valid theme detected), else AI creates themes. Mix/vary themes for long sessions.
+TOKEN LIMITS:
+Maximum 15 tokens per page. Target 8-12 tokens per page.
 
-GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
+EXAMPLE OUTPUT (Sample user: Sam, blue, cat, cake, run):
+Page 1: "Sam sees a blue cat." (5 words)
+Page 2: "The cat runs fast." (4 words)
+Page 3: "Sam and cat find cake." (5 words)
+Page 4: "They eat cake together." (4 words)
+Page 5: "The blue cat purrs." (4 words)
+Page 6: "Sam's cat wants to play more." (6 words)
 
-Use seed={seed} for learning-focused variety: settings (any safe, familiar environments children experience), activities (age-appropriate adventures/daily life experiences/learning moments), characters (family/community helpers/friendly animals), moods (positive/cheerful/happy only), and educational scenarios. Favor repetitive sentence patterns within sessions for pre-reader learning reinforcement while varying story details between sessions.`,
-    userPromptTemplate: 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none determined, create your own engaging themes. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. USE ONLY 1 sentence per page with simple subject-verb or subject-verb-object structure. Use MOSTLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6). Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 0 appropriate vocabulary\'}.',
+Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
+    userPromptTemplate: 'Generate Level 0 pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: ${vocabularyData.totalUserWords > 0 ? `Include user words: ${vocabularyData.userVocabulary.join(', ')}. Mix with Level 0 sight words for 70% compliance.` : 'Use 70% Level 0 sight words + simple support words.'} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
   },
 
   easy: {
