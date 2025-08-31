@@ -79,6 +79,8 @@ WRONG EXAMPLES (TOO LONG):
 
 Put each sentence on its own line with double line breaks for clear separation.
 
+Generate exactly 10 sentences for the complete story.
+
 Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
     userPromptTemplate: 'Create a never-ending pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
   },

@@ -253,8 +253,21 @@ function cleanStoryText(text: string): string {
 }
 
 function parseIntoPages(storyText: string, gradeLevel: number): string[] {
-  // Unified word-count approach for all levels
-  const targetWordsPerPage = gradeLevel === 0 ? 6 : gradeLevel === 1 ? 24 : gradeLevel <= 2 ? 30 : 60;
+  // For beginner level (grade 0), use sentence-based parsing but limit to 10 for Netflix
+  if (gradeLevel === 0) {
+    // Split by sentence breaks (double line breaks or sentence endings)
+    const sentences = storyText
+      .split(/\n\n+|\.\s*\n|\.\s*$/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .map(s => s.endsWith('.') ? s : s + '.');
+    
+    // For Netflix mode, limit to first 10 sentences
+    return sentences.slice(0, 10);
+  }
+  
+  // For other levels, use word-count approach
+  const targetWordsPerPage = gradeLevel === 1 ? 24 : gradeLevel <= 2 ? 30 : 60;
   
   // Simple paragraph-based splitting
   const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
