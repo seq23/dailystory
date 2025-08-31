@@ -43,10 +43,10 @@ CRITICAL RULES:
 - Try to incorporate a narrative with a natural hook for continuation
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(0) - Level 0 system vocabulary (3-5 years: sight words, CVC patterns)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, enforce strict Level 0 compliance for age-appropriate learning
 
 Maximum 8 tokens per page. Max 6 words per page.
 
@@ -57,7 +57,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
 Use seed={seed} for learning-focused variety: settings (any safe, familiar environments children experience), activities (age-appropriate adventures/daily life experiences/learning moments), characters (family/community helpers/friendly animals), moods (positive/cheerful/happy only), and educational scenarios. Favor repetitive sentence patterns within sessions for pre-reader learning reinforcement while varying story details between sessions.`,
-    userPromptTemplate: 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none determined, create your own engaging themes. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. USE ONLY 1 sentence per page with simple subject-verb or subject-verb-object structure. Use MOSTLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6).',
+    userPromptTemplate: 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none determined, create your own engaging themes. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. USE ONLY 1 sentence per page with simple subject-verb or subject-verb-object structure. Use MOSTLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6). Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 0 appropriate vocabulary\'}.',
   },
 
   easy: {
@@ -75,10 +75,10 @@ RULES:
 - Include narrative hooks for continuation
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(1) - Level 1 system vocabulary (5-7 years: Dolch 1st grade + CVC expansion)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, enforce Level 1 compliance for developing readers
 
 Maximum 32 tokens per page. Target 15-24 words per page.
 
@@ -93,7 +93,7 @@ AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorV
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
 Use seed={seed} for creative variety: settings (any age-appropriate location), activities (adventures/exploration/problem-solving/friendship), moods (wide emotional range), characters (diverse backgrounds), magical elements, and imaginative scenarios. Let OpenAI's creativity flourish within age-appropriate boundaries.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Let the story flow organically with natural progression.',
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Let the story flow organically with natural progression. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 1 appropriate vocabulary\'}.',
   },
 
   medium: {
@@ -112,10 +112,10 @@ RULES:
 - Include narrative hooks and mild tension
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(2) - Level 2 system vocabulary (7-9 years: Dolch 2nd grade + compound words)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, enforce Level 2 compliance for intermediate readers
 
 Maximum 93 tokens per page. Target 50-70 words per page.
 
@@ -130,7 +130,7 @@ AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorV
 GUARDRAILS: Age-appropriate content. No copyrighted content. Transform concerning themes.
 
 Use seed={seed} for enhanced creativity: settings (fantastical or realistic worlds), activities (complex adventures/mysteries/scientific exploration), character development (personality growth/challenges), magical systems, world-building elements. Embrace OpenAI's full creative potential for engaging storytelling.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression.',
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 2 appropriate vocabulary\'}.',
   },
 
   hard: {
@@ -149,10 +149,10 @@ RULES:
 - Include character development
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(3) - Level 3 system vocabulary (9-11 years: 3rd-4th grade academic terms)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, enforce Level 3 compliance for advanced elementary readers
 
 Maximum 160 tokens per page. Target 80-120 words per page.
 
@@ -167,7 +167,7 @@ AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorV
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid intense themes.
 
 Use seed={seed} for maximum creativity: settings (any imaginative world), complex character arcs, sophisticated plot development, thematic exploration, literary devices, and advanced storytelling techniques. Allow OpenAI complete creative freedom within age-appropriate content guidelines.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques.',
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 3 appropriate vocabulary\'}.',
   },
 
   expert: {
@@ -185,10 +185,10 @@ RULES:
 - Story continues infinitely unless user requests ending
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (11-13+ years: comprehensive 7th-12th grade)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, enforce Level 4 compliance for advanced readers (unlimited vocabulary)
 
 Maximum 267 tokens per page. Target 120-200 words per page.
 
@@ -203,7 +203,7 @@ AUTHOR'S STYLE: Draw inspiration from available author voice patterns in authorV
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid inappropriate material.
 
 Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens (11-13). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 until the user requests an ending. Challenge readers intellectually with mature themes and transformative character growth. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative.',
+    userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 until the user requests an ending. Challenge readers intellectually with mature themes and transformative character growth. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
   }
 };
 
@@ -223,10 +223,10 @@ CRITICAL RULES:
 - Do NOT include page numbers, page markers, or page headers in your content
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (6th grade uses comprehensive expert-level vocabulary)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, use Level 4 vocabulary with 6th grade sentence complexity
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -243,7 +243,7 @@ Maximum 400 tokens per page. Target 200-400 words per page.
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
     wordCount: "200-400 words per page"
   },
 
@@ -260,10 +260,10 @@ CRITICAL RULES:
 - Do NOT include page numbers, page markers, or page headers in your content
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (7th grade uses comprehensive expert-level vocabulary)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, use Level 4 vocabulary with 7th grade sentence complexity
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -280,7 +280,7 @@ Maximum 427 tokens per page. Target 200-400 words per page.
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
     wordCount: "200-400 words per page"
   },
 
@@ -297,10 +297,10 @@ CRITICAL RULES:
 - Do NOT include page numbers, page markers, or page headers in your content
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (8th grade uses comprehensive expert-level vocabulary)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, use Level 4 vocabulary with 8th grade sentence complexity
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -317,7 +317,7 @@ Maximum 453 tokens per page. Target 200-400 words per page.
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
     wordCount: "200-400 words per page"
   },
 
@@ -334,10 +334,10 @@ CRITICAL RULES:
 - Do NOT include page numbers, page markers, or page headers in your content
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (9th grade uses comprehensive expert-level vocabulary)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, use Level 4 vocabulary with 9th grade sentence complexity
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -354,7 +354,7 @@ Maximum 480 tokens per page. Target 200-400 words per page.
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
     wordCount: "200-400 words per page"
   },
 
@@ -371,10 +371,10 @@ CRITICAL RULES:
 - Do NOT include page numbers, page markers, or page headers in your content
 
 VOCABULARY INTEGRATION:
-- Prioritize user-specified vocabulary words when provided in the request body
-- Adapt vocabulary complexity to match the reading level and user preferences
-- Ensure vocabulary compliance meets the specified target levels
-- Include educational vocabulary naturally within the story context
+- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
+- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (10th grade uses comprehensive expert-level vocabulary)
+- User vocabulary takes absolute priority and must be included regardless of grade level
+- When no user vocabulary exists, use Level 4 vocabulary with 10th grade sentence complexity
 
 USER INPUT INTEGRATION: Optional enhancement only - {userName}, {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} available if story calls for them.
 
@@ -391,7 +391,7 @@ Maximum 533 tokens per page. Target 200-400 words per page.
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
 Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 10th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
+    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 10th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details. Priority vocabulary to include: ${vocabularyData.totalUserWords > 0 ? vocabularyData.userVocabulary.join(\', \') : \'Use Level 4 appropriate vocabulary\'}.',
     wordCount: "200-400 words per page"
   }
 };
