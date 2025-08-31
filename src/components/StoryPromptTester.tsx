@@ -441,8 +441,8 @@ export function StoryPromptTester() {
     if (!pages || pages.length <= 1) return false;
     
     const difficultyLimits = {
-      'beginner': 25,
-      'easy': 24,    // Level 1 = 24 words per page
+      'beginner': 8,   // Allow up to 8 words per page (target: 6)
+      'easy': 26,      // Allow up to 26 words per page (target: 24)
       'medium': 45,  // Level 2 = 40-50 words per page (use middle)
       'hard': 80,    // Level 3 = 80 words per page
       'expert': 100, // Level 4 = 100 words per page
@@ -561,7 +561,7 @@ export function StoryPromptTester() {
 
   // Token validation using the proper tokenLimitValidator system
   const analyzeTokenLimits = (content: string[], level: string): { isValid: boolean; tokenCount: number; wordCount: number; maxTokens: number } => {
-    const fullText = content.join(' ');
+    const fullText = Array.isArray(content) && content.length > 0 ? content.join(' ') : '';
     const wordCount = countWords(fullText);
     const tokenCount = estimateTokenCount(fullText);
     
