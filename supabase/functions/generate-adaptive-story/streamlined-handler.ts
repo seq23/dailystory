@@ -113,37 +113,131 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       enhancedUserPrompt += `\nCharacter appearance: ${userInfo.name} has ${hairColor}.`;
     }
   }
-  
-  console.log('🤖 STREAMLINED: Calling OpenAI', { gradeLevel, maxTokens });
-  
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: prompt.systemPrompt },
-        { role: 'user', content: enhancedUserPrompt }
-      ],
-      max_completion_tokens: maxTokens
-    }),
-  });
 
-  if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+  // Enhanced AI Generation with 2-Attempt Quality-First Model Progression
+  let storyText = '';
+  let attempt = 1;
+  const maxAttempts = 2;
+  const startTime = Date.now();
+
+  // Model progression for quality optimization
+  const modelProgression = [
+    { model: 'gpt-4.1-2025-04-14', description: 'enhanced quality', paramName: 'max_completion_tokens' }, 
+    { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens' }
+  ];
+
+  // Apply to BOTH attempts
+  const baseInstructions = `
+CRITICAL SUCCESS REQUIREMENTS:
+- Generate a reliable engaging narrative suitable for children
+- Include natural continuation hooks and smooth story flow  
+- If target vocabulary provided, incorporate naturally throughout
+- Never include page numbers, titles, or formatting markers
+- This is a never-ending story - always continue, never conclude
+`;
+
+  while (attempt <= maxAttempts && !storyText) {
+    try {
+      const currentModel = modelProgression[attempt - 1];
+      console.log(`🤖 AI Attempt ${attempt}/${maxAttempts} using ${currentModel.model} (${currentModel.description}):`, { 
+        gradeLevel,
+        tokenBudget: maxTokens,
+        qualityFirst: attempt === 1,
+        hasTargetVocabulary: enhancedUserPrompt.includes('Priority vocabulary')
+      });
+      
+      // Attempt 1: Base prompt + complete instructions
+      // Attempt 2: Same complete instructions + reliability emphasis
+      let enhancedSystemPrompt = prompt.systemPrompt + baseInstructions;
+      let finalUserPrompt = enhancedUserPrompt;
+      
+      if (attempt === 2) {
+        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: This is the final attempt before template fallback - prioritize completion and reliability. Generate any engaging story content that meets the requirements above. Focus on natural story flow and ensure all target vocabulary is included if specified.`;
+        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure for this final attempt. Include all target vocabulary naturally.`;
+      }
+      
+      // API call with correct model parameters
+      const apiBody: any = {
+        model: currentModel.model,
+        messages: [
+          { role: 'system', content: enhancedSystemPrompt },
+          { role: 'user', content: finalUserPrompt }
+        ]
+      };
+      
+      // Use correct parameter based on model
+      apiBody[currentModel.paramName] = maxTokens;
+      
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      storyText = data.choices[0].message.content;
+      
+      if (storyText && storyText.trim()) {
+        const vocabularyUsage = extractVocabularyUsage(storyText, enhancedUserPrompt);
+        console.log(`✅ SUCCESS with ${currentModel.model}:`, { 
+          attempt,
+          contentLength: storyText.length,
+          model: currentModel.model,
+          processingTime: `${Date.now() - startTime}ms`,
+          vocabularyTracking: vocabularyUsage
+        });
+        
+        // Track vocabulary encounters if user is authenticated
+        if (vocabularyUsage.hasTargetVocabulary && vocabularyUsage.usedWords.length > 0) {
+          console.log(`📚 Vocabulary tracking: ${vocabularyUsage.usedWords.length} words used`);
+        }
+        
+        break;
+      } else {
+        console.log(`❌ ${currentModel.model} produced empty content, trying next model...`);
+        storyText = '';
+      }
+      
+    } catch (error) {
+      console.error(`❌ Attempt ${attempt} with ${modelProgression[attempt - 1].model} failed:`, error);
+      storyText = '';
+    }
+    
+    attempt++;
   }
 
-  const data = await response.json();
-  const storyText = data.choices[0].message.content;
-
   if (!storyText?.trim()) {
-    throw new Error('Empty story generated');
+    throw new Error('All AI generation attempts failed');
   }
 
   return cleanStoryText(storyText);
+}
+
+// Helper function for vocabulary tracking
+function extractVocabularyUsage(storyText: string, userPrompt: string): any {
+  const vocabMatch = userPrompt.match(/Priority vocabulary to include: ([^\n]+)/);
+  if (!vocabMatch) return { hasTargetVocabulary: false };
+  
+  const targetWords = vocabMatch[1].split(', ').filter(word => word.trim());
+  const usedWords = targetWords.filter(word => 
+    storyText.toLowerCase().includes(word.toLowerCase())
+  );
+  
+  return {
+    hasTargetVocabulary: true,
+    targetWords,
+    usedWords,
+    usageRate: `${usedWords.length}/${targetWords.length}`,
+    missingWords: targetWords.filter(word => !usedWords.includes(word))
+  };
 }
 
 function cleanStoryText(text: string): string {
