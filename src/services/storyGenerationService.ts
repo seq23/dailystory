@@ -79,27 +79,26 @@ export class StoryGenerationService {
       // Step 4: AuthorVoice selection (with silent failure)
       let authorVoiceBundle: AuthorVoiceBundle;
       try {
-        authorVoiceBundle = AuthorVoiceService.createVoiceBundle(
-          userInfo.favoriteColor || 'green', 
-          userInfo.difficultyLevel || 'easy'
+        const themeHints = [
+          ...(userInfo.interests || []),
+          ...(userInfo.favoriteActivities || []),
+          ...(themeIntent?.theme || [])
+        ];
+        authorVoiceBundle = AuthorVoiceService.createInspirationalBundle(
+          userInfo.difficultyLevel || 'easy',
+          themeHints
         );
       } catch (error) {
         console.warn('⚠️ AuthorVoice selection failed silently:', error);
         // Create minimal fallback bundle
         authorVoiceBundle = {
           voice: {
-            name: "Green",
+            name: "Fallback Voice",
             description: "Safe fallback voice",
-            ageRange: "5-7",
-            patterns: {
-              openings: ["Let's begin our story..."],
-              transitions: ["What happens next?"],
-              closings: ["The adventure continues..."],
-              plotTwists: ["Something unexpected happens..."],
-              continuations: ["Part two awaits..."],
-              pauses: ["Take a moment to think..."],
-              hooks: ["Something catches your attention..."]
-            },
+            ageRange: { min: 5, max: 7 },
+            openingPatterns: ["Let's begin our story..."],
+            transitionPatterns: ["What happens next?"],
+            closingPatterns: ["The adventure continues..."],
             characteristics: ["Safe narrative voice"],
             preferredThemes: ["friendship"],
             styleSummary: "Simple, safe storytelling",
@@ -107,10 +106,9 @@ export class StoryGenerationService {
           },
           selectedPatterns: {
             opening: "Let's begin our story...",
-            transitions: ["What happens next?"],
+            transition: "What happens next?",
             closing: "The adventure continues..."
           },
-          characteristics: ["Safe narrative voice"],
           themeAlignment: ["friendship"]
         };
       }
@@ -226,11 +224,11 @@ export class StoryGenerationService {
     const authorLayer = {
       authorStyle: authorVoiceBundle?.voice?.styleSummary || '[AI_DETERMINE_TONE]',
       storyOpenings: authorVoiceBundle?.selectedPatterns?.opening || '[AI_DETERMINE_OPENING]',
-      storyTransitions: authorVoiceBundle?.selectedPatterns?.transitions?.[0] || '[AI_DETERMINE_TRANSITIONS]',
-      plotTwists: authorVoiceBundle?.voice?.patterns?.plotTwists?.[0] || '[AI_DETERMINE_TWISTS]',
-      continuations: authorVoiceBundle?.voice?.patterns?.continuations?.[0] || '[AI_DETERMINE_CONTINUATIONS]',
-      pauses: authorVoiceBundle?.voice?.patterns?.pauses?.[0] || '[AI_DETERMINE_PAUSES]',
-      hooks: authorVoiceBundle?.voice?.patterns?.hooks?.[0] || '[AI_DETERMINE_HOOKS]'
+      storyTransitions: authorVoiceBundle?.selectedPatterns?.transition || '[AI_DETERMINE_TRANSITIONS]',
+      plotTwists: authorVoiceBundle?.voice?.openingPatterns?.[0] || '[AI_DETERMINE_TWISTS]',
+      continuations: authorVoiceBundle?.voice?.transitionPatterns?.[0] || '[AI_DETERMINE_CONTINUATIONS]',
+      pauses: authorVoiceBundle?.voice?.closingPatterns?.[0] || '[AI_DETERMINE_PAUSES]',
+      hooks: authorVoiceBundle?.voice?.sampleMicroLines?.[0] || '[AI_DETERMINE_HOOKS]'
     };
 
     // Final Placeholder Resolution (User layer wins conflicts)

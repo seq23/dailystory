@@ -45,9 +45,13 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
       
       // Process author voice (for debugging/display purposes)
       try {
-        const voiceBundle = AuthorVoiceService.createVoiceBundle(
-          userInfo.favoriteColor, 
-          userInfo.difficultyLevel || 'easy'
+        const themeHints = [
+          ...(userInfo.interests || []),
+          ...(userInfo.favoriteActivities || [])
+        ];
+        const voiceBundle = AuthorVoiceService.createInspirationalBundle(
+          userInfo.difficultyLevel || 'easy',
+          themeHints
         );
         setAuthorVoice(voiceBundle);
       } catch (error) {

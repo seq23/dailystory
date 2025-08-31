@@ -1,527 +1,279 @@
-// Author Voice Service - Moved from Backend for Frontend Processing
+// Inspirational Voice Service - AI Story Generation Inspiration
+// Provides thematically appropriate author voices for AI storytelling guidance
+
 import type { DifficultyLevel } from "@/types";
 
 export interface ColorVoice {
   name: string;
   description: string;
-  ageRange: string;
-  patterns: {
-    openings: string[];
-    transitions: string[];
-    closings: string[];
-    plotTwists: string[];      // NEW
-    continuations: string[];   // NEW
-    pauses: string[];         // NEW
-    hooks: string[];          // NEW
-  };
+  ageRange: { min: number; max: number };
+  openingPatterns: string[];
+  transitionPatterns: string[];
+  closingPatterns: string[];
   characteristics: string[];
-  preferredThemes?: string[];
+  preferredThemes: string[];
   styleSummary: string;
   sampleMicroLines: string[];
 }
 
-export const COLOR_VOICES: Record<string, ColorVoice> = {
-  green: {
-    name: "Green Voice",
-    description: "Minimalist dialogue, expressive illustrations, and humor that resonates with both kids and adults.",
-    ageRange: "5-7",
-    patterns: {
-      openings: [
-        "{userName} was having a really difficult day.",
-        "'I do NOT want to!' said {userName}.",
-        "{userName} had a very important question.",
-        "There was a big problem today.",
-        "{userName} found it hard to explain feelings.",
-        "Today was going to be different.",
-        "Something was not quite right.",
-        "'Wait!' shouted {userName}. 'I have an idea!'"
-      ],
-      transitions: [
-        "But then something important happened.",
-        "'Wait!' shouted {userName}.",
-        "That was not what {pronoun} expected at all.",
-        "Sometimes the best ideas come when you least expect them.",
-        "They took a deep breath and tried again.",
-        "Maybe there was another way to think about this.",
-        "'{userName},' said the wise friend, 'listen carefully.'",
-        "And then... everything changed."
-      ],
-      closings: [
-        "And they both laughed and laughed.",
-        "That is what friendship is all about.",
-        "Tomorrow would bring new adventures.",
-        "Being different makes life special."
-      ],
-      plotTwists: [
-        "The problem turned into a gift!",
-        "A friend appeared just when needed!",
-        "The solution was hiding in plain sight!"
-      ],
-      continuations: [
-        "The friendship grows stronger...",
-        "New challenges await...",
-        "The next day brings hope..."
-      ],
-      pauses: [
-        "Take a deep breath together...",
-        "Think about what matters most...",
-        "Feel the friendship in your heart..."
-      ],
-      hooks: [
-        "A gentle voice calls {userName}'s name...",
-        "Something warm touches {userName}'s heart...",
-        "A friend's eyes sparkle with understanding..."
-      ]
-    },
-    characteristics: ["emotional honesty", "friendship", "simple dialogue", "problem solving"],
-    preferredThemes: ["friendship", "kindness", "empathy", "problem-solving"],
-    styleSummary: "Emotionally honest voice with simple dialogue and problem-solving focus. Emphasizes friendship, feelings, and working through challenges together.",
+export const INSPIRATIONAL_VOICES: Record<string, ColorVoice> = {
+  gentleGuide: {
+    name: "The Gentle Guide",
+    description: "A nurturing storyteller who weaves nature and kindness into every tale",
+    ageRange: { min: 4, max: 12 },
+    openingPatterns: [
+      "In a world where kindness blooms like flowers...",
+      "Once upon a time, in a place where friendship grows...", 
+      "There was a gentle soul who believed...",
+      "In the heart of a peaceful garden..."
+    ],
+    transitionPatterns: [
+      "With a warm smile, {pronoun} discovered...",
+      "As gentle as a morning breeze...",
+      "Like seeds of wisdom taking root...",
+      "With patience that flows like a quiet stream..."
+    ],
+    closingPatterns: [
+      "And so, with hearts full of understanding...",
+      "Like leaves that dance in harmony...", 
+      "With wisdom that grows stronger each day...",
+      "And peace settled over the land like a gentle mist..."
+    ],
+    characteristics: [
+      "Uses nature metaphors and imagery",
+      "Emphasizes growth, learning, and patience",
+      "Gentle, nurturing tone throughout",
+      "Focuses on emotional intelligence and empathy",
+      "Celebrates quiet moments and inner strength"
+    ],
+    preferredThemes: ["friendship", "nature", "growth", "kindness", "animals", "family"],
+    styleSummary: "Warm, nature-focused storytelling with gentle wisdom and emotional depth",
     sampleMicroLines: [
-      "But then something important happened.",
-      "Maybe there was another way to think about this.",
-      "And then... everything changed.",
-      "Friends make everything better, don't they?"
+      "The butterfly whispered secrets of transformation...",
+      "In the garden of possibilities...",
+      "With roots deep and branches reaching..."
     ]
   },
-
-  purple: {
-    name: "Purple Voice",
-    description: "Gentle, whimsical tales with friendship and moral undertones.",
-    ageRange: "5-7",
-    patterns: {
-      openings: [
-        "{userName} and {friend} were the very best of friends.",
-        "One spring morning, {userName} knocked on the door.",
-        "{userName} was feeling quite lonely today.",
-        "It was the kind of day when friends are most important.",
-        "{userName} had been thinking about {friend} all morning.",
-        "The seasons were changing, and so was {userName}.",
-        "There are days when even good friends disagree.",
-        "{userName} wanted to do something special for {friend}."
-      ],
-      transitions: [
-        "But then {friend} had a wonderful idea.",
-        "Together, they decided to try something new.",
-        "Sometimes the best adventures are shared.",
-        "That's when {userName} remembered something important.",
-        "Friends can help each other in surprising ways.",
-        "They discovered that working together was better.",
-        "The two friends learned something valuable.",
-        "And so they set off on their gentle adventure."
-      ],
-      closings: [
-        "And so their friendship grew even stronger.",
-        "They spent the rest of the day enjoying each other's company.",
-        "That evening, they felt grateful for their friendship.",
-        "Some things are better when shared with a friend."
-      ],
-      plotTwists: [
-        "The seasons brought an unexpected gift!",
-        "A quiet moment revealed something beautiful!",
-        "The simple became extraordinary!"
-      ],
-      continuations: [
-        "The seasons turn, the friendship remains...",
-        "Tomorrow holds gentle surprises...",
-        "The friendship grows with each season..."
-      ],
-      pauses: [
-        "Listen to the gentle breeze...",
-        "Notice the changing light...",
-        "Feel the warmth of friendship..."
-      ],
-      hooks: [
-        "A soft whisper in the wind...",
-        "Gentle footsteps on the path...",
-        "A quiet knock at the door..."
-      ]
-    },
-    characteristics: ["gentle wisdom", "friendship", "seasonal themes", "quiet adventures"],
-    preferredThemes: ["friendship", "nature", "seasons", "quiet wisdom"],
-    styleSummary: "Gentle, whimsical voice with friendship and seasonal themes. Emphasizes quiet wisdom, shared adventures, and the beauty of simple moments.",
+  cosmicDreamer: {
+    name: "The Cosmic Dreamer",
+    description: "A mystical narrator who paints adventures across starlit realms and magical dimensions", 
+    ageRange: { min: 6, max: 16 },
+    openingPatterns: [
+      "Among the constellations where dreams take flight...",
+      "In the shimmer between worlds...",
+      "When starlight dances with possibility...",
+      "Beyond the veil of ordinary sight..."
+    ],
+    transitionPatterns: [
+      "Like stardust scattered across time...",
+      "Through portals of wonder...",
+      "As magic hummed in the air...",
+      "Where reality bends to imagination..."
+    ],
+    closingPatterns: [
+      "And the cosmos smiled upon their journey...",
+      "Like shooting stars, their story continues...",
+      "In the endless tapestry of wonder...",
+      "Where every ending becomes a new beginning..."
+    ],
+    characteristics: [
+      "Rich in cosmic and mystical imagery",
+      "Embraces wonder and transformation",
+      "Lyrical, flowing narrative style", 
+      "Balances adventure with introspection",
+      "Celebrates imagination and possibility"
+    ],
+    preferredThemes: ["magic", "adventure", "transformation", "mystery", "dreams", "fantasy"],
+    styleSummary: "Mystical and wonder-filled with cosmic imagery and transformative journeys",
     sampleMicroLines: [
-      "Together, they decided to try something new.",
-      "The afternoon sun painted everything golden.",
-      "Time seemed to slow down just for them.",
-      "Simple moments became precious memories."
+      "Starlight whispered ancient secrets...",
+      "In the dance of celestial bodies...",
+      "Where imagination touches infinity..."
     ]
   },
-
-  orange: {
-    name: "Orange Voice",
-    description: "Relatable everyday adventures, realistic dialogue, and themes of friendship, family, and school life.",
-    ageRange: "7-9",
-    patterns: {
-      openings: [
-        "{userName} had been looking forward to this day all week.",
-        "It all started when {userName} decided to help with chores.",
-        "Nobody understood {userName} the way family did.",
-        "Things never went the way {userName} planned them.",
-        "First period had already gone sideways.",
-        "{userName} thought today would be simple—until it wasn't.",
-        "It began with a tiny mistake and a big lesson.",
-        "The plan looked perfect on paper, but real life was different."
-      ],
-      transitions: [
-        "But then something unexpected happened.",
-        "That's when {userName} got a brilliant idea.",
-        "Of course, things didn't go smoothly.",
-        "As usual, life was more complicated than expected.",
-        "So {userName} made a quick change and kept going.",
-        "Of course, {friend} had a different opinion.",
-        "They had to ask for help—and that was okay.",
-        "A clever solution saved the day."
-      ],
-      closings: [
-        "And {userName} learned that growing up means making mistakes.",
-        "Sometimes the best adventures are the unexpected ones.",
-        "Life with family is never boring.",
-        "And {userName} couldn't wait for tomorrow's adventure."
-      ],
-      plotTwists: [
-        "The mistake turned into the best part!",
-        "Family came to the rescue in an unexpected way!",
-        "The boring day became an amazing adventure!"
-      ],
-      continuations: [
-        "Tomorrow's plan is already forming...",
-        "The family adventure continues...",
-        "Next week holds new possibilities..."
-      ],
-      pauses: [
-        "Take a moment to appreciate family...",
-        "Think about what you've learned...",
-        "Consider all the possibilities..."
-      ],
-      hooks: [
-        "The phone rings with news...",
-        "Mom calls from the kitchen...",
-        "A new plan starts forming..."
-      ]
-    },
-    characteristics: ["realistic", "family life", "humor", "relatability", "everyday adventures"],
-    preferredThemes: ["family", "school", "humor", "resilience", "growing up"],
-    styleSummary: "Realistic, relatable voice focusing on everyday family and school adventures. Emphasizes humor, resilience, and the ordinary magic of growing up.",
+  spiritedExplorer: {
+    name: "The Spirited Explorer",
+    description: "An energetic adventurer who turns every moment into a thrilling discovery",
+    ageRange: { min: 5, max: 14 },
+    openingPatterns: [
+      "Adventure calls from every corner...",
+      "With curiosity burning bright...",
+      "In a world full of hidden treasures...",
+      "Where every step leads to discovery..."
+    ],
+    transitionPatterns: [
+      "With excitement bubbling over...",
+      "Like a burst of golden sunshine...",
+      "Racing toward the next adventure...",
+      "With energy that could light up the sky..."
+    ],
+    closingPatterns: [
+      "And their adventure was just beginning...",
+      "With hearts full of joy and wonder...",
+      "Ready for whatever comes next...",
+      "And the world became a playground of possibilities..."
+    ],
+    characteristics: [
+      "High-energy, enthusiastic tone",
+      "Emphasizes action and discovery",
+      "Celebrates courage and curiosity", 
+      "Uses vivid, dynamic imagery",
+      "Encourages boldness and exploration"
+    ],
+    preferredThemes: ["adventure", "friendship", "courage", "discovery", "fun", "sports"],
+    styleSummary: "Dynamic and energetic with emphasis on action, discovery, and joyful adventures",
     sampleMicroLines: [
-      "Of course, things didn't go smoothly.",
-      "As usual, life was more complicated than expected.",
-      "Mom called from the kitchen with perfect timing.",
-      "Tomorrow would definitely be a fresh start."
+      "Lightning-fast reflexes kicked in...",
+      "The thrill of discovery sparkled...",
+      "Adventure awaited around every bend..."
     ]
   },
-
-  pink: {
-    name: "Pink Voice",
-    description: "Imaginative, often dark humor, quirky characters, and playful language.",
-    ageRange: "7-9",
-    patterns: {
-      openings: [
-        "{userName} had always been a rather extraordinary child.",
-        "There was something decidedly peculiar about {userName}.",
-        "Most grown-ups are beastly creatures, but {userName} was different.",
-        "It was on a particularly dreary Tuesday that {userName} discovered...",
-        "{userName} possessed a most unusual and wonderful secret.",
-        "Now, you must understand that {userName} was no ordinary child.",
-        "The grown-ups never suspected that {userName} could...",
-        "It all began when {userName} found something absolutely impossible."
-      ],
-      transitions: [
-        "But then, something absolutely extraordinary happened!",
-        "Suddenly, {userName} realized {pronoun} had a magnificent power!",
-        "The grown-ups were in for a tremendous surprise!",
-        "That's when {userName} decided to teach them a lesson!",
-        "Little did they know that {userName} was planning something spectacular!",
-        "And then, with a tremendous whoosh and a crackle...",
-        "The most wonderfully wicked idea popped into {userName}'s head!",
-        "What happened next was simply astounding!"
-      ],
-      closings: [
-        "And {userName} lived happily ever after (until the next adventure).",
-        "It was the most splendidly ridiculous day anyone could imagine.",
-        "The grown-ups learned to never underestimate {userName} again.",
-        "And that, dear reader, is how {userName} changed everything."
-      ],
-      plotTwists: [
-        "The impossible became gloriously possible!",
-        "The adults discovered {userName}'s magnificent secret!",
-        "Everything turned wonderfully upside down!"
-      ],
-      continuations: [
-        "The extraordinary adventures multiply...",
-        "More magnificent mischief awaits...",
-        "The next impossible thing beckons..."
-      ],
-      pauses: [
-        "Savor this delicious moment...",
-        "Let the wonder sink in...",
-        "Feel the magic in the air..."
-      ],
-      hooks: [
-        "A peculiar shimmer catches the light...",
-        "Something extraordinary stirs...",
-        "The impossible whispers {userName}'s name..."
-      ]
-    },
-    characteristics: ["imaginative", "dark humor", "quirky", "empowering"],
-    preferredThemes: ["imagination", "empowerment", "quirky adventures", "outsmarting adults"],
-    styleSummary: "Imaginative voice with dark humor and quirky characters. Celebrates uniqueness and empowers children through fantastical, slightly subversive adventures.",
+  heartWhisperer: {
+    name: "The Heart Whisperer", 
+    description: "A compassionate storyteller who finds beauty in emotions and human connections",
+    ageRange: { min: 7, max: 15 },
+    openingPatterns: [
+      "In the language of the heart...",
+      "Where love blooms like morning roses...",
+      "When hearts recognize their kindred spirits...",
+      "In the gentle spaces between souls..."
+    ],
+    transitionPatterns: [
+      "With tenderness that heals...",
+      "Like a warm embrace on a cold day...",
+      "Through the poetry of understanding...",
+      "With compassion flowing like a river..."
+    ],
+    closingPatterns: [
+      "And love found its way home...",
+      "In the garden of cherished memories...",
+      "Where hearts remain forever connected...",
+      "And warmth settled deep within their souls..."
+    ],
+    characteristics: [
+      "Emotionally rich and nurturing",
+      "Focuses on relationships and connections",
+      "Uses romantic and tender imagery",
+      "Celebrates empathy and understanding",
+      "Gentle, flowing narrative rhythm"
+    ],
+    preferredThemes: ["love", "friendship", "family", "emotions", "relationships", "healing"],
+    styleSummary: "Tender and emotionally resonant with focus on human connections and healing",
     sampleMicroLines: [
-      "But then, something absolutely extraordinary happened!",
-      "The most wonderfully wicked idea popped into {userName}'s head!",
-      "Little did they know that {userName} was planning something spectacular!",
-      "It was the most splendidly ridiculous day anyone could imagine."
+      "Hearts spoke without words...",
+      "In the symphony of souls...",
+      "Love's gentle touch awakened..."
     ]
   },
-
-  navyblue: {
-    name: "Navy Blue Voice",
-    description: "Sophisticated storytelling with mystery, adventure, and deeper themes suitable for older children.",
-    ageRange: "9-12",
-    patterns: {
-      openings: [
-        "{userName} stood at the edge of the great mystery, wondering what lay ahead.",
-        "The ancient map revealed secrets that {userName} never expected to discover.",
-        "It was the kind of adventure that changes everything you thought you knew.",
-        "{userName} had always felt different, but today {pronoun} would understand why.",
-        "The storm clouds gathered as {userName} realized the truth about the legend.",
-        "In the depths of the old library, {userName} found more than just books.",
-        "Sometimes the greatest adventures begin with the smallest clues.",
-        "{userName} never imagined that one decision would alter the course of history."
-      ],
-      transitions: [
-        "But the mystery deepened with each discovery.",
-        "As the pieces fell into place, {userName} began to understand.",
-        "The ancient wisdom revealed itself slowly, deliberately.",
-        "Each challenge tested not just {userName}'s courage, but {pronoun} character.",
-        "The path forward demanded both intelligence and bravery.",
-        "What seemed impossible began to make perfect sense.",
-        "The legendary powers awakened within {userName} at last.",
-        "Time was running out, but {userName} had learned enough to act."
-      ],
-      closings: [
-        "And {userName} emerged forever changed by the wisdom gained.",
-        "The mystery was solved, but greater adventures awaited.",
-        "With newfound understanding, {userName} stepped confidently into the future.",
-        "The legend would live on, carried forward by {userName}'s courage."
-      ],
-      plotTwists: [
-        "The enemy revealed themselves to be an unexpected ally!",
-        "The ancient prophecy had been misunderstood all along!",
-        "The greatest power was hidden within {userName} from the beginning!"
-      ],
-      continuations: [
-        "Greater mysteries call to {userName}...",
-        "The adventure has only just begun...",
-        "New legends await their champion..."
-      ],
-      pauses: [
-        "Consider the weight of this moment...",
-        "Let the ancient wisdom settle in your mind...",
-        "Feel the power of understanding growing..."
-      ],
-      hooks: [
-        "An ancient symbol glows in the darkness...",
-        "Whispers of forgotten knowledge reach {userName}...",
-        "The very air thrums with mystical energy..."
-      ]
-    },
-    characteristics: ["mysterious", "adventurous", "sophisticated", "legendary"],
-    preferredThemes: ["mystery", "adventure", "ancient wisdom", "personal growth"],
-    styleSummary: "Sophisticated voice with mystery and adventure themes. Features deeper storytelling, ancient wisdom, and character development suitable for older children.",
+  wiseSage: {
+    name: "The Wise Sage",
+    description: "An ancient storyteller who weaves timeless wisdom into captivating tales",
+    ageRange: { min: 8, max: 18 },
+    openingPatterns: [
+      "In the chambers of ancient wisdom...",
+      "Where knowledge flows like golden rivers...",
+      "From the depths of understanding...",
+      "In the sacred halls of learning..."
+    ],
+    transitionPatterns: [
+      "With the weight of ages behind them...",
+      "Through corridors of deep thought...",
+      "Like echoes of eternal truth...",
+      "With wisdom earned through experience..."
+    ],
+    closingPatterns: [
+      "And wisdom became their guiding light...",
+      "In the tapestry of eternal knowledge...",
+      "Where understanding illuminates the path...",
+      "And truth revealed its timeless beauty..."
+    ],
+    characteristics: [
+      "Philosophical and contemplative tone",
+      "Rich in metaphor and symbolism",
+      "Emphasizes learning and growth",
+      "Uses classical and timeless imagery",
+      "Balances wisdom with accessibility"
+    ],
+    preferredThemes: ["wisdom", "learning", "growth", "mystery", "philosophy", "history"],
+    styleSummary: "Contemplative and wise with classical imagery and philosophical depth",
     sampleMicroLines: [
-      "But the mystery deepened with each discovery.",
-      "The ancient wisdom revealed itself slowly, deliberately.",
-      "Time was running out, but {userName} had learned enough to act.",
-      "With newfound understanding, {userName} stepped confidently into the future."
+      "Ancient wisdom stirred to life...",
+      "In the labyrinth of knowledge...",
+      "Truth emerged from shadows of doubt..."
     ]
   },
-
-  copper: {
-    name: "Copper Voice",
-    description: "Warm, craftsman-like stories focusing on creation, skill development, and mastery through practice.",
-    ageRange: "9-12",
-    patterns: {
-      openings: [
-        "{userName} had been practicing for months, but today would be the real test.",
-        "The workshop was filled with tools and dreams, waiting for {userName} to begin.",
-        "Every master craftsperson started exactly where {userName} stood now.",
-        "The art had been passed down through generations, and now it came to {userName}.",
-        "In {pronoun} hands, raw materials would become something extraordinary.",
-        "The old master watched as {userName} approached the workbench with determination.",
-        "Today, {userName} would learn that true skill comes from the heart, not just the hands.",
-        "The project seemed impossible, but {userName} had been preparing for this moment."
-      ],
-      transitions: [
-        "But then {userName} remembered the master's most important lesson.",
-        "The work required patience, precision, and something more—passion.",
-        "Each mistake became a stepping stone toward mastery.",
-        "The ancient techniques revealed their secrets to {userName} slowly.",
-        "With careful attention, {userName} began to see the patterns emerge.",
-        "The tools seemed to respond to {userName}'s growing confidence.",
-        "What had seemed complex became elegantly simple.",
-        "The rhythm of creation flowed through {userName}'s work."
-      ],
-      closings: [
-        "And {userName} stepped back to admire not just the creation, but the creator {pronoun} had become.",
-        "The masterpiece was complete, but {userName}'s journey as a craftsperson had just begun.",
-        "With skilled hands and a proud heart, {userName} knew this was only the beginning.",
-        "The tradition lived on, now carried forward by {userName}'s capable hands."
-      ],
-      plotTwists: [
-        "The 'mistake' revealed a better way to solve the problem!",
-        "The old master had been secretly learning from {userName} too!",
-        "The creation exceeded even {userName}'s wildest dreams!"
-      ],
-      continuations: [
-        "New projects call to the skilled craftsperson...",
-        "The workshop holds more secrets to discover...",
-        "Greater challenges await the dedicated artisan..."
-      ],
-      pauses: [
-        "Feel the satisfaction of work well done...",
-        "Appreciate the beauty of skilled hands at work...",
-        "Notice how practice transforms into artistry..."
-      ],
-      hooks: [
-        "The workshop door creaks open to new possibilities...",
-        "An unfamiliar tool catches {userName}'s eye...",
-        "The scent of sawdust and dreams fills the air..."
-      ]
-    },
-    characteristics: ["craftsmanship", "skill development", "patience", "mastery"],
-    preferredThemes: ["learning", "creation", "tradition", "skill mastery"],
-    styleSummary: "Warm, craftsman-focused voice emphasizing skill development and creation. Celebrates the journey from novice to master through dedication and practice.",
+  playfulSpirit: {
+    name: "The Playful Spirit",
+    description: "A joyful narrator who finds magic in laughter and celebrates the lighter side of life",
+    ageRange: { min: 4, max: 12 },
+    openingPatterns: [
+      "Where giggles dance with sunbeams...",
+      "In a world painted with laughter...",
+      "When joy bubbles up like magic...",
+      "Where every day is a celebration..."
+    ],
+    transitionPatterns: [
+      "With a skip and a hop...",
+      "Like bubbles floating on the breeze...",
+      "Through puddles of pure joy...",
+      "With laughter ringing like silver bells..."
+    ],
+    closingPatterns: [
+      "And happiness filled every corner...",
+      "With smiles that could light up the world...",
+      "Where laughter echoes forever...",
+      "And joy became their constant companion..."
+    ],
+    characteristics: [
+      "Light-hearted and whimsical",
+      "Emphasizes fun and celebration",
+      "Uses playful imagery and sounds",
+      "Celebrates innocence and wonder",
+      "Upbeat, bouncy narrative rhythm"
+    ],
+    preferredThemes: ["fun", "friendship", "celebration", "animals", "games", "family"],
+    styleSummary: "Whimsical and joyful with emphasis on fun, laughter, and celebratory moments",
     sampleMicroLines: [
-      "The work required patience, precision, and something more—passion.",
-      "Each mistake became a stepping stone toward mastery.",
-      "The rhythm of creation flowed through {userName}'s work.",
-      "With skilled hands and a proud heart, {userName} knew this was only the beginning."
+      "Giggles sparkled in the air...",
+      "Joy painted rainbow colors...",
+      "Laughter became their superpower..."
     ]
   },
-
-  slategray: {
-    name: "Slate Gray Voice",
-    description: "Thoughtful, introspective stories exploring complex emotions, relationships, and moral dilemmas.",
-    ageRange: "10-12",
-    patterns: {
-      openings: [
-        "{userName} stared out the window, wrestling with thoughts too big for words.",
-        "Some decisions change everything, and {userName} was about to make one.",
-        "The question had been bothering {userName} for weeks: what was the right thing to do?",
-        "It wasn't the kind of problem that had easy answers, but {userName} had to try.",
-        "In the quiet moments between day and night, {userName} found clarity at last.",
-        "The conversation with {friend} had left {userName} with more questions than answers.",
-        "Growing up meant facing the kinds of choices {userName} used to avoid.",
-        "Sometimes understanding yourself is the hardest journey of all."
-      ],
-      transitions: [
-        "But as {userName} thought deeper, the picture became clearer.",
-        "The weight of the decision pressed down, but so did the wisdom to handle it.",
-        "Slowly, the complex emotions began to sort themselves out.",
-        "What {friend} had said suddenly made perfect sense.",
-        "The courage to act came from an unexpected place within {userName}.",
-        "Sometimes the most difficult path is also the most necessary one.",
-        "The truth, when it finally came, was both simple and profound.",
-        "In that moment of understanding, everything changed for {userName}."
-      ],
-      closings: [
-        "And {userName} discovered that growing up meant making peace with uncertainty.",
-        "The question was answered, but {userName} knew there would be many more to come.",
-        "With a deeper understanding of {pronoun}self, {userName} faced the future with quiet confidence.",
-        "Some lessons can only be learned by living through them, and {userName} had learned well."
-      ],
-      plotTwists: [
-        "The person {userName} trusted most had been wrong all along!",
-        "The problem solved itself when {userName} stopped trying to control it!",
-        "The answer was found in the last place {userName} expected to look!"
-      ],
-      continuations: [
-        "New questions emerge as {userName} grows wiser...",
-        "The journey of self-discovery continues...",
-        "Greater understanding brings greater responsibility..."
-      ],
-      pauses: [
-        "Take time to sit with these complex feelings...",
-        "Consider all the perspectives in this situation...",
-        "Feel the weight and wisdom of growing up..."
-      ],
-      hooks: [
-        "A memory surfaces that changes everything...",
-        "The phone call {userName} has been dreading arrives...",
-        "A moment of silence reveals the truth..."
-      ]
-    },
-    characteristics: ["introspective", "complex emotions", "moral depth", "thoughtful"],
-    preferredThemes: ["self-discovery", "moral dilemmas", "relationships", "emotional growth"],
-    styleSummary: "Thoughtful, introspective voice exploring complex emotions and moral questions. Suitable for older children navigating the challenges of growing up and understanding themselves.",
+  questSeeker: {
+    name: "The Quest Seeker",
+    description: "A determined narrator who transforms challenges into heroic journeys of growth",
+    ageRange: { min: 6, max: 16 },
+    openingPatterns: [
+      "When destiny calls from distant shores...",
+      "In the crucible of great challenges...",
+      "Where heroes are forged in fire...",
+      "At the crossroads of courage and fear..."
+    ],
+    transitionPatterns: [
+      "With steel in their spine...",
+      "Through trials that test the soul...",
+      "Like a phoenix rising...",
+      "With determination burning bright..."
+    ],
+    closingPatterns: [
+      "And victory tasted sweeter than honey...",
+      "Where legends are born from struggle...",
+      "With honor earned through perseverance...",
+      "And their legacy echoed through time..."
+    ],
+    characteristics: [
+      "Epic and inspiring tone",
+      "Emphasizes heroism and perseverance",
+      "Uses powerful, dramatic imagery",
+      "Celebrates courage and determination",
+      "Strong, rhythmic narrative flow"
+    ],
+    preferredThemes: ["adventure", "courage", "growth", "challenges", "heroes", "quests"],
+    styleSummary: "Epic and inspiring with heroic themes and emphasis on overcoming challenges",
     sampleMicroLines: [
-      "But as {userName} thought deeper, the picture became clearer.",
-      "Sometimes the most difficult path is also the most necessary one.",
-      "In that moment of understanding, everything changed for {userName}.",
-      "Some lessons can only be learned by living through them, and {userName} had learned well."
-    ]
-  },
-
-  teal: {
-    name: "Teal Voice",
-    description: "Environmentally conscious stories blending science, nature, and social responsibility for mature young readers.",
-    ageRange: "10-12",
-    patterns: {
-      openings: [
-        "{userName} had always felt connected to the natural world, but today that connection became a calling.",
-        "The environmental data was clear, and it was up to {userName}'s generation to act.",
-        "In the forest, {userName} discovered that every living thing was part of a vast, interconnected system.",
-        "The scientists had been right all along, and now {userName} understood what needed to be done.",
-        "Standing by the polluted river, {userName} made a promise that would change everything.",
-        "The future of the planet rested in the hands of young people like {userName}.",
-        "What started as a school project became {userName}'s mission to heal the world.",
-        "The climate crisis wasn't just news anymore—it was {userName}'s reality to face."
-      ],
-      transitions: [
-        "But {userName} knew that individual action must become collective movement.",
-        "The solution required both scientific understanding and community cooperation.",
-        "As {userName} learned more, the urgency of the situation became crystal clear.",
-        "The old ways of thinking had failed; it was time for {userName}'s generation to lead.",
-        "Each small action rippled outward, creating waves of positive change.",
-        "The research revealed both the problem and the path forward.",
-        "With determination and scientific knowledge, {userName} began to make a difference.",
-        "The planet's future depended on choices being made right now."
-      ],
-      closings: [
-        "And {userName} realized that protecting the earth was not just a responsibility, but a privilege.",
-        "The work was far from over, but {userName} now knew that change was possible.",
-        "With science as a guide and passion as fuel, {userName} stepped boldly into environmental leadership.",
-        "The planet had found another guardian in {userName}, and hope grew a little stronger."
-      ],
-      plotTwists: [
-        "The solution was hiding in nature's own design all along!",
-        "The adults finally started listening to {userName}'s generation!",
-        "The small local action sparked a global movement!"
-      ],
-      continuations: [
-        "The environmental work expands to new challenges...",
-        "More young activists join {userName}'s cause...",
-        "The next generation of earth guardians emerges..."
-      ],
-      pauses: [
-        "Listen to what the earth is telling us...",
-        "Feel your connection to all living things...",
-        "Consider your role as a planetary steward..."
-      ],
-      hooks: [
-        "The morning news brings urgent environmental data...",
-        "A dying tree whispers its secrets to {userName}...",
-        "The research results arrive with shocking implications..."
-      ]
-    },
-    characteristics: ["environmental consciousness", "scientific thinking", "social responsibility", "future-focused"],
-    preferredThemes: ["environmentalism", "science", "social justice", "global citizenship"],
-    styleSummary: "Environmentally conscious voice blending science education with social responsibility. Empowers older children to become environmental stewards and global citizens.",
-    sampleMicroLines: [
-      "But {userName} knew that individual action must become collective movement.",
-      "Each small action rippled outward, creating waves of positive change.",
-      "The planet's future depended on choices being made right now.",
-      "With science as a guide and passion as fuel, {userName} stepped boldly into environmental leadership."
+      "Destiny forged in starfire...",
+      "Through the gauntlet of trials...",
+      "Where courage meets its calling..."
     ]
   }
 };
@@ -530,132 +282,134 @@ export interface AuthorVoiceBundle {
   voice: ColorVoice;
   selectedPatterns: {
     opening: string;
-    transitions: string[];
+    transition: string;
     closing: string;
   };
-  characteristics: string[];
   themeAlignment: string[];
 }
 
 export class AuthorVoiceService {
   /**
-   * Select author voice based on user's favorite color and difficulty
+   * Selects an appropriate inspirational voice based on difficulty level and story context
    */
-  static selectVoiceForUser(favoriteColor: string, difficulty: DifficultyLevel = 'easy'): ColorVoice {
-    // Convert hex colors to color names if needed
-    const colorName = this.normalizeColorName(favoriteColor);
+  static selectInspirationalVoice(difficulty: DifficultyLevel = 'easy', themeHints?: string[]): ColorVoice {
+    const ageGroup = this.mapDifficultyToAgeGroup(difficulty);
     
-    // Age-appropriate fallback logic
-    const ageGroup = this.getAgeGroupFromDifficulty(difficulty);
+    // Filter voices that are age-appropriate
+    const appropriateVoices = Object.values(INSPIRATIONAL_VOICES).filter(voice =>
+      voice.ageRange.min <= ageGroup.max && voice.ageRange.max >= ageGroup.min
+    );
     
-    // Primary selection by color
-    if (COLOR_VOICES[colorName]) {
-      const voice = COLOR_VOICES[colorName];
-      if (this.isAgeAppropriate(voice, ageGroup)) {
-        return voice;
+    // If theme hints are provided, try to find voices that match
+    if (themeHints && themeHints.length > 0 && appropriateVoices.length > 1) {
+      const themeMatchedVoices = appropriateVoices.filter(voice =>
+        voice.preferredThemes.some(theme => 
+          themeHints.some(hint => hint.toLowerCase().includes(theme.toLowerCase()))
+        )
+      );
+      
+      if (themeMatchedVoices.length > 0) {
+        return themeMatchedVoices[Math.floor(Math.random() * themeMatchedVoices.length)];
       }
     }
     
-    // Fallback to age-appropriate voice
-    return this.getAgeAppropriateVoice(ageGroup);
+    // Random selection from appropriate voices for creative inspiration
+    if (appropriateVoices.length > 0) {
+      return appropriateVoices[Math.floor(Math.random() * appropriateVoices.length)];
+    }
+    
+    // Final fallback to gentle guide
+    return INSPIRATIONAL_VOICES.gentleGuide;
   }
 
   /**
-   * Bundle voice with specific patterns for story generation
+   * Creates a complete voice bundle for AI storytelling inspiration
    */
-  static createVoiceBundle(favoriteColor: string, difficulty: DifficultyLevel): AuthorVoiceBundle {
-    const voice = this.selectVoiceForUser(favoriteColor, difficulty);
-    
-    // Select specific patterns (random selection for variety)
-    const opening = this.selectRandomPattern(voice.patterns.openings);
-    const transitions = this.selectRandomPatterns(voice.patterns.transitions, 3);
-    const closing = this.selectRandomPattern(voice.patterns.closings);
+  static createInspirationalBundle(difficulty: DifficultyLevel, themeHints?: string[]): AuthorVoiceBundle {
+    const voice = this.selectInspirationalVoice(difficulty, themeHints);
     
     return {
       voice,
       selectedPatterns: {
-        opening,
-        transitions,
-        closing
+        opening: this.selectRandomPattern(voice.openingPatterns),
+        transition: this.selectRandomPattern(voice.transitionPatterns), 
+        closing: this.selectRandomPattern(voice.closingPatterns)
       },
-      characteristics: voice.characteristics,
-      themeAlignment: voice.preferredThemes || []
+      themeAlignment: voice.preferredThemes
     };
   }
 
   /**
-   * Resolve placeholders in voice patterns
+   * Extracts theme hints from user info for better voice matching
    */
-  static resolvePlaceholders(text: string, userInfo: any = {}): string {
-    return text
-      .replace(/\{userName\}/g, userInfo.name || 'the child')
-      .replace(/\{pronoun\}/g, this.derivePronoun(userInfo))
-      .replace(/\{friend\}/g, userInfo.favoriteAnimal || 'friend')
-      .replace(/\{animal\}/g, userInfo.favoriteAnimal || 'cat')
-      .replace(/\{food\}/g, userInfo.favoriteFood || 'cookies')
-      .replace(/\{color\}/g, userInfo.favoriteColor || 'blue')
-      .replace(/\{adjective\}/g, 'wonderful')
-      .replace(/\{object\}/g, 'treasure');
-  }
-
-  private static normalizeColorName(color: string): string {
-    if (!color) return 'blue';
+  private static extractThemeHints(userInfo?: any): string[] {
+    const hints: string[] = [];
     
-    // Handle hex colors
-    const hexToColorMap: Record<string, string> = {
-      '#10B981': 'green',
-      '#8B5CF6': 'purple',
-      '#F97316': 'orange',
-      '#EC4899': 'pink',
-      '#3B82F6': 'blue'
-    };
+    if (!userInfo) return hints;
     
-    if (color.startsWith('#')) {
-      return hexToColorMap[color] || 'blue';
+    // Extract from interests
+    if (userInfo.interests) {
+      hints.push(...userInfo.interests);
     }
     
-    return color.toLowerCase();
+    // Extract from favorite activities
+    if (userInfo.favoriteActivities) {
+      hints.push(...userInfo.favoriteActivities);
+    }
+    
+    // Extract from story preferences
+    if (userInfo.storyLanguagePreferences) {
+      hints.push(...userInfo.storyLanguagePreferences);
+    }
+    
+    return hints.map(hint => hint.toLowerCase());
   }
 
-  private static getAgeGroupFromDifficulty(difficulty: DifficultyLevel): string {
-    const difficultyAgeMap = {
-      'beginner': '3-5',
-      'easy': '5-7', 
-      'medium': '7-9',
-      'hard': '9-12',
-      'expert': '10-12'
-    };
-    return difficultyAgeMap[difficulty] || '5-7';
+  /**
+   * Maps difficulty to age groups for voice selection
+   */
+  private static mapDifficultyToAgeGroup(difficulty: DifficultyLevel): { min: number; max: number } {
+    switch (difficulty) {
+      case 'beginner': return { min: 3, max: 6 };
+      case 'easy': return { min: 5, max: 8 };
+      case 'medium': return { min: 7, max: 12 };
+      case 'hard': return { min: 10, max: 16 };
+      case 'expert': return { min: 14, max: 18 };
+      default: return { min: 5, max: 8 };
+    }
   }
 
-  private static isAgeAppropriate(voice: ColorVoice, targetAgeGroup: string): boolean {
-    return voice.ageRange === targetAgeGroup;
-  }
-
-  private static getAgeAppropriateVoice(ageGroup: string): ColorVoice {
-    const ageVoiceMap = {
-      '3-5': COLOR_VOICES.green,
-      '5-7': COLOR_VOICES.green,
-      '7-9': COLOR_VOICES.orange,
-      '9-12': COLOR_VOICES.navyblue,
-      '10-12': COLOR_VOICES.teal
-    };
-    return ageVoiceMap[ageGroup] || COLOR_VOICES.green;
-  }
-
+  /**
+   * Selects a random pattern from an array
+   */
   private static selectRandomPattern(patterns: string[]): string {
+    if (!patterns || patterns.length === 0) return '';
     return patterns[Math.floor(Math.random() * patterns.length)];
   }
 
-  private static selectRandomPatterns(patterns: string[], count: number): string[] {
-    const shuffled = [...patterns].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
+  /**
+   * Resolves placeholders in text with user information
+   */
+  static resolvePlaceholders(text: string, userInfo: any = {}): string {
+    let resolved = text;
+    
+    // Basic user info placeholders
+    resolved = resolved.replace(/{userName}/g, userInfo.name || 'the child');
+    resolved = resolved.replace(/{pronoun}/g, this.derivePronoun(userInfo));
+    
+    return resolved;
   }
 
+  /**
+   * Derives appropriate pronoun from user info
+   */
   private static derivePronoun(userInfo: any = {}): string {
     const avatarType = userInfo.avatar?.type;
-    if (avatarType === 'girl') return 'she';
-    if (avatarType === 'boy') return 'he';
-    return 'they';
+    
+    switch (avatarType) {
+      case 'boy': return 'he';
+      case 'girl': return 'she';
+      default: return 'they';
+    }
   }
 }
