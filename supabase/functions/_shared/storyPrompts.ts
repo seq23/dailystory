@@ -50,7 +50,7 @@ USER INPUT INTEGRATION: Mix {userName}, {favoriteColor}, {favoriteAnimal}, {favo
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform any potentially concerning themes into their gentle equivalents naturally.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for learning-focused variety: settings (any safe, familiar environments children experience), activities (age-appropriate adventures/daily life experiences/learning moments), characters (family/community helpers/friendly animals), moods (positive/cheerful/happy only), and educational scenarios. Favor repetitive sentence patterns within sessions for pre-reader learning reinforcement while varying story details between sessions.`,
     userPromptTemplate: 'Create a never-ending children\'s story for {userName}, age 3-5. The story continues forever unless the user requests an ending. Use {specialRequest} as creative inspiration, or if none determined, create your own engaging themes. Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. USE ONLY 1 sentence per page with simple subject-verb or subject-verb-object structure. Use MOSTLY sight words and 2-4 letter words. Use MOSTLY 2-4 word sentences (max 6).',
   },
 
@@ -80,7 +80,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: G-rated content only. No external personal data. No copyrighted content. Transform concerning themes to gentle equivalents.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for creative variety: settings (any age-appropriate location), activities (adventures/exploration/problem-solving/friendship), moods (wide emotional range), characters (diverse backgrounds), magical elements, and imaginative scenarios. Let OpenAI's creativity flourish within age-appropriate boundaries.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 5-7. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Integrate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story in a direct way, mixing with your own creative elements. Use simple vocabulary with 2-3 sentences per page for developing readers. Let the story flow organically with natural progression.',
   },
 
@@ -111,7 +111,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Transform concerning themes.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for enhanced creativity: settings (fantastical or realistic worlds), activities (complex adventures/mysteries/scientific exploration), character development (personality growth/challenges), magical systems, world-building elements. Embrace OpenAI's full creative potential for engaging storytelling.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 7-9. The story continues forever with natural pauses and continuation hooks unless the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} throughout the story, mixing with your own creative elements. Let the story flow organically with natural progression.',
   },
 
@@ -142,7 +142,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid intense themes.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for maximum creativity: settings (any imaginative world), complex character arcs, sophisticated plot development, thematic exploration, literary devices, and advanced storytelling techniques. Allow OpenAI complete creative freedom within age-appropriate content guidelines.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 9-12. The story continues forever with natural pauses and continuation hooks until the user requests an ending. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative, mixing with your own creative elements. Let the story flow organically with sophisticated storytelling techniques.',
   },
 
@@ -172,7 +172,7 @@ AUTHOR'S STYLE: Draw inspiration from getColorVoiceForUser(userInfo, difficulty)
 
 GUARDRAILS: Age-appropriate content. No copyrighted content. Avoid inappropriate material.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens (11-13). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
     userPromptTemplate: 'Create a never-ending story for {userName}, age 11-15 until the user requests an ending. Challenge readers intellectually with mature themes and transformative character growth. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally incorporate {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} when they enhance the narrative.',
   }
 };
@@ -206,7 +206,7 @@ Maximum 400 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 6th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     wordCount: "200-400 words per page"
   },
@@ -237,7 +237,7 @@ Maximum 427 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 7th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     wordCount: "200-400 words per page"
   },
@@ -268,7 +268,7 @@ Maximum 453 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 8th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     wordCount: "200-400 words per page"
   },
@@ -299,7 +299,7 @@ Maximum 480 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 9th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     wordCount: "200-400 words per page"
   },
@@ -330,7 +330,7 @@ Maximum 533 tokens per page. Target 200-400 words per page.
 
 CRITICAL: Remove ALL markdown formatting including **bold**, *italic*, and any asterisks from your output.
 
-Use seed={seed} to vary story elements: settings (home/park/forest/city), activities (exploring/helping/playing), moods (cheerful/curious/adventurous), and time periods (morning/afternoon/evening). Higher seeds favor active/adventurous themes, lower seeds favor calm/reflective themes.`,
+Use seed={seed} for unlimited creative expression: sophisticated world-building, complex character psychology, advanced literary techniques, philosophical themes, and mature storytelling approaches appropriate for pre-teens and teens (11-15). Grant OpenAI maximum creative autonomy for intellectually challenging narratives while maintaining age-appropriate content.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) using 10th grade vocabulary that challenges readers intellectually and emotionally. Use {specialRequest} as the main theme and creative direction, or improvise (author\'s style is a reference). Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Use a random internal seed (1-10,000) for unique details.',
     wordCount: "200-400 words per page"
   }
