@@ -254,12 +254,29 @@ function cleanStoryText(text: string): string {
     .trim();
 }
 
+/**
+ * Get correct word count range per page based on grade level
+ */
+function getWordsPerPageRange(gradeLevel: number): { min: number; max: number; target: number } {
+  if (gradeLevel === 0) {
+    return { min: 15, max: 24, target: 20 }; // Beginner
+  } else if (gradeLevel === 1) {
+    return { min: 50, max: 70, target: 60 }; // Easy  
+  } else if (gradeLevel === 2) {
+    return { min: 80, max: 120, target: 100 }; // Medium
+  } else if (gradeLevel >= 3 && gradeLevel <= 5) {
+    return { min: 120, max: 200, target: 160 }; // Hard
+  } else {
+    return { min: 200, max: 400, target: 300 }; // Expert (6th-10th grade)
+  }
+}
+
 function parseIntoPages(storyText: string, gradeLevel: number): string[] {
   const expertGrade = mapGradeToExpertLevel(gradeLevel);
   const level = expertGrade || mapGradeLevelToDifficulty(gradeLevel);
   const expectedPages = getExpectedPages(level);
   
-  // For beginner and easy levels, use sentence-based parsing and limit to expected pages
+  // For beginner and easy levels, use sentence-based parsing
   if (gradeLevel === 0 || gradeLevel === 1) {
     // Split by sentence breaks (double line breaks or sentence endings)
     const sentences = storyText
@@ -268,14 +285,15 @@ function parseIntoPages(storyText: string, gradeLevel: number): string[] {
       .filter(s => s.length > 0)
       .map(s => s.endsWith('.') ? s : s + '.');
     
-    // For Netflix mode, limit to expected pages
+    // Always limit to expected pages
     return sentences.slice(0, expectedPages);
   }
   
-  // For other levels, use word-count approach
-  const targetWordsPerPage = gradeLevel <= 2 ? 30 : 60;
+  // For medium, hard, and expert levels, use proper word-count approach
+  const wordRange = getWordsPerPageRange(gradeLevel);
+  const targetWordsPerPage = wordRange.target;
   
-  // Simple paragraph-based splitting
+  // Split by paragraphs and process
   const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
   const pages: string[] = [];
   
@@ -285,22 +303,30 @@ function parseIntoPages(storyText: string, gradeLevel: number): string[] {
   for (const paragraph of paragraphs) {
     const paragraphWords = paragraph.split(/\s+/).length;
     
+    // If adding this paragraph would exceed target AND we have content, start new page
     if (currentWordCount + paragraphWords > targetWordsPerPage && currentPage) {
       pages.push(currentPage.trim());
       currentPage = paragraph;
       currentWordCount = paragraphWords;
+      
+      // Stop if we've reached expected pages
+      if (pages.length >= expectedPages) {
+        break;
+      }
     } else {
       currentPage += (currentPage ? '\n\n' : '') + paragraph;
       currentWordCount += paragraphWords;
     }
   }
   
-  if (currentPage.trim()) {
+  // Add the last page if we have content and haven't exceeded expected pages
+  if (currentPage.trim() && pages.length < expectedPages) {
     pages.push(currentPage.trim());
   }
   
-  // Ensure we have at least one page
-  return pages.length > 0 ? pages : [storyText];
+  // Always limit to expected pages and ensure we have at least one page
+  const limitedPages = pages.slice(0, expectedPages);
+  return limitedPages.length > 0 ? limitedPages : [storyText];
 }
 
 function getTokensForGrade(gradeLevel: number): number {
