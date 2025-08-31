@@ -397,6 +397,258 @@ export const COLOR_VOICES: Record<string, ColorVoice> = {
       "Little did they know that {userName} was planning something spectacular!",
       "It was the most splendidly ridiculous day anyone could imagine."
     ]
+  },
+
+  navyblue: {
+    name: "Navy Blue Voice",
+    description: "Sophisticated storytelling with mystery, adventure, and deeper themes suitable for older children.",
+    ageRange: "9-12",
+    patterns: {
+      openings: [
+        "{userName} stood at the edge of the great mystery, wondering what lay ahead.",
+        "The ancient map revealed secrets that {userName} never expected to discover.",
+        "It was the kind of adventure that changes everything you thought you knew.",
+        "{userName} had always felt different, but today {pronoun} would understand why.",
+        "The storm clouds gathered as {userName} realized the truth about the legend.",
+        "In the depths of the old library, {userName} found more than just books.",
+        "Sometimes the greatest adventures begin with the smallest clues.",
+        "{userName} never imagined that one decision would alter the course of history."
+      ],
+      transitions: [
+        "But the mystery deepened with each discovery.",
+        "As the pieces fell into place, {userName} began to understand.",
+        "The ancient wisdom revealed itself slowly, deliberately.",
+        "Each challenge tested not just {userName}'s courage, but {pronoun} character.",
+        "The path forward demanded both intelligence and bravery.",
+        "What seemed impossible began to make perfect sense.",
+        "The legendary powers awakened within {userName} at last.",
+        "Time was running out, but {userName} had learned enough to act."
+      ],
+      closings: [
+        "And {userName} emerged forever changed by the wisdom gained.",
+        "The mystery was solved, but greater adventures awaited.",
+        "With newfound understanding, {userName} stepped confidently into the future.",
+        "The legend would live on, carried forward by {userName}'s courage."
+      ],
+      plotTwists: [
+        "The enemy revealed themselves to be an unexpected ally!",
+        "The ancient prophecy had been misunderstood all along!",
+        "The greatest power was hidden within {userName} from the beginning!"
+      ],
+      continuations: [
+        "Greater mysteries call to {userName}...",
+        "The adventure has only just begun...",
+        "New legends await their champion..."
+      ],
+      pauses: [
+        "Consider the weight of this moment...",
+        "Let the ancient wisdom settle in your mind...",
+        "Feel the power of understanding growing..."
+      ],
+      hooks: [
+        "An ancient symbol glows in the darkness...",
+        "Whispers of forgotten knowledge reach {userName}...",
+        "The very air thrums with mystical energy..."
+      ]
+    },
+    characteristics: ["mysterious", "adventurous", "sophisticated", "legendary"],
+    preferredThemes: ["mystery", "adventure", "ancient wisdom", "personal growth"],
+    styleSummary: "Sophisticated voice with mystery and adventure themes. Features deeper storytelling, ancient wisdom, and character development suitable for older children.",
+    sampleMicroLines: [
+      "But the mystery deepened with each discovery.",
+      "The ancient wisdom revealed itself slowly, deliberately.",
+      "Time was running out, but {userName} had learned enough to act.",
+      "With newfound understanding, {userName} stepped confidently into the future."
+    ]
+  },
+
+  copper: {
+    name: "Copper Voice",
+    description: "Warm, craftsman-like stories focusing on creation, skill development, and mastery through practice.",
+    ageRange: "9-12",
+    patterns: {
+      openings: [
+        "{userName} had been practicing for months, but today would be the real test.",
+        "The workshop was filled with tools and dreams, waiting for {userName} to begin.",
+        "Every master craftsperson started exactly where {userName} stood now.",
+        "The art had been passed down through generations, and now it came to {userName}.",
+        "In {pronoun} hands, raw materials would become something extraordinary.",
+        "The old master watched as {userName} approached the workbench with determination.",
+        "Today, {userName} would learn that true skill comes from the heart, not just the hands.",
+        "The project seemed impossible, but {userName} had been preparing for this moment."
+      ],
+      transitions: [
+        "But then {userName} remembered the master's most important lesson.",
+        "The work required patience, precision, and something more—passion.",
+        "Each mistake became a stepping stone toward mastery.",
+        "The ancient techniques revealed their secrets to {userName} slowly.",
+        "With careful attention, {userName} began to see the patterns emerge.",
+        "The tools seemed to respond to {userName}'s growing confidence.",
+        "What had seemed complex became elegantly simple.",
+        "The rhythm of creation flowed through {userName}'s work."
+      ],
+      closings: [
+        "And {userName} stepped back to admire not just the creation, but the creator {pronoun} had become.",
+        "The masterpiece was complete, but {userName}'s journey as a craftsperson had just begun.",
+        "With skilled hands and a proud heart, {userName} knew this was only the beginning.",
+        "The tradition lived on, now carried forward by {userName}'s capable hands."
+      ],
+      plotTwists: [
+        "The 'mistake' revealed a better way to solve the problem!",
+        "The old master had been secretly learning from {userName} too!",
+        "The creation exceeded even {userName}'s wildest dreams!"
+      ],
+      continuations: [
+        "New projects call to the skilled craftsperson...",
+        "The workshop holds more secrets to discover...",
+        "Greater challenges await the dedicated artisan..."
+      ],
+      pauses: [
+        "Feel the satisfaction of work well done...",
+        "Appreciate the beauty of skilled hands at work...",
+        "Notice how practice transforms into artistry..."
+      ],
+      hooks: [
+        "The workshop door creaks open to new possibilities...",
+        "An unfamiliar tool catches {userName}'s eye...",
+        "The scent of sawdust and dreams fills the air..."
+      ]
+    },
+    characteristics: ["craftsmanship", "skill development", "patience", "mastery"],
+    preferredThemes: ["learning", "creation", "tradition", "skill mastery"],
+    styleSummary: "Warm, craftsman-focused voice emphasizing skill development and creation. Celebrates the journey from novice to master through dedication and practice.",
+    sampleMicroLines: [
+      "The work required patience, precision, and something more—passion.",
+      "Each mistake became a stepping stone toward mastery.",
+      "The rhythm of creation flowed through {userName}'s work.",
+      "With skilled hands and a proud heart, {userName} knew this was only the beginning."
+    ]
+  },
+
+  slategray: {
+    name: "Slate Gray Voice",
+    description: "Thoughtful, introspective stories exploring complex emotions, relationships, and moral dilemmas.",
+    ageRange: "10-12",
+    patterns: {
+      openings: [
+        "{userName} stared out the window, wrestling with thoughts too big for words.",
+        "Some decisions change everything, and {userName} was about to make one.",
+        "The question had been bothering {userName} for weeks: what was the right thing to do?",
+        "It wasn't the kind of problem that had easy answers, but {userName} had to try.",
+        "In the quiet moments between day and night, {userName} found clarity at last.",
+        "The conversation with {friend} had left {userName} with more questions than answers.",
+        "Growing up meant facing the kinds of choices {userName} used to avoid.",
+        "Sometimes understanding yourself is the hardest journey of all."
+      ],
+      transitions: [
+        "But as {userName} thought deeper, the picture became clearer.",
+        "The weight of the decision pressed down, but so did the wisdom to handle it.",
+        "Slowly, the complex emotions began to sort themselves out.",
+        "What {friend} had said suddenly made perfect sense.",
+        "The courage to act came from an unexpected place within {userName}.",
+        "Sometimes the most difficult path is also the most necessary one.",
+        "The truth, when it finally came, was both simple and profound.",
+        "In that moment of understanding, everything changed for {userName}."
+      ],
+      closings: [
+        "And {userName} discovered that growing up meant making peace with uncertainty.",
+        "The question was answered, but {userName} knew there would be many more to come.",
+        "With a deeper understanding of {pronoun}self, {userName} faced the future with quiet confidence.",
+        "Some lessons can only be learned by living through them, and {userName} had learned well."
+      ],
+      plotTwists: [
+        "The person {userName} trusted most had been wrong all along!",
+        "The problem solved itself when {userName} stopped trying to control it!",
+        "The answer was found in the last place {userName} expected to look!"
+      ],
+      continuations: [
+        "New questions emerge as {userName} grows wiser...",
+        "The journey of self-discovery continues...",
+        "Greater understanding brings greater responsibility..."
+      ],
+      pauses: [
+        "Take time to sit with these complex feelings...",
+        "Consider all the perspectives in this situation...",
+        "Feel the weight and wisdom of growing up..."
+      ],
+      hooks: [
+        "A memory surfaces that changes everything...",
+        "The phone call {userName} has been dreading arrives...",
+        "A moment of silence reveals the truth..."
+      ]
+    },
+    characteristics: ["introspective", "complex emotions", "moral depth", "thoughtful"],
+    preferredThemes: ["self-discovery", "moral dilemmas", "relationships", "emotional growth"],
+    styleSummary: "Thoughtful, introspective voice exploring complex emotions and moral questions. Suitable for older children navigating the challenges of growing up and understanding themselves.",
+    sampleMicroLines: [
+      "But as {userName} thought deeper, the picture became clearer.",
+      "Sometimes the most difficult path is also the most necessary one.",
+      "In that moment of understanding, everything changed for {userName}.",
+      "Some lessons can only be learned by living through them, and {userName} had learned well."
+    ]
+  },
+
+  teal: {
+    name: "Teal Voice",
+    description: "Environmentally conscious stories blending science, nature, and social responsibility for mature young readers.",
+    ageRange: "10-12",
+    patterns: {
+      openings: [
+        "{userName} had always felt connected to the natural world, but today that connection became a calling.",
+        "The environmental data was clear, and it was up to {userName}'s generation to act.",
+        "In the forest, {userName} discovered that every living thing was part of a vast, interconnected system.",
+        "The scientists had been right all along, and now {userName} understood what needed to be done.",
+        "Standing by the polluted river, {userName} made a promise that would change everything.",
+        "The future of the planet rested in the hands of young people like {userName}.",
+        "What started as a school project became {userName}'s mission to heal the world.",
+        "The climate crisis wasn't just news anymore—it was {userName}'s reality to face."
+      ],
+      transitions: [
+        "But {userName} knew that individual action must become collective movement.",
+        "The solution required both scientific understanding and community cooperation.",
+        "As {userName} learned more, the urgency of the situation became crystal clear.",
+        "The old ways of thinking had failed; it was time for {userName}'s generation to lead.",
+        "Each small action rippled outward, creating waves of positive change.",
+        "The research revealed both the problem and the path forward.",
+        "With determination and scientific knowledge, {userName} began to make a difference.",
+        "The planet's future depended on choices being made right now."
+      ],
+      closings: [
+        "And {userName} realized that protecting the earth was not just a responsibility, but a privilege.",
+        "The work was far from over, but {userName} now knew that change was possible.",
+        "With science as a guide and passion as fuel, {userName} stepped boldly into environmental leadership.",
+        "The planet had found another guardian in {userName}, and hope grew a little stronger."
+      ],
+      plotTwists: [
+        "The solution was hiding in nature's own design all along!",
+        "The adults finally started listening to {userName}'s generation!",
+        "The small local action sparked a global movement!"
+      ],
+      continuations: [
+        "The environmental work expands to new challenges...",
+        "More young activists join {userName}'s cause...",
+        "The next generation of earth guardians emerges..."
+      ],
+      pauses: [
+        "Listen to what the earth is telling us...",
+        "Feel your connection to all living things...",
+        "Consider your role as a planetary steward..."
+      ],
+      hooks: [
+        "The morning news brings urgent environmental data...",
+        "A dying tree whispers its secrets to {userName}...",
+        "The research results arrive with shocking implications..."
+      ]
+    },
+    characteristics: ["environmental consciousness", "scientific thinking", "social responsibility", "future-focused"],
+    preferredThemes: ["environmentalism", "science", "social justice", "global citizenship"],
+    styleSummary: "Environmentally conscious voice blending science education with social responsibility. Empowers older children to become environmental stewards and global citizens.",
+    sampleMicroLines: [
+      "But {userName} knew that individual action must become collective movement.",
+      "Each small action rippled outward, creating waves of positive change.",
+      "The planet's future depended on choices being made right now.",
+      "With science as a guide and passion as fuel, {userName} stepped boldly into environmental leadership."
+    ]
   }
 };
 
@@ -498,8 +750,8 @@ export class AuthorVoiceService {
       'beginner': '3-5',
       'easy': '5-7', 
       'medium': '7-9',
-      'hard': '7-9',
-      'expert': '7-9'
+      'hard': '9-12',
+      'expert': '10-12'
     };
     return difficultyAgeMap[difficulty] || '5-7';
   }
@@ -512,7 +764,9 @@ export class AuthorVoiceService {
     const ageVoiceMap = {
       '3-5': COLOR_VOICES.red,
       '5-7': COLOR_VOICES.green,
-      '7-9': COLOR_VOICES.orange
+      '7-9': COLOR_VOICES.orange,
+      '9-12': COLOR_VOICES.navyblue,
+      '10-12': COLOR_VOICES.teal
     };
     return ageVoiceMap[ageGroup] || COLOR_VOICES.green;
   }
