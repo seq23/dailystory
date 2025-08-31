@@ -444,14 +444,60 @@ export function formatUserPrompt(template: string, userInfo: any): string {
  * Extract token limit directly from system prompt - SINGLE SOURCE OF TRUTH
  */
 export function extractTokenLimitFromPrompt(systemPrompt: string): number {
-  const match = systemPrompt.match(/Maximum (\d+) tokens per page/);
-  if (match) {
-    console.log(`🔍 Token extraction SUCCESS: Found ${match[1]} tokens in prompt`);
-    return parseInt(match[1]);
+  // Try to match token format first
+  const tokenMatch = systemPrompt.match(/Maximum (\d+) tokens per page/);
+  if (tokenMatch) {
+    console.log(`🔍 Token extraction SUCCESS: Found ${tokenMatch[1]} tokens in prompt`);
+    return parseInt(tokenMatch[1]);
+  }
+  
+  // Try to match word count format for expert levels (e.g., "350-400 words per page")
+  const wordMatch = systemPrompt.match(/(\d+)[-–](\d+) words per page/);
+  if (wordMatch) {
+    const avgWords = (parseInt(wordMatch[1]) + parseInt(wordMatch[2])) / 2;
+    const tokens = Math.ceil(avgWords * 1.33); // Convert words to tokens (1.33 ratio)
+    console.log(`🔍 Token extraction SUCCESS: Converted ${avgWords} words to ${tokens} tokens`);
+    return tokens;
+  }
+  
+  // Try single word count format (e.g., "400 words per page")
+  const singleWordMatch = systemPrompt.match(/(\d+) words per page/);
+  if (singleWordMatch) {
+    const words = parseInt(singleWordMatch[1]);
+    const tokens = Math.ceil(words * 1.33); // Convert words to tokens
+    console.log(`🔍 Token extraction SUCCESS: Converted ${words} words to ${tokens} tokens`);
+    return tokens;
   }
   
   console.error('🚨 Token extraction FAILED - no match found in prompt:', systemPrompt.substring(0, 200) + '...');
-  return 8; // Safe fallback
+  return 400; // Realistic fallback for expert content
+}
+
+/**
+ * Normalize grade level format to handle all variations
+ */
+function normalizeGradeLevel(difficulty: string): string {
+  // Handle "grade6", "grade7", etc. -> "6th", "7th", etc.
+  const gradeMatch = difficulty.match(/^grade(\d+)$/);
+  if (gradeMatch) {
+    return `${gradeMatch[1]}th`;
+  }
+  
+  // Handle "6", "7", etc. -> "6th", "7th", etc.
+  const numMatch = difficulty.match(/^(\d+)$/);
+  if (numMatch) {
+    return `${numMatch[1]}th`;
+  }
+  
+  return difficulty; // Return as-is if already in standard format
+}
+
+/**
+ * Check if difficulty is an expert grade level
+ */
+function isExpertGradeLevel(difficulty: string): boolean {
+  const normalized = normalizeGradeLevel(difficulty);
+  return ['6th', '7th', '8th', '9th', '10th'].includes(normalized);
 }
 
 /**
@@ -460,6 +506,9 @@ export function extractTokenLimitFromPrompt(systemPrompt: string): number {
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   console.log(`🎯 Getting per-page tokens for difficulty: ${difficulty}`);
   
+  // Normalize the difficulty for consistent lookup
+  const normalizedDifficulty = normalizeGradeLevel(difficulty);
+  
   // Check regular difficulty levels first
   if (Object.keys(STORY_PROMPTS).includes(difficulty as DifficultyLevel)) {
     const tokens = extractTokenLimitFromPrompt(STORY_PROMPTS[difficulty as DifficultyLevel].systemPrompt);
@@ -467,48 +516,53 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
     return tokens;
   }
   
-  // Check expert grade levels
+  // Check expert grade levels with normalized format
+  if (Object.keys(EXPERT_STORY_PROMPTS).includes(normalizedDifficulty as ExpertGradeLevel)) {
+    const tokens = extractTokenLimitFromPrompt(EXPERT_STORY_PROMPTS[normalizedDifficulty as ExpertGradeLevel].systemPrompt);
+    console.log(`✅ Expert grade ${normalizedDifficulty} (original: ${difficulty}): ${tokens} tokens per page`);
+    return tokens;
+  }
+  
+  // Check if original format is in expert prompts
   if (Object.keys(EXPERT_STORY_PROMPTS).includes(difficulty as ExpertGradeLevel)) {
     const tokens = extractTokenLimitFromPrompt(EXPERT_STORY_PROMPTS[difficulty as ExpertGradeLevel].systemPrompt);
     console.log(`✅ Expert grade ${difficulty}: ${tokens} tokens per page`);
     return tokens;
   }
   
-  // Proper expert grade fallbacks with flexible naming
+  // High-quality expert grade fallbacks
   const expertFallbacks: Record<string, number> = {
-    '6th': 400,
-    '7th': 427, 
-    '8th': 453,
-    '9th': 480,
-    '10th': 533,
-    // Handle alternate naming conventions
-    'grade6': 400,
-    'grade7': 427,
-    'grade8': 453,
-    'grade9': 480,
-    'grade10': 533
+    '6th': 467,   // ~350 words
+    '7th': 533,   // ~400 words  
+    '8th': 600,   // ~450 words
+    '9th': 667,   // ~500 words
+    '10th': 733,  // ~550 words
   };
   
-  if (difficulty in expertFallbacks) {
-    const tokens = expertFallbacks[difficulty];
-    console.log(`🔧 Expert fallback for ${difficulty}: ${tokens} tokens per page`);
+  // Use normalized format for fallback lookup
+  if (expertFallbacks[normalizedDifficulty]) {
+    const tokens = expertFallbacks[normalizedDifficulty];
+    console.log(`🔧 Expert fallback for ${difficulty} (normalized: ${normalizedDifficulty}): ${tokens} tokens per page`);
     return tokens;
   }
   
-  // Handle grade level parsing for formats like "grade10" -> "10th"
-  const gradeMatch = difficulty.match(/^grade(\d+)$/);
-  if (gradeMatch) {
-    const gradeNum = gradeMatch[1];
-    const standardFormat = `${gradeNum}th`;
-    if (standardFormat in expertFallbacks) {
-      const tokens = expertFallbacks[standardFormat];
-      console.log(`🔧 Expert fallback for ${difficulty} (normalized to ${standardFormat}): ${tokens} tokens per page`);
-      return tokens;
-    }
+  // Regular difficulty fallbacks
+  const regularFallbacks: Record<string, number> = {
+    'beginner': 67,   // ~50 words
+    'easy': 100,      // ~75 words
+    'medium': 133,    // ~100 words
+    'hard': 200,      // ~150 words
+    'expert': 467,    // Default expert level (6th grade equivalent)
+  };
+  
+  if (regularFallbacks[difficulty]) {
+    const tokens = regularFallbacks[difficulty];
+    console.log(`🔧 Regular fallback for ${difficulty}: ${tokens} tokens per page`);
+    return tokens;
   }
   
-  console.error(`🚨 Unknown difficulty: ${difficulty}, using realistic fallback`);
-  return 400; // More realistic fallback for expert content
+  console.error(`🚨 Unknown difficulty: ${difficulty}, using expert fallback`);
+  return 467; // Default to 6th grade expert level
 }
 
 /**
@@ -531,13 +585,30 @@ export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeL
  * Get expected pages for difficulty level
  */
 export function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  // Normalize grade level format
+  const normalizedDifficulty = normalizeGradeLevel(difficulty);
+  
+  // Check regular difficulty levels first
   if (Object.keys(STORY_PROMPTS).includes(difficulty as DifficultyLevel)) {
     return STORY_PROMPTS[difficulty as DifficultyLevel].expectedPages || 10;
   }
+  
+  // Check expert grade levels with normalized format
+  if (Object.keys(EXPERT_STORY_PROMPTS).includes(normalizedDifficulty as ExpertGradeLevel)) {
+    return EXPERT_STORY_PROMPTS[normalizedDifficulty as ExpertGradeLevel].expectedPages || 12;
+  }
+  
+  // Check original format
   if (Object.keys(EXPERT_STORY_PROMPTS).includes(difficulty as ExpertGradeLevel)) {
     return EXPERT_STORY_PROMPTS[difficulty as ExpertGradeLevel].expectedPages || 12;
   }
-  return 10;
+  
+  // Expert grade fallback
+  if (isExpertGradeLevel(difficulty)) {
+    return 12;
+  }
+  
+  return 10; // Default for regular difficulties
 }
 
 /**

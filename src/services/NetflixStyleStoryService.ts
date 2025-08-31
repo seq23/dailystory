@@ -62,29 +62,29 @@ export class NetflixStyleStoryService {
         // Pages already cleaned by unified system
         const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
-        // Character-based validation that aligns with actual AI output
-        const isExpertLevel = difficulty === 'expert';
-        const minPagesRequired = isExpertLevel ? 2 : 3;
+        // Token-based validation that aligns with actual AI output
+        const isExpertLevel = difficulty === 'expert' || this.isExpertGradeLevel(difficulty);
+        const minPagesRequired = isExpertLevel ? 8 : 5; // Reduced minimum pages
         
-        // For expert levels, validate total character count (more realistic than word count)
-        const totalCharacterCount = isExpertLevel ? 
-          (cleanedPages || []).join(' ').length : 0;
-        const minCharsForExpert = 800; // Minimum characters for expert content (realistic for AI output)
+        // Import token validation utilities
+        const { validateTokenLimit, estimateTokenCount } = await import('@/utils/tokenLimitValidator');
         
-        // Also validate individual page quality
-        const avgCharsPerPage = isExpertLevel && cleanedPages.length > 0 ? 
-          totalCharacterCount / cleanedPages.length : 0;
-        const minCharsPerPage = 100; // Each page should have substantial content
+        // For all levels, validate using proper token-based validation
+        const totalContent = (cleanedPages || []).join(' ');
+        const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
         
-        const isValidContent = isExpertLevel ? 
-          (cleanedPages.length >= minPagesRequired && 
-           totalCharacterCount >= minCharsForExpert && 
-           avgCharsPerPage >= minCharsPerPage) :
-          (cleanedPages.length >= minPagesRequired);
+        // Check if content meets token requirements (more lenient validation)
+        const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= 400;
+        
+        // Additional quality check: ensure pages aren't just repeated content (concatenation detection)
+        const uniqueContentRatio = this.calculateUniqueContentRatio(cleanedPages);
+        const hasUniqueContent = uniqueContentRatio >= 0.6; // At least 60% unique content across pages
+        
+        const isValidContent = hasSubstantialContent && hasUniqueContent;
 
         if (isValidContent) {
-          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages${isExpertLevel ? ` (${totalCharacterCount} chars, ${Math.round(avgCharsPerPage)} avg/page)` : ''}`);
-          console.log(`📊 Netflix: Validation details - Min pages: ${minPagesRequired}, Min chars: ${isExpertLevel ? minCharsForExpert : 'N/A'}, Min chars/page: ${isExpertLevel ? minCharsPerPage : 'N/A'}`);
+          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages (${tokenValidation.actualTokens} tokens, ${Math.round(uniqueContentRatio * 100)}% unique)`);
+          console.log(`📊 Netflix: Validation details - Min pages: ${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}, Unique ratio: ${Math.round(uniqueContentRatio * 100)}%`);
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           } catch {}
@@ -102,15 +102,17 @@ export class NetflixStyleStoryService {
 
       // Debug validation failure details
       const cleanedPages = result.pages?.filter((page: string) => page.length > 10) || [];
-      const isExpertLevel = difficulty === 'expert';
-      const minPagesRequired = isExpertLevel ? 2 : 3;
-      const totalCharacterCount = isExpertLevel ? cleanedPages.join(' ').length : 0;
-      const minCharsForExpert = 800;
-      const avgCharsPerPage = isExpertLevel && cleanedPages.length > 0 ? totalCharacterCount / cleanedPages.length : 0;
-      const minCharsPerPage = 100;
+      const isExpertLevel = difficulty === 'expert' || this.isExpertGradeLevel(difficulty);
+      const minPagesRequired = isExpertLevel ? 8 : 5;
+      
+      // Import validation for debug info
+      const { validateTokenLimit } = await import('@/utils/tokenLimitValidator');
+      const totalContent = cleanedPages.join(' ');
+      const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
+      const uniqueContentRatio = this.calculateUniqueContentRatio(cleanedPages);
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
-      console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}${isExpertLevel ? `, Chars: ${totalCharacterCount}/${minCharsForExpert}, Avg chars/page: ${Math.round(avgCharsPerPage)}/${minCharsPerPage}` : ''}`);
+      console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}, Unique: ${Math.round(uniqueContentRatio * 100)}%`);
       return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
 
     } catch (error) {
@@ -176,6 +178,71 @@ export class NetflixStyleStoryService {
         source: 'fallback'
       };
     }
+  }
+
+  /**
+   * Check if difficulty is an expert grade level
+   */
+  private static isExpertGradeLevel(difficulty: string): boolean {
+    // Check for standard expert grade levels
+    if (['6th', '7th', '8th', '9th', '10th'].includes(difficulty)) {
+      return true;
+    }
+    
+    // Check for alternate naming (grade6, grade7, etc.)
+    const gradeMatch = difficulty.match(/^grade(\d+)$/);
+    if (gradeMatch) {
+      const gradeNum = parseInt(gradeMatch[1]);
+      return gradeNum >= 6 && gradeNum <= 10;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Calculate unique content ratio to detect concatenation
+   */
+  private static calculateUniqueContentRatio(pages: string[]): number {
+    if (!pages || pages.length <= 1) return 1.0;
+    
+    // Simple uniqueness check: compare consecutive pages
+    let uniquePages = 0;
+    const threshold = 0.7; // 70% similarity threshold
+    
+    for (let i = 0; i < pages.length; i++) {
+      let isUnique = true;
+      const currentPage = pages[i].toLowerCase().trim();
+      
+      // Compare with other pages
+      for (let j = 0; j < pages.length; j++) {
+        if (i === j) continue;
+        
+        const otherPage = pages[j].toLowerCase().trim();
+        const similarity = this.calculateSimilarity(currentPage, otherPage);
+        
+        if (similarity > threshold) {
+          isUnique = false;
+          break;
+        }
+      }
+      
+      if (isUnique) uniquePages++;
+    }
+    
+    return uniquePages / pages.length;
+  }
+  
+  /**
+   * Calculate similarity between two strings (simple word overlap)
+   */
+  private static calculateSimilarity(str1: string, str2: string): number {
+    const words1 = new Set(str1.split(/\s+/));
+    const words2 = new Set(str2.split(/\s+/));
+    
+    const intersection = new Set([...words1].filter(x => words2.has(x)));
+    const union = new Set([...words1, ...words2]);
+    
+    return union.size > 0 ? intersection.size / union.size : 0;
   }
 
   static async generateCompleteStory(userInfo: UserInfo): Promise<NetflixStoryResult> {

@@ -23,23 +23,41 @@ export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeL
   return getTotalNetflixTokensFromPrompts(difficulty);
 }
 
+/**
+ * Normalize grade level format to handle all variations
+ */
+function normalizeGradeLevel(difficulty: string): string {
+  // Handle "grade6", "grade7", etc. -> "6th", "7th", etc.
+  const gradeMatch = difficulty.match(/^grade(\d+)$/);
+  if (gradeMatch) {
+    return `${gradeMatch[1]}th`;
+  }
+  
+  // Handle "6", "7", etc. -> "6th", "7th", etc.
+  const numMatch = difficulty.match(/^(\d+)$/);
+  if (numMatch) {
+    return `${numMatch[1]}th`;
+  }
+  
+  return difficulty; // Return as-is if already in standard format
+}
+
+/**
+ * Check if difficulty is an expert grade level
+ */
+function isExpertGradeLevel(difficulty: string): boolean {
+  const normalized = normalizeGradeLevel(difficulty);
+  return ['6th', '7th', '8th', '9th', '10th'].includes(normalized);
+}
+
 // Get expected pages for difficulty level
 function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  // Handle expert grade levels and alternate formats
-  if (['6th', '7th', '8th', '9th', '10th'].includes(difficulty)) {
+  // Expert grade levels get more pages
+  if (isExpertGradeLevel(difficulty)) {
     return 12;
   }
   
-  // Handle alternate naming conventions like "grade6", "grade7", etc.
-  const gradeMatch = difficulty.match(/^grade(\d+)$/);
-  if (gradeMatch) {
-    const gradeNum = parseInt(gradeMatch[1]);
-    if (gradeNum >= 6 && gradeNum <= 10) {
-      return 12;
-    }
-  }
-  
-  return 10;
+  return 10; // Regular difficulty levels
 }
 
 export interface TokenLimitConfig {
@@ -63,7 +81,7 @@ export function getTokenLimitForSinglePage(difficulty: DifficultyLevel | ExpertG
 // Realistic page configuration based on business logic and system prompts - NOW DYNAMIC
 export function getPageConfig(difficulty: DifficultyLevel | ExpertGradeLevel) {
   const tokensPerPage = getPerPageTokenLimit(difficulty);
-  const expectedPages = (['6th', '7th', '8th', '9th', '10th'].includes(difficulty)) ? 12 : 10;
+  const expectedPages = isExpertGradeLevel(difficulty) ? 12 : 10;
   
   return {
     expectedPages,
