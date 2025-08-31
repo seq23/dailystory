@@ -474,23 +474,41 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
     return tokens;
   }
   
-  // Proper expert grade fallbacks - no more generic 8-token fallback
-  const expertFallbacks = {
+  // Proper expert grade fallbacks with flexible naming
+  const expertFallbacks: Record<string, number> = {
     '6th': 400,
     '7th': 427, 
     '8th': 453,
     '9th': 480,
-    '10th': 533
+    '10th': 533,
+    // Handle alternate naming conventions
+    'grade6': 400,
+    'grade7': 427,
+    'grade8': 453,
+    'grade9': 480,
+    'grade10': 533
   };
   
   if (difficulty in expertFallbacks) {
-    const tokens = expertFallbacks[difficulty as ExpertGradeLevel];
+    const tokens = expertFallbacks[difficulty];
     console.log(`🔧 Expert fallback for ${difficulty}: ${tokens} tokens per page`);
     return tokens;
   }
   
-  console.error(`🚨 Unknown difficulty: ${difficulty}, using minimal fallback`);
-  return 8; // Safe minimal fallback
+  // Handle grade level parsing for formats like "grade10" -> "10th"
+  const gradeMatch = difficulty.match(/^grade(\d+)$/);
+  if (gradeMatch) {
+    const gradeNum = gradeMatch[1];
+    const standardFormat = `${gradeNum}th`;
+    if (standardFormat in expertFallbacks) {
+      const tokens = expertFallbacks[standardFormat];
+      console.log(`🔧 Expert fallback for ${difficulty} (normalized to ${standardFormat}): ${tokens} tokens per page`);
+      return tokens;
+    }
+  }
+  
+  console.error(`🚨 Unknown difficulty: ${difficulty}, using realistic fallback`);
+  return 400; // More realistic fallback for expert content
 }
 
 /**

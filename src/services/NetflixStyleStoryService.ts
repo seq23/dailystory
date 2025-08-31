@@ -62,21 +62,29 @@ export class NetflixStyleStoryService {
         // Pages already cleaned by unified system
         const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
-        // Difficulty-aware page validation
+        // Character-based validation that aligns with actual AI output
         const isExpertLevel = difficulty === 'expert';
-        const minPagesRequired = isExpertLevel ? 2 : 3; // Expert levels generate fewer, longer pages initially
+        const minPagesRequired = isExpertLevel ? 2 : 3;
         
-        // For expert levels, also validate total word count for quality
-        const totalWordCount = isExpertLevel ? 
-          (cleanedPages || []).join(' ').split(/\s+/).filter(word => word.length > 0).length : 0;
-        const minWordsForExpert = 500; // Minimum words for expert content
+        // For expert levels, validate total character count (more realistic than word count)
+        const totalCharacterCount = isExpertLevel ? 
+          (cleanedPages || []).join(' ').length : 0;
+        const minCharsForExpert = 800; // Minimum characters for expert content (realistic for AI output)
+        
+        // Also validate individual page quality
+        const avgCharsPerPage = isExpertLevel && cleanedPages.length > 0 ? 
+          totalCharacterCount / cleanedPages.length : 0;
+        const minCharsPerPage = 100; // Each page should have substantial content
         
         const isValidContent = isExpertLevel ? 
-          (cleanedPages.length >= minPagesRequired && totalWordCount >= minWordsForExpert) :
+          (cleanedPages.length >= minPagesRequired && 
+           totalCharacterCount >= minCharsForExpert && 
+           avgCharsPerPage >= minCharsPerPage) :
           (cleanedPages.length >= minPagesRequired);
 
         if (isValidContent) {
-          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages${isExpertLevel ? ` (${totalWordCount} words)` : ''}`);
+          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages${isExpertLevel ? ` (${totalCharacterCount} chars, ${Math.round(avgCharsPerPage)} avg/page)` : ''}`);
+          console.log(`📊 Netflix: Validation details - Min pages: ${minPagesRequired}, Min chars: ${isExpertLevel ? minCharsForExpert : 'N/A'}, Min chars/page: ${isExpertLevel ? minCharsPerPage : 'N/A'}`);
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           } catch {}
@@ -92,7 +100,17 @@ export class NetflixStyleStoryService {
         }
       }
 
+      // Debug validation failure details
+      const cleanedPages = result.pages?.filter((page: string) => page.length > 10) || [];
+      const isExpertLevel = difficulty === 'expert';
+      const minPagesRequired = isExpertLevel ? 2 : 3;
+      const totalCharacterCount = isExpertLevel ? cleanedPages.join(' ').length : 0;
+      const minCharsForExpert = 800;
+      const avgCharsPerPage = isExpertLevel && cleanedPages.length > 0 ? totalCharacterCount / cleanedPages.length : 0;
+      const minCharsPerPage = 100;
+
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
+      console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}${isExpertLevel ? `, Chars: ${totalCharacterCount}/${minCharsForExpert}, Avg chars/page: ${Math.round(avgCharsPerPage)}/${minCharsPerPage}` : ''}`);
       return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
 
     } catch (error) {

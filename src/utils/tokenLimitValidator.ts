@@ -25,10 +25,20 @@ export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeL
 
 // Get expected pages for difficulty level
 function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  // Basic levels generate 10 pages, grade levels generate 12 pages
+  // Handle expert grade levels and alternate formats
   if (['6th', '7th', '8th', '9th', '10th'].includes(difficulty)) {
     return 12;
   }
+  
+  // Handle alternate naming conventions like "grade6", "grade7", etc.
+  const gradeMatch = difficulty.match(/^grade(\d+)$/);
+  if (gradeMatch) {
+    const gradeNum = parseInt(gradeMatch[1]);
+    if (gradeNum >= 6 && gradeNum <= 10) {
+      return 12;
+    }
+  }
+  
   return 10;
 }
 
