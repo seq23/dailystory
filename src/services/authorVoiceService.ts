@@ -409,5 +409,3 @@ export class AuthorVoiceService {
     return 'they';
   }
 }
-
-export { COLOR_VOICES };

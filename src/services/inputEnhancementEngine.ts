@@ -63,4 +63,3 @@ export class InputEnhancementEngine {
     this.enhancementCache.clear();
   }
 }
-}
