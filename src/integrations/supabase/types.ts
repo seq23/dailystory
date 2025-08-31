@@ -808,6 +808,10 @@ export type Database = {
         Args: { details?: Json; event_type: string; user_id_param?: string }
         Returns: undefined
       }
+      purge_old_incidents: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
