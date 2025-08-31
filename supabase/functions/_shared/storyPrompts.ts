@@ -67,7 +67,7 @@ Page 5: "The blue cat purrs." (4 words)
 Page 6: "Sam's cat wants to play more." (6 words)
 
 Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
-    userPromptTemplate: `Generate Level 0 pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: ${vocabularyData.totalUserWords > 0 ? \`Include user words: ${vocabularyData.userVocabulary.join(', ')}. Mix with Level 0 sight words for 70% compliance.\` : 'Use 70% Level 0 sight words + simple support words.'} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.`,
+    userPromptTemplate: 'Generate Level 0 pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
   },
 
   easy: {
