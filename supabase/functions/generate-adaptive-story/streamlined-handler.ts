@@ -4,6 +4,12 @@
 
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 
+// CORS headers - moved to top to fix ReferenceError
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 interface StreamlinedBundle {
   storyContent: string;
   userVocabulary: string[];
@@ -289,9 +295,3 @@ function getTokensForGrade(gradeLevel: number): number {
   };
   return tokenMap[gradeLevel] || 800;
 }
-
-// Export for use in main handler
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
