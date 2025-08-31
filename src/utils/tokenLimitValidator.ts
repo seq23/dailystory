@@ -20,7 +20,7 @@ const TOKEN_LIMITS: Record<string, number> = {
 // Get per-page token limit (for live generation)
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   const normalized = normalizeGradeLevel(difficulty);
-  return TOKEN_LIMITS[normalized] || TOKEN_LIMITS['medium']; // Default to medium
+  return TOKEN_LIMITS[normalized] || TOKEN_LIMITS['beginner']; // Default to beginner
 }
 
 // Get total story tokens for guests (6 pages of consistent difficulty)
