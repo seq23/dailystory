@@ -349,9 +349,9 @@ function getTokensForGrade(gradeLevel: number): number {
   const tokenMap: Record<number, number> = {
     0: 400,  // PreK
     1: 600,  // 1st
-    2: 800,  // 2nd  
-    3: 1000, // 4th
-    4: 1200  // 6th+
+    2: 1200,  // 2nd (Medium: 150 tokens/page × 10 pages)
+    3: 1600, // 3rd (Hard: 200 tokens/page × 10 pages)
+    4: 6000  // 4th+ (Expert: 500 tokens/page × 12 pages)
   };
-  return tokenMap[gradeLevel] || 800;
+  return tokenMap[gradeLevel] || 1200;
 }

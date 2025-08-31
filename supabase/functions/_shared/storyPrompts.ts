@@ -151,7 +151,7 @@ CONTENT SAFETY:
 - No copyrighted content
 
 TOKEN LIMITS:
-Maximum 93 tokens per page. Target 50-70 words per page.
+Maximum 150 tokens per page. Target 50-70 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age 7-9). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -188,7 +188,7 @@ CONTENT SAFETY:
 - No copyrighted content
 
 TOKEN LIMITS:
-Maximum 160 tokens per page. Target 80-120 words per page.
+Maximum 200 tokens per page. Target 80-120 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age 9-11). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -225,7 +225,7 @@ CONTENT SAFETY:
 - No copyrighted content
 
 TOKEN LIMITS:
-Maximum 267 tokens per page. Target 120-200 words per page.
+Maximum 500 tokens per page. Target 120-200 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age 11-13). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create intellectually challenging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -264,7 +264,7 @@ FORMAT:
 - Focus on character development and thematic exploration appropriate for 6th grade readers
 - Target 200-400 words per page
 
-Maximum 400 tokens per page. Target 200-400 words per page.
+Maximum 500 tokens per page. Target 200-400 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) focusing on transitional themes like growing up and responsibility. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Growing up, responsibility, friendship dynamics. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -300,7 +300,7 @@ FORMAT:
 - Develop complex themes and character relationships appropriate for 7th grade readers
 - Target 200-400 words per page
 
-Maximum 427 tokens per page. Target 200-400 words per page.
+Maximum 500 tokens per page. Target 200-400 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) exploring themes of identity and belonging. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Identity, social relationships, belonging. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -336,7 +336,7 @@ FORMAT:
 - Explore mature themes with intellectual depth appropriate for 8th grade readers
 - Target 200-400 words per page
 
-Maximum 453 tokens per page. Target 200-400 words per page.
+Maximum 500 tokens per page. Target 200-400 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) examining ethics and moral choices. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Ethics, moral choices, right vs wrong. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -372,7 +372,7 @@ FORMAT:
 - Develop intricate thematic content and psychological depth appropriate for 9th grade readers
 - Target 200-400 words per page
 
-Maximum 480 tokens per page. Target 200-400 words per page.
+Maximum 500 tokens per page. Target 200-400 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) exploring philosophical themes and abstract thinking. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Philosophy, abstract thinking, meaning of life. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -408,7 +408,7 @@ FORMAT:
 - Develop complex philosophical themes and profound character depth appropriate for 10th grade readers
 - Target 200-400 words per page
 
-Maximum 533 tokens per page. Target 200-400 words per page.
+Maximum 500 tokens per page. Target 200-400 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) showcasing literary sophistication and mature themes. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Literary sophistication, mature themes, complex analysis. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
