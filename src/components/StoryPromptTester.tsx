@@ -379,7 +379,7 @@ export function StoryPromptTester() {
       result.success = true;
       
       // Use proper token validation with the full content
-      const tokenAnalysis = analyzeTokenLimits(result.fullContent, level);
+      const tokenAnalysis = analyzeTokenLimits(result.fullContent || [], level);
       result.withinTokenLimits = tokenAnalysis.isValid;
       result.tokenCount = tokenAnalysis.tokenCount;
       result.maxTokensAllowed = tokenAnalysis.maxTokens;
@@ -561,7 +561,7 @@ export function StoryPromptTester() {
 
   // Token validation using the proper tokenLimitValidator system
   const analyzeTokenLimits = (content: string[], level: string): { isValid: boolean; tokenCount: number; wordCount: number; maxTokens: number } => {
-    const fullText = Array.isArray(content) && content.length > 0 ? content.join(' ') : '';
+    const fullText = (Array.isArray(content) && content.length > 0) ? content.join(' ') : '';
     const wordCount = countWords(fullText);
     const tokenCount = estimateTokenCount(fullText);
     
