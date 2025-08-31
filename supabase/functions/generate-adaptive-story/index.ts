@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
+import { handleStreamlinedGeneration } from './streamlined-handler.ts';
 
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(
@@ -136,6 +137,13 @@ serve(async (req) => {
   
   try {
     requestBody = await req.json();
+    
+    // NEW STREAMLINED ARCHITECTURE: Handle pre-processed bundles
+    if (requestBody.bundle) {
+      return await handleStreamlinedGeneration(requestBody);
+    }
+    
+    // LEGACY SUPPORT: Handle old format for backward compatibility
     
     // Diagnostic mode check
     if (requestBody.diagnostic === true) {
