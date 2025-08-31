@@ -445,20 +445,52 @@ export function formatUserPrompt(template: string, userInfo: any): string {
  */
 export function extractTokenLimitFromPrompt(systemPrompt: string): number {
   const match = systemPrompt.match(/Maximum (\d+) tokens per page/);
-  return match ? parseInt(match[1]) : 8; // Safe fallback
+  if (match) {
+    console.log(`🔍 Token extraction SUCCESS: Found ${match[1]} tokens in prompt`);
+    return parseInt(match[1]);
+  }
+  
+  console.error('🚨 Token extraction FAILED - no match found in prompt:', systemPrompt.substring(0, 200) + '...');
+  return 8; // Safe fallback
 }
 
 /**
  * Get per-page token limit from system prompts (for live generation)
  */
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  console.log(`🎯 Getting per-page tokens for difficulty: ${difficulty}`);
+  
+  // Check regular difficulty levels first
   if (Object.keys(STORY_PROMPTS).includes(difficulty as DifficultyLevel)) {
-    return extractTokenLimitFromPrompt(STORY_PROMPTS[difficulty as DifficultyLevel].systemPrompt);
+    const tokens = extractTokenLimitFromPrompt(STORY_PROMPTS[difficulty as DifficultyLevel].systemPrompt);
+    console.log(`✅ Regular difficulty ${difficulty}: ${tokens} tokens per page`);
+    return tokens;
   }
+  
+  // Check expert grade levels
   if (Object.keys(EXPERT_STORY_PROMPTS).includes(difficulty as ExpertGradeLevel)) {
-    return extractTokenLimitFromPrompt(EXPERT_STORY_PROMPTS[difficulty as ExpertGradeLevel].systemPrompt);
+    const tokens = extractTokenLimitFromPrompt(EXPERT_STORY_PROMPTS[difficulty as ExpertGradeLevel].systemPrompt);
+    console.log(`✅ Expert grade ${difficulty}: ${tokens} tokens per page`);
+    return tokens;
   }
-  return 8; // Safe fallback
+  
+  // Proper expert grade fallbacks - no more generic 8-token fallback
+  const expertFallbacks = {
+    '6th': 400,
+    '7th': 427, 
+    '8th': 453,
+    '9th': 480,
+    '10th': 533
+  };
+  
+  if (difficulty in expertFallbacks) {
+    const tokens = expertFallbacks[difficulty as ExpertGradeLevel];
+    console.log(`🔧 Expert fallback for ${difficulty}: ${tokens} tokens per page`);
+    return tokens;
+  }
+  
+  console.error(`🚨 Unknown difficulty: ${difficulty}, using minimal fallback`);
+  return 8; // Safe minimal fallback
 }
 
 /**
