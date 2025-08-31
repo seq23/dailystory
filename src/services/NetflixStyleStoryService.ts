@@ -62,8 +62,21 @@ export class NetflixStyleStoryService {
         // Pages already cleaned by unified system
         const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
-        if (cleanedPages.length >= 3) {
-          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages`);
+        // Difficulty-aware page validation
+        const isExpertLevel = difficulty === 'expert';
+        const minPagesRequired = isExpertLevel ? 2 : 3; // Expert levels generate fewer, longer pages initially
+        
+        // For expert levels, also validate total word count for quality
+        const totalWordCount = isExpertLevel ? 
+          cleanedPages.join(' ').split(/\s+/).filter(word => word.length > 0).length : 0;
+        const minWordsForExpert = 500; // Minimum words for expert content
+        
+        const isValidContent = isExpertLevel ? 
+          (cleanedPages.length >= minPagesRequired && totalWordCount >= minWordsForExpert) :
+          (cleanedPages.length >= minPagesRequired);
+
+        if (isValidContent) {
+          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages${isExpertLevel ? ` (${totalWordCount} words)` : ''}`);
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           } catch {}
