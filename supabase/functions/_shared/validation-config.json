@@ -41,9 +41,21 @@
     "Grade10": 12
   },
   "validationThresholds": {
-    "minContentRatio": 0.1,
+    "minContentRatio": 0.05,
     "maxContentRatio": 1.5,
     "splitTolerance": 1.5,
     "cacheLimit": 500
+  },
+  "characterThresholds": {
+    "Level0": { "minChars": 50, "maxChars": 500 },
+    "Level1": { "minChars": 100, "maxChars": 800 },
+    "Level2": { "minChars": 200, "maxChars": 1200 },
+    "Level3": { "minChars": 300, "maxChars": 1500 },
+    "Level4": { "minChars": 400, "maxChars": 2000 },
+    "Grade6": { "minChars": 400, "maxChars": 2000 },
+    "Grade7": { "minChars": 400, "maxChars": 2000 },
+    "Grade8": { "minChars": 400, "maxChars": 2000 },
+    "Grade9": { "minChars": 400, "maxChars": 2000 },
+    "Grade10": { "minChars": 400, "maxChars": 2000 }
   }
 }

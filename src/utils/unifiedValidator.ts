@@ -9,6 +9,8 @@ import {
   mapDifficultyToLevel, 
   getTokenLimitsForLevel, 
   enhancedAutoSplitContent as sharedAutoSplitContent,
+  validateGuestStoryLength,
+  validateLivePageLength,
   type ValidationLevel 
 } from '../../supabase/functions/_shared/validation-utils';
 
@@ -127,44 +129,59 @@ export class UnifiedValidator {
   }
 
   /**
-   * Guest mode validation (6-page stories)
+   * Guest mode validation (6-page stories) - Enhanced dual validation
    */
   private static validateGuestStory(
     pages: string[],
     config: ValidationConfig,
     metrics: any
   ): ValidationResult {
-    const limits = getTokenLimitsForLevel(config.level);
-    const maxTokens = limits.guestStory;
-    const minTokens = Math.floor(maxTokens * 0.1); // 10% minimum threshold
+    const fullContent = pages.join(' ');
+    const validationResult = validateGuestStoryLength(fullContent, config.level);
     
-    // Check if content meets minimum requirements
-    if (metrics.tokenCount < minTokens) {
+    // Enhanced logging for debugging
+    console.log(`🔍 [UNIFIED-VALIDATOR] Guest story validation for ${config.level}:`, {
+      level: config.level,
+      tokenCount: validationResult.tokenCount,
+      characterCount: validationResult.characterCount,
+      isValid: validationResult.isValid,
+      passedBy: validationResult.passedBy,
+      reason: validationResult.reason
+    });
+    
+    if (!validationResult.isValid) {
       return {
         decision: 'RETRY_WITH_HINT',
         isValid: false,
-        reasons: [`Story too short: ${metrics.tokenCount} tokens (minimum: ${minTokens})`],
-        metrics,
+        reasons: [validationResult.reason || 'Content length validation failed'],
+        metrics: {
+          ...metrics,
+          tokenCount: validationResult.tokenCount,
+          characterCount: validationResult.characterCount,
+          maxAllowedTokens: validationResult.maxAllowedTokens,
+          maxAllowedChars: validationResult.maxAllowedChars
+        },
         hints: ['Generate more detailed content', 'Add more descriptive elements']
       };
     }
 
-    // Content sufficiency check: Always attempt to repair/split instead of rejecting
-    if (metrics.tokenCount > maxTokens) {
-      console.log(`🔧 UnifiedValidator: Content exceeds token limit (${metrics.tokenCount}/${maxTokens}), attempting auto-split`);
+    // Content exceeds token limits - attempt auto-split
+    if (validationResult.tokenCount > validationResult.maxAllowedTokens) {
+      console.log(`🔧 UnifiedValidator: Content exceeds token limit, attempting auto-split`);
       
-      const splitPages = sharedAutoSplitContent(pages.join(' '), config.level, 6);
+      const splitPages = sharedAutoSplitContent(fullContent, config.level, 6);
       
-      // Accept the split content regardless of final page count - embrace AI generosity
       return {
         decision: 'REPAIR_AND_SPLIT',
         isValid: true,
         content: splitPages,
-        reasons: [`Content auto-split from ${pages.length} to ${splitPages.length} pages to optimize reading experience`],
+        reasons: [`Content auto-split to ${splitPages.length} pages (passed by: ${validationResult.passedBy})`],
         metrics: {
           ...metrics,
           pageCount: splitPages.length,
-          tokenCount: estimateTokenCount(splitPages.join(' '))
+          tokenCount: validationResult.tokenCount,
+          characterCount: validationResult.characterCount,
+          passedBy: validationResult.passedBy
         }
       };
     }
@@ -173,48 +190,66 @@ export class UnifiedValidator {
       decision: 'ACCEPT',
       isValid: true,
       content: pages,
-      reasons: ['Guest story validation passed'],
-      metrics
+      reasons: [`Guest story validation passed (passed by: ${validationResult.passedBy})`],
+      metrics: {
+        ...metrics,
+        tokenCount: validationResult.tokenCount,
+        characterCount: validationResult.characterCount,
+        passedBy: validationResult.passedBy
+      }
     };
   }
 
   /**
-   * Live mode validation (page-by-page)
+   * Live mode validation (page-by-page) - Enhanced dual validation
    */
   private static validateLivePage(
     pages: string[],
     config: ValidationConfig,
     metrics: any
   ): ValidationResult {
-    const limits = getTokenLimitsForLevel(config.level);
-    const maxTokensPerPage = limits.perPage;
-    
     // For live mode, typically validating one page at a time
     if (pages.length === 1) {
-      const pageTokens = estimateTokenCount(pages[0]);
+      const validationResult = validateLivePageLength(pages[0], config.level);
       
-      if (pageTokens > maxTokensPerPage * 1.5) { // Allow 50% overflow for splitting
+      console.log(`🔍 [UNIFIED-VALIDATOR] Live page validation for ${config.level}:`, {
+        level: config.level,
+        tokenCount: validationResult.tokenCount,
+        characterCount: validationResult.characterCount,
+        isValid: validationResult.isValid,
+        passedBy: validationResult.passedBy,
+        reason: validationResult.reason
+      });
+      
+      if (!validationResult.isValid) {
+        return {
+          decision: 'RETRY_WITH_HINT',
+          isValid: false,
+          reasons: [validationResult.reason || 'Page length validation failed'],
+          metrics: {
+            ...metrics,
+            tokenCount: validationResult.tokenCount,
+            characterCount: validationResult.characterCount
+          },
+          hints: ['Add more descriptive details', 'Expand the scene']
+        };
+      }
+
+      // Check if page needs splitting due to excessive length
+      if (validationResult.tokenCount > validationResult.maxAllowedTokens * 1.5) {
         const splitPages = sharedAutoSplitContent(pages[0], config.level, 2);
         return {
           decision: 'REPAIR_AND_SPLIT',
           isValid: true,
           content: splitPages,
-          reasons: ['Page content auto-split due to length'],
+          reasons: [`Page content auto-split (passed by: ${validationResult.passedBy})`],
           metrics: {
             ...metrics,
             pageCount: splitPages.length,
-            tokenCount: estimateTokenCount(splitPages.join(' '))
+            tokenCount: validationResult.tokenCount,
+            characterCount: validationResult.characterCount,
+            passedBy: validationResult.passedBy
           }
-        };
-      }
-
-      if (pageTokens < maxTokensPerPage * 0.1) { // Less than 10% is too short
-        return {
-          decision: 'RETRY_WITH_HINT',
-          isValid: false,
-          reasons: [`Page too short: ${pageTokens} tokens (minimum: ${Math.floor(maxTokensPerPage * 0.1)})`],
-          metrics,
-          hints: ['Add more descriptive details', 'Expand the scene']
         };
       }
 
@@ -222,32 +257,28 @@ export class UnifiedValidator {
         decision: 'ACCEPT',
         isValid: true,
         content: pages,
-        reasons: ['Live page validation passed'],
-        metrics
+        reasons: [`Live page validation passed (passed by: ${validationResult.passedBy})`],
+        metrics: {
+          ...metrics,
+          tokenCount: validationResult.tokenCount,
+          characterCount: validationResult.characterCount,
+          passedBy: validationResult.passedBy
+        }
       };
     }
 
-    // Multiple pages in live mode - validate each
-    const oversizedPages: number[] = [];
-    const undersizedPages: number[] = [];
-
-    pages.forEach((page, index) => {
-      const pageTokens = estimateTokenCount(page);
-      if (pageTokens > maxTokensPerPage * 1.5) {
-        oversizedPages.push(index);
-      } else if (pageTokens < maxTokensPerPage * 0.1) {
-        undersizedPages.push(index);
-      }
-    });
-
-    if (oversizedPages.length > 0 || undersizedPages.length > 0) {
-      const reasons = [];
-      if (oversizedPages.length > 0) {
-        reasons.push(`Pages ${oversizedPages.map(i => i + 1).join(', ')} are oversized`);
-      }
-      if (undersizedPages.length > 0) {
-        reasons.push(`Pages ${undersizedPages.map(i => i + 1).join(', ')} are undersized`);
-      }
+    // Multiple pages in live mode - validate each with dual validation
+    const validationResults = pages.map((page, index) => ({
+      index,
+      result: validateLivePageLength(page, config.level)
+    }));
+    
+    const invalidPages = validationResults.filter(v => !v.result.isValid);
+    
+    if (invalidPages.length > 0) {
+      const reasons = invalidPages.map(v => 
+        `Page ${v.index + 1}: ${v.result.reason}`
+      );
 
       return {
         decision: 'REPAIR',
