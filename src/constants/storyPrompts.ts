@@ -68,7 +68,7 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryP
     systemPrompt: `Expert story writer for ${gradeLevel} grade`,
     userPromptTemplate: `Create a never-ending story for {userName} (age {age}). Theme: {specialRequest}. Vocabulary: {vocabularyInstructions}. Seed: {seed}`,
     wordCount: "200-400 words per page",
-    expectedPages: 10
+    expectedPages: 8
   };
 }
 
