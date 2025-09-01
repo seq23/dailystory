@@ -8,7 +8,7 @@ import {
   estimateTokenCount, 
   mapDifficultyToLevel, 
   getTokenLimitsForLevel, 
-  autoSplitContent as sharedAutoSplitContent,
+  enhancedAutoSplitContent as sharedAutoSplitContent,
   type ValidationLevel 
 } from '../../supabase/functions/_shared/validation-utils';
 
