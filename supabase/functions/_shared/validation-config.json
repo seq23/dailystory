@@ -1,7 +1,7 @@
 {
   "tokenLimits": {
     "Level0": { "perPage": 15, "guestStory": 90 },
-    "Level1": { "perPage": 60, "guestStory": 360 },
+    "Level1": { "perPage": 24, "guestStory": 360 },
     "Level2": { "perPage": 250, "guestStory": 1500 },
     "Level3": { "perPage": 350, "guestStory": 2100 },
     "Level4": { "perPage": 500, "guestStory": 3000 },
@@ -48,7 +48,7 @@
   },
   "characterThresholds": {
     "Level0": { "minChars": 50, "maxChars": 500 },
-    "Level1": { "minChars": 100, "maxChars": 800 },
+    "Level1": { "minChars": 50, "maxChars": 150 },
     "Level2": { "minChars": 200, "maxChars": 1200 },
     "Level3": { "minChars": 300, "maxChars": 1500 },
     "Level4": { "minChars": 400, "maxChars": 2000 },

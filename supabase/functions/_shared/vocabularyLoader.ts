@@ -22,23 +22,23 @@ export async function getVocabularyForGrade(gradeLevel: number): Promise<Set<str
     // Dynamic import based on grade level
     if (gradeLevel <= 0) {
       const { ENHANCED_LEVEL_0_VOCABULARY } = await import('./vocabulary/dolchPrePrimer.ts');
-      vocabulary = ENHANCED_LEVEL_0_VOCABULARY;
+      vocabulary = Array.from(ENHANCED_LEVEL_0_VOCABULARY);
     } else if (gradeLevel <= 1) {
       const { LEVEL_1_VOCABULARY } = await import('./vocabulary/level1Vocabulary.ts');
-      vocabulary = LEVEL_1_VOCABULARY;
+      vocabulary = Array.from(LEVEL_1_VOCABULARY);
     } else if (gradeLevel <= 2) {
       const { LEVEL_2_VOCABULARY } = await import('./vocabulary/level2Vocabulary.ts');
-      vocabulary = LEVEL_2_VOCABULARY;
+      vocabulary = Array.from(LEVEL_2_VOCABULARY);
     } else if (gradeLevel <= 3) {
       const { LEVEL_3_VOCABULARY } = await import('./vocabulary/level3Vocabulary.ts');
-      vocabulary = LEVEL_3_VOCABULARY;
+      vocabulary = Array.from(LEVEL_3_VOCABULARY);
     } else if (gradeLevel <= 4) {
       const { LEVEL_4_VOCABULARY } = await import('./vocabulary/level4Vocabulary.ts');
-      vocabulary = LEVEL_4_VOCABULARY;
+      vocabulary = Array.from(LEVEL_4_VOCABULARY);
     } else {
       // For grades 5+ use level 4 vocabulary as base
       const { LEVEL_4_VOCABULARY } = await import('./vocabulary/level4Vocabulary.ts');
-      vocabulary = LEVEL_4_VOCABULARY;
+      vocabulary = Array.from(LEVEL_4_VOCABULARY);
     }
     
     // Convert to Set and cache
