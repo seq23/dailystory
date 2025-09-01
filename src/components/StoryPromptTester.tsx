@@ -312,15 +312,17 @@ export function StoryPromptTester() {
         testTimeouts.set(testKey, timeout);
       });
 
-      // Add detailed debugging for medium level
-      if (level === 'medium') {
-        console.log(`🔍 [DEBUG] Starting ${service} test for medium level:`, {
+      // Add detailed debugging for medium and hard levels
+      if (level === 'medium' || level === 'hard') {
+        console.log(`🔍 [TEST-DEBUG] Starting ${service} test for ${level} level:`, {
           userInfo: {
             name: userInfo.name,
             age: userInfo.age,
             difficultyLevel: userInfo.difficultyLevel,
             grade: userInfo.grade
           },
+          expectedLevel: level === 'medium' ? 'Level2' : 'Level3',
+          expectedTokens: level === 'medium' ? '1500 (guest)' : '2100 (guest)',
           timestamp: new Date().toISOString()
         });
       }
@@ -332,11 +334,14 @@ export function StoryPromptTester() {
         result.pages = response.pageCount || response.pages?.length || 0;
         
         // Enhanced logging for source detection debugging
-        console.log(`🔍 Netflix Service Result for ${level}:`, {
+        console.log(`🔍 [TEST-DEBUG] Netflix Service Result for ${level}:`, {
           source: response.source,
           hasContent: !!response.content,
           pageCount: response.content?.length || 0,
-          contentPreview: response.content?.[0]?.substring(0, 50) + '...'
+          contentPreview: response.content?.[0]?.substring(0, 50) + '...',
+          totalWordCount: response.content ? response.content.join(' ').split(/\s+/).length : 0,
+          error: response.error || 'none',
+          fallbackReason: response.fallbackReason || 'none'
         });
         
         if (response.content && Array.isArray(response.content)) {
@@ -365,11 +370,13 @@ export function StoryPromptTester() {
         result.pages = 1; // Live service generates one page at a time
         
         // Enhanced logging for source detection debugging
-        console.log(`🔍 Live Service Result for ${level}:`, {
+        console.log(`🔍 [TEST-DEBUG] Live Service Result for ${level}:`, {
           source: globalSource,
           hasContent: !!response.content,
           contentLength: response.content?.length || 0,
-          contentPreview: response.content?.substring(0, 50) + '...'
+          contentPreview: response.content?.substring(0, 50) + '...',
+          wordCount: response.content ? response.content.split(/\s+/).length : 0,
+          error: response.error || 'none'
         });
         
         if (response.content) {
@@ -392,12 +399,14 @@ export function StoryPromptTester() {
         result.pages = response.pageCount || response.pages?.length || 0;
         
         // Enhanced logging for source detection debugging
-        console.log(`🔍 Template Service Result for ${level}:`, {
+        console.log(`🔍 [TEST-DEBUG] Template Service Result for ${level}:`, {
           source: response.success ? 'fallback' : 'emergency',
           success: response.success,
           hasPages: !!response.pages,
           pageCount: response.pages?.length || 0,
-          contentPreview: response.pages?.[0]?.substring(0, 50) + '...'
+          contentPreview: response.pages?.[0]?.substring(0, 50) + '...',
+          totalWordCount: response.pages ? response.pages.join(' ').split(/\s+/).length : 0,
+          error: response.error || 'none'
         });
         
         if (response.pages && Array.isArray(response.pages)) {

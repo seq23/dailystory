@@ -147,14 +147,35 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       (parseInt(expertGrade.replace('grade', '')) || bundle.systemSettings.gradeLevel) : 
       bundle.systemSettings.gradeLevel;
     
-    console.log(`🤖 STREAMLINED: Calling OpenAI with grade level ${effectiveGradeLevel} for ${expertGrade || effectiveDifficulty}`);
+    console.log(`🤖 [AI-DEBUG] STREAMLINED: Calling OpenAI for ${expertGrade || effectiveDifficulty}:`, {
+      effectiveGradeLevel,
+      expertGrade,
+      effectiveDifficulty,
+      systemPromptLength: aiPrompt.systemPrompt.length,
+      userPromptLength: aiPrompt.userPrompt.length,
+      expectedTokens: sharedGetTokensForGrade(effectiveGradeLevel)
+    });
+    
     const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo);
     
     // Parse into pages using shared validation utilities
     const validationLevel = expertGrade ? 
       mapDifficultyToLevel(expertGrade) : 
       mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
+    
+    console.log(`🔍 [VALIDATION-DEBUG] STREAMLINED: Parsing content for ${expertGrade || effectiveDifficulty}:`, {
+      validationLevel,
+      storyLength: storyText.length,
+      estimatedTokens: storyText.split(/\s+/).length * 1.3
+    });
+    
     const pages = sharedParseIntoPages(storyText, validationLevel);
+    
+    console.log(`📄 [VALIDATION-DEBUG] STREAMLINED: Page parsing complete:`, {
+      totalPages: pages.length,
+      pageLengths: pages.map(p => p.length),
+      pageTokens: pages.map(p => Math.ceil(p.split(/\s+/).length * 1.3))
+    });
     
     // Calculate real vocabulary compliance using dynamic loader
     let vocabCompliance = 1.0; // Default fallback
@@ -163,9 +184,15 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       const complianceResult = await calculateVocabularyCompliance(storyText, effectiveGradeLevel);
       vocabCompliance = complianceResult.compliance;
       
-      console.log(`📊 Vocabulary compliance: ${Math.round(vocabCompliance * 100)}% (${complianceResult.validWords}/${complianceResult.totalWords} words)`);
+      console.log(`📊 [VOCAB-DEBUG] Vocabulary compliance for grade ${effectiveGradeLevel}:`, {
+        compliance: Math.round(vocabCompliance * 100) + '%',
+        validWords: complianceResult.validWords,
+        totalWords: complianceResult.totalWords,
+        invalidWords: complianceResult.totalWords - complianceResult.validWords,
+        level: expertGrade || effectiveDifficulty
+      });
     } catch (error) {
-      console.warn('⚠️ Could not calculate vocabulary compliance:', error);
+      console.warn('⚠️ [VOCAB-DEBUG] Could not calculate vocabulary compliance:', error);
     }
     
     // Return streamlined response
@@ -369,12 +396,16 @@ CRITICAL SUCCESS REQUIREMENTS:
       
       if (storyText && storyText.trim()) {
         const vocabularyUsage = extractVocabularyUsage(storyText, enhancedUserPrompt);
-        console.log(`✅ SUCCESS with ${currentModel.model}:`, { 
+        console.log(`✅ [AI-DEBUG] SUCCESS with ${currentModel.model}:`, { 
           attempt,
           contentLength: storyText.length,
           model: currentModel.model,
           processingTime: `${Date.now() - startTime}ms`,
-          vocabularyTracking: vocabularyUsage
+          vocabularyTracking: vocabularyUsage,
+          gradeLevel,
+          hasPageMarkers: storyText.includes('***'),
+          wordCount: storyText.split(/\s+/).length,
+          estimatedTokens: Math.ceil(storyText.split(/\s+/).length * 1.3)
         });
         
         // Enhanced vocabulary tracking for analytics (both user and system vocabulary)

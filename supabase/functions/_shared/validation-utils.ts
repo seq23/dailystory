@@ -225,7 +225,23 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
   const maxTokens = limits.guestStory;
   const minTokens = Math.floor(maxTokens * validationConfig.validationThresholds.minContentRatio);
   
+  // Enhanced logging for debugging medium/hard level issues
+  console.log(`🔍 [VALIDATION-DEBUG] Guest story validation for ${level}:`, {
+    level,
+    tokenCount,
+    maxTokens,
+    minTokens,
+    contentLength: content.length,
+    limits,
+    minContentRatio: validationConfig.validationThresholds.minContentRatio
+  });
+  
   if (tokenCount < minTokens) {
+    console.log(`❌ [VALIDATION-DEBUG] Story too short for ${level}:`, {
+      tokenCount,
+      minTokens,
+      shortfall: minTokens - tokenCount
+    });
     return {
       isValid: false,
       tokenCount,
@@ -235,6 +251,11 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
   }
   
   if (tokenCount > maxTokens) {
+    console.log(`❌ [VALIDATION-DEBUG] Story too long for ${level}:`, {
+      tokenCount,
+      maxTokens,
+      excess: tokenCount - maxTokens
+    });
     return {
       isValid: false,
       tokenCount,
@@ -242,6 +263,13 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
       reason: `Story too long: ${tokenCount} tokens (maximum: ${maxTokens})`
     };
   }
+  
+  console.log(`✅ [VALIDATION-DEBUG] Story length validation passed for ${level}:`, {
+    tokenCount,
+    minTokens,
+    maxTokens,
+    utilizationPercentage: Math.round((tokenCount / maxTokens) * 100)
+  });
   
   return {
     isValid: true,
@@ -263,8 +291,26 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   const limits = getTokenLimitsForLevel(level);
   const maxTokens = limits.perPage;
   const minTokens = Math.floor(maxTokens * validationConfig.validationThresholds.minContentRatio);
+  const maxWithTolerance = maxTokens * validationConfig.validationThresholds.splitTolerance;
+  
+  // Enhanced logging for debugging medium/hard level issues
+  console.log(`🔍 [VALIDATION-DEBUG] Live page validation for ${level}:`, {
+    level,
+    tokenCount,
+    maxTokens,
+    minTokens,
+    maxWithTolerance,
+    contentLength: content.length,
+    limits,
+    splitTolerance: validationConfig.validationThresholds.splitTolerance
+  });
   
   if (tokenCount < minTokens) {
+    console.log(`❌ [VALIDATION-DEBUG] Page too short for ${level}:`, {
+      tokenCount,
+      minTokens,
+      shortfall: minTokens - tokenCount
+    });
     return {
       isValid: false,
       tokenCount,
@@ -273,14 +319,26 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     };
   }
   
-  if (tokenCount > maxTokens * validationConfig.validationThresholds.splitTolerance) {
+  if (tokenCount > maxWithTolerance) {
+    console.log(`❌ [VALIDATION-DEBUG] Page too long for ${level}:`, {
+      tokenCount,
+      maxWithTolerance,
+      excess: tokenCount - maxWithTolerance
+    });
     return {
       isValid: false,
       tokenCount,
       maxAllowed: maxTokens,
-      reason: `Page too long: ${tokenCount} tokens (maximum: ${maxTokens * validationConfig.validationThresholds.splitTolerance})`
+      reason: `Page too long: ${tokenCount} tokens (maximum: ${maxWithTolerance})`
     };
   }
+  
+  console.log(`✅ [VALIDATION-DEBUG] Page length validation passed for ${level}:`, {
+    tokenCount,
+    minTokens,
+    maxTokens,
+    utilizationPercentage: Math.round((tokenCount / maxTokens) * 100)
+  });
   
   return {
     isValid: true,
