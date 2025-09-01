@@ -340,3 +340,6 @@ export function getTokensForGrade(gradeLevel: number): number {
   // Return total tokens for expected story length
   return expectedPages * tokensPerPage;
 }
+
+// Backward compatibility alias
+export const autoSplitContent = enhancedAutoSplitContent;
