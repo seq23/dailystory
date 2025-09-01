@@ -14,23 +14,22 @@ import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
   difficulty: string;
-  maxTokens: number;
-  wordsPerToken: number;
-  expectedPages?: number;
-  tokensPerPage?: number;
+  expectedPages: number;
+  tokensPerPage: number;
 }
 
+// Bulletproof token limits matching exact system prompt values
 const TOKEN_LIMITS: Record<string, TokenLimitConfig> = {
-  beginner: { difficulty: 'beginner', maxTokens: 80, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 8 },
-  easy: { difficulty: 'easy', maxTokens: 320, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 32 },
-  medium: { difficulty: 'medium', maxTokens: 930, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 93 },
-  hard: { difficulty: 'hard', maxTokens: 1600, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 160 },
-  expert: { difficulty: 'expert', maxTokens: 2670, wordsPerToken: 0.75, expectedPages: 10, tokensPerPage: 267 },
-  grade6: { difficulty: 'grade6', maxTokens: 4800, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 400 },
-  grade7: { difficulty: 'grade7', maxTokens: 5124, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 427 },
-  grade8: { difficulty: 'grade8', maxTokens: 5436, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 453 },
-  grade9: { difficulty: 'grade9', maxTokens: 5760, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 480 },
-  grade10: { difficulty: 'grade10', maxTokens: 6396, wordsPerToken: 0.75, expectedPages: 12, tokensPerPage: 533 }
+  beginner: { difficulty: 'beginner', expectedPages: 10, tokensPerPage: 15 },
+  easy: { difficulty: 'easy', expectedPages: 10, tokensPerPage: 32 },
+  medium: { difficulty: 'medium', expectedPages: 10, tokensPerPage: 150 },
+  hard: { difficulty: 'hard', expectedPages: 10, tokensPerPage: 200 },
+  expert: { difficulty: 'expert', expectedPages: 10, tokensPerPage: 500 },
+  grade6: { difficulty: 'grade6', expectedPages: 12, tokensPerPage: 500 },
+  grade7: { difficulty: 'grade7', expectedPages: 12, tokensPerPage: 500 },
+  grade8: { difficulty: 'grade8', expectedPages: 12, tokensPerPage: 500 },
+  grade9: { difficulty: 'grade9', expectedPages: 12, tokensPerPage: 500 },
+  grade10: { difficulty: 'grade10', expectedPages: 12, tokensPerPage: 500 }
 };
 
 // Get expected page count for difficulty level

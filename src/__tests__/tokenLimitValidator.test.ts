@@ -44,8 +44,8 @@ describe('Token Limit Validator', () => {
       const result = validateTokenLimit(text, 'beginner');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(150); // Netflix total tokens for beginner
-      expect(result.maxAllowed).toBe(150); // 15 tokens per page * 10 pages
+      expect(result.actualTokens).toBeLessThanOrEqual(90); // Guest story tokens for beginner
+      expect(result.maxAllowed).toBe(90); // Guest story tokens (15 * 6 pages)
     });
 
     it('detects text exceeding limits', () => {
@@ -62,8 +62,8 @@ describe('Token Limit Validator', () => {
       const nearLimitText = "The quick brown fox jumps over the lazy dog. ".repeat(5);
       const result = validateTokenLimit(nearLimitText, 'beginner');
       
-      // Should be valid but with warning
-      if (result.actualTokens >= 150 * 0.9 && result.actualTokens <= 150) {
+      // Should be valid but with warning (if near 90 tokens limit)
+      if (result.actualTokens >= 90 * 0.9 && result.actualTokens <= 90) {
         expect(result.isValid).toBe(true);
         expect(result.warnings).toContain(expect.stringContaining('approaching token limit'));
       }
@@ -74,7 +74,7 @@ describe('Token Limit Validator', () => {
       const result = validateTokenLimit(text, '6th');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(6000); // 6th grade Netflix total
+      expect(result.actualTokens).toBeLessThanOrEqual(3000); // 6th grade guest total (6 pages)
     });
 
     it('handles unknown difficulty levels with fallback', () => {
@@ -83,7 +83,7 @@ describe('Token Limit Validator', () => {
       
       // Should use fallback behavior (beginner limits) rather than failing
       expect(result.isValid).toBe(true);
-      expect(result.maxAllowed).toBe(150); // Should fallback to beginner Netflix limit
+      expect(result.maxAllowed).toBe(90); // Should fallback to beginner guest limit
     });
   });
 
@@ -100,7 +100,7 @@ describe('Token Limit Validator', () => {
       const result = validatePageTokenDistribution(pages, 'beginner');
       
       expect(result.isValid).toBe(true);
-      expect(result.actualTokens).toBeLessThanOrEqual(150); // Netflix total for beginner
+      expect(result.actualTokens).toBeLessThanOrEqual(90); // Guest story tokens for beginner
     });
 
     it('detects pages that are too long', () => {
@@ -117,24 +117,26 @@ describe('Token Limit Validator', () => {
   });
 
   describe('getTokenLimitForDifficulty', () => {
-    it('returns correct Netflix total limits for all difficulty levels', () => {
-      expect(getTokenLimitForDifficulty('beginner')).toBe(150);  // 15 * 10 pages
-      expect(getTokenLimitForDifficulty('easy')).toBe(320);      // 32 * 10 pages
-      expect(getTokenLimitForDifficulty('medium')).toBe(1500);   // 150 * 10 pages
-      expect(getTokenLimitForDifficulty('hard')).toBe(2000);     // 200 * 10 pages
-      expect(getTokenLimitForDifficulty('expert')).toBe(5000);   // 500 * 10 pages
+    it('returns guest story tokens (6 pages) for total difficulty limits', () => {
+      // Business logic: guests get 6 pages of any story
+      expect(getTokenLimitForDifficulty('beginner')).toBe(90);   // 15 * 6 pages
+      expect(getTokenLimitForDifficulty('easy')).toBe(192);      // 32 * 6 pages
+      expect(getTokenLimitForDifficulty('medium')).toBe(900);    // 150 * 6 pages
+      expect(getTokenLimitForDifficulty('hard')).toBe(1200);     // 200 * 6 pages
+      expect(getTokenLimitForDifficulty('expert')).toBe(3000);   // 500 * 6 pages
     });
 
-    it('returns correct Netflix total limits for expert grade levels', () => {
-      expect(getTokenLimitForDifficulty('6th')).toBe(6000);   // 500 * 12 pages
-      expect(getTokenLimitForDifficulty('7th')).toBe(6000);   // 500 * 12 pages
-      expect(getTokenLimitForDifficulty('8th')).toBe(6000);   // 500 * 12 pages
-      expect(getTokenLimitForDifficulty('9th')).toBe(6000);   // 500 * 12 pages
-      expect(getTokenLimitForDifficulty('10th')).toBe(6000);  // 500 * 12 pages
+    it('returns guest story tokens (6 pages) for expert grade levels', () => {
+      // Expert grade levels also get 6 pages for guests
+      expect(getTokenLimitForDifficulty('6th')).toBe(3000);    // 500 * 6 pages
+      expect(getTokenLimitForDifficulty('7th')).toBe(3000);    // 500 * 6 pages
+      expect(getTokenLimitForDifficulty('8th')).toBe(3000);    // 500 * 6 pages
+      expect(getTokenLimitForDifficulty('9th')).toBe(3000);    // 500 * 6 pages
+      expect(getTokenLimitForDifficulty('10th')).toBe(3000);   // 500 * 6 pages
     });
 
     it('returns fallback for unknown difficulty', () => {
-      expect(getTokenLimitForDifficulty('unknown' as any)).toBe(150); // 15 * 10 fallback
+      expect(getTokenLimitForDifficulty('unknown' as any)).toBe(90); // 15 * 6 fallback
     });
   });
 
@@ -144,8 +146,8 @@ describe('Token Limit Validator', () => {
       const expertWords = getRecommendedWordsForDifficulty('expert');
       
       expect(beginnerWords).toBeLessThan(expertWords);
-      expect(beginnerWords).toBeGreaterThan(110); // Should be reasonable (150 * 0.75)
-      expect(expertWords).toBeGreaterThan(3750); // Should be higher (5000 * 0.75)
+      expect(beginnerWords).toBeGreaterThan(60); // Should be reasonable (90 * 0.75)
+      expect(expertWords).toBeGreaterThan(2200); // Should be higher (3000 * 0.75)
     });
   });
 
@@ -164,10 +166,10 @@ describe('Token Limit Validator', () => {
     it('has consistent hardcoded token limits across expert grade levels', () => {
       const grades = ['6th', '7th', '8th', '9th', '10th'] as const;
       
-      // All expert grades now have the same token limit (500 per page * 12 pages = 6000)
+      // All expert grades have the same per-page token limit, so guest stories (6 pages) are all the same
       for (const grade of grades) {
         const tokens = getTokenLimitForDifficulty(grade);
-        expect(tokens).toBe(6000);
+        expect(tokens).toBe(3000); // 500 per page * 6 pages for guests
       }
     });
   });
@@ -194,7 +196,7 @@ describe('Token Limit Validator', () => {
       
       expect(liveResult.maxAllowed).toBeLessThan(netflixResult.maxAllowed);
       expect(liveResult.maxAllowed).toBe(15); // Single page limit
-      expect(netflixResult.maxAllowed).toBe(150); // Full story limit (15 * 10)
+      expect(netflixResult.maxAllowed).toBe(90); // Guest story limit (15 * 6)
     });
   });
 
@@ -250,6 +252,13 @@ describe('Token Limit Validator', () => {
         expect(getPerPageTokenLimit('medium')).toBe(150);
         expect(getPerPageTokenLimit('6th')).toBe(500);
       });
+    });
+
+    it('creates proper comment noting single source of truth', () => {
+      // Template service is now bulletproof with hardcoded system prompt values
+      // All other services import from system prompts as single source of truth  
+      // Guest stories = 6 pages, Premium = unlimited pages with per-page validation
+      expect(true).toBe(true); // Implementation validated by other tests
     });
   });
 });

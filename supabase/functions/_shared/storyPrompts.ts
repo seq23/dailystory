@@ -570,14 +570,6 @@ export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | Exper
   return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
 }
 
-/**
- * Get total Netflix generation tokens (10-12 pages depending on difficulty)
- */
-export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const perPageTokens = getPerPageTokenLimit(difficulty);
-  const pages = getExpectedPages(difficulty);
-  return perPageTokens * pages;
-}
 
 /**
  * Get expected pages for difficulty level
@@ -610,10 +602,10 @@ export function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel)
 }
 
 /**
- * Get token limit for difficulty level - NOW USES SYSTEM PROMPTS AS SOURCE OF TRUTH
+ * Get token limit for difficulty level - uses guest story tokens (6 pages)
  */
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getTotalNetflixTokens(difficulty); // For Netflix generation (total story)
+  return getTotalStoryTokensForGuests(difficulty); // For guest stories (6 pages)
 }
 
 /**

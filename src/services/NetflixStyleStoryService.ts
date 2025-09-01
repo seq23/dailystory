@@ -82,11 +82,12 @@ export class NetflixStyleStoryService {
         const totalContent = (cleanedPages || []).join(' ');
         const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
         
-        // Check if content meets token requirements using proper difficulty-based limits
-        const { getTotalNetflixTokens } = await import('@/utils/tokenLimitValidator');
-        const expectedTokens = getTotalNetflixTokens(difficulty);
-        const minTokensRequired = Math.floor(expectedTokens * 0.4); // 40% of expected tokens minimum
-        const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired;
+      // Check if content meets token requirements using per-page calculation for guests
+      const { getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
+      const tokensPerPage = getPerPageTokenLimit(difficulty);
+      const expectedTokensForGuests = tokensPerPage * 6; // 6 pages for guests
+      const minTokensRequired = Math.floor(expectedTokensForGuests * 0.4); // 40% minimum
+      const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired;
         
         // Additional quality check: ensure pages aren't just repeated content (concatenation detection)
         const uniqueContentRatio = this.calculateUniqueContentRatio(cleanedPages);
@@ -118,14 +119,15 @@ export class NetflixStyleStoryService {
       const minPagesRequired = isExpertLevel ? 8 : 5;
       
       // Import validation for debug info
-      const { validateTokenLimit, getTotalNetflixTokens } = await import('@/utils/tokenLimitValidator');
+      const { validateTokenLimit, getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
       const totalContent = cleanedPages.join(' ');
       const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
       const uniqueContentRatio = this.calculateUniqueContentRatio(cleanedPages);
       
-      // Calculate proper minimum tokens for debug
-      const expectedTokens = getTotalNetflixTokens(difficulty);
-      const minTokensRequired = Math.floor(expectedTokens * 0.4);
+      // Calculate proper minimum tokens for debug using guest calculation
+      const tokensPerPage = getPerPageTokenLimit(difficulty);
+      const expectedTokensForGuests = tokensPerPage * 6;
+      const minTokensRequired = Math.floor(expectedTokensForGuests * 0.4);
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
       console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}, Unique: ${Math.round(uniqueContentRatio * 100)}%`);
@@ -135,7 +137,7 @@ export class NetflixStyleStoryService {
         minRequired: minPagesRequired,
         tokenCount: tokenValidation.actualTokens,
         minTokensRequired,
-        expectedTokens,
+        expectedTokensForGuests,
         hasUniqueContent: uniqueContentRatio >= 0.6,
         uniqueRatio: Math.round(uniqueContentRatio * 100)
       });

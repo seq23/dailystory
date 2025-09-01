@@ -3,24 +3,12 @@
 
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
 
-// Hardcoded token limits matching system prompt values
-const TOKEN_LIMITS: Record<string, number> = {
-  'beginner': 15,
-  'easy': 32,
-  'medium': 150,
-  'hard': 200,
-  'expert': 500,
-  '6th': 500,
-  '7th': 500,
-  '8th': 500,
-  '9th': 500,
-  '10th': 500
-};
+// Import token functions from system prompts - single source of truth
+import { getPerPageTokenLimit as getSystemPerPageTokenLimit } from '../../supabase/functions/_shared/storyPrompts';
 
-// Get per-page token limit (for live generation)
+// Get per-page token limit from system prompts (for live generation)
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const normalized = normalizeGradeLevel(difficulty);
-  return TOKEN_LIMITS[normalized] || TOKEN_LIMITS['beginner']; // Default to beginner
+  return getSystemPerPageTokenLimit(difficulty);
 }
 
 // Get total story tokens for guests (6 pages of consistent difficulty)
@@ -28,12 +16,6 @@ export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | Exper
   return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
 }
 
-// Get total Netflix generation tokens (10-12 pages depending on difficulty)
-export function getTotalNetflixTokens(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const tokensPerPage = getPerPageTokenLimit(difficulty);
-  const expectedPages = isExpertGradeLevel(difficulty) ? 12 : 10;
-  return tokensPerPage * expectedPages;
-}
 
 /**
  * Normalize grade level format to handle all variations
@@ -82,7 +64,7 @@ export interface TokenLimitConfig {
 
 // Token limits now come from system prompts - single source of truth
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getTotalNetflixTokens(difficulty); // For Netflix generation (total story)
+  return getTotalStoryTokensForGuests(difficulty); // For guest/Netflix stories (6 pages)
 }
 
 // Token limits for SINGLE PAGE generation (Live Generation service)
