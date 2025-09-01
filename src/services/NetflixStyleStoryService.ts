@@ -89,15 +89,11 @@ export class NetflixStyleStoryService {
       const minTokensRequired = Math.floor(expectedTokensForGuests * 0.4); // 40% minimum
       const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired;
         
-        // Additional quality check: ensure pages aren't just repeated content (concatenation detection)
-        const uniqueContentRatio = this.calculateUniqueContentRatio(cleanedPages);
-        const hasUniqueContent = uniqueContentRatio >= 0.6; // At least 60% unique content across pages
-        
-        const isValidContent = hasSubstantialContent && hasUniqueContent;
+        const isValidContent = hasSubstantialContent;
 
         if (isValidContent) {
-          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages (${tokenValidation.actualTokens} tokens, ${Math.round(uniqueContentRatio * 100)}% unique)`);
-          console.log(`📊 Netflix: Validation details - Min pages: ${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}, Unique ratio: ${Math.round(uniqueContentRatio * 100)}%`);
+          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages (${tokenValidation.actualTokens} tokens)`);
+          console.log(`📊 Netflix: Validation details - Min pages: ${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}`);
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           } catch {}
@@ -122,7 +118,6 @@ export class NetflixStyleStoryService {
       const { validateTokenLimit, getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
       const totalContent = cleanedPages.join(' ');
       const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
-      const uniqueContentRatio = this.calculateUniqueContentRatio(cleanedPages);
       
       // Calculate proper minimum tokens for debug using guest calculation
       const tokensPerPage = getPerPageTokenLimit(difficulty);
@@ -130,16 +125,14 @@ export class NetflixStyleStoryService {
       const minTokensRequired = Math.floor(expectedTokensForGuests * 0.4);
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
-      console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}, Unique: ${Math.round(uniqueContentRatio * 100)}%`);
+      console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}`);
       console.log(`🔍 Netflix: Detailed validation breakdown:`, {
         hasSubstantialContent: cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired,
         pageCount: cleanedPages.length,
         minRequired: minPagesRequired,
         tokenCount: tokenValidation.actualTokens,
         minTokensRequired,
-        expectedTokensForGuests,
-        hasUniqueContent: uniqueContentRatio >= 0.6,
-        uniqueRatio: Math.round(uniqueContentRatio * 100)
+        expectedTokensForGuests
       });
       return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
 
@@ -253,51 +246,6 @@ export class NetflixStyleStoryService {
     return false;
   }
   
-  /**
-   * Calculate unique content ratio to detect concatenation
-   */
-  private static calculateUniqueContentRatio(pages: string[]): number {
-    if (!pages || pages.length <= 1) return 1.0;
-    
-    // Simple uniqueness check: compare consecutive pages
-    let uniquePages = 0;
-    const threshold = 0.7; // 70% similarity threshold
-    
-    for (let i = 0; i < pages.length; i++) {
-      let isUnique = true;
-      const currentPage = pages[i].toLowerCase().trim();
-      
-      // Compare with other pages
-      for (let j = 0; j < pages.length; j++) {
-        if (i === j) continue;
-        
-        const otherPage = pages[j].toLowerCase().trim();
-        const similarity = this.calculateSimilarity(currentPage, otherPage);
-        
-        if (similarity > threshold) {
-          isUnique = false;
-          break;
-        }
-      }
-      
-      if (isUnique) uniquePages++;
-    }
-    
-    return uniquePages / pages.length;
-  }
-  
-  /**
-   * Calculate similarity between two strings (simple word overlap)
-   */
-  private static calculateSimilarity(str1: string, str2: string): number {
-    const words1 = new Set(str1.split(/\s+/));
-    const words2 = new Set(str2.split(/\s+/));
-    
-    const intersection = new Set([...words1].filter(x => words2.has(x)));
-    const union = new Set([...words1, ...words2]);
-    
-    return union.size > 0 ? intersection.size / union.size : 0;
-  }
 
   static async generateCompleteStory(userInfo: UserInfo): Promise<NetflixStoryResult> {
     return this.generateStory(userInfo);

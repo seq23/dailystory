@@ -48,7 +48,6 @@ interface TestResult {
   tokenCount?: number;
   maxTokensAllowed?: number;
   source: 'ai' | 'fallback' | 'emergency' | 'unknown';
-  hasPageConcatenation: boolean;
   contentPreview: string;
   fullContent: string[];
   withinTokenLimits: boolean;
@@ -268,7 +267,6 @@ export function StoryPromptTester() {
       pages: 0,
       wordCount: 0,
       source: 'unknown',
-      hasPageConcatenation: false,
       contentPreview: '',
       fullContent: [],
       withinTokenLimits: false,
@@ -298,7 +296,6 @@ export function StoryPromptTester() {
           result.wordCount = countWords(response.content);
           result.contentPreview = response.content[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.content;
-          result.hasPageConcatenation = checkPageConcatenation(response.content, level);
           
           // Check for emergency content (rhyming educational content)
           const firstPage = response.content[0] || '';
@@ -332,7 +329,6 @@ export function StoryPromptTester() {
           result.wordCount = countWords(response.content);
           result.contentPreview = response.content.substring(0, 100) + '...';
           result.fullContent = [response.content];
-          result.hasPageConcatenation = false; // Single page, no concatenation possible
           
           // Check for emergency content
           if (response.content.includes('began a wonderful adventure') && response.content.length < 50) {
@@ -361,7 +357,6 @@ export function StoryPromptTester() {
           result.wordCount = countWords(response.pages);
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.pages;
-          result.hasPageConcatenation = checkPageConcatenation(response.pages, level);
           
           // Check for emergency rhyming content from ErrorHandlingManager
           const firstPage = response.pages[0] || '';
@@ -436,65 +431,14 @@ export function StoryPromptTester() {
     return result;
   };
 
-  // Enhanced page concatenation detection with updated word count standards
-  const checkPageConcatenation = (pages: string[], level: string): boolean => {
-    if (!pages || pages.length <= 1) return false;
-    
-    const difficultyLimits = {
-      'beginner': 8,   // Allow up to 8 words per page (target: 6)
-      'easy': 26,      // Allow up to 26 words per page (target: 24)
-      'medium': 45,  // Level 2 = 40-50 words per page (use middle)
-      'hard': 80,    // Level 3 = 80 words per page
-      'expert': 100, // Level 4 = 100 words per page
-      '6th': 100,    // Grade levels all use 100 words per page
-      '7th': 100,
-      '8th': 100,
-      '9th': 100,
-      '10th': 100
-    };
-    
-    const expectedWordLimit = difficultyLimits[level as keyof typeof difficultyLimits] || 50;
-    
-    for (let i = 0; i < pages.length; i++) {
-      const page = pages[i];
-      const pageWordCount = countWords(page);
-      
-      // 1. Excessive word count (clear concatenation) - only flag if 3x expected limit
-      if (pageWordCount > expectedWordLimit * 3) return true;
-      
-      // 2. Multiple "Page X:" markers
-      if (page.includes('Page ') && page.includes('Page ', 10)) return true;
-      
-      // 3. Multiple disconnected sentences (3+ full sentences ending abruptly)
-      if (page.match(/\.\s+[A-Z].*\.\s+[A-Z].*\.\s+[A-Z]/g)) return true;
-      
-      // 4. Specific concatenation patterns from logs
-      if (page.match(/, and [a-z]/g)) return true; // ", and lowercase" unnatural grammar
-      if (page.match(/technology begins behaving.*artifact/i)) return true; // Specific pattern
-      if (page.match(/ancient texts mention.*expedition that found/i)) return true; // Another pattern
-      if (page.match(/\. [A-Z][^.]{20,}\. [A-Z][^.]{20,}\. [A-Z]/)) return true; // Long fragments
-      
-      // 5. Excessive comma usage (often indicates concatenated details)
-      const commaCount = (page.match(/,/g) || []).length;
-      if (commaCount > 6 && pageWordCount < 150) return true; // High comma density
-      
-      // 6. Awkward conjunctions indicating forced connections
-      if (page.match(/, while .*, and /g)) return true; // Complex nested connectors
-      if (page.match(/, suggesting .*, and /g)) return true; // Another concatenation pattern
-    }
-    
-    return false;
-  };
 
   // Enhanced content validation
   const validateContentQuality = (pages: string[]): { 
     score: number;
     issues: string[];
-    concatenationDetails: string[];
     grammarIssues: string[];
   } => {
     const issues: string[] = [];
-    const concatenationDetails: string[] = [];
     const grammarIssues: string[] = [];
     let score = 100;
 
@@ -504,22 +448,6 @@ export function StoryPromptTester() {
         score -= 20;
         return;
       }
-
-      // Concatenation detection with details
-      const concatenationPatterns = [
-        { pattern: /, and [a-z]/, description: "Unnatural lowercase conjunction" },
-        { pattern: /\. [A-Z][^.]{20,}\. [A-Z][^.]{20,}/, description: "Multiple long disconnected sentences" },
-        { pattern: /, while .*, and /, description: "Complex nested connectors" },
-        { pattern: /technology begins behaving.*artifact/i, description: "Specific template concatenation" },
-        { pattern: /ancient texts mention.*expedition/i, description: "Another template concatenation" }
-      ];
-
-      concatenationPatterns.forEach(({ pattern, description }) => {
-        if (pattern.test(page)) {
-          concatenationDetails.push(`Page ${index + 1}: ${description}`);
-          score -= 15;
-        }
-      });
 
       // Grammar issues
       const grammarPatterns = [
@@ -542,19 +470,11 @@ export function StoryPromptTester() {
         issues.push(`Page ${index + 1}: Excessive length (${wordCount} words)`);
         score -= 10;
       }
-
-      // Comma density (indication of concatenation)
-      const commaCount = (page.match(/,/g) || []).length;
-      if (commaCount > 6 && wordCount < 150) {
-        concatenationDetails.push(`Page ${index + 1}: High comma density (${commaCount} commas in ${wordCount} words)`);
-        score -= 10;
-      }
     });
 
     return { 
       score: Math.max(0, score), 
       issues, 
-      concatenationDetails, 
       grammarIssues 
     };
   };
@@ -728,13 +648,6 @@ export function StoryPromptTester() {
                 <XCircle className="w-5 h-5 text-red-500" />
               )}
               {renderSourceBadge(result.source, result.emergencyContentUsed)}
-              
-              {/* Concatenation Detection Status */}
-              {result.hasPageConcatenation !== undefined && (
-                <Badge variant={result.hasPageConcatenation ? 'destructive' : 'default'} className="ml-2">
-                  {result.hasPageConcatenation ? 'Concatenation Detected' : 'No Concatenation'}
-                </Badge>
-              )}
             </div>
           </div>
         </CardHeader>
@@ -805,11 +718,6 @@ export function StoryPromptTester() {
           </div>
         )}
 
-        {result.hasPageConcatenation && (
-          <div className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded mt-2">
-            ⚠️ Page concatenation detected
-          </div>
-        )}
 
         {result.emergencyContentUsed && (
           <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded mt-2">
