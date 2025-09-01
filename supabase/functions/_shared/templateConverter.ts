@@ -117,8 +117,14 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // TESTING MODE: Always use full scene content for complete validation
   let text = scene.text; // Use full scene content (60-120+ words) instead of microVariants summary
   
-  // Enhanced content selection for Hard and Expert levels (FIXED: Level detection)
-  const isHardOrExpert = template.level === 'Level 3' || template.level === 'Level 4';
+  // Enhanced level detection: Handle both template levels and difficulty mappings
+  const isHardOrExpert = template.level === 'Level 3' || template.level === 'Level 4' || 
+                         template.level === 'hard' || template.level === 'expert';
+  const isMedium = template.level === 'Level 1' || template.level === 'Level 2' || 
+                   template.level === 'medium';
+  
+  // Log level detection for debugging
+  console.log(`🎯 LEVEL DETECTION: template.level="${template.level}" → isHardOrExpert=${isHardOrExpert}, isMedium=${isMedium}`);
   
   // AGGRESSIVE content selection for Hard/Expert levels - ALWAYS add content
   let shouldAddDetail = false;
@@ -134,7 +140,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
     const allDetails = scene.microVariants.optionalDetails;
     const currentWordCount = text.split(' ').length;
-    const targetWordCount = isHardOrExpert ? (template.level === 'Level 3' ? 80 : 100) : 50;
+    const targetWordCount = isHardOrExpert ? (template.level === 'Level 3' || template.level === 'hard' ? 80 : 100) : (isMedium ? 45 : 30);
     const wordsNeeded = targetWordCount - currentWordCount;
     
     if (isHardOrExpert && wordsNeeded > 20) {
@@ -184,9 +190,18 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
     }
   }
   
-  // Word count validation and minimum enforcement (FIXED: Level detection)
+  // Word count validation with proper level-based targets
   const finalWordCount = text.split(' ').length;
-  const targetWords = isHardOrExpert ? (template.level === 'Level 3' ? 80 : 100) : 50;
+  let targetWords;
+  if (isHardOrExpert) {
+    targetWords = template.level === 'Level 3' || template.level === 'hard' ? 80 : 100;
+  } else if (isMedium) {
+    targetWords = 45; // Medium level target: 45 words per page
+  } else {
+    targetWords = 30; // Beginner/easy level target: 30 words per page
+  }
+  
+  console.log(`📊 WORD COUNT TARGET: Level "${template.level}" → Target: ${targetWords} words, Current: ${finalWordCount} words`);
   
   // SMARTER WORD COUNT ENFORCEMENT: Use alternatives as replacements, not additions
   const newFinalWordCount = text.split(' ').length;
