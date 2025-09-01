@@ -120,9 +120,9 @@ describe('Token Limit Validator', () => {
     it('returns guest story tokens (6 pages) for total difficulty limits', () => {
       // Business logic: guests get 6 pages of any story
       expect(getTokenLimitForDifficulty('beginner')).toBe(90);   // 15 * 6 pages
-      expect(getTokenLimitForDifficulty('easy')).toBe(192);      // 32 * 6 pages
-      expect(getTokenLimitForDifficulty('medium')).toBe(900);    // 150 * 6 pages
-      expect(getTokenLimitForDifficulty('hard')).toBe(1200);     // 200 * 6 pages
+      expect(getTokenLimitForDifficulty('easy')).toBe(360);      // 60 * 6 pages
+      expect(getTokenLimitForDifficulty('medium')).toBe(1500);   // 250 * 6 pages
+      expect(getTokenLimitForDifficulty('hard')).toBe(2100);     // 350 * 6 pages
       expect(getTokenLimitForDifficulty('expert')).toBe(3000);   // 500 * 6 pages
     });
 
@@ -177,9 +177,9 @@ describe('Token Limit Validator', () => {
   describe('getTokenLimitForSinglePage', () => {
     it('returns correct single-page token limits', () => {
       expect(getTokenLimitForSinglePage('beginner')).toBe(15);  // From system prompt
-      expect(getTokenLimitForSinglePage('easy')).toBe(32);      // From system prompt
-      expect(getTokenLimitForSinglePage('medium')).toBe(150);   // From system prompt
-      expect(getTokenLimitForSinglePage('hard')).toBe(200);     // From system prompt
+      expect(getTokenLimitForSinglePage('easy')).toBe(60);      // From system prompt
+      expect(getTokenLimitForSinglePage('medium')).toBe(250);   // From system prompt
+      expect(getTokenLimitForSinglePage('hard')).toBe(350);     // From system prompt
       expect(getTokenLimitForSinglePage('expert')).toBe(500);   // From system prompt
     });
 
@@ -240,16 +240,16 @@ describe('Token Limit Validator', () => {
     describe('getTotalStoryTokensForGuests', () => {
       it('returns correct guest story limits (6 pages)', () => {
         expect(getTotalStoryTokensForGuests('beginner')).toBe(90);  // 15 * 6 pages
-        expect(getTotalStoryTokensForGuests('easy')).toBe(192);     // 32 * 6 pages
-        expect(getTotalStoryTokensForGuests('medium')).toBe(900);   // 150 * 6 pages
+        expect(getTotalStoryTokensForGuests('easy')).toBe(360);     // 60 * 6 pages
+        expect(getTotalStoryTokensForGuests('medium')).toBe(1500);  // 250 * 6 pages
       });
     });
 
     describe('getPerPageTokenLimit', () => {
       it('returns correct per-page limits from system prompts', () => {
         expect(getPerPageTokenLimit('beginner')).toBe(15);
-        expect(getPerPageTokenLimit('easy')).toBe(32);
-        expect(getPerPageTokenLimit('medium')).toBe(150);
+        expect(getPerPageTokenLimit('easy')).toBe(60);
+        expect(getPerPageTokenLimit('medium')).toBe(250);
         expect(getPerPageTokenLimit('6th')).toBe(500);
       });
     });

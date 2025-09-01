@@ -51,11 +51,11 @@ export const TokenMonitoringDashboard: React.FC<TokenMonitoringProps> = ({ class
     : 0;
 
   const maxTokensPerDifficulty = {
-    beginner: 500,
-    easy: 800,
-    medium: 1200,
-    hard: 1500,
-    expert: 2000
+    beginner: 90,    // 15 * 6 pages (guest limit)
+    easy: 360,       // 60 * 6 pages (guest limit)
+    medium: 1500,    // 250 * 6 pages (guest limit)
+    hard: 2100,      // 350 * 6 pages (guest limit)
+    expert: 3000     // 500 * 6 pages (guest limit)
   };
 
   const getUsageStatus = (tokens: number, difficulty: string) => {

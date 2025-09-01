@@ -539,13 +539,13 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
     return tokens;
   }
   
-  // Regular difficulty fallbacks - updated to match system prompts
+  // Dynamic fallbacks - extracted from actual system prompts
   const regularFallbacks: Record<string, number> = {
-    'beginner': 15,   // Updated to match system prompt "Maximum 15 tokens per page"
-    'easy': 32,       // Updated to match system prompt "Maximum 32 tokens per page"
-    'medium': 150,    // Updated to match system prompt "Maximum 150 tokens per page"
-    'hard': 200,      // Updated to match system prompt "Maximum 200 tokens per page"
-    'expert': 500,    // Updated to match system prompt "Maximum 500 tokens per page"
+    'beginner': extractTokenLimitFromPrompt(STORY_PROMPTS.beginner.systemPrompt),
+    'easy': extractTokenLimitFromPrompt(STORY_PROMPTS.easy.systemPrompt),
+    'medium': extractTokenLimitFromPrompt(STORY_PROMPTS.medium.systemPrompt),
+    'hard': extractTokenLimitFromPrompt(STORY_PROMPTS.hard.systemPrompt),
+    'expert': extractTokenLimitFromPrompt(STORY_PROMPTS.expert.systemPrompt),
   };
   
   if (regularFallbacks[difficulty]) {
