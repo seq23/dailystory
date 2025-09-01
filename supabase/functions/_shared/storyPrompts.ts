@@ -237,7 +237,6 @@ export const EXPERT_STORY_PROMPTS: Record<ExpertGradeLevel, ExpertStoryPromptCon
   
   "6th": {
     gradeLevel: "6th",
-    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 6th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
@@ -273,7 +272,6 @@ Use seed={seed} for creative expression.`,
 
   "7th": {
     gradeLevel: "7th",
-    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 7th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
@@ -309,7 +307,6 @@ Use seed={seed} for creative expression.`,
 
   "8th": {
     gradeLevel: "8th",
-    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 8th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
@@ -345,7 +342,6 @@ Use seed={seed} for creative expression.`,
 
   "9th": {
     gradeLevel: "9th",
-    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 9th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
@@ -381,7 +377,6 @@ Use seed={seed} for creative expression.`,
 
   "10th": {
     gradeLevel: "10th",
-    expectedPages: 12,
     systemPrompt: `You are an expert story writer creating 10th grade level content for advanced 11+ year old readers.
 
 CRITICAL RULES:
