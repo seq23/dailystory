@@ -28,10 +28,10 @@ export function BasicLevelTestRunner() {
 
   const createTestUser = (level: DifficultyLevel): UserInfo => {
     const configs = {
-      beginner: { name: 'Emma', age: 4, grade: 'PreK' as const, pages: '4-6' },
-      easy: { name: 'Alex', age: 6, grade: 'K' as const, pages: '4-6' },
-      medium: { name: 'Maya', age: 8, grade: '2nd' as const, pages: '4-6' },
-      hard: { name: 'Jordan', age: 10, grade: '4th' as const, pages: '4-6' }
+      beginner: { name: 'Emma', age: 4, grade: 'PreK' as const },
+      easy: { name: 'Alex', age: 6, grade: 'K' as const },
+      medium: { name: 'Maya', age: 8, grade: '2nd' as const },
+      hard: { name: 'Jordan', age: 10, grade: '4th' as const }
     };
 
     const config = configs[level];
@@ -52,8 +52,8 @@ export function BasicLevelTestRunner() {
   };
 
   const getExpectedPageRange = (level: DifficultyLevel): [number, number] => {
-    // All basic levels expect 4-6 pages
-    return [4, 6];
+    // All basic levels expect ~10 pages (allowing 1-page tolerance)
+    return [9, 11];
   };
 
   const runBasicLevelTest = async () => {
@@ -123,10 +123,10 @@ export function BasicLevelTestRunner() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <GraduationCap className="w-5 h-5" />
-          Basic Level Test (4-6 Pages)
+          Basic Level Test (10 Pages)
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Tests basic difficulty levels (Beginner → Hard) to verify 4-6 page generation
+          Tests basic difficulty levels (Beginner → Hard) to verify 10-page generation
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -192,7 +192,7 @@ export function BasicLevelTestRunner() {
               <li>Total Tests: {results.length}/4</li>
               <li>Success Rate: {results.filter(r => r.success).length}/{results.length}</li>
               <li>Page Range Success: {results.filter(r => r.pagesInRange).length}/{results.length}</li>
-              <li>Average Pages: {averagePages.toFixed(1)} (Target: 4-6)</li>
+              <li>Average Pages: {averagePages.toFixed(1)} (Target: 9-11)</li>
               <li>AI Generation: {results.filter(r => r.source === 'ai').length}/{results.length}</li>
             </ul>
           </div>
