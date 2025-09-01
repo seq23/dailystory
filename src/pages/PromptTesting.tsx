@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
+import { ValidationTestRunner } from '@/components/ValidationTestRunner';
 
 export default function PromptTesting() {
   return (
@@ -24,6 +25,10 @@ export default function PromptTesting() {
               </Button>
             </Link>
           </div>
+        </div>
+        
+        <div className="mb-8">
+          <ValidationTestRunner />
         </div>
         
         <RunwareConnectionTest />
