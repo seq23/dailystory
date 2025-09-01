@@ -213,10 +213,41 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
     try {
       console.log('🎯 Calling streamlined edge function');
       
+      // CRITICAL FIX: Format the actual user prompt template with resolved data
+      const { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, mapGradeToExpertLevel } = await import('../constants/storyPrompts');
+      
+      // Determine difficulty/grade level
+      const gradeLevel = bundle.systemSettings.gradeLevel;
+      const expertGrade = config.expertGradeLevel || mapGradeToExpertLevel(gradeLevel);
+      const difficulty = config.difficulty || this.mapGradeLevelToDifficulty(gradeLevel);
+      
+      // Get the correct prompt template
+      const promptConfig = expertGrade 
+        ? getExpertStoryPrompt(expertGrade)
+        : getStoryPrompt(difficulty);
+      
+      // Extract user data from the resolved bundle for formatUserPrompt
+      const extractedData = this.extractUserDataFromBundle(bundle.storyContent);
+      
+      // Format the user prompt template with the extracted data
+      const formattedUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, extractedData);
+      
+      // Replace bundle.storyContent with the properly formatted prompt
+      const enhancedBundle = {
+        ...bundle,
+        storyContent: formattedUserPrompt
+      };
+      
+      console.log('🔧 Fixed user prompt linkage:', {
+        originalLength: bundle.storyContent.length,
+        formattedLength: formattedUserPrompt.length,
+        difficulty: expertGrade || difficulty
+      });
+      
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
-          // Streamlined payload structure
-          bundle,
+          // Streamlined payload structure with fixed prompt
+          bundle: enhancedBundle,
           config: {
             sessionType: config.sessionType || 'free',
             pageNumber: config.pageNumber || 1,
@@ -292,6 +323,58 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
       compliance: validation.compliancePercentage,
       issues
     };
+  }
+
+  /**
+   * Extract user data from resolved bundle for formatUserPrompt
+   */
+  private static extractUserDataFromBundle(storyContent: string): Record<string, any> {
+    let extractedData: Record<string, any> = {};
+    
+    try {
+      // Extract Character Info JSON
+      const matches = storyContent.match(/Character Info: ({.*})/);
+      if (matches) {
+        extractedData = JSON.parse(matches[1]);
+      }
+      
+      // Extract other resolved data from the natural language bundle
+      const vocabMatch = storyContent.match(/Vocabulary: (.*?)(?:\.|$)/);
+      if (vocabMatch) {
+        extractedData.vocabularyInstructions = vocabMatch[1];
+      }
+      
+      const themeMatch = storyContent.match(/Theme: (.*?)(?:\.|Vocabulary)/);
+      if (themeMatch) {
+        extractedData.specialRequest = themeMatch[1];
+      }
+      
+      // Add a creative seed for variation
+      extractedData.seed = Math.floor(Math.random() * 10000);
+      
+    } catch (error) {
+      console.warn('⚠️ Failed to extract user data from bundle:', error);
+      // Return safe defaults
+      extractedData = {
+        userName: 'Child',
+        specialRequest: 'adventure',
+        vocabularyInstructions: 'age-appropriate vocabulary',
+        seed: Math.floor(Math.random() * 10000)
+      };
+    }
+    
+    return extractedData;
+  }
+
+  /**
+   * Map grade level to difficulty for backward compatibility
+   */
+  private static mapGradeLevelToDifficulty(gradeLevel: number): string {
+    if (gradeLevel === 0) return 'beginner';
+    if (gradeLevel === 1) return 'easy';
+    if (gradeLevel === 2) return 'medium';
+    if (gradeLevel === 3) return 'hard';
+    return 'expert';
   }
 
   /**
