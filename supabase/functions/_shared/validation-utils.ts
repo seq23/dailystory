@@ -42,10 +42,70 @@ export function getExpectedPagesForLevel(level: ValidationLevel): number {
 }
 
 /**
- * Auto-split content into appropriate page sizes using sentence-based splitting
+ * Emergency chunking for oversized sentences (Level 0 fallback)
+ */
+export function emergencyChunkSentence(sentence: string, targetTokens: number): string[] {
+  const words = sentence.trim().split(/\s+/);
+  const chunks: string[] = [];
+  let currentChunk = '';
+  let currentTokens = 0;
+  
+  for (const word of words) {
+    const wordTokens = estimateTokenCount(word);
+    
+    if (currentTokens + wordTokens > targetTokens && currentChunk.length > 0) {
+      chunks.push(currentChunk.trim());
+      currentChunk = word;
+      currentTokens = wordTokens;
+    } else {
+      if (currentChunk.length > 0) currentChunk += ' ';
+      currentChunk += word;
+      currentTokens += wordTokens;
+    }
+  }
+  
+  if (currentChunk.trim().length > 0) {
+    chunks.push(currentChunk.trim());
+  }
+  
+  return chunks.length > 0 ? chunks : [sentence];
+}
+
+/**
+ * Word-chunking fallback for unpunctuated/run-on sentences (Level 1-4+ fallback)
+ */
+export function wordChunkSentence(sentence: string, targetTokens: number): string[] {
+  const words = sentence.trim().split(/\s+/);
+  const chunks: string[] = [];
+  let currentChunk = '';
+  let currentTokens = 0;
+  
+  for (const word of words) {
+    const wordTokens = estimateTokenCount(word);
+    
+    if (currentTokens + wordTokens > targetTokens && currentChunk.length > 0) {
+      chunks.push(currentChunk.trim() + '.');
+      currentChunk = word;
+      currentTokens = wordTokens;
+    } else {
+      if (currentChunk.length > 0) currentChunk += ' ';
+      currentChunk += word;
+      currentTokens += wordTokens;
+    }
+  }
+  
+  if (currentChunk.trim().length > 0) {
+    chunks.push(currentChunk.trim() + '.');
+  }
+  
+  return chunks.length > 0 ? chunks : [sentence];
+}
+
+/**
+ * Enhanced auto-split with Level 0 strict splitting and Level 1-4+ smart packing
  * This is the core algorithm that ensures consistent page generation
  */
-export function autoSplitContent(content: string, level: ValidationLevel, maxPages: number): string[] {
+export function enhancedAutoSplitContent(content: string, level: ValidationLevel, maxPages: number): string[] {
   if (!content?.trim()) return [];
   
   const targetTokensPerPage = getTokenLimitsForLevel(level).perPage;
@@ -71,31 +131,74 @@ export function autoSplitContent(content: string, level: ValidationLevel, maxPag
   let currentPage = '';
   let currentTokens = 0;
   
+  // Level 0: Strict 1-sentence per page with emergency chunking
+  if (level === 'Level0') {
+    for (const sentence of sentences) {
+      const cleanSentence = sentence.trim();
+      if (!cleanSentence) continue;
+      
+      const sentenceTokens = estimateTokenCount(cleanSentence);
+      
+      // If sentence is too long for Level 0, emergency chunk it
+      if (sentenceTokens > targetTokensPerPage) {
+        const chunks = emergencyChunkSentence(cleanSentence, targetTokensPerPage);
+        pages.push(...chunks);
+      } else {
+        pages.push(cleanSentence);
+      }
+      
+      // Stop if we've hit max pages
+      if (pages.length >= maxPages) break;
+    }
+    
+    return pages.length > 0 ? pages : [content.trim()];
+  }
+  
+  // Level 1-4+: Smart packing with word-chunking fallback
   for (const sentence of sentences) {
     const cleanSentence = sentence.trim();
     if (!cleanSentence) continue;
     
     const sentenceTokens = estimateTokenCount(cleanSentence);
     
-    // Check if adding this sentence would exceed target and we have content
-    if (currentTokens + sentenceTokens > targetTokensPerPage && currentPage.length > 0) {
-      if (pages.length < maxPages) {
-        // Start new page
-        pages.push(currentPage.trim());
-        currentPage = cleanSentence;
-        currentTokens = sentenceTokens;
-      } else {
-        // At max pages limit, add to current page
-        currentPage += ' ' + cleanSentence;
-        currentTokens += sentenceTokens;
+    // If sentence is too long and has no punctuation, word-chunk it
+    if (sentenceTokens > targetTokensPerPage * 1.5 && !/[.!?]/.test(cleanSentence)) {
+      const chunks = wordChunkSentence(cleanSentence, targetTokensPerPage);
+      
+      for (const chunk of chunks) {
+        const chunkTokens = estimateTokenCount(chunk);
+        
+        if (currentTokens + chunkTokens > targetTokensPerPage && currentPage.length > 0) {
+          if (pages.length < maxPages) {
+            pages.push(currentPage.trim());
+            currentPage = chunk;
+            currentTokens = chunkTokens;
+          } else {
+            currentPage += ' ' + chunk;
+            currentTokens += chunkTokens;
+          }
+        } else {
+          if (currentPage.length > 0) currentPage += ' ';
+          currentPage += chunk;
+          currentTokens += chunkTokens;
+        }
       }
     } else {
-      // Add to current page
-      if (currentPage.length > 0) {
-        currentPage += ' ';
+      // Normal sentence processing with smart packing
+      if (currentTokens + sentenceTokens > targetTokensPerPage && currentPage.length > 0) {
+        if (pages.length < maxPages) {
+          pages.push(currentPage.trim());
+          currentPage = cleanSentence;
+          currentTokens = sentenceTokens;
+        } else {
+          currentPage += ' ' + cleanSentence;
+          currentTokens += sentenceTokens;
+        }
+      } else {
+        if (currentPage.length > 0) currentPage += ' ';
+        currentPage += cleanSentence;
+        currentTokens += sentenceTokens;
       }
-      currentPage += cleanSentence;
-      currentTokens += sentenceTokens;
     }
   }
   
@@ -205,10 +308,10 @@ export function parseIntoPages(content: string, level: ValidationLevel): string[
     return pages;
   }
   
-  // Fallback method: Smart sentence-based splitting
-  console.log(`🔄 Page splitting: No *** markers found, using smart fallback`);
+  // Fallback method: Enhanced sentence-based splitting
+  console.log(`🔄 Page splitting: No *** markers found, using enhanced smart fallback`);
   const expectedPages = getExpectedPagesForLevel(level);
-  const smartSplit = autoSplitContent(content, level, expectedPages);
+  const smartSplit = enhancedAutoSplitContent(content, level, expectedPages);
   
   console.log(`✅ Page splitting: Generated ${smartSplit.length} pages using smart fallback (target: ${expectedPages})`);
   return smartSplit;

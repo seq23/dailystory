@@ -257,6 +257,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   const baseInstructions = `
 CRITICAL SUCCESS REQUIREMENTS:
 - Generate a reliable engaging narrative suitable for children
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 - Include natural continuation hooks and smooth story flow  
 - If target vocabulary provided, incorporate naturally throughout
 - Never include page numbers, titles, or formatting markers
@@ -278,17 +279,17 @@ CRITICAL SUCCESS REQUIREMENTS:
       let enhancedSystemPrompt = prompt.systemPrompt + baseInstructions;
       let finalUserPrompt = enhancedUserPrompt;
       
-      // Progressive retry enhancement based on attempt number
+      // Progressive retry enhancement with *** reminders based on attempt number
       if (isExpertLevel) {
         if (attempt === 2) {
-          enhancedSystemPrompt += `\n\nQUALITY ENHANCEMENT: Second attempt with intelligent model - focus on sophisticated narrative structure and advanced vocabulary integration.`;
+          enhancedSystemPrompt += `\n\nQUALITY ENHANCEMENT: Second attempt with intelligent model - focus on sophisticated narrative structure and advanced vocabulary integration. CRITICAL: End each page with ' *** ' marker.`;
         } else if (attempt >= 3) {
-          enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Attempt ${attempt}/${maxAttempts} - prioritize completion and reliability while maintaining quality. Generate any engaging story content that meets the requirements above.`;
-          finalUserPrompt += ` Create engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
+          enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Attempt ${attempt}/${maxAttempts} - prioritize completion and reliability while maintaining quality. CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS! Generate any engaging story content that meets the requirements above.`;
+          finalUserPrompt += ` Create engaging story with natural flow and clear narrative structure. CRITICAL: End each page with ' *** ' marker. Include all target vocabulary naturally.`;
         }
       } else if (attempt === 2) {
-        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Final attempt before template fallback - prioritize completion and reliability. Generate any engaging story content that meets the requirements above.`;
-        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
+        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Final attempt before template fallback - prioritize completion and reliability. CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS! Generate any engaging story content that meets the requirements above.`;
+        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure. CRITICAL: End each page with ' *** ' marker. Include all target vocabulary naturally.`;
       }
       
       // API call with correct model parameters and enhanced logging

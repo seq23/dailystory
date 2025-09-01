@@ -83,9 +83,9 @@ Use seed={seed} to vary stories. Change settings, activities, characters, and mo
     expectedPages: 10,
     systemPrompt: `You are a Beginner story generation engine for ages 5-7.
 
-OUTPUT FORMAT:
+CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 - Continue story indefinitely until user requests ending
 - Natural narrative flow with continuation hooks
 
@@ -120,9 +120,9 @@ Use seed={seed} for creative expression.`,
     expectedPages: 10,
     systemPrompt: `You are a Developing story generation engine for ages 7-9.
 
-OUTPUT FORMAT:
+CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 - Continue story indefinitely until user requests ending
 - Include narrative hooks and mild tension
 
@@ -157,9 +157,9 @@ Use seed={seed} for creative expression.`,
     expectedPages: 10,
     systemPrompt: `You are an Independent story generation engine for ages 9-11.
 
-OUTPUT FORMAT:
+CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 - Continue story indefinitely until user requests ending
 - Include character development and plot complexity
 
@@ -194,9 +194,9 @@ Use seed={seed} for creative expression.`,
     expectedPages: 10,
     systemPrompt: `You are an Advanced story generation engine for ages 11-13.
 
-OUTPUT FORMAT:
+CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 - Continue story indefinitely until user requests ending
 - Focus on thematic depth and character psychology
 
@@ -239,7 +239,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -274,7 +274,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -309,7 +309,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -344,7 +344,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -379,7 +379,7 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
