@@ -10,6 +10,7 @@ import { DiagnosticTool } from '@/utils/diagnostics';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
+import { StoryQualityChecker } from '@/utils/storyQualityChecker';
 
 export interface NetflixStoryResult {
   content: string[];
@@ -86,11 +87,18 @@ export class NetflixStyleStoryService {
       const { getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
       const tokensPerPage = getPerPageTokenLimit(difficulty);
       const expectedTokensForGuests = tokensPerPage * 6; // 6 pages for guests
-      const minTokenPercentage = isExpertLevel ? 0.25 : 0.4; // 25% for expert, 40% for regular
+      const minTokenPercentage = 0.1; // 10% for all levels - unified threshold
       const minTokensRequired = Math.floor(expectedTokensForGuests * minTokenPercentage);
       const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired;
-        
-        const isValidContent = hasSubstantialContent;
+      
+      // For expert levels, also check story quality score > 50
+      let qualityValidation = { isValid: true, score: 100 };
+      if (isExpertLevel) {
+        qualityValidation = StoryQualityChecker.checkStoryQuality(cleanedPages, difficulty as any);
+        console.log(`📊 Netflix: Expert quality check - Score: ${qualityValidation.score}, Valid: ${qualityValidation.isValid}`);
+      }
+      
+      const isValidContent = hasSubstantialContent && (!isExpertLevel || qualityValidation.score > 50);
 
         if (isValidContent) {
           console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages (${tokenValidation.actualTokens} tokens)`);
@@ -123,7 +131,7 @@ export class NetflixStyleStoryService {
       // Calculate proper minimum tokens for debug using guest calculation
       const tokensPerPage = getPerPageTokenLimit(difficulty);
       const expectedTokensForGuests = tokensPerPage * 6;
-      const minTokenPercentage = isExpertLevel ? 0.25 : 0.4; // 25% for expert, 40% for regular
+      const minTokenPercentage = 0.1; // 10% for all levels - unified threshold
       const minTokensRequired = Math.floor(expectedTokensForGuests * minTokenPercentage);
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');

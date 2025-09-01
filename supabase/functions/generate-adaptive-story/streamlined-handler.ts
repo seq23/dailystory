@@ -161,17 +161,28 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     }
   }
 
-  // Enhanced AI Generation with 2-Attempt Quality-First Model Progression
+  // Enhanced AI Generation with Expert Circuit Breaker
   let storyText = '';
   let attempt = 1;
-  const maxAttempts = 2;
+  
+  // Expert detection for specialized handling
+  const isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
+  const maxAttempts = isExpertLevel ? 5 : 2; // 5 attempts for expert, 2 for regular
   const startTime = Date.now();
 
-  // Model progression for quality optimization
-  const modelProgression = [
-    { model: 'gpt-4.1-2025-04-14', description: 'enhanced quality', paramName: 'max_completion_tokens' }, 
+  // Progressive model chain for expert levels, optimized chain for regular
+  const modelProgression = isExpertLevel ? [
+    { model: 'gpt-5-2025-08-07', description: 'flagship expert quality', paramName: 'max_completion_tokens' },
+    { model: 'gpt-4.1-2025-04-14', description: 'intelligent fallback', paramName: 'max_completion_tokens' }, 
+    { model: 'gpt-5-mini-2025-08-07', description: 'fast & reliable', paramName: 'max_completion_tokens' },
+    { model: 'gpt-4.1-2025-04-14', description: 'retry intelligent', paramName: 'max_completion_tokens' },
+    { model: 'gpt-5-nano-2025-08-07', description: 'final attempt', paramName: 'max_completion_tokens' }
+  ] : [
+    { model: 'gpt-5-2025-08-07', description: 'flagship quality', paramName: 'max_completion_tokens' }, 
     { model: 'gpt-5-mini-2025-08-07', description: 'fast & reliable', paramName: 'max_completion_tokens' }
   ];
+
+  console.log(`🎯 Expert Circuit Breaker: ${isExpertLevel ? 'EXPERT' : 'REGULAR'} mode - ${maxAttempts} attempts available`);
 
   // Apply to BOTH attempts
   const baseInstructions = `
@@ -198,9 +209,17 @@ CRITICAL SUCCESS REQUIREMENTS:
       let enhancedSystemPrompt = prompt.systemPrompt + baseInstructions;
       let finalUserPrompt = enhancedUserPrompt;
       
-      if (attempt === 2) {
-        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: This is the final attempt before template fallback - prioritize completion and reliability. Generate any engaging story content that meets the requirements above. Focus on natural story flow and ensure all target vocabulary is included if specified.`;
-        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure for this final attempt. Include all target vocabulary naturally.`;
+      // Progressive retry enhancement based on attempt number
+      if (isExpertLevel) {
+        if (attempt === 2) {
+          enhancedSystemPrompt += `\n\nQUALITY ENHANCEMENT: Second attempt with intelligent model - focus on sophisticated narrative structure and advanced vocabulary integration.`;
+        } else if (attempt >= 3) {
+          enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Attempt ${attempt}/${maxAttempts} - prioritize completion and reliability while maintaining quality. Generate any engaging story content that meets the requirements above.`;
+          finalUserPrompt += ` Create engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
+        }
+      } else if (attempt === 2) {
+        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Final attempt before template fallback - prioritize completion and reliability. Generate any engaging story content that meets the requirements above.`;
+        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
       }
       
       // API call with correct model parameters
