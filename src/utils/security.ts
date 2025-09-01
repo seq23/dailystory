@@ -1,8 +1,23 @@
 // Enhanced Security Utilities for Children's Story App
 import { APP_CONFIG } from "@/constants/app";
 
+export type SecurityLevel = 'Level0' | 'Level1' | 'Level2' | 'Level3' | 'Level4' | 'Grade6' | 'Grade7' | 'Grade8' | 'Grade9' | 'Grade10';
+
 // Content filtering and sanitization
 export class ContentSecurity {
+  // Nuclear Blacklist - Most extreme words always blocked regardless of level
+  private static readonly NUCLEAR_BLACKLIST = [
+    // Extreme racial slurs and hate speech
+    'nigger', 'spic', 'chink', 'kike', 'wetback', 'towelhead', 'raghead',
+    // Extreme sexual content
+    'fuck', 'fucking', 'motherfucker', 'gangbang', 'gangbanging', 'rape', 'molest',
+    // Extreme violence/weapons
+    'ar-15', 'ak-47', 'machine gun', 'bomb', 'explosive', 'terrorism', 'terrorist',
+    // Extreme drugs
+    'heroin', 'cocaine', 'meth', 'fentanyl',
+    // Self-harm extreme
+    'suicide', 'kill yourself', 'self-harm', 'cutting'
+  ];
   // Multilingual inappropriate words database
   private static multilingualInappropriateWords = {
     // English
@@ -97,6 +112,13 @@ export class ContentSecurity {
     'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny'
   ];
 
+  // Violence words allowed for Hard/Expert/Grade6+ levels
+  private static violenceWordsForOlderKids = [
+    'kill', 'killing', 'killed', 'killer', 'murder', 'die', 'dead', 'death',
+    'blood', 'knife', 'stab', 'stabbing', 'stabbed', 'gun', 'guns', 'shoot', 
+    'shooting', 'shot', 'fight', 'fighting', 'war', 'battle', 'sword'
+  ];
+
   // Character substitution patterns (e.g., "v1ol3nt" → "violent")
   private static substitutionPatterns = [
     { pattern: /[0o]/gi, replacement: 'o' },
@@ -138,7 +160,116 @@ export class ContentSecurity {
   private static submissionCounts = new Map<string, { count: number; timestamp: number }>();
 
   /**
+   * Get level-based word list for filtering
+   */
+  static getLevelBasedWordList(level: SecurityLevel): string[] {
+    // Always include nuclear blacklist
+    let filteredWords = [...this.NUCLEAR_BLACKLIST];
+
+    // For Level0-2 (PreK-2nd): Use full inappropriate words + younger children restricted
+    if (['Level0', 'Level1', 'Level2'].includes(level)) {
+      filteredWords.push(...this.multilingualInappropriateWords.en);
+      filteredWords.push(...this.youngerChildrenRestrictedWords);
+    }
+    // For Level3-4 (3rd-5th): Use inappropriate words but exclude mild violence words
+    else if (['Level3', 'Level4'].includes(level)) {
+      const inappropriateWords = this.multilingualInappropriateWords.en.filter(word => 
+        !this.violenceWordsForOlderKids.includes(word)
+      );
+      filteredWords.push(...inappropriateWords);
+    }
+    // For Grade6-10: Only nuclear blacklist (violence words allowed)
+    // Grade6+ levels already have minimal filtering
+
+    return [...new Set(filteredWords)]; // Remove duplicates
+  }
+
+  /**
+   * Level-based content appropriateness check
+   */
+  static isContentAppropriateForLevel(text: string, level: SecurityLevel, userLanguage?: string): { appropriate: boolean; reason?: string } {
+    if (!text || typeof text !== 'string') {
+      return { appropriate: false, reason: 'Invalid input' };
+    }
+
+    // Get level-appropriate filtering list
+    const filteredWords = this.getLevelBasedWordList(level);
+    
+    // Normalize text
+    let normalizedText = text.toLowerCase().trim();
+    const isLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF0-9.,!?;:'"()\-]*$/.test(text);
+    
+    if (isLatinScript) {
+      this.substitutionPatterns.forEach(({ pattern, replacement }) => {
+        normalizedText = normalizedText.replace(pattern, replacement);
+      });
+      normalizedText = normalizedText.replace(/[^a-z\s]/g, '');
+    }
+
+    // Check semantic patterns for inappropriate phrase combinations (Latin script only)
+    if (isLatinScript) {
+      for (const semanticPattern of this.semanticPatterns) {
+        try {
+          if (semanticPattern.pattern.test(text) || semanticPattern.pattern.test(normalizedText)) {
+            return { appropriate: false, reason: semanticPattern.reason };
+          }
+        } catch (regexError) {
+          console.warn(`Regex error checking semantic pattern:`, regexError);
+        }
+      }
+    }
+
+    // Check filtered words
+    for (const word of filteredWords) {
+      try {
+        const isWordInLatinScript = /^[a-zA-Z\s\u00C0-\u017F\u1E00-\u1EFF]*$/.test(word);
+        
+        let isFound = false;
+        if (isWordInLatinScript) {
+          const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const wordPattern = new RegExp(`\\b${escapedWord}\\b`, 'i');
+          isFound = wordPattern.test(normalizedText);
+        } else {
+          const lowerWord = word.toLowerCase();
+          const lowerText = text.toLowerCase();
+          isFound = lowerText.includes(lowerWord) || normalizedText.includes(lowerWord);
+        }
+        
+        if (isFound) {
+          return { appropriate: false, reason: `Content not appropriate for ${level}` };
+        }
+      } catch (regexError) {
+        console.warn(`Regex error checking word "${word}":`, regexError);
+        if (text.toLowerCase().includes(word.toLowerCase())) {
+          return { appropriate: false, reason: `Content not appropriate for ${level}` };
+        }
+      }
+    }
+
+    // Check multilingual inappropriate words for user's language
+    if (userLanguage && userLanguage !== 'en' && this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords]) {
+      const languageWords = this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords] || [];
+      
+      for (const word of languageWords) {
+        const lowerWord = word.toLowerCase();
+        const lowerText = text.toLowerCase();
+        if (lowerText.includes(lowerWord) || normalizedText.includes(lowerWord)) {
+          return { appropriate: false, reason: `Inappropriate content detected in ${userLanguage.toUpperCase()}` };
+        }
+      }
+    }
+
+    // Check for repeated characters (potential obfuscation) - only for Latin scripts
+    if (isLatinScript && /(.)\1{4,}/.test(normalizedText)) {
+      return { appropriate: false, reason: 'Suspicious character repetition detected' };
+    }
+
+    return { appropriate: true };
+  }
+
+  /**
    * Enhanced content filtering with age-appropriate validation and multilingual support
+   * @deprecated Use isContentAppropriateForLevel instead
    */
   static isContentAppropriate(text: string, grade?: string, userLanguage?: string): { appropriate: boolean; reason?: string } {
     if (!text || typeof text !== 'string') {

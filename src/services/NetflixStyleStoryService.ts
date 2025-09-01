@@ -72,37 +72,23 @@ export class NetflixStyleStoryService {
         // Pages already cleaned by unified system
         const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
-        // Token-based validation that aligns with actual AI output
-        const isExpertLevel = difficulty === 'expert' || this.isExpertGradeLevel(difficulty);
-        const minPagesRequired = isExpertLevel ? 6 : 5; // Reduced expert pages from 8 to 6
+        // Use UnifiedValidator for comprehensive validation - fixes 717-token issue
+        const { UnifiedValidator } = await import('@/utils/unifiedValidator');
+        const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
         
-        // Import token validation utilities
-        const { validateTokenLimit, estimateTokenCount } = await import('@/utils/tokenLimitValidator');
-        
-        // For all levels, validate using proper token-based validation
-        const totalContent = (cleanedPages || []).join(' ');
-        const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
-        
-      // Check if content meets token requirements using per-page calculation for guests
-      const { getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
-      const tokensPerPage = getPerPageTokenLimit(difficulty);
-      const expectedTokensForGuests = tokensPerPage * 6; // 6 pages for guests
-      const minTokenPercentage = 0.1; // 10% for all levels - unified threshold
-      const minTokensRequired = Math.floor(expectedTokensForGuests * minTokenPercentage);
-      const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired;
-      
-      // For expert levels, also check story quality score > 50
-      let qualityValidation = { isValid: true, score: 100 };
-      if (isExpertLevel) {
-        qualityValidation = StoryQualityChecker.checkStoryQuality(cleanedPages, difficulty as any);
-        console.log(`📊 Netflix: Expert quality check - Score: ${qualityValidation.score}, Valid: ${qualityValidation.isValid}`);
-      }
-      
-      const isValidContent = hasSubstantialContent && (!isExpertLevel || qualityValidation.score > 50);
+        const validationResult = UnifiedValidator.validateContent(cleanedPages, {
+          mode: 'guest',
+          level,
+          userLanguage: userInfo.nativeLanguage
+        });
 
-        if (isValidContent) {
-          console.log(`✅ Netflix: AI generation successful - ${cleanedPages.length} pages (${tokenValidation.actualTokens} tokens)`);
-          console.log(`📊 Netflix: Validation details - Min pages: ${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}`);
+        // Accept content based on unified validator decision
+        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
+          const finalContent = validationResult.content || cleanedPages;
+          
+          console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages (${validationResult.metrics.tokenCount} tokens)`);
+          console.log(`📊 Netflix: Validation decision: ${validationResult.decision}`);
+          
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           } catch {}
@@ -111,38 +97,39 @@ export class NetflixStyleStoryService {
           window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
           return {
-            content: cleanedPages,
-            pageCount: cleanedPages.length,
+            content: finalContent,
+            pageCount: finalContent.length,
             source: 'ai'
           };
         }
+
+        // Log validation failure details for debugging
+        console.log('📺 Netflix: AI generation validation failed');
+        console.log(`📊 Netflix: Validation details:`, {
+          decision: validationResult.decision,
+          reasons: validationResult.reasons,
+          metrics: validationResult.metrics
+        });
       }
 
-      // Debug validation failure details
+      // Debug validation failure details - Updated for UnifiedValidator
       const cleanedPages = result.pages?.filter((page: string) => page.length > 10) || [];
-      const isExpertLevel = difficulty === 'expert' || this.isExpertGradeLevel(difficulty);
-      const minPagesRequired = isExpertLevel ? 6 : 5;
       
-      // Import validation for debug info
-      const { validateTokenLimit, getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
-      const totalContent = cleanedPages.join(' ');
-      const tokenValidation = validateTokenLimit(totalContent, difficulty, 'netflix');
+      // Import unified validator for debug info
+      const { UnifiedValidator } = await import('@/utils/unifiedValidator');
+      const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
       
-      // Calculate proper minimum tokens for debug using guest calculation
-      const tokensPerPage = getPerPageTokenLimit(difficulty);
-      const expectedTokensForGuests = tokensPerPage * 6;
-      const minTokenPercentage = 0.1; // 10% for all levels - unified threshold
-      const minTokensRequired = Math.floor(expectedTokensForGuests * minTokenPercentage);
+      const debugValidation = UnifiedValidator.validateContent(cleanedPages, {
+        mode: 'guest',
+        level,
+        userLanguage: userInfo.nativeLanguage
+      });
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
-      console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}`);
-      console.log(`🔍 Netflix: Detailed validation breakdown:`, {
-        hasSubstantialContent: cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired,
-        pageCount: cleanedPages.length,
-        minRequired: minPagesRequired,
-        tokenCount: tokenValidation.actualTokens,
-        minTokensRequired,
-        expectedTokensForGuests
+      console.log(`📊 Netflix: Unified validation debug:`, {
+        decision: debugValidation.decision,
+        reasons: debugValidation.reasons,
+        metrics: debugValidation.metrics
       });
       return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
 

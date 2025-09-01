@@ -44,28 +44,12 @@ export class LiveGenerationService {
       
       // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
-      let promptConfig: any;
       
       if (difficulty === 'expert') {
         // Premium expert progression: adaptive grade selection
         expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
-        promptConfig = getExpertStoryPrompt(expertGradeLevel);
         console.log(`📚 Live Generation: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
-      } else {
-        promptConfig = getStoryPrompt(difficulty);
       }
-      const systemPrompt = `${promptConfig.systemPrompt}
-      
-      IMPORTANT: You are generating the FIRST PAGE only of a multi-page story. 
-      - Create an engaging opening that establishes the character and setting
-      - End with a hook that makes the reader want to continue
-      - This is page 1 of ${promptConfig.expectedPages || 'an unlimited'} ${promptConfig.expectedPages ? 'pages' : 'story'}
-      - Keep the content appropriate for the difficulty level
-      - Return ONLY the page content, no page numbers or formatting
-      - Focus on quality storytelling over exact word counts`;
-      
-      // Use configured prompts from storyPrompts.ts only
-      let userPrompt = formatUserPrompt(promptConfig.userPromptTemplate, userInfo);
       
       console.log('🔄 Live Generation: Using unified 4-tier system');
       
@@ -73,7 +57,9 @@ export class LiveGenerationService {
       
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'premium',
-        pageNumber: 1
+        pageNumber: 1,
+        expertGradeLevel,
+        difficulty
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -84,20 +70,33 @@ export class LiveGenerationService {
       // Extract first page from unified system
       const content = result.pages[0] || '';
       
-      // Simple validation - just check if content exists and has reasonable length
-      if (!content || content.length < 10) {
-        console.log('❌ First page too short, using fallback');
-        return this.generateFallbackFirstPage(userInfo, difficulty, 'content_too_short');
+      // Use UnifiedValidator for validation instead of simple length check
+      const { UnifiedValidator } = await import('@/utils/unifiedValidator');
+      const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+      
+      const validationResult = UnifiedValidator.validateContent(content, {
+        mode: 'live',
+        level,
+        userLanguage: userInfo.nativeLanguage
+      });
+      
+      if (!validationResult.isValid || validationResult.decision === 'REJECT') {
+        console.log('❌ First page validation failed:', validationResult.reasons);
+        return this.generateFallbackFirstPage(userInfo, difficulty, 'content_validation_failed');
       }
+      
+      // Handle auto-splitting if needed
+      const finalContent = validationResult.decision === 'REPAIR_AND_SPLIT' ? 
+        (validationResult.content?.[0] || content) : content;
       
       // Create context for next page
       const context: LiveGenerationContext = {
         userInfo,
         difficulty,
         expertGradeLevel,
-        storyContext: [content],
+        storyContext: [finalContent],
         currentPage: 1,
-        totalExpectedPages: promptConfig.expectedPages || 999, // Use high number for unlimited stories
+        totalExpectedPages: 999, // Never-ending stories
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
@@ -112,7 +111,7 @@ export class LiveGenerationService {
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
       
       return {
-        content,
+        content: finalContent,
         isComplete: false,
         nextContext: context
       };
@@ -182,16 +181,29 @@ export class LiveGenerationService {
       // Extract first page from unified system
       const content = result.pages[0] || '';
       
-      // Simple validation - just check if content exists and has reasonable length
-      if (!content || content.length < 10) {
-        console.log(`❌ Page ${nextPageNumber} too short, using fallback`);
-        return this.generateFallbackNextPage(context, nextPageNumber, 'content_too_short', userRequestedEnding);
+      // Use UnifiedValidator for validation
+      const { UnifiedValidator } = await import('@/utils/unifiedValidator');
+      const level = UnifiedValidator.mapDifficultyToLevel(context.difficulty);
+      
+      const validationResult = UnifiedValidator.validateContent(content, {
+        mode: 'live',
+        level,
+        userLanguage: context.userInfo.nativeLanguage
+      });
+      
+      if (!validationResult.isValid || validationResult.decision === 'REJECT') {
+        console.log(`❌ Page ${nextPageNumber} validation failed:`, validationResult.reasons);
+        return this.generateFallbackNextPage(context, nextPageNumber, 'content_validation_failed', userRequestedEnding);
       }
+      
+      // Handle auto-splitting if needed
+      const finalContent = validationResult.decision === 'REPAIR_AND_SPLIT' ? 
+        (validationResult.content?.[0] || content) : content;
       
       // Update context for next page (never-ending stories grow dynamically)
       const updatedContext: LiveGenerationContext = {
         ...context,
-        storyContext: [...(context.storyContext || []), content],
+        storyContext: [...(context.storyContext || []), finalContent],
         currentPage: nextPageNumber,
         totalExpectedPages: context.totalExpectedPages // Keep original expectation
       };
@@ -207,7 +219,7 @@ export class LiveGenerationService {
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
       
       return {
-        content,
+        content: finalContent,
         isComplete: shouldConclude,
         nextContext: shouldConclude ? undefined : updatedContext
       };

@@ -1,19 +1,22 @@
-// Token Limit Validation Utility - USES HARDCODED LIMITS MATCHING SYSTEM PROMPTS
-// Ensures consistent token limits across prompt configurations
+// Token Limit Validation Utility - UNIFIED VALIDATOR INTEGRATION
+// Now uses UnifiedValidator as primary validation system
 
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
+import { UnifiedValidator, type ValidationLevel } from './unifiedValidator';
 
 // Import token functions from system prompts - single source of truth
 import { getPerPageTokenLimit as getSystemPerPageTokenLimit } from '../../supabase/functions/_shared/storyPrompts';
 
-// Get per-page token limit from system prompts (for live generation)
+// Get per-page token limit - redirects to UnifiedValidator
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getSystemPerPageTokenLimit(difficulty);
+  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+  return UnifiedValidator.getTokenLimits(level).perPage;
 }
 
-// Get total story tokens for guests (6 pages of consistent difficulty)
+// Get total story tokens for guests - redirects to UnifiedValidator
 export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
+  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+  return UnifiedValidator.getTokenLimits(level).guestStory;
 }
 
 
@@ -62,14 +65,14 @@ export interface TokenLimitConfig {
   tokensPerPage?: number;
 }
 
-// Token limits now come from system prompts - single source of truth
+// Token limits redirected to UnifiedValidator
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   return getTotalStoryTokensForGuests(difficulty); // For guest/Netflix stories (6 pages)
 }
 
-// Token limits for SINGLE PAGE generation (Live Generation service)
+// Token limits for SINGLE PAGE generation - redirects to UnifiedValidator
 export function getTokenLimitForSinglePage(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getPerPageTokenLimit(difficulty); // From system prompts
+  return getPerPageTokenLimit(difficulty);
 }
 
 // Realistic page configuration based on business logic and system prompts - NOW DYNAMIC
@@ -106,42 +109,41 @@ export function validateTokenLimit(
   difficulty: DifficultyLevel | ExpertGradeLevel,
   mode: 'ai' | 'template' | 'live' | 'netflix' = 'ai'
 ): TokenValidationResult {
-  const actualTokens = estimateTokenCount(text);
+  // Redirect to UnifiedValidator for comprehensive validation
+  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+  const validationMode = mode === 'live' ? 'live' : 'guest';
   
-  // Use appropriate token limit based on generation mode
-  const maxTokens = mode === 'live' ? 
-    getTokenLimitForSinglePage(difficulty) : 
-    getTokenLimitForDifficulty(difficulty);
-    
-  const pageConfig = getPageConfig(difficulty);
+  const result = UnifiedValidator.validateContent(text, {
+    mode: validationMode,
+    level
+  });
+
+  // Convert UnifiedValidator result to TokenValidationResult format
+  const actualTokens = result.metrics.tokenCount;
+  const limits = UnifiedValidator.getTokenLimits(level);
+  const maxTokens = mode === 'live' ? limits.perPage : limits.guestStory;
   
   // Enhanced validation with template vs AI mode detection
   const isTemplateMode = mode === 'template';
   const templateMultiplier = isTemplateMode && difficulty !== 'beginner' ? 1.8 : 1.0;
   const effectiveMaxTokens = Math.floor(maxTokens * templateMultiplier);
   
-  const isValid = actualTokens <= effectiveMaxTokens;
-  const warnings: string[] = [];
+  const isValid = result.isValid && actualTokens <= effectiveMaxTokens;
+  const warnings: string[] = [...result.reasons];
   
-  if (!isValid) {
+  if (!isValid && actualTokens > effectiveMaxTokens) {
     warnings.push(
       `Text exceeds ${mode} token limit: ${actualTokens} tokens (max: ${effectiveMaxTokens})`
     );
   }
   
-  // Different warning thresholds for template vs AI mode
-  const warningThreshold = isTemplateMode ? 0.95 : 0.9;
-  if (actualTokens >= effectiveMaxTokens * warningThreshold && actualTokens <= effectiveMaxTokens) {
-    warnings.push(
-      `Text is approaching ${mode} token limit: ${actualTokens}/${effectiveMaxTokens} tokens`
-    );
-  }
+  const pageConfig = getPageConfig(difficulty);
   
   return {
     isValid,
     actualTokens,
     maxAllowed: effectiveMaxTokens,
-    exceededBy: isValid ? undefined : actualTokens - effectiveMaxTokens,
+    exceededBy: isValid ? undefined : Math.max(0, actualTokens - effectiveMaxTokens),
     warnings,
     templateMode: isTemplateMode,
     expectedPages: pageConfig.expectedPages
@@ -183,30 +185,36 @@ export function getRecommendedWordsForDifficulty(difficulty: DifficultyLevel | E
   return Math.floor(maxTokens * 0.75); // Conservative token-to-word conversion
 }
 
-// GUEST USER VALIDATION: Validate total 6-page story experience
+// GUEST USER VALIDATION: Validate total 6-page story experience - Uses UnifiedValidator
 export function validateGuestStoryTokens(text: string, difficulty: DifficultyLevel | ExpertGradeLevel): TokenValidationResult {
-  const actualTokens = estimateTokenCount(text);
-  const maxTokens = getTotalStoryTokensForGuests(difficulty); // 6 pages worth
+  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+  const result = UnifiedValidator.validateContent(text, { mode: 'guest', level });
+  
+  const actualTokens = result.metrics.tokenCount;
+  const maxTokens = UnifiedValidator.getTokenLimits(level).guestStory;
   
   return {
-    isValid: actualTokens <= maxTokens,
+    isValid: result.isValid,
     actualTokens,
     maxAllowed: maxTokens,
     exceededBy: actualTokens > maxTokens ? actualTokens - maxTokens : undefined,
-    warnings: actualTokens > maxTokens ? [`Guest story exceeds 6-page limit: ${actualTokens}/${maxTokens} tokens`] : []
+    warnings: result.reasons
   };
 }
 
-// PREMIUM USER VALIDATION: Validate individual page
+// PREMIUM USER VALIDATION: Validate individual page - Uses UnifiedValidator
 export function validatePremiumPageTokens(text: string, difficulty: DifficultyLevel | ExpertGradeLevel): TokenValidationResult {
-  const actualTokens = estimateTokenCount(text);
-  const maxTokens = getPerPageTokenLimit(difficulty); // Per page
+  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+  const result = UnifiedValidator.validateContent(text, { mode: 'live', level });
+  
+  const actualTokens = result.metrics.tokenCount;
+  const maxTokens = UnifiedValidator.getTokenLimits(level).perPage;
   
   return {
-    isValid: actualTokens <= maxTokens,
+    isValid: result.isValid,
     actualTokens,
     maxAllowed: maxTokens,
     exceededBy: actualTokens > maxTokens ? actualTokens - maxTokens : undefined,
-    warnings: actualTokens > maxTokens ? [`Page exceeds limit: ${actualTokens}/${maxTokens} tokens`] : []
+    warnings: result.reasons
   };
 }
