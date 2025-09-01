@@ -1,22 +1,25 @@
-// Token Limit Validation Utility - UNIFIED VALIDATOR INTEGRATION
-// Now uses UnifiedValidator as primary validation system
+// Token Limit Validation Utility - Now using shared validation architecture
+// Delegates to shared utilities for consistency with backend
 
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
-import { UnifiedValidator, type ValidationLevel } from './unifiedValidator';
+import { 
+  mapDifficultyToLevel, 
+  getTokenLimitsForLevel, 
+  estimateTokenCount as sharedEstimateTokenCount,
+  type ValidationLevel 
+} from '../../supabase/functions/_shared/validation-utils';
+import { UnifiedValidator } from './unifiedValidator';
 
-// Import token functions from system prompts - single source of truth
-import { getPerPageTokenLimit as getSystemPerPageTokenLimit } from '../../supabase/functions/_shared/storyPrompts';
-
-// Get per-page token limit - redirects to UnifiedValidator
+// Get per-page token limit - uses shared utilities
 export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
-  return UnifiedValidator.getTokenLimits(level).perPage;
+  const level = mapDifficultyToLevel(difficulty);
+  return getTokenLimitsForLevel(level).perPage;
 }
 
-// Get total story tokens for guests - redirects to UnifiedValidator
+// Get total story tokens for guests - uses shared utilities  
 export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
-  return UnifiedValidator.getTokenLimits(level).guestStory;
+  const level = mapDifficultyToLevel(difficulty);
+  return getTokenLimitsForLevel(level).guestStory;
 }
 
 
@@ -98,10 +101,8 @@ export interface TokenValidationResult {
 }
 
 export function estimateTokenCount(text: string): number {
-  // Simple token estimation based on word count and punctuation
-  const words = text.trim().split(/\s+/).length;
-  const punctuation = (text.match(/[.,!?;:]/g) || []).length;
-  return Math.ceil(words * 1.3 + punctuation * 0.5); // Conservative estimate
+  // Delegate to shared utilities for consistency
+  return sharedEstimateTokenCount(text);
 }
 
 export function validateTokenLimit(

@@ -1,11 +1,19 @@
-// Unified Validation System - Central validation hub with guest/live modes
+// Unified Validation System - Now using shared validation architecture
 // Integrates content filtering, token validation, and auto-pagination
 
 import { ContentSecurity } from './security';
-import { estimateTokenCount } from './tokenLimitValidator';
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
+// Import shared utilities for consistency with backend
+import { 
+  estimateTokenCount, 
+  mapDifficultyToLevel, 
+  getTokenLimitsForLevel, 
+  autoSplitContent as sharedAutoSplitContent,
+  type ValidationLevel 
+} from '../../supabase/functions/_shared/validation-utils';
 
-export type ValidationLevel = 'Level0' | 'Level1' | 'Level2' | 'Level3' | 'Level4' | 'Grade6' | 'Grade7' | 'Grade8' | 'Grade9' | 'Grade10';
+// Re-export ValidationLevel for compatibility
+export type { ValidationLevel };
 
 export type ValidationDecision = 
   | 'ACCEPT'
@@ -36,33 +44,8 @@ export interface ValidationConfig {
 }
 
 export class UnifiedValidator {
-  // Per-page token limits by level
-  private static readonly PER_PAGE_TOKENS = {
-    'Level0': 15,
-    'Level1': 60, 
-    'Level2': 250,
-    'Level3': 350,
-    'Level4': 500,
-    'Grade6': 500,
-    'Grade7': 500,
-    'Grade8': 500,
-    'Grade9': 500,
-    'Grade10': 500
-  };
-
-  // Guest story limits (6 pages total)
-  private static readonly GUEST_STORY_TOKENS = {
-    'Level0': 90,   // 15 * 6
-    'Level1': 360,  // 60 * 6
-    'Level2': 1500, // 250 * 6
-    'Level3': 2100, // 350 * 6
-    'Level4': 3000, // 500 * 6
-    'Grade6': 3000, // 500 * 6
-    'Grade7': 3000,
-    'Grade8': 3000,
-    'Grade9': 3000,
-    'Grade10': 3000
-  };
+  // Token limits now sourced from shared config
+  // Maintained for legacy compatibility but delegates to shared utilities
 
   /**
    * Main validation entry point
@@ -151,7 +134,8 @@ export class UnifiedValidator {
     config: ValidationConfig,
     metrics: any
   ): ValidationResult {
-    const maxTokens = this.GUEST_STORY_TOKENS[config.level];
+    const limits = getTokenLimitsForLevel(config.level);
+    const maxTokens = limits.guestStory;
     const minTokens = Math.floor(maxTokens * 0.1); // 10% minimum threshold
     
     // Check if content meets minimum requirements
@@ -167,7 +151,7 @@ export class UnifiedValidator {
 
     // Check if content exceeds maximum (needs splitting)
     if (metrics.tokenCount > maxTokens) {
-      const splitPages = this.autoSplitContent(pages.join(' '), config.level, 6);
+      const splitPages = sharedAutoSplitContent(pages.join(' '), config.level, 6);
       if (splitPages.length <= 6) {
         return {
           decision: 'REPAIR_AND_SPLIT',
@@ -208,14 +192,15 @@ export class UnifiedValidator {
     config: ValidationConfig,
     metrics: any
   ): ValidationResult {
-    const maxTokensPerPage = this.PER_PAGE_TOKENS[config.level];
+    const limits = getTokenLimitsForLevel(config.level);
+    const maxTokensPerPage = limits.perPage;
     
     // For live mode, typically validating one page at a time
     if (pages.length === 1) {
       const pageTokens = estimateTokenCount(pages[0]);
       
       if (pageTokens > maxTokensPerPage * 1.5) { // Allow 50% overflow for splitting
-        const splitPages = this.autoSplitContent(pages[0], config.level, 2);
+        const splitPages = sharedAutoSplitContent(pages[0], config.level, 2);
         return {
           decision: 'REPAIR_AND_SPLIT',
           isValid: true,
@@ -288,48 +273,8 @@ export class UnifiedValidator {
     };
   }
 
-  /**
-   * Auto-split content into appropriate page sizes
-   */
-  private static autoSplitContent(content: string, level: ValidationLevel, maxPages: number): string[] {
-    const targetTokensPerPage = this.PER_PAGE_TOKENS[level];
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    
-    const pages: string[] = [];
-    let currentPage = '';
-    let currentTokens = 0;
-
-    for (const sentence of sentences) {
-      const sentenceTokens = estimateTokenCount(sentence.trim() + '.');
-      
-      // If adding this sentence would exceed target and we have content, start new page
-      if (currentTokens + sentenceTokens > targetTokensPerPage && currentPage.length > 0) {
-        if (pages.length < maxPages) {
-          pages.push(currentPage.trim());
-          currentPage = sentence.trim() + '.';
-          currentTokens = sentenceTokens;
-        } else {
-          // At max pages, add to current page
-          currentPage += ' ' + sentence.trim() + '.';
-          currentTokens += sentenceTokens;
-        }
-      } else {
-        // Add to current page
-        if (currentPage.length > 0) {
-          currentPage += ' ';
-        }
-        currentPage += sentence.trim() + '.';
-        currentTokens += sentenceTokens;
-      }
-    }
-
-    // Add final page if it has content
-    if (currentPage.trim().length > 0) {
-      pages.push(currentPage.trim());
-    }
-
-    return pages.length > 0 ? pages : [content]; // Fallback to original if splitting failed
-  }
+  // Auto-split content now delegates to shared utilities
+  // Removed duplicate implementation
 
   /**
    * Calculate vocabulary compliance percentage
@@ -345,28 +290,10 @@ export class UnifiedValidator {
   }
 
   /**
-   * Map difficulty level to validation level
+   * Map difficulty level to validation level - delegates to shared utilities
    */
   static mapDifficultyToLevel(difficulty: DifficultyLevel | ExpertGradeLevel): ValidationLevel {
-    const difficultyMap: Record<string, ValidationLevel> = {
-      'beginner': 'Level0',
-      'easy': 'Level1', 
-      'medium': 'Level2',
-      'hard': 'Level3',
-      'expert': 'Level4',
-      '6th': 'Grade6',
-      'grade6': 'Grade6',
-      '7th': 'Grade7',
-      'grade7': 'Grade7',
-      '8th': 'Grade8',
-      'grade8': 'Grade8',
-      '9th': 'Grade9',
-      'grade9': 'Grade9',
-      '10th': 'Grade10',
-      'grade10': 'Grade10'
-    };
-
-    return difficultyMap[difficulty.toLowerCase()] || 'Level2';
+    return mapDifficultyToLevel(difficulty);
   }
 
   /**
@@ -405,12 +332,9 @@ export class UnifiedValidator {
   private static _contentValidationCache: Map<string, { appropriate: boolean; reason?: string }> | null = null;
 
   /**
-   * Get recommended token limits for level
+   * Get recommended token limits for level - delegates to shared utilities
    */
   static getTokenLimits(level: ValidationLevel) {
-    return {
-      perPage: this.PER_PAGE_TOKENS[level],
-      guestStory: this.GUEST_STORY_TOKENS[level]
-    };
+    return getTokenLimitsForLevel(level);
   }
 }

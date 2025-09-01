@@ -1,0 +1,49 @@
+{
+  "tokenLimits": {
+    "Level0": { "perPage": 15, "guestStory": 90 },
+    "Level1": { "perPage": 60, "guestStory": 360 },
+    "Level2": { "perPage": 250, "guestStory": 1500 },
+    "Level3": { "perPage": 350, "guestStory": 2100 },
+    "Level4": { "perPage": 500, "guestStory": 3000 },
+    "Grade6": { "perPage": 500, "guestStory": 3000 },
+    "Grade7": { "perPage": 500, "guestStory": 3000 },
+    "Grade8": { "perPage": 500, "guestStory": 3000 },
+    "Grade9": { "perPage": 500, "guestStory": 3000 },
+    "Grade10": { "perPage": 500, "guestStory": 3000 }
+  },
+  "difficultyMapping": {
+    "beginner": "Level0",
+    "easy": "Level1",
+    "medium": "Level2",
+    "hard": "Level3",
+    "expert": "Level4",
+    "6th": "Grade6",
+    "grade6": "Grade6",
+    "7th": "Grade7",
+    "grade7": "Grade7",
+    "8th": "Grade8",
+    "grade8": "Grade8",
+    "9th": "Grade9",
+    "grade9": "Grade9",
+    "10th": "Grade10",
+    "grade10": "Grade10"
+  },
+  "pageExpectations": {
+    "Level0": 10,
+    "Level1": 10,
+    "Level2": 10,
+    "Level3": 10,
+    "Level4": 10,
+    "Grade6": 12,
+    "Grade7": 12,
+    "Grade8": 12,
+    "Grade9": 12,
+    "Grade10": 12
+  },
+  "validationThresholds": {
+    "minContentRatio": 0.1,
+    "maxContentRatio": 1.5,
+    "splitTolerance": 1.5,
+    "cacheLimit": 500
+  }
+}

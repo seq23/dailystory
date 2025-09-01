@@ -1,8 +1,14 @@
 // Streamlined Story Generation Handler
 // Processes pre-processed bundles from frontend services  
-// Uses existing prompts from storyPrompts.ts - LEAN & DRY
+// Uses shared validation utilities for consistent page generation
 
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { 
+  parseIntoPages as sharedParseIntoPages, 
+  getTokensForGrade as sharedGetTokensForGrade,
+  mapDifficultyToLevel,
+  type ValidationLevel 
+} from "../_shared/validation-utils.ts";
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
@@ -144,8 +150,11 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     console.log(`🤖 STREAMLINED: Calling OpenAI with grade level ${effectiveGradeLevel} for ${expertGrade || effectiveDifficulty}`);
     const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo);
     
-    // Parse into pages (simplified) - use effective grade level
-    const pages = parseIntoPages(storyText, effectiveGradeLevel);
+    // Parse into pages using shared validation utilities
+    const validationLevel = expertGrade ? 
+      mapDifficultyToLevel(expertGrade) : 
+      mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
+    const pages = sharedParseIntoPages(storyText, validationLevel);
     
     // Return streamlined response
     return new Response(JSON.stringify({
@@ -206,7 +215,7 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
 }
 
 async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any): Promise<string> {
-  const maxTokens = getTokensForGrade(gradeLevel);
+  const maxTokens = sharedGetTokensForGrade(gradeLevel);
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Add hair color mapping for English speakers
@@ -426,105 +435,4 @@ function cleanStoryText(text: string): string {
 
 function cleanPageBreakMarkers(text: string): string {
   return text.replace(/\s*\*\*\*\s*/g, '').trim();
-}
-
-/**
- * Get correct word count range per page based on grade level
- */
-function getWordsPerPageRange(gradeLevel: number): { min: number; max: number; target: number } {
-  if (gradeLevel === 0) {
-    return { min: 15, max: 24, target: 20 }; // Beginner
-  } else if (gradeLevel === 1) {
-    return { min: 50, max: 70, target: 60 }; // Easy  
-  } else if (gradeLevel === 2) {
-    return { min: 80, max: 120, target: 100 }; // Medium
-  } else if (gradeLevel >= 3 && gradeLevel <= 5) {
-    return { min: 120, max: 200, target: 160 }; // Hard
-  } else {
-    return { min: 200, max: 400, target: 300 }; // Expert (6th-10th grade)
-  }
-}
-
-function parseIntoPages(storyText: string, gradeLevel: number): string[] {
-  const expertGrade = mapGradeToExpertLevel(gradeLevel);
-  const level = expertGrade || mapGradeLevelToDifficulty(gradeLevel);
-  const expectedPages = getExpectedPages(level);
-  
-  // First try to split by ' *** ' markers
-  if (storyText.includes(' *** ')) {
-    const pages = storyText
-      .split(' *** ')
-      .map(page => cleanPageBreakMarkers(page))
-      .filter(page => page.trim().length > 0)
-      .slice(0, expectedPages);
-    
-    if (pages.length > 0) {
-      return pages;
-    }
-  }
-  
-  // Fallback to existing word-count logic if no markers found
-  // For beginner and easy levels, use sentence-based parsing
-  if (gradeLevel === 0 || gradeLevel === 1) {
-    const sentences = storyText
-      .split(/\n\n+|\.\s*\n|\.\s*$/)
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-      .map(s => s.endsWith('.') ? s : s + '.');
-    
-    return sentences.slice(0, expectedPages);
-  }
-  
-  // For medium, hard, and expert levels, use proper word-count approach
-  const wordRange = getWordsPerPageRange(gradeLevel);
-  const targetWordsPerPage = wordRange.target;
-  
-  // Split by paragraphs and process
-  const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
-  const pages: string[] = [];
-  
-  let currentPage = '';
-  let currentWordCount = 0;
-  
-  for (const paragraph of paragraphs) {
-    const paragraphWords = paragraph.split(/\s+/).length;
-    
-    // If adding this paragraph would exceed target AND we have content, start new page
-    if (currentWordCount + paragraphWords > targetWordsPerPage && currentPage) {
-      pages.push(currentPage.trim());
-      currentPage = paragraph;
-      currentWordCount = paragraphWords;
-      
-      // Stop if we've reached expected pages
-      if (pages.length >= expectedPages) {
-        break;
-      }
-    } else {
-      currentPage += (currentPage ? '\n\n' : '') + paragraph;
-      currentWordCount += paragraphWords;
-    }
-  }
-  
-  // Add the last page if we have content and haven't exceeded expected pages
-  if (currentPage.trim() && pages.length < expectedPages) {
-    pages.push(currentPage.trim());
-  }
-  
-  // Always limit to expected pages and ensure we have at least one page
-  const limitedPages = pages.slice(0, expectedPages);
-  return limitedPages.length > 0 ? limitedPages : [storyText];
-}
-
-function getTokensForGrade(gradeLevel: number): number {
-  // Use system prompts as single source of truth for token limits
-  const expertGrade = mapGradeToExpertLevel(gradeLevel);
-  const difficulty = expertGrade || mapGradeLevelToDifficulty(gradeLevel);
-  
-  const perPageTokens = getPerPageTokenLimit(difficulty);
-  const expectedPages = getExpectedPages(difficulty);
-  const totalTokens = perPageTokens * expectedPages;
-  
-  console.log(`🎯 Token calculation for grade ${gradeLevel}: ${perPageTokens} tokens/page × ${expectedPages} pages = ${totalTokens} total tokens`);
-  
-  return totalTokens;
 }
