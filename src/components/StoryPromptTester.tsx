@@ -623,7 +623,6 @@ export function StoryPromptTester() {
     const totalTests = profiles.length * servicesCount;
     let completed = 0;
 
-    const results: TestResult[] = [];
     const comparisons: ServiceComparison[] = [];
 
     // Process tests in batches for better performance
@@ -637,6 +636,7 @@ export function StoryPromptTester() {
         setCurrentTest(`Testing ${level} (${userInfo.name})`);
         
         const comparison: ServiceComparison = { level };
+        const batchResults: TestResult[] = [];
         
         try {
           if (testMode === 'full') {
@@ -644,7 +644,7 @@ export function StoryPromptTester() {
             const netflixResult = await testService(level, userInfo, 'netflix');
             const liveResult = await testService(level, userInfo, 'live');
             
-            results.push(netflixResult, liveResult);
+            batchResults.push(netflixResult, liveResult);
             comparison.netflix = netflixResult;
             comparison.live = liveResult;
             
@@ -655,7 +655,7 @@ export function StoryPromptTester() {
           if (testMode === 'ai-only') {
             // Test Netflix service only (AI-first complete stories)
             const netflixResult = await testService(level, userInfo, 'netflix');
-            results.push(netflixResult);
+            batchResults.push(netflixResult);
             comparison.netflix = netflixResult;
             completed++;
             setProgress((completed / totalTests) * 100);
@@ -664,7 +664,7 @@ export function StoryPromptTester() {
           if (testMode === 'live-only') {
             // Test Live service only (page-by-page generation)
             const liveResult = await testService(level, userInfo, 'live');
-            results.push(liveResult);
+            batchResults.push(liveResult);
             comparison.live = liveResult;
             completed++;
             setProgress((completed / totalTests) * 100);
@@ -676,7 +676,7 @@ export function StoryPromptTester() {
             const liveResult = await testService(level, userInfo, 'live');
             const templateResult = await testService(level, userInfo, 'template');
             
-            results.push(netflixResult, liveResult, templateResult);
+            batchResults.push(netflixResult, liveResult, templateResult);
             comparison.netflix = netflixResult;
             comparison.live = liveResult;
             comparison.template = templateResult;
@@ -688,7 +688,7 @@ export function StoryPromptTester() {
           if (testMode === 'template-only') {
             // Test only template service
             const templateResult = await testService(level, userInfo, 'template');
-            results.push(templateResult);
+            batchResults.push(templateResult);
             comparison.template = templateResult;
             completed++;
             setProgress((completed / totalTests) * 100);
@@ -701,12 +701,9 @@ export function StoryPromptTester() {
 
         comparisons.push(comparison);
         
-        // Update results progressively
-        setTestResults(prev => [...prev, ...results]);
+        // Update results with only the current batch's new results
+        setTestResults(prev => [...prev, ...batchResults]);
         setServiceComparisons(prev => [...prev, comparison]);
-        
-        completed += servicesCount;
-        setProgress((completed / totalTests) * 100);
       }));
       
       // Short delay between batches to prevent overwhelming the services
