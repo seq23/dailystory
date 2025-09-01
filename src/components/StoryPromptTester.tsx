@@ -209,6 +209,16 @@ const testUserProfiles: Record<string, UserInfo> = {
   }
 };
 
+// Simplified test profiles for quick testing (6 representative profiles)
+const simplifiedTestProfiles: Record<string, UserInfo> = {
+  beginner: testUserProfiles.beginner,
+  easy: testUserProfiles.easy,
+  medium: testUserProfiles.medium,
+  hard: testUserProfiles.hard,
+  grade6: testUserProfiles.grade6,
+  grade10: testUserProfiles.grade10
+};
+
 export function StoryPromptTester() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [serviceComparisons, setServiceComparisons] = useState<ServiceComparison[]>([]);
@@ -217,6 +227,7 @@ export function StoryPromptTester() {
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('netflix');
   const [testMode, setTestMode] = useState<'full' | 'ai-only' | 'live-only' | 'template-only' | 'comparison'>('full');
+  const [isQuickTest, setIsQuickTest] = useState(true); // New state for quick vs comprehensive testing
   const [logs, setLogs] = useState<string[]>([]);
   const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
   
@@ -597,7 +608,7 @@ export function StoryPromptTester() {
     // Use custom preferences if enabled, otherwise use predefined profiles
     const profiles: [string, UserInfo][] = useCustomPreferences 
       ? [['custom', customUserPrefs] as [string, UserInfo]] 
-      : Object.entries(testUserProfiles);
+      : Object.entries(isQuickTest ? simplifiedTestProfiles : testUserProfiles);
     
     const servicesCount = testMode === 'comparison' ? 3 : testMode === 'full' ? 2 : 1;
     const totalTests = profiles.length * servicesCount;
@@ -1249,6 +1260,16 @@ export function StoryPromptTester() {
 
         {/* Control Buttons */}
         <div className="flex gap-2 items-center">
+          {/* Quick Test Toggle */}
+          <Button
+            onClick={() => setIsQuickTest(!isQuickTest)}
+            variant={isQuickTest ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            {isQuickTest ? 'Quick Test (6)' : 'Comprehensive (9)'}
+          </Button>
+          
           <Button
             onClick={runAllTests}
             disabled={isRunning}
