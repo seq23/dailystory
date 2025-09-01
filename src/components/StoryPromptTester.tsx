@@ -129,20 +129,6 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'sushi',
     specialRequest: 'science fiction'
   },
-  expert: {
-    name: 'Zara',
-    age: 12,
-    grade: "6th+" as Grade,
-    nativeLanguage: "en" as LanguageCode,
-    learningGoal: "improve-english-reading" as LearningGoal,
-    avatar: { type: "girl", skinTone: "olive" },
-    difficultyLevel: 'expert',
-    favoriteColor: 'silver',
-    favoriteAnimal: 'eagle',
-    hobbies: 'chess strategy',
-    favoriteFood: 'pasta',
-    specialRequest: 'adventure mysteries'
-  },
   
   // Grade-specific expert levels
   grade6: {
@@ -748,9 +734,10 @@ export function StoryPromptTester() {
     );
   };
 
-  // Render individual test result
-  const renderTestResult = (result: TestResult) => {
-    const resultKey = `${result.level}-${result.service}`;
+  // Render individual test result with unique key generation
+  const renderTestResult = (result: TestResult, index: number) => {
+    // Use index and additional identifiers to ensure unique keys
+    const resultKey = `${result.level}-${result.service}-${index}-${result.wordCount}`;
     const isContentExpanded = expandedContent[resultKey] || false;
     const toggleContentExpanded = () => {
       setExpandedContent(prev => ({
@@ -760,7 +747,9 @@ export function StoryPromptTester() {
     };
 
     return (
-      <Card key={`${result.level}-${result.service}`} className="mb-4">
+      <Card key={resultKey} className={`mb-4 border-2 ${
+          result.success ? (result.withinTokenLimits ? 'border-green-200' : 'border-yellow-200') : 'border-red-200'
+        }`}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
@@ -1293,7 +1282,7 @@ export function StoryPromptTester() {
             <div className="space-y-4">
               {testResults
                 .filter(r => r.service === 'netflix')
-                .map(renderTestResult)}
+                .map((result, index) => renderTestResult(result, index))}
             </div>
           </TabsContent>
 
@@ -1313,7 +1302,7 @@ export function StoryPromptTester() {
                     </Card>
                   );
                 }
-                return liveResults.map(renderTestResult);
+                return liveResults.map((result, index) => renderTestResult(result, index));
               })()}
             </div>
           </TabsContent>
