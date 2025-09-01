@@ -114,7 +114,7 @@ CONTENT SAFETY:
 - No copyrighted content
 
 TOKEN LIMITS:
-Maximum 32 tokens per page. Target 15-24 words per page.
+Maximum 60 tokens per page. Target 15-24 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age 5-7). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -151,7 +151,7 @@ CONTENT SAFETY:
 - No copyrighted content
 
 TOKEN LIMITS:
-Maximum 150 tokens per page. Target 50-70 words per page.
+Maximum 250 tokens per page. Target 50-70 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age 7-9). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
@@ -188,7 +188,7 @@ CONTENT SAFETY:
 - No copyrighted content
 
 TOKEN LIMITS:
-Maximum 200 tokens per page. Target 80-120 words per page.
+Maximum 350 tokens per page. Target 80-120 words per page.
 
 Use seed={seed} for creative expression.`,
     userPromptTemplate: 'Create a never-ending story for {userName} (age 9-11). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
