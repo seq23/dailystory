@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle, User, Settings } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
@@ -1194,47 +1195,56 @@ export function StoryPromptTester() {
         </Card>
 
         {/* Test Mode Selection */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant={testMode === 'full' ? 'default' : 'outline'}
-            onClick={() => setTestMode('full')}
-            className="flex items-center gap-2"
-          >
-            <Zap className="w-4 h-4" />
-            Full Flow (AI→Template→Emergency)
-          </Button>
-            <Button
-            variant={testMode === 'ai-only' ? 'default' : 'outline'}
-            onClick={() => setTestMode('ai-only')}
-            className="flex items-center gap-2"
-          >
-            <Brain className="w-4 h-4" />
-            Netflix Only
-          </Button>
-          <Button
-            variant={testMode === 'live-only' ? 'default' : 'outline'}
-            onClick={() => setTestMode('live-only')}
-            className="flex items-center gap-2"
-          >
-            <Zap className="w-4 h-4" />
-            Live Only
-          </Button>
-          <Button
-            variant={testMode === 'template-only' ? 'default' : 'outline'}
-            onClick={() => setTestMode('template-only')}
-            className="flex items-center gap-2"
-          >
-            <Shuffle className="w-4 h-4" />
-            Template Only
-          </Button>
-          <Button
-            variant={testMode === 'comparison' ? 'default' : 'outline'}
-            onClick={() => setTestMode('comparison')}
-            className="flex items-center gap-2"
-          >
-            <AlertCircle className="w-4 h-4" />
-            Compare All Services
-          </Button>
+        <div className="mb-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2 min-w-64">
+                {testMode === 'full' && <><Zap className="w-4 h-4" />Full Flow (AI→Template→Emergency)</>}
+                {testMode === 'ai-only' && <><Brain className="w-4 h-4" />Netflix Only</>}
+                {testMode === 'live-only' && <><Zap className="w-4 h-4" />Live Only</>}
+                {testMode === 'template-only' && <><Shuffle className="w-4 h-4" />Template Only</>}
+                {testMode === 'comparison' && <><AlertCircle className="w-4 h-4" />Compare All Services</>}
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 bg-background border shadow-lg z-50">
+              <DropdownMenuItem 
+                onClick={() => setTestMode('full')}
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted"
+              >
+                <Zap className="w-4 h-4" />
+                Full Flow (AI→Template→Emergency)
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setTestMode('ai-only')}
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted"
+              >
+                <Brain className="w-4 h-4" />
+                Netflix Only
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setTestMode('live-only')}
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted"
+              >
+                <Zap className="w-4 h-4" />
+                Live Only
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setTestMode('template-only')}
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted"
+              >
+                <Shuffle className="w-4 h-4" />
+                Template Only
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setTestMode('comparison')}
+                className="flex items-center gap-2 cursor-pointer hover:bg-muted"
+              >
+                <AlertCircle className="w-4 h-4" />
+                Compare All Services
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Control Buttons */}
