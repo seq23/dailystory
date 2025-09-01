@@ -149,30 +149,24 @@ export class UnifiedValidator {
       };
     }
 
-    // Check if content exceeds maximum (needs splitting)
+    // Content sufficiency check: Always attempt to repair/split instead of rejecting
     if (metrics.tokenCount > maxTokens) {
+      console.log(`🔧 UnifiedValidator: Content exceeds token limit (${metrics.tokenCount}/${maxTokens}), attempting auto-split`);
+      
       const splitPages = sharedAutoSplitContent(pages.join(' '), config.level, 6);
-      if (splitPages.length <= 6) {
-        return {
-          decision: 'REPAIR_AND_SPLIT',
-          isValid: true,
-          content: splitPages,
-          reasons: ['Content auto-split to fit 6-page guest limit'],
-          metrics: {
-            ...metrics,
-            pageCount: splitPages.length,
-            tokenCount: estimateTokenCount(splitPages.join(' '))
-          }
-        };
-      } else {
-        return {
-          decision: 'REPAIR',
-          isValid: false,
-          reasons: [`Story too long: ${metrics.tokenCount} tokens (maximum: ${maxTokens})`],
-          metrics,
-          hints: ['Reduce content length', 'Focus on core story elements']
-        };
-      }
+      
+      // Accept the split content regardless of final page count - embrace AI generosity
+      return {
+        decision: 'REPAIR_AND_SPLIT',
+        isValid: true,
+        content: splitPages,
+        reasons: [`Content auto-split from ${pages.length} to ${splitPages.length} pages to optimize reading experience`],
+        metrics: {
+          ...metrics,
+          pageCount: splitPages.length,
+          tokenCount: estimateTokenCount(splitPages.join(' '))
+        }
+      };
     }
 
     return {

@@ -72,9 +72,13 @@ export class NetflixStyleStoryService {
         // Pages already cleaned by unified system
         const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
-        // Use UnifiedValidator for comprehensive validation - fixes 717-token issue
+        // Use UnifiedValidator for comprehensive validation - prioritize expertGradeLevel
         const { UnifiedValidator } = await import('@/utils/unifiedValidator');
-        const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+        const level = expertGradeLevel ? 
+          UnifiedValidator.mapDifficultyToLevel(expertGradeLevel) : 
+          UnifiedValidator.mapDifficultyToLevel(difficulty);
+        
+        console.log(`🎯 Netflix: Using validation level ${level} for ${expertGradeLevel || difficulty}`);
         
         const validationResult = UnifiedValidator.validateContent(cleanedPages, {
           mode: 'guest',
@@ -115,9 +119,13 @@ export class NetflixStyleStoryService {
       // Debug validation failure details - Updated for UnifiedValidator
       const cleanedPages = result.pages?.filter((page: string) => page.length > 10) || [];
       
-      // Import unified validator for debug info
+      // Import unified validator for debug info - prioritize expertGradeLevel
       const { UnifiedValidator } = await import('@/utils/unifiedValidator');
-      const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
+      const level = expertGradeLevel ? 
+        UnifiedValidator.mapDifficultyToLevel(expertGradeLevel) : 
+        UnifiedValidator.mapDifficultyToLevel(difficulty);
+      
+      console.log(`🎯 Netflix Debug: Using validation level ${level} for ${expertGradeLevel || difficulty}`);
       
       const debugValidation = UnifiedValidator.validateContent(cleanedPages, {
         mode: 'guest',
