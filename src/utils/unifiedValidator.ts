@@ -80,12 +80,43 @@ export class UnifiedValidator {
     const storyLanguage = this.detectStoryLanguage(totalContent);
     const isEnglishOnly = storyLanguage === 'en';
 
-    // Content filtering using level-based security with language optimization
-    const contentValidation = ContentSecurity.isContentAppropriateForLevel(
-      totalContent, 
-      config.level,
-      isEnglishOnly ? 'en' : config.userLanguage
-    );
+    // Performance optimization: cache content validation results
+    const contentHash = `${totalContent.substring(0, 100)}_${config.level}_${isEnglishOnly ? 'en' : config.userLanguage}`;
+    let contentValidation = this._contentValidationCache?.get(contentHash);
+    
+    if (!contentValidation) {
+      // Content filtering using level-based security with language optimization
+      contentValidation = ContentSecurity.isContentAppropriateForLevel(
+        totalContent, 
+        config.level,
+        isEnglishOnly ? 'en' : config.userLanguage
+      );
+      
+      // Cache the result
+      if (!this._contentValidationCache) {
+        this._contentValidationCache = new Map();
+      }
+      this._contentValidationCache.set(contentHash, contentValidation);
+      
+      // Limit cache size
+      if (this._contentValidationCache.size > 500) {
+        const firstKey = this._contentValidationCache.keys().next().value;
+        this._contentValidationCache.delete(firstKey);
+      }
+    }
+
+    // Performance optimization: Add debug logging for medium level validation
+    if (config.level === 'Level2' || config.level === 'medium' as any) {
+      console.log(`🔍 [UnifiedValidator] Medium level validation:`, {
+        level: config.level,
+        tokenCount,
+        pageCount,
+        storyLanguage,
+        isEnglishOnly,
+        contentAppropriate: contentValidation.appropriate,
+        contentLength: totalContent.length
+      });
+    }
 
     const metrics = {
       tokenCount,
@@ -340,15 +371,16 @@ export class UnifiedValidator {
 
   /**
    * Detect story language for performance optimization
+   * Enhanced detection for medium level debugging
    */
   private static detectStoryLanguage(content: string): string {
     // Quick English detection - if content is primarily Latin characters and common English patterns
     const englishIndicators = /\b(the|and|a|to|of|in|is|you|that|it|he|was|for|on|are|as|with|his|they|at|be|this|have|from|or|one|had|by|word|but|not|what|all|were|we|when|your|can|said)\b/gi;
     const englishMatches = content.match(englishIndicators);
-    const totalWords = content.split(/\s+/).length;
+    const totalWords = content.split(/\s+/).filter(w => w.length > 0).length;
     
-    // If >50% of words are common English words, assume English
-    if (englishMatches && englishMatches.length / totalWords > 0.5) {
+    // If >40% of words are common English words, assume English (lowered threshold for better detection)
+    if (englishMatches && totalWords > 0 && englishMatches.length / totalWords > 0.4) {
       return 'en';
     }
     
@@ -356,10 +388,21 @@ export class UnifiedValidator {
     if (/[\u0600-\u06FF]/.test(content)) return 'ar'; // Arabic
     if (/[\u4e00-\u9fff]/.test(content)) return 'zh'; // Chinese
     if (/[\u0900-\u097F]/.test(content)) return 'hi'; // Hindi
+    if (/[\u0400-\u04FF]/.test(content)) return 'ru'; // Russian
+    if (/[\u3040-\u309F\u30A0-\u30FF]/.test(content)) return 'ja'; // Japanese
     
-    // Default to English for Latin scripts
+    // Additional check for Latin-based content with English characteristics
+    const latinScript = /^[\x00-\x7F\u00C0-\u017F\u0100-\u024F\s\d\.\,\!\?\'\"\-\(\)]+$/;
+    if (latinScript.test(content)) {
+      return 'en';
+    }
+    
+    // Default to English for Latin scripts and unknown content
     return 'en';
   }
+
+  // Content validation cache for performance
+  private static _contentValidationCache: Map<string, { appropriate: boolean; reason?: string }> | null = null;
 
   /**
    * Get recommended token limits for level

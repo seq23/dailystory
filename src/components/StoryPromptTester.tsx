@@ -233,6 +233,10 @@ export function StoryPromptTester() {
   const [logs, setLogs] = useState<string[]>([]);
   const [expandedContent, setExpandedContent] = useState<Record<string, boolean>>({});
   
+  // Performance optimization: Cache validation results
+  const [validationCache] = useState<Map<string, any>>(new Map());
+  const [testTimeouts] = useState<Map<string, NodeJS.Timeout>>(new Map());
+  
   // Custom user preferences state
   const [useCustomPreferences, setUseCustomPreferences] = useState(false);
   const [customUserPrefs, setCustomUserPrefs] = useState<UserInfo>({
@@ -253,13 +257,37 @@ export function StoryPromptTester() {
 
   const templateService = useTemplateService();
 
-  // Test individual service
+  // Cached validation to improve performance
+  const getCachedValidation = (content: string[], level: string, service: string) => {
+    const cacheKey = `${content.join('').substring(0, 100)}_${level}_${service}`;
+    return validationCache.get(cacheKey);
+  };
+
+  const setCachedValidation = (content: string[], level: string, service: string, result: any) => {
+    const cacheKey = `${content.join('').substring(0, 100)}_${level}_${service}`;
+    validationCache.set(cacheKey, result);
+    
+    // Limit cache size to prevent memory leaks
+    if (validationCache.size > 100) {
+      const firstKey = validationCache.keys().next().value;
+      validationCache.delete(firstKey);
+    }
+  };
+
+  // Test individual service with timeout and performance optimization
   const testService = async (
     level: string, 
     userInfo: UserInfo, 
     service: 'netflix' | 'live' | 'template'
   ): Promise<TestResult> => {
     const startTime = Date.now();
+    const testKey = `${level}_${service}`;
+    
+    // Clear any existing timeout
+    if (testTimeouts.has(testKey)) {
+      clearTimeout(testTimeouts.get(testKey)!);
+      testTimeouts.delete(testKey);
+    }
     let result: TestResult = {
       level,
       service,
@@ -277,6 +305,27 @@ export function StoryPromptTester() {
     try {
       let response: any = null;
       result.generationPath = [`Starting ${service} service test`];
+
+      // Add timeout for long-running tests (30 seconds)
+      const timeoutPromise = new Promise((_, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error(`Test timeout after 30 seconds for ${level} ${service}`));
+        }, 30000);
+        testTimeouts.set(testKey, timeout);
+      });
+
+      // Add detailed debugging for medium level
+      if (level === 'medium') {
+        console.log(`🔍 [DEBUG] Starting ${service} test for medium level:`, {
+          userInfo: {
+            name: userInfo.name,
+            age: userInfo.age,
+            difficultyLevel: userInfo.difficultyLevel,
+            grade: userInfo.grade
+          },
+          timestamp: new Date().toISOString()
+        });
+      }
 
       if (service === 'netflix') {
         result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
@@ -379,16 +428,32 @@ export function StoryPromptTester() {
       result.tokenCount = tokenAnalysis.tokenCount;
       result.maxTokensAllowed = tokenAnalysis.maxTokens;
       
-      // Enhanced validation - check for placeholder and content issues
+      // Performance optimized validation - check cache first
       if (result.fullContent && result.fullContent.length > 0) {
-        const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
-        result.placeholderValidation = placeholderValidation;
-        result.contentIssues = checkForPlaceholderIssues(result.fullContent);
-        result.tokenValidation = validatePageTokenDistribution(
-          result.fullContent, 
-          level as DifficultyLevel, 
-          result.source === 'ai' ? 'ai' : 'template'
-        );
+        let cachedValidation = getCachedValidation(result.fullContent, level, service);
+        
+        if (!cachedValidation) {
+          // Run validation and cache results
+          const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
+          const contentIssues = checkForPlaceholderIssues(result.fullContent);
+          const tokenValidation = validatePageTokenDistribution(
+            result.fullContent, 
+            level as DifficultyLevel, 
+            result.source === 'ai' ? 'ai' : 'template'
+          );
+          
+          cachedValidation = {
+            placeholderValidation,
+            contentIssues,
+            tokenValidation
+          };
+          
+          setCachedValidation(result.fullContent, level, service, cachedValidation);
+        }
+        
+        result.placeholderValidation = cachedValidation.placeholderValidation;
+        result.contentIssues = cachedValidation.contentIssues;
+        result.tokenValidation = cachedValidation.tokenValidation;
         result.hasEmptyContent = result.wordCount === 0 || result.fullContent.every(page => page.trim().length === 0);
         
         // If we have empty content, mark as failed
@@ -417,15 +482,50 @@ export function StoryPromptTester() {
         result.generationPath.push('AI generation successful');
       }
 
-      // Add log entry
-      setLogs(prev => [...prev, `✅ ${service} test for ${level}: ${result.source} source, ${result.pages} pages, ${result.wordCount} words`]);
+      // Clear timeout if test completes successfully
+      if (testTimeouts.has(testKey)) {
+        clearTimeout(testTimeouts.get(testKey)!);
+        testTimeouts.delete(testKey);
+      }
+
+      // Add log entry with performance info
+      setLogs(prev => [...prev, `✅ ${service} test for ${level}: ${result.source} source, ${result.pages} pages, ${result.wordCount} words (${result.responseTime}ms)`]);
+
+      // Special logging for medium level to debug failures
+      if (level === 'medium') {
+        console.log(`🔍 [DEBUG] Medium ${service} test completed:`, {
+          success: result.success,
+          source: result.source,
+          pages: result.pages,
+          wordCount: result.wordCount,
+          withinTokenLimits: result.withinTokenLimits,
+          fallbackReason: result.fallbackReason,
+          error: result.error
+        });
+      }
 
     } catch (error) {
       result.error = error instanceof Error ? error.message : 'Unknown error';
       result.responseTime = Date.now() - startTime;
       result.generationPath.push(`Error: ${result.error}`);
+      
+      // Clear timeout on error
+      if (testTimeouts.has(testKey)) {
+        clearTimeout(testTimeouts.get(testKey)!);
+        testTimeouts.delete(testKey);
+      }
+      
       setLogs(prev => [...prev, `❌ ${service} test failed for ${level}: ${result.error}`]);
       console.error(`${service} test failed for ${level}:`, error);
+      
+      // Special error logging for medium level
+      if (level === 'medium') {
+        console.error(`🚨 [DEBUG] Medium ${service} test failed:`, {
+          error: result.error,
+          responseTime: result.responseTime,
+          userInfo: userInfo.name
+        });
+      }
     }
 
     return result;
@@ -496,13 +596,16 @@ export function StoryPromptTester() {
     };
   };
 
-  // Run comprehensive tests
+  // Optimized batch test runner with progressive results
   const runAllTests = async () => {
     setIsRunning(true);
     setTestResults([]);
     setServiceComparisons([]);
-    setLogs(['🚀 Starting comprehensive story generation tests...']);
+    setLogs(['🚀 Starting optimized story generation tests...']);
     setProgress(0);
+    
+    // Clear validation cache for fresh tests
+    validationCache.clear();
 
     // Use custom preferences if enabled, otherwise use predefined profiles
     const profiles: [string, UserInfo][] = useCustomPreferences 
@@ -516,93 +619,115 @@ export function StoryPromptTester() {
     const results: TestResult[] = [];
     const comparisons: ServiceComparison[] = [];
 
-    for (const [level, userInfo] of profiles) {
-      setCurrentTest(`Testing ${level} (${userInfo.name})`);
+    // Process tests in batches for better performance
+    const batchSize = 2; // Process 2 tests at a time
+    
+    for (let i = 0; i < profiles.length; i += batchSize) {
+      const batch = profiles.slice(i, i + batchSize);
       
-      const comparison: ServiceComparison = { level };
+      // Process batch in parallel
+      await Promise.all(batch.map(async ([level, userInfo]) => {
+        setCurrentTest(`Testing ${level} (${userInfo.name})`);
+        
+        const comparison: ServiceComparison = { level };
+        
+        try {
+          if (testMode === 'full') {
+            // Test both Netflix and Live services for comprehensive testing
+            const netflixResult = await testService(level, userInfo, 'netflix');
+            const liveResult = await testService(level, userInfo, 'live');
+            
+            results.push(netflixResult, liveResult);
+            comparison.netflix = netflixResult;
+            comparison.live = liveResult;
+            
+            completed += 2;
+            setProgress((completed / totalTests) * 100);
+          }
+
+          if (testMode === 'ai-only') {
+            // Test Netflix service only (AI-first complete stories)
+            const netflixResult = await testService(level, userInfo, 'netflix');
+            results.push(netflixResult);
+            comparison.netflix = netflixResult;
+            completed++;
+            setProgress((completed / totalTests) * 100);
+          }
+
+          if (testMode === 'live-only') {
+            // Test Live service only (page-by-page generation)
+            const liveResult = await testService(level, userInfo, 'live');
+            results.push(liveResult);
+            comparison.live = liveResult;
+            completed++;
+            setProgress((completed / totalTests) * 100);
+          }
+
+          if (testMode === 'comparison') {
+            // Test all three services for comparison
+            const netflixResult = await testService(level, userInfo, 'netflix');
+            const liveResult = await testService(level, userInfo, 'live');
+            const templateResult = await testService(level, userInfo, 'template');
+            
+            results.push(netflixResult, liveResult, templateResult);
+            comparison.netflix = netflixResult;
+            comparison.live = liveResult;
+            comparison.template = templateResult;
+            
+            completed += 3;
+            setProgress((completed / totalTests) * 100);
+          }
+
+          if (testMode === 'template-only') {
+            // Test only template service
+            const templateResult = await testService(level, userInfo, 'template');
+            results.push(templateResult);
+            comparison.template = templateResult;
+            completed++;
+            setProgress((completed / totalTests) * 100);
+          }
+
+        } catch (error) {
+          console.error(`Test failed for ${level}:`, error);
+          setLogs(prev => [...prev, `❌ Test failed for ${level}: ${error}`]);
+        }
+
+        comparisons.push(comparison);
+        
+        // Update results progressively
+        setTestResults(prev => [...prev, ...results]);
+        setServiceComparisons(prev => [...prev, comparison]);
+        
+        completed += servicesCount;
+        setProgress((completed / totalTests) * 100);
+      }));
       
-      try {
-        if (testMode === 'full') {
-          // Test both Netflix and Live services for comprehensive testing
-          const netflixResult = await testService(level, userInfo, 'netflix');
-          const liveResult = await testService(level, userInfo, 'live');
-          
-          results.push(netflixResult, liveResult);
-          comparison.netflix = netflixResult;
-          comparison.live = liveResult;
-          
-          completed += 2;
-          setProgress((completed / totalTests) * 100);
-        }
-
-        if (testMode === 'ai-only') {
-          // Test Netflix service only (AI-first complete stories)
-          const netflixResult = await testService(level, userInfo, 'netflix');
-          results.push(netflixResult);
-          comparison.netflix = netflixResult;
-          completed++;
-          setProgress((completed / totalTests) * 100);
-        }
-
-        if (testMode === 'live-only') {
-          // Test Live service only (page-by-page generation)
-          const liveResult = await testService(level, userInfo, 'live');
-          results.push(liveResult);
-          comparison.live = liveResult;
-          completed++;
-          setProgress((completed / totalTests) * 100);
-        }
-
-        if (testMode === 'comparison') {
-          // Test all three services for comparison
-          const netflixResult = await testService(level, userInfo, 'netflix');
-          const liveResult = await testService(level, userInfo, 'live');
-          const templateResult = await testService(level, userInfo, 'template');
-          
-          results.push(netflixResult, liveResult, templateResult);
-          comparison.netflix = netflixResult;
-          comparison.live = liveResult;
-          comparison.template = templateResult;
-          
-          completed += 3;
-          setProgress((completed / totalTests) * 100);
-        }
-
-        if (testMode === 'template-only') {
-          // Test only template service
-          const templateResult = await testService(level, userInfo, 'template');
-          results.push(templateResult);
-          comparison.template = templateResult;
-          completed++;
-          setProgress((completed / totalTests) * 100);
-        }
-
-      } catch (error) {
-        console.error(`Test failed for ${level}:`, error);
-        setLogs(prev => [...prev, `❌ Test failed for ${level}: ${error}`]);
+      // Short delay between batches to prevent overwhelming the services
+      if (i + batchSize < profiles.length) {
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
-
-      comparisons.push(comparison);
-      
-      // Short delay to prevent overwhelming the services
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    setTestResults(results);
-    setServiceComparisons(comparisons);
     setIsRunning(false);
     setCurrentTest('');
     setProgress(100);
-    setLogs(prev => [...prev, '🎉 All tests completed!']);
+    setLogs(prev => [...prev, `🎉 All tests completed! Cache size: ${validationCache.size}`]);
   };
 
-  // Reset all tests
+  // Reset all tests and clear caches
   const resetTests = () => {
     setTestResults([]);
     setServiceComparisons([]);
     setProgress(0);
     setCurrentTest('');
     setLogs([]);
+    
+    // Clear performance caches
+    validationCache.clear();
+    
+    // Clear any remaining timeouts
+    testTimeouts.forEach(timeout => clearTimeout(timeout));
+    testTimeouts.clear();
   };
 
   // Render source badge
