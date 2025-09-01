@@ -169,7 +169,7 @@ export class StoryGenerationService {
       if (vocabularyIntegration.userSpecified.specialRequestWords.length > 0) vocabSources.push('special request');
       if (vocabularyIntegration.userSpecified.teacherWords.length > 0) vocabSources.push('teacher words');
       
-      vocabularyInstructions = `MUST incorporate these vocabulary words: ${allUserVocabWords.join(', ')} (from: ${vocabSources.join(', ')})`;
+      vocabularyInstructions = `Priority vocabulary to include: ${allUserVocabWords.join(', ')} (from: ${vocabSources.join(', ')})`;
     } else {
       vocabularyInstructions = `Use grade level ${systemSettings.gradeLevel} appropriate vocabulary based on difficulty level ${essentialUserInfo.difficultyLevel}`;
     }

@@ -156,15 +156,28 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
     const pages = sharedParseIntoPages(storyText, validationLevel);
     
+    // Calculate real vocabulary compliance using dynamic loader
+    let vocabCompliance = 1.0; // Default fallback
+    try {
+      const { calculateVocabularyCompliance } = await import('../_shared/vocabularyLoader.ts');
+      const complianceResult = await calculateVocabularyCompliance(storyText, effectiveGradeLevel);
+      vocabCompliance = complianceResult.compliance;
+      
+      console.log(`📊 Vocabulary compliance: ${Math.round(vocabCompliance * 100)}% (${complianceResult.validWords}/${complianceResult.totalWords} words)`);
+    } catch (error) {
+      console.warn('⚠️ Could not calculate vocabulary compliance:', error);
+    }
+    
     // Return streamlined response
     return new Response(JSON.stringify({
       success: true,
       story: storyText,
       pages: pages,
-      vocabCompliance: 1.0, // Frontend handles validation
+      vocabCompliance,
       metadata: {
         processingMode: 'streamlined-lean',
-        gradeLevel: bundle.systemSettings.gradeLevel
+        gradeLevel: bundle.systemSettings.gradeLevel,
+        vocabularyCompliance: vocabCompliance
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -364,9 +377,23 @@ CRITICAL SUCCESS REQUIREMENTS:
           vocabularyTracking: vocabularyUsage
         });
         
-        // Track vocabulary encounters if user is authenticated
+        // Enhanced vocabulary tracking for analytics (both user and system vocabulary)
         if (vocabularyUsage.hasTargetVocabulary && vocabularyUsage.usedWords.length > 0) {
-          console.log(`📚 Vocabulary tracking: ${vocabularyUsage.usedWords.length} words used`);
+          console.log(`📚 User vocabulary tracking: ${vocabularyUsage.usedWords.length} priority words used`);
+        }
+        
+        // Track system vocabulary compliance for analytics
+        try {
+          const { calculateVocabularyCompliance } = await import('../_shared/vocabularyLoader.ts');
+          const systemCompliance = await calculateVocabularyCompliance(storyText, gradeLevel);
+          console.log(`📊 System vocabulary compliance: ${Math.round(systemCompliance.compliance * 100)}% for grade ${gradeLevel}`);
+          
+          // Add system compliance to vocabulary tracking
+          vocabularyUsage.systemCompliance = systemCompliance.compliance;
+          vocabularyUsage.systemValidWords = systemCompliance.validWords;
+          vocabularyUsage.systemTotalWords = systemCompliance.totalWords;
+        } catch (error) {
+          console.warn('⚠️ System vocabulary tracking failed:', error);
         }
         
         break;

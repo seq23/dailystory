@@ -425,7 +425,10 @@ export function formatUserPrompt(template: string, userInfo: any): string {
     .replace(/\{favoriteAnimal\}/g, userInfo.favoriteAnimal || 'cat')
     .replace(/\{favoriteFood\}/g, userInfo.favoriteFood || 'cookies')
     .replace(/\{hobbies\}/g, userInfo.hobbies || 'playing outside')
-    .replace(/\{age\}/g, userInfo.age?.toString() || '8');
+    .replace(/\{age\}/g, userInfo.age?.toString() || '8')
+    .replace(/\{specialRequest\}/g, userInfo.specialRequest || 'create an engaging adventure')
+    .replace(/\{vocabularyInstructions\}/g, userInfo.vocabularyInstructions || 'Use age-appropriate vocabulary')
+    .replace(/\{seed\}/g, userInfo.seed || Math.floor(Math.random() * 1000).toString());
 }
 
 /**
