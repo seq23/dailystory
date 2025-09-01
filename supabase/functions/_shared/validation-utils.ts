@@ -1,8 +1,10 @@
 // Shared Validation Utilities - Portable across TypeScript and Deno
 // Single source of truth for core validation logic
 
-// Import shared configuration
+// Import shared configuration for fallbacks only
 import validationConfig from './validation-config.json' assert { type: 'json' };
+// Import dynamic extraction functions - SINGLE SOURCE OF TRUTH
+import { extractTokenLimitFromPrompt, getStoryPrompt, getExpertStoryPrompt, type DifficultyLevel as PromptDifficultyLevel, type ExpertGradeLevel as PromptExpertGradeLevel } from './storyPrompts.ts';
 
 export type ValidationLevel = 'Level0' | 'Level1' | 'Level2' | 'Level3' | 'Level4' | 'Grade6' | 'Grade7' | 'Grade8' | 'Grade9' | 'Grade10';
 export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
@@ -28,10 +30,54 @@ export function mapDifficultyToLevel(difficulty: DifficultyLevel | ExpertGradeLe
 }
 
 /**
- * Get token limits for a validation level
+ * Get token limits for a validation level - DYNAMIC EXTRACTION FROM PROMPTS
  */
 export function getTokenLimitsForLevel(level: ValidationLevel) {
-  return validationConfig.tokenLimits[level] || validationConfig.tokenLimits.Level2;
+  // Map validation level back to difficulty
+  const difficultyMapping = {
+    'Level0': 'beginner',
+    'Level1': 'easy', 
+    'Level2': 'medium',
+    'Level3': 'hard',
+    'Level4': 'expert',
+    'Grade6': '6th',
+    'Grade7': '7th', 
+    'Grade8': '8th',
+    'Grade9': '9th',
+    'Grade10': '10th'
+  };
+  
+  const difficulty = difficultyMapping[level];
+  if (!difficulty) {
+    console.warn(`⚠️ Unknown validation level: ${level}, using fallback`);
+    return validationConfig.tokenLimits.Level2;
+  }
+  
+  try {
+    let perPageTokens;
+    
+    // Get tokens from system prompts - SINGLE SOURCE OF TRUTH
+    if (['beginner', 'easy', 'medium', 'hard', 'expert'].includes(difficulty)) {
+      const prompt = getStoryPrompt(difficulty as PromptDifficultyLevel);
+      perPageTokens = extractTokenLimitFromPrompt(prompt.systemPrompt);
+    } else {
+      const prompt = getExpertStoryPrompt(difficulty as PromptExpertGradeLevel);
+      perPageTokens = extractTokenLimitFromPrompt(prompt.systemPrompt);
+    }
+    
+    // Calculate guest story tokens (6 pages)
+    const guestStoryTokens = perPageTokens * 6;
+    
+    console.log(`✅ Dynamic token extraction for ${level} (${difficulty}): ${perPageTokens} per page, ${guestStoryTokens} guest story`);
+    
+    return {
+      perPage: perPageTokens,
+      guestStory: guestStoryTokens
+    };
+  } catch (error) {
+    console.error(`🚨 Failed to extract tokens for ${level}:`, error);
+    return validationConfig.tokenLimits[level] || validationConfig.tokenLimits.Level2;
+  }
 }
 
 /**
