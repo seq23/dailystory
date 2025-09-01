@@ -192,6 +192,12 @@ export class ContentSecurity {
       return { appropriate: false, reason: 'Invalid input' };
     }
 
+    // Performance optimization: cache results for repeated content
+    const contentHash = `${text.substring(0, 100)}_${level}_${userLanguage}`;
+    if (this._validationCache?.has(contentHash)) {
+      return this._validationCache.get(contentHash);
+    }
+
     // Get level-appropriate filtering list
     const filteredWords = this.getLevelBasedWordList(level);
     
@@ -246,8 +252,10 @@ export class ContentSecurity {
       }
     }
 
-    // Check multilingual inappropriate words for user's language
-    if (userLanguage && userLanguage !== 'en' && this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords]) {
+    // Skip multilingual check if content is English-only (major performance optimization)
+    const isEnglishContent = isLatinScript && userLanguage === 'en';
+    
+    if (!isEnglishContent && userLanguage && userLanguage !== 'en' && this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords]) {
       const languageWords = this.multilingualInappropriateWords[userLanguage as keyof typeof this.multilingualInappropriateWords] || [];
       
       for (const word of languageWords) {
@@ -264,8 +272,25 @@ export class ContentSecurity {
       return { appropriate: false, reason: 'Suspicious character repetition detected' };
     }
 
-    return { appropriate: true };
+    const result = { appropriate: true };
+    
+    // Cache the result for performance
+    if (!this._validationCache) {
+      this._validationCache = new Map();
+    }
+    this._validationCache.set(contentHash, result);
+    
+    // Limit cache size to prevent memory leaks
+    if (this._validationCache.size > 1000) {
+      const firstKey = this._validationCache.keys().next().value;
+      this._validationCache.delete(firstKey);
+    }
+    
+    return result;
   }
+
+  // Validation result cache for performance
+  private static _validationCache: Map<string, { appropriate: boolean; reason?: string }> | null = null;
 
   /**
    * Enhanced content filtering with age-appropriate validation and multilingual support

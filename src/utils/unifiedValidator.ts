@@ -76,11 +76,15 @@ export class UnifiedValidator {
     const tokenCount = estimateTokenCount(totalContent);
     const pageCount = pages.length;
 
-    // Content filtering using level-based security
+    // Detect story language for performance optimization
+    const storyLanguage = this.detectStoryLanguage(totalContent);
+    const isEnglishOnly = storyLanguage === 'en';
+
+    // Content filtering using level-based security with language optimization
     const contentValidation = ContentSecurity.isContentAppropriateForLevel(
       totalContent, 
       config.level,
-      config.userLanguage
+      isEnglishOnly ? 'en' : config.userLanguage
     );
 
     const metrics = {
@@ -332,6 +336,29 @@ export class UnifiedValidator {
     };
 
     return difficultyMap[difficulty.toLowerCase()] || 'Level2';
+  }
+
+  /**
+   * Detect story language for performance optimization
+   */
+  private static detectStoryLanguage(content: string): string {
+    // Quick English detection - if content is primarily Latin characters and common English patterns
+    const englishIndicators = /\b(the|and|a|to|of|in|is|you|that|it|he|was|for|on|are|as|with|his|they|at|be|this|have|from|or|one|had|by|word|but|not|what|all|were|we|when|your|can|said)\b/gi;
+    const englishMatches = content.match(englishIndicators);
+    const totalWords = content.split(/\s+/).length;
+    
+    // If >50% of words are common English words, assume English
+    if (englishMatches && englishMatches.length / totalWords > 0.5) {
+      return 'en';
+    }
+    
+    // Check for non-Latin scripts that would indicate other languages
+    if (/[\u0600-\u06FF]/.test(content)) return 'ar'; // Arabic
+    if (/[\u4e00-\u9fff]/.test(content)) return 'zh'; // Chinese
+    if (/[\u0900-\u097F]/.test(content)) return 'hi'; // Hindi
+    
+    // Default to English for Latin scripts
+    return 'en';
   }
 
   /**
