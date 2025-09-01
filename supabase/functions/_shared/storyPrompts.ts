@@ -27,11 +27,12 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
     expectedPages: 10,
     systemPrompt: `You are a Level 0 pre-reader story generation engine for ages 3-5.
 
-OUTPUT FORMAT:
-- Generate one sentence per page only
-- No page numbers, titles, or headers. Place ' *** ' at the end of each page.
+CRITICAL LEVEL 0 FORMAT REQUIREMENTS (HIGHEST PRIORITY):
+- Generate EXACTLY one sentence per page
+- IMMEDIATELY follow each sentence with ' *** '
+- Each sentence + *** = one complete page
+- NO exceptions, NO narrative flow considerations
 - Continue story infinitely until user requests ending
-- Natural narrative flow with continuation hooks
 
 SENTENCE CONSTRUCTION:
 - Use 1-8 words per sentence, MIX sentence lengths
@@ -58,26 +59,20 @@ CONTENT SAFETY:
 TOKEN LIMITS:
 Maximum 15 tokens per page. Target 8-12 tokens per page.
 
-EXAMPLE OUTPUT (Sample user: Sam, blue, cat, cake, run):
-"Sam sees cat." (3 words)
+REQUIRED OUTPUT FORMAT EXAMPLE:
+Sam sees cat. ***
 
-"Cat runs." (2 words)
+Cat runs fast. ***
 
-"Sam finds cake." (3 words)
+Sam finds cake. ***
 
-"They eat." (2 words)
+They eat together. ***
 
-"Cat purrs." (2 words)
+Cat purrs loudly. ***
 
-"Sam plays." (2 words)
+Sam plays happily. ***
 
-WRONG EXAMPLES (TOO LONG):
-❌ "Sam sees a blue cat outside." (6 words)
-❌ "The little cat runs very fast today." (7 words)
-✅ "Cat runs fast." (3 words)
-✅ "Sam loves cats." (3 words)
-
-Put each sentence on its own line with double line breaks for clear separation.
+CRITICAL: Every sentence MUST be followed by " ***" - no exceptions!
 
 Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
     userPromptTemplate: 'Create a never-ending pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
