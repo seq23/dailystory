@@ -176,18 +176,23 @@ class UnifiedCircuitBreaker {
   private failures = 0;
   private lastFailure = 0;
   private readonly threshold = 2;
+  private readonly expertThreshold = 5; // Higher threshold for expert content
   private readonly timeout = 15000; // 15 seconds
+  private readonly expertTimeout = 5000; // 5 seconds for expert content recovery
   
-  isOpen(): boolean {
-    const isCurrentlyOpen = this.failures >= this.threshold && (Date.now() - this.lastFailure < this.timeout);
+  isOpen(isExpertContent = false): boolean {
+    const threshold = isExpertContent ? this.expertThreshold : this.threshold;
+    const timeout = isExpertContent ? this.expertTimeout : this.timeout;
+    const isCurrentlyOpen = this.failures >= threshold && (Date.now() - this.lastFailure < timeout);
     
-    if (this.failures >= this.threshold) {
-      if (Date.now() - this.lastFailure < this.timeout) {
+    if (this.failures >= threshold) {
+      if (Date.now() - this.lastFailure < timeout) {
         // Log circuit breaker state
         CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'OPEN', {
           failures: this.failures,
-          threshold: this.threshold,
-          timeoutRemaining: this.timeout - (Date.now() - this.lastFailure)
+          threshold: isExpertContent ? this.expertThreshold : this.threshold,
+          timeoutRemaining: timeout - (Date.now() - this.lastFailure),
+          expertContent: isExpertContent
         });
         return true;
       }
@@ -220,20 +225,23 @@ class UnifiedCircuitBreaker {
     });
   }
   
-  recordFailure(): void {
+  recordFailure(isExpertContent = false): void {
     this.failures++;
     this.lastFailure = Date.now();
+    const threshold = isExpertContent ? this.expertThreshold : this.threshold;
     
-    if (this.failures >= this.threshold) {
+    if (this.failures >= threshold) {
       CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'OPEN', {
         failures: this.failures,
-        threshold: this.threshold,
-        event: 'threshold_exceeded'
+        threshold,
+        event: 'threshold_exceeded',
+        expertContent: isExpertContent
       });
     } else {
       CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'HALF_OPEN', {
         failures: this.failures,
-        threshold: this.threshold
+        threshold,
+        expertContent: isExpertContent
       });
     }
     
@@ -264,13 +272,15 @@ class UnifiedCircuitBreaker {
   }
   
   // Get current status for diagnostics
-  getStatus(): { isOpen: boolean; failures: number; lastFailure: number; threshold: number; timeout: number } {
+  getStatus(isExpertContent = false): { isOpen: boolean; failures: number; lastFailure: number; threshold: number; timeout: number; expertThreshold?: number; expertTimeout?: number } {
     return {
-      isOpen: this.isOpen(),
+      isOpen: this.isOpen(isExpertContent),
       failures: this.failures,
       lastFailure: this.lastFailure,
       threshold: this.threshold,
-      timeout: this.timeout
+      timeout: this.timeout,
+      expertThreshold: this.expertThreshold,
+      expertTimeout: this.expertTimeout
     };
   }
 }
@@ -448,9 +458,12 @@ function parseAIResponse(content, options = {}) {
 async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
-  // Circuit breaker check with enhanced logging
-  if (circuitBreaker.isOpen()) {
-    console.warn('🚫 Circuit breaker is open, skipping OpenAI - using Tier 2 immediately');
+  // Circuit breaker check with expert content awareness
+  const isExpertContent = userInfo?.difficultyLevel === 'expert' || userInfo?.expertGradeLevel || 
+                         ['6th', '7th', '8th', '9th', '10th'].includes(userInfo?.readingLevel);
+  
+  if (circuitBreaker.isOpen(isExpertContent)) {
+    console.warn(`🚫 Circuit breaker is open for ${isExpertContent ? 'expert' : 'regular'} content, skipping OpenAI - using Tier 2 immediately`);
     const error = new Error('Circuit breaker open - service degraded');
     TierFailureLogger.logTier1OpenAIFailure(error, { 
       reason: 'circuit_breaker_open',
@@ -598,7 +611,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
     }
     
     console.warn(`❌ Model ${model.name} failed after 3 attempts, trying next model...`);
-    circuitBreaker.recordFailure();
+    circuitBreaker.recordFailure(isExpertContent);
     
     // Log model exhaustion
     TierFailureLogger.logTier1OpenAIFailure(new Error(`Model ${model.name} exhausted after 3 attempts`), {

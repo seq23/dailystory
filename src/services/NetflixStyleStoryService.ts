@@ -73,7 +73,7 @@ export class NetflixStyleStoryService {
 
         // Token-based validation that aligns with actual AI output
         const isExpertLevel = difficulty === 'expert' || this.isExpertGradeLevel(difficulty);
-        const minPagesRequired = isExpertLevel ? 8 : 5; // Reduced minimum pages
+        const minPagesRequired = isExpertLevel ? 6 : 5; // Reduced expert pages from 8 to 6
         
         // Import token validation utilities
         const { validateTokenLimit, estimateTokenCount } = await import('@/utils/tokenLimitValidator');
@@ -86,7 +86,8 @@ export class NetflixStyleStoryService {
       const { getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
       const tokensPerPage = getPerPageTokenLimit(difficulty);
       const expectedTokensForGuests = tokensPerPage * 6; // 6 pages for guests
-      const minTokensRequired = Math.floor(expectedTokensForGuests * 0.4); // 40% minimum
+      const minTokenPercentage = isExpertLevel ? 0.25 : 0.4; // 25% for expert, 40% for regular
+      const minTokensRequired = Math.floor(expectedTokensForGuests * minTokenPercentage);
       const hasSubstantialContent = cleanedPages.length >= minPagesRequired && tokenValidation.actualTokens >= minTokensRequired;
         
         const isValidContent = hasSubstantialContent;
@@ -112,7 +113,7 @@ export class NetflixStyleStoryService {
       // Debug validation failure details
       const cleanedPages = result.pages?.filter((page: string) => page.length > 10) || [];
       const isExpertLevel = difficulty === 'expert' || this.isExpertGradeLevel(difficulty);
-      const minPagesRequired = isExpertLevel ? 8 : 5;
+      const minPagesRequired = isExpertLevel ? 6 : 5;
       
       // Import validation for debug info
       const { validateTokenLimit, getPerPageTokenLimit } = await import('@/utils/tokenLimitValidator');
@@ -122,7 +123,8 @@ export class NetflixStyleStoryService {
       // Calculate proper minimum tokens for debug using guest calculation
       const tokensPerPage = getPerPageTokenLimit(difficulty);
       const expectedTokensForGuests = tokensPerPage * 6;
-      const minTokensRequired = Math.floor(expectedTokensForGuests * 0.4);
+      const minTokenPercentage = isExpertLevel ? 0.25 : 0.4; // 25% for expert, 40% for regular
+      const minTokensRequired = Math.floor(expectedTokensForGuests * minTokenPercentage);
 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
       console.log(`📊 Netflix: Content validation failed - Pages: ${cleanedPages.length}/${minPagesRequired}, Tokens: ${tokenValidation.actualTokens}`);
