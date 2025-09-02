@@ -96,6 +96,21 @@ export function getCharacterLimitsForLevel(level: ValidationLevel) {
 }
 
 /**
+ * Lightweight content type detection helpers
+ */
+export function isTransition(content: string): boolean {
+  return /\b(meanwhile|later that|next|then|after|during|suddenly|now|finally|soon|eventually)\b/i.test(content);
+}
+
+export function isEnding(content: string): boolean {
+  return /\b(the end|happily ever after|lived happily|learned|finally|concluded|finished|complete)\b/i.test(content);
+}
+
+export function isCliffhanger(content: string): boolean {
+  return /[?!]|but suddenly|what was|to be continued|suddenly|what would|who could|where did|will they/i.test(content);
+}
+
+/**
  * Emergency chunking for oversized sentences (Level 0 fallback)
  */
 export function emergencyChunkSentence(sentence: string, targetTokens: number): string[] {
@@ -372,8 +387,27 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   const maxTokensWithTolerance = maxTokens * validationConfig.validationThresholds.splitTolerance;
   
   // For live pages, use direct per-page character limits (no story-level calculations)
-  const minCharsPerPage = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
-  const maxCharsPerPage = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
+  let minCharsPerPage = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
+  let maxCharsPerPage = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
+  
+  // Detect special content types and apply even more lenient minimums
+  const isSpecialContent = isTransition(content) || isEnding(content) || isCliffhanger(content);
+  let adjustedMinTokens = minTokens;
+  
+  if (isSpecialContent) {
+    // Apply 0.5x multiplier for special content types (even more lenient)
+    adjustedMinTokens = Math.floor(minTokens * 0.5);
+    minCharsPerPage = Math.floor(minCharsPerPage * 0.5);
+    
+    console.log(`🎭 [CONTENT-TYPE] Special content detected:`, {
+      isTransition: isTransition(content),
+      isEnding: isEnding(content), 
+      isCliffhanger: isCliffhanger(content),
+      appliedMultiplier: 0.5,
+      originalMinTokens: minTokens,
+      adjustedMinTokens
+    });
+  }
   
   // Enhanced logging for debugging
   console.log(`🔍 [VALIDATION-DEBUG] Live page dual validation for ${level}:`, {
@@ -387,16 +421,16 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   });
   
   // Check if content passes either validation method
-  const passesTokenValidation = tokenCount >= minTokens && tokenCount <= maxTokensWithTolerance;
+  const passesTokenValidation = tokenCount >= adjustedMinTokens && tokenCount <= maxTokensWithTolerance;
   const passesCharacterValidation = characterCount >= minCharsPerPage && characterCount <= maxCharsPerPage;
   
   if (!passesTokenValidation && !passesCharacterValidation) {
-    const reason = tokenCount < minTokens ? 
-      `Page too short: ${tokenCount} tokens (min: ${minTokens}) and ${characterCount} chars (min: ${minCharsPerPage})` :
+    const reason = tokenCount < adjustedMinTokens ? 
+      `Page too short: ${tokenCount} tokens (min: ${adjustedMinTokens}) and ${characterCount} chars (min: ${minCharsPerPage})` :
       `Page too long: ${tokenCount} tokens (max: ${maxTokensWithTolerance}) and ${characterCount} chars (max: ${maxCharsPerPage})`;
     
     console.log(`❌ [VALIDATION-DEBUG] Page failed both validations for ${level}:`, {
-      tokenCount, minTokens, maxTokensWithTolerance,
+      tokenCount, minTokens: adjustedMinTokens, maxTokensWithTolerance,
       characterCount, minCharsPerPage, maxCharsPerPage,
       reason
     });
@@ -422,7 +456,7 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   }
   
   console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (passed by: ${passedBy}):`, {
-    tokenCount, minTokens, maxTokens,
+    tokenCount, minTokens: adjustedMinTokens, maxTokens,
     characterCount, minCharsPerPage, maxCharsPerPage,
     tokenUtilization: Math.round((tokenCount / maxTokens) * 100),
     charUtilization: Math.round((characterCount / maxCharsPerPage) * 100)
