@@ -95,7 +95,7 @@ import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/Ne
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
 import { DiagnosticTool } from "@/utils/diagnostics";
-import { validateGuestStoryTokens, validatePremiumPageTokens } from "@/utils/tokenLimitValidator";
+import { UnifiedValidator } from "@/utils/unifiedValidator";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
@@ -1618,7 +1618,8 @@ const initializeStory = async () => {
       // Token validation for guest users (6-page story limit)
       if (!isPremium) {
         const fullStoryText = (processedPages || []).join(' ');
-        const validation = validateGuestStoryTokens(fullStoryText, currentDifficulty);
+        const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
+        const validation = UnifiedValidator.validateContent(fullStoryText, { mode: 'guest', level: validationLevel });
         if (!validation.isValid) {
           console.warn('⚠️ Guest story exceeds token limits:', validation);
           toast({
@@ -1997,7 +1998,8 @@ const initializeStory = async () => {
         
         // Token validation for premium users (per-page limit)
         if (isPremium) {
-          const validation = validatePremiumPageTokens(result.content, currentDifficulty);
+          const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
+          const validation = UnifiedValidator.validateContent(result.content, { mode: 'live', level: validationLevel });
           if (!validation.isValid) {
             console.warn('⚠️ Premium page exceeds token limits:', validation);
             toast({
@@ -2692,7 +2694,8 @@ const handleRestartTimer = () => {
         });
         
         // Token validation for premium ending page
-        const validation = validatePremiumPageTokens(result.content, currentDifficulty);
+        const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
+        const validation = UnifiedValidator.validateContent(result.content, { mode: 'live', level: validationLevel });
         if (!validation.isValid) {
           console.warn('⚠️ Premium ending page exceeds token limits:', validation);
           toast({

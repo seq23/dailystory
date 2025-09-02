@@ -9,8 +9,8 @@ import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { useTemplateCounts } from '@/hooks/useTemplateCounts';
 import { StoryResultDisplay } from './StoryResultDisplay';
-import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
-import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
+import { UnifiedValidator } from '@/utils/unifiedValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/enhancedPlaceholderValidator';
 import type { DifficultyLevel } from '@/types';
 
 export function QuickTemplateTest() {
@@ -160,7 +160,7 @@ export function QuickTemplateTest() {
               {testingMode === 'testing' && selectedLevel && (
                 <>
                   <Badge variant="secondary">
-                    Target: {getTokenLimitForDifficulty(selectedLevel as DifficultyLevel)} tokens
+                    Target: {UnifiedValidator.getTokenLimits(UnifiedValidator.mapDifficultyToLevel(selectedLevel as DifficultyLevel)).guestStory} tokens
                   </Badge>
                   <Badge variant="outline">
                     {selectedLevel !== 'beginner' ? 'Template density' : 'AI-matched density'}
@@ -254,10 +254,10 @@ export function QuickTemplateTest() {
               </CardHeader>
               <CardContent>
                 {(() => {
-                  const validationResult = validatePageTokenDistribution(
-                    result.pages, 
-                    selectedLevel as DifficultyLevel, 
-                    result.metadata?.targetWordDensity === 'Template-optimized' ? 'template' : 'ai'
+                  const validationLevel = UnifiedValidator.mapDifficultyToLevel(selectedLevel as DifficultyLevel);
+                  const validationResult = UnifiedValidator.validateContent(
+                    result.pages.join(' '), 
+                    { mode: 'guest', level: validationLevel }
                   );
 
                   const placeholderValidation = validatePlaceholders(result.pages);
@@ -272,15 +272,14 @@ export function QuickTemplateTest() {
                             {validationResult.isValid ? 'Valid' : 'Invalid'}
                           </Badge>
                           <span className="text-sm">
-                            {validationResult.actualTokens} / {validationResult.maxAllowed} tokens
-                            {validationResult.templateMode && ' (Template mode)'}
+                            {validationResult.metrics.tokenCount} / {UnifiedValidator.getTokenLimits(validationLevel).guestStory} tokens
                           </span>
                         </div>
                         
-                        {validationResult.warnings.length > 0 && (
+                        {validationResult.reasons.length > 0 && (
                           <div className="space-y-1">
                             <p className="text-sm font-medium">Token Warnings:</p>
-                            {validationResult.warnings.map((warning, index) => (
+                            {validationResult.reasons.map((warning, index) => (
                               <p key={index} className="text-sm text-muted-foreground">• {warning}</p>
                             ))}
                           </div>

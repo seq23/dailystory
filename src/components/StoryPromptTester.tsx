@@ -15,13 +15,12 @@ import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
-import { validatePageTokenDistribution, getTokenLimitForDifficulty, validateTokenLimit, estimateTokenCount } from '@/utils/tokenLimitValidator';
-import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
+import { UnifiedValidator, type ValidationResult, type ValidationDecision } from '@/utils/unifiedValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/enhancedPlaceholderValidator';
 import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
-import { UnifiedValidator, type ValidationResult, type ValidationDecision } from '@/utils/unifiedValidator';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
 // Robust word counting function
@@ -702,11 +701,12 @@ export function StoryPromptTester() {
       result.responseTime = Date.now() - startTime;
       result.success = true;
       
-      // Use proper token validation with the full content
-      const tokenValidation = validatePageTokenDistribution(result.fullContent || [], level as DifficultyLevel);
+      // Use UnifiedValidator for proper token validation
+      const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
+      const tokenValidation = UnifiedValidator.validateContent(result.fullContent.join(' '), { mode: 'guest', level: validationLevel });
       result.withinTokenLimits = tokenValidation.isValid;
-      result.tokenCount = tokenValidation.actualTokens || 0;
-      result.maxTokensAllowed = tokenValidation.maxAllowed || 0;
+      result.tokenCount = tokenValidation.metrics.tokenCount;
+      result.maxTokensAllowed = UnifiedValidator.getTokenLimits(validationLevel).guestStory;
       
       // Show final result toast
       showTestToast({
@@ -724,16 +724,18 @@ export function StoryPromptTester() {
           // Run validation and cache results
           const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
           const contentIssues = checkForPlaceholderIssues(result.fullContent);
-          const tokenValidation = validatePageTokenDistribution(
-            result.fullContent, 
-            level as DifficultyLevel, 
-            result.source === 'ai' ? 'ai' : 'template'
-          );
+          const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
+          const tokenValidation = UnifiedValidator.validateContent(result.fullContent.join(' '), { mode: 'guest', level: validationLevel });
           
           cachedValidation = {
             placeholderValidation,
             contentIssues,
-            tokenValidation
+            tokenValidation: {
+              isValid: tokenValidation.isValid,
+              actualTokens: tokenValidation.metrics.tokenCount,
+              maxAllowed: UnifiedValidator.getTokenLimits(validationLevel).guestStory,
+              warnings: tokenValidation.reasons
+            }
           };
           
           setCachedValidation(result.fullContent, level, service, cachedValidation);
@@ -877,20 +879,21 @@ export function StoryPromptTester() {
     };
   };
 
-  // Token validation using the proper tokenLimitValidator system
+  // Token validation using UnifiedValidator
   const analyzeTokenLimits = (content: string[], level: string): { isValid: boolean; tokenCount: number; wordCount: number; maxTokens: number } => {
     const fullText = (Array.isArray(content) && content.length > 0) ? content.join(' ') : '';
     const wordCount = countWords(fullText);
-    const tokenCount = estimateTokenCount(fullText);
     
-    // Use the proper validation function from tokenLimitValidator
-    const validation = validateTokenLimit(fullText, level as DifficultyLevel, 'ai');
+    // Use UnifiedValidator for comprehensive validation
+    const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
+    const validation = UnifiedValidator.validateContent(fullText, { mode: 'guest', level: validationLevel });
+    const tokenLimits = UnifiedValidator.getTokenLimits(validationLevel);
     
     return {
       isValid: validation.isValid,
-      tokenCount,
+      tokenCount: validation.metrics.tokenCount,
       wordCount,
-      maxTokens: validation.maxAllowed
+      maxTokens: tokenLimits.guestStory
     };
   };
 

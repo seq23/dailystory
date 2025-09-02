@@ -2,6 +2,7 @@
 // Integrates content filtering, token validation, and auto-pagination
 
 import { ContentSecurity } from './security';
+import { StoryQualityChecker } from './storyQualityChecker';
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
 // Import shared utilities for consistency with backend
 import { 
@@ -35,6 +36,12 @@ export interface ValidationResult {
     pageCount: number;
     contentAppropriate: boolean;
     vocabularyCompliance?: number;
+    qualityScore?: number;
+    qualityIssues?: Array<{
+      type: 'grammar' | 'flow' | 'structure' | 'readability';
+      severity: 'error' | 'warning' | 'info';
+      message: string;
+    }>;
   };
   hints?: string[];
 }
@@ -108,7 +115,9 @@ export class UnifiedValidator {
       tokenCount,
       pageCount,
       contentAppropriate: contentValidation.appropriate,
-      vocabularyCompliance: this.calculateVocabularyCompliance(totalContent, config.vocabularyIntegration)
+      vocabularyCompliance: this.calculateVocabularyCompliance(totalContent, config.vocabularyIntegration),
+      qualityScore: 0,
+      qualityIssues: []
     };
 
     // If content is inappropriate, reject immediately
@@ -121,12 +130,41 @@ export class UnifiedValidator {
       };
     }
 
-    // Mode-specific validation
+    // Add quality validation after content security but before token validation
+    const qualityCheck = this.validateStoryQuality(pages, config);
+    metrics.qualityScore = qualityCheck.score;
+    metrics.qualityIssues = qualityCheck.issues;
+
+    // Add quality issues to reasons if they affect validity
+    const qualityReasons = qualityCheck.issues
+      .filter(issue => issue.severity === 'error')
+      .map(issue => `Quality issue: ${issue.message}`);
+
+    const baseReasons = qualityReasons;
+
+    // Mode-specific validation with quality integration
     if (config.mode === 'guest') {
-      return this.validateGuestStory(pages, config, metrics);
+      return this.validateGuestStory(pages, config, metrics, baseReasons);
     } else {
-      return this.validateLivePage(pages, config, metrics);
+      return this.validateLivePage(pages, config, metrics, baseReasons);
     }
+  }
+
+  /**
+   * Validate story quality using StoryQualityChecker
+   */
+  private static validateStoryQuality(pages: string[], config: ValidationConfig) {
+    // Map validation level to difficulty for StoryQualityChecker
+    const difficultyMap = {
+      'Level0': 'beginner' as const,
+      'Level1': 'easy' as const, 
+      'Level2': 'medium' as const,
+      'Level3': 'hard' as const,
+      'Level4': 'expert' as const
+    };
+    
+    const difficulty = difficultyMap[config.level] || 'medium';
+    return StoryQualityChecker.checkStoryQuality(pages, difficulty);
   }
 
   /**
@@ -135,7 +173,8 @@ export class UnifiedValidator {
   private static validateGuestStory(
     pages: string[],
     config: ValidationConfig,
-    metrics: any
+    metrics: any,
+    baseReasons: string[] = []
   ): ValidationResult {
     const fullContent = pages.join(' ');
     
@@ -152,11 +191,11 @@ export class UnifiedValidator {
     // Business-Logic-Aware Page Count Validation (Option B)
     if (pageCount < 6) {
       // REJECT: Below business model cliff - user experience broken
-      return {
-        decision: 'RETRY_WITH_HINT',
-        isValid: false,
-        reasons: [`Story has ${pageCount} pages but needs at least 6 pages for business model (users see 6 pages)`],
-        metrics: { ...metrics, pageCount, expectedPages },
+        return {
+          decision: 'RETRY_WITH_HINT',
+          isValid: false,
+          reasons: [...baseReasons, `Story has ${pageCount} pages but needs at least 6 pages for business model (users see 6 pages)`],
+          metrics: { ...metrics, pageCount, expectedPages },
         hints: [
           `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
           'Create more story content with additional scenes and development',
@@ -205,7 +244,7 @@ export class UnifiedValidator {
         return {
           decision: 'RETRY_WITH_HINT',
           isValid: false,
-          reasons: [reason],
+          reasons: [...baseReasons, reason],
           metrics: {
             ...metrics,
             tokenCount: validationResult.tokenCount,
@@ -224,7 +263,7 @@ export class UnifiedValidator {
         return {
           decision: 'REPAIR',
           isValid: false,
-          reasons: [reason],
+          reasons: [...baseReasons, reason],
           metrics: {
             ...metrics,
             tokenCount: validationResult.tokenCount,
@@ -252,7 +291,7 @@ export class UnifiedValidator {
         decision: 'REPAIR_AND_SPLIT',
         isValid: true,
         content: splitPages,
-        reasons: [`Content auto-split to ${splitPages.length} pages (passed by: ${validationResult.passedBy})`],
+        reasons: [...baseReasons, `Content auto-split to ${splitPages.length} pages (passed by: ${validationResult.passedBy})`],
         metrics: {
           ...metrics,
           pageCount: splitPages.length,
@@ -267,7 +306,7 @@ export class UnifiedValidator {
       decision: 'ACCEPT',
       isValid: true,
       content: pages,
-      reasons: [`Guest story validation passed (passed by: ${validationResult.passedBy})`],
+      reasons: [...baseReasons, `Guest story validation passed (passed by: ${validationResult.passedBy})`],
       metrics: {
         ...metrics,
         tokenCount: validationResult.tokenCount,
@@ -283,7 +322,8 @@ export class UnifiedValidator {
   private static validateLivePage(
     pages: string[],
     config: ValidationConfig,
-    metrics: any
+    metrics: any,
+    baseReasons: string[] = []
   ): ValidationResult {
     // PHASE 4: Live service has no page expectations
     const expectedPages = getExpectedPagesForService('live', config.level); // Returns null
@@ -314,7 +354,7 @@ export class UnifiedValidator {
           return {
             decision: 'RETRY_WITH_HINT',
             isValid: false,
-            reasons: [reason],
+            reasons: [...baseReasons, reason],
             metrics: {
               ...metrics,
               tokenCount: validationResult.tokenCount,
@@ -331,7 +371,7 @@ export class UnifiedValidator {
           return {
             decision: 'REPAIR',
             isValid: false,
-            reasons: [reason],
+            reasons: [...baseReasons, reason],
             metrics: {
               ...metrics,
               tokenCount: validationResult.tokenCount,
@@ -351,7 +391,7 @@ export class UnifiedValidator {
         return {
           decision: 'REPAIR',
           isValid: false,
-          reasons: [`Live page is egregiously long (${validationResult.tokenCount} tokens > ${validationResult.maxAllowedTokens * 1.3})`],
+          reasons: [...baseReasons, `Live page is egregiously long (${validationResult.tokenCount} tokens > ${validationResult.maxAllowedTokens * 1.3})`],
           metrics: {
             ...metrics,
             tokenCount: validationResult.tokenCount,
@@ -371,7 +411,7 @@ export class UnifiedValidator {
         decision: 'ACCEPT',
         isValid: true,
         content: pages,
-        reasons: [`Live page validation passed (passed by: ${validationResult.passedBy})`],
+        reasons: [...baseReasons, `Live page validation passed (passed by: ${validationResult.passedBy})`],
         metrics: {
           ...metrics,
           tokenCount: validationResult.tokenCount,
@@ -397,7 +437,7 @@ export class UnifiedValidator {
       return {
         decision: 'REPAIR',
         isValid: false,
-        reasons,
+        reasons: [...baseReasons, ...reasons],
         metrics,
         hints: ['Adjust page content length', 'Redistribute content across pages']
       };
@@ -407,7 +447,7 @@ export class UnifiedValidator {
       decision: 'ACCEPT',
       isValid: true,
       content: pages,
-      reasons: ['Live multi-page validation passed'],
+      reasons: [...baseReasons, 'Live multi-page validation passed'],
       metrics
     };
   }
