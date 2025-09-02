@@ -113,6 +113,7 @@ export class NetflixStyleStoryService {
           UnifiedValidator.mapDifficultyToLevel(difficulty);
         
         console.log(`🎯 Netflix: Using validation level ${level} for ${expertGradeLevel || difficulty}`);
+        console.log(`📝 Netflix: Content before validation - ${cleanedPages.length} pages:`, cleanedPages.map((p, i) => `Page ${i+1}: ${p.substring(0, 100)}...`));
         
         const validationResult = UnifiedValidator.validateContent(cleanedPages, {
           mode: 'guest',
@@ -120,8 +121,18 @@ export class NetflixStyleStoryService {
           userLanguage: userInfo.nativeLanguage
         });
 
-        // Accept content based on unified validator decision
-        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
+        console.log(`🔍 Netflix: Validation complete - Decision: ${validationResult.decision}, Valid: ${validationResult.isValid}`);
+        console.log(`📊 Netflix: Full validation result:`, {
+          decision: validationResult.decision,
+          isValid: validationResult.isValid,
+          reasons: validationResult.reasons,
+          metrics: validationResult.metrics,
+          hasContent: !!validationResult.content,
+          contentLength: validationResult.content?.length || 0
+        });
+
+        // Accept content based on unified validator decision - include REPAIR decisions
+        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT' || validationResult.decision === 'REPAIR' || validationResult.isValid) {
           const finalContent = validationResult.content || cleanedPages;
           
           console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages (${validationResult.metrics.tokenCount} tokens)`);
@@ -142,12 +153,15 @@ export class NetflixStyleStoryService {
         }
 
         // Log validation failure details for debugging
-        console.log('📺 Netflix: AI generation validation failed');
-        console.log(`📊 Netflix: Validation details:`, {
+        console.log('❌ Netflix: AI generation validation REJECTED');
+        console.log(`📊 Netflix: Rejection details:`, {
           decision: validationResult.decision,
+          isValid: validationResult.isValid,
           reasons: validationResult.reasons,
-          metrics: validationResult.metrics
+          metrics: validationResult.metrics,
+          contentPreview: cleanedPages.map((p, i) => `Page ${i+1}: ${p.substring(0, 50)}...`)
         });
+        console.log('🔄 Netflix: Will attempt template fallback due to validation rejection');
       }
 
       // Debug validation failure details - Updated for UnifiedValidator
