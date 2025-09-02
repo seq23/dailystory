@@ -105,7 +105,7 @@ export interface TokenLimitConfig {
 
 // Token limits redirected to UnifiedValidator
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getTotalStoryTokensForGuests(difficulty); // For guest/Netflix stories (6 pages)
+  return getTotalStoryTokensForGuests(difficulty); // For guest/Netflix stories (full story)
 }
 
 // Token limits for SINGLE PAGE generation - redirects to UnifiedValidator
@@ -221,7 +221,7 @@ export function getRecommendedWordsForDifficulty(difficulty: DifficultyLevel | E
   return Math.floor(maxTokens * 0.75); // Conservative token-to-word conversion
 }
 
-// GUEST USER VALIDATION: Validate total 6-page story experience - Uses UnifiedValidator
+// GUEST USER VALIDATION: Validate full guest story experience - Uses UnifiedValidator
 export function validateGuestStoryTokens(text: string, difficulty: DifficultyLevel | ExpertGradeLevel): TokenValidationResult {
   const level = UnifiedValidator.mapDifficultyToLevel(difficulty);
   const result = UnifiedValidator.validateContent(text, { mode: 'guest', level });

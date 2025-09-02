@@ -169,7 +169,8 @@ export class UnifiedValidator {
     if (validationResult.tokenCount > validationResult.maxAllowedTokens) {
       console.log(`🔧 UnifiedValidator: Content exceeds token limit, attempting auto-split`);
       
-      const splitPages = sharedAutoSplitContent(fullContent, config.level, 6);
+      const expectedPages = getTokenLimitsForLevel(config.level).guestStory / getTokenLimitsForLevel(config.level).perPage;
+      const splitPages = sharedAutoSplitContent(fullContent, config.level, Math.ceil(expectedPages));
       
       return {
         decision: 'REPAIR_AND_SPLIT',
