@@ -17,6 +17,7 @@ import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { validatePageTokenDistribution, getTokenLimitForDifficulty, validateTokenLimit, estimateTokenCount } from '@/utils/tokenLimitValidator';
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
+import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
 // Robust word counting function
@@ -344,7 +345,9 @@ export function StoryPromptTester() {
         
         // Use actual page count from the response
         const actualPageCount = response.pageCount || response.pages?.length || 0;
-        result.pages = actualPageCount;
+        // Get expected pages using real session logic
+        const validationLevel = mapDifficultyToLevel(level as DifficultyLevel | ExpertGradeLevel);
+        result.pages = getExpectedPagesForLevel(validationLevel);
         result.actualPages = actualPageCount;
         
         // Enhanced logging for source detection debugging
