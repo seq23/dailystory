@@ -338,15 +338,10 @@ export function StoryPromptTester() {
         response = await NetflixStyleStoryService.generateStory(userInfo);
         result.source = response.source || 'unknown';
         
-        // Use expected pages from validation config instead of failed response count
-        const expectedPages = (() => {
-          if (level.includes('grade') || level.includes('th')) {
-            return 8; // Expert grades get 8 pages
-          }
-          return 10; // Basic levels get 10 pages
-        })();
-        result.pages = expectedPages;
-        result.actualPages = response.pageCount || response.pages?.length || 0;
+        // Use actual page count from the response
+        const actualPageCount = response.pageCount || response.pages?.length || 0;
+        result.pages = actualPageCount;
+        result.actualPages = actualPageCount;
         
         // Enhanced logging for source detection debugging
         console.log(`🔍 [TEST-DEBUG] Netflix Service Result for ${level}:`, {
