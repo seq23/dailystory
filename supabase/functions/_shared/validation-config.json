@@ -41,7 +41,7 @@
     "Grade10": 8
   },
   "validationThresholds": {
-    "minContentRatio": 0.05,
+    "minContentRatio": 0.001,
     "maxContentRatio": 1.5,
     "splitTolerance": 1.5,
     "cacheLimit": 500

@@ -129,7 +129,7 @@ CRITICAL OUTPUT FORMAT:
 SENTENCE CONSTRUCTION:
 - Use 4-5 sentences per page
 - 5-12 word sentences (max 15 words)
-- 50-70 words per page total
+- 50-70 words per page total - allow natural variation for storytelling flow
 - Mix simple and compound sentences
 - Use descriptive language and varied sentence beginnings
 
@@ -166,7 +166,7 @@ CRITICAL OUTPUT FORMAT:
 SENTENCE CONSTRUCTION:
 - Natural sentence flow without rigid page requirements
 - Varied sentence lengths (max 20 words)
-- 80-120 words per page total
+- 80-120 words per page total - allow natural variation for storytelling flow
 - Complex sentences with dependent clauses
 - Descriptive language and sophisticated vocabulary
 
@@ -203,7 +203,7 @@ CRITICAL OUTPUT FORMAT:
 SENTENCE CONSTRUCTION:
 - Natural sophisticated flow without rigid page requirements
 - Sophisticated sentence structures with multiple clauses
-- 120-200 words per page total
+- 120-200 words per page total - allow natural variation for storytelling flow
 - Literary devices and advanced vocabulary
 - Nuanced character development
 
@@ -256,7 +256,7 @@ FORMAT:
 - Natural sentence flow without rigid page requirements
 - Foundational complex sentence structures and literary vocabulary
 - Focus on character development and thematic exploration appropriate for 6th grade readers
-- Target 200-400 words per page
+- Target 200-400 words per page - allow natural variation for storytelling flow
 
 Maximum 500 tokens per page. Target 200-400 words per page.
 
@@ -291,7 +291,7 @@ FORMAT:
 - Natural sentence flow without rigid page requirements
 - Increasingly sophisticated sentence structures and varied literary techniques
 - Develop complex themes and character relationships appropriate for 7th grade readers
-- Target 200-400 words per page
+- Target 200-400 words per page - allow natural variation for storytelling flow
 
 Maximum 500 tokens per page. Target 200-400 words per page.
 
@@ -326,7 +326,7 @@ FORMAT:
 - Natural sentence flow without rigid page requirements
 - Advanced grammatical structures, literary devices, and nuanced vocabulary
 - Explore mature themes with intellectual depth appropriate for 8th grade readers
-- Target 200-400 words per page
+- Target 200-400 words per page - allow natural variation for storytelling flow
 
 Maximum 500 tokens per page. Target 200-400 words per page.
 
@@ -361,7 +361,7 @@ FORMAT:
 - Natural sentence flow without rigid page requirements
 - Sophisticated prose, complex syntactic structures, and rich literary language
 - Develop intricate thematic content and psychological depth appropriate for 9th grade readers
-- Target 200-400 words per page
+- Target 200-400 words per page - allow natural variation for storytelling flow
 
 Maximum 500 tokens per page. Target 200-400 words per page.
 
@@ -396,7 +396,7 @@ FORMAT:
 - Natural sentence flow without rigid page requirements
 - Masterful prose, intricate sentence construction, and elevated literary language
 - Develop complex philosophical themes and profound character depth appropriate for 10th grade readers
-- Target 200-400 words per page
+- Target 200-400 words per page - allow natural variation for storytelling flow
 
 Maximum 500 tokens per page. Target 200-400 words per page.
 
