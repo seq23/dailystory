@@ -24,7 +24,7 @@ export function BasicLevelTestRunner() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const basicLevels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard'];
+  const difficultyLevels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
 
   const createTestUser = (level: DifficultyLevel): UserInfo => {
     const configs = {
@@ -63,8 +63,8 @@ export function BasicLevelTestRunner() {
 
     const testResults: BasicTestResult[] = [];
 
-    for (let i = 0; i < basicLevels.length; i++) {
-      const level = basicLevels[i];
+    for (let i = 0; i < difficultyLevels.length; i++) {
+      const level = difficultyLevels[i];
       const testUser = createTestUser(level);
       const [minPages, maxPages] = getExpectedPageRange(level);
       
@@ -107,7 +107,7 @@ export function BasicLevelTestRunner() {
         });
       }
 
-      setProgress(((i + 1) / basicLevels.length) * 100);
+      setProgress(((i + 1) / difficultyLevels.length) * 100);
       setResults([...testResults]);
     }
 
@@ -123,10 +123,10 @@ export function BasicLevelTestRunner() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <GraduationCap className="w-5 h-5" />
-          Basic Level Test (10 Pages)
+          Basic Level Test (8 Pages)
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Tests basic difficulty levels (Beginner → Hard) to verify 10-page generation
+          Tests basic difficulty levels (Beginner → Expert) to verify 8-page generation
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -189,7 +189,7 @@ export function BasicLevelTestRunner() {
           <div className="mt-4 p-4 bg-muted rounded-lg">
             <h4 className="font-semibold mb-2">Summary:</h4>
             <ul className="text-sm space-y-1">
-              <li>Total Tests: {results.length}/4</li>
+              <li>Total Tests: {results.length}/5</li>
               <li>Success Rate: {results.filter(r => r.success).length}/{results.length}</li>
               <li>Page Range Success: {results.filter(r => r.pagesInRange).length}/{results.length}</li>
               <li>Average Pages: {averagePages.toFixed(1)} (Target: 9-11)</li>

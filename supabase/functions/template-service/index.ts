@@ -20,21 +20,21 @@ interface TokenLimitConfig {
 
 // Bulletproof token limits matching exact system prompt values
 const TOKEN_LIMITS: Record<string, TokenLimitConfig> = {
-  beginner: { difficulty: 'beginner', expectedPages: 10, tokensPerPage: 15 },
-  easy: { difficulty: 'easy', expectedPages: 10, tokensPerPage: 32 },
-  medium: { difficulty: 'medium', expectedPages: 10, tokensPerPage: 150 },
-  hard: { difficulty: 'hard', expectedPages: 10, tokensPerPage: 200 },
-  expert: { difficulty: 'expert', expectedPages: 10, tokensPerPage: 500 },
-  grade6: { difficulty: 'grade6', expectedPages: 12, tokensPerPage: 500 },
-  grade7: { difficulty: 'grade7', expectedPages: 12, tokensPerPage: 500 },
-  grade8: { difficulty: 'grade8', expectedPages: 12, tokensPerPage: 500 },
-  grade9: { difficulty: 'grade9', expectedPages: 12, tokensPerPage: 500 },
-  grade10: { difficulty: 'grade10', expectedPages: 12, tokensPerPage: 500 }
+  beginner: { difficulty: 'beginner', expectedPages: 8, tokensPerPage: 15 },
+  easy: { difficulty: 'easy', expectedPages: 8, tokensPerPage: 32 },
+  medium: { difficulty: 'medium', expectedPages: 8, tokensPerPage: 150 },
+  hard: { difficulty: 'hard', expectedPages: 8, tokensPerPage: 200 },
+  expert: { difficulty: 'expert', expectedPages: 8, tokensPerPage: 500 },
+  grade6: { difficulty: 'grade6', expectedPages: 8, tokensPerPage: 500 },
+  grade7: { difficulty: 'grade7', expectedPages: 8, tokensPerPage: 500 },
+  grade8: { difficulty: 'grade8', expectedPages: 8, tokensPerPage: 500 },
+  grade9: { difficulty: 'grade9', expectedPages: 8, tokensPerPage: 500 },
+  grade10: { difficulty: 'grade10', expectedPages: 8, tokensPerPage: 500 }
 };
 
 // Get expected page count for difficulty level
 function getExpectedPageCountForDifficulty(difficulty: string): number {
-  return TOKEN_LIMITS[difficulty]?.expectedPages || 5;
+  return TOKEN_LIMITS[difficulty]?.expectedPages || 8;
 }
 
 function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount: number = 5): string[] {

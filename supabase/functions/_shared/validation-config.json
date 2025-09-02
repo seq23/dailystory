@@ -29,11 +29,11 @@
     "grade10": "Grade10"
   },
   "pageExpectations": {
-    "Level0": 10,
-    "Level1": 10,
-    "Level2": 10,
-    "Level3": 10,
-    "Level4": 10,
+    "Level0": 8,
+    "Level1": 8,
+    "Level2": 8,
+    "Level3": 8,
+    "Level4": 8,
     "Grade6": 8,
     "Grade7": 8,
     "Grade8": 8,

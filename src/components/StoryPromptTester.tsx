@@ -430,10 +430,10 @@ export function StoryPromptTester() {
       result.success = true;
       
       // Use proper token validation with the full content
-      const tokenAnalysis = analyzeTokenLimits(result.fullContent || [], level);
-      result.withinTokenLimits = tokenAnalysis.isValid;
-      result.tokenCount = tokenAnalysis.tokenCount;
-      result.maxTokensAllowed = tokenAnalysis.maxTokens;
+      const tokenValidation = validatePageTokenDistribution(result.fullContent || [], level as DifficultyLevel);
+      result.withinTokenLimits = tokenValidation.isValid;
+      result.tokenCount = tokenValidation.actualTokens || 0;
+      result.maxTokensAllowed = tokenValidation.maxAllowed || 0;
       
       // Performance optimized validation - check cache first
       if (result.fullContent && result.fullContent.length > 0) {
