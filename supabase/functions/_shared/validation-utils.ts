@@ -65,8 +65,9 @@ export function getTokenLimitsForLevel(level: ValidationLevel) {
       perPageTokens = extractTokenLimitFromPrompt(prompt.systemPrompt);
     }
     
-    // Calculate guest story tokens (6 pages)
-    const guestStoryTokens = perPageTokens * 6;
+    // Calculate guest story tokens using expected pages for level
+    const expectedPages = getExpectedPagesForLevel(level);
+    const guestStoryTokens = perPageTokens * expectedPages;
     
     console.log(`✅ Dynamic token extraction for ${level} (${difficulty}): ${perPageTokens} per page, ${guestStoryTokens} guest story`);
     
@@ -370,10 +371,9 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   const minTokens = Math.floor(maxTokens * validationConfig.validationThresholds.minContentRatio);
   const maxTokensWithTolerance = maxTokens * validationConfig.validationThresholds.splitTolerance;
   
-  // For live pages, use per-page character limits (divide by expected pages for single page)
-  const expectedPages = getExpectedPagesForLevel(level);
-  const minCharsPerPage = Math.floor(characterLimits.minChars / expectedPages);
-  const maxCharsPerPage = Math.floor(characterLimits.maxChars / expectedPages);
+  // For live pages, use direct per-page character limits (no story-level calculations)
+  const minCharsPerPage = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
+  const maxCharsPerPage = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
   
   // Enhanced logging for debugging
   console.log(`🔍 [VALIDATION-DEBUG] Live page dual validation for ${level}:`, {
