@@ -38,12 +38,12 @@ export function TemplateSystemMonitor() {
       const validationMetrics = TemplateValidationService.getValidationMetrics();
 
       setMonitoringData({
-        systemHealth: report.summary,
-        templateRankings: report.topPerformingTemplates,
-        problematicTemplates: report.problematicTemplates,
-        placeholderIssues: report.placeholderIssues,
-        alerts,
-        validationMetrics
+        systemHealth: report.summary || { recommendations: [] },
+        templateRankings: report.topPerformingTemplates || [],
+        problematicTemplates: report.problematicTemplates || [],
+        placeholderIssues: report.placeholderIssues || [],
+        alerts: alerts || [],
+        validationMetrics: validationMetrics || { commonErrors: [] }
       });
     } catch (error) {
       console.error('Error refreshing monitoring data:', error);
@@ -117,7 +117,7 @@ export function TemplateSystemMonitor() {
       </div>
 
       {/* Critical Alerts */}
-      {monitoringData.alerts.length > 0 && (
+      {monitoringData.alerts && monitoringData.alerts.length > 0 && (
         <div className="space-y-2">
           {monitoringData.alerts.map((alert, index) => (
             <Alert key={index} className="border-l-4 border-l-red-500">
@@ -226,7 +226,7 @@ export function TemplateSystemMonitor() {
                 <CardTitle>Top Performing Templates</CardTitle>
               </CardHeader>
               <CardContent>
-                {monitoringData.templateRankings.length > 0 ? (
+                {monitoringData.templateRankings && monitoringData.templateRankings.length > 0 ? (
                   <div className="space-y-2">
                     {monitoringData.templateRankings.slice(0, 5).map((template, index) => (
                       <div key={index} className="flex items-center justify-between p-2 border rounded">
@@ -261,7 +261,7 @@ export function TemplateSystemMonitor() {
                 <CardTitle>Templates Needing Attention</CardTitle>
               </CardHeader>
               <CardContent>
-                {monitoringData.problematicTemplates.length > 0 ? (
+                {monitoringData.problematicTemplates && monitoringData.problematicTemplates.length > 0 ? (
                   <div className="space-y-2">
                     {monitoringData.problematicTemplates.slice(0, 5).map((template, index) => (
                       <div key={index} className="flex items-center justify-between p-2 border rounded border-red-200">
@@ -298,7 +298,7 @@ export function TemplateSystemMonitor() {
               <CardTitle>Placeholder Resolution Issues</CardTitle>
             </CardHeader>
             <CardContent>
-              {monitoringData.placeholderIssues.length > 0 ? (
+              {monitoringData.placeholderIssues && monitoringData.placeholderIssues.length > 0 ? (
                 <div className="space-y-3">
                   {monitoringData.placeholderIssues.map((placeholder, index) => (
                     <div key={index} className="p-3 border rounded border-yellow-200">
@@ -311,7 +311,7 @@ export function TemplateSystemMonitor() {
                       <div className="text-sm text-muted-foreground mt-1">
                         {placeholder.failureCount} failures recorded
                       </div>
-                      {placeholder.commonFailureReasons.length > 0 && (
+                      {placeholder.commonFailureReasons && placeholder.commonFailureReasons.length > 0 && (
                         <div className="text-xs text-red-600 mt-1">
                           Common issues: {placeholder.commonFailureReasons.join(', ')}
                         </div>
@@ -349,7 +349,7 @@ export function TemplateSystemMonitor() {
                 </div>
               </div>
 
-              {monitoringData.validationMetrics.commonErrors.length > 0 && (
+              {monitoringData.validationMetrics.commonErrors && monitoringData.validationMetrics.commonErrors.length > 0 && (
                 <div className="mt-4">
                   <div className="text-sm font-medium mb-2">Common Validation Errors</div>
                   <div className="space-y-1">
@@ -368,7 +368,7 @@ export function TemplateSystemMonitor() {
       </Tabs>
 
       {/* Recommendations */}
-      {monitoringData.systemHealth.recommendations.length > 0 && (
+      {monitoringData.systemHealth.recommendations && monitoringData.systemHealth.recommendations.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>System Recommendations</CardTitle>
