@@ -3093,17 +3093,20 @@ const handleRestartTimer = () => {
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
                   <p className="text-sm text-muted-foreground text-center min-w-[96px]">
-                    {(() => {
-                      const endingPageCount = (window as any).__endingPageCount__;
-                      const firstEndingPageIndex = (window as any).__firstEndingPageIndex__;
-                      const isViewingEnding = endingPageCount && firstEndingPageIndex !== undefined && 
-                                            currentPage >= firstEndingPageIndex && 
-                                            currentPage <= firstEndingPageIndex + endingPageCount - 1;
-                      
-                      return isViewingEnding 
-                        ? `Page ${currentPage + 1} - This ending has ${endingPageCount} pages!`
-                        : `Page ${currentPage + 1}`;
-                    })()}
+                     {(() => {
+                       const endingPageCount = (window as any).__endingPageCount__;
+                       const firstEndingPageIndex = (window as any).__firstEndingPageIndex__;
+                       const isViewingEnding = endingPageCount && firstEndingPageIndex !== undefined && 
+                                             currentPage >= firstEndingPageIndex && 
+                                             currentPage <= firstEndingPageIndex + endingPageCount - 1;
+                       
+                       if (isViewingEnding) {
+                         const currentEndingPageNumber = currentPage - firstEndingPageIndex + 1;
+                         return `Page ${currentPage + 1} - Ending Page ${currentEndingPageNumber} of ${endingPageCount}`;
+                       }
+                       
+                       return `Page ${currentPage + 1}`;
+                     })()}
                   </p>
                   <Button
                     id="reader-next"
