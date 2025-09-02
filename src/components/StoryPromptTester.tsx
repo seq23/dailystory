@@ -18,6 +18,7 @@ import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { validatePageTokenDistribution, getTokenLimitForDifficulty, validateTokenLimit, estimateTokenCount } from '@/utils/tokenLimitValidator';
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
+import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
 // Robust word counting function
@@ -311,14 +312,10 @@ export function StoryPromptTester() {
       let response: any = null;
       result.generationPath = [`Starting ${service} service test`];
 
-      // Add timeout for long-running tests (30 seconds)
-      let timeoutHandle: NodeJS.Timeout;
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutHandle = setTimeout(() => {
-          reject(new Error(`Test timeout after 30 seconds for ${level} ${service}`));
-        }, 30000);
-        testTimeouts.set(testKey, timeoutHandle);
-      });
+      // Use real user timeout configuration with retries and delays
+      const testWithTimeout = async (operation: () => Promise<any>) => {
+        return withTimeout(operation, TIMEOUT_CONFIGS.STORY_GENERATION);
+      };
 
       // Add detailed debugging for medium and hard levels
       if (level === 'medium' || level === 'hard') {
@@ -337,10 +334,7 @@ export function StoryPromptTester() {
 
       if (service === 'netflix') {
         result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
-        response = await Promise.race([
-          NetflixStyleStoryService.generateStory(userInfo),
-          timeoutPromise
-        ]);
+        response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(userInfo));
         result.source = response.source || 'unknown';
         
         // Use actual page count from the response
@@ -379,10 +373,7 @@ export function StoryPromptTester() {
         
       } else if (service === 'live') {
         result.generationPath.push('Calling LiveGenerationService.generateFirstPage()');
-        response = await Promise.race([
-          LiveGenerationService.generateFirstPage(userInfo),
-          timeoutPromise
-        ]);
+        response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(userInfo));
         
         // Check global source tracking
         const globalSource = (globalThis as any).__LAST_PAGE_SOURCE__;
@@ -415,10 +406,7 @@ export function StoryPromptTester() {
         
       } else if (service === 'template') {
         result.generationPath.push('Calling template service directly');
-        response = await Promise.race([
-          templateService.generateStory(userInfo, 'testing'),
-          timeoutPromise
-        ]);
+        response = await testWithTimeout(() => templateService.generateStory(userInfo, 'testing'));
         result.source = response.success ? 'fallback' : 'emergency'; // Templates are fallback, emergency if they fail
         result.pages = response.pageCount || response.pages?.length || 0;
         
