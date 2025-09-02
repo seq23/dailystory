@@ -94,8 +94,11 @@ const VERB_CONJUGATION_FIXES = [
 const SENTENCE_STRUCTURE_FIXES = [
   // Fix run-on sentences
   { pattern: /([.!?])\s*([a-z])/g, replacement: '$1 $2'.toUpperCase() },
-  // Fix capitalization after punctuation
-  { pattern: /([.!?])\s+([a-z])/g, replacement: (match: string, punct: string, letter: string) => `${punct} ${letter.toUpperCase()}` },
+  // Fix capitalization after punctuation - using function replacement
+  { 
+    pattern: /([.!?])\s+([a-z])/g, 
+    replacement: (match: string, punct: string, letter: string) => `${punct} ${letter.toUpperCase()}` 
+  },
   // Fix double punctuation
   { pattern: /[.]{2,}/g, replacement: '.' },
   { pattern: /[,]{2,}/g, replacement: ',' },
@@ -165,7 +168,11 @@ function applySentenceStructureFixes(text: string): string {
   let result = text;
   
   for (const fix of SENTENCE_STRUCTURE_FIXES) {
-    result = result.replace(fix.pattern, fix.replacement);
+    if (typeof fix.replacement === 'function') {
+      result = result.replace(fix.pattern, fix.replacement);
+    } else {
+      result = result.replace(fix.pattern, fix.replacement);
+    }
   }
   
   return result;

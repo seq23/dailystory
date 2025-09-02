@@ -63,7 +63,7 @@ interface TestResult {
   generationPath?: string[];
   emergencyContentUsed?: boolean;
   // Enhanced validation fields
-  placeholderValidation?: import('@/utils/placeholderValidator').PlaceholderValidationResult;
+  placeholderValidation?: import('@/utils/enhancedPlaceholderValidator').PlaceholderValidationResult;
   contentIssues?: string[];
   tokenValidation?: any;
   hasEmptyContent?: boolean;
