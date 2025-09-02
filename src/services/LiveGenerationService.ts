@@ -140,44 +140,64 @@ export class LiveGenerationService {
       } else if (validationResult.decision === 'RETRY_WITH_HINT') {
         console.log('🔄 Live Generation: Content needs complete regeneration with hints');
         
-        const { HintRegenerationService } = await import('./hintRegenerationService');
-        
-        const regenerationResult = await HintRegenerationService.regenerateWithHints({
-          userInfo,
-          difficulty,
-          hints: validationResult.hints || [],
-          failureReasons: validationResult.reasons,
-          sessionType: 'live',
-          pageNumber: 1
-        });
+        let regenerationResult;
+        try {
+          const { HintRegenerationService } = await import('./hintRegenerationService');
+          regenerationResult = await HintRegenerationService.regenerateWithHints({
+            userInfo,
+            difficulty,
+            hints: validationResult.hints || [],
+            failureReasons: validationResult.reasons,
+            sessionType: 'live',
+            pageNumber: 1
+          });
+        } catch (importError) {
+          console.error('❌ Live Generation: Failed to import HintRegenerationService:', importError);
+          return this.generateFallbackFirstPage(userInfo, difficulty, 'hint_regeneration_import_failed');
+        }
 
         if (regenerationResult.success && regenerationResult.content) {
           console.log(`✅ Live Generation: Regeneration successful after ${regenerationResult.attempts} attempts`);
           
-          const finalContent = regenerationResult.content[0] || content;
+          // CRITICAL SECURITY: Re-validate regenerated content to prevent infinite loops
+          console.log('🔒 Live Generation: Re-validating regenerated content for security');
+          const reValidationResult = UnifiedValidator.validateContent(regenerationResult.content[0], {
+            mode: 'live',
+            level,
+            userLanguage: userInfo.nativeLanguage
+          });
           
-          const context: LiveGenerationContext = {
-            userInfo,
-            difficulty,
-            expertGradeLevel,
-            storyContext: [finalContent],
-            currentPage: 1,
-            totalExpectedPages: 999,
-            characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
-          };
+          if (reValidationResult.decision === 'ACCEPT' || reValidationResult.decision === 'REPAIR_AND_SPLIT') {
+            console.log('✅ Live Generation: Regenerated content passed re-validation');
+            
+            const finalContent = reValidationResult.content?.[0] || regenerationResult.content[0] || content;
+            
+            const context: LiveGenerationContext = {
+              userInfo,
+              difficulty,
+              expertGradeLevel,
+              storyContext: [finalContent],
+              currentPage: 1,
+              totalExpectedPages: 999,
+              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+            };
 
-          try {
-            (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
-            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-          } catch {}
+            try {
+              (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+            } catch {}
 
-          window.dispatchEvent(new CustomEvent('story:generation:complete'));
-          
-          return {
-            content: finalContent,
-            isComplete: false,
-            nextContext: context
-          };
+            window.dispatchEvent(new CustomEvent('story:generation:complete'));
+            
+            return {
+              content: finalContent,
+              isComplete: false,
+              nextContext: context
+            };
+          } else {
+            console.log('❌ Live Generation: Regenerated content failed re-validation - using fallback');
+            return this.generateFallbackFirstPage(userInfo, difficulty, 'regeneration_revalidation_failed');
+          }
         } else {
           console.log(`❌ Live Generation: Regeneration failed after ${regenerationResult.attempts} attempts: ${regenerationResult.error}`);
           return this.generateFallbackFirstPage(userInfo, difficulty, 'regeneration_failed');
@@ -185,41 +205,63 @@ export class LiveGenerationService {
       } else if (validationResult.decision === 'REPAIR') {
         console.log('🔧 Live Generation: Content needs repair - attempting AI repair');
         
-        const repairResult = await RepairService.repairContent({
-          originalContent: [content],
-          repairReasons: validationResult.reasons,
-          hints: validationResult.hints,
-          userInfo,
-          difficulty
-        });
+        let repairResult;
+        try {
+          const { RepairService } = await import('./repairService');
+          repairResult = await RepairService.repairContent({
+            originalContent: [content],
+            repairReasons: validationResult.reasons,
+            hints: validationResult.hints,
+            userInfo,
+            difficulty
+          });
+        } catch (importError) {
+          console.error('❌ Live Generation: Failed to import RepairService:', importError);
+          return this.generateFallbackFirstPage(userInfo, difficulty, 'repair_import_failed');
+        }
 
         if (repairResult.success && repairResult.repairedContent) {
           console.log(`✅ Live Generation: Repair successful after ${repairResult.attempts} attempts`);
           
-          const finalContent = repairResult.repairedContent[0] || content;
+          // CRITICAL SECURITY: Re-validate repaired content to prevent infinite loops
+          console.log('🔒 Live Generation: Re-validating repaired content for security');
+          const reValidationResult = UnifiedValidator.validateContent(repairResult.repairedContent[0], {
+            mode: 'live',
+            level,
+            userLanguage: userInfo.nativeLanguage
+          });
           
-          const context: LiveGenerationContext = {
-            userInfo,
-            difficulty,
-            expertGradeLevel,
-            storyContext: [finalContent],
-            currentPage: 1,
-            totalExpectedPages: 999,
-            characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
-          };
+          if (reValidationResult.decision === 'ACCEPT' || reValidationResult.decision === 'REPAIR_AND_SPLIT') {
+            console.log('✅ Live Generation: Repaired content passed re-validation');
+            
+            const finalContent = reValidationResult.content?.[0] || repairResult.repairedContent[0] || content;
+            
+            const context: LiveGenerationContext = {
+              userInfo,
+              difficulty,
+              expertGradeLevel,
+              storyContext: [finalContent],
+              currentPage: 1,
+              totalExpectedPages: 999,
+              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+            };
 
-          try {
-            (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
-            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-          } catch {}
+            try {
+              (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+            } catch {}
 
-          window.dispatchEvent(new CustomEvent('story:generation:complete'));
-          
-          return {
-            content: finalContent,
-            isComplete: false,
-            nextContext: context
-          };
+            window.dispatchEvent(new CustomEvent('story:generation:complete'));
+            
+            return {
+              content: finalContent,
+              isComplete: false,
+              nextContext: context
+            };
+          } else {
+            console.log('❌ Live Generation: Repaired content failed re-validation - using fallback');
+            return this.generateFallbackFirstPage(userInfo, difficulty, 'repair_revalidation_failed');
+          }
         } else {
           console.log(`❌ Live Generation: Repair failed after ${repairResult.attempts} attempts: ${repairResult.error}`);
           return this.generateFallbackFirstPage(userInfo, difficulty, 'repair_failed');
@@ -310,36 +352,56 @@ export class LiveGenerationService {
       } else if (validationResult.decision === 'RETRY_WITH_HINT') {
         console.log('🔄 Live Generation Next Page: Content needs complete regeneration with hints');
         
-        const { HintRegenerationService } = await import('./hintRegenerationService');
-        
-        const regenerationResult = await HintRegenerationService.regenerateWithHints({
-          userInfo: context.userInfo,
-          difficulty: context.difficulty,
-          hints: validationResult.hints || [],
-          failureReasons: validationResult.reasons,
-          sessionType: 'live',
-          pageNumber: nextPageNumber,
-          existingStory: context.storyContext?.join(' ')
-        });
+        let regenerationResult;
+        try {
+          const { HintRegenerationService } = await import('./hintRegenerationService');
+          regenerationResult = await HintRegenerationService.regenerateWithHints({
+            userInfo: context.userInfo,
+            difficulty: context.difficulty,
+            hints: validationResult.hints || [],
+            failureReasons: validationResult.reasons,
+            sessionType: 'live',
+            pageNumber: nextPageNumber,
+            existingStory: context.storyContext?.join(' ')
+          });
+        } catch (importError) {
+          console.error('❌ Live Generation Next Page: Failed to import HintRegenerationService:', importError);
+          return this.generateFallbackNextPage(context, nextPageNumber, 'hint_regeneration_import_failed', userRequestedEnding);
+        }
 
         if (regenerationResult.success && regenerationResult.content) {
           console.log(`✅ Live Generation: Next page regeneration successful after ${regenerationResult.attempts} attempts`);
           
-          const finalContent = regenerationResult.content[0] || content;
+          // CRITICAL SECURITY: Re-validate next page regenerated content to prevent infinite loops
+          console.log('🔒 Live Generation Next Page: Re-validating regenerated content for security');
+          const reValidationResult = UnifiedValidator.validateContent(regenerationResult.content[0], {
+            mode: 'live',
+            level,
+            userLanguage: context.userInfo.nativeLanguage
+          });
           
-          const updatedContext: LiveGenerationContext = {
-            ...context,
-            storyContext: [...(context.storyContext || []), finalContent],
-            currentPage: nextPageNumber,
-            totalExpectedPages: Math.max(context.totalExpectedPages, nextPageNumber + 1),
-            characters: context.characters
-          };
+          if (reValidationResult.decision === 'ACCEPT' || reValidationResult.decision === 'REPAIR_AND_SPLIT') {
+            console.log('✅ Live Generation Next Page: Regenerated content passed re-validation');
+            
+            const finalContent = reValidationResult.content?.[0] || regenerationResult.content[0] || content;
+            
+            const updatedContext: LiveGenerationContext = {
+              ...context,
+              storyContext: [...(context.storyContext || []), finalContent],
+              currentPage: nextPageNumber,
+              totalExpectedPages: Math.max(context.totalExpectedPages, nextPageNumber + 1),
+              characters: context.characters
+            };
 
-          return {
-            content: finalContent,
-            isComplete: false,
-            nextContext: updatedContext
-          };
+            return {
+              content: finalContent,
+              isComplete: false,
+              nextContext: updatedContext
+            };
+          } else {
+            console.log('❌ Live Generation Next Page: Regenerated content failed re-validation - using fallback');
+            return this.generateFallbackNextPage(context, nextPageNumber, 'regeneration_revalidation_failed', userRequestedEnding);
+          }
         } else {
           console.log(`❌ Live Generation: Next page regeneration failed: ${regenerationResult.error}`);
           return this.generateFallbackNextPage(context, nextPageNumber, 'regeneration_failed', userRequestedEnding);
@@ -347,32 +409,54 @@ export class LiveGenerationService {
       } else if (validationResult.decision === 'REPAIR') {
         console.log('🔧 Live Generation Next Page: Content needs repair - attempting AI repair');
         
-        const repairResult = await RepairService.repairContent({
-          originalContent: [content],
-          repairReasons: validationResult.reasons,
-          hints: validationResult.hints,
-          userInfo: context.userInfo,
-          difficulty: context.difficulty
-        });
+        let repairResult;
+        try {
+          const { RepairService } = await import('./repairService');
+          repairResult = await RepairService.repairContent({
+            originalContent: [content],
+            repairReasons: validationResult.reasons,
+            hints: validationResult.hints,
+            userInfo: context.userInfo,
+            difficulty: context.difficulty
+          });
+        } catch (importError) {
+          console.error('❌ Live Generation Next Page: Failed to import RepairService:', importError);
+          return this.generateFallbackNextPage(context, nextPageNumber, 'repair_import_failed', userRequestedEnding);
+        }
 
         if (repairResult.success && repairResult.repairedContent) {
           console.log(`✅ Live Generation: Next page repair successful after ${repairResult.attempts} attempts`);
           
-          const finalContent = repairResult.repairedContent[0] || content;
+          // CRITICAL SECURITY: Re-validate next page repaired content to prevent infinite loops
+          console.log('🔒 Live Generation Next Page: Re-validating repaired content for security');
+          const reValidationResult = UnifiedValidator.validateContent(repairResult.repairedContent[0], {
+            mode: 'live',
+            level,
+            userLanguage: context.userInfo.nativeLanguage
+          });
           
-          const updatedContext: LiveGenerationContext = {
-            ...context,
-            storyContext: [...(context.storyContext || []), finalContent],
-            currentPage: nextPageNumber,
-            totalExpectedPages: Math.max(context.totalExpectedPages, nextPageNumber + 1),
-            characters: context.characters
-          };
+          if (reValidationResult.decision === 'ACCEPT' || reValidationResult.decision === 'REPAIR_AND_SPLIT') {
+            console.log('✅ Live Generation Next Page: Repaired content passed re-validation');
+            
+            const finalContent = reValidationResult.content?.[0] || repairResult.repairedContent[0] || content;
+            
+            const updatedContext: LiveGenerationContext = {
+              ...context,
+              storyContext: [...(context.storyContext || []), finalContent],
+              currentPage: nextPageNumber,
+              totalExpectedPages: Math.max(context.totalExpectedPages, nextPageNumber + 1),
+              characters: context.characters
+            };
 
-          return {
-            content: finalContent,
-            isComplete: false,
-            nextContext: updatedContext
-          };
+            return {
+              content: finalContent,
+              isComplete: false,
+              nextContext: updatedContext
+            };
+          } else {
+            console.log('❌ Live Generation Next Page: Repaired content failed re-validation - using fallback');
+            return this.generateFallbackNextPage(context, nextPageNumber, 'repair_revalidation_failed', userRequestedEnding);
+          }
         } else {
           console.log(`❌ Live Generation: Next page repair failed: ${repairResult.error}`);
           return this.generateFallbackNextPage(context, nextPageNumber, 'repair_failed', userRequestedEnding);

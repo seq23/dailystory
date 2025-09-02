@@ -25,9 +25,13 @@ interface StreamlinedBundle {
 }
 
 interface StreamlinedConfig {
-  sessionType: 'free' | 'premium';
+  sessionType: 'free' | 'premium' | 'repair';
   pageNumber: number;
   existingStory?: string;
+  // Repair-specific configuration
+  repairAttempt?: number;
+  originalContent?: string[];
+  repairReasons?: string[];
 }
 
 // Hair color mapping for English speakers only (moved from main handler)
@@ -52,8 +56,19 @@ export async function handleStreamlinedGeneration(requestBody: any) {
   console.log('🔍 STREAMLINED: Config received:', {
     expertGradeLevel: config.expertGradeLevel,
     difficulty: config.difficulty,
-    gradeLevel: bundle.systemSettings.gradeLevel
+    gradeLevel: bundle.systemSettings.gradeLevel,
+    sessionType: config.sessionType,
+    isRepairMode: config.sessionType === 'repair'
   });
+  
+  // Handle repair mode with special processing
+  if (config.sessionType === 'repair') {
+    console.log('🔧 STREAMLINED: REPAIR MODE detected:', {
+      attempt: config.repairAttempt || 1,
+      hasOriginalContent: !!(config.originalContent && config.originalContent.length > 0),
+      hasRepairReasons: !!(config.repairReasons && config.repairReasons.length > 0)
+    });
+  }
   
   // PHASE 1: API Key Validation
   const apiKey = Deno.env.get('OPENAI_API_KEY');
@@ -137,9 +152,36 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     }
 
     // Bundle already contains resolved natural language - use directly
+    let finalSystemPrompt = promptConfig.systemPrompt;
+    let finalUserPrompt = bundle.storyContent;
+    
+    // REPAIR MODE: Enhance prompts with repair-specific instructions
+    if (config.sessionType === 'repair' && config.originalContent && config.repairReasons) {
+      console.log('🔧 STREAMLINED: Applying repair-specific prompt enhancements');
+      
+      const repairInstructions = `
+REPAIR REQUEST (Attempt ${config.repairAttempt || 1}):
+The following content had these issues: ${config.repairReasons.join(', ')}
+
+ORIGINAL CONTENT TO REPAIR:
+${config.originalContent.join(' ')}
+
+REPAIR INSTRUCTIONS:
+- Fix vocabulary that's too advanced or inappropriate
+- Ensure appropriate content length
+- Maintain story coherence and age-appropriate language
+- Keep the same characters and core narrative
+- Address the specific issues mentioned above
+
+Generate a corrected version that addresses these issues while keeping the story engaging.`;
+      
+      finalSystemPrompt += '\n\n' + repairInstructions;
+      finalUserPrompt = bundle.storyContent + '\n\nPlease repair the content based on the instructions above.';
+    }
+    
     const aiPrompt = {
-      systemPrompt: promptConfig.systemPrompt,
-      userPrompt: bundle.storyContent // Already resolved by 4-tier system
+      systemPrompt: finalSystemPrompt,
+      userPrompt: finalUserPrompt // Already resolved by 4-tier system or enhanced for repair
     };
     
     // Generate story with OpenAI - pass the effective grade level for token calculation
@@ -147,16 +189,23 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       (parseInt(expertGrade.replace('grade', '')) || bundle.systemSettings.gradeLevel) : 
       bundle.systemSettings.gradeLevel;
     
+    // Add token buffer for repair operations (repairs need more tokens for context)
+    const baseTokens = sharedGetTokensForGrade(effectiveGradeLevel);
+    const repairTokenBuffer = config.sessionType === 'repair' ? Math.floor(baseTokens * 0.2) : 0;
+    const finalTokenLimit = baseTokens + repairTokenBuffer;
+    
     console.log(`🤖 [AI-DEBUG] STREAMLINED: Calling OpenAI for ${expertGrade || effectiveDifficulty}:`, {
       effectiveGradeLevel,
       expertGrade,
       effectiveDifficulty,
       systemPromptLength: aiPrompt.systemPrompt.length,
       userPromptLength: aiPrompt.userPrompt.length,
-      expectedTokens: sharedGetTokensForGrade(effectiveGradeLevel)
+      expectedTokens: finalTokenLimit,
+      isRepairMode: config.sessionType === 'repair',
+      repairTokenBuffer
     });
     
-    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo);
+    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, finalTokenLimit);
     
     // Parse into pages using shared validation utilities
     const validationLevel = expertGrade ? 
@@ -270,8 +319,8 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
   return 'expert';
 }
 
-async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any): Promise<string> {
-  const maxTokens = sharedGetTokensForGrade(gradeLevel);
+async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number): Promise<string> {
+  const maxTokens = customTokenLimit || sharedGetTokensForGrade(gradeLevel);
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Add hair color mapping for English speakers

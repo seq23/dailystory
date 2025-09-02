@@ -22,12 +22,36 @@ export interface RepairResult {
 
 export class RepairService {
   private static readonly MAX_REPAIR_ATTEMPTS = 2;
+  
+  // Session-based repair tracking to prevent cross-session loops
+  private static repairAttempts = new Map<string, number>();
+  private static lastRepairTime = new Map<string, number>();
 
   /**
    * Attempt to repair content using AI with specific repair instructions
    */
   static async repairContent(request: RepairRequest): Promise<RepairResult> {
     console.log('🔧 RepairService: Starting content repair for', request.difficulty);
+    
+    // Create session key for loop protection
+    const sessionKey = `${request.userInfo.name}-${request.difficulty}`;
+    const now = Date.now();
+    
+    // Check for repair loops (reset counter if more than 5 minutes passed)
+    const lastTime = this.lastRepairTime.get(sessionKey) || 0;
+    if (now - lastTime > 300000) { // 5 minutes
+      this.repairAttempts.delete(sessionKey);
+    }
+    
+    const sessionAttempts = this.repairAttempts.get(sessionKey) || 0;
+    if (sessionAttempts >= this.MAX_REPAIR_ATTEMPTS) {
+      console.log('🚫 RepairService: Max session repair attempts reached, aborting');
+      return {
+        success: false,
+        error: 'Maximum repair attempts reached for this session',
+        attempts: sessionAttempts
+      };
+    }
     
     let attempts = 0;
     let lastError: string | undefined;
@@ -81,6 +105,10 @@ export class RepairService {
         if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
           console.log('✅ RepairService: Content repair successful');
           
+          // Update session tracking for successful repair
+          this.repairAttempts.set(sessionKey, sessionAttempts + attempts);
+          this.lastRepairTime.set(sessionKey, now);
+          
           return {
             success: true,
             repairedContent: validationResult.content || data.pages,
@@ -107,6 +135,11 @@ export class RepairService {
     }
 
     console.log('❌ RepairService: All repair attempts failed');
+    
+    // Update session tracking for failed repair
+    this.repairAttempts.set(sessionKey, sessionAttempts + attempts);
+    this.lastRepairTime.set(sessionKey, now);
+    
     return {
       success: false,
       error: lastError || 'All repair attempts failed',
