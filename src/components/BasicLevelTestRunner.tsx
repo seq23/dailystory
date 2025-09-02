@@ -7,6 +7,25 @@ import { Loader2, PlayCircle, CheckCircle2, XCircle, GraduationCap } from 'lucid
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { estimateTokenCount } from '@/utils/tokenLimitValidator';
 import type { UserInfo, DifficultyLevel } from '@/types';
+const countWords = (content: string | string[]): number => {
+  if (!content) return 0;
+  
+  // Handle array of pages
+  if (Array.isArray(content)) {
+    return content.reduce((total, page) => total + countWords(page), 0);
+  }
+  
+  // Handle single string
+  if (typeof content === 'string') {
+    return content
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0)
+      .length;
+  }
+  
+  return 0;
+};
 
 interface BasicTestResult {
   level: DifficultyLevel;

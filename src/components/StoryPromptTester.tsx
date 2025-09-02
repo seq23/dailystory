@@ -19,6 +19,9 @@ import { validatePageTokenDistribution, getTokenLimitForDifficulty, validateToke
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
+import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
+import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
+import { UnifiedValidator, type ValidationResult, type ValidationDecision } from '@/utils/unifiedValidator';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
 
 // Robust word counting function
@@ -65,6 +68,12 @@ interface TestResult {
   contentIssues?: string[];
   tokenValidation?: any;
   hasEmptyContent?: boolean;
+  // Character analysis fields
+  characterAnalysis?: CharacterAnalysis;
+  // Validation tracking
+  validationDecision?: ValidationDecision;
+  validationReasons?: string[];
+  repairAttempted?: boolean;
 }
 
 interface ServiceComparison {
@@ -280,7 +289,53 @@ export function StoryPromptTester() {
     }
   };
 
-  // Test individual service with timeout and performance optimization
+  // Enhanced validation with repair handling (moved to proper location)
+  const performValidationWithRepair = async (
+    content: string[],
+    level: string,
+    result: TestResult
+  ): Promise<void> => {
+    try {
+      showTestToast({
+        level,
+        step: 'validation',
+        message: 'Validating content quality'
+      });
+
+      const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
+      const validationResult = UnifiedValidator.validateContent(content, {
+        mode: 'guest',
+        level: validationLevel,
+        userLanguage: 'en'
+      });
+
+      result.validationDecision = validationResult.decision;
+      result.validationReasons = validationResult.reasons;
+
+      if (validationResult.decision === 'REPAIR') {
+        showTestToast({
+          level,
+          step: 'repair_needed',
+          message: validationResult.reasons[0] || 'Content needs repair'
+        });
+        result.repairAttempted = true;
+        showTestToast({
+          level,
+          step: 'repair_success',
+          message: 'Repair completed (simulated)'
+        });
+      } else if (validationResult.decision === 'REPAIR_AND_SPLIT') {
+        if (validationResult.content) {
+          result.fullContent = validationResult.content;
+          result.actualPages = validationResult.content.length;
+        }
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+    }
+  };
+
+  // Test individual service with timeout and enhanced validation
   const testService = async (
     level: string, 
     userInfo: UserInfo, 
@@ -288,6 +343,13 @@ export function StoryPromptTester() {
   ): Promise<TestResult> => {
     const startTime = Date.now();
     const testKey = `${level}_${service}`;
+    
+    // Show starting toast
+    showTestToast({
+      level,
+      step: 'starting',
+      message: `Starting ${service} service test`
+    });
     
     // Clear any existing timeout
     if (testTimeouts.has(testKey)) {
@@ -334,8 +396,37 @@ export function StoryPromptTester() {
 
       if (service === 'netflix') {
         result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
+        
+        // Show AI generation toast
+        showTestToast({
+          level,
+          step: 'ai_generation',
+          message: 'Generating with Netflix-style service'
+        });
+        
         response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(userInfo));
         result.source = response.source || 'unknown';
+        
+        // Check if this was actually AI or fallback
+        if (result.source === 'ai') {
+          showTestToast({
+            level,
+            step: 'ai_success',
+            message: 'AI generation completed'
+          });
+        } else if (result.source === 'fallback') {
+          showTestToast({
+            level,
+            step: 'template_fallback',
+            message: 'AI failed, used template fallback'
+          });
+        } else if (result.source === 'emergency') {
+          showTestToast({
+            level,
+            step: 'template_failed',
+            message: 'Template failed, used emergency content'
+          });
+        }
         
         // Use actual page count from the response
         const actualPageCount = response.pageCount || response.pages?.length || 0;
@@ -360,6 +451,13 @@ export function StoryPromptTester() {
           result.contentPreview = response.content[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.content;
           
+          // Add character analysis
+          result.characterAnalysis = analyzeCharacters(
+            response.content,
+            result.wordCount,
+            response.content.length
+          );
+          
           // Check for emergency content (rhyming educational content)
           const firstPage = response.content[0] || '';
           if (firstPage.includes('story machine took a little rest') || 
@@ -369,10 +467,21 @@ export function StoryPromptTester() {
             result.source = 'emergency';
             result.generationPath.push('Used emergency rhyming content');
           }
+          
+          // Perform validation with repair handling
+          await performValidationWithRepair(response.content, level, result);
         }
         
       } else if (service === 'live') {
         result.generationPath.push('Calling LiveGenerationService.generateFirstPage()');
+        
+        // Show AI generation toast
+        showTestToast({
+          level,
+          step: 'ai_generation',
+          message: 'Generating with Live service'
+        });
+        
         response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(userInfo));
         
         // Check global source tracking
@@ -380,6 +489,21 @@ export function StoryPromptTester() {
         result.source = globalSource || 'unknown';
         // Dynamic linkage: LiveGenerationService generates "1 page at a time" (as defined in NetflixStyleStoryService.ts:20)
         result.pages = response.content ? 1 : 0;
+        
+        // Show appropriate toast based on source
+        if (result.source === 'ai') {
+          showTestToast({
+            level,
+            step: 'ai_success',
+            message: 'AI generation completed'
+          });
+        } else {
+          showTestToast({
+            level,
+            step: 'template_fallback',
+            message: 'AI failed, used fallback'
+          });
+        }
         
         // Enhanced logging for source detection debugging
         console.log(`🔍 [TEST-DEBUG] Live Service Result for ${level}:`, {
@@ -396,19 +520,52 @@ export function StoryPromptTester() {
           result.contentPreview = response.content.substring(0, 100) + '...';
           result.fullContent = [response.content];
           
+          // Add character analysis
+          result.characterAnalysis = analyzeCharacters(
+            [response.content],
+            result.wordCount,
+            1
+          );
+          
           // Check for emergency content
           if (response.content.includes('began a wonderful adventure') && response.content.length < 50) {
             result.emergencyContentUsed = true;
             result.source = 'emergency';
             result.generationPath.push('Used basic emergency content');
           }
+          
+          // Perform validation with repair handling  
+          await performValidationWithRepair([response.content], level, result);
         }
         
       } else if (service === 'template') {
         result.generationPath.push('Calling template service directly');
+        
+        // Show template generation toast
+        showTestToast({
+          level,
+          step: 'template_fallback',
+          message: 'Testing template service directly'
+        });
+        
         response = await testWithTimeout(() => templateService.generateStory(userInfo, 'testing'));
         result.source = response.success ? 'fallback' : 'emergency'; // Templates are fallback, emergency if they fail
         result.pages = response.pageCount || response.pages?.length || 0;
+        
+        // Show result toast
+        if (response.success) {
+          showTestToast({
+            level,
+            step: 'template_success',
+            message: 'Template generation completed'
+          });
+        } else {
+          showTestToast({
+            level,
+            step: 'template_failed',
+            message: 'Template generation failed'
+          });
+        }
         
         // Enhanced logging for source detection debugging
         console.log(`🔍 [TEST-DEBUG] Template Service Result for ${level}:`, {
@@ -426,6 +583,13 @@ export function StoryPromptTester() {
           result.contentPreview = response.pages[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.pages;
           
+          // Add character analysis
+          result.characterAnalysis = analyzeCharacters(
+            response.pages,
+            result.wordCount,
+            response.pages.length
+          );
+          
           // Check for emergency rhyming content from ErrorHandlingManager
           const firstPage = response.pages[0] || '';
           if (firstPage.includes('story machine took a little rest') || 
@@ -435,6 +599,9 @@ export function StoryPromptTester() {
             result.source = 'emergency';
             result.generationPath.push('Used ErrorHandlingManager emergency content');
           }
+          
+          // Perform validation with repair handling
+          await performValidationWithRepair(response.pages, level, result);
         }
       }
 
@@ -446,6 +613,14 @@ export function StoryPromptTester() {
       result.withinTokenLimits = tokenValidation.isValid;
       result.tokenCount = tokenValidation.actualTokens || 0;
       result.maxTokensAllowed = tokenValidation.maxAllowed || 0;
+      
+      // Show final result toast
+      showTestToast({
+        level,
+        step: 'final_result',
+        source: result.source as any,
+        message: `Test completed in ${result.responseTime}ms`
+      });
       
       // Performance optimized validation - check cache first
       if (result.fullContent && result.fullContent.length > 0) {
@@ -1047,31 +1222,63 @@ export function StoryPromptTester() {
                 {/* Content Analysis */}
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="text-sm font-medium text-muted-foreground mb-2">Content Analysis</div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs">
+                    <div>
+                      <div className="text-muted-foreground">Total Words</div>
+                      <div className="font-medium">{result.wordCount}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Total Characters</div>
+                      <div className="font-medium">{result.characterAnalysis?.totalCharacters || 'N/A'}</div>
+                    </div>
                     <div>
                       <div className="text-muted-foreground">Avg Words/Page</div>
-                      <div className="font-medium">{Math.round(result.wordCount / result.pages)}</div>
+                      <div className="font-medium">{Math.round(result.wordCount / (result.actualPages || result.pages || 1))}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Avg Chars/Word</div>
+                      <div className="font-medium">{result.characterAnalysis?.averageCharactersPerWord || 'N/A'}</div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Source Type</div>
-                      <div className="font-medium">{result.emergencyContentUsed ? 'Emergency' : result.source.toUpperCase()}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Generation Time</div>
-                      <div className="font-medium">{result.responseTime}ms</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Quality</div>
-                      <div className={`font-medium ${result.withinTokenLimits ? 'text-green-600' : 'text-red-600'}`}>
-                        {result.withinTokenLimits ? 'Valid' : 'Invalid'}
-                        {result.tokenCount && result.maxTokensAllowed && (
+                      <div className="font-medium">
+                        {result.emergencyContentUsed ? 'Emergency' : result.source.toUpperCase()}
+                        {result.validationDecision && (
                           <div className="text-xs text-muted-foreground">
-                            {result.tokenCount}/{result.maxTokensAllowed} tokens
+                            Val: {result.validationDecision}
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Additional character metrics */}
+                  {result.characterAnalysis && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Character Analysis</div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                        <div>
+                          <div className="text-muted-foreground">Chars (no spaces)</div>
+                          <div className="font-medium">{result.characterAnalysis.charactersNoSpaces}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Avg Chars/Page</div>
+                          <div className="font-medium">{result.characterAnalysis.averageCharactersPerPage}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Quality</div>
+                          <div className={`font-medium ${result.withinTokenLimits ? 'text-green-600' : 'text-red-600'}`}>
+                            {result.withinTokenLimits ? 'Valid' : 'Invalid'}
+                            {result.tokenCount && result.maxTokensAllowed && (
+                              <div className="text-xs text-muted-foreground">
+                                {result.tokenCount}/{result.maxTokensAllowed} tokens
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </CollapsibleContent>
