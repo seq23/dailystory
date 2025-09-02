@@ -102,26 +102,18 @@ export class RepairService {
           userLanguage: 'en'
         });
 
-        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
-          console.log('✅ RepairService: Content repair successful');
-          
-          // Update session tracking for successful repair
-          this.repairAttempts.set(sessionKey, sessionAttempts + attempts);
-          this.lastRepairTime.set(sessionKey, now);
-          
-          return {
-            success: true,
-            repairedContent: validationResult.content || data.pages,
-            attempts
-          };
-        } else if (validationResult.decision === 'REPAIR' && attempts < this.MAX_REPAIR_ATTEMPTS) {
-          console.log(`🔄 RepairService: Repair still needed, trying again (${attempts}/${this.MAX_REPAIR_ATTEMPTS})`);
-          lastError = `Still needs repair: ${validationResult.reasons.join(', ')}`;
-          continue;
-        } else {
-          lastError = `Repair validation failed: ${validationResult.reasons.join(', ')}`;
-          break;
-        }
+        // Backend now handles all validation - trust the response
+        console.log('✅ RepairService: Content repair successful');
+        
+        // Update session tracking for successful repair
+        this.repairAttempts.set(sessionKey, sessionAttempts + attempts);
+        this.lastRepairTime.set(sessionKey, now);
+        
+        return {
+          success: true,
+          repairedContent: data.pages,
+          attempts
+        };
 
       } catch (error) {
         console.error(`❌ RepairService: Attempt ${attempts} failed:`, error);

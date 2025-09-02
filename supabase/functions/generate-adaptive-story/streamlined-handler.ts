@@ -11,6 +11,7 @@ import {
 } from "../_shared/validation-utils.ts";
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
+import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
@@ -209,80 +210,64 @@ Generate a corrected version that addresses these issues while keeping the story
     
     const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, finalTokenLimit);
     
-    // Parse into pages using shared validation utilities
+    // PHASE 5: Bulk Story Processing - Apply validation, grammar, placeholders to ENTIRE story ONCE
+    console.log('🔧 STREAMLINED: Starting bulk processing on complete story');
+    
+    // Compute validation level first
     const validationLevel = expertGrade ? 
       mapDifficultyToLevel(expertGrade) : 
       mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
     
-    // DEBUG: Log raw AI response before parsing
-    console.log('🎯 [PAGE-DEBUG] Raw AI story text analysis:', {
-      length: storyText.length,
-      preview: storyText.substring(0, 500),
-      asteriskCount: (storyText.match(/\*\*\*/g) || []).length,
-      asteriskPositions: storyText.split('').map((char, i) => char === '*' ? i : -1).filter(i => i !== -1).slice(0, 20),
-      containsPageMarkers: storyText.includes('***'),
-      firstAsteriskIndex: storyText.indexOf('***'),
-      validationLevel
+    // Step 1: Apply UnifiedValidator to entire story
+    const validationConfig: ValidationConfig = {
+      mode: config.sessionType === 'free' ? 'guest' : 'live',
+      level: validationLevel,
+      userLanguage: 'en'
+    };
+    
+    const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
+    console.log('✅ STREAMLINED: Story validation complete:', {
+      decision: validationResult.decision,
+      isValid: validationResult.isValid,
+      tokenCount: validationResult.metrics.tokenCount
     });
     
-    console.log(`🔍 [VALIDATION-DEBUG] STREAMLINED: Parsing content for ${expertGrade || effectiveDifficulty}:`, {
-      validationLevel,
-      storyLength: storyText.length,
-      estimatedTokens: storyText.split(/\s+/).length * 1.3
-    });
+    // Step 2: Apply grammar enhancement to entire story ONCE
+    const grammarEnhanced = validateAndEnhanceGrammar(storyText, 'they');
+    console.log('✅ STREAMLINED: Grammar enhancement complete');
     
-    const pages = sharedParseIntoPages(storyText, validationLevel);
+    // Step 3: Apply placeholder resolution to entire story ONCE  
+    const placeholderResolved = resolveAllPlaceholders(grammarEnhanced, { userInfo });
+    console.log('✅ STREAMLINED: Placeholder resolution complete');
     
-    console.log('📊 [PAGE-DEBUG] Parse result:', {
+    // Step 4: THEN parse into pages using shared validation utilities
+    const pages = sharedParseIntoPages(placeholderResolved, validationLevel);
+    
+    
+    console.log('📊 [PAGE-DEBUG] Final processing result:', {
       pagesCount: pages.length,
-      pagePreview: pages.map(p => p.substring(0, 100))
-    });
-
-    // POST-PROCESS: Apply sophisticated grammar enhancement to each page
-    console.log('🔧 STREAMLINED: Starting post-processing for', pages.length, 'pages');
-    const processedPages = pages.map((page, index) => {
-      // Step 1: Resolve any remaining placeholders
-      const placeholderResolved = resolveAllPlaceholders(page, { userInfo });
-      
-      // Step 2: Apply sophisticated grammar validation and enhancement
-      const grammarEnhanced = validateAndEnhanceGrammar(placeholderResolved, 'they');
-      
-      console.log(`✅ Page ${index + 1} post-processed: ${grammarEnhanced.substring(0, 50)}...`);
-      return grammarEnhanced;
-    });
-    
-    console.log(`📄 [VALIDATION-DEBUG] STREAMLINED: Page parsing complete:`, {
-      totalPages: pages.length,
-      pageLengths: pages.map(p => p.length),
-      pageTokens: pages.map(p => Math.ceil(p.split(/\s+/).length * 1.3))
+      totalLength: placeholderResolved.length,
+      pagePreview: pages.map(p => p.substring(0, 50) + '...')
     });
     
     // Calculate real vocabulary compliance using dynamic loader
     let vocabCompliance = 1.0; // Default fallback
     try {
       const { calculateVocabularyCompliance } = await import('../_shared/vocabularyLoader.ts');
-      const complianceResult = await calculateVocabularyCompliance(storyText, effectiveGradeLevel);
+      const complianceResult = await calculateVocabularyCompliance(placeholderResolved, effectiveGradeLevel);
       vocabCompliance = complianceResult.compliance;
-      
-      console.log(`📊 [VOCAB-DEBUG] Vocabulary compliance for grade ${effectiveGradeLevel}:`, {
-        compliance: Math.round(vocabCompliance * 100) + '%',
-        validWords: complianceResult.validWords,
-        totalWords: complianceResult.totalWords,
-        invalidWords: complianceResult.totalWords - complianceResult.validWords,
-        level: expertGrade || effectiveDifficulty
-      });
     } catch (error) {
       console.warn('⚠️ [VOCAB-DEBUG] Could not calculate vocabulary compliance:', error);
     }
     
-    // Return streamlined response with post-processed pages
+    // Return streamlined response with bulk-processed story
     return new Response(JSON.stringify({
       success: true,
-      story: storyText,
-      pages: processedPages, // Use processed pages instead of raw pages
+      story: placeholderResolved,
+      pages: pages, // Use bulk-processed pages
       vocabCompliance,
       metadata: {
-        processingMode: 'streamlined-lean',
+        processingMode: 'streamlined-bulk',
         gradeLevel: bundle.systemSettings.gradeLevel,
         vocabularyCompliance: vocabCompliance
       }

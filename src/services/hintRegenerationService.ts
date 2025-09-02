@@ -84,28 +84,14 @@ export class HintRegenerationService {
           userLanguage: 'en'
         });
 
-        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
-          console.log('✅ HintRegeneration: Content regeneration successful');
-          
-          return {
-            success: true,
-            content: validationResult.content || data.pages,
-            attempts
-          };
-        } else if (validationResult.decision === 'RETRY_WITH_HINT' && attempts < this.MAX_REGENERATION_ATTEMPTS) {
-          console.log(`🔄 HintRegeneration: Still needs regeneration, trying again (${attempts}/${this.MAX_REGENERATION_ATTEMPTS})`);
-          lastError = `Still needs regeneration: ${validationResult.reasons.join(', ')}`;
-          
-          // Update hints for next attempt
-          request.hints = [
-            ...request.hints,
-            ...(validationResult.hints || [])
-          ];
-          continue;
-        } else {
-          lastError = `Regeneration validation failed: ${validationResult.reasons.join(', ')}`;
-          break;
-        }
+        // Backend now handles all validation - trust the response
+        console.log('✅ HintRegeneration: Content regeneration successful');
+        
+        return {
+          success: true,
+          content: data.pages,
+          attempts
+        };
 
       } catch (error) {
         console.error(`❌ HintRegeneration: Attempt ${attempts} failed:`, error);

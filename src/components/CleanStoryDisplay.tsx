@@ -1616,18 +1616,15 @@ const initializeStory = async () => {
       console.log('📚 Setting story content via buffer to prevent flickering...');
       
       // Token validation for guest users (6-page story limit)
+      // Backend now handles all validation - remove frontend re-validation
       if (!isPremium) {
+        // Keep story length logging for analytics but trust backend validation
         const fullStoryText = (processedPages || []).join(' ');
-        const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
-        const validation = UnifiedValidator.validateContent(fullStoryText, { mode: 'guest', level: validationLevel });
-        if (!validation.isValid) {
-          console.warn('⚠️ Guest story exceeds token limits:', validation);
-          toast({
-            title: "Story Length Notice",
-            description: `Story is within limits but on the longer side for ${currentDifficulty} level.`,
-            variant: "default"
-          });
-        }
+        console.log('📊 Guest story processed:', {
+          totalLength: fullStoryText.length,
+          pageCount: processedPages?.length || 0,
+          difficulty: currentDifficulty
+        });
       }
       
       setStory(processedPages);
@@ -1996,19 +1993,12 @@ const initializeStory = async () => {
           isComplete: result.isComplete
         });
         
-        // Token validation for premium users (per-page limit)
-        if (isPremium) {
-          const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
-          const validation = UnifiedValidator.validateContent(result.content, { mode: 'live', level: validationLevel });
-          if (!validation.isValid) {
-            console.warn('⚠️ Premium page exceeds token limits:', validation);
-            toast({
-              title: "Page Length Notice", 
-              description: `This page is a bit long for ${currentDifficulty} level, but that's okay!`,
-              variant: "default"
-            });
-          }
-        }
+        // Backend now handles all validation - trust the response
+        // Keep analytics logging but remove frontend re-validation
+        console.log('📊 Premium page generated:', {
+          contentLength: result.content?.length || 0,
+          difficulty: currentDifficulty
+        });
         
         setStory(prev => [...prev, result.content]);
         StoryContentLogger.logStoryChange('premium_next_page', 'after', [...story, result.content], {
@@ -2695,15 +2685,12 @@ const handleRestartTimer = () => {
         
         // Token validation for premium ending page
         const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
-        const validation = UnifiedValidator.validateContent(result.content, { mode: 'live', level: validationLevel });
-        if (!validation.isValid) {
-          console.warn('⚠️ Premium ending page exceeds token limits:', validation);
-          toast({
-            title: "Ending Page Notice", 
-            description: `The ending is a bit long for ${currentDifficulty} level, but that's perfectly fine!`,
-            variant: "default"
-          });
-        }
+        // Backend now handles all validation - trust the response
+        // Keep analytics logging but remove frontend re-validation  
+        console.log('📊 Premium ending generated:', {
+          contentLength: result.content?.length || 0,
+          difficulty: currentDifficulty
+        });
         
         setStory(prev => [...prev, result.content]);
         StoryContentLogger.logStoryChange('premium_ending_page', 'after', [...story, result.content], {

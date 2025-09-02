@@ -1,0 +1,357 @@
+// Unified Validation System - Backend Version
+// Moved from frontend for server-side processing efficiency
+// Integrates content filtering, token validation, and auto-pagination
+
+import { 
+  estimateTokenCount, 
+  mapDifficultyToLevel, 
+  enhancedAutoSplitContent as sharedAutoSplitContent,
+  validateGuestStoryLength,
+  validateLivePageLength,
+  getExpectedPagesForService,
+  type ValidationLevel 
+} from './validation-utils.ts';
+
+// Re-export ValidationLevel for compatibility
+export type { ValidationLevel };
+
+export type ValidationDecision = 
+  | 'ACCEPT'
+  | 'REPAIR_AND_SPLIT' 
+  | 'REPAIR'
+  | 'RETRY_WITH_HINT'
+  | 'REJECT';
+
+export interface ValidationResult {
+  decision: ValidationDecision;
+  isValid: boolean;
+  content?: string[];
+  reasons: string[];
+  metrics: {
+    tokenCount: number;
+    pageCount: number;
+    contentAppropriate: boolean;
+    vocabularyCompliance?: number;
+    qualityScore?: number;
+    qualityIssues?: Array<{
+      type: 'grammar' | 'flow' | 'structure' | 'readability';
+      severity: 'error' | 'warning' | 'info';
+      message: string;
+    }>;
+  };
+  hints?: string[];
+}
+
+export interface ValidationConfig {
+  mode: 'guest' | 'live';
+  level: ValidationLevel;
+  userLanguage?: string;
+  vocabularyIntegration?: any;
+}
+
+export class UnifiedValidator {
+  private static _contentValidationCache = new Map<string, { appropriate: boolean; reason?: string }>();
+
+  /**
+   * Main validation entry point
+   */
+  static validateContent(
+    content: string | string[],
+    config: ValidationConfig
+  ): ValidationResult {
+    const pages = Array.isArray(content) ? content : [content];
+    const totalContent = pages.join(' ');
+    const tokenCount = estimateTokenCount(totalContent);
+    const pageCount = pages.length;
+
+    // Detect story language for performance optimization
+    const storyLanguage = this.detectStoryLanguage(totalContent);
+    const isEnglishOnly = storyLanguage === 'en';
+
+    // Performance optimization: cache content validation results
+    const contentHash = `${totalContent.substring(0, 100)}_${config.level}_${isEnglishOnly ? 'en' : config.userLanguage}`;
+    let contentValidation = this._contentValidationCache?.get(contentHash);
+    
+    if (!contentValidation) {
+      // Basic content filtering for backend - simplified version
+      contentValidation = this.isContentAppropriateForLevel(
+        totalContent, 
+        config.level,
+        isEnglishOnly ? 'en' : config.userLanguage
+      );
+      
+      // Cache the result
+      this._contentValidationCache.set(contentHash, contentValidation);
+      
+      // Limit cache size
+      if (this._contentValidationCache.size > 500) {
+        const firstKey = this._contentValidationCache.keys().next().value;
+        this._contentValidationCache.delete(firstKey);
+      }
+    }
+
+    const metrics = {
+      tokenCount,
+      pageCount,
+      contentAppropriate: contentValidation.appropriate,
+      vocabularyCompliance: this.calculateVocabularyCompliance(totalContent, config.vocabularyIntegration),
+      qualityScore: 1.0,
+      qualityIssues: []
+    };
+
+    // If content is inappropriate, reject immediately
+    if (!contentValidation.appropriate) {
+      return {
+        decision: 'REJECT',
+        isValid: false,
+        reasons: [contentValidation.reason || 'Content inappropriate for age level'],
+        metrics
+      };
+    }
+
+    // Mode-specific validation
+    if (config.mode === 'guest') {
+      return this.validateGuestStory(pages, config, metrics, []);
+    } else {
+      return this.validateLivePage(pages, config, metrics, []);
+    }
+  }
+
+  /**
+   * Guest mode validation (6-page stories)
+   */
+  private static validateGuestStory(
+    pages: string[],
+    config: ValidationConfig,
+    metrics: any,
+    baseReasons: string[] = []
+  ): ValidationResult {
+    const fullContent = pages.join(' ');
+    
+    // Business-logic-aware page count validation
+    const pageCount = pages.length;
+    const expectedPages = getExpectedPagesForService('netflix', config.level) || 12;
+    
+    if (pageCount < 6) {
+      return {
+        decision: 'RETRY_WITH_HINT',
+        isValid: false,
+        reasons: [...baseReasons, `Story has ${pageCount} pages but needs at least 6 pages for business model`],
+        metrics: { ...metrics, pageCount, expectedPages },
+        hints: [
+          `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
+          'Create more story content with additional scenes and development',
+          'Add character interactions, setting descriptions, and plot progression'
+        ]
+      };
+    }
+    
+    const validationResult = validateGuestStoryLength(fullContent, config.level);
+    
+    if (!validationResult.isValid) {
+      const reason = validationResult.reason || 'Content validation failed';
+      
+      const needsCompleteRegeneration = reason.includes('too short') || 
+                                      reason.includes('insufficient content') ||
+                                      (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.3);
+      
+      if (needsCompleteRegeneration) {
+        return {
+          decision: 'RETRY_WITH_HINT',
+          isValid: false,
+          reasons: [...baseReasons, reason],
+          metrics: {
+            ...metrics,
+            tokenCount: validationResult.tokenCount,
+            characterCount: validationResult.characterCount
+          },
+          hints: [
+            `Generate content with at least ${validationResult.maxAllowedTokens * 0.7} tokens`,
+            'Include more descriptive details and story development'
+          ]
+        };
+      } else {
+        return {
+          decision: 'REPAIR',
+          isValid: false,
+          reasons: [...baseReasons, reason],
+          metrics: {
+            ...metrics,
+            tokenCount: validationResult.tokenCount,
+            characterCount: validationResult.characterCount
+          }
+        };
+      }
+    }
+
+    // Content exceeds token limits - attempt auto-split
+    if (validationResult.tokenCount > validationResult.maxAllowedTokens) {
+      const targetPages = getExpectedPagesForService('netflix', config.level) || 12;
+      const splitPages = sharedAutoSplitContent(fullContent, config.level, targetPages);
+      
+      return {
+        decision: 'REPAIR_AND_SPLIT',
+        isValid: true,
+        content: splitPages,
+        reasons: [...baseReasons, `Content auto-split to ${splitPages.length} pages`],
+        metrics: {
+          ...metrics,
+          pageCount: splitPages.length,
+          tokenCount: validationResult.tokenCount
+        }
+      };
+    }
+
+    return {
+      decision: 'ACCEPT',
+      isValid: true,
+      content: pages,
+      reasons: [...baseReasons, 'Guest story validation passed'],
+      metrics: {
+        ...metrics,
+        tokenCount: validationResult.tokenCount
+      }
+    };
+  }
+
+  /**
+   * Live mode validation (page-by-page)
+   */
+  private static validateLivePage(
+    pages: string[],
+    config: ValidationConfig,
+    metrics: any,
+    baseReasons: string[] = []
+  ): ValidationResult {
+    if (pages.length === 1) {
+      const validationResult = validateLivePageLength(pages[0], config.level);
+      
+      if (!validationResult.isValid) {
+        const reason = validationResult.reason || 'Page validation failed';
+        
+        const needsCompleteRegeneration = reason.includes('too short') || 
+                                        (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.5);
+        
+        if (needsCompleteRegeneration) {
+          return {
+            decision: 'RETRY_WITH_HINT',
+            isValid: false,
+            reasons: [...baseReasons, reason],
+            metrics: {
+              ...metrics,
+              tokenCount: validationResult.tokenCount
+            },
+            hints: [
+              `Generate a page with at least ${validationResult.maxAllowedTokens * 0.8} tokens`,
+              'Create more detailed scene descriptions'
+            ]
+          };
+        } else {
+          return {
+            decision: 'REPAIR',
+            isValid: false,
+            reasons: [...baseReasons, reason],
+            metrics: {
+              ...metrics,
+              tokenCount: validationResult.tokenCount
+            }
+          };
+        }
+      }
+
+      // Check if page is too long
+      if (validationResult.tokenCount > validationResult.maxAllowedTokens * 1.3) {
+        return {
+          decision: 'REPAIR',
+          isValid: false,
+          reasons: [...baseReasons, `Live page is too long (${validationResult.tokenCount} tokens)`],
+          metrics: {
+            ...metrics,
+            tokenCount: validationResult.tokenCount
+          },
+          hints: [
+            'Reduce content length to fit single page format',
+            'Focus on one key scene or moment'
+          ]
+        };
+      }
+
+      return {
+        decision: 'ACCEPT',
+        isValid: true,
+        content: pages,
+        reasons: [...baseReasons, 'Live page validation passed'],
+        metrics: {
+          ...metrics,
+          tokenCount: validationResult.tokenCount
+        }
+      };
+    }
+
+    // Multiple pages validation
+    return {
+      decision: 'ACCEPT',
+      isValid: true,
+      content: pages,
+      reasons: [...baseReasons, 'Live multi-page validation passed'],
+      metrics
+    };
+  }
+
+  /**
+   * Basic content appropriateness check for backend
+   */
+  private static isContentAppropriateForLevel(
+    content: string, 
+    level: ValidationLevel,
+    language: string = 'en'
+  ): { appropriate: boolean; reason?: string } {
+    // Basic inappropriate content detection
+    const inappropriateWords = [
+      'violence', 'death', 'kill', 'murder', 'blood', 'weapon', 'gun', 'knife',
+      'scary', 'horror', 'nightmare', 'monster', 'ghost', 'demon'
+    ];
+    
+    const lowerContent = content.toLowerCase();
+    const foundInappropriate = inappropriateWords.filter(word => lowerContent.includes(word));
+    
+    if (foundInappropriate.length > 0) {
+      return {
+        appropriate: false,
+        reason: `Contains inappropriate content: ${foundInappropriate.join(', ')}`
+      };
+    }
+    
+    return { appropriate: true };
+  }
+
+  /**
+   * Calculate vocabulary compliance percentage
+   */
+  private static calculateVocabularyCompliance(content: string, vocabularyIntegration?: any): number {
+    if (!vocabularyIntegration) {
+      return 1.0; // Default to 100% if no vocabulary requirements
+    }
+    return 0.85; // Placeholder
+  }
+
+  /**
+   * Map difficulty level to validation level
+   */
+  static mapDifficultyToLevel(difficulty: any): ValidationLevel {
+    return mapDifficultyToLevel(difficulty);
+  }
+
+  /**
+   * Detect story language for performance optimization
+   */
+  private static detectStoryLanguage(content: string): string {
+    // Simple language detection - check for common English words
+    const englishWords = ['the', 'and', 'to', 'a', 'of', 'in', 'is', 'it', 'you', 'that'];
+    const words = content.toLowerCase().split(/\s+/);
+    const englishWordCount = words.filter(word => englishWords.includes(word)).length;
+    
+    // If more than 20% of words are common English words, assume it's English
+    return (englishWordCount / words.length) > 0.2 ? 'en' : 'unknown';
+  }
+}

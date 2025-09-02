@@ -56,39 +56,38 @@ export class StoryGenerationService {
       
       // Step 1: UserInfo (already available)
       
-      // Step 2: VocabularyService (with silent failure)
-      let vocabularyIntegration: VocabularyIntegration;
-      try {
-        vocabularyIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
-      } catch (error) {
-        console.warn('⚠️ VocabularyService failed silently:', error);
-        vocabularyIntegration = {
-          userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
-          systemVocabulary: { level: 2, complianceTarget: 0.7 },
-          metadata: { totalUserWords: 0, priorityInstructions: '', sources: [] }
-        };
-      }
+      // PHASE 1: True 4-Layer Parallelization - Execute all layers simultaneously
+      const [vocabularyIntegration, themeIntent, creativeSeeds] = await Promise.all([
+        VocabularyService.fetchAllVocabulary(userInfo).catch(error => {
+          console.warn('⚠️ VocabularyService failed silently:', error);
+          return {
+            userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
+            systemVocabulary: { level: 'PreK' as any, complianceTarget: 0.7 },
+            metadata: { totalUserWords: 0, priorityInstructions: '', sources: [] }
+          } as VocabularyIntegration;
+        }),
+        Promise.resolve(extractThemeIntent(userInfo)).catch(error => {
+          console.warn('⚠️ ThemeIntent extraction failed silently:', error);
+          return {
+            theme: [],
+            setting: [],
+            characters: [],
+            keywords: [],
+            rawInput: userInfo.specialRequest || ''
+          };
+        }),
+        Promise.resolve(generateCreativeSeeds(userInfo)).catch(error => {
+          console.warn('⚠️ CreativeSeeds generation failed silently:', error);
+          return [];
+        })
+      ]);
       
-      // Step 3: ThemeIntent extraction (with silent failure)
-      let themeIntent: ThemeIntent;
-      try {
-        themeIntent = extractThemeIntent(userInfo);
-      } catch (error) {
-        console.warn('⚠️ ThemeIntent extraction failed silently:', error);
-        themeIntent = {
-          theme: [],
-          setting: [],
-          characters: [],
-          keywords: [],
-          rawInput: userInfo.specialRequest || ''
-        };
-      }
-      
-      // Step 4: PlaceholderResolution with 4-layer priority
+      // Step 4: PlaceholderResolution with 4-layer priority (now includes creativeSeeds)
       const resolvedStoryContent = this.resolveAllPlaceholders(
         userInfo,
         vocabularyIntegration,
-        themeIntent
+        themeIntent,
+        creativeSeeds
       );
       
       // Step 5: Send resolved string to edge function
@@ -121,15 +120,16 @@ export class StoryGenerationService {
   private static resolveAllPlaceholders(
     userInfo: UserInfo,
     vocabularyIntegration: VocabularyIntegration,
-    themeIntent: ThemeIntent
+    themeIntent: ThemeIntent,
+    creativeSeeds: any[]
   ): string {
     
-    // LAYER 1 - Essential User Info Only (null-safe, no forced defaults for preferences)
+    // LAYER 1 - Essential User Info Only (PHASE 2: Safe Avatar Data Flow)
     const essentialUserInfo = {
       name: userInfo.name || "Child whose name no one could say",
       age: userInfo.age || 5,
-      avatar: userInfo.avatar, // Needed for hair mapping in edge function
-      nativeLanguage: userInfo.nativeLanguage || 'en', // Needed for hair mapping logic
+      avatarType: userInfo.avatar?.type,
+      avatarSkinTone: userInfo.avatar?.skinTone,
       difficultyLevel: userInfo.difficultyLevel, // Needed for story complexity
       gradeLevel: userInfo.gradeLevel || 'PreK', // Needed for vocabulary/complexity
       // USER PREFERENCES - only include if they exist, don't force defaults
@@ -174,8 +174,7 @@ export class StoryGenerationService {
       vocabularyInstructions = `Use grade level ${systemSettings.gradeLevel} appropriate vocabulary based on difficulty level ${essentialUserInfo.difficultyLevel}`;
     }
 
-    // LAYER 4 - Creative Seeds (handles favoriteColor/Animal/Food/hobbies exclusively)
-    const creativeSeeds = generateCreativeSeeds(userInfo);
+    // LAYER 4 - Creative Seeds (now passed as parameter from parallel execution)
     const creativeGuidance = creativeSeeds.length > 0 
       ? `Creative Guidance (use as inspiration, not requirements): ${creativeSeeds.map(seed => 
           `Consider: ${seed.storyPossibilities.join(' OR ')}`
