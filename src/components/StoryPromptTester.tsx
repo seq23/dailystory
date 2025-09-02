@@ -311,6 +311,15 @@ export function StoryPromptTester() {
 
       result.validationDecision = validationResult.decision;
       result.validationReasons = validationResult.reasons;
+      
+      // PHASE 2: PAGE COUNT INVESTIGATION - Track validation decisions affecting page count
+      console.log(`🔍 [VALIDATION-DEBUG] ${level} - Validation Decision Impact:`, {
+        originalPageCount: content.length,
+        validationDecision: validationResult.decision,
+        validationReasons: validationResult.reasons,
+        newPageCount: validationResult.content?.length || content.length,
+        pageCountChanged: (validationResult.content?.length || content.length) !== content.length
+      });
 
       if (validationResult.decision === 'REPAIR') {
         showTestToast({
@@ -319,6 +328,14 @@ export function StoryPromptTester() {
           message: validationResult.reasons[0] || 'Content needs repair'
         });
         result.repairAttempted = true;
+        
+        // PHASE 5: ROOT CAUSE IDENTIFICATION - Track repair triggers
+        console.log(`🔍 [REPAIR-TRIGGER-DEBUG] ${level} - Repair Needed:`, {
+          repairReason: validationResult.reasons[0],
+          originalContent: content[0]?.substring(0, 100) + '...',
+          repairStrategy: 'simulated'
+        });
+        
         showTestToast({
           level,
           step: 'repair_success',
@@ -328,10 +345,25 @@ export function StoryPromptTester() {
         if (validationResult.content) {
           result.fullContent = validationResult.content;
           result.actualPages = validationResult.content.length;
+          
+          // PHASE 2: PAGE COUNT INVESTIGATION - Track page splitting in validation
+          console.log(`🔍 [PAGE-SPLIT-DEBUG] ${level} - Validation Split Pages:`, {
+            originalPages: content.length,
+            newPages: validationResult.content.length,
+            splitReason: validationResult.reasons[0],
+            pageCountDelta: validationResult.content.length - content.length
+          });
         }
       }
     } catch (error) {
       console.error('Validation error:', error);
+      
+      // PHASE 5: ROOT CAUSE IDENTIFICATION - Track validation failures
+      console.log(`🔍 [VALIDATION-ERROR-DEBUG] ${level} - Validation Failed:`, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        contentLength: content.length,
+        contentPreview: content[0]?.substring(0, 50) + '...'
+      });
     }
   };
 
@@ -343,6 +375,20 @@ export function StoryPromptTester() {
   ): Promise<TestResult> => {
     const startTime = Date.now();
     const testKey = `${level}_${service}`;
+    
+    // PHASE 4: PLACEHOLDER TRACKING - Log all 6 placeholders being sent
+    console.log(`🔍 [PLACEHOLDER-DEBUG] ${service} test for ${level} level - Placeholder data:`, {
+      placeholdersSent: {
+        userName: userInfo.name,
+        favoriteColor: userInfo.favoriteColor,
+        favoriteAnimal: userInfo.favoriteAnimal,
+        favoriteFood: userInfo.favoriteFood,
+        hobbies: userInfo.hobbies,
+        specialRequest: userInfo.specialRequest
+      },
+      allSixPlaceholdersActive: !!(userInfo.name && userInfo.favoriteColor && userInfo.favoriteAnimal && userInfo.favoriteFood && userInfo.hobbies && userInfo.specialRequest),
+      timestamp: new Date().toISOString()
+    });
     
     // Show starting toast
     showTestToast({
@@ -404,8 +450,27 @@ export function StoryPromptTester() {
           message: 'Generating with Netflix-style service'
         });
         
+        // PHASE 3: PERFORMANCE ANALYSIS - Track timing breakdown
+        const aiStartTime = Date.now();
         response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(userInfo));
+        const aiGenerationTime = Date.now() - aiStartTime;
+        
         result.source = response.source || 'unknown';
+        
+        // PHASE 2: PAGE COUNT INVESTIGATION - Enhanced logging
+        console.log(`🔍 [PAGE-COUNT-DEBUG] Netflix ${level} - Raw AI Response Analysis:`, {
+          rawResponseKeys: Object.keys(response),
+          hasContent: !!response.content,
+          contentType: Array.isArray(response.content) ? 'array' : typeof response.content,
+          rawPageCount: response.content?.length || 0,
+          contentPreview: response.content?.[0]?.substring(0, 100) + '...',
+          pageSplittingMethod: response.pageCountMethod || 'unknown',
+          aiGenerationTime: `${aiGenerationTime}ms`,
+          source: response.source,
+          expectedPages: 12,
+          actualPages: response.content?.length || 0,
+          pageCountDelta: (response.content?.length || 0) - 12
+        });
         
         // Check if this was actually AI or fallback
         if (result.source === 'ai') {
@@ -451,6 +516,25 @@ export function StoryPromptTester() {
           result.contentPreview = response.content[0]?.substring(0, 100) + '...' || '';
           result.fullContent = response.content;
           
+          // PHASE 4: PLACEHOLDER TRACKING - Check placeholder usage in final story
+          const fullStoryText = response.content.join(' ');
+          const placeholderUsage = {
+            userName: fullStoryText.toLowerCase().includes(userInfo.name?.toLowerCase() || ''),
+            favoriteColor: fullStoryText.toLowerCase().includes(userInfo.favoriteColor?.toLowerCase() || ''),
+            favoriteAnimal: fullStoryText.toLowerCase().includes(userInfo.favoriteAnimal?.toLowerCase() || ''),
+            favoriteFood: fullStoryText.toLowerCase().includes(userInfo.favoriteFood?.toLowerCase() || ''),
+            hobbies: fullStoryText.toLowerCase().includes(userInfo.hobbies?.toLowerCase() || ''),
+            specialRequest: fullStoryText.toLowerCase().includes(userInfo.specialRequest?.toLowerCase() || '')
+          };
+          const placeholdersUsedCount = Object.values(placeholderUsage).filter(Boolean).length;
+          
+          console.log(`🔍 [PLACEHOLDER-USAGE-DEBUG] Netflix ${level} - Placeholder Utilization:`, {
+            placeholderUsage,
+            placeholdersUsedCount,
+            placeholdersUsedRate: `${placeholdersUsedCount}/6 (${Math.round((placeholdersUsedCount/6)*100)}%)`,
+            storyPreview: fullStoryText.substring(0, 200) + '...'
+          });
+          
           // Add character analysis
           result.characterAnalysis = analyzeCharacters(
             response.content,
@@ -468,8 +552,18 @@ export function StoryPromptTester() {
             result.generationPath.push('Used emergency rhyming content');
           }
           
-          // Perform validation with repair handling
+          // PHASE 3: PERFORMANCE ANALYSIS - Track validation timing
+          const validationStartTime = Date.now();
           await performValidationWithRepair(response.content, level, result);
+          const validationTime = Date.now() - validationStartTime;
+          
+          console.log(`🔍 [PERFORMANCE-DEBUG] Netflix ${level} - Timing Breakdown:`, {
+            aiGenerationTime: `${aiGenerationTime}ms`,
+            validationTime: `${validationTime}ms`,
+            totalTime: `${Date.now() - startTime}ms`,
+            pageCount: response.content.length,
+            wordsPerSecond: Math.round(result.wordCount / ((Date.now() - startTime) / 1000))
+          });
         }
         
       } else if (service === 'live') {
@@ -702,6 +796,16 @@ export function StoryPromptTester() {
       result.error = error instanceof Error ? error.message : 'Unknown error';
       result.responseTime = Date.now() - startTime;
       result.generationPath.push(`Error: ${result.error}`);
+      
+      // PHASE 5: ROOT CAUSE IDENTIFICATION - Track cascade failures and timeouts
+      console.log(`🔍 [PERFORMANCE-ERROR-DEBUG] ${service} ${level} - Load Time Analysis:`, {
+        totalTime: `${result.responseTime}ms`,
+        error: result.error,
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+        timeoutOccurred: result.error?.includes('timeout') || result.error?.includes('AbortError'),
+        cascadeFailure: result.error?.includes('model') || result.error?.includes('service'),
+        networkDelay: result.responseTime > 10000 ? 'EXCESSIVE' : result.responseTime > 5000 ? 'HIGH' : 'NORMAL'
+      });
       
       // Clear timeout on error
       if (testTimeouts.has(testKey)) {
