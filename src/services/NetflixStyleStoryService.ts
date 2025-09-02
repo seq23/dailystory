@@ -195,7 +195,18 @@ export class NetflixStyleStoryService {
           });
 
           if (repairResult.success && repairResult.repairedContent) {
-            console.log(`✅ Netflix: Repair successful after ${repairResult.attempts} attempts`);
+          console.log(`✅ Netflix: Repair successful after ${repairResult.attempts} attempts`);
+          
+          // SECURITY: Re-validate repaired content to prevent infinite loops
+          console.log('🔍 Netflix: Re-validating repaired content for security');
+          const revalidationResult = UnifiedValidator.validateContent(repairResult.repairedContent, {
+            mode: 'guest',
+            level,
+            userLanguage: userInfo.nativeLanguage
+          });
+          
+          if (revalidationResult.decision === 'ACCEPT') {
+            console.log('✅ Netflix: Repaired content passed re-validation');
             
             try {
               (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
@@ -205,10 +216,15 @@ export class NetflixStyleStoryService {
             window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
             return {
-              content: repairResult.repairedContent,
-              pageCount: repairResult.repairedContent.length,
+              content: revalidationResult.content || repairResult.repairedContent,
+              pageCount: (revalidationResult.content || repairResult.repairedContent).length,
               source: 'ai'
             };
+          } else {
+            console.log(`❌ Netflix: Repaired content failed re-validation: ${revalidationResult.decision}`);
+            console.log('🔄 Netflix: Using fallback due to repair re-validation failure');
+            return this.generateFallbackStory(userInfo, difficulty, 'repair_revalidation_failed');
+          }
           } else {
             console.log(`❌ Netflix: Repair failed after ${repairResult.attempts} attempts: ${repairResult.error}`);
             return this.generateFallbackStory(userInfo, difficulty, 'repair_failed');
