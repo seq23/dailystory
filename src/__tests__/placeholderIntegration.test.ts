@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PlaceholderValidationService } from "@/services/PlaceholderValidationService";
+import { UnifiedValidationService as PlaceholderValidationService } from "@/services/UnifiedValidationService";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import { UnifiedCharacterDescriptor } from "@/services/UnifiedCharacterDescriptor";
 import type { UserInfo } from "@/types";
