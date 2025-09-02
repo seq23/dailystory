@@ -387,7 +387,8 @@ export function StoryPromptTester() {
         // Check global source tracking
         const globalSource = (globalThis as any).__LAST_PAGE_SOURCE__;
         result.source = globalSource || 'unknown';
-        result.pages = 1; // Live service generates one page at a time
+        // Dynamic linkage: LiveGenerationService generates "1 page at a time" (as defined in NetflixStyleStoryService.ts:20)
+        result.pages = response.content ? 1 : 0;
         
         // Enhanced logging for source detection debugging
         console.log(`🔍 [TEST-DEBUG] Live Service Result for ${level}:`, {
