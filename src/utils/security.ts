@@ -105,12 +105,6 @@ export class ContentSecurity {
     ...ContentSecurity.multilingualInappropriateWords.en
   ];
 
-  // Words inappropriate only for youngest children (PreK-2nd grade) but OK for 3rd grade and up
-  private static youngerChildrenRestrictedWords = [
-    'scary', 'frightening', 'violent', 'dark', 'death', 'weapon', 'sword', 'fight',
-    'monster', 'ghost', 'zombie', 'vampire', 'witch', 'evil', 'mean', 'bad', 'hurt', 'pain',
-    'blood', 'angry', 'mad', 'hate', 'stupid', 'dumb', 'ugly', 'fat', 'skinny'
-  ];
 
   // Violence words allowed for Hard/Expert/Grade6+ levels
   private static violenceWordsForOlderKids = [
@@ -166,10 +160,13 @@ export class ContentSecurity {
     // Always include nuclear blacklist
     let filteredWords = [...this.NUCLEAR_BLACKLIST];
 
-    // For Level0-2 (PreK-2nd): Use full inappropriate words + younger children restricted
-    if (['Level0', 'Level1', 'Level2'].includes(level)) {
+    // For Level0-1 (PreK-1st): Use full inappropriate words  
+    if (['Level0', 'Level1'].includes(level)) {
       filteredWords.push(...this.multilingualInappropriateWords.en);
-      filteredWords.push(...this.youngerChildrenRestrictedWords);
+    }
+    // For Level2 (2nd-3rd): Use inappropriate words but allow age-appropriate adventure content
+    else if (level === 'Level2') {
+      filteredWords.push(...this.multilingualInappropriateWords.en);
     }
     // For Level3-4 (3rd-5th): Use inappropriate words but exclude mild violence words
     else if (['Level3', 'Level4'].includes(level)) {
@@ -379,22 +376,6 @@ export class ContentSecurity {
       }
     }
 
-    // Check age-restricted words only for youngest children (PreK-2nd grade) - English only for now
-    if (isYoungestChild && isLatinScript) {
-      for (const word of this.youngerChildrenRestrictedWords) {
-        try {
-          const wordPattern = new RegExp(`\\b${word}\\b`, 'i');
-          if (wordPattern.test(normalizedText)) {
-            return { appropriate: false, reason: `Content not appropriate for youngest children: ${word}` };
-          }
-        } catch (regexError) {
-          console.warn(`Regex error checking age-restricted word "${word}":`, regexError);
-          if (normalizedText.includes(word.toLowerCase())) {
-            return { appropriate: false, reason: `Content not appropriate for youngest children: ${word}` };
-          }
-        }
-      }
-    }
 
     // Check for repeated characters (potential obfuscation) - only for Latin scripts
     if (isLatinScript && /(.)\1{4,}/.test(normalizedText)) {
