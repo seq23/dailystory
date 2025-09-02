@@ -131,6 +131,21 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'sushi',
     specialRequest: 'science fiction'
   },
+  expert: {
+    name: 'Taylor',
+    age: 12,
+    grade: "6th+" as Grade,
+    nativeLanguage: "en" as LanguageCode,
+    learningGoal: "improve-english-reading" as LearningGoal,
+    avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
+    difficultyLevel: 'expert',
+    expertGradeLevel: '6th' as ExpertGradeLevel,
+    favoriteColor: 'silver',
+    favoriteAnimal: 'dragon',
+    hobbies: 'advanced reading',
+    favoriteFood: 'sushi',
+    specialRequest: 'complex adventures'
+  },
   
   // Grade-specific expert levels
   grade6: {

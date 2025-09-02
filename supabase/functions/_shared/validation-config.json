@@ -47,15 +47,15 @@
     "cacheLimit": 500
   },
   "characterThresholds": {
-    "Level0": { "minChars": 800, "maxChars": 1500 },
-    "Level1": { "minChars": 1500, "maxChars": 3000 },
-    "Level2": { "minChars": 2500, "maxChars": 5000 },
-    "Level3": { "minChars": 3500, "maxChars": 7000 },
-    "Level4": { "minChars": 5000, "maxChars": 12000 },
-    "Grade6": { "minChars": 5000, "maxChars": 12000 },
-    "Grade7": { "minChars": 5000, "maxChars": 12000 },
-    "Grade8": { "minChars": 5000, "maxChars": 12000 },
-    "Grade9": { "minChars": 5000, "maxChars": 12000 },
-    "Grade10": { "minChars": 5000, "maxChars": 12000 }
+    "Level0": { "minChars": 5, "maxChars": 400 },
+    "Level1": { "minChars": 5, "maxChars": 1600 },
+    "Level2": { "minChars": 5, "maxChars": 4600 },
+    "Level3": { "minChars": 5, "maxChars": 7900 },
+    "Level4": { "minChars": 5, "maxChars": 13200 },
+    "Grade6": { "minChars": 5, "maxChars": 26400 },
+    "Grade7": { "minChars": 5, "maxChars": 26400 },
+    "Grade8": { "minChars": 5, "maxChars": 26400 },
+    "Grade9": { "minChars": 5, "maxChars": 26400 },
+    "Grade10": { "minChars": 5, "maxChars": 26400 }
   }
 }

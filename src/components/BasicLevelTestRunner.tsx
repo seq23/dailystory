@@ -31,7 +31,8 @@ export function BasicLevelTestRunner() {
       beginner: { name: 'Emma', age: 4, grade: 'PreK' as const },
       easy: { name: 'Alex', age: 6, grade: 'K' as const },
       medium: { name: 'Maya', age: 8, grade: '2nd' as const },
-      hard: { name: 'Jordan', age: 10, grade: '4th' as const }
+      hard: { name: 'Jordan', age: 10, grade: '4th' as const },
+      expert: { name: 'Taylor', age: 12, grade: '6th+' as const }
     };
 
     const config = configs[level];
