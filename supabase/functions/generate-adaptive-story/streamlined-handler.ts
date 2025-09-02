@@ -328,14 +328,14 @@ Continue in this exact format, using *** to separate each story page.
       // Progressive retry enhancement with *** reminders based on attempt number
       if (isExpertLevel) {
         if (attempt === 2) {
-          enhancedSystemPrompt += `\n\nQUALITY ENHANCEMENT: Second attempt with intelligent model - focus on sophisticated narrative structure and advanced vocabulary integration. CRITICAL: End each page with ' *** ' marker.`;
+          enhancedSystemPrompt += `\n\nQUALITY ENHANCEMENT: Second attempt with intelligent model - focus on sophisticated narrative structure and advanced vocabulary integration.`;
         } else if (attempt >= 3) {
-          enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Attempt ${attempt}/${maxAttempts} - prioritize completion and reliability while maintaining quality. CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS! Generate any engaging story content that meets the requirements above.`;
-          finalUserPrompt += ` Create engaging story with natural flow and clear narrative structure. CRITICAL: End each page with ' *** ' marker. Include all target vocabulary naturally.`;
+          enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Attempt ${attempt}/${maxAttempts} - prioritize completion and reliability while maintaining quality. Generate any engaging story content that meets the requirements above.`;
+          finalUserPrompt += ` Create engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
         }
       } else if (attempt === 2) {
-        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Final attempt before template fallback - prioritize completion and reliability. CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS! Generate any engaging story content that meets the requirements above.`;
-        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure. CRITICAL: End each page with ' *** ' marker. Include all target vocabulary naturally.`;
+        enhancedSystemPrompt += `\n\nRELIABILITY EMPHASIS: Final attempt before template fallback - prioritize completion and reliability. Generate any engaging story content that meets the requirements above.`;
+        finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
       }
       
       // API call with correct model parameters and enhanced logging
