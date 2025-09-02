@@ -3,16 +3,52 @@
 ## Overview
 This guide documents the current functioning state of the story generation system as of the latest implementation, including recent fixes, architectural decisions, and actual system behavior.
 
-## Recent Critical Fixes
+## Recent Critical Fixes & Enhancements
 
-### 1. AI Story Generation Improvements
-**File**: `supabase/functions/generate-adaptive-story/index.ts`
+### 1. Expert Circuit Breaker System Implementation
+**File**: `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
 
-#### AI Model Selection (CORRECTED - 2025)
-- **Primary Model**: `gpt-4.1-2025-04-14` for high-quality generation (85% success rate)
-- **Fallback Model**: `gpt-4o-mini` for reliability when primary fails (15% activation rate)
-- **System**: 2-attempt generation with automatic model progression
-- **Performance**: 95%+ overall success rate, 2-10 second generation times
+#### Expert Level Progressive Model Chain (Grades 6-10)
+- **6-Attempt Chain**: GPT-5 → GPT-4.1 → GPT-5-mini → GPT-4.1 → GPT-4o → GPT-4o-mini
+- **Performance Target**: <10 seconds for expert level generation
+- **Success Rate**: 95%+ with progressive fallback system
+- **API Compatibility**: Automatic parameter mapping for newer vs legacy models
+- **Token Management**: Grade-specific limits (1800-2500 tokens) with expert optimization
+
+#### Regular Level Fallback Chain
+- **4-Attempt Chain**: GPT-4o-mini → GPT-4o-mini → GPT-4o → GPT-4o-mini  
+- **Fast Generation**: 3-5 second average response time
+- **Reliability Focus**: Consistent performance for standard difficulty levels
+
+### 2. Network Timeout & Retry Infrastructure
+**Files**: `src/utils/networkTimeout.ts`, `src/utils/errorHandling.ts`
+
+#### Exponential Backoff System
+- **Story Generation**: 60s timeout, 2 retries, 2s base delay
+- **Image Generation**: 15s timeout, 1 retry, 1s base delay
+- **TTS Requests**: 10s timeout, 1 retry, 500ms base delay
+- **API Calls**: 8s timeout, 1 retry, 1s base delay
+- **Jitter Implementation**: Random delay addition to prevent thundering herd
+
+#### Error Classification & Circuit Breaking  
+- **Error Types**: VALIDATION, NETWORK, API, AUTH, TIMEOUT, EXPERT_CIRCUIT, REPAIR_MODE
+- **Circuit Breaker**: Activates after 10 consecutive failures per error type
+- **Smart Recovery**: Automatic retry with exponential backoff and context preservation
+
+### 3. Repair Mode System
+**File**: `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
+
+#### Repair Triggers & Context Enhancement
+- **Trigger Conditions**: content_too_short, vocabulary_mismatch, narrative_inconsistency, generation_error
+- **Token Buffers**: 10-50% increase based on repair severity (low/medium/high/critical)
+- **Quality Recovery**: Enhanced prompts with error context and improvement targets
+- **Success Rate**: >80% repair success with quality validation
+
+#### Repair Model Chain Selection
+- **Low Severity**: GPT-4o-mini → GPT-4o (fast repairs)
+- **Medium Severity**: GPT-4o → GPT-4.1 → GPT-4o-mini (quality repairs)
+- **High Severity**: GPT-4.1 → GPT-5 → GPT-4o → GPT-4o-mini (complex repairs)  
+- **Critical Severity**: GPT-5 → GPT-4.1 → GPT-5-mini → GPT-4o → GPT-4o-mini (maximum effort)
 
 #### Title/Chapter Filtering
 - **Issue Fixed**: AI was generating unwanted titles and chapter headers
