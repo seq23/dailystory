@@ -9,6 +9,7 @@ import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
+import { RepairService } from './repairService';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -138,9 +139,45 @@ export class LiveGenerationService {
         };
       } else if (validationResult.decision === 'REPAIR') {
         console.log('🔧 Live Generation: Content needs repair - attempting AI repair');
-        // In production, this would trigger repair service
-        // For now, fall back to template
-        return this.generateFallbackFirstPage(userInfo, difficulty, 'content_needs_repair');
+        
+        const repairResult = await RepairService.repairContent({
+          originalContent: [content],
+          repairReasons: validationResult.reasons,
+          userInfo,
+          difficulty
+        });
+
+        if (repairResult.success && repairResult.repairedContent) {
+          console.log(`✅ Live Generation: Repair successful after ${repairResult.attempts} attempts`);
+          
+          const finalContent = repairResult.repairedContent[0] || content;
+          
+          const context: LiveGenerationContext = {
+            userInfo,
+            difficulty,
+            expertGradeLevel,
+            storyContext: [finalContent],
+            currentPage: 1,
+            totalExpectedPages: 999,
+            characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+          };
+
+          try {
+            (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+          } catch {}
+
+          window.dispatchEvent(new CustomEvent('story:generation:complete'));
+          
+          return {
+            content: finalContent,
+            isComplete: false,
+            nextContext: context
+          };
+        } else {
+          console.log(`❌ Live Generation: Repair failed after ${repairResult.attempts} attempts: ${repairResult.error}`);
+          return this.generateFallbackFirstPage(userInfo, difficulty, 'repair_failed');
+        }
       } else {
         console.log('❌ Live Generation: Validation rejected content');
         return this.generateFallbackFirstPage(userInfo, difficulty, 'content_validation_failed');

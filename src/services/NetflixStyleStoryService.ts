@@ -45,6 +45,7 @@ import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { StoryQualityChecker } from '@/utils/storyQualityChecker';
+import { RepairService } from './repairService';
 
 export interface NetflixStoryResult {
   content: string[];
@@ -131,8 +132,8 @@ export class NetflixStyleStoryService {
           contentLength: validationResult.content?.length || 0
         });
 
-        // Accept content based on unified validator decision - include REPAIR decisions
-        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT' || validationResult.decision === 'REPAIR' || validationResult.isValid) {
+        // Handle validation decisions properly
+        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
           const finalContent = validationResult.content || cleanedPages;
           
           console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages (${validationResult.metrics.tokenCount} tokens)`);
@@ -150,6 +151,35 @@ export class NetflixStyleStoryService {
             pageCount: finalContent.length,
             source: 'ai'
           };
+        } else if (validationResult.decision === 'REPAIR') {
+          console.log('🔧 Netflix: Content needs repair - attempting AI repair');
+          
+          const repairResult = await RepairService.repairContent({
+            originalContent: cleanedPages,
+            repairReasons: validationResult.reasons,
+            userInfo,
+            difficulty
+          });
+
+          if (repairResult.success && repairResult.repairedContent) {
+            console.log(`✅ Netflix: Repair successful after ${repairResult.attempts} attempts`);
+            
+            try {
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+            } catch {}
+
+            // Emit story generation complete event
+            window.dispatchEvent(new CustomEvent('story:generation:complete'));
+
+            return {
+              content: repairResult.repairedContent,
+              pageCount: repairResult.repairedContent.length,
+              source: 'ai'
+            };
+          } else {
+            console.log(`❌ Netflix: Repair failed after ${repairResult.attempts} attempts: ${repairResult.error}`);
+            return this.generateFallbackStory(userInfo, difficulty, 'repair_failed');
+          }
         }
 
         // Log validation failure details for debugging
