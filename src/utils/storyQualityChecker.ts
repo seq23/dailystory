@@ -168,11 +168,11 @@ export class StoryQualityChecker {
     
     // Flexible ranges with margin of error for natural flow
     const flexibleWordCounts = {
-      beginner: { min: 4, max: 8 },   // Small margin around 6-word target
-      easy: { min: 18, max: 30 },     // Margin around 24-word target
-      medium: { min: 35, max: 55 },   // Margin around 45-word target
-      hard: { min: 65, max: 95 },     // Margin around 80-word target
-      expert: { min: 85, max: 120 }   // Margin around 100+ word target
+      beginner: { min: 2, max: 8 },     // Strict for learning (2-8 words)
+      easy: { min: 18, max: 30 },       // Keep current with hard limit
+      medium: { min: 45, max: 80 },     // Allow 50-70 + creative flexibility
+      hard: { min: 70, max: 130 },      // Allow 80-120 + creative flexibility
+      expert: { min: 110, max: 220 }    // Allow 120-200 + creative flexibility
     };
     
     const ideal = idealWordCounts[difficulty] || idealWordCounts.easy;
