@@ -473,26 +473,43 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
 }
 
 /**
- * Smart content splitting with *** marker detection and sentence fallback
+ * Smart content splitting with enhanced asterisk pattern detection and sentence fallback
  */
 export function parseIntoPages(content: string, level: ValidationLevel): string[] {
   if (!content?.trim()) return [];
   
-  // Primary method: Check for *** page markers
-  const markerSplit = content.split(/\s*\*\*\*\s*/);
+  // Enhanced asterisk pattern detection with priority: *** > ** > *
+  let markerSplit: string[] = [];
+  let detectedPattern = '';
+  
+  // Try *** first (most preferred)
+  if (content.includes('***')) {
+    markerSplit = content.split(/\s*\*\*\*\s*/);
+    detectedPattern = '***';
+  }
+  // Try ** if no *** found
+  else if (content.includes('**')) {
+    markerSplit = content.split(/\s*\*\*\s*/);
+    detectedPattern = '**';
+  }
+  // Try * if no ** found  
+  else if (content.includes('*')) {
+    markerSplit = content.split(/\s*\*\s*/);
+    detectedPattern = '*';
+  }
   
   if (markerSplit.length > 1) {
-    // *** markers found - clean and return pages
+    // Asterisk markers found - clean and return pages
     const pages = markerSplit
       .map(page => page.trim())
       .filter(page => page.length > 0);
     
-    console.log(`✅ Page splitting: Found ${pages.length} pages using *** markers`);
+    console.log(`✅ Page splitting: Found ${pages.length} pages using '${detectedPattern}' markers`);
     return pages;
   }
   
   // Fallback method: Enhanced sentence-based splitting
-  console.log(`🔄 Page splitting: No *** markers found, using enhanced smart fallback`);
+  console.log(`🔄 Page splitting: No asterisk markers found, using enhanced smart fallback`);
   const expectedPages = getExpectedPagesForLevel(level);
   const smartSplit = enhancedAutoSplitContent(content, level, expectedPages);
   
