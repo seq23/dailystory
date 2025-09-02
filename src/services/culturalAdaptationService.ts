@@ -167,6 +167,20 @@ export class CulturalAdaptationService {
     return story;
   }
 
+  static getCulturalGuidanceString(nativeLanguage: string): string {
+    const languageGuidance: Record<string, string> = {
+      'fr': 'aspects of French culture that a person living in France, Quebec, or Francophone African countries would experience',
+      'es': 'aspects of Hispanic/Latino culture from Spain or Latin American countries',
+      'ar': 'aspects of Arabic culture from MENA regions',
+      'pt': 'aspects of Portuguese culture from Brazil or Portuguese-speaking African countries',
+      'zh': 'aspects of Chinese culture from mainland China, Taiwan, or Chinese communities worldwide',
+      'hi': 'aspects of Indian culture from various regions of India',
+      'en': '' // No cultural additions for English speakers
+    };
+    
+    return languageGuidance[nativeLanguage] || '';
+  }
+
   static generateCulturallyAdaptedCharacterDescription(userInfo: UserInfo): string {
     const context = this.getCulturalContext(userInfo.nativeLanguage || 'en');
     const isESLLearner = userInfo.nativeLanguage !== 'en';

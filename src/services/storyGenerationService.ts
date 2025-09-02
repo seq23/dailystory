@@ -7,6 +7,7 @@ import type { UserInfo, DifficultyLevel } from "@/types";
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { generateCreativeSeeds } from './inputEnhancementEngine';
+import { CulturalAdaptationService } from './culturalAdaptationService';
 
 export interface StoryGenerationBundle {
   storyContent: string;           // Fully resolved story requirements
@@ -194,7 +195,10 @@ export class StoryGenerationService {
       userPreferences = `User preferences: ${preferences.join(', ')}. `;
     }
 
-    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. Vocabulary: ${vocabularyInstructions}. ${creativeGuidance}
+    // CULTURAL CONTEXT INTEGRATION
+    const culturalContext = CulturalAdaptationService.getCulturalGuidanceString(essentialUserInfo.nativeLanguage);
+
+    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. Vocabulary: ${vocabularyInstructions}. ${culturalContext ? `Cultural context: When natural to the story, subtly incorporate ${culturalContext}. ` : ''}${creativeGuidance}
 
 Character Info: ${JSON.stringify(essentialUserInfo)}`;
 
