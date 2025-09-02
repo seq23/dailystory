@@ -23,10 +23,11 @@ export interface LiveGenerationContext {
 }
 
 export interface LivePageResult {
-  content: string;
+  content: string | string[];
   isComplete: boolean;
   nextContext?: LiveGenerationContext;
   error?: string;
+  endingPageCount?: number;
 }
 
 export class LiveGenerationService {
@@ -198,13 +199,13 @@ export class LiveGenerationService {
         return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', true);
       }
 
-      // Extract content from unified system - backend handles validation
-      const content = result.pages[0] || '';
-      if (!content || content.length < 10) {
+      // Extract ALL ending pages from unified system - backend handles validation
+      const allPages = result.pages || [];
+      if (allPages.length === 0 || !allPages[0] || allPages[0].length < 10) {
         return this.generateFallbackNextPage(context, nextPageNumber, 'content_too_short_conclusion', true);
       }
 
-      console.log('🚀 Live Generation: Ending page generated successfully');
+      console.log(`🚀 Live Generation: Ending generated with ${allPages.length} page(s)`);
       try {
         (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
         (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
@@ -214,9 +215,10 @@ export class LiveGenerationService {
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
       return {
-        content,
+        content: allPages.length === 1 ? allPages[0] : allPages,
         isComplete: true,
-        nextContext: undefined
+        nextContext: undefined,
+        endingPageCount: allPages.length
       };
     } catch (error) {
       console.error('🚀 Live Generation: Error generating ending page:', error);

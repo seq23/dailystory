@@ -1418,14 +1418,15 @@ const initializeStory = async () => {
         return;
       }
       
-      StoryContentLogger.logStoryChange('premium_first_page', 'before', [result.content], {
+      StoryContentLogger.logStoryChange('premium_first_page', 'before', [Array.isArray(result.content) ? result.content[0] : result.content], {
         userInfo: effectiveUser.name,
         difficulty: currentDifficulty,
         hasNextContext: !!result.nextContext,
         isComplete: result.isComplete
       });
-      setStory([result.content]);
-      StoryContentLogger.logStoryChange('premium_first_page', 'after', [result.content], {
+      const firstPageContent = Array.isArray(result.content) ? result.content[0] : result.content;
+      setStory([firstPageContent]);
+      StoryContentLogger.logStoryChange('premium_first_page', 'after', [firstPageContent], {
         expertGradeLevel: result.nextContext?.expertGradeLevel,
         title: `${userInfo.name}'s Live Adventure`
       });
@@ -1447,7 +1448,7 @@ const initializeStory = async () => {
         StorySessionCache.cacheStorySession(
           cacheId,
           currentDifficulty as any,
-          [result.content],
+          [Array.isArray(result.content) ? result.content[0] : result.content],
           [{ prompt: '' }],
           0,
           { isPremium: true, sessionStartTime }
@@ -1986,9 +1987,10 @@ const initializeStory = async () => {
       setJustAdvanced(true);
       const result = await generateNextPage();
       if (result && !result.error) {
-        StoryContentLogger.logStoryChange('premium_next_page', 'before', [...story, result.content], {
+        const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
+        StoryContentLogger.logStoryChange('premium_next_page', 'before', [...story, pageContent], {
           currentPageBeforeAdd: currentPage,
-          newPageContent: result.content.substring(0, 100),
+          contentPreview: pageContent?.substring(0, 100),
           hasNextContext: !!result.nextContext,
           isComplete: result.isComplete
         });
@@ -1996,12 +1998,12 @@ const initializeStory = async () => {
         // Backend now handles all validation - trust the response
         // Keep analytics logging but remove frontend re-validation
         console.log('📊 Premium page generated:', {
-          contentLength: result.content?.length || 0,
+          contentLength: pageContent?.length || 0,
           difficulty: currentDifficulty
         });
         
-        setStory(prev => [...prev, result.content]);
-        StoryContentLogger.logStoryChange('premium_next_page', 'after', [...story, result.content], {
+        setStory(prev => [...prev, pageContent]);
+        StoryContentLogger.logStoryChange('premium_next_page', 'after', [...story, pageContent], {
           newCurrentPage: currentPage + 1,
           totalPages: story.length + 1
         });
@@ -2042,13 +2044,14 @@ const initializeStory = async () => {
             };
             const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData);
             if (result && !result.error) {
-              StoryContentLogger.logStoryChange('premium_sequel_generation', 'before', [...story, result.content], {
+              const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
+              StoryContentLogger.logStoryChange('premium_sequel_generation', 'before', [...story, pageContent], {
                 sequelContext: 'continuation',
-                newPageContent: result.content.substring(0, 100),
+                contentPreview: pageContent?.substring(0, 100),
                 totalExpectedPages: Math.max(story.length + 1, 6)
               });
-              setStory(prev => [...prev, result.content]);
-              StoryContentLogger.logStoryChange('premium_sequel_generation', 'after', [...story, result.content], {
+              setStory(prev => [...prev, pageContent]);
+              StoryContentLogger.logStoryChange('premium_sequel_generation', 'after', [...story, pageContent], {
                 newCurrentPage: currentPage + 1,
                 totalPages: story.length + 1
               });
@@ -2069,13 +2072,14 @@ const initializeStory = async () => {
         // Fallback: continue generation if story not marked complete
         const result = await generateNextPage();
         if (result && !result.error) {
-          StoryContentLogger.logStoryChange('premium_fallback_next', 'before', [...story, result.content], {
+          const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
+          StoryContentLogger.logStoryChange('premium_fallback_next', 'before', [...story, pageContent], {
             fallbackReason: 'story not complete',
-            newPageContent: result.content.substring(0, 100),
+            contentPreview: pageContent?.substring(0, 100),
             hasNextContext: !!result.nextContext
           });
-          setStory(prev => [...prev, result.content]);
-          StoryContentLogger.logStoryChange('premium_fallback_next', 'after', [...story, result.content], {
+          setStory(prev => [...prev, pageContent]);
+          StoryContentLogger.logStoryChange('premium_fallback_next', 'after', [...story, pageContent], {
             newCurrentPage: currentPage + 1,
             totalPages: story.length + 1
           });
@@ -2538,8 +2542,9 @@ const handleRestartTimer = () => {
           userInfo: effectiveUser.name,
           hasNextContext: !!first.nextContext
         });
-        setStory([first.content]);
-        StoryContentLogger.logStoryChange('premium_rewrite_first', 'after', [first.content], {
+        const firstPageContent = Array.isArray(first.content) ? first.content[0] : first.content;
+        setStory([firstPageContent]);
+        StoryContentLogger.logStoryChange('premium_rewrite_first', 'after', [firstPageContent], {
           expertGradeLevel: first.nextContext?.expertGradeLevel,
           isComplete: first.isComplete,
           title: `${userInfo.name}'s Live Adventure`
@@ -2677,8 +2682,8 @@ const handleRestartTimer = () => {
     try {
       const result = await LiveGenerationService.generateEndingPage(liveContext);
       if (result && !result.error) {
-        StoryContentLogger.logStoryChange('premium_ending_page', 'before', [...story, result.content], {
-          endingPageContent: result.content.substring(0, 100),
+        StoryContentLogger.logStoryChange('premium_ending_page', 'before', [...story], {
+          contentPreview: Array.isArray(result.content) ? result.content[0]?.substring(0, 100) : result.content?.substring(0, 100),
           currentStoryLength: story.length,
           hasLiveContext: !!liveContext
         });
@@ -2692,18 +2697,28 @@ const handleRestartTimer = () => {
           difficulty: currentDifficulty
         });
         
-        setStory(prev => [...prev, result.content]);
-        StoryContentLogger.logStoryChange('premium_ending_page', 'after', [...story, result.content], {
+        // Handle multiple ending pages
+        const endingPages = Array.isArray(result.content) ? result.content : [result.content];
+        const endingPageCount = result.endingPageCount || endingPages.length;
+        
+        setStory(prev => [...prev, ...endingPages]);
+        StoryContentLogger.logStoryChange('premium_ending_page', 'after', [...story, ...endingPages], {
           endingPageIndex: story.length,
+          endingPageCount,
           isComplete: true,
           liveContextCleared: true
         });
         setIsStoryComplete(true);
         setLiveContext(null);
 
-        // Determine the index of the newly added ending page
-        const endingPageIndex = story.length; // new last index after append
-        setLastEndingPageIndex(endingPageIndex);
+        // Track the range of ending pages
+        const firstEndingPageIndex = story.length;
+        const lastEndingPageIndex = story.length + endingPages.length - 1;
+        setLastEndingPageIndex(lastEndingPageIndex);
+        
+        // Store ending page count for pagination display
+        (window as any).__endingPageCount__ = endingPageCount;
+        (window as any).__firstEndingPageIndex__ = firstEndingPageIndex;
 
         // Auto-advance to the newly generated concluding page
         setCurrentPage(prev => prev + 1);
@@ -2711,7 +2726,7 @@ const handleRestartTimer = () => {
         setTimeout(() => setJustAdvanced(false), 600);
 
         // Show expanded "Finish Story" CTA on the ending page only
-        finishExpandedOnPageRef.current = endingPageIndex;
+        finishExpandedOnPageRef.current = lastEndingPageIndex;
         setFinishCTAExpanded(true);
 
         setHighlightSave(true);
@@ -3047,7 +3062,17 @@ const handleRestartTimer = () => {
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
                   <p className="text-sm text-muted-foreground text-center min-w-[96px]">
-                    Page {currentPage + 1}
+                    {(() => {
+                      const endingPageCount = (window as any).__endingPageCount__;
+                      const firstEndingPageIndex = (window as any).__firstEndingPageIndex__;
+                      const isViewingEnding = endingPageCount && firstEndingPageIndex !== undefined && 
+                                            currentPage >= firstEndingPageIndex && 
+                                            currentPage <= firstEndingPageIndex + endingPageCount - 1;
+                      
+                      return isViewingEnding 
+                        ? `Page ${currentPage + 1} - This ending has ${endingPageCount} pages!`
+                        : `Page ${currentPage + 1}`;
+                    })()}
                   </p>
                   <Button
                     id="reader-next"
