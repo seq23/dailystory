@@ -180,28 +180,12 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       estimatedTokens: storyText.split(/\s+/).length * 1.3
     });
     
-    const parseResult = sharedParseIntoPages(storyText, validationLevel);
+    const pages = sharedParseIntoPages(storyText, validationLevel);
     
     console.log('📊 [PAGE-DEBUG] Parse result:', {
-      success: parseResult.success,
-      pagesCount: parseResult.success ? parseResult.pages.length : 0,
-      error: parseResult.success ? null : parseResult.error,
-      pagePreview: parseResult.success ? parseResult.pages.map(p => p.substring(0, 100)) : null
+      pagesCount: pages.length,
+      pagePreview: pages.map(p => p.substring(0, 100))
     });
-    
-    if (!parseResult.success) {
-      console.error('❌ Page parsing failed:', parseResult.error);
-      return new Response(JSON.stringify({
-        error: 'Failed to parse story into pages',
-        details: parseResult.error,
-        category: 'parsing_error'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-    
-    const pages = parseResult.pages;
     
     console.log(`📄 [VALIDATION-DEBUG] STREAMLINED: Page parsing complete:`, {
       totalPages: pages.length,
