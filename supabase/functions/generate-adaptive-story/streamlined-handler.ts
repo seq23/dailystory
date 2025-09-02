@@ -13,6 +13,10 @@ import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 
+// Import static caching and error classification
+const { getModelChain, getHairColorMapping, getSystemSettings } = await import('./StaticDataCache.ts');
+const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
+
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,19 +41,11 @@ interface StreamlinedConfig {
   repairReasons?: string[];
 }
 
-// Hair color mapping for English speakers only (moved from main handler)
+// Hair color mapping using cached data (performance optimized)
 function getHairColorForSkinTone(skinTone: string | undefined): string | null {
   if (!skinTone) return null;
-  
-  const hairColorMap: Record<string, string> = {
-    'pale': 'red hair',
-    'light': 'blonde hair', 
-    'medium': 'brown hair',
-    'olive': 'black hair',
-    'dark': 'dark curly hair'
-  };
-  
-  return hairColorMap[skinTone] || null;
+  const mapping = getHairColorMapping();
+  return mapping[skinTone] || null;
 }
 
 export async function handleStreamlinedGeneration(requestBody: any) {
@@ -276,53 +272,27 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     }
   }
 
-  // Enhanced AI Generation with Expert Circuit Breaker and Legacy Model Fallback
+  // Enhanced AI Generation with Intelligent Circuit Breaker
   let storyText = '';
   let attempt = 1;
+  let currentModelIndex = 0;
+  let retriesOnCurrentModel = 0;
+  const maxRetriesPerModel = 2;
   
   // Expert detection for specialized handling
   const isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
-  const maxAttempts = isExpertLevel ? 6 : 4; // Increased attempts for legacy fallback
-  const startTime = Date.now();
-
-  // Progressive model chain with legacy fallback (GPT-4o models use different parameters)
-  const modelProgression = isExpertLevel ? [
-    { model: 'gpt-5-2025-08-07', description: 'flagship expert quality', paramName: 'max_completion_tokens' },
-    { model: 'gpt-4.1-2025-04-14', description: 'intelligent fallback', paramName: 'max_completion_tokens' }, 
-    { model: 'gpt-5-mini-2025-08-07', description: 'fast & reliable', paramName: 'max_completion_tokens' },
-    { model: 'gpt-4.1-2025-04-14', description: 'retry intelligent', paramName: 'max_completion_tokens' },
-    { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
-    { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
-  ] : [
-    { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true }, 
-    { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true },
-    { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
-    { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
-  ];
-
-  console.log(`🎯 Expert Circuit Breaker: ${isExpertLevel ? 'EXPERT' : 'REGULAR'} mode - ${maxAttempts} attempts available`);
-
-  // Apply to BOTH attempts
-  const baseInstructions = `
-CRITICAL SUCCESS REQUIREMENTS:
-- Generate a reliable engaging narrative suitable for children
-- Use exactly three asterisks (***) on a line by themselves to separate story pages
-- Include natural continuation hooks and smooth story flow  
-- If target vocabulary provided, incorporate naturally throughout
-- This is a never-ending story - always continue, never conclude
-
-Example format:
-PAGE TEXT
-***
-PAGE TEXT
-***
-Continue in this exact format, using *** to separate each story page.
-`;
+  const modelProgression = getModelChain(isExpertLevel);
+  const systemSettings = getSystemSettings();
+  const maxAttempts = systemSettings.maxAttempts[isExpertLevel ? 'expert' : 'regular'];
+  
+  console.log(`🎯 Intelligent Circuit Breaker: ${isExpertLevel ? 'EXPERT' : 'REGULAR'} mode - ${maxAttempts} attempts available`);
+  
+  const baseInstructions = systemSettings.baseInstructions;
 
   while (attempt <= maxAttempts && !storyText) {
     try {
-      const currentModel = modelProgression[attempt - 1];
-      console.log(`🤖 AI Attempt ${attempt}/${maxAttempts} using ${currentModel.model} (${currentModel.description}):`, { 
+      const currentModel = modelProgression[currentModelIndex];
+      console.log(`🤖 AI Attempt ${attempt}/${maxAttempts} using ${currentModel.model} (${currentModel.description}) - Model ${currentModelIndex + 1}/${modelProgression.length}, Retry ${retriesOnCurrentModel + 1}/${maxRetriesPerModel}:`, { 
         gradeLevel,
         tokenBudget: maxTokens,
         qualityFirst: attempt === 1,
@@ -453,17 +423,44 @@ Continue in this exact format, using *** to separate each story page.
       }
       
     } catch (error) {
-      console.error(`❌ Attempt ${attempt} with ${modelProgression[attempt - 1].model} failed:`, {
+      console.error(`❌ Generation attempt ${attempt} failed:`, {
         error: error.message,
-        model: modelProgression[attempt - 1].model,
-        attempt,
-        maxAttempts,
-        stack: error.stack
+        model: currentModel?.model,
+        attempt: attempt,
+        maxAttempts: maxAttempts,
+        currentModelIndex,
+        retriesOnCurrentModel
       });
-      storyText = '';
+      
+      // Classify error to determine retry strategy
+      const classification = classifyError(error);
+      
+      if (classification.shouldRetryWithSameModel && retriesOnCurrentModel < maxRetriesPerModel) {
+        // Content error - retry same model with enhancement
+        retriesOnCurrentModel++;
+        const enhancement = getRetryEnhancement(classification.category, retriesOnCurrentModel);
+        if (enhancement) {
+          enhancedUserPrompt += `\n\n${enhancement}`;
+        }
+        console.log(`🔄 Retrying same model with content enhancement (${retriesOnCurrentModel}/${maxRetriesPerModel})`);
+      } else {
+        // API error or max retries reached - move to next model
+        currentModelIndex++;
+        retriesOnCurrentModel = 0;
+        if (currentModelIndex >= modelProgression.length) {
+          console.error('❌ All AI generation attempts failed');
+          throw new Error('All AI generation attempts failed');
+        }
+        console.log(`🔄 Moving to next model: ${modelProgression[currentModelIndex].model}`);
+      }
+      
+      attempt++;
+      
+      if (attempt > maxAttempts) {
+        console.error('❌ Maximum attempts reached');
+        throw new Error('All AI generation attempts failed');
+      }
     }
-    
-    attempt++;
   }
 
   if (!storyText?.trim()) {
@@ -472,7 +469,8 @@ Continue in this exact format, using *** to separate each story page.
       modelsAttempted: modelProgression.map(m => m.model),
       isExpertLevel,
       gradeLevel,
-      processingTimeMs: Date.now() - startTime
+      currentModelIndex,
+      retriesOnCurrentModel
     });
     throw new Error(`All AI generation attempts failed after ${maxAttempts} attempts with models: ${modelProgression.map(m => m.model).join(', ')}`);
   }

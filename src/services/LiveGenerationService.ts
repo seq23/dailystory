@@ -10,6 +10,7 @@ import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { RepairService } from './repairService';
+import { LoggerService } from '@/services/LoggerService';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -34,11 +35,11 @@ export class LiveGenerationService {
    */
   static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any): Promise<LivePageResult> {
     try {
-      console.log('🚀 Live Generation: Starting first page for', userInfo.name);
+      LoggerService.milestone('Starting first page generation', 'LiveGeneration', { user: userInfo.name });
       
       // Use user-selected difficulty only (no automatic overrides)
       const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
-      console.log(`🎯 Live Generation: Using user-selected difficulty ${difficulty} for ${userInfo.name}`);
+      LoggerService.info(`Using user-selected difficulty ${difficulty}`, 'LiveGeneration', { user: userInfo.name });
       
       // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
@@ -46,10 +47,10 @@ export class LiveGenerationService {
       if (difficulty === 'expert') {
         // Premium expert progression: adaptive grade selection
         expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
-        console.log(`📚 Live Generation: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
+        LoggerService.info(`Using adaptive expert grade ${expertGradeLevel}`, 'LiveGeneration', { user: userInfo.name });
       }
       
-      console.log('🔄 Live Generation: Using unified 4-tier system');
+      LoggerService.debug('Using unified 4-tier system', 'LiveGeneration');
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
@@ -61,13 +62,13 @@ export class LiveGenerationService {
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
-        console.error('🚀 Live Generation: 4-tier system failed:', result.error);
+        LoggerService.error('4-tier system failed', 'LiveGeneration', result.error);
         return this.generateFallbackFirstPage(userInfo, difficulty, 'unified_system_error');
       }
 
       // Extract first page from unified system - backend handles all validation
       const content = result.pages[0] || '';
-      console.log('✅ Live Generation: Content received from backend');
+      LoggerService.milestone('Content received from backend', 'LiveGeneration');
       
       // Create context for next page
       const context: LiveGenerationContext = {
@@ -179,10 +180,11 @@ export class LiveGenerationService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
-      // Create ending-focused userInfo
+      // CRITICAL FIX: Preserve user's original themes, characters, and settings for conclusion
+      // Don't overwrite specialRequest - let user's preferences guide the ending
       const endingUserInfo = {
         ...context.userInfo,
-        specialRequest: `Provide a satisfying conclusion to this adventure: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`
+        specialRequest: `${context.userInfo.specialRequest || 'adventure'} - please provide a satisfying conclusion to this story: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`
       };
       
       const result = await StoryGenerationService.generateStory(endingUserInfo, {
