@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, PlayCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
-import { estimateTokenCount } from '@/utils/tokenLimitValidator';
+import { UnifiedValidator } from '@/utils/unifiedValidator';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, ExpertGradeLevel } from '@/types';
@@ -75,7 +75,7 @@ export function ValidationTestRunner() {
         
         const pageCount = response.content?.length || 0;
         const fullText = response.content?.join(' ') || '';
-        const tokenCount = response.content ? estimateTokenCount(fullText) : 0;
+        const tokenCount = response.content ? response.content.join(' ').split(/\s+/).length * 0.75 : 0; // Rough token estimate
         const wordCount = fullText.split(/\s+/).filter(word => word.length > 0).length;
         const characterCount = countCharacters(response.content || []);
         const characterAnalysis = analyzeCharacters(
