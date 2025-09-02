@@ -188,6 +188,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isStoryStable, setIsStoryStable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastImageError, setLastImageError] = useState<string | null>(null);
+  
+  // Multi-page ending & sequel integration state
+  const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
   // For free users, limit displayed pages to 6 maximum
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
@@ -362,6 +365,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
   const [isStoryComplete, setIsStoryComplete] = useState(false);
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
+  
+  // Helper function to clear ending-related tracking variables
+  const clearEndingTracking = useCallback(() => {
+    console.log('🧹 Clearing ending tracking variables');
+    setOriginalStoryLength(null);
+    setLastEndingPageIndex(null);
+    // Clear global pagination variables
+    delete (window as any).__endingPageCount__;
+    delete (window as any).__firstEndingPageIndex__;
+  }, []);
   
   
   // Image state
@@ -2415,6 +2428,9 @@ const handleRestartTimer = () => {
       specialRequest: !!specialRequestOverride,
     });
 
+    // Clear ending tracking for new stories and rewrites
+    clearEndingTracking();
+
     // Get userId for cache clearing
     const currentUserId = isPremium ? 
       ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 
@@ -2646,6 +2662,9 @@ const handleRestartTimer = () => {
     // Premium users continuing to "Part II" - preserve character state
     console.log('🔗 Premium user starting sequel - preserving character state');
     
+    // Clear ending tracking to reset pagination UI
+    clearEndingTracking();
+    
     // Create new session ID for the sequel but keep character consistency
     const newCharacterSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
     
@@ -2661,13 +2680,21 @@ const handleRestartTimer = () => {
       console.warn('⚠️ Failed to preserve character state for sequel');
     }
     
+    // Use original story for sequel context (exclude ending pages)
+    const originalStoryPages = originalStoryLength !== null ? story.slice(0, originalStoryLength) : story;
+    console.log('📖 Using original story context for sequel:', {
+      totalStoryPages: story.length,
+      originalStoryLength,
+      contextPages: originalStoryPages.length
+    });
+    
     const newContext: LiveGenerationContext = {
       userInfo,
       difficulty: currentDifficulty,
       expertGradeLevel: currentDifficulty === 'expert' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
-      storyContext: [...story],
-      currentPage: story.length,
-      totalExpectedPages: Math.max(story.length + 1, 6),
+      storyContext: originalStoryPages,
+      currentPage: originalStoryPages.length,
+      totalExpectedPages: Math.max(originalStoryPages.length + 1, 6),
       characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
     };
     setLiveContext(newContext);
@@ -2701,12 +2728,16 @@ const handleRestartTimer = () => {
         const endingPages = Array.isArray(result.content) ? result.content : [result.content];
         const endingPageCount = result.endingPageCount || endingPages.length;
         
+        // Store original story length BEFORE adding ending pages
+        setOriginalStoryLength(story.length);
+        
         setStory(prev => [...prev, ...endingPages]);
         StoryContentLogger.logStoryChange('premium_ending_page', 'after', [...story, ...endingPages], {
           endingPageIndex: story.length,
           endingPageCount,
           isComplete: true,
-          liveContextCleared: true
+          liveContextCleared: true,
+          originalStoryLength: story.length
         });
         setIsStoryComplete(true);
         setLiveContext(null);
