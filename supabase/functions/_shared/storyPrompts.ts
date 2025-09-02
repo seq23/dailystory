@@ -31,13 +31,14 @@ CRITICAL LEVEL 0 FORMAT REQUIREMENTS (HIGHEST PRIORITY):
 - Generate EXACTLY one sentence per page
 - IMMEDIATELY follow each sentence with ' *** '
 - Each sentence + *** = one complete page
-- NO exceptions, NO narrative flow considerations
+- 8 WORDS PER PAGE MAX, NO exceptions
 - Continue story infinitely until user requests ending
 
 SENTENCE CONSTRUCTION:
-- Use 1-8 words per sentence, MIX sentence lengths
-- PREFER shorter sentences: 2-4 words is best
-- 5-6 words is good, 7-8 words use sparingly
+- MIX sentence lengths
+- PREFER shorter sentences
+- 2-, 3-, and 4 word sentences is BEST
+- 5-6 words is acceptable, 7-8 words use sparingly
 - Structure: "Name + verb" OR "Name + verb + noun" OR "Name + verb + adjective + noun"
 - Use simple pronouns: I, you, me, we, they, it, he, she
 - Allow simple possessives: Sam's, cat's, dog's
