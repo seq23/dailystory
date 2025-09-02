@@ -154,31 +154,11 @@ export class ContentSecurity {
   private static submissionCounts = new Map<string, { count: number; timestamp: number }>();
 
   /**
-   * Get level-based word list for filtering
+   * Get level-based word list for filtering (simplified to use NUCLEAR_BLACKLIST only)
    */
   static getLevelBasedWordList(level: SecurityLevel): string[] {
-    // Always include nuclear blacklist
-    let filteredWords = [...this.NUCLEAR_BLACKLIST];
-
-    // For Level0-1 (PreK-1st): Use full inappropriate words  
-    if (['Level0', 'Level1'].includes(level)) {
-      filteredWords.push(...this.multilingualInappropriateWords.en);
-    }
-    // For Level2 (2nd-3rd): Use inappropriate words but allow age-appropriate adventure content
-    else if (level === 'Level2') {
-      filteredWords.push(...this.multilingualInappropriateWords.en);
-    }
-    // For Level3-4 (3rd-5th): Use inappropriate words but exclude mild violence words
-    else if (['Level3', 'Level4'].includes(level)) {
-      const inappropriateWords = this.multilingualInappropriateWords.en.filter(word => 
-        !this.violenceWordsForOlderKids.includes(word)
-      );
-      filteredWords.push(...inappropriateWords);
-    }
-    // For Grade6-10: Only nuclear blacklist (violence words allowed)
-    // Grade6+ levels already have minimal filtering
-
-    return [...new Set(filteredWords)]; // Remove duplicates
+    // Only use nuclear blacklist - let AI prompts handle age-appropriateness
+    return [...this.NUCLEAR_BLACKLIST];
   }
 
   /**
