@@ -557,10 +557,10 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
 }
 
 /**
- * Get total story tokens for guests (6 pages of consistent difficulty)
+ * Get total story tokens for guests (expected pages for difficulty level)
  */
 export function getTotalStoryTokensForGuests(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getPerPageTokenLimit(difficulty) * 6; // 6 pages for guests
+  return getPerPageTokenLimit(difficulty) * getExpectedPages(difficulty); // Dynamic pages based on difficulty
 }
 
 
@@ -595,10 +595,10 @@ export function getExpectedPages(difficulty: DifficultyLevel | ExpertGradeLevel)
 }
 
 /**
- * Get token limit for difficulty level - uses guest story tokens (6 pages)
+ * Get token limit for difficulty level - uses guest story tokens (expected pages)
  */
 export function getTokenLimitForDifficulty(difficulty: DifficultyLevel | ExpertGradeLevel): number {
-  return getTotalStoryTokensForGuests(difficulty); // For guest stories (6 pages)
+  return getTotalStoryTokensForGuests(difficulty); // For guest stories (dynamic pages based on difficulty)
 }
 
 /**

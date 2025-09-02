@@ -1,10 +1,10 @@
 {
   "tokenLimits": {
-    "Level0": { "perPage": 15, "guestStory": 90 },
-    "Level1": { "perPage": 60, "guestStory": 360 },
-    "Level2": { "perPage": 250, "guestStory": 1500 },
-    "Level3": { "perPage": 350, "guestStory": 2100 },
-    "Level4": { "perPage": 500, "guestStory": 3000 },
+    "Level0": { "perPage": 15, "guestStory": 150 },
+    "Level1": { "perPage": 60, "guestStory": 600 },
+    "Level2": { "perPage": 250, "guestStory": 2500 },
+    "Level3": { "perPage": 350, "guestStory": 3500 },
+    "Level4": { "perPage": 500, "guestStory": 5000 },
     "Grade6": { "perPage": 500, "guestStory": 4000 },
     "Grade7": { "perPage": 500, "guestStory": 4000 },
     "Grade8": { "perPage": 500, "guestStory": 4000 },
