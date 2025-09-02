@@ -29,7 +29,7 @@ export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
 
 CRITICAL LEVEL 0 FORMAT REQUIREMENTS (HIGHEST PRIORITY):
 - Generate EXACTLY one sentence per page
-- IMMEDIATELY follow each sentence with ' *** '
+- Use exactly three asterisks (***) on a line by themselves to separate story pages
 - Each sentence + *** = one complete page
 - 8 WORDS PER PAGE MAX, NO exceptions
 - Continue story infinitely until user requests ending
@@ -73,7 +73,14 @@ Cat purrs loudly. ***
 
 Sam plays happily. ***
 
-CRITICAL: Every sentence MUST be followed by " ***" - no exceptions!
+Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
     userPromptTemplate: 'Create a never-ending pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
@@ -86,9 +93,16 @@ Use seed={seed} to vary stories. Change settings, activities, characters, and mo
 
 CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
 - Continue story indefinitely until user requests ending
 - Natural narrative flow with continuation hooks
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 SENTENCE CONSTRUCTION:
 - Use 2-3 sentences per page
@@ -123,9 +137,16 @@ Use seed={seed} for creative expression.`,
 
 CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
 - Continue story indefinitely until user requests ending
 - Include narrative hooks and mild tension
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 SENTENCE CONSTRUCTION:
 - Use 4-5 sentences per page
@@ -160,9 +181,16 @@ Use seed={seed} for creative expression.`,
 
 CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
 - Continue story indefinitely until user requests ending
 - Include character development and plot complexity
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 SENTENCE CONSTRUCTION:
 - Natural sentence flow without rigid page requirements
@@ -197,9 +225,16 @@ Use seed={seed} for creative expression.`,
 
 CRITICAL OUTPUT FORMAT:
 - Generate content as continuous narrative flow
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
 - Continue story indefinitely until user requests ending
 - Focus on thematic depth and character psychology
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 SENTENCE CONSTRUCTION:
 - Natural sophisticated flow without rigid page requirements
@@ -240,7 +275,14 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -275,7 +317,14 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -310,7 +359,14 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -345,7 +401,14 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
@@ -380,7 +443,14 @@ CRITICAL RULES:
 - Each continuation should have compelling hooks with thematic depth
 - Follow story's natural rhythm and pacing requirements
 - Generate content as continuous narrative that naturally breaks into distinct scenes/segments
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages. Do not add titles, page numbers, or headers.
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 
 VOCABULARY INTEGRATION:
 - PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions

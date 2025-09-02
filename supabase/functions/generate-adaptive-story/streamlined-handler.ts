@@ -297,11 +297,17 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   const baseInstructions = `
 CRITICAL SUCCESS REQUIREMENTS:
 - Generate a reliable engaging narrative suitable for children
-- CRITICAL: End each page with ' *** ' marker - NO EXCEPTIONS!
+- Use exactly three asterisks (***) on a line by themselves to separate story pages
 - Include natural continuation hooks and smooth story flow  
 - If target vocabulary provided, incorporate naturally throughout
-- Never include page numbers, titles, or formatting markers
 - This is a never-ending story - always continue, never conclude
+
+Example format:
+PAGE TEXT
+***
+PAGE TEXT
+***
+Continue in this exact format, using *** to separate each story page.
 `;
 
   while (attempt <= maxAttempts && !storyText) {
