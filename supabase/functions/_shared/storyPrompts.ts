@@ -92,7 +92,7 @@ CRITICAL OUTPUT FORMAT:
 SENTENCE CONSTRUCTION:
 - Use 2-3 sentences per page
 - 4-8 word sentences (max 12 words)
-- 15-24 words per page total  
+- 15-24 words per page total (NO PAGE OVER 30 WORDS. BEFORE GENERATING COUNT TOTAL WORDS. MUST BE LESS THAN 30 WORDS)  
 - Simple present/past tense, subject-verb-object structure
 - Mix simple sentences with compound sentences using "and," "but," "so"
 

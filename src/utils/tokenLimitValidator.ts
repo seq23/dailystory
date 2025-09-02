@@ -161,7 +161,7 @@ export function validateTokenLimit(
   
   // Enhanced validation with template vs AI mode detection
   const isTemplateMode = mode === 'template';
-  const templateMultiplier = isTemplateMode && difficulty !== 'beginner' ? 1.8 : 1.0;
+  const templateMultiplier = isTemplateMode && difficulty !== 'beginner' && difficulty !== 'easy' ? 1.8 : 1.0;
   const effectiveMaxTokens = Math.floor(maxTokens * templateMultiplier);
   
   const isValid = result.isValid && actualTokens <= effectiveMaxTokens;
