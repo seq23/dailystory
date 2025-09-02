@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TemplateMonitoringService } from '@/services/TemplateMonitoringService';
-import { UnifiedValidationService as TemplateValidationService } from '@/services/UnifiedValidationService';
+import { TemplateValidationService } from '@/services/TemplateValidationService';
+import { PlaceholderValidationService } from '@/services/PlaceholderValidationService';
 import { Activity, AlertTriangle, CheckCircle, Clock, Zap } from 'lucide-react';
 
 interface MonitoringData {

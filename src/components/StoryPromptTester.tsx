@@ -15,7 +15,8 @@ import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
-// Token and placeholder validation now handled by UnifiedValidator
+import { validatePageTokenDistribution, getTokenLimitForDifficulty, validateTokenLimit, estimateTokenCount } from '@/utils/tokenLimitValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
@@ -62,8 +63,8 @@ interface TestResult {
   fallbackReason?: string;
   generationPath?: string[];
   emergencyContentUsed?: boolean;
-  // Enhanced validation fields - now handled by UnifiedValidator
-  placeholderValidation?: any;
+  // Enhanced validation fields
+  placeholderValidation?: import('@/utils/placeholderValidator').PlaceholderValidationResult;
   contentIssues?: string[];
   tokenValidation?: any;
   hasEmptyContent?: boolean;
@@ -701,15 +702,11 @@ export function StoryPromptTester() {
       result.responseTime = Date.now() - startTime;
       result.success = true;
       
-      // Use UnifiedValidator for token validation
-      const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
-      const tokenValidation = UnifiedValidator.validateContent(result.fullContent || [], {
-        mode: 'guest',
-        level: validationLevel
-      });
+      // Use proper token validation with the full content
+      const tokenValidation = validatePageTokenDistribution(result.fullContent || [], level as DifficultyLevel);
       result.withinTokenLimits = tokenValidation.isValid;
-      result.tokenCount = tokenValidation.metrics.tokenCount || 0;
-      result.maxTokensAllowed = UnifiedValidator.getTokenLimits(validationLevel).guestStory;
+      result.tokenCount = tokenValidation.actualTokens || 0;
+      result.maxTokensAllowed = tokenValidation.maxAllowed || 0;
       
       // Show final result toast
       showTestToast({
@@ -724,15 +721,14 @@ export function StoryPromptTester() {
         let cachedValidation = getCachedValidation(result.fullContent, level, service);
         
         if (!cachedValidation) {
-          // Simplified validation without deleted utilities
-          const hasUnresolvedPlaceholders = result.fullContent.some(page => page.includes('{') && page.includes('}'));
-          const placeholderValidation = { isValid: !hasUnresolvedPlaceholders };
-          const contentIssues = hasUnresolvedPlaceholders ? ['Unresolved placeholders found'] : [];
-          const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
-          const tokenValidation = UnifiedValidator.validateContent(result.fullContent, {
-            mode: 'guest',
-            level: validationLevel
-          });
+          // Run validation and cache results
+          const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
+          const contentIssues = checkForPlaceholderIssues(result.fullContent);
+          const tokenValidation = validatePageTokenDistribution(
+            result.fullContent, 
+            level as DifficultyLevel, 
+            result.source === 'ai' ? 'ai' : 'template'
+          );
           
           cachedValidation = {
             placeholderValidation,
@@ -885,20 +881,16 @@ export function StoryPromptTester() {
   const analyzeTokenLimits = (content: string[], level: string): { isValid: boolean; tokenCount: number; wordCount: number; maxTokens: number } => {
     const fullText = (Array.isArray(content) && content.length > 0) ? content.join(' ') : '';
     const wordCount = countWords(fullText);
-    const tokenCount = Math.floor(wordCount * 0.75); // Rough token estimate
+    const tokenCount = estimateTokenCount(fullText);
     
-    // Use UnifiedValidator for validation
-    const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
-    const validation = UnifiedValidator.validateContent([fullText], {
-      mode: 'guest',
-      level: validationLevel
-    });
+    // Use the proper validation function from tokenLimitValidator
+    const validation = validateTokenLimit(fullText, level as DifficultyLevel, 'ai');
     
     return {
       isValid: validation.isValid,
       tokenCount,
       wordCount,
-      maxTokens: UnifiedValidator.getTokenLimits(validationLevel).guestStory
+      maxTokens: validation.maxAllowed
     };
   };
 
@@ -1183,7 +1175,7 @@ export function StoryPromptTester() {
                   <span className="text-sm font-medium">Placeholder Resolution</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {result.placeholderValidation?.isValid ? '✅ Placeholders resolved' : '❌ Unresolved placeholders found'}
+                  {getPlaceholderValidationMessage(result.placeholderValidation)}
                 </p>
                 {result.contentIssues && result.contentIssues.length > 0 && (
                   <div className="mt-2 space-y-1">

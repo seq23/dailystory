@@ -9,7 +9,8 @@ import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { useTemplateCounts } from '@/hooks/useTemplateCounts';
 import { StoryResultDisplay } from './StoryResultDisplay';
-import { UnifiedValidator } from '@/utils/unifiedValidator';
+import { validatePageTokenDistribution, getTokenLimitForDifficulty } from '@/utils/tokenLimitValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { DifficultyLevel } from '@/types';
 
 export function QuickTemplateTest() {
@@ -158,9 +159,9 @@ export function QuickTemplateTest() {
               </span>
               {testingMode === 'testing' && selectedLevel && (
                 <>
-                   <Badge variant="secondary">
-                     Target: {UnifiedValidator.getTokenLimits(UnifiedValidator.mapDifficultyToLevel(selectedLevel as DifficultyLevel)).guestStory} tokens
-                   </Badge>
+                  <Badge variant="secondary">
+                    Target: {getTokenLimitForDifficulty(selectedLevel as DifficultyLevel)} tokens
+                  </Badge>
                   <Badge variant="outline">
                     {selectedLevel !== 'beginner' ? 'Template density' : 'AI-matched density'}
                   </Badge>
@@ -252,17 +253,15 @@ export function QuickTemplateTest() {
                 <CardTitle>Validation Results</CardTitle>
               </CardHeader>
               <CardContent>
-                 {(() => {
-                   // Use UnifiedValidator for validation
-                   const validationLevel = UnifiedValidator.mapDifficultyToLevel(selectedLevel as DifficultyLevel);
-                   const validationResult = UnifiedValidator.validateContent(result.pages, {
-                     mode: 'guest',
-                     level: validationLevel
-                   });
+                {(() => {
+                  const validationResult = validatePageTokenDistribution(
+                    result.pages, 
+                    selectedLevel as DifficultyLevel, 
+                    result.metadata?.targetWordDensity === 'Template-optimized' ? 'template' : 'ai'
+                  );
 
-                   const hasUnresolvedPlaceholders = result.pages.some(page => page.includes('{') && page.includes('}'));
-                   const placeholderValidation = { isValid: !hasUnresolvedPlaceholders };
-                   const placeholderIssues = hasUnresolvedPlaceholders ? ['Unresolved placeholders found'] : [];
+                  const placeholderValidation = validatePlaceholders(result.pages);
+                  const placeholderIssues = checkForPlaceholderIssues(result.pages);
                   
                   return (
                     <div className="space-y-4">
@@ -272,28 +271,28 @@ export function QuickTemplateTest() {
                           <Badge variant={validationResult.isValid ? 'default' : 'destructive'}>
                             {validationResult.isValid ? 'Valid' : 'Invalid'}
                           </Badge>
-                           <span className="text-sm">
-                             {validationResult.metrics.tokenCount} / {UnifiedValidator.getTokenLimits(validationLevel).guestStory} tokens
-                             {result.metadata?.targetWordDensity === 'Template-optimized' && ' (Template mode)'}
-                           </span>
+                          <span className="text-sm">
+                            {validationResult.actualTokens} / {validationResult.maxAllowed} tokens
+                            {validationResult.templateMode && ' (Template mode)'}
+                          </span>
                         </div>
                         
-                         {validationResult.reasons.length > 0 && (
-                           <div className="space-y-1">
-                             <p className="text-sm font-medium">Validation Reasons:</p>
-                             {validationResult.reasons.map((reason, index) => (
-                               <p key={index} className="text-sm text-muted-foreground">• {reason}</p>
-                             ))}
-                           </div>
-                         )}
+                        {validationResult.warnings.length > 0 && (
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">Token Warnings:</p>
+                            {validationResult.warnings.map((warning, index) => (
+                              <p key={index} className="text-sm text-muted-foreground">• {warning}</p>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       {/* Placeholder Validation */}
                       <div className="space-y-2 p-3 bg-muted rounded-lg">
                         <p className="text-sm font-medium">Placeholder Resolution</p>
-                         <p className="text-sm text-muted-foreground">
-                           {placeholderValidation.isValid ? '✅ Placeholders resolved' : '❌ Unresolved placeholders found'}
-                         </p>
+                        <p className="text-sm text-muted-foreground">
+                          {getPlaceholderValidationMessage(placeholderValidation)}
+                        </p>
                         {placeholderIssues.length > 0 && (
                           <div className="space-y-1">
                             <p className="text-xs font-medium text-destructive">Content Issues:</p>

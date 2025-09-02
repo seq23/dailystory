@@ -95,7 +95,7 @@ import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/Ne
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
 import { DiagnosticTool } from "@/utils/diagnostics";
-import { UnifiedValidator } from "@/utils/unifiedValidator";
+import { validateGuestStoryTokens, validatePremiumPageTokens } from "@/utils/tokenLimitValidator";
 
 import { SimpleImageService } from "@/services/SimpleImageService";
 import { ImageFallbackService } from "@/services/ImageFallbackService";
@@ -1615,16 +1615,13 @@ const initializeStory = async () => {
       // BUFFERED UPDATE: Prevent flickering by updating in single batch
       console.log('📚 Setting story content via buffer to prevent flickering...');
       
-        // Token validation for guest users (6-page story limit)
-        if (!isPremium) {
-          const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
-          const validationResult = UnifiedValidator.validateContent(processedPages || [], {
-            mode: 'guest',
-            level: validationLevel
-          });
-          if (!validationResult.isValid) {
-            console.warn('⚠️ Guest story exceeds limits:', validationResult);
-            toast({
+      // Token validation for guest users (6-page story limit)
+      if (!isPremium) {
+        const fullStoryText = (processedPages || []).join(' ');
+        const validation = validateGuestStoryTokens(fullStoryText, currentDifficulty);
+        if (!validation.isValid) {
+          console.warn('⚠️ Guest story exceeds token limits:', validation);
+          toast({
             title: "Story Length Notice",
             description: `Story is within limits but on the longer side for ${currentDifficulty} level.`,
             variant: "default"
@@ -2000,13 +1997,9 @@ const initializeStory = async () => {
         
         // Token validation for premium users (per-page limit)
         if (isPremium) {
-          const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
-          const validationResult = UnifiedValidator.validateContent([result.content], {
-            mode: 'live',
-            level: validationLevel
-          });
-          if (!validationResult.isValid) {
-            console.warn('⚠️ Premium page exceeds limits:', validationResult);
+          const validation = validatePremiumPageTokens(result.content, currentDifficulty);
+          if (!validation.isValid) {
+            console.warn('⚠️ Premium page exceeds token limits:', validation);
             toast({
               title: "Page Length Notice", 
               description: `This page is a bit long for ${currentDifficulty} level, but that's okay!`,
@@ -2699,13 +2692,9 @@ const handleRestartTimer = () => {
         });
         
         // Token validation for premium ending page
-        const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
-        const validationResult = UnifiedValidator.validateContent([result.content], {
-          mode: 'live',
-          level: validationLevel
-        });
-        if (!validationResult.isValid) {
-          console.warn('⚠️ Premium ending page exceeds limits:', validationResult);
+        const validation = validatePremiumPageTokens(result.content, currentDifficulty);
+        if (!validation.isValid) {
+          console.warn('⚠️ Premium ending page exceeds token limits:', validation);
           toast({
             title: "Ending Page Notice", 
             description: `The ending is a bit long for ${currentDifficulty} level, but that's perfectly fine!`,
