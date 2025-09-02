@@ -1,3 +1,42 @@
+/*
+ * ============================================================================
+ * BUSINESS MODEL DOCUMENTATION - AUDIO SESSION MANAGEMENT
+ * ============================================================================
+ * 
+ * AUDIO ACCESS CONTROL BY USER TYPE:
+ * 
+ * 1. GUEST USERS (Free):
+ *    - Limited to ONE audio playback per page per session
+ *    - After playing audio once on a page, shows crown icon (upgrade prompt)
+ *    - Tracks per-session page usage via sessionStorage
+ *    - Audio restriction drives premium upgrade conversions
+ *    - Resets when "Next Story" clicked or session ends
+ * 
+ * 2. PREMIUM USERS:
+ *    - Unlimited audio playback on any page
+ *    - No crown icons or upgrade prompts
+ *    - Can replay audio as many times as desired
+ *    - Full access to all audio features
+ * 
+ * 3. SESSION TRACKING:
+ *    - Uses unique session ID per guest session
+ *    - Content hash prevents cheating by refreshing
+ *    - Tracks which pages have had audio played
+ *    - Comprehensive clearing when session ends
+ * 
+ * 4. BUSINESS LOGIC:
+ *    - Audio limitations complement 6-page story limits
+ *    - Multiple upgrade touch points throughout experience
+ *    - Premium removes ALL restrictions (time, pages, audio)
+ * 
+ * 5. VOCABULARY SERVICE INTEGRATION:
+ *    - Exposes current user name for pronunciation features
+ *    - Audio coaching available to both user types
+ *    - Premium gets enhanced vocabulary features
+ * 
+ * ============================================================================
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import type { UserInfo } from '@/types';
 

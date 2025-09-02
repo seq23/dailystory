@@ -1,3 +1,38 @@
+/*
+ * ============================================================================
+ * BUSINESS MODEL DOCUMENTATION - TOKEN LIMIT VALIDATION
+ * ============================================================================
+ * 
+ * CRITICAL BUSINESS RULES:
+ * 
+ * 1. TWO USER TYPES:
+ *    - Guest Users (Free): 20-minute timer, limited to 6 pages per story
+ *    - Premium Users: Can dismiss timer, unlimited story length
+ * 
+ * 2. GUEST USER RESTRICTIONS:
+ *    - Netflix-style generation: 10+ pages generated at once by OpenAI
+ *    - BUSINESS RULE: Artificially limited to 6 pages to encourage premium upgrades
+ *    - After page 6, they see "Next Story" button (never see story endings)
+ *    - This is intentional - drives premium conversions
+ * 
+ * 3. PREMIUM USER BENEFITS:
+ *    - Live generation: 1 page at a time by OpenAI
+ *    - Can continue same story indefinitely
+ *    - "Finish Story" option for AI-generated endings when THEY choose
+ * 
+ * 4. NEVER-ENDING STORY ARCHITECTURE:
+ *    - AI should NEVER naturally conclude stories
+ *    - Guest cutoff at page 6 is artificial (business decision)
+ *    - Premium users choose when to end via "Finish Story"
+ * 
+ * 5. TOKEN VALIDATION:
+ *    - Guests: Backend generates full story, frontend enforces 6-page limit
+ *    - Premium: Per-page validation for live generation
+ *    - getTotalStoryTokensForGuests() returns full story tokens (not 6-page limit)
+ * 
+ * ============================================================================
+ */
+
 // Token Limit Validation Utility - Now using shared validation architecture
 // Delegates to shared utilities for consistency with backend
 

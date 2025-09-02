@@ -1,3 +1,43 @@
+/*
+ * ============================================================================
+ * BUSINESS MODEL DOCUMENTATION - SESSION CACHE MANAGER
+ * ============================================================================
+ * 
+ * UNIFIED CACHE MANAGEMENT FOR DIFFERENT USER EXPERIENCES:
+ * 
+ * 1. GUEST USER CACHE CLEARING:
+ *    - "Next Story": Clears cache to start fresh 6-page cycle
+ *    - Session End: Comprehensive clearing after 20-minute timer expires
+ *    - Prevents contamination between different guest sessions
+ *    - Avatar-aware clearing to maintain character consistency
+ * 
+ * 2. PREMIUM USER CACHE CLEARING:
+ *    - "Rewrite Story": Selective clearing (preserve avatar, clear story)
+ *    - Session End: Complete clearing when user chooses to end
+ *    - Story Library: Preserve saved stories with original images
+ *    - Magic Wand: Regenerate story with new images
+ * 
+ * 3. CLEARING CONTEXTS:
+ *    - 'session-end': Complete wipe for both user types
+ *    - 'premium-rewrite': Selective clearing for story regeneration
+ *    - 'new-session': Fresh start with clean caches
+ *    - 'next-story': Guest cycle management (6-page limit enforcement)
+ * 
+ * 4. CACHE TYPES MANAGED:
+ *    - Image cache: Generated images for stories
+ *    - Story content: Pages, navigation, progress
+ *    - Visual state: Character appearance, consistency
+ *    - Character state: Avatar identity across sessions
+ *    - Session data: Timer, progress, user preferences
+ * 
+ * 5. BUSINESS LOGIC ENFORCEMENT:
+ *    - Guest 6-page limit: Cache clearing enables "Next Story" cycle
+ *    - Premium continuity: Preserve character identity during rewrites
+ *    - Cross-session isolation: Prevent avatar/story contamination
+ * 
+ * ============================================================================
+ */
+
 /**
  * Unified Session Cache Manager
  * Clears ALL session-related caches at reading session end

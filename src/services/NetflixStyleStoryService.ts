@@ -1,5 +1,39 @@
+/*
+ * ============================================================================
+ * BUSINESS MODEL DOCUMENTATION - NETFLIX-STYLE STORY SERVICE
+ * ============================================================================
+ * 
+ * PURPOSE: Handles story generation for GUEST USERS (Free, Non-Paid)
+ * 
+ * GUEST USER STORY GENERATION:
+ * - Netflix-style: Generates 10+ pages at once by OpenAI
+ * - BUSINESS RULE: Full story generated but users limited to 6 pages
+ * - Artificial limitation to encourage premium upgrades
+ * - Backend generates complete story, frontend enforces page limits
+ * 
+ * NEVER-ENDING STORY ARCHITECTURE:
+ * - Stories are designed to continue indefinitely
+ * - AI should NEVER naturally conclude stories
+ * - Guest cutoff at page 6 is purely business logic (not story ending)
+ * 
+ * DIFFERENTIATION FROM PREMIUM:
+ * - Premium users get LiveGenerationService (1 page at a time)
+ * - Guest users get this service (full story batch generation)
+ * 
+ * TOKEN VALIDATION:
+ * - Generates stories within difficulty-based token limits
+ * - Uses UnifiedValidator for content quality assurance
+ * - Falls back to template service if AI generation fails
+ * 
+ * CACHE BEHAVIOR:
+ * - Generated stories cached for guest session duration
+ * - Cleared when guest clicks "Next Story" or session ends
+ * 
+ * ============================================================================
+ */
+
 // Netflix-style Story Generation Service
-// Generates full stories with AI quality preference
+// Generates full stories with AI quality preference for GUEST USERS
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';

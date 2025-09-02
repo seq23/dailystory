@@ -1,3 +1,43 @@
+/*
+ * ============================================================================
+ * BUSINESS MODEL DOCUMENTATION - STORY SESSION CACHE
+ * ============================================================================
+ * 
+ * CACHE MANAGEMENT FOR DIFFERENT USER TYPES:
+ * 
+ * 1. GUEST USERS (Free):
+ *    - Avatar-aware cache keys to prevent cross-session contamination
+ *    - Cache holds complete Netflix-style story (10+ pages generated)
+ *    - Frontend enforces 6-page limit (business rule)
+ *    - "Next Story": Clears cache, starts fresh cycle
+ *    - Session end (20-min timer): Comprehensive cache clearing
+ * 
+ * 2. PREMIUM USERS:
+ *    - Cache manages live generation (page-by-page)
+ *    - Images cached with each page for backward navigation
+ *    - "Finish Story": Can continue to Part II, III, etc.
+ *    - Magic wand rewrite: Clears story content, preserves avatar identity
+ *    - Can save stories to library with all original images
+ * 
+ * 3. CACHE CLEARING CONTEXTS:
+ *    - 'session-end': Complete cache wipe for both user types
+ *    - 'next-story': Guest starts new 6-page cycle
+ *    - 'rewrite': Premium story regeneration (preserve avatar)
+ *    - 'avatar-change': User switches avatar appearance
+ * 
+ * 4. NEVER-ENDING STORY SUPPORT:
+ *    - Cache designed to handle indefinitely long stories
+ *    - Guest artificial limit at 6 pages (business decision)
+ *    - Premium users can continue same story forever
+ * 
+ * 5. IMAGE & CHARACTER STATE:
+ *    - Links to character session for avatar consistency
+ *    - Preserves images for backward navigation
+ *    - Comprehensive clearing prevents cross-session contamination
+ * 
+ * ============================================================================
+ */
+
 // Story Session Cache - Persistent storage for story content across navigation
 import { DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';

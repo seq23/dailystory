@@ -1,3 +1,44 @@
+/*
+ * ============================================================================
+ * BUSINESS MODEL DOCUMENTATION - CLEAN STORY DISPLAY
+ * ============================================================================
+ * 
+ * CORE BUSINESS LOGIC:
+ * 
+ * 1. GUEST USERS (Free, Non-Paid):
+ *    - 20-minute timer starts on page load (can pause/reduce/end from floating timer)
+ *    - Netflix-style story generation (10+ pages generated at once by OpenAI)
+ *    - BUSINESS RULE: Can only read 6 pages of each story (artificial limit)
+ *    - On page 6: "Next Story" button appears (never see story endings)
+ *    - Fresh image generated for every page of the 6-page story
+ *    - Backward navigation shows same images (cached)
+ *    - "Next Story" clears cache, starts new 6-page cycle
+ *    - Session ends when timer reaches zero - all caches cleared
+ * 
+ * 2. PREMIUM USERS:
+ *    - Same timer but can dismiss it for unlimited sessions
+ *    - Live generation: 1 page at a time by OpenAI
+ *    - New image for every page, backward/forward navigation preserved
+ *    - "Finish Story" for AI-generated endings (user choice)
+ *    - Can continue forward for Part II, III, etc.
+ *    - Save story to library with all original images cached
+ *    - Magic wand: Rewrite story (clears cache, regenerates images)
+ *    - Session end: All caches cleared
+ * 
+ * 3. NEVER-ENDING STORIES:
+ *    - Both user types get stories that could continue forever
+ *    - AI should NEVER naturally conclude stories
+ *    - Guest artificial cutoff at page 6 (business differentiation)
+ *    - Premium users choose when to end
+ * 
+ * 4. CACHE MANAGEMENT:
+ *    - Guest "Next Story": Clear cache for fresh 6-page experience
+ *    - Premium rewrite: Clear cache, regenerate with new images
+ *    - Session end: Always clear all caches for both user types
+ * 
+ * ============================================================================
+ */
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
