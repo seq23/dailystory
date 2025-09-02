@@ -8,6 +8,7 @@ import { UnifiedValidator, type ValidationResult } from '@/utils/unifiedValidato
 export interface RepairRequest {
   originalContent: string[];
   repairReasons: string[];
+  hints?: string[];
   userInfo: UserInfo;
   difficulty: DifficultyLevel;
 }
@@ -119,6 +120,7 @@ export class RepairService {
   private static createRepairPrompt(request: RepairRequest, attemptNumber: number): string {
     const originalText = request.originalContent.join(' ');
     const repairInstructions = request.repairReasons.join(', ');
+    const hintsText = request.hints ? request.hints.join('\n- ') : 'General content improvement needed';
     
     return `REPAIR REQUEST (Attempt ${attemptNumber}):
 Original content had these issues: ${repairInstructions}
@@ -126,6 +128,7 @@ Original content had these issues: ${repairInstructions}
 Please fix the following story content while maintaining the core narrative and characters.
 
 SPECIFIC REPAIR INSTRUCTIONS:
+- ${hintsText}
 - Fix any vocabulary that's too advanced or inappropriate for ${request.difficulty} level
 - Ensure content length meets requirements for ${request.difficulty} difficulty
 - Maintain story coherence and appropriate pacing
@@ -135,7 +138,7 @@ SPECIFIC REPAIR INSTRUCTIONS:
 ORIGINAL CONTENT TO REPAIR:
 ${originalText}
 
-Generate a corrected version that addresses the issues while keeping the story engaging and appropriate.`;
+Generate a corrected version that addresses the specific issues while keeping the story engaging and appropriate.`;
   }
 
   /**

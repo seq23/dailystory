@@ -151,12 +151,45 @@ export class NetflixStyleStoryService {
             pageCount: finalContent.length,
             source: 'ai'
           };
+        } else if (validationResult.decision === 'RETRY_WITH_HINT') {
+          console.log('🔄 Netflix: Content needs complete regeneration with hints');
+          
+          const { HintRegenerationService } = await import('./hintRegenerationService');
+          
+          const regenerationResult = await HintRegenerationService.regenerateWithHints({
+            userInfo,
+            difficulty,
+            hints: validationResult.hints || [],
+            failureReasons: validationResult.reasons,
+            sessionType: 'guest'
+          });
+
+          if (regenerationResult.success && regenerationResult.content) {
+            console.log(`✅ Netflix: Regeneration successful after ${regenerationResult.attempts} attempts`);
+            
+            try {
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+            } catch {}
+
+            // Emit story generation complete event
+            window.dispatchEvent(new CustomEvent('story:generation:complete'));
+
+            return {
+              content: regenerationResult.content,
+              pageCount: regenerationResult.content.length,
+              source: 'ai'
+            };
+          } else {
+            console.log(`❌ Netflix: Regeneration failed after ${regenerationResult.attempts} attempts: ${regenerationResult.error}`);
+            return this.generateFallbackStory(userInfo, difficulty, 'regeneration_failed');
+          }
         } else if (validationResult.decision === 'REPAIR') {
           console.log('🔧 Netflix: Content needs repair - attempting AI repair');
           
           const repairResult = await RepairService.repairContent({
             originalContent: cleanedPages,
             repairReasons: validationResult.reasons,
+            hints: validationResult.hints,
             userInfo,
             difficulty
           });

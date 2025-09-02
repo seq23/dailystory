@@ -150,19 +150,52 @@ export class UnifiedValidator {
     });
     
     if (!validationResult.isValid) {
-      return {
-        decision: 'RETRY_WITH_HINT',
-        isValid: false,
-        reasons: [validationResult.reason || 'Content length validation failed'],
-        metrics: {
-          ...metrics,
-          tokenCount: validationResult.tokenCount,
-          characterCount: validationResult.characterCount,
-          maxAllowedTokens: validationResult.maxAllowedTokens,
-          maxAllowedChars: validationResult.maxAllowedChars
-        },
-        hints: ['Generate more detailed content', 'Add more descriptive elements']
-      };
+      const reason = validationResult.reason || 'Content validation failed';
+      
+      // Determine if content needs REPAIR or RETRY_WITH_HINT
+      const needsCompleteRegeneration = reason.includes('too short') || 
+                                      reason.includes('insufficient content') ||
+                                      reason.includes('empty') ||
+                                      (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.3);
+      
+      if (needsCompleteRegeneration) {
+        return {
+          decision: 'RETRY_WITH_HINT',
+          isValid: false,
+          reasons: [reason],
+          metrics: {
+            ...metrics,
+            tokenCount: validationResult.tokenCount,
+            characterCount: validationResult.characterCount,
+            maxAllowedTokens: validationResult.maxAllowedTokens,
+            maxAllowedChars: validationResult.maxAllowedChars
+          },
+          hints: [
+            `Generate content with at least ${validationResult.maxAllowedTokens * 0.7} tokens`,
+            'Include more descriptive details and story development',
+            'Add dialogue, setting descriptions, and character interactions'
+          ]
+        };
+      } else {
+        // Content exists but has fixable issues (vocabulary, formatting, etc.)
+        return {
+          decision: 'REPAIR',
+          isValid: false,
+          reasons: [reason],
+          metrics: {
+            ...metrics,
+            tokenCount: validationResult.tokenCount,
+            characterCount: validationResult.characterCount,
+            maxAllowedTokens: validationResult.maxAllowedTokens,
+            maxAllowedChars: validationResult.maxAllowedChars
+          },
+          hints: [
+            'Adjust vocabulary complexity for age level',
+            'Improve content structure and pacing',
+            'Ensure appropriate difficulty level'
+          ]
+        };
+      }
     }
 
     // Content exceeds token limits - attempt auto-split
@@ -223,17 +256,47 @@ export class UnifiedValidator {
       });
       
       if (!validationResult.isValid) {
-        return {
-          decision: 'RETRY_WITH_HINT',
-          isValid: false,
-          reasons: [validationResult.reason || 'Page length validation failed'],
-          metrics: {
-            ...metrics,
-            tokenCount: validationResult.tokenCount,
-            characterCount: validationResult.characterCount
-          },
-          hints: ['Add more descriptive details', 'Expand the scene']
-        };
+        const reason = validationResult.reason || 'Page validation failed';
+        
+        // For live pages, distinguish between content that's too short vs has other issues
+        const needsCompleteRegeneration = reason.includes('too short') || 
+                                        reason.includes('insufficient') ||
+                                        (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.5);
+        
+        if (needsCompleteRegeneration) {
+          return {
+            decision: 'RETRY_WITH_HINT',
+            isValid: false,
+            reasons: [reason],
+            metrics: {
+              ...metrics,
+              tokenCount: validationResult.tokenCount,
+              characterCount: validationResult.characterCount
+            },
+            hints: [
+              `Generate a page with at least ${validationResult.maxAllowedTokens * 0.8} tokens`,
+              'Create more detailed scene descriptions',
+              'Add character interactions and dialogue',
+              'Include sensory details and emotional elements'
+            ]
+          };
+        } else {
+          return {
+            decision: 'REPAIR',
+            isValid: false,
+            reasons: [reason],
+            metrics: {
+              ...metrics,
+              tokenCount: validationResult.tokenCount,
+              characterCount: validationResult.characterCount
+            },
+            hints: [
+              'Adjust vocabulary for target reading level',
+              'Improve sentence structure and flow',
+              'Enhance age-appropriate content'
+            ]
+          };
+        }
       }
 
       // Check if page needs splitting due to excessive length
