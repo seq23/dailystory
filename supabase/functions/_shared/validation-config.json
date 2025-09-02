@@ -5,16 +5,16 @@
   "_progression": "Level0 < Level1 < Level2 < Level3 < Level4 < Grade6-10 (proper educational progression)",
   
   "tokenLimits": {
-    "Level0": { "perPage": 15, "guestStory": 104 },
-    "Level1": { "perPage": 60, "guestStory": 600 },
-    "Level2": { "perPage": 250, "guestStory": 2500 },
-    "Level3": { "perPage": 350, "guestStory": 3500 },
-    "Level4": { "perPage": 500, "guestStory": 5000 },
-    "Grade6": { "perPage": 500, "guestStory": 4000 },
-    "Grade7": { "perPage": 500, "guestStory": 4000 },
-    "Grade8": { "perPage": 500, "guestStory": 4000 },
-    "Grade9": { "perPage": 500, "guestStory": 4000 },
-    "Grade10": { "perPage": 500, "guestStory": 4000 }
+    "Level0": { "perPage": 15, "guestStory": 180 },
+    "Level1": { "perPage": 60, "guestStory": 720 },
+    "Level2": { "perPage": 250, "guestStory": 3000 },
+    "Level3": { "perPage": 350, "guestStory": 4200 },
+    "Level4": { "perPage": 500, "guestStory": 6000 },
+    "Grade6": { "perPage": 500, "guestStory": 6000 },
+    "Grade7": { "perPage": 500, "guestStory": 6000 },
+    "Grade8": { "perPage": 500, "guestStory": 6000 },
+    "Grade9": { "perPage": 500, "guestStory": 6000 },
+    "Grade10": { "perPage": 500, "guestStory": 6000 }
   },
   "difficultyMapping": {
     "beginner": "Level0",
@@ -34,16 +34,19 @@
     "grade10": "Grade10"
   },
   "pageExpectations": {
-    "Level0": 12,
-    "Level1": 12,
-    "Level2": 12,
-    "Level3": 12,
-    "Level4": 12,
-    "Grade6": 12,
-    "Grade7": 12,
-    "Grade8": 12,
-    "Grade9": 12,
-    "Grade10": 12
+    "netflix": {
+      "Level0": 12,
+      "Level1": 12,
+      "Level2": 12,
+      "Level3": 12,
+      "Level4": 12,
+      "Grade6": 12,
+      "Grade7": 12,
+      "Grade8": 12,
+      "Grade9": 12,
+      "Grade10": 12
+    },
+    "live": null
   },
   "validationThresholds": {
     "minContentRatio": 0.3,

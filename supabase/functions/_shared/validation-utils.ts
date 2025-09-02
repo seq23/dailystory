@@ -82,10 +82,27 @@ export function getTokenLimitsForLevel(level: ValidationLevel) {
 }
 
 /**
- * Get expected pages for a validation level
+ * Get expected pages for a validation level (DEPRECATED - use getExpectedPagesForService)
  */
 export function getExpectedPagesForLevel(level: ValidationLevel): number {
-  return validationConfig.pageExpectations[level] || 10;
+  // Fallback to Netflix expectations for backward compatibility
+  return getExpectedPagesForService('netflix', level);
+}
+
+/**
+ * Get expected pages for a service and validation level - SINGLE SOURCE OF TRUTH
+ */
+export function getExpectedPagesForService(service: 'netflix' | 'live', level: ValidationLevel): number | null {
+  if (service === 'live') {
+    return null; // Live mode has no page expectations
+  }
+  
+  if (service === 'netflix') {
+    return validationConfig.pageExpectations.netflix[level] || 12;
+  }
+  
+  console.warn(`⚠️ Unknown service: ${service}, using Netflix fallback`);
+  return validationConfig.pageExpectations.netflix[level] || 12;
 }
 
 /**
@@ -475,7 +492,7 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
 /**
  * Smart content splitting with enhanced asterisk pattern detection and sentence fallback
  */
-export function parseIntoPages(content: string, level: ValidationLevel): string[] {
+export function parseIntoPages(content: string, level: ValidationLevel, service: 'netflix' | 'live' = 'netflix'): string[] {
   if (!content?.trim()) return [];
   
   // Enhanced asterisk pattern detection with priority: *** > ** > *
@@ -508,12 +525,18 @@ export function parseIntoPages(content: string, level: ValidationLevel): string[
     return pages;
   }
   
-  // Fallback method: Enhanced sentence-based splitting
-  console.log(`🔄 Page splitting: No asterisk markers found, using enhanced smart fallback`);
-  const expectedPages = getExpectedPagesForLevel(level);
-  const smartSplit = enhancedAutoSplitContent(content, level, expectedPages);
+  // Service-specific fallback splitting
+  if (service === 'live') {
+    console.log(`🔄 Live service: No splitting, returning single page`);
+    return [content.trim()];
+  }
   
-  console.log(`✅ Page splitting: Generated ${smartSplit.length} pages using smart fallback (target: ${expectedPages})`);
+  // Netflix service: Enhanced sentence-based splitting
+  console.log(`🔄 Netflix service: No asterisk markers found, using enhanced smart fallback`);
+  const expectedPages = getExpectedPagesForService('netflix', level);
+  const smartSplit = enhancedAutoSplitContent(content, level, expectedPages || 12);
+  
+  console.log(`✅ Netflix service: Generated ${smartSplit.length} pages using smart fallback (target: ${expectedPages})`);
   return smartSplit;
 }
 

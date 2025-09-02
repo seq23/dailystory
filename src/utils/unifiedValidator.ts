@@ -11,6 +11,7 @@ import {
   enhancedAutoSplitContent as sharedAutoSplitContent,
   validateGuestStoryLength,
   validateLivePageLength,
+  getExpectedPagesForService,
   type ValidationLevel 
 } from '../../supabase/functions/_shared/validation-utils';
 
@@ -129,7 +130,7 @@ export class UnifiedValidator {
   }
 
   /**
-   * Guest mode validation (6-page stories) - Enhanced dual validation
+   * Guest mode validation (6-page stories) - Enhanced dual validation with business-logic-aware page count validation
    */
   private static validateGuestStory(
     pages: string[],
@@ -137,6 +138,48 @@ export class UnifiedValidator {
     metrics: any
   ): ValidationResult {
     const fullContent = pages.join(' ');
+    
+    // PHASE 3: Add business-logic-aware page count validation
+    const pageCount = pages.length;
+    const expectedPages = getExpectedPagesForService('netflix', config.level) || 12;
+    
+    console.log(`🔍 [PAGE-COUNT-VALIDATION] Netflix validation for ${config.level}:`, {
+      pageCount,
+      expectedPages,
+      businessModelCliff: 6
+    });
+    
+    // Business-Logic-Aware Page Count Validation (Option B)
+    if (pageCount < 6) {
+      // REJECT: Below business model cliff - user experience broken
+      return {
+        decision: 'RETRY_WITH_HINT',
+        isValid: false,
+        reasons: [`Story has ${pageCount} pages but needs at least 6 pages for business model (users see 6 pages)`],
+        metrics: { ...metrics, pageCount, expectedPages },
+        hints: [
+          `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
+          'Create more story content with additional scenes and development',
+          'Add character interactions, setting descriptions, and plot progression'
+        ]
+      };
+    } else if (pageCount >= 6 && pageCount <= 9) {
+      // ACCEPT but log as under-target
+      console.log(`⚠️ [PAGE-COUNT] Under-target but acceptable: ${pageCount} pages (target: ${expectedPages})`);
+    } else if (pageCount >= 10 && pageCount <= 12) {
+      // IDEAL target range
+      console.log(`✅ [PAGE-COUNT] Ideal range: ${pageCount} pages (target: ${expectedPages})`);
+    } else if (pageCount >= 13 && pageCount <= 15) {
+      // ACCEPT but log over-target
+      console.log(`⚠️ [PAGE-COUNT] Over-target but usable: ${pageCount} pages (target: ${expectedPages})`);
+    } else if (pageCount > 15) {
+      // TRUNCATE - way over limit
+      console.log(`🔧 [PAGE-COUNT] Way over limit, truncating: ${pageCount} pages -> 12 pages`);
+      const truncatedPages = pages.slice(0, 12);
+      pages = truncatedPages;
+      metrics.truncatedFromPages = pageCount;
+    }
+    
     const validationResult = validateGuestStoryLength(fullContent, config.level);
     
     // Enhanced logging for debugging
@@ -198,12 +241,12 @@ export class UnifiedValidator {
       }
     }
 
-    // Content exceeds token limits - attempt auto-split
+    // Content exceeds token limits - attempt auto-split for Netflix
     if (validationResult.tokenCount > validationResult.maxAllowedTokens) {
-      console.log(`🔧 UnifiedValidator: Content exceeds token limit, attempting auto-split`);
+      console.log(`🔧 UnifiedValidator: Content exceeds token limit, attempting Netflix auto-split`);
       
-      const expectedPages = getTokenLimitsForLevel(config.level).guestStory / getTokenLimitsForLevel(config.level).perPage;
-      const splitPages = sharedAutoSplitContent(fullContent, config.level, Math.ceil(expectedPages));
+      const targetPages = getExpectedPagesForService('netflix', config.level) || 12;
+      const splitPages = sharedAutoSplitContent(fullContent, config.level, targetPages);
       
       return {
         decision: 'REPAIR_AND_SPLIT',
@@ -235,13 +278,17 @@ export class UnifiedValidator {
   }
 
   /**
-   * Live mode validation (page-by-page) - Enhanced dual validation
+   * Live mode validation (page-by-page) - Enhanced dual validation with no page expectations
    */
   private static validateLivePage(
     pages: string[],
     config: ValidationConfig,
     metrics: any
   ): ValidationResult {
+    // PHASE 4: Live service has no page expectations
+    const expectedPages = getExpectedPagesForService('live', config.level); // Returns null
+    console.log(`🔍 [LIVE-VALIDATION] Live mode validation for ${config.level}: no page expectations (${expectedPages})`);
+    
     // For live mode, typically validating one page at a time
     if (pages.length === 1) {
       const validationResult = validateLivePageLength(pages[0], config.level);
@@ -299,23 +346,26 @@ export class UnifiedValidator {
         }
       }
 
-      // Check if page needs splitting due to excessive length
-      if (validationResult.tokenCount > validationResult.maxAllowedTokens * 1.5) {
-        const splitPages = sharedAutoSplitContent(pages[0], config.level, 2);
+      // Check if page is egregiously long (>30% margin) - send to AI repair, don't split for live mode
+      if (validationResult.tokenCount > validationResult.maxAllowedTokens * 1.3) {
         return {
-          decision: 'REPAIR_AND_SPLIT',
-          isValid: true,
-          content: splitPages,
-          reasons: [`Page content auto-split (passed by: ${validationResult.passedBy})`],
+          decision: 'REPAIR',
+          isValid: false,
+          reasons: [`Live page is egregiously long (${validationResult.tokenCount} tokens > ${validationResult.maxAllowedTokens * 1.3})`],
           metrics: {
             ...metrics,
-            pageCount: splitPages.length,
             tokenCount: validationResult.tokenCount,
-            characterCount: validationResult.characterCount,
-            passedBy: validationResult.passedBy
-          }
+            characterCount: validationResult.characterCount
+          },
+          hints: [
+            'Reduce content length to fit single page format',
+            'Focus on one key scene or moment',
+            'Remove excessive descriptions while keeping essential story elements'
+          ]
         };
       }
+      
+      // Keep all meaningful content in single page for live mode - no splitting
 
       return {
         decision: 'ACCEPT',
