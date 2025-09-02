@@ -9,6 +9,8 @@ import {
   mapDifficultyToLevel,
   type ValidationLevel 
 } from "../_shared/validation-utils.ts";
+import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
+import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
@@ -235,6 +237,19 @@ Generate a corrected version that addresses these issues while keeping the story
       pagesCount: pages.length,
       pagePreview: pages.map(p => p.substring(0, 100))
     });
+
+    // POST-PROCESS: Apply sophisticated grammar enhancement to each page
+    console.log('🔧 STREAMLINED: Starting post-processing for', pages.length, 'pages');
+    const processedPages = pages.map((page, index) => {
+      // Step 1: Resolve any remaining placeholders
+      const placeholderResolved = resolveAllPlaceholders(page, { userInfo });
+      
+      // Step 2: Apply sophisticated grammar validation and enhancement
+      const grammarEnhanced = validateAndEnhanceGrammar(placeholderResolved, 'they');
+      
+      console.log(`✅ Page ${index + 1} post-processed: ${grammarEnhanced.substring(0, 50)}...`);
+      return grammarEnhanced;
+    });
     
     console.log(`📄 [VALIDATION-DEBUG] STREAMLINED: Page parsing complete:`, {
       totalPages: pages.length,
@@ -260,11 +275,11 @@ Generate a corrected version that addresses these issues while keeping the story
       console.warn('⚠️ [VOCAB-DEBUG] Could not calculate vocabulary compliance:', error);
     }
     
-    // Return streamlined response
+    // Return streamlined response with post-processed pages
     return new Response(JSON.stringify({
       success: true,
       story: storyText,
-      pages: pages,
+      pages: processedPages, // Use processed pages instead of raw pages
       vocabCompliance,
       metadata: {
         processingMode: 'streamlined-lean',
