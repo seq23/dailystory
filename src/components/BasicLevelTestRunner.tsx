@@ -6,7 +6,11 @@ import { Progress } from '@/components/ui/progress';
 import { Loader2, PlayCircle, CheckCircle2, XCircle, GraduationCap } from 'lucide-react';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { estimateTokenCount } from '@/utils/tokenLimitValidator';
+import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
+import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, DifficultyLevel } from '@/types';
+
+// Robust word counting function
 const countWords = (content: string | string[]): number => {
   if (!content) return 0;
   
@@ -31,11 +35,13 @@ interface BasicTestResult {
   level: DifficultyLevel;
   success: boolean;
   pageCount: number;
-  tokenCount: number;
-  source: string;
+  tokenCount?: number;
+  wordCount: number;
+  characterCount?: number;
+  characterAnalysis?: CharacterAnalysis;
+  source: 'ai' | 'fallback' | 'emergency' | 'unknown';
   error?: string;
   pagesInRange: boolean;
-  wordCount: number;
 }
 
 export function BasicLevelTestRunner() {
@@ -71,23 +77,34 @@ export function BasicLevelTestRunner() {
     };
   };
 
-  const getExpectedPageRange = (level: DifficultyLevel): [number, number] => {
+  const getExpectedPageRange = (level: DifficultyLevel): { min: number; max: number } => {
     // All basic levels expect ~12 pages (allowing 1-page tolerance)
-    return [11, 13];
+    return { min: 11, max: 13 };
   };
 
   const runBasicLevelTest = async () => {
     setIsRunning(true);
     setResults([]);
     setProgress(0);
-
+    
+    // Clear previous toasts
+    clearAllTestingToasts();
+    
+    const startTime = Date.now();
     const testResults: BasicTestResult[] = [];
 
     for (let i = 0; i < difficultyLevels.length; i++) {
       const level = difficultyLevels[i];
       const testUser = createTestUser(level);
-      const [minPages, maxPages] = getExpectedPageRange(level);
+      const expectedRange = getExpectedPageRange(level);
       
+      // Show starting toast with level identification
+      showTestToast({
+        level,
+        step: 'starting',
+        message: 'Starting basic level test'
+      });
+
       try {
         console.log(`🧪 Testing ${level} level story generation...`);
         
@@ -96,8 +113,14 @@ export function BasicLevelTestRunner() {
         const pageCount = response.content?.length || 0;
         const fullText = response.content?.join(' ') || '';
         const tokenCount = estimateTokenCount(fullText);
-        const wordCount = fullText.split(/\s+/).filter(word => word.length > 0).length;
-        const pagesInRange = pageCount >= minPages && pageCount <= maxPages;
+        const wordCount = countWords(response.content || []);
+        const characterCount = countCharacters(response.content || []);
+        const characterAnalysis = analyzeCharacters(
+          response.content || [], 
+          wordCount, 
+          pageCount
+        );
+        const pagesInRange = pageCount >= expectedRange.min && pageCount <= expectedRange.max;
         
         const result: BasicTestResult = {
           level,
@@ -105,38 +128,74 @@ export function BasicLevelTestRunner() {
           pageCount,
           tokenCount,
           wordCount,
+          characterCount,
+          characterAnalysis,
           source: response.source || 'unknown',
           pagesInRange,
           error: response.content ? undefined : 'No content generated'
         };
+
+        // Show appropriate result toast
+        if (result.success) {
+          showTestToast({
+            level,
+            step: 'final_result',
+            source: result.source as any,
+            message: `${pageCount} pages, ${wordCount} words`
+          });
+        } else {
+          showTestToast({
+            level,
+            step: 'error',
+            message: result.error || 'Generation failed'
+          });
+        }
 
         testResults.push(result);
         console.log(`✅ ${level} level: ${pageCount} pages (${pagesInRange ? 'PASS' : 'FAIL'})`);
         
       } catch (error) {
         console.error(`❌ Error testing ${level}:`, error);
+        
+        showTestToast({
+          level,
+          step: 'error',
+          message: error instanceof Error ? error.message : 'Unknown error'
+        });
+        
         testResults.push({
           level,
           success: false,
           pageCount: 0,
           tokenCount: 0,
           wordCount: 0,
-          source: 'error',
+          characterCount: 0,
+          source: 'unknown',
           pagesInRange: false,
           error: error instanceof Error ? error.message : 'Unknown error'
         });
       }
 
-      setProgress(((i + 1) / difficultyLevels.length) * 100);
       setResults([...testResults]);
+      setProgress(((i + 1) / difficultyLevels.length) * 100);
     }
 
+    const totalTime = Date.now() - startTime;
+    const successfulTests = testResults.filter(r => r.success).length;
+    
+    // Show summary toast
+    showTestSummaryToast(successfulTests, difficultyLevels.length, totalTime);
+    
     setIsRunning(false);
     console.log('🎯 Basic level test complete!');
   };
 
   const overallSuccess = results.length > 0 && results.every(r => r.success && r.pagesInRange);
   const averagePages = results.length > 0 ? results.reduce((sum, r) => sum + r.pageCount, 0) / results.length : 0;
+  const successfulTests = results.filter(r => r.success).length;
+  const totalPages = results.reduce((sum, r) => sum + r.pageCount, 0);
+  const totalWords = results.reduce((sum, r) => sum + r.wordCount, 0);
+  const totalCharacters = results.reduce((sum, r) => sum + (r.characterCount || 0), 0);
 
   return (
     <Card className="w-full">
@@ -202,17 +261,52 @@ export function BasicLevelTestRunner() {
                 </div>
               </div>
             ))}
+            
+            {/* Enhanced metrics display */}
+            {results.length > 0 && (
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <h4 className="font-semibold mb-2">Detailed Metrics:</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <div className="text-muted-foreground">Total Words</div>
+                    <div className="font-medium">{totalWords}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Total Characters</div>
+                    <div className="font-medium">{totalCharacters}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Avg Words/Page</div>
+                    <div className="font-medium">
+                      {totalPages > 0 ? Math.round(totalWords / totalPages) : 0}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Avg Chars/Word</div>
+                    <div className="font-medium">
+                      {totalWords > 0 ? Math.round((totalCharacters / totalWords) * 10) / 10 : 0}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {results.length > 0 && (
           <div className="mt-4 p-4 bg-muted rounded-lg">
             <h4 className="font-semibold mb-2">Summary:</h4>
-            <ul className="text-sm space-y-1">
+            <div className="text-sm text-muted-foreground">
+              Success Rate: {Math.round((successfulTests / results.length) * 100)}% • 
+              Avg Words: {Math.round(totalWords / results.length)} • 
+              Avg Characters: {Math.round(totalCharacters / results.length)} •
+              Avg Pages: {Math.round(totalPages / results.length)}
+            </div>
+            <ul className="text-sm space-y-1 mt-2">
               <li>Total Tests: {results.length}/5</li>
-              <li>Success Rate: {results.filter(r => r.success).length}/{results.length}</li>
+              <li>Success Rate: {successfulTests}/{results.length}</li>
               <li>Page Range Success: {results.filter(r => r.pagesInRange).length}/{results.length}</li>
-              <li>Average Pages: {averagePages.toFixed(1)} (Target: 9-11)</li>
+              <li>Average Pages: {averagePages.toFixed(1)} (Target: 11-13)</li>
               <li>AI Generation: {results.filter(r => r.source === 'ai').length}/{results.length}</li>
             </ul>
           </div>

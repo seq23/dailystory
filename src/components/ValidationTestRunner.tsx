@@ -6,6 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { Loader2, PlayCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { estimateTokenCount } from '@/utils/tokenLimitValidator';
+import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
+import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, ExpertGradeLevel } from '@/types';
 
 interface ValidationTestResult {
@@ -13,6 +15,9 @@ interface ValidationTestResult {
   success: boolean;
   pageCount: number;
   tokenCount: number;
+  wordCount: number;
+  characterCount: number;
+  characterAnalysis?: CharacterAnalysis;
   source: string;
   error?: string;
   pagesInRange: boolean;
@@ -45,12 +50,23 @@ export function ValidationTestRunner() {
     setIsRunning(true);
     setResults([]);
     setProgress(0);
-
+    
+    // Clear previous toasts
+    clearAllTestingToasts();
+    
+    const startTime = Date.now();
     const testResults: ValidationTestResult[] = [];
 
     for (let i = 0; i < expertGrades.length; i++) {
       const gradeLevel = expertGrades[i];
       const testUser = createTestUser(gradeLevel);
+      
+      // Show starting toast
+      showTestToast({
+        level: `Grade ${gradeLevel}`,
+        step: 'starting',
+        message: 'Starting expert level test'
+      });
       
       try {
         console.log(`🧪 Testing ${gradeLevel} grade story generation...`);
@@ -58,7 +74,15 @@ export function ValidationTestRunner() {
         const response = await NetflixStyleStoryService.generateStory(testUser);
         
         const pageCount = response.content?.length || 0;
-        const tokenCount = response.content ? estimateTokenCount(response.content.join(' ')) : 0;
+        const fullText = response.content?.join(' ') || '';
+        const tokenCount = response.content ? estimateTokenCount(fullText) : 0;
+        const wordCount = fullText.split(/\s+/).filter(word => word.length > 0).length;
+        const characterCount = countCharacters(response.content || []);
+        const characterAnalysis = analyzeCharacters(
+          response.content || [], 
+          wordCount, 
+          pageCount
+        );
         const pagesInRange = pageCount >= 8 && pageCount <= 12;
         
         const result: ValidationTestResult = {
@@ -66,21 +90,49 @@ export function ValidationTestRunner() {
           success: !!response.content && pageCount > 0,
           pageCount,
           tokenCount,
+          wordCount,
+          characterCount,
+          characterAnalysis,
           source: response.source || 'unknown',
           pagesInRange,
           error: response.content ? undefined : 'No content generated'
         };
+
+        // Show result toast
+        if (result.success) {
+          showTestToast({
+            level: `Grade ${gradeLevel}`,
+            step: 'final_result',
+            source: result.source as any,
+            message: `${pageCount} pages, ${wordCount} words`
+          });
+        } else {
+          showTestToast({
+            level: `Grade ${gradeLevel}`,
+            step: 'error',
+            message: result.error || 'Generation failed'
+          });
+        }
 
         testResults.push(result);
         console.log(`✅ ${gradeLevel} grade: ${pageCount} pages (${pagesInRange ? 'PASS' : 'FAIL'})`);
         
       } catch (error) {
         console.error(`❌ Error testing ${gradeLevel}:`, error);
+        
+        showTestToast({
+          level: `Grade ${gradeLevel}`,
+          step: 'error',
+          message: error instanceof Error ? error.message : 'Unknown error'
+        });
+        
         testResults.push({
           gradeLevel,
           success: false,
           pageCount: 0,
           tokenCount: 0,
+          wordCount: 0,
+          characterCount: 0,
           source: 'error',
           pagesInRange: false,
           error: error instanceof Error ? error.message : 'Unknown error'
@@ -91,6 +143,12 @@ export function ValidationTestRunner() {
       setResults([...testResults]);
     }
 
+    const totalTime = Date.now() - startTime;
+    const successfulTests = testResults.filter(r => r.success).length;
+    
+    // Show summary toast
+    showTestSummaryToast(successfulTests, expertGrades.length, totalTime);
+    
     setIsRunning(false);
     console.log('🎯 Validation test complete!');
   };
@@ -148,7 +206,7 @@ export function ValidationTestRunner() {
                   <div>
                     <p className="font-medium">Grade {result.gradeLevel}</p>
                     <p className="text-sm text-muted-foreground">
-                      {result.error || `${result.pageCount} pages • ${result.tokenCount} tokens • ${result.source}`}
+                      {result.error || `${result.pageCount} pages • ${result.wordCount} words • ${result.characterCount} chars • ${result.source}`}
                     </p>
                   </div>
                 </div>
@@ -173,6 +231,8 @@ export function ValidationTestRunner() {
               <li>Success Rate: {results.filter(r => r.success).length}/{results.length}</li>
               <li>Page Range Success: {results.filter(r => r.pagesInRange).length}/{results.length}</li>
               <li>Average Pages: {averagePages.toFixed(1)} (Target: 8-12)</li>
+              <li>Average Words: {Math.round(results.reduce((sum, r) => sum + (r.wordCount || 0), 0) / results.length)}</li>
+              <li>Average Characters: {Math.round(results.reduce((sum, r) => sum + (r.characterCount || 0), 0) / results.length)}</li>
               <li>AI Generation: {results.filter(r => r.source === 'ai').length}/{results.length}</li>
             </ul>
           </div>

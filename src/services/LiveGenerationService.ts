@@ -80,41 +80,71 @@ export class LiveGenerationService {
         userLanguage: userInfo.nativeLanguage
       });
       
-      if (!validationResult.isValid || validationResult.decision === 'REJECT') {
-        console.log('❌ First page validation failed:', validationResult.reasons);
+      // Handle validation decisions with repair support
+      if (validationResult.decision === 'ACCEPT') {
+        console.log('✅ Live Generation: Validation passed');
+        // Continue with accepted content
+        const finalContent = validationResult.content?.[0] || content;
+        
+        // Create context for next page
+        const context: LiveGenerationContext = {
+          userInfo,
+          difficulty,
+          expertGradeLevel,
+          storyContext: [finalContent],
+          currentPage: 1,
+          totalExpectedPages: 999,
+          characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        };
+
+        try {
+          (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+          (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+        } catch {}
+
+        window.dispatchEvent(new CustomEvent('story:generation:complete'));
+        
+        return {
+          content: finalContent,
+          isComplete: false,
+          nextContext: context
+        };
+      } else if (validationResult.decision === 'REPAIR_AND_SPLIT') {
+        console.log('🔧 Live Generation: Auto-splitting content');
+        const finalContent = validationResult.content?.[0] || content;
+        
+        // Create context for next page
+        const context: LiveGenerationContext = {
+          userInfo,
+          difficulty,
+          expertGradeLevel,
+          storyContext: [finalContent],
+          currentPage: 1,
+          totalExpectedPages: 999,
+          characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        };
+
+        try {
+          (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
+          (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+        } catch {}
+
+        window.dispatchEvent(new CustomEvent('story:generation:complete'));
+        
+        return {
+          content: finalContent,
+          isComplete: false,
+          nextContext: context
+        };
+      } else if (validationResult.decision === 'REPAIR') {
+        console.log('🔧 Live Generation: Content needs repair - attempting AI repair');
+        // In production, this would trigger repair service
+        // For now, fall back to template
+        return this.generateFallbackFirstPage(userInfo, difficulty, 'content_needs_repair');
+      } else {
+        console.log('❌ Live Generation: Validation rejected content');
         return this.generateFallbackFirstPage(userInfo, difficulty, 'content_validation_failed');
       }
-      
-      // Handle auto-splitting if needed
-      const finalContent = validationResult.decision === 'REPAIR_AND_SPLIT' ? 
-        (validationResult.content?.[0] || content) : content;
-      
-      // Create context for next page
-      const context: LiveGenerationContext = {
-        userInfo,
-        difficulty,
-        expertGradeLevel,
-        storyContext: [finalContent],
-        currentPage: 1,
-        totalExpectedPages: 999, // Never-ending stories
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
-      };
-
-      console.log('🚀 Live Generation: First page generated and validated successfully');
-      try {
-        (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
-        (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-      } catch {}
-      console.log('🧭 PAGE_SOURCE', { page: 1, source: 'ai', service: 'Live' });
-      
-      // Emit story generation complete event
-      window.dispatchEvent(new CustomEvent('story:generation:complete'));
-      
-      return {
-        content: finalContent,
-        isComplete: false,
-        nextContext: context
-      };
       
     } catch (error) {
       console.error('🚀 Live Generation: Error generating first page:', error);
