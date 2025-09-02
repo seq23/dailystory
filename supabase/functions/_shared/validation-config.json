@@ -1,6 +1,6 @@
 {
   "tokenLimits": {
-    "Level0": { "perPage": 15, "guestStory": 150 },
+    "Level0": { "perPage": 15, "guestStory": 104 },
     "Level1": { "perPage": 60, "guestStory": 600 },
     "Level2": { "perPage": 250, "guestStory": 2500 },
     "Level3": { "perPage": 350, "guestStory": 3500 },

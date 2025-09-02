@@ -285,8 +285,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
     { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
   ] : [
-    { model: 'gpt-5-2025-08-07', description: 'flagship quality', paramName: 'max_completion_tokens' }, 
-    { model: 'gpt-5-mini-2025-08-07', description: 'fast & reliable', paramName: 'max_completion_tokens' },
+    { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true }, 
+    { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true },
     { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
     { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
   ];

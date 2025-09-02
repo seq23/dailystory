@@ -53,8 +53,8 @@ export function BasicLevelTestRunner() {
   };
 
   const getExpectedPageRange = (level: DifficultyLevel): [number, number] => {
-    // All basic levels expect ~10 pages (allowing 1-page tolerance)
-    return [9, 11];
+    // All basic levels expect ~12 pages (allowing 1-page tolerance)
+    return [11, 13];
   };
 
   const runBasicLevelTest = async () => {
