@@ -163,13 +163,45 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       mapDifficultyToLevel(expertGrade) : 
       mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
     
+    // DEBUG: Log raw AI response before parsing
+    console.log('🎯 [PAGE-DEBUG] Raw AI story text analysis:', {
+      length: storyText.length,
+      preview: storyText.substring(0, 500),
+      asteriskCount: (storyText.match(/\*\*\*/g) || []).length,
+      asteriskPositions: storyText.split('').map((char, i) => char === '*' ? i : -1).filter(i => i !== -1).slice(0, 20),
+      containsPageMarkers: storyText.includes('***'),
+      firstAsteriskIndex: storyText.indexOf('***'),
+      validationLevel
+    });
+    
     console.log(`🔍 [VALIDATION-DEBUG] STREAMLINED: Parsing content for ${expertGrade || effectiveDifficulty}:`, {
       validationLevel,
       storyLength: storyText.length,
       estimatedTokens: storyText.split(/\s+/).length * 1.3
     });
     
-    const pages = sharedParseIntoPages(storyText, validationLevel);
+    const parseResult = sharedParseIntoPages(storyText, validationLevel);
+    
+    console.log('📊 [PAGE-DEBUG] Parse result:', {
+      success: parseResult.success,
+      pagesCount: parseResult.success ? parseResult.pages.length : 0,
+      error: parseResult.success ? null : parseResult.error,
+      pagePreview: parseResult.success ? parseResult.pages.map(p => p.substring(0, 100)) : null
+    });
+    
+    if (!parseResult.success) {
+      console.error('❌ Page parsing failed:', parseResult.error);
+      return new Response(JSON.stringify({
+        error: 'Failed to parse story into pages',
+        details: parseResult.error,
+        category: 'parsing_error'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    const pages = parseResult.pages;
     
     console.log(`📄 [VALIDATION-DEBUG] STREAMLINED: Page parsing complete:`, {
       totalPages: pages.length,
