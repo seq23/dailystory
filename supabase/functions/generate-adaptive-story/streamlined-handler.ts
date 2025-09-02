@@ -55,31 +55,8 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 export async function handleStreamlinedGeneration(requestBody: any) {
   const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig & { expertGradeLevel?: string; difficulty?: string } } = requestBody;
   
-  console.log('🎯 STREAMLINED: Processing lean bundle');
-  console.log('🔍 STREAMLINED: Config received:', {
-    expertGradeLevel: config.expertGradeLevel,
-    difficulty: config.difficulty,
-    gradeLevel: bundle.systemSettings.gradeLevel,
-    sessionType: config.sessionType,
-    isRepairMode: config.sessionType === 'repair'
-  });
-  
-  // Handle repair mode with special processing
-  if (config.sessionType === 'repair') {
-    console.log('🔧 STREAMLINED: REPAIR MODE detected:', {
-      attempt: config.repairAttempt || 1,
-      hasOriginalContent: !!(config.originalContent && config.originalContent.length > 0),
-      hasRepairReasons: !!(config.repairReasons && config.repairReasons.length > 0)
-    });
-  }
-  
   // PHASE 1: API Key Validation
   const apiKey = Deno.env.get('OPENAI_API_KEY');
-  console.log('🔍 API Key validation:', {
-    hasApiKey: !!apiKey,
-    keyPrefix: apiKey ? apiKey.substring(0, 7) + '...' : 'MISSING',
-    timestamp: new Date().toISOString()
-  });
   
   if (!apiKey) {
     console.error('❌ CRITICAL: OpenAI API key not found in environment');
@@ -136,12 +113,6 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     const promptConfig = expertGrade 
       ? getExpertStoryPrompt(expertGrade)
       : getStoryPrompt(effectiveDifficulty as DifficultyLevel);
-      
-    console.log(`🎯 STREAMLINED: Selected prompt config for ${expertGrade || effectiveDifficulty}:`, {
-      hasSystemPrompt: !!promptConfig.systemPrompt,
-      tokens: promptConfig.tokens,
-      expectedPages: promptConfig.expectedPages
-    });
     
     // Extract userInfo from already-resolved bundle
     let userInfo = {};
@@ -197,22 +168,9 @@ Generate a corrected version that addresses these issues while keeping the story
     const repairTokenBuffer = config.sessionType === 'repair' ? Math.floor(baseTokens * 0.2) : 0;
     const finalTokenLimit = baseTokens + repairTokenBuffer;
     
-    console.log(`🤖 [AI-DEBUG] STREAMLINED: Calling OpenAI for ${expertGrade || effectiveDifficulty}:`, {
-      effectiveGradeLevel,
-      expertGrade,
-      effectiveDifficulty,
-      systemPromptLength: aiPrompt.systemPrompt.length,
-      userPromptLength: aiPrompt.userPrompt.length,
-      expectedTokens: finalTokenLimit,
-      isRepairMode: config.sessionType === 'repair',
-      repairTokenBuffer
-    });
-    
     const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, finalTokenLimit);
     
     // PHASE 5: Bulk Story Processing - Apply validation, grammar, placeholders to ENTIRE story ONCE
-    console.log('🔧 STREAMLINED: Starting bulk processing on complete story');
-    
     // Compute validation level first
     const validationLevel = expertGrade ? 
       mapDifficultyToLevel(expertGrade) : 
@@ -226,38 +184,24 @@ Generate a corrected version that addresses these issues while keeping the story
     };
     
     const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
-    console.log('✅ STREAMLINED: Story validation complete:', {
-      decision: validationResult.decision,
-      isValid: validationResult.isValid,
-      tokenCount: validationResult.metrics.tokenCount
-    });
     
     // Step 2: Apply grammar enhancement to entire story ONCE
     const grammarEnhanced = validateAndEnhanceGrammar(storyText, 'they');
-    console.log('✅ STREAMLINED: Grammar enhancement complete');
     
     // Step 3: Apply placeholder resolution to entire story ONCE  
     const placeholderResolved = resolveAllPlaceholders(grammarEnhanced, { userInfo });
-    console.log('✅ STREAMLINED: Placeholder resolution complete');
     
     // Step 4: THEN parse into pages using shared validation utilities
     const pages = sharedParseIntoPages(placeholderResolved, validationLevel);
     
-    
-    console.log('📊 [PAGE-DEBUG] Final processing result:', {
-      pagesCount: pages.length,
-      totalLength: placeholderResolved.length,
-      pagePreview: pages.map(p => p.substring(0, 50) + '...')
-    });
-    
-    // Calculate real vocabulary compliance using dynamic loader
-    let vocabCompliance = 1.0; // Default fallback
+    // Calculate vocabulary compliance
+    let vocabCompliance = 1.0;
     try {
       const { calculateVocabularyCompliance } = await import('../_shared/vocabularyLoader.ts');
       const complianceResult = await calculateVocabularyCompliance(placeholderResolved, effectiveGradeLevel);
       vocabCompliance = complianceResult.compliance;
     } catch (error) {
-      console.warn('⚠️ [VOCAB-DEBUG] Could not calculate vocabulary compliance:', error);
+      // Silent fallback
     }
     
     // Return streamlined response with bulk-processed story

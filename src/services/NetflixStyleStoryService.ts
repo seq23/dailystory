@@ -21,8 +21,7 @@
  * - Guest users get this service (full story batch generation)
  * 
  * TOKEN VALIDATION:
- * - Generates stories within difficulty-based token limits
- * - Uses UnifiedValidator for content quality assurance
+ * - Backend now handles all validation and content quality assurance
  * - Falls back to template service if AI generation fails
  * 
  * CACHE BEHAVIOR:
@@ -31,9 +30,6 @@
  * 
  * ============================================================================
  */
-
-// Netflix-style Story Generation Service
-// Generates full stories with AI quality preference for GUEST USERS
 
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
@@ -107,165 +103,30 @@ export class NetflixStyleStoryService {
         // Pages already cleaned by unified system
         const cleanedPages = result.pages.filter((page: string) => page.length > 10);
 
-        // Use UnifiedValidator for comprehensive validation - prioritize expertGradeLevel
-        const { UnifiedValidator } = await import('@/utils/unifiedValidator');
-        const level = expertGradeLevel ? 
-          UnifiedValidator.mapDifficultyToLevel(expertGradeLevel) : 
-          UnifiedValidator.mapDifficultyToLevel(difficulty);
+        // Backend now handles all validation - trust the response
+        console.log(`✅ Netflix: Story received from backend - ${cleanedPages.length} pages`);
         
-        console.log(`🎯 Netflix: Using validation level ${level} for ${expertGradeLevel || difficulty}`);
-        console.log(`📝 Netflix: Content before validation - ${cleanedPages.length} pages:`, cleanedPages.map((p, i) => `Page ${i+1}: ${p.substring(0, 100)}...`));
+        // Success: Return the validated content directly
+        const finalContent = cleanedPages;
         
-        const validationResult = UnifiedValidator.validateContent(cleanedPages, {
-          mode: 'guest',
-          level,
-          userLanguage: userInfo.nativeLanguage
-        });
+        console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages`);
+        
+        try {
+          (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+        } catch {}
 
-        console.log(`🔍 Netflix: Validation complete - Decision: ${validationResult.decision}, Valid: ${validationResult.isValid}`);
-        console.log(`📊 Netflix: Full validation result:`, {
-          decision: validationResult.decision,
-          isValid: validationResult.isValid,
-          reasons: validationResult.reasons,
-          metrics: validationResult.metrics,
-          hasContent: !!validationResult.content,
-          contentLength: validationResult.content?.length || 0
-        });
+        // Emit story generation complete event
+        window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
-        // Handle validation decisions properly
-        if (validationResult.decision === 'ACCEPT' || validationResult.decision === 'REPAIR_AND_SPLIT') {
-          const finalContent = validationResult.content || cleanedPages;
-          
-          console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages (${validationResult.metrics.tokenCount} tokens)`);
-          console.log(`📊 Netflix: Validation decision: ${validationResult.decision}`);
-          
-          try {
-            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-          } catch {}
-
-          // Emit story generation complete event
-          window.dispatchEvent(new CustomEvent('story:generation:complete'));
-
-          return {
-            content: finalContent,
-            pageCount: finalContent.length,
-            source: 'ai'
-          };
-        } else if (validationResult.decision === 'RETRY_WITH_HINT') {
-          console.log('🔄 Netflix: Content needs complete regeneration with hints');
-          
-          const { HintRegenerationService } = await import('./hintRegenerationService');
-          
-          const regenerationResult = await HintRegenerationService.regenerateWithHints({
-            userInfo,
-            difficulty,
-            hints: validationResult.hints || [],
-            failureReasons: validationResult.reasons,
-            sessionType: 'guest'
-          });
-
-          if (regenerationResult.success && regenerationResult.content) {
-            console.log(`✅ Netflix: Regeneration successful after ${regenerationResult.attempts} attempts`);
-            
-            try {
-              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-            } catch {}
-
-            // Emit story generation complete event
-            window.dispatchEvent(new CustomEvent('story:generation:complete'));
-
-            return {
-              content: regenerationResult.content,
-              pageCount: regenerationResult.content.length,
-              source: 'ai'
-            };
-          } else {
-            console.log(`❌ Netflix: Regeneration failed after ${regenerationResult.attempts} attempts: ${regenerationResult.error}`);
-            return this.generateFallbackStory(userInfo, difficulty, 'regeneration_failed');
-          }
-        } else if (validationResult.decision === 'REPAIR') {
-          console.log('🔧 Netflix: Content needs repair - attempting AI repair');
-          
-          const repairResult = await RepairService.repairContent({
-            originalContent: cleanedPages,
-            repairReasons: validationResult.reasons,
-            hints: validationResult.hints,
-            userInfo,
-            difficulty
-          });
-
-          if (repairResult.success && repairResult.repairedContent) {
-          console.log(`✅ Netflix: Repair successful after ${repairResult.attempts} attempts`);
-          
-          // SECURITY: Re-validate repaired content to prevent infinite loops
-          console.log('🔍 Netflix: Re-validating repaired content for security');
-          const revalidationResult = UnifiedValidator.validateContent(repairResult.repairedContent, {
-            mode: 'guest',
-            level,
-            userLanguage: userInfo.nativeLanguage
-          });
-          
-          if (revalidationResult.decision === 'ACCEPT') {
-            console.log('✅ Netflix: Repaired content passed re-validation');
-            
-            try {
-              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-            } catch {}
-
-            // Emit story generation complete event
-            window.dispatchEvent(new CustomEvent('story:generation:complete'));
-
-            return {
-              content: revalidationResult.content || repairResult.repairedContent,
-              pageCount: (revalidationResult.content || repairResult.repairedContent).length,
-              source: 'ai'
-            };
-          } else {
-            console.log(`❌ Netflix: Repaired content failed re-validation: ${revalidationResult.decision}`);
-            console.log('🔄 Netflix: Using fallback due to repair re-validation failure');
-            return this.generateFallbackStory(userInfo, difficulty, 'repair_revalidation_failed');
-          }
-          } else {
-            console.log(`❌ Netflix: Repair failed after ${repairResult.attempts} attempts: ${repairResult.error}`);
-            return this.generateFallbackStory(userInfo, difficulty, 'repair_failed');
-          }
-        }
-
-        // Log validation failure details for debugging
-        console.log('❌ Netflix: AI generation validation REJECTED');
-        console.log(`📊 Netflix: Rejection details:`, {
-          decision: validationResult.decision,
-          isValid: validationResult.isValid,
-          reasons: validationResult.reasons,
-          metrics: validationResult.metrics,
-          contentPreview: cleanedPages.map((p, i) => `Page ${i+1}: ${p.substring(0, 50)}...`)
-        });
-        console.log('🔄 Netflix: Will attempt template fallback due to validation rejection');
+        return {
+          content: finalContent,
+          pageCount: finalContent.length,
+          source: 'ai'
+        };
       }
 
-      // Debug validation failure details - Updated for UnifiedValidator
-      const cleanedPages = result.pages?.filter((page: string) => page.length > 10) || [];
-      
-      // Import unified validator for debug info - prioritize expertGradeLevel
-      const { UnifiedValidator } = await import('@/utils/unifiedValidator');
-      const level = expertGradeLevel ? 
-        UnifiedValidator.mapDifficultyToLevel(expertGradeLevel) : 
-        UnifiedValidator.mapDifficultyToLevel(difficulty);
-      
-      console.log(`🎯 Netflix Debug: Using validation level ${level} for ${expertGradeLevel || difficulty}`);
-      
-      const debugValidation = UnifiedValidator.validateContent(cleanedPages, {
-        mode: 'guest',
-        level,
-        userLanguage: userInfo.nativeLanguage
-      });
-
+      // Debug insufficient content 
       console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
-      console.log(`📊 Netflix: Unified validation debug:`, {
-        decision: debugValidation.decision,
-        reasons: debugValidation.reasons,
-        metrics: debugValidation.metrics
-      });
       return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
 
     } catch (error) {
@@ -377,7 +238,6 @@ export class NetflixStyleStoryService {
     
     return false;
   }
-  
 
   static async generateCompleteStory(userInfo: UserInfo): Promise<NetflixStoryResult> {
     return this.generateStory(userInfo);
