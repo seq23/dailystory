@@ -24,7 +24,7 @@ export interface ExpertStoryPromptConfig {
 export const STORY_PROMPTS: Record<DifficultyLevel, StoryPromptConfig> = {
   beginner: {
     difficulty: 'beginner',
-    expectedPages: 8,
+    expectedPages: 12,
     systemPrompt: `You are a Level 0 pre-reader story generation engine for ages 3-5.
 
 CRITICAL LEVEL 0 FORMAT REQUIREMENTS (HIGHEST PRIORITY):
@@ -80,7 +80,7 @@ Use seed={seed} to vary stories. Change settings, activities, characters, and mo
 
   easy: {
     difficulty: 'easy',
-    expectedPages: 8,
+    expectedPages: 12,
     systemPrompt: `You are a Beginner story generation engine for ages 5-7.
 
 CRITICAL OUTPUT FORMAT:
@@ -117,7 +117,7 @@ Use seed={seed} for creative expression.`,
 
   medium: {
     difficulty: 'medium',
-    expectedPages: 8,
+    expectedPages: 12,
     systemPrompt: `You are a Developing story generation engine for ages 7-9.
 
 CRITICAL OUTPUT FORMAT:
@@ -154,7 +154,7 @@ Use seed={seed} for creative expression.`,
 
   hard: {
     difficulty: 'hard',
-    expectedPages: 8,
+    expectedPages: 12,
     systemPrompt: `You are an Independent story generation engine for ages 9-11.
 
 CRITICAL OUTPUT FORMAT:
@@ -191,7 +191,7 @@ Use seed={seed} for creative expression.`,
 
   expert: {
     difficulty: 'expert',
-    expectedPages: 8,
+    expectedPages: 12,
     systemPrompt: `You are an Advanced story generation engine for ages 11-13.
 
 CRITICAL OUTPUT FORMAT:

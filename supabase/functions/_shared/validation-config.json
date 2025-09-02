@@ -29,19 +29,19 @@
     "grade10": "Grade10"
   },
   "pageExpectations": {
-    "Level0": 8,
-    "Level1": 8,
-    "Level2": 8,
-    "Level3": 8,
-    "Level4": 8,
-    "Grade6": 8,
-    "Grade7": 8,
-    "Grade8": 8,
-    "Grade9": 8,
-    "Grade10": 8
+    "Level0": 12,
+    "Level1": 12,
+    "Level2": 12,
+    "Level3": 12,
+    "Level4": 12,
+    "Grade6": 12,
+    "Grade7": 12,
+    "Grade8": 12,
+    "Grade9": 12,
+    "Grade10": 12
   },
   "validationThresholds": {
-    "minContentRatio": 0.001,
+    "minContentRatio": 0.3,
     "maxContentRatio": 1.5,
     "splitTolerance": 1.5,
     "cacheLimit": 500

@@ -18,23 +18,24 @@ interface TokenLimitConfig {
   tokensPerPage: number;
 }
 
-// Bulletproof token limits matching exact system prompt values
+// BULLETPROOF HARDCODED FALLBACK - NEVER CHANGE - TEMPLATE SERVICE EMERGENCY SYSTEM
+// This must remain independent of AI generation to serve as reliable fallback
 const TOKEN_LIMITS: Record<string, TokenLimitConfig> = {
-  beginner: { difficulty: 'beginner', expectedPages: 8, tokensPerPage: 15 },
-  easy: { difficulty: 'easy', expectedPages: 8, tokensPerPage: 32 },
-  medium: { difficulty: 'medium', expectedPages: 8, tokensPerPage: 150 },
-  hard: { difficulty: 'hard', expectedPages: 8, tokensPerPage: 200 },
-  expert: { difficulty: 'expert', expectedPages: 8, tokensPerPage: 500 },
-  grade6: { difficulty: 'grade6', expectedPages: 8, tokensPerPage: 500 },
-  grade7: { difficulty: 'grade7', expectedPages: 8, tokensPerPage: 500 },
-  grade8: { difficulty: 'grade8', expectedPages: 8, tokensPerPage: 500 },
-  grade9: { difficulty: 'grade9', expectedPages: 8, tokensPerPage: 500 },
-  grade10: { difficulty: 'grade10', expectedPages: 8, tokensPerPage: 500 }
+  beginner: { difficulty: 'beginner', expectedPages: 12, tokensPerPage: 15 },
+  easy: { difficulty: 'easy', expectedPages: 12, tokensPerPage: 32 },
+  medium: { difficulty: 'medium', expectedPages: 12, tokensPerPage: 150 },
+  hard: { difficulty: 'hard', expectedPages: 12, tokensPerPage: 200 },
+  expert: { difficulty: 'expert', expectedPages: 16, tokensPerPage: 500 },
+  grade6: { difficulty: 'grade6', expectedPages: 16, tokensPerPage: 500 },
+  grade7: { difficulty: 'grade7', expectedPages: 16, tokensPerPage: 500 },
+  grade8: { difficulty: 'grade8', expectedPages: 16, tokensPerPage: 500 },
+  grade9: { difficulty: 'grade9', expectedPages: 16, tokensPerPage: 500 },
+  grade10: { difficulty: 'grade10', expectedPages: 16, tokensPerPage: 500 }
 };
 
-// Get expected page count for difficulty level
+// Get expected page count for difficulty level - BULLETPROOF FALLBACK
 function getExpectedPageCountForDifficulty(difficulty: string): number {
-  return TOKEN_LIMITS[difficulty]?.expectedPages || 8;
+  return TOKEN_LIMITS[difficulty]?.expectedPages || 12;
 }
 
 function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount: number = 5): string[] {
