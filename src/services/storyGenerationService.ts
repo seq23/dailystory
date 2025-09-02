@@ -128,6 +128,7 @@ export class StoryGenerationService {
     const essentialUserInfo = {
       name: userInfo.name || "Child whose name no one could say",
       age: userInfo.age || 5,
+      nativeLanguage: userInfo.nativeLanguage || 'en',
       avatarType: userInfo.avatar?.type,
       avatarSkinTone: userInfo.avatar?.skinTone,
       difficultyLevel: userInfo.difficultyLevel, // Needed for story complexity
