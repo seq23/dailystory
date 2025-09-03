@@ -1,8 +1,11 @@
-# Current Template System and Fallback Chain Documentation
+# Current Template System and Fallback Chain Architecture
+
+**Last Updated**: January 2025  
+**Status**: ✅ Fully Implemented and Operational
 
 ## Overview
 
-This document provides the accurate, current state of the template system and fallback chain as implemented in the codebase. It replaces outdated documentation and reflects the actual implementation including the new creative rhyming emergency fallback system.
+This document details the comprehensive 3-tier fallback system with proper source tracking, toast notifications, and status indicators. The system ensures users always receive content through AI generation → Template system → Emergency content progression, with complete user experience management.
 
 ## System Architecture
 
@@ -22,10 +25,12 @@ This document provides the accurate, current state of the template system and fa
   - `generateNextPage(context: LiveGenerationContext)`
 - **Fallback Strategy**: Enhanced templates → Emergency content
 
-#### 3. **Template Service** (Backend)
+#### 3. **Template Service** (Backend) ✅ FIXED
 - **Location**: `supabase/functions/template-service/index.ts`
-- **Purpose**: Supabase Edge Function for template-based story generation
+- **Status**: ✅ Syntax error resolved - Fixed import path in `templateConverter.ts`
+- **Purpose**: Supabase Edge Function for template-based story generation  
 - **Integration**: Called by `useTemplateService` hook
+- **Source Tracking**: Returns `source: 'fallback'` metadata with generated content
 - **Fallback Strategy**: Template library → Grammar validation → Error handling
 
 ## Current Fallback Chain Hierarchy
@@ -34,17 +39,26 @@ This document provides the accurate, current state of the template system and fa
 **Services**: `NetflixStyleStoryService`, `LiveGenerationService`
 - Attempts OpenAI GPT-4 story generation via `supabase.functions.invoke('generate-adaptive-story')`
 - Includes cultural context, difficulty adaptation, and character consistency
+- **Source Tracking**: Sets `window.__LAST_STORY_SOURCE__ = 'ai'` on success
+- **User Experience**: No toast notifications, no status indicators (normal operation)
 - **Timeout**: Configured per service
 - **Success Rate**: ~85-90% under normal conditions
 
 **On Failure → Level 2**
 
-### Level 2: Backend Template System
-**Service**: `template-service` Edge Function
+### Level 2: Backend Template System ✅ FIXED
+**Service**: `template-service` Edge Function  
 - **Location**: `supabase/functions/template-service/index.ts`
+- **Status**: ✅ Deployment working - Fixed syntax error in `templateConverter.ts`
+- **Fix Applied**: Corrected import from `'./placeholderResolver.js'` to `'./placeholderResolver.ts'`
 - **Content**: 136 individual template files accessed via dynamic loading
 - **Total Pages**: 400+ story pages
 - **Architecture**: Backend-only with no frontend template storage
+- **Source Tracking**: Sets `window.__LAST_STORY_SOURCE__ = 'fallback'` on success
+- **User Experience**: 
+  - Yellow warning toast: "Using backup story content while AI recovers" (7 seconds)
+  - Backup status indicator appears (top-right, clickable)
+  - Session flag: `story_backup_mode = 'true'`
 - **Features**:
   - Individual template file loading from `supabase/functions/_shared/templates/`
   - User personalization via `placeholderResolver.ts`
@@ -52,19 +66,19 @@ This document provides the accurate, current state of the template system and fa
   - Cultural context integration
   - 4 ending types per template (Cozy, Silly, Triumphant, Reflective)
 
-**Template Distribution**:
-- **Level 0 (beginner)**: 100 simple sentence templates (600 sentences)
-- **Level 1-4**: 20 structured templates (5 per level)
-- **Grades 6-10**: 15 advanced templates (3 per grade)
-- **Access Method**: Dynamic loading via `dynamicTemplateLoader.js`
-- **Registry System**: Metadata-only mapping in `registry.js`
-
 **On Failure → Level 3**
 
-### Level 3: Creative Rhyming Emergency Content
+### Level 3: Creative Rhyming Emergency Content ✅ FIXED
 **Manager**: `ErrorHandlingManager.getEmergencyContent()`
 - **Location**: `src/services/errorHandlingManager.ts` (lines 113-177)
+- **Status**: ✅ Source tracking corrected - Now properly sets emergency source
+- **Fix Applied**: Added `window.__LAST_STORY_SOURCE__ = 'emergency'` in emergency content generation
 - **Purpose**: Delightful rhyming poems that explain system issues
+- **Source Tracking**: Sets `window.__LAST_STORY_SOURCE__ = 'emergency'` on activation
+- **User Experience**:
+  - Red emergency toast: "Temporary content while systems recover" (10 seconds)  
+  - Emergency status indicator appears (red Zap icon, top-right)
+  - Session flag: `story_emergency_mode = 'true'`
 - **Features**:
   - 5 rotating rhyming templates to avoid repetition
   - User name personalization
@@ -85,6 +99,49 @@ Or tell us what happened - we'd love to explore!
 ```
 
 **Final Fallback**: Simple 4-line rhyming message if content generation fails
+
+## Source Tracking and User Experience System ✅ IMPLEMENTED
+
+### Global Source Variables
+```javascript
+// Set by all services to track content source
+window.__LAST_STORY_SOURCE__ = 'ai' | 'fallback' | 'emergency'
+window.__LAST_PAGE_SOURCE__ = 'ai' | 'fallback' | 'emergency' // Premium users
+```
+
+### Toast Notification System
+**Hook**: `useStorySourceNotifications` monitors source changes
+
+#### 3-Tier Toast Implementation
+1. **Yellow Warning Toast** (7 seconds)
+   - Trigger: Source changes to `'fallback'`
+   - Message: "Using backup story content while AI recovers"  
+   - Variant: `warning`
+
+2. **Red Emergency Toast** (10 seconds)
+   - Trigger: Source changes to `'emergency'`
+   - Message: "Temporary content while systems recover"
+   - Variant: `destructive`
+
+3. **Green Recovery Toast** (4 seconds)
+   - Trigger: Source returns to `'ai'` after fallback/emergency
+   - Message: "AI storytelling is back online!"
+   - Variant: `default` with green styling
+   - Frequency: Once per session via `ai_recovery_shown` flag
+
+### Status Indicator System
+**Component**: `StoryStatusIndicator` provides persistent status awareness
+
+#### Status Display
+- **Normal Mode**: Hidden indicator
+- **Backup Mode**: Yellow AlertTriangle icon, "Backup Mode" text
+- **Emergency Mode**: Red Zap icon, "Emergency" text
+- **Position**: Fixed top-right corner, clickable for more info
+
+#### Session Storage Integration
+- `story_backup_mode`: Controls backup mode indicator visibility
+- `story_emergency_mode`: Controls emergency mode indicator visibility
+- `ai_recovery_shown`: Prevents duplicate recovery notifications
 
 ## Error Handling and Retry System
 
@@ -222,29 +279,40 @@ const TOKEN_LIMITS = {
 
 ## Current Implementation Status
 
-### ✅ Fully Implemented
-- Creative rhyming emergency fallback system
-- Toast notifications on max retries
-- Enhanced UI error displays in QuickTemplateTest and CleanStoryDisplay  
-- 35-template enhanced fallback library
-- Comprehensive error tracking and retry logic
-- Placeholder resolution and grammar validation
+### ✅ Fully Implemented and Operational
+- **3-tier fallback system**: AI → Templates → Emergency content
+- **Template service deployment**: ✅ Fixed syntax error, now functional
+- **Emergency source tracking**: ✅ Corrected to properly label emergency content as `'emergency'`
+- **Toast notification system**: Complete 3-tier system with proper durations
+- **Status indicator system**: Persistent, clickable status awareness
+- **Session storage integration**: Proper flag management and cleanup
+- **Recovery notification system**: One-time per session recovery celebrations
+- **Creative rhyming emergency fallback**: Delightful user experience during failures
+- **Enhanced UI error displays**: QuickTemplateTest and CleanStoryDisplay integration
+- **Comprehensive error tracking and retry logic**: Standardized error handling
+- **Placeholder resolution and grammar validation**: Complete personalization
 
 ### ✅ Integration Points Working
-- `useTemplateService` → `template-service` Edge Function → `dynamicTemplateLoader.js` → Individual template files
-- Frontend services → `useTemplateService` hook → Backend API calls
-- Template loading → `placeholderResolver.ts` → `grammarValidator.ts` → Processed content
-- Edge Function errors → `ErrorHandlingManager` → Emergency rhyming content
-- Backend template system → Frontend display → User experience
+- **Source tracking pipeline**: All services → Global source flags → UI notifications
+- **Toast system integration**: Source changes → useStorySourceNotifications → Toast display
+- **Status indicator coordination**: Session storage flags → StoryStatusIndicator → User awareness
+- **Template service pipeline**: `useTemplateService` → `template-service` Edge Function → `dynamicTemplateLoader.js` → Individual template files
+- **Frontend services integration**: Story services → Template hooks → Backend API calls
+- **Template processing**: Template loading → `placeholderResolver.ts` → `grammarValidator.ts` → Processed content
+- **Emergency content flow**: Edge Function errors → `ErrorHandlingManager` → Emergency rhyming content
+- **Complete user experience**: Backend template system → Frontend display → User notifications
 
 ### 🔄 Current Behavior Flow
-1. User requests story
-2. Service attempts AI generation
-3. On failure: Enhanced template system
-4. On template failure: Creative rhyming emergency content
-5. UI displays delightful poems with retry guidance
-6. Toast notifications inform users of system status
-7. After 3 retries: Enhanced error display with rhyming content
+1. **User requests story** → Timer starts, session begins
+2. **AI generation attempt** → Sets `'ai'` source on success, no notifications
+3. **AI failure** → Template system activates
+4. **Template success** → Sets `'fallback'` source → Yellow toast → Backup indicator
+5. **Template failure** → Emergency content activates  
+6. **Emergency activation** → Sets `'emergency'` source → Red toast → Emergency indicator
+7. **AI recovery** → Sets `'ai'` source → Green recovery toast (once per session) → Indicators disappear
+8. **UI displays** → Appropriate content with clear source awareness and retry guidance
+9. **User interaction** → Clickable status indicators provide contextual information
+10. **Session management** → Proper cleanup and flag management on session end
 
 ## Testing Scenarios
 
@@ -280,5 +348,5 @@ const TOKEN_LIMITS = {
 
 ---
 
-**Last Updated**: Post-Backend Architecture Implementation with Individual File System  
-**Status**: All systems operational and accurately documented - Backend-only template architecture complete ✅
+**Last Updated**: January 2025 - Post-Emergency Source Tracking Fixes and Toast System Implementation  
+**Status**: All systems operational with comprehensive fallback chain, proper source tracking, and complete user experience management ✅

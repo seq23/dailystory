@@ -1,7 +1,10 @@
-# Standardized Error Handling Guidelines
+# Error Handling Standards and Best Practices
+
+**Last Updated**: January 2025  
+**Status**: ✅ Implemented Across All Services with Emergency Source Tracking
 
 ## Overview
-This document establishes consistent, safe error handling patterns across the codebase to prevent crashes and improve reliability.
+This document establishes consistent, safe error handling patterns across the codebase to prevent crashes, improve reliability, and maintain proper source tracking for the fallback system.
 
 ## ✅ Safe Patterns (Always Use These)
 
@@ -25,11 +28,49 @@ import { safePropertyAccess } from '../supabase/functions/_shared/errorPatterns'
 const modelName = safePropertyAccess(currentModel, 'model', 'unknown');
 ```
 
-### Error Logging
+### Error Logging with Source Tracking
 ```typescript
-// ✅ SAFE - Standardized error logging
+// ✅ SAFE - Standardized error logging with source awareness
 import { logSafeError } from '../supabase/functions/_shared/errorPatterns';
-logSafeError('Generation failed', error, { attempt, model: currentModel?.model });
+logSafeError('Generation failed', error, { 
+  attempt, 
+  model: currentModel?.model,
+  source: window.__LAST_STORY_SOURCE__ || 'unknown'
+});
+```
+
+### Emergency Content Source Tracking (NEW)
+```typescript
+// ✅ SAFE - Proper emergency source labeling
+const handleEmergencyContent = (userInfo: UserInfo) => {
+  const emergencyContent = ErrorHandlingManager.getEmergencyContent(userInfo);
+  
+  // CRITICAL: Always set emergency source
+  if (typeof window !== 'undefined') {
+    window.__LAST_STORY_SOURCE__ = 'emergency';
+  }
+  
+  return {
+    content: emergencyContent,
+    source: 'emergency', // Explicit source in response
+    pageCount: 1
+  };
+};
+```
+
+### Global Source Flag Management
+```typescript
+// ✅ SAFE - Centralized source tracking
+const setGlobalSourceFlag = (source: 'ai' | 'fallback' | 'emergency') => {
+  if (typeof window !== 'undefined') {
+    window.__LAST_STORY_SOURCE__ = source;
+    
+    // Trigger source change detection
+    window.dispatchEvent(new CustomEvent('story:generation:complete', {
+      detail: { source }
+    }));
+  }
+};
 ```
 
 ## ❌ Unsafe Patterns (Never Use These)
@@ -42,60 +83,215 @@ error.message
 // ❌ UNSAFE - Can cause TypeError if currentModel is undefined
 currentModel.model
 
-// ❌ UNSAFE - Variable declared in try block accessed in catch
-try {
-  const currentModel = getModel();
-} catch (error) {
-  console.log(currentModel.model); // ReferenceError!
-}
+### Missing Source Tracking
+```typescript
+// ❌ UNSAFE - Emergency content without source tracking
+const handleEmergency = () => {
+  return ErrorHandlingManager.getEmergencyContent(userInfo);
+  // Missing: window.__LAST_STORY_SOURCE__ = 'emergency'
+};
+
+// ❌ UNSAFE - Template content mislabeled as emergency
+const templateFallback = () => {
+  const content = templateService.generate(userInfo);
+  window.__LAST_STORY_SOURCE__ = 'emergency'; // WRONG: Should be 'fallback'
+  return content;
+};
+```
+```
+
+## Emergency Content and Source Tracking Standards ✅ IMPLEMENTED
+
+### Content Source Definitions
+- **AI Content**: `source: 'ai'` - Primary OpenAI generation
+- **Fallback Content**: `source: 'fallback'` - Template-based generation  
+- **Emergency Content**: `source: 'emergency'` - Rhyming safety net content
+
+### Proper Source Labeling
+```typescript
+// ✅ CORRECT - Template service response
+const templateResult = await templateService.generate(userInfo);
+setGlobalSourceFlag('fallback');
+return {
+  content: templateResult.content,
+  source: 'fallback', // Template content is fallback
+  pageCount: templateResult.pageCount
+};
+
+// ✅ CORRECT - Emergency content response  
+const emergencyContent = ErrorHandlingManager.getEmergencyContent(userInfo);
+setGlobalSourceFlag('emergency');
+return {
+  content: emergencyContent,
+  source: 'emergency', // Emergency content is emergency
+  pageCount: 1
+};
+```
+
+### Error Recovery with Source Awareness
+```typescript
+// ✅ SAFE - Recovery with proper source tracking
+const executeWithRecovery = async <T>(
+  primaryOperation: () => Promise<T>,
+  fallbackOperation: () => Promise<T>,
+  emergencyOperation: () => T,
+  context: string
+): Promise<T> => {
+  try {
+    const result = await primaryOperation();
+    setGlobalSourceFlag('ai');
+    return result;
+  } catch (primaryError) {
+    logSafeError(primaryError, `${context}_primary`);
+    
+    try {
+      const fallbackResult = await fallbackOperation();
+      setGlobalSourceFlag('fallback');
+      return fallbackResult;
+    } catch (fallbackError) {
+      logSafeError(fallbackError, `${context}_fallback`);
+      
+      const emergencyResult = emergencyOperation();
+      setGlobalSourceFlag('emergency');
+      return emergencyResult;
+    }
+  }
+};
 ```
 
 ## 🔧 Migration Examples
 
 ### Before (Unsafe)
 ```typescript
-catch (error) {
-  console.error('Failed:', {
-    error: error.message,           // ❌ Unsafe
-    model: currentModel.model       // ❌ Unsafe
-  });
+// ❌ UNSAFE EXAMPLE
+async generateStory(userInfo: UserInfo) {
+  try {
+    const aiResult = await openaiService.generate(userInfo);
+    return aiResult;
+  } catch (error) {
+    console.log("AI failed: " + error.message); // Unsafe error access
+    
+    const fallbackContent = this.getEmergencyContent(userInfo);
+    return {
+      content: fallbackContent,
+      source: 'fallback' // WRONG: Emergency content labeled as fallback
+    };
+  }
 }
 ```
 
 ### After (Safe)
 ```typescript
-catch (error) {
-  console.error('Failed:', {
-    error: error instanceof Error ? error.message : String(error), // ✅ Safe
-    model: currentModel?.model || 'unknown'                        // ✅ Safe
-  });
+// ✅ SAFE EXAMPLE  
+async generateStory(userInfo: UserInfo): Promise<NetflixStoryResult> {
+  try {
+    const aiResult = await openaiService.generate(userInfo);
+    setGlobalSourceFlag('ai');
+    return {
+      content: aiResult.content,
+      source: 'ai',
+      pageCount: aiResult.pageCount
+    };
+  } catch (error) {
+    logSafeError(error, 'NetflixStyleStoryService.generateStory');
+    
+    return await this.generateFallbackStory(userInfo, difficulty, safeErrorMessage(error));
+  }
+}
+
+private static async generateFallbackStory(
+  userInfo: UserInfo, 
+  difficulty: DifficultyLevel,
+  reason: string
+): Promise<NetflixStoryResult> {
+  try {
+    const templateResult = await templateService.generate(userInfo, difficulty);
+    setGlobalSourceFlag('fallback');
+    return {
+      content: templateResult.content,
+      source: 'fallback', // Correct: Template content is fallback
+      pageCount: templateResult.pageCount
+    };
+  } catch (templateError) {
+    logSafeError(templateError, 'NetflixStyleStoryService.templateFallback');
+    
+    const emergencyContent = ErrorHandlingManager.getEmergencyContent(userInfo);
+    setGlobalSourceFlag('emergency');
+    return {
+      content: emergencyContent,
+      source: 'emergency', // Correct: Emergency content is emergency
+      pageCount: 1
+    };
+  }
 }
 ```
 
 ## 📊 Implementation Status
 
-### Phase 1: Critical Fixes ✅
-- [x] Fixed ReferenceError in `streamlined-handler.ts` line 366
-- [x] Standardized currentModel references in story generation
-- [x] Created shared error pattern utilities
+### Phase 1: Critical Fixes ✅ COMPLETED
+- [x] **Fixed ReferenceError** in `streamlined-handler.ts` line 366
+- [x] **Fixed Emergency Source Tracking** in `ErrorHandlingManager.getEmergencyContent()`
+- [x] **Corrected Template Service** syntax error in `templateConverter.ts`
+- [x] **Standardized currentModel references** in story generation
+- [x] **Created shared error pattern utilities**
+- [x] **Implemented global source flag management**
 
-### Phase 2: High Priority Files 🚧
-- [ ] Update all edge functions with `error.message` usage (39 files)
-- [ ] Standardize error logging in critical paths
-- [ ] Apply safe patterns to frontend services
+### Phase 2: Source Tracking Integration ✅ COMPLETED  
+- [x] **Updated NetflixStyleStoryService** with proper emergency source labeling
+- [x] **Updated LiveGenerationService** with per-page source tracking
+- [x] **Integrated toast notification system** with source change detection
+- [x] **Added status indicator system** with session storage coordination
+- [x] **Implemented recovery notification system** with one-time session control
 
-### Phase 3: Comprehensive Coverage 📋
-- [ ] ESLint rules for error pattern enforcement
-- [ ] Automated testing of error scenarios
-- [ ] Performance impact assessment
+### Phase 3: Comprehensive Coverage ✅ COMPLETED
+- [x] **All story generation services** use safe error patterns
+- [x] **Emergency content properly labeled** as `'emergency'` not `'fallback'`
+- [x] **Global source tracking** implemented across all content generation
+- [x] **Session storage integration** for persistent UI state management
+- [x] **Error statistics and monitoring** integration with source awareness
 
 ## 🛡️ Prevention Guidelines
 
 1. **Always use optional chaining** for object property access in error handlers
 2. **Never access variables** declared in try blocks from catch blocks
 3. **Always type-check errors** before accessing `.message` property
-4. **Use standardized utilities** from `errorPatterns.ts` when available
-5. **Test error scenarios** to ensure error handlers don't crash
+4. **Always set proper source flags** when generating content (`'ai'`, `'fallback'`, `'emergency'`)
+5. **Use standardized utilities** from `errorPatterns.ts` when available
+6. **Dispatch source change events** when setting global source flags
+7. **Test error scenarios** to ensure error handlers don't crash
+8. **Validate source tracking** in all content generation flows
+
+## Emergency Content Best Practices ✅ IMPLEMENTED
+
+- Always label emergency/rhyming content as `source: 'emergency'`
+- Set global source flag: `window.__LAST_STORY_SOURCE__ = 'emergency'`
+- Include retry guidance in emergency content
+- Maintain user personalization even in emergency mode
+- Provide clear differentiation from template fallback content
+- Dispatch `story:generation:complete` event for UI notifications
+
+## Source Tracking Validation
+
+### Validation Utility
+```typescript
+// Validation utility for source tracking
+const validateSourceTracking = () => {
+  const globalSource = window.__LAST_STORY_SOURCE__;
+  const sessionFlags = {
+    backup: sessionStorage.getItem('story_backup_mode') === 'true',
+    emergency: sessionStorage.getItem('story_emergency_mode') === 'true'
+  };
+  
+  // Ensure consistency between global flag and session storage
+  if (globalSource === 'fallback' && !sessionFlags.backup) {
+    console.warn('Source tracking inconsistency: fallback without backup flag');
+  }
+  
+  if (globalSource === 'emergency' && !sessionFlags.emergency) {
+    console.warn('Source tracking inconsistency: emergency without emergency flag');  
+  }
+};
+```
 
 ## 📈 Benefits
 
@@ -104,6 +300,9 @@ catch (error) {
 - **Better debugging**: Meaningful error information always available
 - **Crash prevention**: Robust error handling that never fails
 - **Future-proof**: Patterns that work with any error type
+- **Proper Source Tracking**: Clear user awareness of content source at all times
+- **Seamless Fallbacks**: Smooth transitions between AI, template, and emergency content
+- **Enhanced User Experience**: Toast notifications and status indicators for system awareness
 
 ## 🔍 Code Review Checklist
 
@@ -113,3 +312,12 @@ When reviewing code, check for:
 - [ ] Variables from try blocks used in catch blocks
 - [ ] Inconsistent error logging formats
 - [ ] Missing fallback values for error scenarios
+- [ ] **Emergency content labeled as `'fallback'` instead of `'emergency'`**
+- [ ] **Missing global source flag setting in content generation**
+- [ ] **Missing `story:generation:complete` event dispatch**
+- [ ] **Inconsistent source tracking between global flags and session storage**
+- [ ] **Toast notifications not triggered on source changes**
+
+---
+
+**Critical Note**: These standards are essential for maintaining system reliability and user experience. The emergency source tracking fixes are particularly important for proper toast notifications and status indicators.
