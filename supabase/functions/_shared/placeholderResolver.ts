@@ -92,6 +92,15 @@ function derivePronoun(userInfo?: UserInfo): string {
   }
 }
 
+function deriveCompleteGenderInfo(userInfo?: UserInfo): string {
+  switch (userInfo?.avatar?.type) {
+    case "boy": return "boy. Use he/him/his pronouns";
+    case "girl": return "girl. Use she/her/hers pronouns"; 
+    case "prefer-not-to-answer": return "child. Use they/them/their pronouns";
+    default: return "child. Use they/them/their pronouns";
+  }
+}
+
 export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
   const map: Record<string, string> = {
     userName: firstName(userInfo.name) || userInfo.name || "Child",
@@ -155,3 +164,5 @@ export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): st
   result = resolveMicroPlaceholders(result, ctx);
   return cleanup(result); // Only NOW do we cleanup, after all placeholders are resolved
 }
+
+export { deriveCompleteGenderInfo };

@@ -9,7 +9,7 @@ import {
   mapDifficultyToLevel,
   type ValidationLevel 
 } from "../_shared/validation-utils.ts";
-import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
+import { resolveAllPlaceholders, deriveCompleteGenderInfo } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage } from '../_shared/errorPatterns.ts';
@@ -271,6 +271,12 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     if (hairColor) {
       enhancedUserPrompt += `\nCharacter appearance: ${userInfo.name} has ${hairColor}.`;
     }
+  }
+
+  // Add gender/pronoun information for ALL users (universal coverage)
+  if (userInfo?.name && userInfo?.avatar?.type) {
+    const genderInfo = deriveCompleteGenderInfo(userInfo);
+    enhancedUserPrompt += `\nCharacter pronouns: ${userInfo.name} is a ${genderInfo}.`;
   }
 
   // Enhanced AI Generation with Intelligent Circuit Breaker
