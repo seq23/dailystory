@@ -290,7 +290,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
 }
 
 // Process ending with arc-aware rotation and sophisticated grammar validation
-function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing', arcConfig?: any): string {
+async function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing', arcConfig?: any): Promise<string> {
   if (endings.length === 0) return "And they lived happily ever after.";
   
   // Use arc-aware ending selection if available
@@ -332,7 +332,7 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template
  * Convert a StoryTemplate to a string array with arc-aware processing
  * Supports never-ending stories with modulo-based arc generation
  */
-export function convertStoryTemplateToStringArray(
+export async function convertStoryTemplateToStringArray(
   template: StoryTemplate, 
   userInfo: UserInfo = {}, 
   pageCount: number = 5,
@@ -345,7 +345,7 @@ export function convertStoryTemplateToStringArray(
     environmentalVariants?: Record<string, string>;
     swappableElements?: Record<string, string>;
   }
-): string[] | { pages: string[], testingData?: any } {
+): Promise<string[] | { pages: string[], testingData?: any }> {
   if (mode === 'testing') {
     console.log(`🔄 Converting template: \"${template.title}\" for ${pageCount} pages (${mode} mode)`);
     if (arcConfig) {
@@ -382,7 +382,7 @@ export function convertStoryTemplateToStringArray(
     
     if (arcPosition.isEndingPage) {
       // Generate ending page with arc transition awareness
-      const ending = processEnding(template.endings, userInfo, template, mode, arcConfig);
+      const ending = await processEnding(template.endings, userInfo, template, mode, arcConfig);
       return [ending];
     } else {
       // Generate scene page using modulo to cycle through scenes
@@ -427,7 +427,7 @@ export function convertStoryTemplateToStringArray(
   }
   
   // Always add ending (with arc-aware processing if available)
-  const ending = processEnding(template.endings, userInfo, template, mode, arcConfig);
+  const ending = await processEnding(template.endings, userInfo, template, mode, arcConfig);
   pages.push(ending);
   
   // TESTING MODE: Show all endings for validation
