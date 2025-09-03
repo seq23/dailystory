@@ -3,7 +3,7 @@
 // Sends fully resolved bundles to streamlined edge function
 
 import { supabase } from "@/integrations/supabase/client";
-import type { UserInfo, DifficultyLevel } from "@/types";
+import type { UserInfo, DifficultyLevel, LearningGoal, AvatarType } from "@/types";
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { generateCreativeSeeds } from './inputEnhancementEngine';
@@ -243,7 +243,17 @@ export class StoryGenerationService {
     }
 
     // CULTURAL CONTEXT INTEGRATION
-    const culturalContext = CulturalAdaptationService.getCulturalGuidanceString(essentialUserInfo.nativeLanguage);
+    const reconstructedUserInfo: UserInfo = {
+      ...essentialUserInfo,
+      grade: essentialUserInfo.gradeLevel,
+      learningGoal: 'improve-english-reading' as LearningGoal,
+      avatar: {
+        type: (essentialUserInfo.avatarType || 'prefer-not-to-answer') as AvatarType,
+        skinTone: separateAvatarData.skinTone || 'light'
+      },
+      specialRequest: themeIntent.rawInput || userInfo.specialRequest || ''
+    };
+    const culturalContext = CulturalAdaptationService.getCulturalGuidanceString(reconstructedUserInfo);
 
     const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. 
 

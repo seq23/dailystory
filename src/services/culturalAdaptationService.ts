@@ -3,14 +3,10 @@ import type { UserInfo } from "@/types";
 export interface CulturalContext {
   region: string;
   characterNames: string[];
-  familyStructures: string[];
   commonFoods: string[];
   celebrations: string[];
-  geographicalFeatures: string[];
-  clothingStyles: string[];
-  architecture: string[];
-  languages: string[];
   values: string[];
+  sports: string[];
 }
 
 export class CulturalAdaptationService {
@@ -18,96 +14,81 @@ export class CulturalAdaptationService {
     'ar': { // Arabic/MENA
       region: 'MENA',
       characterNames: ['Layla', 'Omar', 'Fatima', 'Hassan', 'Amira', 'Karim', 'Zahra', 'Youssef'],
-      familyStructures: ['extended family', 'grandparents nearby', 'cousins visiting', 'family gatherings'],
       commonFoods: ['dates', 'hummus', 'flatbread', 'lamb', 'rice dishes', 'mint tea', 'olives'],
       celebrations: ['Eid celebrations', 'family feasts', 'mosque gatherings', 'traditional weddings'],
-      geographicalFeatures: ['desert landscapes', 'oasis gardens', 'coastal cities', 'mountain villages'],
-      clothingStyles: ['flowing robes', 'colorful scarves', 'embroidered patterns', 'traditional dress'],
-      architecture: ['domed buildings', 'courtyard houses', 'geometric patterns', 'fountains'],
-      languages: ['Arabic phrases', 'family words in Arabic'],
-      values: ['hospitality', 'family honor', 'community respect', 'sharing with others']
+      values: ['hospitality', 'family honor', 'community respect', 'sharing with others'],
+      sports: ['football', 'camel racing', 'horseback riding', 'wrestling', 'archery']
     },
     
     'es': { // Spanish/Latin American
       region: 'Latin America',
       characterNames: ['Sofia', 'Diego', 'Esperanza', 'Carlos', 'Isabella', 'Miguel', 'Valentina', 'Gabriel'],
-      familyStructures: ['big family dinners', 'abuela stories', 'many cousins', 'family traditions'],
       commonFoods: ['tortillas', 'rice and beans', 'tropical fruits', 'empanadas', 'fresh juices'],
       celebrations: ['quinceañeras', 'Día de los Muertos', 'family parties', 'saint day celebrations'],
-      geographicalFeatures: ['rainforests', 'mountains', 'beaches', 'colorful towns', 'plazas'],
-      clothingStyles: ['bright colors', 'embroidered blouses', 'woven patterns', 'festive dresses'],
-      architecture: ['colonial buildings', 'tile roofs', 'church bells', 'market squares'],
-      languages: ['Spanish phrases', 'familia words'],
-      values: ['family loyalty', 'celebration of life', 'community support', 'respect for elders']
+      values: ['family loyalty', 'celebration of life', 'community support', 'respect for elders'],
+      sports: ['football', 'baseball', 'boxing', 'volleyball', 'cycling']
     },
 
     'zh': { // Chinese
       region: 'East Asia',
       characterNames: ['Li Wei', 'Mei Lin', 'Chen Yu', 'Zhang Min', 'Wang Lei', 'Liu Xin', 'Zhou Yun'],
-      familyStructures: ['multigenerational homes', 'respect for elders', 'study groups', 'family meals'],
       commonFoods: ['rice', 'noodles', 'dumplings', 'tea', 'fresh vegetables', 'tofu dishes'],
       celebrations: ['Chinese New Year', 'Moon Festival', 'Dragon Boat Festival', 'family reunions'],
-      geographicalFeatures: ['bamboo forests', 'mountains', 'rivers', 'ancient temples', 'gardens'],
-      clothingStyles: ['silk garments', 'traditional patterns', 'red for celebrations', 'jade jewelry'],
-      architecture: ['pagodas', 'courtyards', 'calligraphy', 'lanterns', 'bridges'],
-      languages: ['Mandarin phrases', 'family titles'],
-      values: ['hard work', 'education', 'family harmony', 'perseverance']
+      values: ['hard work', 'education', 'family harmony', 'perseverance'],
+      sports: ['table tennis', 'badminton', 'martial arts', 'diving', 'gymnastics']
     },
 
     'hi': { // Hindi/Indian
       region: 'South Asia', 
       characterNames: ['Priya', 'Arjun', 'Kavya', 'Rohan', 'Ananya', 'Vikram', 'Sita', 'Dev'],
-      familyStructures: ['joint families', 'multiple generations', 'arranged marriages', 'festival preparations'],
       commonFoods: ['curry', 'rice', 'chapati', 'lentils', 'spices', 'mango', 'chai tea'],
       celebrations: ['Diwali', 'Holi', 'weddings', 'harvest festivals', 'temple ceremonies'],
-      geographicalFeatures: ['monsoon rains', 'rivers', 'mountains', 'tropical forests', 'holy sites'],
-      clothingStyles: ['colorful saris', 'kurtas', 'intricate patterns', 'jewelry', 'henna designs'],
-      architecture: ['temples', 'palaces', 'carved stonework', 'courtyards', 'domes'],
-      languages: ['Hindi phrases', 'Sanskrit words'],
-      values: ['respect for teachers', 'spiritual growth', 'community harmony', 'hospitality']
+      values: ['respect for teachers', 'spiritual growth', 'community harmony', 'hospitality'],
+      sports: ['cricket', 'kabaddi', 'field hockey', 'badminton', 'wrestling']
     },
 
     'pt': { // Portuguese/Brazilian
       region: 'South America',
       characterNames: ['Ana', 'João', 'Mariana', 'Pedro', 'Beatriz', 'Gabriel', 'Camila', 'Rafael'],
-      familyStructures: ['close families', 'beach gatherings', 'neighborhood friends', 'festive meals'],
       commonFoods: ['fresh fruits', 'grilled meats', 'beans and rice', 'açaí', 'coconut water'],
       celebrations: ['Carnival', 'beach parties', 'football matches', 'music festivals'],
-      geographicalFeatures: ['tropical beaches', 'rainforests', 'mountains', 'rivers', 'colorful cities'],
-      clothingStyles: ['bright swimwear', 'casual clothing', 'football jerseys', 'festival costumes'],
-      architecture: ['colonial churches', 'colorful houses', 'beach huts', 'modern buildings'],
-      languages: ['Portuguese phrases', 'musical terms'],
-      values: ['joy and celebration', 'friendship', 'environmental care', 'community spirit']
+      values: ['joy and celebration', 'friendship', 'environmental care', 'community spirit'],
+      sports: ['football', 'volleyball', 'capoeira', 'surfing', 'beach volleyball']
     },
 
     'fr': { // French
       region: 'France/Francophone Africa',
       characterNames: ['Marie', 'Pierre', 'Camille', 'Antoine', 'Sophie', 'Louis', 'Émilie', 'Nicolas'],
-      familyStructures: ['small families', 'weekend visits', 'café culture', 'evening dinners'],
       commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'couscous', 'tajines', 'plantains'],
       celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics', 'independence days', 'traditional ceremonies'],
-      geographicalFeatures: ['countryside', 'châteaux', 'vineyards', 'coastal areas', 'mountain regions'],
-      clothingStyles: ['elegant fashion', 'scarves', 'classic styles', 'seasonal clothing'],
-      architecture: ['stone buildings', 'café terraces', 'historic monuments', 'gardens'],
-      languages: ['French phrases', 'cultural expressions'],
-      values: ['appreciation of beauty', 'culinary arts', 'intellectual discussion', 'cultural heritage']
+      values: ['appreciation of beauty', 'culinary arts', 'intellectual discussion', 'cultural heritage'],
+      sports: ['football', 'rugby', 'cycling', 'tennis', 'handball']
     },
 
     'en': { // English - Native speakers
       region: 'English-speaking',
       characterNames: ['Emma', 'Liam', 'Olivia', 'Noah', 'Sophia', 'Mason', 'Isabella', 'Jacob'],
-      familyStructures: ['nuclear families', 'weekend activities', 'school friends', 'community events'],
       commonFoods: ['sandwiches', 'pizza', 'burgers', 'salads', 'snacks', 'milk', 'fruit'],
       celebrations: ['birthdays', 'holidays', 'school events', 'sports games', 'family vacations'],
-      geographicalFeatures: ['parks', 'suburbs', 'schools', 'playgrounds', 'neighborhoods'],
-      clothingStyles: ['casual wear', 'school uniforms', 'sports clothing', 'seasonal outfits'],
-      architecture: ['houses with yards', 'schools', 'libraries', 'community centers'],
-      languages: ['regional expressions', 'slang terms'],
-      values: ['independence', 'achievement', 'fairness', 'creativity']
+      values: ['independence', 'achievement', 'fairness', 'creativity'],
+      sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field']
+    },
+
+    'en-african-american': { // African American
+      region: 'African American',
+      characterNames: ['Aisha', 'Jamal', 'Zara', 'Malik', 'Nia', 'Darius', 'Amara', 'Khalil', 'Imani', 'Xavier', 'Sanaa', 'Jalen', 'Kaya', 'Terrell', 'Alanna', 'Devin', 'Zuri', 'Marcus', 'Asha', 'Quinton', 'Layla', 'Isaiah', 'Camila', 'Jayden', 'Amina', 'Damon', 'Keisha', 'Antonio', 'Nala', 'Jordan', 'Zoe', 'Tyrone', 'Maya', 'Aaron', 'Destiny'],
+      commonFoods: ['cornbread', 'fried chicken', 'mac and cheese', 'collard greens', 'sweet potato pie', 'black-eyed peas', 'catfish', 'banana pudding', 'peach cobbler', 'gumbo', 'jambalaya', 'barbecue ribs', 'candied yams', 'pound cake', 'red beans and rice', 'biscuits and gravy', 'shrimp and grits', 'pecan pie', 'chess pie'],
+      celebrations: ['Juneteenth', 'family reunions', 'church gatherings', 'block parties', 'graduation celebrations'],
+      values: ['community strength', 'family pride', 'perseverance', 'educational achievement'],
+      sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field']
     }
   };
 
-  static getCulturalContext(nativeLanguage: string): CulturalContext {
+  static getCulturalContext(nativeLanguage: string, userInfo?: UserInfo): CulturalContext {
+    // Check for African American cultural context (English + dark skin)
+    if (nativeLanguage === 'en' && userInfo?.avatar?.skinTone === 'dark') {
+      return this.culturalContexts['en-african-american'] || this.culturalContexts['en'];
+    }
     return this.culturalContexts[nativeLanguage] || this.culturalContexts['en'];
   }
 
@@ -123,15 +104,15 @@ export class CulturalAdaptationService {
   static getCulturalElements(userInfo: UserInfo): {
     food: string;
     celebration: string;
-    setting: string;
+    sport: string;
     value: string;
   } {
-    const context = this.getCulturalContext(userInfo.nativeLanguage || 'en');
+    const context = this.getCulturalContext(userInfo.nativeLanguage || 'en', userInfo);
     
     return {
       food: context.commonFoods[Math.floor(Math.random() * context.commonFoods.length)],
       celebration: context.celebrations[Math.floor(Math.random() * context.celebrations.length)],
-      setting: context.geographicalFeatures[Math.floor(Math.random() * context.geographicalFeatures.length)],
+      sport: context.sports[Math.floor(Math.random() * context.sports.length)],
       value: context.values[Math.floor(Math.random() * context.values.length)]
     };
   }
@@ -141,7 +122,7 @@ export class CulturalAdaptationService {
     userInfo: UserInfo,
     isESLLearner: boolean = false
   ): string {
-    const context = this.getCulturalContext(userInfo.nativeLanguage || 'en');
+    const context = this.getCulturalContext(userInfo.nativeLanguage || 'en', userInfo);
     const elements = this.getCulturalElements(userInfo);
     
     let adaptedStory = storyTemplate;
@@ -149,7 +130,7 @@ export class CulturalAdaptationService {
     // Replace generic elements with culturally appropriate ones
     adaptedStory = adaptedStory.replace(/\{cultural_food\}/g, elements.food);
     adaptedStory = adaptedStory.replace(/\{cultural_celebration\}/g, elements.celebration);
-    adaptedStory = adaptedStory.replace(/\{cultural_setting\}/g, elements.setting);
+    adaptedStory = adaptedStory.replace(/\{cultural_sport\}/g, elements.sport);
     adaptedStory = adaptedStory.replace(/\{cultural_value\}/g, elements.value);
 
     // Add ESL-friendly language patterns if user is learning English
@@ -167,24 +148,30 @@ export class CulturalAdaptationService {
     return story;
   }
 
-  static getCulturalGuidanceString(nativeLanguage: string): string {
-    const context = this.getCulturalContext(nativeLanguage);
+  static getCulturalGuidanceString(userInfo: UserInfo): string {
+    const nativeLanguage = userInfo.nativeLanguage || 'en';
+    const context = this.getCulturalContext(nativeLanguage, userInfo);
+    
+    // Special handling for African American context (English + dark skin)
+    if (nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
+      return `Subtly incorporate African American cultural elements when natural to the story: foods like ${context.commonFoods[0]} or ${context.commonFoods[1]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`;
+    }
     
     const languageGuidance: Record<string, string> = {
-      'fr': `This person is likely from French/Francophone African culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'es': `This person is likely from Hispanic/Latino culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'ar': `This person is likely from Arabic/MENA culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'pt': `This person is likely from Portuguese/Brazilian culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'zh': `This person is likely from Chinese/East Asian culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'hi': `This person is likely from Indian/South Asian culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'en': '' // No cultural additions for English speakers
+      'fr': `Subtly incorporate French/Francophone cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
+      'es': `Subtly incorporate Hispanic/Latino cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
+      'ar': `Subtly incorporate Arabic/MENA cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
+      'pt': `Subtly incorporate Portuguese/Brazilian cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
+      'zh': `Subtly incorporate Chinese/East Asian cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
+      'hi': `Subtly incorporate Indian/South Asian cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
+      'en': '' // No cultural additions for English + non-dark skin
     };
 
     return languageGuidance[nativeLanguage] || '';
   }
 
   static generateCulturallyAdaptedCharacterDescription(userInfo: UserInfo): string {
-    const context = this.getCulturalContext(userInfo.nativeLanguage || 'en');
+    const context = this.getCulturalContext(userInfo.nativeLanguage || 'en', userInfo);
     const isESLLearner = userInfo.nativeLanguage !== 'en';
     
     if (isESLLearner) {
