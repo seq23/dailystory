@@ -363,7 +363,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           status: response.status,
           statusText: response.statusText,
           errorBody: errorText,
-          model: currentModel.model
+          model: currentModel?.model || 'unknown'
         });
         throw new Error(`API Error ${response.status}: ${errorText}`);
       }
@@ -424,8 +424,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
     } catch (error) {
       console.error(`❌ Generation attempt ${attempt} failed:`, {
-        error: error.message,
-        model: currentModel?.model,
+        error: error instanceof Error ? error.message : String(error),
+        model: currentModel?.model || 'unknown',
         attempt: attempt,
         maxAttempts: maxAttempts,
         currentModelIndex,

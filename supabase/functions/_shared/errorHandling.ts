@@ -51,7 +51,7 @@ export class EdgeErrorHandler {
   ): Response {
     const edgeError: EdgeError = {
       type: error.type || EdgeErrorType.UNKNOWN,
-      message: error.message || 'An unexpected error occurred',
+      message: error instanceof Error ? error.message : (error.message || 'An unexpected error occurred'),
       functionName,
       timestamp: Date.now(),
       details: context?.details || error.details,

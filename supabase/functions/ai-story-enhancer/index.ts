@@ -345,7 +345,7 @@ function parseAIResponse(content, options = {}) {
     return parsed;
   } catch (directError) {
     console.log('⚠️ PARSING ATTEMPT 1 FAILED: Direct parsing failed, trying extraction methods:', {
-      errorMessage: directError.message,
+      errorMessage: directError instanceof Error ? directError.message : String(directError),
       contentStructure: {
         hasCodeBlocks: content.includes('```'),
         hasJsonKeywords: /["'][a-zA-Z]+["']\s*:/.test(content),
@@ -597,7 +597,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
             errorType: 'timeout'
           });
         } else {
-          console.error(`❌ Model ${model.name} error on attempt ${attempt}:`, error.message);
+          console.error(`❌ Model ${model.name} error on attempt ${attempt}:`, error instanceof Error ? error.message : String(error));
           TierFailureLogger.logTier1OpenAIFailure(error, {
             model: model.name,
             attempt,
