@@ -57,12 +57,21 @@ export class CulturalAdaptationService {
     },
 
     'fr': { // French
-      region: 'France/Francophone Africa',
+      region: 'France',
       characterNames: ['Marie', 'Pierre', 'Camille', 'Antoine', 'Sophie', 'Louis', 'Émilie', 'Nicolas'],
-      commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'couscous', 'tajines', 'plantains'],
-      celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics', 'independence days', 'traditional ceremonies'],
+      commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'croissants', 'baguettes'],
+      celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics', 'Bastille Day'],
       values: ['appreciation of beauty', 'culinary arts', 'intellectual discussion', 'cultural heritage'],
       sports: ['football', 'rugby', 'cycling', 'tennis', 'handball']
+    },
+
+    'fr-francophone-african': { // Francophone African
+      region: 'Francophone Africa',
+      characterNames: ['Aminata', 'Mamadou', 'Fatou', 'Ibrahim', 'Aicha', 'Oumar', 'Mariam', 'Sekou'],
+      commonFoods: ['couscous', 'tajines', 'plantains', 'yassa', 'thieboudienne', 'mafe', 'attiéké'],
+      celebrations: ['independence days', 'traditional ceremonies', 'harvest festivals', 'community gatherings'],
+      values: ['community solidarity', 'respect for elders', 'oral tradition', 'hospitality'],
+      sports: ['football', 'basketball', 'wrestling', 'running', 'handball']
     },
 
     'en': { // English - Native speakers
@@ -88,6 +97,10 @@ export class CulturalAdaptationService {
     // Check for African American cultural context (English + dark skin)
     if (nativeLanguage === 'en' && userInfo?.avatar?.skinTone === 'dark') {
       return this.culturalContexts['en-african-american'] || this.culturalContexts['en'];
+    }
+    // Check for Francophone African cultural context (French + dark skin)
+    if (nativeLanguage === 'fr' && userInfo?.avatar?.skinTone === 'dark') {
+      return this.culturalContexts['fr-francophone-african'] || this.culturalContexts['fr'];
     }
     return this.culturalContexts[nativeLanguage] || this.culturalContexts['en'];
   }
@@ -156,12 +169,15 @@ export class CulturalAdaptationService {
     let culturalKey = nativeLanguage;
     if (nativeLanguage === 'en' && skinTone === 'dark') {
       culturalKey = 'en-african-american';
+    } else if (nativeLanguage === 'fr' && skinTone === 'dark') {
+      culturalKey = 'fr-francophone-african';
     }
     
     const context = this.getCulturalContext(culturalKey, userInfo);
     
     const languageGuidance: Record<string, string> = {
-      'fr': `This child is likely from French/Francophone African culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'fr': `This child is likely from French culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'fr-francophone-african': `This child is likely from Francophone African culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
       'es': `This child is likely from Hispanic/Latino culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
       'ar': `This child is likely from Arabic/MENA culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
       'pt': `This child is likely from Portuguese/Brazilian culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,

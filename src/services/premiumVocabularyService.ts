@@ -306,6 +306,11 @@ export class PremiumVocabularyService {
         'dog': '/dɔg/ → Similar to "chien" pronunciation pattern',
         'book': '/bʊk/ → Compare with "livre" for context'
       },
+      'fr-francophone-african': {
+        'cat': '/kæt/ → Like "chat" but with different vowel',
+        'dog': '/dɔg/ → Similar to "chien" pronunciation pattern',
+        'book': '/bʊk/ → Compare with "livre" for context'
+      },
       'zh': {
         'cat': '/kæt/ → 猫 (māo) - Practice the "a" sound difference',
         'dog': '/dɔg/ → 狗 (gǒu) - Focus on the "o" vowel sound',
@@ -420,6 +425,13 @@ export class PremiumVocabularyService {
         'book': 'book',
         'house': 'house',
         'family': 'family'
+      },
+      'fr-francophone-african': {
+        'cat': 'chat',
+        'dog': 'chien',
+        'book': 'livre',
+        'house': 'maison',
+        'family': 'famille'
       }
     };
 
@@ -490,6 +502,7 @@ export class PremiumVocabularyService {
     const adaptations: Record<LanguageCode, string[]> = {
       'es': ['Focus on "th" sounds', 'Practice silent letters', 'Work on vowel distinctions'],
       'fr': ['Practice English "h" sounds', 'Work on nasal vowels', 'Focus on final consonants'],
+      'fr-francophone-african': ['Practice English "h" sounds', 'Work on nasal vowels', 'Focus on final consonants'],
       'zh': ['Practice consonant clusters', 'Work on vowel length', 'Focus on stress patterns'],
       'ar': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on consonant endings'],
       'hi': ['Practice "v" vs "w" sounds', 'Work on "th" sounds', 'Focus on consonant clusters'],
@@ -572,6 +585,7 @@ export class PremiumVocabularyService {
       'en': [],
       'es': ['family', 'animal', 'natural', 'hospital'],
       'fr': ['family', 'animal', 'natural', 'hospital'],
+      'fr-francophone-african': ['family', 'animal', 'natural', 'hospital'],
       'pt': ['family', 'animal', 'natural', 'hospital'],
       'ar': [],
       'zh': [],
@@ -588,6 +602,7 @@ export class PremiumVocabularyService {
       'en': [],
       'es': ['embarrassed', 'library', 'actual'],
       'fr': ['library', 'actual', 'eventually'],
+      'fr-francophone-african': ['library', 'actual', 'eventually'],
       'pt': ['embarrassed', 'library'],
       'ar': [],
       'zh': [],
