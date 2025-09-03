@@ -24,7 +24,7 @@ export interface UserInfo {
   specialRequest?: string;
 }
 
-const FALLBACK_POOLS = {
+export const FALLBACK_POOLS = {
   animal: ["cat", "dog", "bird", "rabbit", "duck", "pig", "cow", "horse", "fish", "bear"],
   animalType: ["owl", "fox", "bear", "deer", "rabbit", "wolf", "eagle", "squirrel"],
   monsterType: ["dragon", "troll", "giant", "ogre", "goblin", "beast", "wizard", "creature"],
@@ -40,7 +40,7 @@ const FALLBACK_POOLS = {
   placeType: ["park", "forest", "garden", "field", "yard", "beach"]
 } as const;
 
-function pick<T>(arr: readonly T[]): T {
+export function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -104,32 +104,13 @@ function deriveCompleteGenderInfo(userInfo?: UserInfo): string {
 export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
   const map: Record<string, string> = {};
   
-  // Only add placeholders if user actually provided the data
-  if (userInfo.name) {
-    map.userName = firstName(userInfo.name) || userInfo.name;
-  } else {
-    map.userName = "Child"; // This is essential for story structure
-  }
-  
-  if (userInfo.favoriteColor) {
-    map.favoriteColor = userInfo.favoriteColor;
-  }
-  
-  if (userInfo.favoriteAnimal) {
-    map.favoriteAnimal = userInfo.favoriteAnimal;
-  }
-  
-  if (userInfo.favoriteFood) {
-    map.favoriteFood = userInfo.favoriteFood;
-  }
-  
-  if (userInfo.hobbies) {
-    map.hobbies = userInfo.hobbies;
-  }
-  
-  if (userInfo.specialRequest) {
-    map.specialRequest = userInfo.specialRequest;
-  }
+  // Always provide fallbacks for canonical placeholders - use user data if available, fallbacks otherwise
+  map.userName = userInfo.name ? (firstName(userInfo.name) || userInfo.name) : "Child";
+  map.favoriteColor = userInfo.favoriteColor || pick(FALLBACK_POOLS.color);
+  map.favoriteAnimal = userInfo.favoriteAnimal || pick(FALLBACK_POOLS.animal);
+  map.favoriteFood = userInfo.favoriteFood || pick(FALLBACK_POOLS.food);
+  map.hobbies = userInfo.hobbies || pick(FALLBACK_POOLS.action);
+  map.specialRequest = userInfo.specialRequest || "";
 
   let out = text;
   for (const [k, v] of Object.entries(map)) {

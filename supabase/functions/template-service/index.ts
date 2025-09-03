@@ -9,7 +9,7 @@ import { getTemplate, getTemplateCount, getRawTemplate } from '../_shared/templa
 import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
 
 // Import sophisticated placeholder resolution  
-import { resolveAllPlaceholders, MicroContext, UserInfo } from '../_shared/placeholderResolver.ts';
+import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
@@ -38,19 +38,48 @@ function getExpectedPageCountForDifficulty(difficulty: string): number {
   return TOKEN_LIMITS[difficulty]?.expectedPages || 12;
 }
 
+// Generate fallback seed data for Level 0 templates when user data is missing
+function generateFallbackSeed(userInfo: UserInfo): Record<string, any> {
+  const seed: Record<string, any> = {};
+  
+  // Generate micro-placeholders that Level 0 templates might use
+  if (!userInfo.favoriteColor) {
+    seed.color = pick(FALLBACK_POOLS.color);
+  }
+  if (!userInfo.favoriteAnimal) {
+    seed.animal = pick(FALLBACK_POOLS.animal);
+  }
+  if (!userInfo.favoriteFood) {
+    seed.food = pick(FALLBACK_POOLS.food);
+  }
+  
+  // Generate additional common micro-placeholders for Level 0
+  seed.setting = pick(FALLBACK_POOLS.setting);
+  seed.object = pick(FALLBACK_POOLS.object);
+  seed.action = pick(FALLBACK_POOLS.action);
+  seed.adjective = pick(FALLBACK_POOLS.adjective);
+  seed.friend = pick(FALLBACK_POOLS.friend);
+  
+  return seed;
+}
+
 function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount: number = 5): string[] {
   const pages: string[] = [];
 
   // Process each page in the template
   const pagesToUse = template.slice(0, Math.min(pageCount, template.length));
   
+  // Generate fallback seed data for Level 0 templates
+  const seed = generateFallbackSeed(userInfo);
+  
   for (const page of pagesToUse) {
     let processedPage = page;
     
-    // Apply sophisticated placeholder resolution (grammar processing moved to process-story-content)
+    // Apply sophisticated placeholder resolution with generated seed data
     const microContext: MicroContext = {
       userInfo: userInfo,
-      pageText: processedPage
+      pageText: processedPage,
+      seed: seed  // Now Level 0 has seed data for micro-placeholders
     };
     processedPage = resolveAllPlaceholders(processedPage, microContext);
     
