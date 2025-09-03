@@ -24,6 +24,7 @@ const corsHeaders = {
 };
 
 interface StreamlinedBundle {
+  sessionId: string;
   storyContent: string;
   systemSettings: {
     gradeLevel: number;
