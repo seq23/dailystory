@@ -133,6 +133,36 @@ export const template = {
         alternatives: ["Reflecting on five years of partnership, Sam understands their relationship with Amara became a model for how authentic connection can drive effective environmental advocacy.", "Their long-term relationship demonstrated that sustainable climate work requires the same commitment to mutual growth and care that sustains loving partnerships."],
         optionalDetails: ["Their initiative now influences environmental education curricula globally", "Sam and Amara are pursuing graduate degrees in climate science together", "Their story is taught in environmental studies courses as an example of effective cross-cultural climate organizing"]
       }
+    },
+    {
+      text: "Sam and Amara's influence extends beyond their original Global Climate Action Network as they begin mentoring other international student activist couples, helping them navigate the intersection of romance and environmental advocacy across cultures. During monthly support sessions with these couples, Sam and Amara share strategies for maintaining relationships during intense climate organizing periods and using love as a foundation for sustained environmental work. 'Climate action requires hope,' Amara explains to the group. 'Our relationships teach us how to practice the care for each other that we want to see in how humanity treats the planet.' Their guidance helps other couples avoid burnout while strengthening both their romantic partnerships and their climate effectiveness.",
+      pause: true,
+      hook: "How will their mentoring create a new generation of environmental activist couples?",
+      microVariants: {
+        text: "Mentoring other activist couples, Sam and Amara discovered their relationship model could help others balance romance and climate advocacy across cultural differences.",
+        alternatives: ["Leading support sessions for international environmental couples allowed Sam and Amara to share how love could strengthen rather than complicate climate organizing.", "Teaching other couples about relationship sustainability during activism proved that Sam and Amara's model could prevent climate movement burnout while deepening romantic connections."],
+        optionalDetails: ["Fifteen couples from ten countries participated in their monthly mentoring sessions", "Their guidance prevented several activist relationships from ending due to climate organizing stress", "The mentoring program was becoming a model for environmental movement sustainability globally"]
+      }
+    },
+    {
+      text: "As Sam prepares to graduate from college and Amara completes their environmental engineering degree in Lagos, they face major decisions about their future together and their continued climate work. Multiple opportunities arise: graduate fellowships in renewable energy that would bring them to the same university, job offers with international climate organizations, and the possibility of establishing a permanent research station for cross-cultural environmental solutions. During late-night planning calls, they realize their individual career paths have become inseparable from their shared mission and relationship. 'Whatever we choose,' Amara says while reviewing research proposals together via video, 'I want to build it with you. Our environmental work is stronger when we're genuinely together.'",
+      pause: true,
+      hook: "What path will Sam and Amara choose for their shared future in climate work?",
+      microVariants: {
+        text: "Planning their post-graduation future, Sam and Amara realized their career decisions would shape both their relationship and the future of their environmental organizing model.",
+        alternatives: ["Facing major life transitions, Sam and Amara understood that their professional choices had become inseparable from their romantic commitment and shared climate vision.", "Graduate school and career planning revealed that Sam and Amara's individual goals had evolved into a unified mission for cross-cultural climate action."],
+        optionalDetails: ["Four universities offered them joint fellowships in environmental science", "Climate organizations worldwide requested their expertise for establishing new youth programs", "Their decision would influence the future structure of international youth climate organizing"]
+      }
+    },
+    {
+      text: "Sam and Amara's relationship reaches a new level of maturity as they learn to support each other through the challenges of transitioning from student activism to professional climate work. When Sam feels overwhelmed by the responsibility of representing their model at international climate conferences, Amara helps them prepare presentations and manage speaking anxiety. When Amara faces pressure from potential employers who question their commitment to international collaboration, Sam provides emotional support and helps research positions that would allow Amara to continue their cross-cultural environmental work. 'We're not just romantic partners anymore,' Amara reflects during one of their weekly calls. 'We're life partners building the kind of world where love and environmental justice can both flourish.' Their relationship has become a sustainable foundation for lifelong climate advocacy.",
+      pause: true,
+      hook: "How has their relationship evolved into a foundation for lifelong environmental advocacy?",
+      microVariants: {
+        text: "Transitioning to professional climate work, Sam and Amara developed a mature partnership that could sustain both their romantic relationship and their lifelong commitment to environmental advocacy.",
+        alternatives: ["Supporting each other through career transitions proved that Sam and Amara had built a relationship strong enough to sustain decades of climate work together.", "Learning to balance personal support with professional collaboration showed Sam and Amara that their love had become the foundation for lifelong environmental organizing."],
+        optionalDetails: ["Their relationship counseling techniques were being studied by researchers interested in activist couple sustainability", "International climate organizations specifically recruited them as a team based on their collaborative model", "Their partnership had become a case study for maintaining relationships during intense environmental work"]
+      }
     }
   ],
   endings: [

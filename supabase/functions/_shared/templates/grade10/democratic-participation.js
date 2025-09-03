@@ -133,6 +133,36 @@ export const template = {
         alternatives: ["Reflecting on five years of partnership, Alex understands their relationship with Jordan became a model for how authentic connection can drive effective political advocacy.", "Their long-term relationship demonstrated that sustainable democracy work requires the same commitment to mutual growth and care that sustains loving partnerships."],
         optionalDetails: ["Their initiative now influences democracy education curricula globally", "Alex and Jordan are pursuing graduate degrees in international relations together", "Their story is taught in political science courses as an example of effective cross-cultural organizing"]
       }
+    },
+    {
+      text: "Alex and Jordan's influence extends beyond their original Democratic Participation Initiative as they begin mentoring other international student activist couples, helping them navigate the intersection of romance and political advocacy across cultures. During monthly support sessions with these couples, Alex and Jordan share strategies for maintaining relationships during intense organizing periods and using love as a foundation for sustained justice work. 'The personal is political isn't just a slogan,' Alex explains to the group. 'Our relationships teach us how to practice the values we advocate for in policy.' Their guidance helps other couples avoid burnout while strengthening both their romantic partnerships and their advocacy effectiveness.",
+      pause: true,
+      hook: "How will their mentoring create a new generation of activist couples?",
+      microVariants: {
+        text: "Mentoring other activist couples, Alex and Jordan discovered their relationship model could help others balance romance and political advocacy across cultural differences.",
+        alternatives: ["Leading support sessions for international activist couples allowed Alex and Jordan to share how love could strengthen rather than complicate political organizing.", "Teaching other couples about relationship sustainability during activism proved that Alex and Jordan's model could prevent movement burnout while deepening romantic connections."],
+        optionalDetails: ["Twelve couples from eight countries participated in their monthly mentoring sessions", "Their guidance prevented several activist relationships from ending due to organizing stress", "The mentoring program was becoming a model for movement sustainability internationally"]
+      }
+    },
+    {
+      text: "As Alex prepares to graduate from college and Jordan completes their political science degree in Seoul, they face major decisions about their future together and their continued democracy work. Multiple opportunities arise: graduate fellowships that would bring them to the same university, job offers with international democracy organizations, and the possibility of establishing a permanent institute for cross-cultural political organizing. During late-night planning calls, they realize their individual career paths have become inseparable from their shared mission and relationship. 'Whatever we choose,' Jordan says while reviewing fellowship applications together via video, 'I want to build it with you. Our work is stronger when we're genuinely together.'",
+      pause: true,
+      hook: "What path will Alex and Jordan choose for their shared future in democracy work?",
+      microVariants: {
+        text: "Planning their post-graduation future, Alex and Jordan realized their career decisions would shape both their relationship and the future of their democracy organizing model.",
+        alternatives: ["Facing major life transitions, Alex and Jordan understood that their professional choices had become inseparable from their romantic commitment and shared advocacy vision.", "Graduate school and career planning revealed that Alex and Jordan's individual goals had evolved into a unified mission for cross-cultural democracy work."],
+        optionalDetails: ["Three universities offered them joint fellowships in international relations", "Democracy organizations worldwide requested their expertise for establishing new youth programs", "Their decision would influence the future structure of international youth political organizing"]
+      }
+    },
+    {
+      text: "Alex and Jordan's relationship reaches a new level of maturity as they learn to support each other through the challenges of transitioning from student activism to professional democracy work. When Alex feels overwhelmed by the responsibility of representing their model at international conferences, Jordan helps them prepare presentations and manage speaking anxiety. When Jordan faces family pressure to choose more traditional career paths, Alex provides emotional support and helps research fellowship programs that would allow Jordan to continue their political work while satisfying family expectations. 'We're not just romantic partners anymore,' Jordan reflects during one of their weekly calls. 'We're life partners building the kind of world where love and democracy can both flourish.' Their relationship has become a sustainable foundation for lifelong justice work.",
+      pause: true,
+      hook: "How has their relationship evolved into a foundation for lifelong advocacy?",
+      microVariants: {
+        text: "Transitioning to professional democracy work, Alex and Jordan developed a mature partnership that could sustain both their romantic relationship and their lifelong commitment to political advocacy.",
+        alternatives: ["Supporting each other through career transitions proved that Alex and Jordan had built a relationship strong enough to sustain decades of justice work together.", "Learning to balance personal support with professional collaboration showed Alex and Jordan that their love had become the foundation for lifelong democracy organizing."],
+        optionalDetails: ["Their relationship counseling techniques were being studied by researchers interested in activist couple sustainability", "International democracy organizations specifically recruited them as a team based on their collaborative model", "Their partnership had become a case study for maintaining relationships during intense political work"]
+      }
     }
   ],
   endings: [

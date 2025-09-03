@@ -133,6 +133,36 @@ export const template = {
         alternatives: ["Reflecting on five years of partnership, Taylor understands their relationship with Kofi became a model for how authentic connection can drive effective health advocacy.", "Their long-term relationship demonstrated that sustainable medical work requires the same commitment to mutual growth and care that sustains loving partnerships."],
         optionalDetails: ["Their initiative now influences medical education curricula globally", "Taylor and Kofi are pursuing medical degrees together", "Their story is taught in global health courses as an example of effective cross-cultural healthcare organizing"]
       }
+    },
+    {
+      text: "Taylor and Kofi's influence extends beyond their original Global Health Equity Partnership as they begin mentoring other international student activist couples, helping them navigate the intersection of romance and health advocacy across cultures. During monthly support sessions with these couples, Taylor and Kofi share strategies for maintaining relationships during intense medical organizing periods and using love as a foundation for sustained health equity work. 'Healing requires compassion,' Kofi explains to the group. 'Our relationships teach us how to practice the care for each other that we want to see in how healthcare systems treat all patients.' Their guidance helps other couples avoid burnout while strengthening both their romantic partnerships and their health advocacy effectiveness.",
+      pause: true,
+      hook: "How will their mentoring create a new generation of health activist couples?",
+      microVariants: {
+        text: "Mentoring other activist couples, Taylor and Kofi discovered their relationship model could help others balance romance and health advocacy across cultural differences.",
+        alternatives: ["Leading support sessions for international health couples allowed Taylor and Kofi to share how love could strengthen rather than complicate medical organizing.", "Teaching other couples about relationship sustainability during activism proved that Taylor and Kofi's model could prevent health movement burnout while deepening romantic connections."],
+        optionalDetails: ["Thirteen couples from nine countries participated in their monthly mentoring sessions", "Their guidance prevented several activist relationships from ending due to health organizing stress", "The mentoring program was becoming a model for health movement sustainability internationally"]
+      }
+    },
+    {
+      text: "As Taylor prepares to graduate from college and Kofi completes their medical degree in Accra, they face major decisions about their future together and their continued health equity work. Multiple opportunities arise: joint residency programs that would bring them to the same hospital, positions with international health organizations, and the possibility of establishing a permanent clinic for cross-cultural medical solutions. During late-night planning calls, they realize their individual career paths have become inseparable from their shared mission and relationship. 'Whatever we choose,' Kofi says while reviewing residency applications together via video, 'I want to build it with you. Our health work is stronger when we're genuinely together.'",
+      pause: true,
+      hook: "What path will Taylor and Kofi choose for their shared future in health equity work?",
+      microVariants: {
+        text: "Planning their post-graduation future, Taylor and Kofi realized their career decisions would shape both their relationship and the future of their health organizing model.",
+        alternatives: ["Facing major life transitions, Taylor and Kofi understood that their professional choices had become inseparable from their romantic commitment and shared health vision.", "Medical school and career planning revealed that Taylor and Kofi's individual goals had evolved into a unified mission for cross-cultural health equity."],
+        optionalDetails: ["Three hospital systems offered them joint residency programs", "Health organizations worldwide requested their expertise for establishing new youth programs", "Their decision would influence the future structure of international youth health organizing"]
+      }
+    },
+    {
+      text: "Taylor and Kofi's relationship reaches a new level of maturity as they learn to support each other through the challenges of transitioning from student activism to professional health work. When Taylor feels overwhelmed by the responsibility of representing their model at international medical conferences, Kofi helps them prepare presentations and manage speaking anxiety. When Kofi faces pressure from potential residency supervisors who question their commitment to international health equity, Taylor provides emotional support and helps research programs that would allow Kofi to continue their cross-cultural medical work. 'We're not just romantic partners anymore,' Kofi reflects during one of their weekly calls. 'We're life partners building the kind of world where love and health justice can both flourish.' Their relationship has become a sustainable foundation for lifelong medical advocacy.",
+      pause: true,
+      hook: "How has their relationship evolved into a foundation for lifelong health advocacy?",
+      microVariants: {
+        text: "Transitioning to professional health work, Taylor and Kofi developed a mature partnership that could sustain both their romantic relationship and their lifelong commitment to health advocacy.",
+        alternatives: ["Supporting each other through career transitions proved that Taylor and Kofi had built a relationship strong enough to sustain decades of health equity work together.", "Learning to balance personal support with professional collaboration showed Taylor and Kofi that their love had become the foundation for lifelong health organizing."],
+        optionalDetails: ["Their relationship counseling techniques were being studied by researchers interested in activist couple sustainability", "International health organizations specifically recruited them as a team based on their collaborative model", "Their partnership had become a case study for maintaining relationships during intense medical advocacy work"]
+      }
     }
   ],
   endings: [
