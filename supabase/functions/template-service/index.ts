@@ -173,10 +173,12 @@ serve(async (req) => {
               });
             } else {
               // Structured template with proper metadata
+              const sceneCount = rawTemplate.scenes?.length || 0;
+              console.log(`📊 Template ${i}: "${rawTemplate.title}" has ${sceneCount} scenes`);
               templateDetails.push({
                 title: rawTemplate.title || `Template ${i + 1}`,
                 theme: rawTemplate.theme || "Adventure",
-                scenes: rawTemplate.scenes?.length || 0,
+                scenes: sceneCount,
                 endings: rawTemplate.endings?.length || 0
               });
             }
