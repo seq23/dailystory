@@ -114,7 +114,7 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
     'light': 'blonde hair', 
     'medium': 'brown hair',
     'olive': 'black hair',
-    'dark': 'textured natural African American hair'
+    'dark': 'textured natural hair'
   };
   
   return hairColorMap[skinTone] || null;
