@@ -26,6 +26,7 @@ export interface ValidationResult {
   decision: ValidationDecision;
   isValid: boolean;
   content?: string[];
+  repairedContent?: string[];
   reasons: string[];
   metrics: {
     tokenCount: number;
@@ -38,8 +39,13 @@ export interface ValidationResult {
       severity: 'error' | 'warning' | 'info';
       message: string;
     }>;
+    expectedPages?: number;
+    actualTokens?: number;
+    expectedTokens?: number;
   };
   hints?: string[];
+  suggestedTokens?: number;
+  actualTokenBudget?: number;
 }
 
 export interface ValidationConfig {
@@ -47,6 +53,8 @@ export interface ValidationConfig {
   level: ValidationLevel;
   userLanguage?: string;
   vocabularyIntegration?: any;
+  actualTokenBudget?: number;
+  retryAttempt?: number;
 }
 
 export class UnifiedValidator {
@@ -133,17 +141,76 @@ export class UnifiedValidator {
     const expectedPages = getExpectedPagesForService('netflix', config.level) || 12;
     
     if (pageCount < 6) {
-      return {
-        decision: 'RETRY_WITH_HINT',
-        isValid: false,
-        reasons: [...baseReasons, `Story has ${pageCount} pages but needs at least 6 pages for business model`],
-        metrics: { ...metrics, pageCount, expectedPages },
-        hints: [
-          `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
-          'Create more story content with additional scenes and development',
-          'Add character interactions, setting descriptions, and plot progression'
-        ]
-      };
+      const expectedTokens = 6 * 250; // 6 pages × 250 tokens per page = 1500 minimum
+      const actualTokens = config.actualTokenBudget || 0;
+      const isRetry = (config.retryAttempt || 0) > 0;
+      
+      console.log(`🔍 Token Adequacy Check: pageCount=${pageCount}, expectedTokens=${expectedTokens}, actualTokens=${actualTokens}, isRetry=${isRetry}`);
+      
+      // DECISION 1: Insufficient token budget detected
+      if (actualTokens < expectedTokens) {
+        console.log(`💡 Insufficient token budget: ${actualTokens} < ${expectedTokens}. Suggesting token increase.`);
+        return {
+          decision: 'RETRY_WITH_HINT',
+          isValid: false,
+          reasons: [...baseReasons, `Story has ${pageCount} pages but was only given ${actualTokens} tokens (needs ${expectedTokens}+ for 6 pages)`],
+          metrics: { ...metrics, pageCount, expectedPages, actualTokens, expectedTokens },
+          hints: [
+            `INCREASE TOKEN BUDGET to ${Math.ceil(expectedTokens * 1.33)} tokens (33% buffer)`,
+            `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
+            'Create more story content with additional scenes and development'
+          ],
+          suggestedTokens: Math.ceil(expectedTokens * 1.33),
+          actualTokenBudget: actualTokens
+        };
+      }
+      
+      // DECISION 2: Adequate tokens but still insufficient pages
+      if (!isRetry) {
+        // First retry: Give standard % more tokens + strong hint
+        const boostedTokens = Math.ceil(actualTokens * 1.25); // 25% increase
+        console.log(`🔄 First retry with boosted tokens: ${actualTokens} → ${boostedTokens}`);
+        return {
+          decision: 'RETRY_WITH_HINT', 
+          isValid: false,
+          reasons: [...baseReasons, `Story has ${pageCount} pages but needs at least 6 pages (adequate tokens: ${actualTokens})`],
+          metrics: { ...metrics, pageCount, expectedPages, actualTokens },
+          hints: [
+            `CRITICAL: You MUST generate exactly 6 or more pages. This is mandatory.`,
+            `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
+            'Add substantial character interactions, detailed setting descriptions, and extended plot progression',
+            'Each page should have meaningful story content, not just brief summaries'
+          ],
+          suggestedTokens: boostedTokens,
+          actualTokenBudget: actualTokens
+        };
+      } else {
+        // Second attempt failed: Use auto-splitting as backup
+        console.log(`🔧 Validation: After retry, still ${pageCount} pages. Using auto-splitting as backup.`);
+        
+        const autoSplitResult = sharedAutoSplitContent(fullContent, config.level, 6);
+        if (autoSplitResult && Array.isArray(autoSplitResult) && autoSplitResult.length >= 6) {
+          console.log(`✅ Auto-split successful: ${pageCount} → ${autoSplitResult.length} pages`);
+          return {
+            decision: 'REPAIR',
+            isValid: true, 
+            reasons: [...baseReasons, `Auto-split ${pageCount} pages into ${autoSplitResult.length} pages`],
+            metrics: { ...metrics, pageCount: autoSplitResult.length, expectedPages },
+            repairedContent: autoSplitResult,
+            actualTokenBudget: actualTokens
+          };
+        } else {
+          // Auto-splitting failed - last resort  
+          console.error(`❌ Auto-split failed for ${pageCount} pages`);
+          return {
+            decision: 'REJECT',
+            isValid: false,
+            reasons: [...baseReasons, `Unable to generate or split content into 6+ pages after retry`],
+            metrics: { ...metrics, pageCount, expectedPages },
+            actualTokenBudget: actualTokens
+          };
+        }
+      }
     }
     
     // TOKEN VALIDATION DISABLED - Using character-only validation

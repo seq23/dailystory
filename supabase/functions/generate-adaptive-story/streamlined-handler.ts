@@ -168,12 +168,17 @@ Generate a corrected version that addresses these issues while keeping the story
       mapDifficultyToLevel(expertGrade) : 
       mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
     
-    // Step 1: Apply UnifiedValidator to entire story
+    // Step 1: Apply UnifiedValidator to entire story with actual token budget
+    const actualTokenBudget = difficulty ? getServiceAwareTokenLimit(difficulty, config) : getServiceSpecificFallback(config);
     const validationConfig: ValidationConfig = {
       mode: config.sessionType === 'free' ? 'guest' : 'live',
       level: validationLevel,
-      userLanguage: 'en'
+      userLanguage: 'en',
+      actualTokenBudget,
+      retryAttempt: config.repairAttempt || 0
     };
+    
+    console.log(`🔍 Validation Config: mode=${validationConfig.mode}, actualTokenBudget=${actualTokenBudget}, retryAttempt=${config.repairAttempt || 0}`);
     
     const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
     
@@ -312,13 +317,21 @@ function getServiceSpecificFallback(config?: StreamlinedConfig): number {
  * Service-aware token limit function - detects Netflix vs Live automatically
  */
 function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): number {
-  // Detect service type from config or default to Netflix for full stories
-  const isLiveGeneration = config?.pageNumber === 1 && !config?.existingStory;  
+  // Improved service detection logic
+  const isLiveGeneration = config?.sessionType === 'premium' && config?.pageNumber === 1 && !!config?.existingStory;
+  const isNetflixGeneration = config?.sessionType === 'free' || (!config?.sessionType && !config?.existingStory);
+  
+  console.log(`🎯 Service Detection: sessionType=${config?.sessionType}, pageNumber=${config?.pageNumber}, hasExistingStory=${!!config?.existingStory}`);
+  console.log(`🎯 Service Decision: isLive=${isLiveGeneration}, isNetflix=${isNetflixGeneration}`);
   
   if (isLiveGeneration) {
-    return getLiveTokenLimit(difficulty);
+    const limit = getLiveTokenLimit(difficulty);
+    console.log(`📄 Using Live token limit: ${limit}`);
+    return limit;
   } else {
-    return getNetflixTokenLimit(difficulty);
+    const limit = getNetflixTokenLimit(difficulty);
+    console.log(`📺 Using Netflix token limit: ${limit}`);
+    return limit;
   }
 }
 
