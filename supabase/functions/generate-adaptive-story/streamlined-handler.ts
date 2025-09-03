@@ -169,7 +169,7 @@ Generate a corrected version that addresses these issues while keeping the story
       mapDifficultyToLevel(effectiveDifficulty as DifficultyLevel);
     
     // Step 1: Apply UnifiedValidator to entire story with actual token budget
-    const actualTokenBudget = difficulty ? getServiceAwareTokenLimit(difficulty, config) : getServiceSpecificFallback(config);
+    const actualTokenBudget = effectiveDifficulty ? getServiceAwareTokenLimit(effectiveDifficulty, config) : getServiceSpecificFallback(config);
     const validationConfig: ValidationConfig = {
       mode: config.sessionType === 'free' ? 'guest' : 'live',
       level: validationLevel,
