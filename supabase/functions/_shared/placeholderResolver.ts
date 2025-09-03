@@ -112,12 +112,29 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
   map.hobbies = userInfo.hobbies || pick(FALLBACK_POOLS.action);
   map.specialRequest = userInfo.specialRequest || "";
 
+  // Enhanced character name extraction from special request
+  let extractedCharacterNames: string[] = [];
+  if (userInfo.specialRequest) {
+    try {
+      // Try to extract character names from special request
+      extractedCharacterNames = extractCharacterNamesFromRequest(userInfo.specialRequest);
+    } catch (error) {
+      console.warn('Character name extraction failed:', error.message);
+    }
+  }
+
   let out = text;
   for (const [k, v] of Object.entries(map)) {
     if (v) {
       out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
     }
   }
+  
+  // Apply character name substitutions if extracted
+  if (extractedCharacterNames.length > 0) {
+    out = applyCharacterNameSubstitutions(out, extractedCharacterNames);
+  }
+  
   return out; // Don't cleanup here - micro placeholders still need processing
 }
 
@@ -205,6 +222,96 @@ export function resolveAllPlaceholders(text: string, ctx: MicroContext = {}): st
   }
   result = resolveMicroPlaceholders(result, ctx);
   return cleanup(result); // Only NOW do we cleanup, after all placeholders are resolved
+}
+
+/**
+ * Extract character names from special request text safely
+ */
+function extractCharacterNamesFromRequest(request: string): string[] {
+  try {
+    if (!request || typeof request !== 'string') return [];
+    
+    const names: string[] = [];
+    const lowerRequest = request.toLowerCase();
+    
+    // Look for patterns like "my friend Sarah" or "about Emma"
+    const namePatterns = [
+      /\b(?:my\s+friend|friend|buddy|pal)\s+([A-Za-z]{2,15})\b/gi,
+      /\b(?:about|with|meet)\s+([A-Za-z]{2,15})\b/gi,
+      /\b([A-Za-z]{2,15})\s+(?:and\s+me|is\s+my)/gi
+    ];
+    
+    for (const pattern of namePatterns) {
+      let match;
+      while ((match = pattern.exec(request)) !== null) {
+        const name = match[1];
+        if (name && name.length >= 2 && name.length <= 15) {
+          // Check if it's likely a name (not a common word)
+          if (!isCommonWordForName(name.toLowerCase())) {
+            names.push(name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+          }
+        }
+        // Prevent infinite loops
+        if (pattern.lastIndex === match.index) {
+          pattern.lastIndex++;
+        }
+      }
+    }
+    
+    // Remove duplicates and limit results
+    return [...new Set(names)].slice(0, 2);
+    
+  } catch (error) {
+    console.warn('Character name extraction error:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Check if word is a common non-name word
+ */
+function isCommonWordForName(word: string): boolean {
+  const commonWords = [
+    'the', 'and', 'with', 'for', 'about', 'story', 'tell', 'want', 'like', 
+    'can', 'you', 'please', 'make', 'create', 'write', 'need', 'would',
+    'this', 'that', 'have', 'will', 'play', 'game', 'fun', 'time'
+  ];
+  return commonWords.includes(word);
+}
+
+/**
+ * Apply character name substitutions to text
+ */
+function applyCharacterNameSubstitutions(text: string, characterNames: string[]): string {
+  try {
+    if (!characterNames || characterNames.length === 0) return text;
+    
+    let result = text;
+    
+    // Replace friend placeholder with first extracted name
+    if (characterNames[0]) {
+      result = result.replace(/\{friend\}/g, characterNames[0]);
+    }
+    
+    // Replace any generic friend names with extracted names
+    const genericNames = ['Sam', 'Alex', 'Riley', 'Taylor', 'Jordan'];
+    
+    for (let i = 0; i < Math.min(characterNames.length, genericNames.length); i++) {
+      const genericName = genericNames[i];
+      const extractedName = characterNames[i];
+      
+      // Replace the generic name with extracted name
+      const nameRegex = new RegExp(`\\b${genericName}\\b`, 'g');
+      result = result.replace(nameRegex, extractedName);
+    }
+    
+    console.log(`👤 Applied character name substitutions: [${characterNames.join(', ')}]`);
+    
+    return result;
+  } catch (error) {
+    console.warn('Character name substitution error:', error.message);
+    return text; // Return original text on error
+  }
 }
 
 export { deriveCompleteGenderInfo };
