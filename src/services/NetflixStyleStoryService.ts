@@ -46,7 +46,7 @@ import { RepairService } from './repairService';
 export interface NetflixStoryResult {
   content: string[];
   pageCount: number;
-  source: 'ai' | 'fallback';
+  source: 'ai' | 'fallback' | 'emergency';
   error?: string;
 }
 
@@ -209,6 +209,9 @@ export class NetflixStyleStoryService {
       console.error('📺 Netflix: Fallback generation failed:', error);
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
+      
+      // Set global emergency source tracking
+      (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
 
       // Emit story generation complete event
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -216,7 +219,7 @@ export class NetflixStyleStoryService {
       return {
         content: emergencyContent,
         pageCount: emergencyContent.length,
-        source: 'fallback'
+        source: 'emergency'
       };
     }
   }

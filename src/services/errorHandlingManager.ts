@@ -112,6 +112,10 @@ export class ErrorHandlingManager {
    */
   static async getEmergencyContent(userInfo?: UserInfo): Promise<string[]> {
     try {
+      // Set global emergency source tracking when nuclear content is used
+      (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
+      (globalThis as any).__LAST_PAGE_SOURCE__ = 'emergency';
+      
       const userName = userInfo?.name || 'Friend';
       
       // Rotate through 5 different rhyming templates to avoid repetition

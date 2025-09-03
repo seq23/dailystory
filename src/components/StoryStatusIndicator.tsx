@@ -17,12 +17,13 @@ export const StoryStatusIndicator = () => {
       try {
         const source = (globalThis as any).__LAST_STORY_SOURCE__;
         const isBackupMode = sessionStorage.getItem('story_backup_mode') === 'true';
+        const isEmergencyMode = sessionStorage.getItem('story_emergency_mode') === 'true';
         
-        if (source === 'fallback' && isBackupMode) {
-          setCurrentMode('backup');
-          setIsVisible(true);
-        } else if (source === 'emergency') {
+        if (source === 'emergency' || isEmergencyMode) {
           setCurrentMode('emergency');
+          setIsVisible(true);
+        } else if (source === 'fallback' || isBackupMode) {
+          setCurrentMode('backup');
           setIsVisible(true);
         } else {
           setCurrentMode('normal');

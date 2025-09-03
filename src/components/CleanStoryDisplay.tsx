@@ -629,7 +629,7 @@ useEffect(() => {
 // Voice command bridge moved below after currentStory/contentHash are defined
 
   // Debug source badge state
-  const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'unknown' | null>(null);
+  const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'emergency' | 'unknown' | null>(null);
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
   // TIMER ENFORCEMENT SYSTEM

@@ -296,6 +296,10 @@ export class LiveGenerationService {
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
       const content = emergencyContent[0] || `${userInfo.name} began a wonderful adventure.`;
       
+      // Set global emergency source tracking
+      (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
+      (globalThis as any).__LAST_PAGE_SOURCE__ = 'emergency';
+      
       let promptConfig: any;
       if (difficulty === 'expert') {
         promptConfig = { expectedPages: 14 };
@@ -385,6 +389,10 @@ export class LiveGenerationService {
       const content = isLastPage ? 
         (emergencyContent[0] || `${context.userInfo.name} had a great day. The end.`) : 
         (emergencyContent[0] || `${context.userInfo.name} continued the adventure.`);
+      
+      // Set global emergency source tracking
+      (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
+      (globalThis as any).__LAST_PAGE_SOURCE__ = 'emergency';
       
       const updatedContext: LiveGenerationContext = {
         ...context,

@@ -39,7 +39,21 @@ export const useStorySourceNotifications = () => {
             sessionStorage.setItem('story_backup_mode', 'true');
           } catch {}
           
-        } else if (currentSource === 'ai' && previousSource === 'fallback') {
+        } else if (currentSource === 'emergency') {
+          // Show red emergency toast for nuclear fallback (critical system failure)
+          toast({
+            title: "🚨 System Recovery Mode",
+            description: "Our storytelling system is experiencing issues. Emergency content is being used while we restore full service.",
+            variant: "destructive", 
+            duration: 10000, // 10 seconds for critical alerts
+          });
+          
+          // Set flag for emergency status indicator
+          try {
+            sessionStorage.setItem('story_emergency_mode', 'true');
+          } catch {}
+          
+        } else if (currentSource === 'ai' && (previousSource === 'fallback' || previousSource === 'emergency')) {
           // AI recovered - show green success toast (one-time only)
           const recoveryKey = 'ai_recovery_shown_' + Date.now();
           const hasShownRecovery = sessionStorage.getItem('ai_recovery_shown');
@@ -60,9 +74,10 @@ export const useStorySourceNotifications = () => {
             } catch {}
           }
           
-          // Clear backup mode flag
+          // Clear backup and emergency mode flags
           try {
             sessionStorage.removeItem('story_backup_mode');
+            sessionStorage.removeItem('story_emergency_mode');
           } catch {}
         }
       } catch (error) {
@@ -113,6 +128,7 @@ export const useStorySourceNotifications = () => {
       try {
         sessionStorage.removeItem('ai_recovery_shown');
         sessionStorage.removeItem('story_backup_mode');
+        sessionStorage.removeItem('story_emergency_mode');
       } catch {}
     };
   }, []);
