@@ -53,9 +53,99 @@ export const template = {
         alternatives: ["Leading global health discussions together revealed Taylor and Kofi's seamless collaboration while creating opportunities for romantic moments despite the distance.", "Dr. Santos's observation about their perfect partnership made Taylor and Kofi realize their connection was obvious to everyone in their medical network."],
         optionalDetails: ["Medical professionals from ten countries participated in weekly sessions", "Each clinic shared unique health challenges and successful treatment approaches", "The network was creating a database of culturally appropriate medical solutions"]
       }
+    },
+    {
+      text: "Their international health network begins influencing actual policy when Taylor and Kofi successfully advocate for telemedicine funding that directly benefits both their communities. Taylor lobbies their state government for rural health technology grants while Kofi presents to Ghana's health ministry about community clinic partnerships with international medical schools. Other students in their network follow their model, creating coordinated health advocacy across multiple continents. 'We're not just learning about health disparities anymore,' Taylor tells Kofi during their celebration video call. 'We're actually addressing them and saving lives.' Kofi's bright smile and the way he says 'I'm so grateful for what we've built together' makes Taylor's heart swell with love and medical hope.",
+      pause: true,
+      hook: "How will their policy victories strengthen their commitment to both health equity and each other?",
+      microVariants: {
+        text: "Successful advocacy for medical funding proved Taylor and Kofi's organizing model could create real healthcare change while deepening their romantic partnership.",
+        alternatives: ["Policy victories in both their communities demonstrated that their international collaboration could influence local health equity while strengthening their emotional bond.", "Winning actual medical funding together showed Taylor and Kofi that their love could drive effective healthcare change across continents."],
+        optionalDetails: ["Taylor's state approved $30 million in rural telemedicine funding", "Kofi's presentation led to clinic partnership programs across Ghana", "Other students replicated their success in eleven different countries"]
+      }
+    },
+    {
+      text: "As their network's medical influence grows, Taylor and Kofi plan their first in-person meeting at the World Health Assembly in Geneva. The anticipation of finally being together physically after months of video calls creates nervous excitement for both. 'What if it feels different in person?' Taylor worries during their final video call before the trip. Kofi's gentle laugh and warm eyes through the screen are reassuring. 'Taylor, we've already healed communities together. Being in the same room will just make our bond stronger.' When they finally meet at the assembly center, their embrace feels like coming home, and their joint presentation on youth health leadership becomes the assembly's most moving session.",
+      pause: true,
+      hook: "Will meeting in person strengthen their partnership and their health equity movement?",
+      microVariants: {
+        text: "Their first in-person meeting at the World Health Assembly felt natural despite months of distance, with their joint presentation becoming the gathering's highlight.",
+        alternatives: ["Meeting physically after months of video calls felt like coming home, with their assembly presentation demonstrating their powerful partnership to international health leaders.", "The Geneva assembly brought Taylor and Kofi together in person, where their natural chemistry and shared expertise impressed established medical advocates."],
+        optionalDetails: ["The assembly included health advocates from seventy-four countries", "Their presentation received standing ovations and multiple collaboration offers", "International health organizations offered to fund their network expansion globally"]
+      }
+    },
+    {
+      text: "Walking through Geneva together after their successful presentation, Taylor and Kofi reflect on how far their movement has come and how much their relationship has meant to their health equity work. 'Thank you for caring about healing with me,' Kofi says, taking Taylor's hand as they watch the sunset over Lake Geneva. 'I never could have imagined that worrying about medical access could lead to caring about someone so deeply.' Taylor squeezes Kofi's hand, feeling the weight of their shared commitment to both health justice and each other. 'We've proven that healthcare isn't just about medicine and technology,' Taylor replies. 'It's about how we care for each other across borders and build the healthy world we want to live in together.'",
+      pause: true,
+      hook: "How will their personal relationship continue to strengthen their health equity work?",
+      microVariants: {
+        text: "Walking through Geneva together, Taylor and Kofi recognized how their love had become inseparable from their commitment to health justice and medical equity.",
+        alternatives: ["Their romantic walk after the successful assembly crystallized how personal relationships and health advocacy had become one unified commitment for them.", "Holding hands by Lake Geneva, Taylor and Kofi understood that their love story was also a health equity story about building the healing world they wanted together."],
+        optionalDetails: ["The Geneva assembly had resulted in funding commitments from five major health foundations", "Their network was now active in thirty-two countries with over 900 student participants", "Multiple health organizations requested partnerships with their youth-led medical equity model"]
+      }
+    },
+    {
+      text: "Back home in their respective countries, Taylor and Kofi continue their long-distance relationship while expanding their health network's medical impact. They co-author research papers on youth health leadership, testify at international hearings on medical access, and maintain their weekly video calls that now include both health strategy and romantic check-ins. Other student advocates in their network begin calling them 'the power couple of youth health equity,' recognizing how their personal relationship strengthens their medical work. 'Love and health justice aren't separate things,' Kofi tells Taylor during one of their calls. 'Our relationship proves that caring for each other makes us better at caring for global health.'",
+      pause: true,
+      hook: "How does their long-distance love strengthen their continued health advocacy?",
+      microVariants: {
+        text: "Maintaining their relationship across distance while expanding their health work showed Taylor and Kofi how love and medical justice could strengthen each other.",
+        alternatives: ["Being known as 'the power couple of youth health equity' reflected how their personal relationship had become integral to their medical advocacy.", "Co-authoring health research while navigating long-distance love demonstrated that their romantic partnership enhanced their effectiveness as health organizers."],
+        optionalDetails: ["Their research papers influenced health access policies in seven countries", "International health organizations regularly consulted them on youth engagement strategies", "Their relationship became a model for other activist couples in the global health movement"]
+      }
+    },
+    {
+      text: "During a particularly intense period of health organizing around global medical reforms, Taylor and Kofi realize their relationship has evolved into something that sustains and strengthens their advocacy rather than competing with it. When Taylor faces resistance from insurance companies in their community who oppose telemedicine expansion, Kofi's support helps them stay committed to the work. When Kofi's clinic faces a medical supply shortage, Taylor helps coordinate international donations that provide immediate relief and long-term sustainability. 'We're not just partners in health work,' Taylor realizes during one of their emergency coordination calls. 'We're partners in building the kind of world where love and medical justice can thrive together.'",
+      pause: true,
+      hook: "Will their partnership help them navigate the complex challenges of global health equity?",
+      microVariants: {
+        text: "Supporting each other through health crises proved to Taylor and Kofi that their relationship made their medical work more sustainable and effective.",
+        alternatives: ["Facing corporate resistance and medical shortages together showed Taylor and Kofi how love could be a form of healthcare resilience and mutual aid.", "Their ability to support each other's health work during crisis periods demonstrated that personal relationships could strengthen rather than distract from medical commitment."],
+        optionalDetails: ["International medical supply coordination helped underserved communities in fourteen countries", "Taylor's insurance resistance was overcome through sustained organizing and telemedicine success stories", "Kofi's supply shortage response became a model for community-based healthcare sustainability"]
+      }
+    },
+    {
+      text: "As they plan for their next in-person meeting and discuss the future of their relationship and their health equity movement, Taylor and Kofi understand that they've created something unique: a love story that's also a healing story, a relationship that strengthens rather than competes with their commitment to medical justice. 'Whether we end up working in the same hospital someday or keep collaborating across continents,' Kofi tells Taylor, 'I know that what we've built together - both personally and medically - is going to keep growing and healing the world.' Taylor nods, feeling the truth of Kofi's words and the excitement of continuing to build healthcare equity and love simultaneously.",
+      pause: true,
+      hook: "What future will Taylor and Kofi create together for both love and global health?",
+      microVariants: {
+        text: "Planning their future together, Taylor and Kofi realized they had created a unique model where personal love and medical commitment strengthened each other.",
+        alternatives: ["Discussing their relationship's future, Taylor and Kofi understood they had proven that love stories could also be health equity stories that inspire broader medical change.", "Their conversation about the future revealed how their partnership had become a living example of the kind of healing world they were working to create through healthcare advocacy."],
+        optionalDetails: ["Their health network was now influencing medical policy in eighteen countries", "Multiple documentary filmmakers wanted to tell their medical love story", "Universities were offering them joint fellowships to continue their health equity work together"]
+      }
+    },
+    {
+      text: "Two years after they first met at the health conference, Taylor stands before the World Health Organization's Global Health Equity Summit to present their partnership's impact on international medical access, with Kofi joining virtually from Accra. Their presentation demonstrates how international collaboration and authentic relationships can create sustainable healthcare solutions. After the presentation, as Taylor video calls Kofi from the WHO lobby, they both reflect on how their love story became a template for the kind of cross-cultural cooperation their health advocacy promotes. 'We didn't just organize for health equity,' Kofi says, smiling through the screen. 'We lived it by choosing to love across borders and build the healing world we believe in.'",
+      pause: true,
+      hook: "How has their relationship become a model for the healing values they advocate?",
+      microVariants: {
+        text: "Presenting to the WHO summit, Taylor and Kofi realized their love story had become a living example of the cross-cultural cooperation necessary for global health equity.",
+        alternatives: ["Their WHO presentation highlighted how personal relationships across borders could model the kind of international collaboration necessary for effective healthcare solutions.", "Speaking to international health leaders about their work, Taylor and Kofi understood their relationship demonstrated the values of mutual care and cross-cultural partnership they advocated medically."],
+        optionalDetails: ["The WHO presentation led to funding for global youth health initiatives", "Their methodology was adopted by health organizations in forty-five countries", "International media covered their story as an example of effective youth health leadership"]
+      }
+    },
+    {
+      text: "Five years after their initial meeting, Taylor reflects on how their relationship with Kofi has shaped both their understanding of health justice and their commitment to medical work that centers authentic connection across difference. Whether they're co-facilitating international health workshops, supporting each other through medical school, or planning their eventual joint practice in a location accessible to both underserved communities, their partnership continues to demonstrate that sustainable healthcare change requires the same qualities as sustainable love: mutual care, genuine commitment, and dedication to healing together. Their Global Health Equity Partnership now operates in forty-eight countries, but Taylor knows the most important victory is proving that medical advocacy and love can strengthen each other.",
+      pause: true,
+      hook: "What lasting impact will their model of love and health equity create?",
+      microVariants: {
+        text: "Five years later, Taylor recognizes that their relationship with Kofi proved health equity and love could strengthen each other to create sustainable medical change.",
+        alternatives: ["Reflecting on five years of partnership, Taylor understands their relationship with Kofi became a model for how authentic connection can drive effective health advocacy.", "Their long-term relationship demonstrated that sustainable medical work requires the same commitment to mutual growth and care that sustains loving partnerships."],
+        optionalDetails: ["Their initiative now influences medical education curricula globally", "Taylor and Kofi are pursuing medical degrees together", "Their story is taught in global health courses as an example of effective cross-cultural healthcare organizing"]
+      }
     }
   ],
   endings: [
+    {
+      type: 'cozy',
+      text: "Taylor and Kofi eventually establish a joint medical practice that serves both rural American communities and West African villages through telemedicine and regular exchanges, creating a cozy clinic filled with medical equipment, traditional healing herbs, and photos from their international health adventures. Their weekly video conferences with student advocates worldwide now include their therapy dog occasionally stealing the spotlight, and their relationship has become a comfortable foundation for sustained health advocacy that prioritizes both healing and happiness.",
+      microVariants: ["Their joint medical practice becomes a hub for international health organizing, with their cozy clinic providing stability for continued healthcare equity work.", "Working together finally, Taylor and Kofi create a warm, healing-centered practice for their global health work, proving that love and medical activism can create sustainable, joyful lives together."]
+    },
+    {
+      type: 'silly',
+      text: "Taylor and Kofi discover that their most effective health workshops happen when they accidentally leave their microphones on during their romantic moments, leading to a series of increasingly popular 'Accidental Intimacy in Medical Organizing' sessions where other healthcare couples share how personal relationships strengthen health equity work - though Taylor still turns bright red every time someone mentions 'that time in Geneva when the stethoscope got tangled up.'",
+      microVariants: ["Their accidental oversharing during video calls becomes a health movement trend where medical couples discuss how relationships enhance healthcare organizing, though Taylor never stops being embarrassed about it.", "What started as technical difficulties during health workshops evolves into intentional discussions about love and medical activism, with Taylor and Kofi reluctantly becoming the poster couple for mixing romance with healthcare advocacy."]
+    },
     {
       type: 'triumphant',
       text: "Taylor and Kofi's Global Health Equity Partnership influences WHO policy, with their telemedicine model becoming an international standard and their personal partnership demonstrating how love across continents can create powerful foundations for global medical justice and cross-cultural healthcare collaboration.",

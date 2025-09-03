@@ -107,9 +107,9 @@ export const TEMPLATE_REGISTRY = {
     type: 'dynamic',
     path: 'grade10/',
     templates: [
-      { file: 'democratic-participation.js', title: 'Democratic Participation Project' },
-      { file: 'global-climate-action.js', title: 'Global Climate Action Network' },
-      { file: 'global-health-equity.js', title: 'Global Health Equity Initiative' }
+      { file: 'democratic-participation.js', title: 'The Democratic Participation Initiative' },
+      { file: 'global-climate-action.js', title: 'The Global Climate Action Network' },
+      { file: 'global-health-equity.js', title: 'The Global Health Equity Partnership' }
     ]
   }
 };
