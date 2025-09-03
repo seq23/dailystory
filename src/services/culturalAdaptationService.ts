@@ -168,13 +168,15 @@ export class CulturalAdaptationService {
   }
 
   static getCulturalGuidanceString(nativeLanguage: string): string {
+    const context = this.getCulturalContext(nativeLanguage);
+    
     const languageGuidance: Record<string, string> = {
-      'fr': 'aspects of French culture that a person living in France, Quebec, or Francophone African countries would experience',
-      'es': 'aspects of Hispanic/Latino culture from Spain or Latin American countries',
-      'ar': 'aspects of Arabic culture from MENA regions',
-      'pt': 'aspects of Portuguese culture from Brazil or Portuguese-speaking African countries',
-      'zh': 'aspects of Chinese culture from mainland China, Taiwan, or Chinese communities worldwide',
-      'hi': 'aspects of Indian culture from various regions of India',
+      'fr': `aspects of French culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'es': `aspects of Hispanic/Latino culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'ar': `aspects of Arabic culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'pt': `aspects of Portuguese culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'zh': `aspects of Chinese culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'hi': `aspects of Indian culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
       'en': '' // No cultural additions for English speakers
     };
     

@@ -148,13 +148,13 @@ export class StoryGenerationService {
     creativeSeeds: any[]
   ): string {
     
-    // LAYER 1 - Essential User Info Only (PHASE 2: Safe Avatar Data Flow)
+    // LAYER 1 - Essential User Info Only (SECURITY FIX: Remove skin tone from AI-visible data)
     const essentialUserInfo = {
       name: userInfo.name || "Child whose name no one could say",
       age: userInfo.age || 5,
       nativeLanguage: userInfo.nativeLanguage || 'en',
       avatarType: userInfo.avatar?.type,
-      avatarSkinTone: userInfo.avatar?.skinTone,
+      // REMOVED: avatarSkinTone - kept separate for edge function hair mapping only
       difficultyLevel: userInfo.difficultyLevel, // Needed for story complexity
       gradeLevel: userInfo.gradeLevel || 'PreK', // Needed for vocabulary/complexity
       // USER PREFERENCES - only include if they exist, don't force defaults
@@ -162,6 +162,11 @@ export class StoryGenerationService {
       ...(userInfo.favoriteAnimal && { favoriteAnimal: userInfo.favoriteAnimal }),
       ...(userInfo.favoriteFood && { favoriteFood: userInfo.favoriteFood }),
       ...(userInfo.hobbies && { hobbies: userInfo.hobbies })
+    };
+
+    // SEPARATE SKIN TONE HANDLING: Keep for edge function hair mapping only
+    const separateAvatarData = {
+      skinTone: userInfo.avatar?.skinTone
     };
 
     // LAYER 2 - Theme Intent Analysis (pulls from Layer 1 specialRequest only)
@@ -199,12 +204,12 @@ export class StoryGenerationService {
       vocabularyInstructions = `Use grade level ${systemSettings.gradeLevel} appropriate vocabulary based on difficulty level ${essentialUserInfo.difficultyLevel}`;
     }
 
-    // LAYER 4 - Creative Seeds (now passed as parameter from parallel execution)
+    // LAYER 4 - Creative Seeds (FIXED: Always integrate user preferences)
     const creativeGuidance = creativeSeeds.length > 0 
-      ? `Creative Guidance (use as inspiration, not requirements): ${creativeSeeds.map(seed => 
-          `Consider: ${seed.storyPossibilities.join(' OR ')}`
-        ).join('; ')}`
-      : 'AI determines creative elements organically';
+      ? `Creative Integration (REQUIRED): ${creativeSeeds.map(seed => 
+          seed.storyPossibilities.join(' ')
+        ).join('; ')}.`
+      : 'AI creates personalized elements based on user preferences.';
 
     // Enhanced Natural Language Template (more AI-friendly)
     let userPreferences = '';
@@ -221,9 +226,18 @@ export class StoryGenerationService {
     // CULTURAL CONTEXT INTEGRATION
     const culturalContext = CulturalAdaptationService.getCulturalGuidanceString(essentialUserInfo.nativeLanguage);
 
-    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. Vocabulary: ${vocabularyInstructions}. ${culturalContext ? `Cultural context: When natural to the story, subtly incorporate ${culturalContext}. ` : ''}${creativeGuidance}
+    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. 
 
-Character Info: ${JSON.stringify(essentialUserInfo)}`;
+Vocabulary System (CORRECTED FALLBACK LOGIC):
+1. PRIORITY: Use these specific words if provided: ${vocabularyInstructions}
+2. FALLBACK: Use getVocabularyForGrade(${essentialUserInfo.gradeLevel}) function for grade-appropriate vocabulary  
+3. FALLBACK: Create vocabulary suitable for age ${essentialUserInfo.age}
+4. FINAL FALLBACK: Create vocabulary suitable for ages 7-10
+
+${culturalContext ? `Cultural context: When natural to the story, subtly incorporate ${culturalContext}. ` : ''}${creativeGuidance}
+
+Character Info: ${JSON.stringify(essentialUserInfo)}
+Separate Avatar Data: ${JSON.stringify(separateAvatarData)}`;
 
     return STORY_TEMPLATE.trim();
   }

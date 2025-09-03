@@ -336,8 +336,22 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   
   // Enhanced avatar processing using StaticDataCache - UNIVERSAL coverage
   let enhancedUserPrompt = prompt.userPrompt;
+  
+  // Extract separate avatar data from bundle for hair mapping only
+  let separateAvatarData = {};
   try {
-    const avatarInfo = processAvatarIdentityFromCache(userInfo);
+    const separateDataMatch = prompt.userPrompt.match(/Separate Avatar Data: ({.*?})/);
+    if (separateDataMatch) {
+      separateAvatarData = JSON.parse(separateDataMatch[1]);
+    }
+  } catch (e) {
+    console.warn('Could not extract separate avatar data from bundle');
+  }
+  
+  try {
+    // Use combined userInfo + separate avatar data for complete processing
+    const completeAvatarInfo = { ...userInfo, ...separateAvatarData };
+    const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo);
     
     // Universal hair color enhancement (no language restriction)
     if (avatarInfo.hairColor && avatarInfo.userName) {
@@ -348,6 +362,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     if (avatarInfo.completeGenderInfo && avatarInfo.userName) {
       enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.userName} is a ${avatarInfo.completeGenderInfo}.`;
     }
+    
+    // Add vocabulary function access to AI prompt
+    enhancedUserPrompt += `\n\nAvailable Function: getVocabularyForGrade(level) - Use this to fetch grade-appropriate vocabulary dynamically when needed.`;
+    
   } catch (avatarError) {
     console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
   }

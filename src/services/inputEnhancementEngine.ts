@@ -40,62 +40,42 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
   const seeds: CreativeStorySeed[] = [];
   const userName = userInfo?.name || 'the child';
 
-  // Color Integration - Natural atmospheric and meaningful object guidance
+  // Color Integration - CONCISE FORMAT
   if (userInfo?.favoriteColor) {
     seeds.push({
       input: userInfo.favoriteColor,
       inputType: 'color',
-      storyPossibilities: [
-        `A beautiful ${userInfo.favoriteColor} object appears in the story`,
-        `${userInfo.favoriteColor} themed elements enhance the adventure`,
-        `The ${userInfo.favoriteColor} surroundings create a special atmosphere`,
-        `Important story elements feature the color ${userInfo.favoriteColor}`
-      ]
+      storyPossibilities: [`Include ${userInfo.favoriteColor} naturally in the story`]
     });
   }
 
-  // Animal Integration - Realistic animal encounters and relationships
+  // Animal Integration - CONCISE FORMAT
   if (userInfo?.favoriteAnimal) {
     seeds.push({
       input: userInfo.favoriteAnimal,
       inputType: 'animal',
-      storyPossibilities: [
-        `A friendly ${userInfo.favoriteAnimal} appears to help during the adventure`,
-        `${userInfo.favoriteAnimal} companions play an important role`,
-        `The story features ${userInfo.favoriteAnimal}s in meaningful ways`,
-        `Encounters with ${userInfo.favoriteAnimal}s add excitement to the tale`
-      ]
+      storyPossibilities: [`Include ${userInfo.favoriteAnimal} naturally in the story`]
     });
   }
 
-  // Hobby Integration - Practical skill applications and problem-solving
+  // Hobby Integration - CONCISE FORMAT
   if (userInfo?.hobbies && userInfo.hobbies.trim()) {
     const hobby = userInfo.hobbies.toLowerCase().split(',')[0]?.trim();
     if (hobby) {
       seeds.push({
         input: hobby,
         inputType: 'hobby',
-        storyPossibilities: [
-          `${userName} uses ${hobby} skills to solve challenges`,
-          `Knowledge from ${hobby} helps navigate the situation`,
-          `${hobby} experience provides useful abilities`,
-          `The skills learned from ${hobby} become important to the story`
-        ]
+        storyPossibilities: [`Include ${hobby} naturally in the story`]
       });
     }
   }
 
-  // Food Integration - Natural story moments and celebrations
+  // Food Integration - CONCISE FORMAT
   if (userInfo?.favoriteFood) {
     seeds.push({
       input: userInfo.favoriteFood,
       inputType: 'food',
-      storyPossibilities: [
-        `${userInfo.favoriteFood} appears as a welcome treat during the journey`,
-        `Sharing ${userInfo.favoriteFood} creates friendship moments`,
-        `${userInfo.favoriteFood} becomes part of a celebration or gathering`,
-        `The story includes ${userInfo.favoriteFood} in meaningful ways`
-      ]
+      storyPossibilities: [`Include ${userInfo.favoriteFood} naturally in the story`]
     });
   }
 
