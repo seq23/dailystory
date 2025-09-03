@@ -131,23 +131,23 @@ export function isCliffhanger(content: string): boolean {
 /**
  * Emergency chunking for oversized sentences (Level 0 fallback)
  */
-export function emergencyChunkSentence(sentence: string, targetTokens: number): string[] {
+export function emergencyChunkSentence(sentence: string, targetChars: number): string[] {
   const words = sentence.trim().split(/\s+/);
   const chunks: string[] = [];
   let currentChunk = '';
-  let currentTokens = 0;
+  let currentChars = 0;
   
   for (const word of words) {
-    const wordTokens = estimateTokenCount(word);
+    const wordChars = word.length;
     
-    if (currentTokens + wordTokens > targetTokens && currentChunk.length > 0) {
+    if (currentChars + wordChars > targetChars && currentChunk.length > 0) {
       chunks.push(currentChunk.trim());
       currentChunk = word;
-      currentTokens = wordTokens;
+      currentChars = wordChars;
     } else {
       if (currentChunk.length > 0) currentChunk += ' ';
       currentChunk += word;
-      currentTokens += wordTokens;
+      currentChars += wordChars + (currentChunk.length > word.length ? 1 : 0); // +1 for space
     }
   }
   
@@ -161,23 +161,23 @@ export function emergencyChunkSentence(sentence: string, targetTokens: number): 
 /**
  * Word-chunking fallback for unpunctuated/run-on sentences (Level 1-4+ fallback)
  */
-export function wordChunkSentence(sentence: string, targetTokens: number): string[] {
+export function wordChunkSentence(sentence: string, targetChars: number): string[] {
   const words = sentence.trim().split(/\s+/);
   const chunks: string[] = [];
   let currentChunk = '';
-  let currentTokens = 0;
+  let currentChars = 0;
   
   for (const word of words) {
-    const wordTokens = estimateTokenCount(word);
+    const wordChars = word.length;
     
-    if (currentTokens + wordTokens > targetTokens && currentChunk.length > 0) {
+    if (currentChars + wordChars > targetChars && currentChunk.length > 0) {
       chunks.push(currentChunk.trim() + '.');
       currentChunk = word;
-      currentTokens = wordTokens;
+      currentChars = wordChars;
     } else {
       if (currentChunk.length > 0) currentChunk += ' ';
       currentChunk += word;
-      currentTokens += wordTokens;
+      currentChars += wordChars + (currentChunk.length > word.length ? 1 : 0); // +1 for space
     }
   }
   
@@ -195,7 +195,8 @@ export function wordChunkSentence(sentence: string, targetTokens: number): strin
 export function enhancedAutoSplitContent(content: string, level: ValidationLevel, maxPages: number): string[] {
   if (!content?.trim()) return [];
   
-  const targetTokensPerPage = getTokenLimitsForLevel(level).perPage;
+  const characterLimits = getCharacterLimitsForLevel(level);
+  const targetCharsPerPage = Math.floor(characterLimits.maxChars / Math.max(maxPages, 12));
   
   // Enhanced sentence splitting - handles multiple punctuation patterns
   const sentences = content
@@ -216,7 +217,7 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
   
   const pages: string[] = [];
   let currentPage = '';
-  let currentTokens = 0;
+  let currentChars = 0;
   
   // Level 0: Strict 1-sentence per page with emergency chunking
   if (level === 'Level0') {
@@ -224,11 +225,11 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
       const cleanSentence = sentence.trim();
       if (!cleanSentence) continue;
       
-      const sentenceTokens = estimateTokenCount(cleanSentence);
+      const sentenceChars = cleanSentence.length;
       
       // If sentence is too long for Level 0, emergency chunk it
-      if (sentenceTokens > targetTokensPerPage) {
-        const chunks = emergencyChunkSentence(cleanSentence, targetTokensPerPage);
+      if (sentenceChars > targetCharsPerPage) {
+        const chunks = emergencyChunkSentence(cleanSentence, targetCharsPerPage);
         pages.push(...chunks);
       } else {
         pages.push(cleanSentence);
@@ -246,45 +247,45 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     const cleanSentence = sentence.trim();
     if (!cleanSentence) continue;
     
-    const sentenceTokens = estimateTokenCount(cleanSentence);
+    const sentenceChars = cleanSentence.length;
     
     // If sentence is too long and has no punctuation, word-chunk it
-    if (sentenceTokens > targetTokensPerPage * 1.5 && !/[.!?]/.test(cleanSentence)) {
-      const chunks = wordChunkSentence(cleanSentence, targetTokensPerPage);
+    if (sentenceChars > targetCharsPerPage * 1.5 && !/[.!?]/.test(cleanSentence)) {
+      const chunks = wordChunkSentence(cleanSentence, targetCharsPerPage);
       
       for (const chunk of chunks) {
-        const chunkTokens = estimateTokenCount(chunk);
+        const chunkChars = chunk.length;
         
-        if (currentTokens + chunkTokens > targetTokensPerPage && currentPage.length > 0) {
+        if (currentChars + chunkChars > targetCharsPerPage && currentPage.length > 0) {
           if (pages.length < maxPages) {
             pages.push(currentPage.trim());
             currentPage = chunk;
-            currentTokens = chunkTokens;
+            currentChars = chunkChars;
           } else {
             currentPage += ' ' + chunk;
-            currentTokens += chunkTokens;
+            currentChars += chunkChars + 1; // +1 for space
           }
         } else {
           if (currentPage.length > 0) currentPage += ' ';
           currentPage += chunk;
-          currentTokens += chunkTokens;
+          currentChars += chunkChars + (currentPage.length > chunk.length ? 1 : 0); // +1 for space
         }
       }
     } else {
       // Normal sentence processing with smart packing
-      if (currentTokens + sentenceTokens > targetTokensPerPage && currentPage.length > 0) {
+      if (currentChars + sentenceChars > targetCharsPerPage && currentPage.length > 0) {
         if (pages.length < maxPages) {
           pages.push(currentPage.trim());
           currentPage = cleanSentence;
-          currentTokens = sentenceTokens;
+          currentChars = sentenceChars;
         } else {
           currentPage += ' ' + cleanSentence;
-          currentTokens += sentenceTokens;
+          currentChars += sentenceChars + 1; // +1 for space
         }
       } else {
         if (currentPage.length > 0) currentPage += ' ';
         currentPage += cleanSentence;
-        currentTokens += sentenceTokens;
+        currentChars += sentenceChars + (currentPage.length > cleanSentence.length ? 1 : 0); // +1 for space
       }
     }
   }
