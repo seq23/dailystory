@@ -37,6 +37,9 @@ export class SessionStateManager {
         promptHistory: [],
         lastSuccessfulPrompt: null,
         
+        // AI Debug tracking - stores full AI prompts (last 3 only)
+        aiPrompts: [],
+        
         // Avatar tracking
         avatarType: null,
         skinTone: null,
@@ -256,6 +259,61 @@ export class SessionStateManager {
     }
     
     console.log(`📋 Stored successful prompt for page ${pageNumber} of session ${sessionId}`);
+  }
+
+  /**
+   * Store AI prompt for debugging - stores EVERYTHING sent to AI
+   */
+  storeAIPromptForDebugging(sessionId, aiPromptData) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    // Initialize aiPrompts array if it doesn't exist
+    if (!state.aiPrompts) {
+      state.aiPrompts = [];
+    }
+    
+    const fullAIPrompt = {
+      systemPrompt: aiPromptData.systemPrompt,
+      userPrompt: aiPromptData.userPrompt,
+      model: aiPromptData.model,
+      tokenLimit: aiPromptData.tokenLimit,
+      pageNumber: aiPromptData.pageNumber || state.pageNumber,
+      attempt: aiPromptData.attempt,
+      timestamp: Date.now(),
+      apiResponse: aiPromptData.apiResponse,
+      success: aiPromptData.success,
+      sessionId: sessionId
+    };
+    
+    // Add to array and keep only last 3
+    state.aiPrompts.push(fullAIPrompt);
+    if (state.aiPrompts.length > 3) {
+      state.aiPrompts.shift(); // Remove oldest
+    }
+    
+    state.lastUpdated = Date.now();
+    
+    console.log(`🔍 [AI-DEBUG] Stored complete AI prompt for session ${sessionId}, attempt ${aiPromptData.attempt}:`, {
+      systemPromptLength: aiPromptData.systemPrompt?.length || 0,
+      userPromptLength: aiPromptData.userPrompt?.length || 0,
+      model: aiPromptData.model,
+      success: aiPromptData.success,
+      totalStoredPrompts: state.aiPrompts.length
+    });
+  }
+
+  /**
+   * Get AI prompts for debugging
+   */
+  getAIPrompts(sessionId, limit = null) {
+    const state = this.getOrCreateSessionState(sessionId);
+    const prompts = state.aiPrompts || [];
+    
+    if (limit && limit > 0) {
+      return prompts.slice(-limit);
+    }
+    
+    return prompts;
   }
 
   /**

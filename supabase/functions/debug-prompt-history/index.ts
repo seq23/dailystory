@@ -14,20 +14,46 @@ serve(async (req) => {
     const url = new URL(req.url);
     const sessionId = url.searchParams.get('sessionId');
     const limit = parseInt(url.searchParams.get('limit') || '5');
+    const type = url.searchParams.get('type') || 'image'; // 'image' or 'ai'
 
     if (!sessionId) {
       return createCorsErrorResponse('Missing sessionId parameter', 400);
     }
 
-    // Get prompt history for the session
-    const promptHistory = globalSessionManager.getPromptHistory(sessionId, limit);
     const storyState = globalSessionManager.getOrCreateSessionState(sessionId);
 
-    console.log(`📚 Retrieved ${promptHistory.length} prompt history entries for session ${sessionId}`);
+    // Handle AI prompt debugging
+    if (type === 'ai') {
+      const aiPrompts = globalSessionManager.getAIPrompts(sessionId, limit);
+      
+      console.log(`🔍 [AI-DEBUG] Retrieved ${aiPrompts.length} AI prompt entries for session ${sessionId}`);
+
+      return createCorsResponse({
+        success: true,
+        sessionId,
+        type: 'ai',
+        aiPrompts,
+        totalEntries: aiPrompts.length,
+        sessionExists: !!storyState,
+        sessionInfo: storyState ? {
+          createdAt: storyState.createdAt,
+          lastUpdated: storyState.lastUpdated,
+          lastPageGenerated: storyState.lastPageGenerated,
+          charactersTracked: storyState.characters.size,
+          objectsTracked: storyState.objects.size
+        } : null
+      });
+    }
+
+    // Default: Get image prompt history for the session
+    const promptHistory = globalSessionManager.getPromptHistory(sessionId, limit);
+
+    console.log(`📚 Retrieved ${promptHistory.length} image prompt history entries for session ${sessionId}`);
 
     return createCorsResponse({
       success: true,
       sessionId,
+      type: 'image',
       promptHistory,
       totalEntries: promptHistory.length,
       sessionExists: !!storyState,

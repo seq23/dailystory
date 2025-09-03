@@ -501,6 +501,29 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           errorBody: errorText,
           model: currentModel?.model || 'unknown'
         });
+        
+        // Store failed AI prompt for debugging (EVERYTHING sent to AI, even failures)
+        try {
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+          globalSessionManager.storeAIPromptForDebugging(bundle.sessionId, {
+            systemPrompt: enhancedSystemPrompt,
+            userPrompt: finalUserPrompt,
+            model: currentModel.model,
+            tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
+            pageNumber: config?.pageNumber || 1,
+            attempt: attempt,
+            success: false,
+            apiResponse: {
+              status: response.status,
+              statusText: response.statusText,
+              errorBody: errorText,
+              error: `API Error ${response.status}`
+            }
+          });
+        } catch (debugError) {
+          console.warn('⚠️ Failed to store failed AI prompt for debugging:', debugError);
+        }
+        
         throw new Error(`API Error ${response.status}: ${errorText}`);
       }
 
@@ -514,6 +537,29 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       });
       
       storyText = data.choices?.[0]?.message?.content || '';
+      
+      // Store complete AI prompt for debugging (EVERYTHING sent to AI)
+      try {
+        const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+        globalSessionManager.storeAIPromptForDebugging(bundle.sessionId, {
+          systemPrompt: enhancedSystemPrompt,
+          userPrompt: finalUserPrompt,
+          model: currentModel.model,
+          tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
+          pageNumber: config?.pageNumber || 1,
+          attempt: attempt,
+          success: true,
+          apiResponse: {
+            status: response.status,
+            contentLength: storyText?.length || 0,
+            usage: data.usage,
+            hasChoices: !!data.choices,
+            choicesLength: data.choices?.length || 0
+          }
+        });
+      } catch (debugError) {
+        console.warn('⚠️ Failed to store AI prompt for debugging:', debugError);
+      }
       
       if (storyText && storyText.trim()) {
         const vocabularyUsage = extractVocabularyUsage(storyText, enhancedUserPrompt);
