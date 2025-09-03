@@ -102,14 +102,34 @@ function deriveCompleteGenderInfo(userInfo?: UserInfo): string {
 }
 
 export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): string {
-  const map: Record<string, string> = {
-    userName: firstName(userInfo.name) || userInfo.name || "Child",
-    favoriteColor: userInfo.favoriteColor || pick(FALLBACK_POOLS.color),
-    favoriteAnimal: userInfo.favoriteAnimal || pick(FALLBACK_POOLS.animal), 
-    favoriteFood: userInfo.favoriteFood || pick(FALLBACK_POOLS.food),
-    hobbies: userInfo.hobbies || "playing outside",
-    specialRequest: userInfo.specialRequest || "adventure"
-  };
+  const map: Record<string, string> = {};
+  
+  // Only add placeholders if user actually provided the data
+  if (userInfo.name) {
+    map.userName = firstName(userInfo.name) || userInfo.name;
+  } else {
+    map.userName = "Child"; // This is essential for story structure
+  }
+  
+  if (userInfo.favoriteColor) {
+    map.favoriteColor = userInfo.favoriteColor;
+  }
+  
+  if (userInfo.favoriteAnimal) {
+    map.favoriteAnimal = userInfo.favoriteAnimal;
+  }
+  
+  if (userInfo.favoriteFood) {
+    map.favoriteFood = userInfo.favoriteFood;
+  }
+  
+  if (userInfo.hobbies) {
+    map.hobbies = userInfo.hobbies;
+  }
+  
+  if (userInfo.specialRequest) {
+    map.specialRequest = userInfo.specialRequest;
+  }
 
   let out = text;
   for (const [k, v] of Object.entries(map)) {
@@ -124,22 +144,63 @@ export function resolveMicroPlaceholders(text: string, ctx: MicroContext = {}): 
   const { userInfo, seed } = ctx;
   const pronoun = derivePronoun(userInfo);
   
-  const mappings: Record<string, string> = {
-    pronoun: pronoun,
-    animal: seed?.animal || userInfo?.favoriteAnimal || pick(FALLBACK_POOLS.animal),
-    animalType: seed?.animalType || pick(FALLBACK_POOLS.animalType),
-    monsterType: seed?.monsterType || pick(FALLBACK_POOLS.monsterType),
-    food: seed?.food || userInfo?.favoriteFood || pick(FALLBACK_POOLS.food),
-    setting: seed?.setting || pick(FALLBACK_POOLS.setting),
-    object: seed?.object || pick(FALLBACK_POOLS.object),
-    action: seed?.action || pick(FALLBACK_POOLS.action),
-    adjective: seed?.adjective || pick(FALLBACK_POOLS.adjective),
-    color: seed?.color || userInfo?.favoriteColor || pick(FALLBACK_POOLS.color),
-    friend: seed?.friend || pick(FALLBACK_POOLS.friend),
-    forestType: seed?.forestType || pick(FALLBACK_POOLS.forestType),
-    weatherType: seed?.weatherType || pick(FALLBACK_POOLS.weatherType),
-    placeType: seed?.placeType || pick(FALLBACK_POOLS.placeType)
-  };
+  const mappings: Record<string, string> = {};
+  
+  // Essential pronoun - always needed for grammar
+  mappings.pronoun = pronoun;
+  
+  // Only add specific placeholders if we have user data or seed data
+  if (seed?.animal || userInfo?.favoriteAnimal) {
+    mappings.animal = seed?.animal || userInfo?.favoriteAnimal;
+  }
+  
+  if (seed?.animalType) {
+    mappings.animalType = seed.animalType;
+  }
+  
+  if (seed?.monsterType) {
+    mappings.monsterType = seed.monsterType;
+  }
+  
+  if (seed?.food || userInfo?.favoriteFood) {
+    mappings.food = seed?.food || userInfo?.favoriteFood;
+  }
+  
+  if (seed?.setting) {
+    mappings.setting = seed.setting;
+  }
+  
+  if (seed?.object) {
+    mappings.object = seed.object;
+  }
+  
+  if (seed?.action) {
+    mappings.action = seed.action;
+  }
+  
+  if (seed?.adjective) {
+    mappings.adjective = seed.adjective;
+  }
+  
+  if (seed?.color || userInfo?.favoriteColor) {
+    mappings.color = seed?.color || userInfo?.favoriteColor;
+  }
+  
+  if (seed?.friend) {
+    mappings.friend = seed.friend;
+  }
+  
+  if (seed?.forestType) {
+    mappings.forestType = seed.forestType;
+  }
+  
+  if (seed?.weatherType) {
+    mappings.weatherType = seed.weatherType;
+  }
+  
+  if (seed?.placeType) {
+    mappings.placeType = seed.placeType;
+  }
 
   let out = text;
   for (const [k, v] of Object.entries(mappings)) {

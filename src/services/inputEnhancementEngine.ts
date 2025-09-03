@@ -69,18 +69,20 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
   }
 
   // Hobby Integration - Practical skill applications and problem-solving
-  if (userInfo?.hobbies) {
-    const hobby = userInfo.hobbies.toLowerCase().split(',')[0]?.trim() || 'playing';
-    seeds.push({
-      input: hobby,
-      inputType: 'hobby',
-      storyPossibilities: [
-        `${userName} uses ${hobby} skills to solve challenges`,
-        `Knowledge from ${hobby} helps navigate the situation`,
-        `${hobby} experience provides useful abilities`,
-        `The skills learned from ${hobby} become important to the story`
-      ]
-    });
+  if (userInfo?.hobbies && userInfo.hobbies.trim()) {
+    const hobby = userInfo.hobbies.toLowerCase().split(',')[0]?.trim();
+    if (hobby) {
+      seeds.push({
+        input: hobby,
+        inputType: 'hobby',
+        storyPossibilities: [
+          `${userName} uses ${hobby} skills to solve challenges`,
+          `Knowledge from ${hobby} helps navigate the situation`,
+          `${hobby} experience provides useful abilities`,
+          `The skills learned from ${hobby} become important to the story`
+        ]
+      });
+    }
   }
 
   // Food Integration - Natural story moments and celebrations
