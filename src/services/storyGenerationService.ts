@@ -29,6 +29,15 @@ export interface StoryGenerationResult {
   };
 }
 
+/**
+ * Safe error message extraction utility
+ */
+function safeErrorMessage(error: any): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error occurred';
+}
+
 export class StoryGenerationService {
   /**
    * Generate story using 4-layer priority system
@@ -57,31 +66,45 @@ export class StoryGenerationService {
       
       // Step 1: UserInfo (already available)
       
-      // PHASE 1: True 4-Layer Parallelization - Execute all layers simultaneously
-      const [vocabularyIntegration, themeIntent, creativeSeeds] = await Promise.all([
-        VocabularyService.fetchAllVocabulary(userInfo).catch(error => {
-          console.warn('⚠️ VocabularyService failed silently:', error);
-          return {
-            userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
-            systemVocabulary: { level: 'PreK' as any, complianceTarget: 0.7 },
-            metadata: { totalUserWords: 0, priorityInstructions: '', sources: [] }
-          } as VocabularyIntegration;
-        }),
-        Promise.resolve(extractThemeIntent(userInfo)).catch(error => {
-          console.warn('⚠️ ThemeIntent extraction failed silently:', error);
-          return {
-            theme: [],
-            setting: [],
-            characters: [],
-            keywords: [],
-            rawInput: userInfo.specialRequest || ''
-          };
-        }),
-        Promise.resolve(generateCreativeSeeds(userInfo)).catch(error => {
-          console.warn('⚠️ CreativeSeeds generation failed silently:', error);
-          return [];
-        })
-      ]);
+      // PHASE 1: Protected 4-Layer Parallelization with Silent Fallbacks
+      let vocabularyIntegration: VocabularyIntegration;
+      let themeIntent: ThemeIntent;  
+      let creativeSeeds: any[];
+
+      try {
+        vocabularyIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
+      } catch (error) {
+        console.warn('⚠️ Layer 2 (Vocabulary) failed silently:', safeErrorMessage(error));
+        vocabularyIntegration = {
+          userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
+          systemVocabulary: { level: 2, complianceTarget: 0.7 },
+          metadata: { totalUserWords: 0, priorityInstructions: 'AI selects appropriate vocabulary', sources: ['ai_fallback'] }
+        };
+      }
+
+      try {
+        themeIntent = extractThemeIntent(userInfo);
+      } catch (error) {
+        console.warn('⚠️ Layer 3 (Theme) failed silently:', safeErrorMessage(error));
+        themeIntent = {
+          theme: ['adventure'], // AI-friendly default
+          setting: ['magical world'],
+          characters: ['brave hero'],
+          keywords: [],
+          rawInput: 'AI creates engaging adventure story'
+        };
+      }
+
+      try {
+        creativeSeeds = generateCreativeSeeds(userInfo);
+      } catch (error) {
+        console.warn('⚠️ Layer 4 (Creative Seeds) failed silently:', safeErrorMessage(error));
+        creativeSeeds = [{
+          input: 'adventure',
+          inputType: 'theme' as const,
+          storyPossibilities: ['AI creates personalized adventure based on user interests']
+        }];
+      }
       
       // Step 4: PlaceholderResolution with 4-layer priority (now includes creativeSeeds)
       const resolvedStoryContent = this.resolveAllPlaceholders(
@@ -333,38 +356,40 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
    * Extract user data from resolved bundle for formatUserPrompt
    */
   private static extractUserDataFromBundle(storyContent: string): Record<string, any> {
-    let extractedData: Record<string, any> = {};
+    let extractedData: Record<string, any> = {
+      userName: 'Child',
+      specialRequest: 'adventure story',
+      vocabularyInstructions: 'age-appropriate vocabulary',
+      seed: Math.floor(Math.random() * 10000)
+    };
     
     try {
-      // Extract Character Info JSON
+      // Safe Character Info JSON extraction with validation
       const matches = storyContent.match(/Character Info: ({.*})/);
-      if (matches) {
-        extractedData = JSON.parse(matches[1]);
+      if (matches?.[1]) {
+        try {
+          const parsed = JSON.parse(matches[1]);
+          if (parsed && typeof parsed === 'object') {
+            extractedData = { ...extractedData, ...parsed };
+          }
+        } catch (jsonError) {
+          console.warn('⚠️ JSON parsing failed, using AI defaults:', safeErrorMessage(jsonError));
+        }
       }
       
-      // Extract other resolved data from the natural language bundle
+      // Safe regex-based extraction with null checks
       const vocabMatch = storyContent.match(/Vocabulary: (.*?)(?:\.|$)/);
-      if (vocabMatch) {
+      if (vocabMatch?.[1]) {
         extractedData.vocabularyInstructions = vocabMatch[1];
       }
       
       const themeMatch = storyContent.match(/Theme: (.*?)(?:\.|Vocabulary)/);
-      if (themeMatch) {
+      if (themeMatch?.[1]) {
         extractedData.specialRequest = themeMatch[1];
       }
       
-      // Add a creative seed for variation
-      extractedData.seed = Math.floor(Math.random() * 10000);
-      
     } catch (error) {
-      console.warn('⚠️ Failed to extract user data from bundle:', error);
-      // Return safe defaults
-      extractedData = {
-        userName: 'Child',
-        specialRequest: 'adventure',
-        vocabularyInstructions: 'age-appropriate vocabulary',
-        seed: Math.floor(Math.random() * 10000)
-      };
+      console.warn('⚠️ Bundle extraction failed, AI will create appropriate content:', safeErrorMessage(error));
     }
     
     return extractedData;
