@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Import the sophisticated template system components
 import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";
+import { validateAndEnhanceGrammar } from "../_shared/grammarValidator.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
