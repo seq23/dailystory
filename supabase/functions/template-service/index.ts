@@ -81,9 +81,11 @@ function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount:
   return pages;
 }
 
+// Module-level initialization flag
+let systemsInitialized = false;
+
 serve(async (req) => {
   // Initialize nuclear systems on first request
-  static let systemsInitialized = false;
   if (!systemsInitialized) {
     await initializeNuclearSystem();
     initializeNuclearSessionSystem();
