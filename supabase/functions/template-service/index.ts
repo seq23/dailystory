@@ -42,23 +42,10 @@ function getExpectedPageCountForDifficulty(difficulty: string): number {
 function generateFallbackSeed(userInfo: UserInfo): Record<string, any> {
   const seed: Record<string, any> = {};
   
-  // Generate micro-placeholders that Level 0 templates might use
-  if (!userInfo.favoriteColor) {
-    seed.color = pick(FALLBACK_POOLS.color);
-  }
-  if (!userInfo.favoriteAnimal) {
-    seed.animal = pick(FALLBACK_POOLS.animal);
-  }
-  if (!userInfo.favoriteFood) {
-    seed.food = pick(FALLBACK_POOLS.food);
-  }
-  
-  // Generate additional common micro-placeholders for Level 0
-  seed.setting = pick(FALLBACK_POOLS.setting);
-  seed.object = pick(FALLBACK_POOLS.object);
-  seed.action = pick(FALLBACK_POOLS.action);
-  seed.adjective = pick(FALLBACK_POOLS.adjective);
+  // Level 0 templates only use these micro-placeholders: {friend} and {object}
+  // Canonical placeholders ({userName}, {favoriteColor}, etc.) are handled by resolveCanonicalPlaceholders()
   seed.friend = pick(FALLBACK_POOLS.friend);
+  seed.object = pick(FALLBACK_POOLS.object);
   
   return seed;
 }
