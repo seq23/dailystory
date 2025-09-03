@@ -7,9 +7,8 @@ import { corsHeaders } from '../_shared/cors.ts';
 // Import dynamic template system
 import { getTemplate, getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
 
-// Import sophisticated placeholder resolution and grammar validation
+// Import sophisticated placeholder resolution  
 import { resolveAllPlaceholders, MicroContext, UserInfo } from '../_shared/placeholderResolver.ts';
-import { safeValidateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
@@ -47,19 +46,12 @@ function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount:
   for (const page of pagesToUse) {
     let processedPage = page;
     
-    // Apply sophisticated placeholder resolution
+    // Apply sophisticated placeholder resolution (grammar processing moved to process-story-content)
     const microContext: MicroContext = {
       userInfo: userInfo,
       pageText: processedPage
     };
     processedPage = resolveAllPlaceholders(processedPage, microContext);
-    
-    // Apply sophisticated grammar validation with crash protection
-    const grammarResult = safeValidateAndEnhanceGrammar(processedPage, "they");
-    processedPage = grammarResult.result;
-    if (!grammarResult.success) {
-      console.warn(`⚠️ Grammar enhancement failed for template page: ${grammarResult.error}`);
-    }
     
     pages.push(processedPage);
   }

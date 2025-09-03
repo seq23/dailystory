@@ -254,7 +254,7 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
         : getStoryPrompt(difficulty);
       
       // Extract user data from the resolved bundle for formatUserPrompt
-      const extractedData = this.extractUserDataFromBundle(bundle.storyContent);
+      const extractedData = this.extractUserInfoFromBundle(bundle.storyContent);
       
       // Format the user prompt template with the extracted data
       const formattedUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, extractedData);
@@ -301,10 +301,33 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
         storyLength: data.story?.length || 0
       });
 
+      // Phase 2: Apply centralized grammar processing via process-story-content
+      console.log('🔄 Applying centralized grammar processing...');
+      
+      let processedPages = data.pages;
+      try {
+        const { data: processResult, error: processError } = await supabase.functions.invoke('process-story-content', {
+          body: {
+            pages: data.pages || [],
+            userInfo: this.extractUserInfoFromBundle(bundle.storyContent),
+            sessionId: 'ai-generation-' + Date.now()
+          }
+        });
+
+        if (processError) {
+          console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+        } else if (processResult?.success && processResult?.processedPages) {
+          processedPages = processResult.processedPages;
+          console.log('✅ Grammar processing successful:', processResult.processingMetadata);
+        }
+      } catch (processError) {
+        console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+      }
+
       return {
         success: true,
         story: data.story,
-        pages: data.pages,
+        pages: processedPages,
         metadata: {
           vocabCompliance: data.vocabCompliance || 0,
           processingTime,
@@ -353,9 +376,9 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
   }
 
   /**
-   * Extract user data from resolved bundle for formatUserPrompt
+   * Extract user data from resolved bundle for formatUserPrompt (also used for process-story-content)
    */
-  private static extractUserDataFromBundle(storyContent: string): Record<string, any> {
+  private static extractUserInfoFromBundle(storyContent: string): Record<string, any> {
     let extractedData: Record<string, any> = {
       userName: 'Child',
       specialRequest: 'adventure story',

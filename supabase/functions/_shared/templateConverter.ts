@@ -3,9 +3,8 @@
  * Converts StoryTemplate objects to string[] arrays with full placeholder resolution
  */
 
-// Import sophisticated placeholder resolver and grammar validation from shared services
+// Import sophisticated placeholder resolver from shared services
 import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.ts';
-import { safeValidateAndEnhanceGrammar } from './grammarValidator.ts';
 
 /**
  * Template Converter for Story Templates
@@ -278,15 +277,8 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
     seed: { ...seedData, ...swappedElements }
   };
   
-  // Apply sophisticated placeholder resolution
+  // Apply sophisticated placeholder resolution (grammar processing moved to process-story-content)
   text = resolveAllPlaceholders(text, microContext);
-  
-  // Apply sophisticated grammar validation with crash protection
-  const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
-  text = grammarResult.result;
-  if (!grammarResult.success) {
-    console.warn(`⚠️ Grammar enhancement failed for scene: ${grammarResult.error}`);
-  }
   
   // EMERGENCY FALLBACK: Ensure never empty
   if (!text || text.trim().length === 0) {
@@ -317,15 +309,8 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template
     seed: { ...seedData, ...swappedElements }
   };
   
-  // Apply sophisticated placeholder resolution
+  // Apply sophisticated placeholder resolution (grammar processing moved to process-story-content)
   text = resolveAllPlaceholders(text, microContext);
-  
-  // Apply sophisticated grammar validation to ending with crash protection
-  const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
-  text = grammarResult.result;
-  if (!grammarResult.success) {
-    console.warn(`⚠️ Grammar enhancement failed for ending: ${grammarResult.error}`);
-  }
   
   return text;
 }
@@ -504,15 +489,8 @@ function processSceneWithCycleVariation(
       seed: { ...seedData, ...swappedElements, cycleNumber }
     };
     
-    // Apply sophisticated placeholder resolution
+    // Apply sophisticated placeholder resolution (grammar processing moved to process-story-content)
     text = resolveAllPlaceholders(text, microContext);
-    
-    // Apply sophisticated grammar validation with crash protection
-    const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
-    text = grammarResult.result;
-    if (!grammarResult.success) {
-      console.warn(`⚠️ Grammar enhancement failed for cycle variation: ${grammarResult.error}`);
-    }
   }
   
   return text;

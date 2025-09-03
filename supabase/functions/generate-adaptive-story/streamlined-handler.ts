@@ -10,7 +10,6 @@ import {
   type ValidationLevel 
 } from "../_shared/validation-utils.ts";
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
-import { safeValidateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 
@@ -178,15 +177,8 @@ Generate a corrected version that addresses these issues while keeping the story
     
     const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
     
-    // Step 2: Apply grammar enhancement to entire story ONCE with crash protection
-    const grammarResult = safeValidateAndEnhanceGrammar(storyText, 'they');
-    const grammarEnhanced = grammarResult.result;
-    if (!grammarResult.success) {
-      console.warn(`⚠️ Grammar enhancement failed for streamlined story: ${grammarResult.error}`);
-    }
-    
-    // Step 3: Apply placeholder resolution to entire story ONCE  
-    const placeholderResolved = resolveAllPlaceholders(grammarEnhanced, { userInfo });
+    // Step 2: Apply placeholder resolution to entire story ONCE (grammar processing moved to process-story-content)
+    const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo });
     
     // Step 4: THEN parse into pages using shared validation utilities
     const pages = sharedParseIntoPages(placeholderResolved, validationLevel);

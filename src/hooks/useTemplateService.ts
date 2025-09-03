@@ -112,10 +112,41 @@ export function useTemplateService() {
       );
 
       if (response.success && response.data) {
-        setResult(response.data);
+        // Phase 2: Apply centralized grammar processing via process-story-content
+        let finalResult = response.data;
+        
+        try {
+          console.log('🔄 Applying centralized grammar processing...');
+          
+          const { data: processResult, error: processError } = await supabase.functions.invoke('process-story-content', {
+            body: {
+              pages: response.data.pages || [],
+              userInfo: userInfo as UserInfo,
+              sessionId: 'template-generation-' + Date.now()
+            }
+          });
+
+          if (processError) {
+            console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+          } else if (processResult?.success && processResult?.processedPages) {
+            finalResult = {
+              ...response.data,
+              pages: processResult.processedPages,
+              metadata: {
+                ...response.data.metadata,
+                grammarProcessingMetadata: processResult.processingMetadata
+              }
+            };
+            console.log('✅ Grammar processing successful:', processResult.processingMetadata);
+          }
+        } catch (processError) {
+          console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+        }
+
+        setResult(finalResult);
         setRetryCount(0);
         setIsMaxRetriesReached(false);
-        return response.data;
+        return finalResult;
       } else if (response.fallback) {
         // Using fallback content
         setResult(response.fallback);
