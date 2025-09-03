@@ -271,61 +271,13 @@ serve(async (req) => {
       }
     }
     
-    // Phase 1: Try smart template selection if special request exists
+    // Simple template selection
     let selectedTemplateIndex = templateIndex; // Use provided index if available
     
-    // Import smart selection modules with error isolation
-    let smartSelector = null;
-    let requestProcessor = null;
-    
-    try {
-      const [selectorModule, processorModule] = await Promise.all([
-        import('../_shared/smartTemplateSelector.js'),
-        import('../_shared/specialRequestProcessor.js')
-      ]);
-      smartSelector = selectorModule;
-      requestProcessor = processorModule;
-    } catch (importError) {
-      console.warn('⚠️ Smart selection modules not available, using fallback selection');
-    }
-    
-    // Attempt smart selection if modules loaded and special request exists
-    if (smartSelector && requestProcessor && !selectedTemplateIndex && userInfo?.specialRequest) {
-      try {
-        console.log('🧠 Attempting smart template selection...');
-        
-        // Parse the special request with safety checks
-        const parsedRequest = requestProcessor.parseSpecialRequest(userInfo.specialRequest);
-        
-        if (parsedRequest?.isValid) {
-          console.log(`📋 Special request parsed successfully: "${parsedRequest.originalRequest}"`);
-          
-          // Get template count for this level
-          const templateCount = await getTemplateCount(templateLevel);
-          
-          if (templateCount > 0) {
-            // Try smart selection with timeout protection
-            const smartIndex = await smartSelector.selectWithTimeout(
-              parsedRequest.originalRequest,
-              templateLevel,
-              templateCount,
-              100 // 100ms timeout
-            );
-            
-            if (smartIndex !== null && smartIndex >= 0) {
-              selectedTemplateIndex = smartIndex;
-              console.log(`🎯 Smart selection successful: Using template ${smartIndex}`);
-            } else {
-              console.log('📍 Smart selection found no strong matches, using fallback');
-            }
-          }
-        } else {
-          console.log('⚠️ Special request could not be parsed, using fallback selection');
-        }
-      } catch (smartError) {
-        console.warn('⚠️ Smart template selection failed, using fallback:', smartError.message);
-        // selectedTemplateIndex remains unchanged (null or provided value)
-      }
+    if (!selectedTemplateIndex) {
+      // Random fallback selection
+      const templateCount = await getTemplateCount(templateLevel);
+      selectedTemplateIndex = Math.floor(Math.random() * (templateCount || 1));
     }
     
     // Fallback chain: Smart → Index → Random

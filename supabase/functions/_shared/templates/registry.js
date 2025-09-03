@@ -8,12 +8,8 @@ export const TEMPLATE_REGISTRY = {
   level0: {
     count: 100,
     type: 'static',
-    path: 'level0.js',
-    functions: {
-      getter: 'getLevel0Template'
-    },
+    path: 'level0.js'
     // Note: No B value - Level 0 excluded from arc processing
-    templates: null // Will be populated later for smart selection
   },
   level1: {
     count: 5,

@@ -1022,23 +1022,4 @@ export const LEVEL_0_TEMPLATES = [
   ]
 ];
 
-/**
- * Get a random Level 0 template
- * @param templateIndex Optional specific index, otherwise random
- * @returns Array of 6 sentences
- */
-export function getLevel0Template(templateIndex) {
-  if (templateIndex >= 0 && templateIndex < LEVEL_0_TEMPLATES.length) {
-    return LEVEL_0_TEMPLATES[templateIndex];
-  }
-  const randomIndex = Math.floor(Math.random() * LEVEL_0_TEMPLATES.length);
-  return LEVEL_0_TEMPLATES[randomIndex];
-}
-
-/**
- * Get the total count of Level 0 templates
- * @returns Number of templates (100)
- */
-export function getLevel0TemplateCount() {
-  return LEVEL_0_TEMPLATES.length;
 }
