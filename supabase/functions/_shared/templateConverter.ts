@@ -290,7 +290,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
 }
 
 // Process ending with arc-aware rotation and sophisticated grammar validation
-function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing', arcConfig?: any): string {
+async function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing', arcConfig?: any): Promise<string> {
   if (endings.length === 0) return "And they lived happily ever after.";
   
   // Use arc-aware ending selection if available
@@ -427,7 +427,7 @@ export function convertStoryTemplateToStringArray(
   }
   
   // Always add ending (with arc-aware processing if available)
-  const ending = processEnding(template.endings, userInfo, template, mode, arcConfig);
+  const ending = await processEnding(template.endings, userInfo, template, mode, arcConfig);
   pages.push(ending);
   
   // TESTING MODE: Show all endings for validation

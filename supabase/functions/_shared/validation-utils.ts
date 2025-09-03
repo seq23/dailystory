@@ -543,5 +543,102 @@ export function getTokensForGrade(gradeLevel: number): number {
   // return expectedPages * tokensPerPage;
 }
 
+/**
+ * Arc-aware validation functions for predictable arc lengths
+ */
+
+/**
+ * Get B value (scenes per arc) for validation level
+ */
+export function getBValueForLevel(level: ValidationLevel): number {
+  const bValues = {
+    'Level0': 0,  // Level 0 excluded from arc processing
+    'Level1': 5,
+    'Level2': 8,
+    'Level3': 10,
+    'Level4': 12,
+    'Grade6': 15,
+    'Grade7': 15,
+    'Grade8': 15,
+    'Grade9': 15,
+    'Grade10': 15
+  };
+  
+  return bValues[level] || 8; // Default to Level 2
+}
+
+/**
+ * Validate content based on arc position (scene vs ending)
+ */
+export function validateArcPosition(content: string, pageIndex: number, level: ValidationLevel): {
+  isValid: boolean;
+  isEnding: boolean;
+  sceneIndex: number;
+  arcNumber: number;
+  expectedType: 'scene' | 'ending';
+  reason?: string;
+} {
+  const B = getBValueForLevel(level);
+  
+  if (B === 0) {
+    // Level 0 - no arc processing
+    return {
+      isValid: true,
+      isEnding: false,
+      sceneIndex: 0,
+      arcNumber: 0,
+      expectedType: 'scene'
+    };
+  }
+  
+  const isEndingPage = (pageIndex % (B + 1)) === B;
+  const sceneIndex = pageIndex % B;
+  const arcNumber = Math.floor(pageIndex / (B + 1));
+  
+  // Validate expected content type
+  const actuallyIsEnding = isEnding(content);
+  const expectedType = isEndingPage ? 'ending' : 'scene';
+  
+  const typeMatches = isEndingPage ? actuallyIsEnding : !actuallyIsEnding;
+  
+  return {
+    isValid: typeMatches,
+    isEnding: isEndingPage,
+    sceneIndex,
+    arcNumber,
+    expectedType,
+    reason: typeMatches ? undefined : `Expected ${expectedType} but content appears to be ${actuallyIsEnding ? 'ending' : 'scene'}`
+  };
+}
+
+/**
+ * Cache validation results based on arc position
+ */
+const arcValidationCache = new Map<string, any>();
+
+export function getCachedValidation(level: ValidationLevel, pageIndex: number, contentHash: string) {
+  const B = getBValueForLevel(level);
+  const sceneIndex = pageIndex % B;
+  const isEnding = (pageIndex % (B + 1)) === B;
+  const cacheKey = `${level}-${sceneIndex}-${isEnding ? 'ending' : 'scene'}-${contentHash}`;
+  
+  return arcValidationCache.get(cacheKey);
+}
+
+export function setCachedValidation(level: ValidationLevel, pageIndex: number, contentHash: string, result: any) {
+  const B = getBValueForLevel(level);
+  const sceneIndex = pageIndex % B;
+  const isEnding = (pageIndex % (B + 1)) === B;
+  const cacheKey = `${level}-${sceneIndex}-${isEnding ? 'ending' : 'scene'}-${contentHash}`;
+  
+  arcValidationCache.set(cacheKey, result);
+  
+  // Limit cache size to prevent memory bloat
+  if (arcValidationCache.size > 1000) {
+    const firstKey = arcValidationCache.keys().next().value;
+    arcValidationCache.delete(firstKey);
+  }
+}
+
 // Backward compatibility alias
 export const autoSplitContent = enhancedAutoSplitContent;

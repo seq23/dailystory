@@ -7,6 +7,7 @@ import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from 
 import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
 import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
 import { getBValue } from '../_shared/templates/registry.js';
+import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
 
 // Import sophisticated placeholder resolution  
 import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
@@ -399,7 +400,12 @@ serve(async (req) => {
         sourceSystem: 'Unified Dynamic Templates',
         templateLevel,
         mode: mode,
-        targetWordDensity: 'Template-optimized'
+        targetWordDensity: 'Template-optimized',
+        templateIndex: finalTemplateIndex,
+        smartSelection: selectedTemplateIndex !== null,
+        fallbackUsed: selectedTemplateIndex === null,
+        arcAware: templateLevel !== 'level0',
+        bValue: templateLevel !== 'level0' ? getBValueForLevel(templateLevel as ValidationLevel) : 0
       },
       ...(testingData && { testingData })
     };

@@ -3,6 +3,15 @@
  * Integrates with existing cache system and character validation
  */
 
+// Import existing cache manager for integration
+let SessionCacheManager;
+try {
+  // Dynamic import to handle both Deno and browser contexts
+  SessionCacheManager = globalThis.SessionCacheManager || null;
+} catch (error) {
+  console.warn('SessionCacheManager not available in edge function context');
+}
+
 /**
  * Arc-aware session state structure
  */
@@ -213,6 +222,15 @@ export class ArcSessionState {
     
     // Mark for cache update
     this.cacheCompatibility.needsCacheUpdate = true;
+    
+    // Integrate with existing cache manager if available
+    if (SessionCacheManager && this.userId !== 'guest') {
+      try {
+        SessionCacheManager.clearOnNextStory(this.userId, this.getUserAvatarType());
+      } catch (error) {
+        console.warn('Failed to integrate with SessionCacheManager:', error);
+      }
+    }
   }
   
   /**
@@ -222,6 +240,23 @@ export class ArcSessionState {
     this.clearForNewStory();
     this.originalSpecialRequest = null;
     this.cacheCompatibility.lastCacheKey = null;
+    
+    // Integrate with existing cache manager for complete session clearing
+    if (SessionCacheManager) {
+      try {
+        SessionCacheManager.clearOnSessionEnd(this.userId, this.getUserAvatarType());
+      } catch (error) {
+        console.warn('Failed to integrate with SessionCacheManager:', error);
+      }
+    }
+  }
+  
+  /**
+   * Get user avatar type for cache integration
+   */
+  getUserAvatarType() {
+    // Extract avatar type from carried data or use default
+    return this.avatarType || 'neutral';
   }
   
   /**
