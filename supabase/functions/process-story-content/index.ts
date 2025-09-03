@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Import the sophisticated template system components
 import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";
-import { validateAndEnhanceGrammar } from "../_shared/grammarValidator.ts";
+import { safeValidateAndEnhanceGrammar } from "../_shared/grammarValidator.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +22,8 @@ interface ProcessResponse {
   processingMetadata: {
     placeholdersResolved: number;
     grammarEnhanced: boolean;
+    grammarEnhancementErrors: number;
+    grammarFailureReasons?: string[];
     source: 'unified-processor';
   };
   error?: string;
@@ -51,6 +53,8 @@ serve(async (req) => {
 
     const processedPages: string[] = [];
     let totalPlaceholdersResolved = 0;
+    let grammarEnhancementSuccesses = 0;
+    const grammarFailureReasons: string[] = [];
 
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
@@ -72,17 +76,26 @@ serve(async (req) => {
       const resolvedCount = originalPlaceholders - remainingPlaceholders;
       totalPlaceholdersResolved += resolvedCount;
       
-      // Step 2: Apply grammar validation and enhancement
+      // Step 2: Apply safe grammar validation and enhancement
       const pronoun = derivePronoun(userInfo);
-      const grammarEnhanced = validateAndEnhanceGrammar(placeholderResolved, pronoun);
-      console.log(`✅ Grammar enhanced for page ${i + 1}: ${grammarEnhanced.substring(0, 50)}...`);
+      const grammarResult = safeValidateAndEnhanceGrammar(placeholderResolved, pronoun);
       
-      processedPages.push(grammarEnhanced);
+      if (grammarResult.success) {
+        grammarEnhancementSuccesses++;
+        console.log(`✅ Grammar enhanced for page ${i + 1}: ${grammarResult.result.substring(0, 50)}...`);
+      } else {
+        grammarFailureReasons.push(`Page ${i + 1}: ${grammarResult.error}`);
+        console.warn(`⚠️ Grammar enhancement failed for page ${i + 1}, using original text`);
+      }
+      
+      processedPages.push(grammarResult.result);
     }
 
     console.log('✅ Unified processing complete', {
       pagesProcessed: processedPages.length,
       totalPlaceholdersResolved,
+      grammarSuccesses: grammarEnhancementSuccesses,
+      grammarFailures: grammarFailureReasons.length,
       source: 'unified-processor'
     });
 
@@ -91,7 +104,9 @@ serve(async (req) => {
       processedPages,
       processingMetadata: {
         placeholdersResolved: totalPlaceholdersResolved,
-        grammarEnhanced: true,
+        grammarEnhanced: grammarEnhancementSuccesses === pages.length,
+        grammarEnhancementErrors: grammarFailureReasons.length,
+        grammarFailureReasons: grammarFailureReasons.length > 0 ? grammarFailureReasons : undefined,
         source: 'unified-processor'
       }
     };
@@ -109,6 +124,7 @@ serve(async (req) => {
       processingMetadata: {
         placeholdersResolved: 0,
         grammarEnhanced: false,
+        grammarEnhancementErrors: 0,
         source: 'unified-processor'
       },
       error: error.message

@@ -216,6 +216,30 @@ export function quickCleanup(text: string): string {
 }
 
 /**
+ * Safe grammar enhancement with error handling and fallback
+ */
+export function safeValidateAndEnhanceGrammar(text: string, pronoun: string = 'they'): {
+  result: string;
+  success: boolean;
+  error?: string;
+} {
+  try {
+    const result = validateAndEnhanceGrammar(text, pronoun);
+    return {
+      result,
+      success: true
+    };
+  } catch (error) {
+    console.warn('⚠️ Grammar enhancement failed, using original text:', error);
+    return {
+      result: text, // Return original text as fallback
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown grammar enhancement error'
+    };
+  }
+}
+
+/**
  * Update server configuration
  */
 export function updateGrammarConfig(config: Partial<typeof SERVER_CONFIG>): void {
