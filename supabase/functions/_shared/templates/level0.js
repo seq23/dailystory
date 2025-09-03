@@ -5,1020 +5,1020 @@
  */
 
 export const LEVEL_0_TEMPLATES = [
-  // Daily Life Templates (20)
+  // Daily Life Templates (1-20)
   
-  // Template 1: Morning Routine
+  // Template 1: Morning Routine  
   [
-    "I wake up.", // 3 words
-    "The sun is up.", // 4 words
-    "Time to get up.", // 4 words
-    "I eat good food.", // 4 words
-    "Get up now.", // 3 words
-    "I am ready." // 3 words
+    "{userName} wakes up.", 
+    "The sun is up.", 
+    "{userName} eats {favoriteFood}.", 
+    "{userName} does {hobbies}.", 
+    "Get up now.", 
+    "{userName} is ready."
   ],
   
   // Template 2: Bedtime Story
   [
-    "Time for bed.", // 3 words
-    "I go to bed.", // 4 words
-    "The {favoriteColor} bed is soft.", // 5 words
-    "{userName} is in bed.", // 4 words
-    "Good night.", // 2 words
-    "Sleep is nice." // 3 words
+    "Time for bed.", 
+    "{userName} goes to bed.", 
+    "The {favoriteColor} bed is soft.", 
+    "{userName} likes {favoriteFood}.", 
+    "Good night.", 
+    "{userName} sleeps well."
   ],
   
   // Template 3: Meal Time
   [
-    "Time to eat.", // 3 words
-    "I see {favoriteFood}.", // 3 words
-    "The food is good.", // 4 words
-    "I eat it up.", // 4 words
-    "So good.", // 2 words
-    "I am full." // 3 words
+    "Time to eat.", 
+    "{userName} sees {favoriteFood}.", 
+    "The {favoriteFood} is {favoriteColor}.", 
+    "{userName} eats it up.", 
+    "So good.", 
+    "{userName} is full."
   ],
   
   // Template 4: Getting Dressed
   [
-    "Time to dress.", // 3 words
-    "I put on clothes.", // 4 words
-    "The {favoriteColor} shirt is pretty.", // 5 words
-    "I can do it.", // 4 words
-    "All done.", // 2 words
-    "I look pretty." // 3 words
+    "Time to dress.", 
+    "{userName} puts on clothes.", 
+    "The {favoriteColor} shirt is pretty.", 
+    "{userName} does {hobbies}.", 
+    "All done.", 
+    "{userName} looks pretty."
   ],
   
   // Template 5: Cleaning Up
   [
-    "Time to clean.", // 3 words
-    "I put toys away.", // 4 words
-    "The room gets clean.", // 4 words
-    "I help make it clean.", // 5 words
-    "Good job.", // 2 words
-    "I like clean." // 3 words
+    "{userName} cleans up.", 
+    "{userName} puts toys away.", 
+    "The room gets clean.", 
+    "{userName} likes {favoriteColor} toys.", 
+    "Good job.", 
+    "{userName} likes clean."
   ],
   
   // Template 6: Bath Time
   [
-    "Time for bath.", // 3 words
-    "I get in water.", // 4 words
-    "The water is warm.", // 4 words
-    "I play in the water.", // 5 words
-    "So fun.", // 2 words
-    "I am clean." // 3 words
+    "Time for bath.", 
+    "{userName} gets in water.", 
+    "The water is warm.", 
+    "{userName} plays in water.", 
+    "So fun.", 
+    "{userName} is clean."
   ],
   
   // Template 7: Cooking Together
   [
-    "I help cook.", // 3 words
-    "{userName} helps {friend}.", // 3 words
-    "We make good food.", // 4 words
-    "I can help make food.", // 5 words
-    "It smells good.", // 3 words
-    "We eat together." // 3 words
+    "{userName} helps cook.", 
+    "{userName} makes {favoriteFood}.", 
+    "We make good food.", 
+    "{userName} likes {hobbies}.", 
+    "It smells good.", 
+    "{userName} eats together."
   ],
   
   // Template 8: Family Time
   [
-    "I love family.", // 3 words
-    "We play together.", // 3 words
-    "{userName} and {friend} play.", // 4 words
-    "We have fun all day.", // 5 words
-    "So happy.", // 2 words
-    "I love them." // 3 words
+    "{userName} loves family.", 
+    "{userName} plays together.", 
+    "{userName} does {hobbies}.", 
+    "{userName} eats {favoriteFood}.", 
+    "So happy.", 
+    "{userName} loves them."
   ],
   
   // Template 9: Chores
   [
-    "I help out.", // 3 words
-    "I make the bed.", // 4 words
-    "I help at home.", // 4 words
-    "The home looks good now.", // 5 words
-    "Good helper.", // 2 words
-    "I like helping." // 3 words
+    "{userName} helps out.", 
+    "{userName} makes the bed.", 
+    "The {favoriteColor} bed looks good.", 
+    "{userName} does {hobbies}.", 
+    "Good helper.", 
+    "{userName} likes helping."
   ],
   
   // Template 10: Shopping
   [
-    "We go shopping.", // 3 words
-    "I see {favoriteFood} here.", // 4 words
-    "We get good food.", // 4 words
-    "I help pick out food.", // 5 words
-    "Fill the cart.", // 3 words
-    "Shopping is fun." // 3 words
+    "{userName} goes shopping.", 
+    "{userName} sees {favoriteFood}.", 
+    "We get good food.", 
+    "{userName} picks {favoriteColor} things.", 
+    "Fill the cart.", 
+    "{userName} loves shopping."
   ],
   
   // Template 11: Phone Call
   [
-    "I call {friend}.", // 3 words
-    "We talk and talk.", // 4 words
-    "I say hello first.", // 4 words
-    "{Friend} talks to me too.", // 5 words
-    "So fun.", // 2 words
-    "I like talking." // 3 words
+    "{userName} calls friend.", 
+    "{userName} talks and talks.", 
+    "{userName} says hello first.", 
+    "{userName} likes {hobbies}.", 
+    "So fun.", 
+    "{userName} likes talking."
   ],
   
   // Template 12: Reading Time
   [
-    "I like books.", // 3 words
-    "I get a book.", // 4 words
-    "I look at words.", // 4 words
-    "The {favoriteColor} book is pretty.", // 5 words
-    "I read it.", // 3 words
-    "Books are fun." // 3 words
+    "{userName} likes books.", 
+    "{userName} gets a book.", 
+    "The {favoriteColor} book is pretty.", 
+    "{userName} reads while doing {hobbies}.", 
+    "{userName} reads it.", 
+    "{userName} loves books."
   ],
   
   // Template 13: Snack Time
   [
-    "Time for snack.", // 3 words
-    "I get some {favoriteFood}.", // 4 words
-    "I am so hungry.", // 4 words
-    "The snack is so good.", // 5 words
-    "I eat up.", // 3 words
-    "Now I'm happy." // 3 words
+    "Time for snack.", 
+    "{userName} gets {favoriteFood}.", 
+    "{userName} is hungry.", 
+    "The {favoriteColor} snack is good.", 
+    "{userName} eats up.", 
+    "{userName} is happy."
   ],
   
   // Template 14: Waking Up
   [
-    "I wake up.", // 3 words
-    "Time to get up.", // 4 words
-    "I start my day.", // 4 words
-    "The new day is fun.", // 5 words
-    "Good morning.", // 2 words
-    "Today is good." // 3 words
+    "{userName} wakes up.", 
+    "Time to get up.", 
+    "{userName} starts the day.", 
+    "{userName} does {hobbies}.", 
+    "Good morning.", 
+    "{userName} feels good."
   ],
   
   // Template 15: House Work
   [
-    "Time to work.", // 3 words
-    "I help {friend} work.", // 4 words
-    "I do good work.", // 4 words
-    "The house looks good now.", // 5 words
-    "Work hard.", // 2 words
-    "I like working." // 3 words
+    "Time to work.", 
+    "{userName} helps work.", 
+    "{userName} does good work.", 
+    "{userName} likes {favoriteColor} tools.", 
+    "Work hard.", 
+    "{userName} likes working."
   ],
   
   // Template 16: Getting Ready
   [
-    "I get ready.", // 3 words
-    "I put on shoes.", // 4 words
-    "I am ready now.", // 4 words
-    "Time to go out now.", // 5 words
-    "All set.", // 2 words
-    "Let's go now." // 3 words
+    "{userName} gets ready.", 
+    "{userName} puts on shoes.", 
+    "The {favoriteColor} shoes are nice.", 
+    "{userName} does {hobbies}.", 
+    "All set.", 
+    "{userName} goes now."
   ],
   
   // Template 17: Dinner Time
   [
-    "Time for dinner.", // 3 words
-    "I sit at table.", // 4 words
-    "I eat with family.", // 4 words
-    "The dinner is so good.", // 5 words
-    "So good.", // 2 words
-    "We eat together." // 3 words
+    "Time for dinner.", 
+    "{userName} sits at table.", 
+    "{userName} eats {favoriteFood}.", 
+    "The dinner is good.", 
+    "So good.", 
+    "{userName} eats together."
   ],
   
   // Template 18: Quiet Time
   [
-    "Time to rest.", // 3 words
-    "I sit and rest.", // 4 words
-    "I am very quiet.", // 4 words
-    "The quiet time is good.", // 5 words
-    "So quiet.", // 2 words
-    "I feel calm." // 3 words
+    "Time to rest.", 
+    "{userName} sits and rests.", 
+    "{userName} is quiet.", 
+    "{userName} likes {favoriteColor} pillows.", 
+    "So quiet.", 
+    "{userName} feels calm."
   ],
   
   // Template 19: Helper
   [
-    "I am helper.", // 3 words
-    "I help {friend} work.", // 4 words
-    "I can help you.", // 4 words
-    "The work gets done well.", // 5 words
-    "Good helper.", // 2 words
-    "I like helping." // 3 words
+    "{userName} is helper.", 
+    "{userName} helps work.", 
+    "{userName} does {hobbies}.", 
+    "The work gets done.", 
+    "Good helper.", 
+    "{userName} likes helping."
   ],
   
   // Template 20: Going to Bed
   [
-    "Time for bed.", // 3 words
-    "I go to bed.", // 4 words
-    "I sleep all night.", // 4 words
-    "The bed is warm now.", // 5 words
-    "Sleep well.", // 2 words
-    "Sweet dreams come." // 3 words
+    "Time for bed.", 
+    "{userName} goes to bed.", 
+    "{userName} sleeps all night.", 
+    "The {favoriteColor} bed is warm.", 
+    "Sleep well.", 
+    "{userName} has sweet dreams."
   ],
   
-  // Healthcare Templates (10)
+  // Healthcare Templates (21-30)
   
   // Template 21: Doctor Visit
   [
-    "I see the doctor.", // 4 words
-    "Go to doctor today.", // 4 words
-    "The doctor helps me.", // 4 words
-    "I am good at doctor.", // 5 words
-    "Feel good.", // 2 words
-    "I feel better." // 3 words
+    "{userName} sees the doctor.", 
+    "Go to doctor today.", 
+    "The doctor helps {userName}.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Feel good.", 
+    "{userName} feels better."
   ],
   
   // Template 22: Dentist Visit
   [
-    "I see the dentist.", // 4 words
-    "Open mouth for dentist.", // 4 words
-    "The dentist cleans teeth.", // 4 words
-    "I have clean white teeth.", // 5 words
-    "Good teeth.", // 2 words
-    "My teeth shine." // 3 words
+    "{userName} sees the dentist.", 
+    "Open mouth for dentist.", 
+    "The dentist cleans teeth.", 
+    "{userName} likes {favoriteColor} toothbrush.", 
+    "Good teeth.", 
+    "{userName}'s teeth shine."
   ],
   
   // Template 23: Feeling Sick
   [
-    "I feel sick.", // 3 words
-    "I need to rest.", // 4 words
-    "I get well soon.", // 4 words
-    "{Friend} helps me feel good.", // 5 words
-    "Rest time.", // 2 words
-    "Now I'm well." // 3 words
+    "{userName} feels sick.", 
+    "{userName} needs to rest.", 
+    "{userName} gets well soon.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Rest time.", 
+    "{userName} is well."
   ],
   
   // Template 24: Taking Medicine
   [
-    "I take medicine.", // 3 words
-    "Medicine helps me.", // 3 words
-    "I take it now.", // 4 words
-    "The medicine makes me well.", // 5 words
-    "Feel good.", // 2 words
-    "I feel good." // 3 words
+    "{userName} takes medicine.", 
+    "Medicine helps {userName}.", 
+    "{userName} takes it now.", 
+    "The medicine is {favoriteColor}.", 
+    "Feel good.", 
+    "{userName} feels good."
   ],
   
   // Template 25: Checkup
   [
-    "I get a checkup.", // 4 words
-    "Go see doctor today.", // 4 words
-    "The doctor looks at me.", // 5 words
-    "I am good and strong.", // 5 words
-    "All good.", // 2 words
-    "I am strong." // 3 words
+    "{userName} gets checkup.", 
+    "Go see doctor today.", 
+    "The doctor looks at {userName}.", 
+    "{userName} does {hobbies}.", 
+    "All good.", 
+    "{userName} is strong."
   ],
   
   // Template 26: Washing Hands
   [
-    "I wash hands.", // 3 words
-    "Use water and soap.", // 4 words
-    "I clean my hands well.", // 5 words
-    "The hands are clean now.", // 5 words
-    "All clean.", // 2 words
-    "Clean hands are good." // 4 words
+    "{userName} washes hands.", 
+    "Use water and soap.", 
+    "{userName} cleans hands well.", 
+    "The {favoriteColor} soap smells nice.", 
+    "All clean.", 
+    "{userName} has clean hands."
   ],
   
   // Template 27: Eating Healthy
   [
-    "I eat good food.", // 4 words
-    "Good food helps me.", // 4 words
-    "I eat it up.", // 4 words
-    "The food makes me strong.", // 5 words
-    "Stay strong.", // 2 words
-    "I feel strong." // 3 words
+    "{userName} eats good food.", 
+    "Good food helps {userName}.", 
+    "{userName} eats it up.", 
+    "{userName} likes {favoriteAnimal}s.", 
+    "Stay strong.", 
+    "{userName} feels strong."
   ],
   
   // Template 28: Exercise
   [
-    "I move my body.", // 4 words
-    "Run and jump today.", // 4 words
-    "I move and play.", // 4 words
-    "The play makes me strong.", // 5 words
-    "Feel strong.", // 2 words
-    "I am strong." // 3 words
+    "{userName} moves body.", 
+    "Run and jump today.", 
+    "{userName} does {hobbies}.", 
+    "The play makes {userName} strong.", 
+    "Feel strong.", 
+    "{userName} is strong."
   ],
   
   // Template 29: Bandage
   [
-    "I need a bandage.", // 4 words
-    "Put it on cut.", // 4 words
-    "The bandage helps me.", // 4 words
-    "I feel good with it.", // 5 words
-    "All better.", // 2 words
-    "Now I'm better." // 3 words
+    "{userName} needs bandage.", 
+    "Put it on cut.", 
+    "The {favoriteColor} bandage helps.", 
+    "{userName} feels good now.", 
+    "All better.", 
+    "{userName} is better."
   ],
   
   // Template 30: Sleep Well
   [
-    "I sleep good.", // 3 words
-    "Sleep helps me grow.", // 4 words
-    "I sleep all night.", // 4 words
-    "The sleep makes me strong.", // 5 words
-    "Rest well.", // 2 words
-    "I feel good." // 3 words
+    "{userName} sleeps good.", 
+    "Sleep helps {userName} grow.", 
+    "{userName} sleeps all night.", 
+    "{userName} dreams of {favoriteAnimal}s.", 
+    "Rest well.", 
+    "{userName} feels good."
   ],
   
-  // Educational Templates (15)
+  // Educational Templates (31-45)
   
   // Template 31: School Day
   [
-    "I go to school.", // 4 words
-    "See new things today.", // 4 words
-    "I learn at school.", // 4 words
-    "The school is fun today.", // 5 words
-    "Learn lots.", // 2 words
-    "I love school." // 3 words
+    "{userName} goes to school.", 
+    "See new things today.", 
+    "{userName} learns at school.", 
+    "{userName} eats {favoriteFood}.", 
+    "Learn lots.", 
+    "{userName} loves school."
   ],
   
   // Template 32: Reading Book
   [
-    "I read books.", // 3 words
-    "Look at the words.", // 4 words
-    "I read this book.", // 4 words
-    "The book has good words.", // 5 words
-    "Good words.", // 2 words
-    "Reading is fun." // 3 words
+    "{userName} reads books.", 
+    "Look at the words.", 
+    "{userName} reads this book.", 
+    "The {favoriteColor} book is good.", 
+    "Good words.", 
+    "{userName} loves reading."
   ],
   
   // Template 33: Writing
   [
-    "I write words.", // 3 words
-    "Make letters on paper.", // 4 words
-    "I write my name.", // 4 words
-    "The writing looks good now.", // 5 words
-    "Write more.", // 2 words
-    "I like writing." // 3 words
+    "{userName} writes words.", 
+    "Make letters on paper.", 
+    "{userName} writes name.", 
+    "{userName} does {hobbies}.", 
+    "Write more.", 
+    "{userName} likes writing."
   ],
   
   // Template 34: Counting
   [
-    "I count things.", // 3 words
-    "One, two, three, four.", // 4 words
-    "I can count high.", // 4 words
-    "The numbers help me learn.", // 5 words
-    "Count high.", // 2 words
-    "Counting is fun." // 3 words
+    "{userName} counts things.", 
+    "One, two, three, four.", 
+    "{userName} can count high.", 
+    "{userName} likes {favoriteColor} numbers.", 
+    "Count high.", 
+    "{userName} loves counting."
   ],
   
   // Template 35: Library Visit
   [
-    "I go to library.", // 4 words
-    "Get books to read.", // 4 words
-    "I find good books.", // 4 words
-    "The library has many books.", // 5 words
-    "Pick books.", // 2 words
-    "So many books." // 3 words
+    "{userName} goes to library.", 
+    "Get books to read.", 
+    "{userName} finds good books.", 
+    "{userName} eats {favoriteFood}.", 
+    "Pick books.", 
+    "{userName} loves books."
   ],
   
   // Template 36: Art Time
   [
-    "I make art.", // 3 words
-    "Use {favoriteColor} paint today.", // 4 words
-    "I make pretty art.", // 4 words
-    "The art looks good now.", // 5 words
-    "So pretty.", // 2 words
-    "I love art." // 3 words
+    "{userName} makes art.", 
+    "Use {favoriteColor} paint today.", 
+    "{userName} makes pretty art.", 
+    "{userName} does {hobbies}.", 
+    "So pretty.", 
+    "{userName} loves art."
   ],
   
   // Template 37: Music Class
   [
-    "I make music.", // 3 words
-    "Sing a good song.", // 4 words
-    "I sing and dance.", // 4 words
-    "The music is fun today.", // 5 words
-    "Sing loud.", // 2 words
-    "I love music." // 3 words
+    "{userName} makes music.", 
+    "Sing a good song.", 
+    "{userName} does {hobbies}.", 
+    "The {favoriteColor} music is fun.", 
+    "Sing loud.", 
+    "{userName} loves music."
   ],
   
   // Template 38: Learning Colors
   [
-    "I see colors.", // 3 words
-    "{FavoriteColor} is so pretty.", // 4 words
-    "I can see all colors.", // 5 words
-    "The colors look pretty today.", // 5 words
-    "Pretty colors.", // 2 words
-    "Colors are pretty." // 3 words
+    "{userName} sees colors.", 
+    "{favoriteColor} is pretty.", 
+    "{userName} can see all colors.", 
+    "{userName} eats {favoriteFood}.", 
+    "Pretty colors.", 
+    "{userName} loves colors."
   ],
   
   // Template 39: Show and Tell
   [
-    "I show things.", // 3 words
-    "Tell about my {object}.", // 4 words
-    "I show this today.", // 4 words
-    "The class sees my {object}.", // 5 words
-    "Look here.", // 2 words
-    "This is fun." // 3 words
+    "{userName} shows things.", 
+    "Tell about the toy.", 
+    "{userName} shows this today.", 
+    "The {favoriteColor} toy is fun.", 
+    "Look here.", 
+    "{userName} loves sharing."
   ],
   
   // Template 40: Science Fun
   [
-    "I learn science.", // 3 words
-    "Look at how things work.", // 5 words
-    "I try new things.", // 4 words
-    "The science is fun today.", // 5 words
-    "Try this.", // 2 words
-    "I love science." // 3 words
+    "{userName} learns science.", 
+    "Look at how things work.", 
+    "{userName} tries new things.", 
+    "{userName} does {hobbies}.", 
+    "Try this.", 
+    "{userName} loves science."
   ],
   
   // Template 41: Puzzle Time
   [
-    "I do puzzles.", // 3 words
-    "Put pieces all together.", // 4 words
-    "I make it work.", // 4 words
-    "The puzzle is done now.", // 5 words
-    "Fits good.", // 2 words
-    "Puzzles are fun." // 3 words
+    "{userName} does puzzles.", 
+    "Put pieces together.", 
+    "{userName} makes it work.", 
+    "The {favoriteColor} puzzle is fun.", 
+    "Fits good.", 
+    "{userName} loves puzzles."
   ],
   
   // Template 42: Computer Time
   [
-    "I use the computer.", // 4 words
-    "Look at the pretty screen.", // 5 words
-    "I learn on computer.", // 4 words
-    "The computer helps me learn.", // 5 words
-    "Type words.", // 2 words
-    "Computers are cool." // 3 words
+    "{userName} uses computer.", 
+    "Look at the screen.", 
+    "{userName} learns on computer.", 
+    "{userName} does {hobbies}.", 
+    "Type words.", 
+    "{userName} loves computers."
   ],
   
   // Template 43: Alphabet
   [
-    "I learn letters.", // 3 words
-    "A, B, C come first.", // 5 words
-    "I know all my letters.", // 5 words
-    "The letters make good words.", // 5 words
-    "Say letters.", // 2 words
-    "Letters are fun." // 3 words
+    "{userName} learns letters.", 
+    "A, B, C come first.", 
+    "{userName} knows all letters.", 
+    "The {favoriteColor} letters are fun.", 
+    "Say letters.", 
+    "{userName} loves letters."
   ],
   
   // Template 44: Math Fun
   [
-    "I do math.", // 3 words
-    "Add one and one together.", // 5 words
-    "I can add big numbers.", // 5 words
-    "The math helps me learn.", // 5 words
-    "Count up.", // 2 words
-    "I love math." // 3 words
+    "{userName} does math.", 
+    "Add one and one.", 
+    "{userName} can add numbers.", 
+    "{userName} eats {favoriteFood}.", 
+    "Count up.", 
+    "{userName} loves math."
   ],
   
   // Template 45: Learning Shapes
   [
-    "I see shapes.", // 3 words
-    "Circle, square, triangle here.", // 4 words
-    "I can find all shapes.", // 5 words
-    "The shapes are all around.", // 5 words
-    "Point out.", // 2 words
-    "Shapes are cool." // 3 words
+    "{userName} sees shapes.", 
+    "Circle, square, triangle here.", 
+    "{userName} finds all shapes.", 
+    "The {favoriteColor} shapes are fun.", 
+    "Point out.", 
+    "{userName} loves shapes."
   ],
 
-  // Play & Recreation Templates (15)
+  // Play & Recreation Templates (46-60)
   
   // Template 46: Playground Fun
   [
-    "I go to playground.", // 4 words
-    "Swing high on the swing.", // 5 words
-    "I play all day.", // 4 words
-    "The playground is so fun.", // 5 words
-    "Play more.", // 2 words
-    "I love playing." // 3 words
+    "{userName} goes to playground.", 
+    "Swing high on swing.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "{userName} does {hobbies}.", 
+    "Play more.", 
+    "{userName} loves playing."
   ],
   
   // Template 47: Ball Game
   [
-    "I play ball.", // 3 words
-    "Throw the {favoriteColor} ball.", // 4 words
-    "I catch the ball.", // 4 words
-    "The ball goes so high.", // 5 words
-    "Catch it.", // 2 words
-    "Ball games are fun." // 4 words
+    "{userName} plays ball.", 
+    "Throw the {favoriteColor} ball.", 
+    "{userName} catches the ball.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Catch it.", 
+    "{userName} loves ball games."
   ],
   
   // Template 48: Hide and Seek
   [
-    "I play hide.", // 3 words
-    "Hide from {friend} now.", // 4 words
-    "I find a spot.", // 4 words
-    "{Friend} tries to find me.", // 5 words
-    "Find me.", // 2 words
-    "This is fun." // 3 words
+    "{userName} plays hide.", 
+    "Hide from friend now.", 
+    "{userName} finds a spot.", 
+    "{userName} does {hobbies}.", 
+    "Find me.", 
+    "{userName} loves hiding."
   ],
   
   // Template 49: Bike Ride
   [
-    "I ride a bike.", // 4 words
-    "Go fast on my bike.", // 5 words
-    "I ride to the park.", // 5 words
-    "The bike goes so fast.", // 5 words
-    "Go fast.", // 2 words
-    "I love bikes." // 3 words
+    "{userName} rides bike.", 
+    "Go fast on bike.", 
+    "{userName} rides to park.", 
+    "The {favoriteColor} bike is fast.", 
+    "Go fast.", 
+    "{userName} loves bikes."
   ],
   
   // Template 50: Swimming
   [
-    "I go swimming.", // 3 words
-    "Jump in the water now.", // 5 words
-    "I splash and play.", // 4 words
-    "The water is so fun.", // 5 words
-    "Splash more.", // 2 words
-    "Water is fun." // 3 words
+    "{userName} goes swimming.", 
+    "Jump in water now.", 
+    "{userName} splashes and plays.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Splash more.", 
+    "{userName} loves water."
   ],
   
   // Template 51: Tag Game
   [
-    "I play tag.", // 3 words
-    "Run fast from {friend}.", // 4 words
-    "I run and run.", // 4 words
-    "{Friend} tries to tag me.", // 5 words
-    "Run fast.", // 2 words
-    "Running is fun." // 3 words
+    "{userName} plays tag.", 
+    "Run fast from friend.", 
+    "{userName} runs and runs.", 
+    "{userName} does {hobbies}.", 
+    "Run fast.", 
+    "{userName} loves running."
   ],
   
   // Template 52: Toy Cars
   [
-    "I play with cars.", // 4 words
-    "The {favoriteColor} car goes fast.", // 5 words
-    "I make car sounds.", // 4 words
-    "The cars go all around.", // 5 words
-    "Vroom vroom.", // 2 words
-    "Cars are cool." // 3 words
+    "{userName} plays with cars.", 
+    "The {favoriteColor} car is fast.", 
+    "{userName} makes car sounds.", 
+    "{userName} likes {favoriteAnimal}s.", 
+    "Vroom vroom.", 
+    "{userName} loves cars."
   ],
   
   // Template 53: Building Blocks
   [
-    "I build things.", // 3 words
-    "Make a tall tower today.", // 5 words
-    "I build it high.", // 4 words
-    "The blocks make good things.", // 5 words
-    "Stack up.", // 2 words
-    "I love building." // 3 words
+    "{userName} builds things.", 
+    "Make tall tower today.", 
+    "{userName} builds it high.", 
+    "The {favoriteColor} blocks are fun.", 
+    "Stack up.", 
+    "{userName} loves building."
   ],
   
   // Template 54: Dancing
   [
-    "I dance now.", // 3 words
-    "Move to the good music.", // 5 words
-    "I dance and spin.", // 4 words
-    "The dancing is so fun.", // 5 words
-    "Spin around.", // 2 words
-    "I love dancing." // 3 words
+    "{userName} dances now.", 
+    "Move to good music.", 
+    "{userName} does {hobbies}.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Spin around.", 
+    "{userName} loves dancing."
   ],
   
   // Template 55: Jump Rope
   [
-    "I jump rope.", // 3 words
-    "Jump up and down fast.", // 5 words
-    "I jump so high.", // 4 words
-    "The rope goes around me.", // 5 words
-    "Jump high.", // 2 words
-    "Jumping is fun." // 3 words
+    "{userName} jumps rope.", 
+    "Jump up and down.", 
+    "{userName} jumps high.", 
+    "The {favoriteColor} rope is fun.", 
+    "Jump high.", 
+    "{userName} loves jumping."
   ],
   
   // Template 56: Sandbox
   [
-    "I play in sand.", // 4 words
-    "Make a big sand castle.", // 5 words
-    "I dig in sand.", // 4 words
-    "The sand makes good things.", // 5 words
-    "Dig more.", // 2 words
-    "Sand is fun." // 3 words
+    "{userName} plays in sand.", 
+    "Make sand castle.", 
+    "{userName} digs in sand.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Dig more.", 
+    "{userName} loves sand."
   ],
   
   // Template 57: Slide Fun
   [
-    "I go on slide.", // 4 words
-    "Climb up the big slide.", // 5 words
-    "I go down fast.", // 4 words
-    "The slide is so fun.", // 5 words
-    "Slide down.", // 2 words
-    "Slides are fun." // 3 words
+    "{userName} goes on slide.", 
+    "Climb up big slide.", 
+    "{userName} goes down fast.", 
+    "The {favoriteColor} slide is fun.", 
+    "Slide down.", 
+    "{userName} loves slides."
   ],
   
   // Template 58: Tricycle
   [
-    "I ride a tricycle.", // 4 words
-    "Go around the big yard.", // 5 words
-    "I pedal so fast.", // 4 words
-    "The tricycle goes all around.", // 5 words
-    "Pedal fast.", // 2 words
-    "Tricycles are fun." // 3 words
+    "{userName} rides tricycle.", 
+    "Go around big yard.", 
+    "{userName} pedals fast.", 
+    "{userName} does {hobbies}.", 
+    "Pedal fast.", 
+    "{userName} loves tricycles."
   ],
   
   // Template 59: Hopscotch
   [
-    "I play hopscotch.", // 3 words
-    "Hop on one foot now.", // 5 words
-    "I hop and jump.", // 4 words
-    "The hopscotch is so fun.", // 5 words
-    "Hop more.", // 2 words
-    "Hopscotch is fun." // 3 words
+    "{userName} plays hopscotch.", 
+    "Hop on one foot.", 
+    "{userName} hops and jumps.", 
+    "The {favoriteColor} squares are fun.", 
+    "Hop more.", 
+    "{userName} loves hopscotch."
   ],
   
   // Template 60: Seesaw
   [
-    "I use the seesaw.", // 4 words
-    "Go up and down fast.", // 5 words
-    "I sit with {friend}.", // 4 words
-    "The seesaw goes up down.", // 5 words
-    "Up down.", // 2 words
-    "Seesaws are fun." // 3 words
+    "{userName} uses seesaw.", 
+    "Go up and down.", 
+    "{userName} sits with friend.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Up down.", 
+    "{userName} loves seesaws."
   ],
   
-  // Community Templates (10)
+  // Community Templates (61-70)
   
   // Template 61: Store Visit
   [
-    "We go to store.", // 4 words
-    "Buy {favoriteFood} at the store.", // 5 words
-    "I help {friend} shop.", // 4 words
-    "The store has good things.", // 5 words
-    "Pick out.", // 2 words
-    "Shopping is fun." // 3 words
+    "{userName} goes to store.", 
+    "Buy {favoriteFood} at store.", 
+    "{userName} helps friend shop.", 
+    "{userName} does {hobbies}.", 
+    "Pick out.", 
+    "{userName} loves shopping."
   ],
   
   // Template 62: Fire Station
   [
-    "I see firefighters.", // 3 words
-    "The red fire truck here.", // 5 words
-    "I meet the firefighters.", // 4 words
-    "The firefighters help all people.", // 5 words
-    "Help people.", // 2 words
-    "Firefighters are brave." // 3 words
+    "{userName} sees firefighters.", 
+    "The {favoriteColor} fire truck.", 
+    "{userName} meets firefighters.", 
+    "{userName} eats {favoriteFood}.", 
+    "Help people.", 
+    "{userName} loves firefighters."
   ],
   
   // Template 63: Police Officer
   [
-    "I meet the police.", // 4 words
-    "The police help keep safe.", // 5 words
-    "I wave to police.", // 4 words
-    "The police officer is nice.", // 5 words
-    "Stay safe.", // 2 words
-    "Police are nice." // 3 words
+    "{userName} meets police.", 
+    "The police help stay safe.", 
+    "{userName} waves to police.", 
+    "{userName} does {hobbies}.", 
+    "Stay safe.", 
+    "{userName} loves police."
   ],
   
   // Template 64: Post Office
   [
-    "I mail letters.", // 3 words
-    "Go to the post office.", // 5 words
-    "I send a letter.", // 4 words
-    "The mail goes far away.", // 5 words
-    "Send mail.", // 2 words
-    "Mail is fun." // 3 words
+    "{userName} mails letters.", 
+    "Go to post office.", 
+    "{userName} sends letter.", 
+    "The {favoriteColor} mail goes far.", 
+    "Send mail.", 
+    "{userName} loves mail."
   ],
   
   // Template 65: Library
   [
-    "I visit the library.", // 4 words
-    "Get books to read today.", // 5 words
-    "I find good books.", // 4 words
-    "The library has many books.", // 5 words
-    "Read lots.", // 2 words
-    "I love libraries." // 3 words
+    "{userName} visits library.", 
+    "Get books to read.", 
+    "{userName} finds good books.", 
+    "{userName} eats {favoriteFood}.", 
+    "Read lots.", 
+    "{userName} loves libraries."
   ],
   
   // Template 66: Bank Visit
   [
-    "I go to bank.", // 4 words
-    "See where money is kept.", // 5 words
-    "I learn about money.", // 4 words
-    "The bank keeps all money.", // 5 words
-    "Save money.", // 2 words
-    "Banks are big." // 3 words
+    "{userName} goes to bank.", 
+    "See where money lives.", 
+    "{userName} learns about money.", 
+    "The {favoriteColor} bank is big.", 
+    "Save money.", 
+    "{userName} loves banks."
   ],
   
   // Template 67: Barber Shop
   [
-    "I get a haircut.", // 4 words
-    "Go to get hair cut.", // 5 words
-    "I sit very still.", // 4 words
-    "The barber cuts my hair.", // 5 words
-    "Look good.", // 2 words
-    "I look good." // 3 words
+    "{userName} gets haircut.", 
+    "Go get hair cut.", 
+    "{userName} sits very still.", 
+    "{userName} does {hobbies}.", 
+    "Look good.", 
+    "{userName} looks good."
   ],
   
   // Template 68: Restaurant
   [
-    "We eat out.", // 3 words
-    "Go to eat at restaurant.", // 5 words
-    "I order good food.", // 4 words
-    "The restaurant has good food.", // 5 words
-    "Order food.", // 2 words
-    "Eating out is fun." // 4 words
+    "{userName} eats out.", 
+    "Go eat at restaurant.", 
+    "{userName} orders {favoriteFood}.", 
+    "The restaurant has good food.", 
+    "Order food.", 
+    "{userName} loves eating out."
   ],
   
   // Template 69: Park Walk
   [
-    "I walk in park.", // 4 words
-    "See all the pretty flowers.", // 5 words
-    "I walk with {friend}.", // 4 words
-    "The park is so pretty.", // 5 words
-    "Walk more.", // 2 words
-    "Parks are pretty." // 3 words
+    "{userName} walks in park.", 
+    "See pretty flowers.", 
+    "{userName} walks with friend.", 
+    "The {favoriteColor} park is pretty.", 
+    "Walk more.", 
+    "{userName} loves parks."
   ],
   
   // Template 70: Grocery Store
   [
-    "We buy food.", // 3 words
-    "Get {favoriteFood} from store.", // 4 words
-    "I help pick food.", // 4 words
-    "The store has good food.", // 5 words
-    "Fill cart.", // 2 words
-    "Food shopping is fun." // 4 words
+    "{userName} buys food.", 
+    "Get {favoriteFood} from store.", 
+    "{userName} helps pick food.", 
+    "{userName} does {hobbies}.", 
+    "Fill cart.", 
+    "{userName} loves food shopping."
   ],
   
-  // Transportation Templates (8)
+  // Transportation Templates (71-78)
   
   // Template 71: Car Ride
   [
-    "I ride in car.", // 4 words
-    "Go fast in the car.", // 5 words
-    "I sit in the car.", // 5 words
-    "The car takes us places.", // 5 words
-    "Go fast.", // 2 words
-    "I love cars." // 3 words
+    "{userName} rides in car.", 
+    "Go fast in car.", 
+    "{userName} sits in car.", 
+    "The {favoriteColor} car is fast.", 
+    "Go fast.", 
+    "{userName} loves cars."
   ],
   
   // Template 72: Bus Trip
   [
-    "I ride the bus.", // 4 words
-    "The big bus comes now.", // 5 words
-    "I get on the bus.", // 5 words
-    "The bus takes us there.", // 5 words
-    "Get on.", // 2 words
-    "Buses are big." // 3 words
+    "{userName} rides bus.", 
+    "The big bus comes.", 
+    "{userName} gets on bus.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Get on.", 
+    "{userName} loves buses."
   ],
   
   // Template 73: Train Ride
   [
-    "I ride the train.", // 4 words
-    "The long train goes fast.", // 5 words
-    "I sit on the train.", // 5 words
-    "The train goes far away.", // 5 words
-    "Go far.", // 2 words
-    "Trains are long." // 3 words
+    "{userName} rides train.", 
+    "The long train goes.", 
+    "{userName} sits on train.", 
+    "{userName} does {hobbies}.", 
+    "Go far.", 
+    "{userName} loves trains."
   ],
   
   // Template 74: Walking
   [
-    "I walk there.", // 3 words
-    "Use my feet to go.", // 5 words
-    "I walk to the park.", // 5 words
-    "Walking gets me there today.", // 5 words
-    "Walk fast.", // 2 words
-    "I love walking." // 3 words
+    "{userName} walks there.", 
+    "Use feet to go.", 
+    "{userName} walks to park.", 
+    "The {favoriteColor} shoes are good.", 
+    "Walk fast.", 
+    "{userName} loves walking."
   ],
   
   // Template 75: Airplane
   [
-    "I fly in airplane.", // 4 words
-    "The big plane goes high.", // 5 words
-    "I fly in the sky.", // 5 words
-    "The airplane goes way up.", // 5 words
-    "Up high.", // 2 words
-    "Flying is fun." // 3 words
+    "{userName} flies in airplane.", 
+    "The big plane goes.", 
+    "{userName} flies in sky.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Up high.", 
+    "{userName} loves flying."
   ],
   
   // Template 76: Boat Ride
   [
-    "I ride the boat.", // 4 words
-    "The boat goes on water.", // 5 words
-    "I sail on the water.", // 5 words
-    "The boat moves so nice.", // 5 words
-    "Sail away.", // 2 words
-    "Boats are fun." // 3 words
+    "{userName} rides boat.", 
+    "The boat goes on water.", 
+    "{userName} sails on water.", 
+    "The {favoriteColor} boat is nice.", 
+    "Sail away.", 
+    "{userName} loves boats."
   ],
   
   // Template 77: Bicycle
   [
-    "I ride a bicycle.", // 4 words
-    "Pedal fast to go places.", // 5 words
-    "I ride my red bicycle.", // 5 words
-    "The bicycle takes me there.", // 5 words
-    "Pedal fast.", // 2 words
-    "I love bikes." // 3 words
+    "{userName} rides bicycle.", 
+    "Pedal fast to go.", 
+    "{userName} rides bicycle.", 
+    "{userName} does {hobbies}.", 
+    "Pedal fast.", 
+    "{userName} loves bikes."
   ],
   
   // Template 78: Scooter
   [
-    "I ride a scooter.", // 4 words
-    "Push with foot to go.", // 5 words
-    "I ride the fast scooter.", // 5 words
-    "The scooter goes so fast.", // 5 words
-    "Push fast.", // 2 words
-    "Scooters are cool." // 3 words
+    "{userName} rides scooter.", 
+    "Push with foot.", 
+    "{userName} rides fast scooter.", 
+    "The {favoriteColor} scooter is fast.", 
+    "Push fast.", 
+    "{userName} loves scooters."
   ],
   
-  // Special Occasions Templates (12)
+  // Special Occasions Templates (79-90)
   
   // Template 79: Birthday Party
   [
-    "It's my birthday.", // 3 words
-    "I am one year older.", // 5 words
-    "The cake is so good.", // 5 words
-    "All my friends come today.", // 5 words
-    "Make a wish.", // 3 words
-    "I am happy." // 3 words
+    "It's {userName}'s birthday.", 
+    "{userName} is older.", 
+    "The cake has {favoriteFood}.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Make wish.", 
+    "{userName} is happy."
   ],
   
   // Template 80: Holiday Fun
   [
-    "It's holiday time.", // 3 words
-    "The family comes over.", // 4 words
-    "I help make good food.", // 5 words
-    "The holiday is so fun.", // 5 words
-    "Have fun.", // 2 words
-    "I love holidays." // 3 words
+    "It's holiday time.", 
+    "The family comes over.", 
+    "{userName} helps make {favoriteFood}.", 
+    "{userName} does {hobbies}.", 
+    "Have fun.", 
+    "{userName} loves holidays."
   ],
   
   // Template 81: Gift Giving
   [
-    "I give gifts.", // 3 words
-    "I have a gift for {friend}.", // 6 words
-    "The gift makes {friend} happy.", // 5 words
-    "Giving gifts makes me happy.", // 5 words
-    "Give more.", // 2 words
-    "I love giving." // 3 words
+    "{userName} gives gifts.", 
+    "{userName} has gift.", 
+    "The gift makes friend happy.", 
+    "{userName} likes {favoriteAnimal}s.", 
+    "Give more.", 
+    "{userName} loves giving."
   ],
   
   // Template 82: New Year
   [
-    "The new year is here.", // 5 words
-    "The old year is done.", // 5 words
-    "I try new things now.", // 5 words
-    "The new year is good.", // 5 words
-    "Start new.", // 2 words
-    "I am excited." // 3 words
+    "The new year is here.", 
+    "The old year is done.", 
+    "{userName} tries new things.", 
+    "{userName} eats {favoriteFood}.", 
+    "Start new.", 
+    "{userName} is excited."
   ],
   
   // Template 83: Valentine's Day
   [
-    "It's Valentine's Day.", // 3 words
-    "I love my family today.", // 5 words
-    "The day is about love.", // 5 words
-    "Love makes all people happy.", // 5 words
-    "Show love.", // 2 words
-    "Love is good." // 3 words
+    "It's Valentine's Day.", 
+    "{userName} loves family.", 
+    "The day is about love.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Show love.", 
+    "{userName} feels love."
   ],
   
   // Template 84: Halloween Fun
   [
-    "It's Halloween time.", // 3 words
-    "Put on a fun costume.", // 5 words
-    "I dress up for fun.", // 5 words
-    "The costume looks so good.", // 5 words
-    "Look fun.", // 2 words
-    "I love Halloween." // 3 words
+    "It's Halloween time.", 
+    "Put on fun costume.", 
+    "{userName} dresses up.", 
+    "{userName} does {hobbies}.", 
+    "Look fun.", 
+    "{userName} loves Halloween."
   ],
   
   // Template 85: Thanksgiving
   [
-    "I give thanks.", // 3 words
-    "I am happy for family.", // 5 words
-    "The family eats together today.", // 5 words
-    "Thanksgiving is about being happy.", // 5 words
-    "Feel happy.", // 2 words
-    "I am thankful." // 3 words
+    "{userName} gives thanks.", 
+    "{userName} is happy.", 
+    "The family eats {favoriteFood}.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Feel happy.", 
+    "{userName} is thankful."
   ],
   
   // Template 86: First Day
   [
-    "It's my first day.", // 4 words
-    "Today is my first day.", // 5 words
-    "I try to do well.", // 5 words
-    "The first day is good.", // 5 words
-    "Do well.", // 2 words
-    "I feel good." // 3 words
+    "It's {userName}'s first day.", 
+    "Today is first day.", 
+    "{userName} tries to do well.", 
+    "{userName} does {hobbies}.", 
+    "Do well.", 
+    "{userName} feels good."
   ],
   
   // Template 87: Graduation
   [
-    "My graduation day.", // 3 words
-    "I did well in school.", // 5 words
-    "The graduation makes me happy.", // 5 words
-    "All the family is there.", // 5 words
-    "Feel proud.", // 2 words
-    "I am proud." // 3 words
+    "{userName}'s graduation day.", 
+    "{userName} did well.", 
+    "The graduation makes {userName} happy.", 
+    "{userName} eats {favoriteFood}.", 
+    "Feel proud.", 
+    "{userName} is proud."
   ],
   
   // Template 88: Summer Fun
   [
-    "It's summer time.", // 3 words
-    "The sun is out today.", // 5 words
-    "I play outside all day.", // 5 words
-    "Summer time is good.", // 4 words
-    "Play outside.", // 2 words
-    "I love summer." // 3 words
+    "It's summer time.", 
+    "The sun is out.", 
+    "{userName} plays outside.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Play outside.", 
+    "{userName} loves summer."
   ],
   
   // Template 89: Winter Fun
   [
-    "It's winter time.", // 3 words
-    "The snow is on ground.", // 5 words
-    "I play in the snow.", // 5 words
-    "Winter time is good.", // 4 words
-    "Play in snow.", // 3 words
-    "I love winter." // 3 words
+    "It's winter time.", 
+    "The snow is here.", 
+    "{userName} plays in snow.", 
+    "{userName} does {hobbies}.", 
+    "Play in snow.", 
+    "{userName} loves winter."
   ],
   
   // Template 90: Spring Time
   [
-    "It's spring time.", // 3 words
-    "The flowers come out now.", // 5 words
-    "I see all the flowers.", // 5 words
-    "Spring time brings flowers.", // 4 words
-    "See flowers.", // 2 words
-    "Flowers are pretty." // 3 words
+    "It's spring time.", 
+    "The flowers come out.", 
+    "{userName} sees flowers.", 
+    "{userName} likes {favoriteAnimal}s.", 
+    "See flowers.", 
+    "{userName} loves flowers."
   ],
   
-  // Nature & Animals Templates (10)
+  // Nature & Animals Templates (91-100)
   
   // Template 91: Pet Care
   [
-    "I feed my pet.", // 4 words
-    "My {favoriteAnimal} needs good food.", // 5 words
-    "I give my pet water.", // 5 words
-    "The pet is happy today.", // 5 words
-    "Pet is happy.", // 3 words
-    "I love pets." // 3 words
+    "{userName} feeds pet.", 
+    "The {favoriteAnimal} needs food.", 
+    "{userName} gives pet water.", 
+    "{userName} does {hobbies}.", 
+    "Pet is happy.", 
+    "{userName} loves pets."
   ],
   
   // Template 92: Garden Time
   [
-    "I plant flowers.", // 3 words
-    "Put seeds in the dirt.", // 5 words
-    "I water the pretty flowers.", // 5 words
-    "The flowers grow so big.", // 5 words
-    "Grow big.", // 2 words
-    "I love gardens." // 3 words
+    "{userName} plants flowers.", 
+    "Put seeds in dirt.", 
+    "{userName} waters flowers.", 
+    "The {favoriteColor} flowers grow.", 
+    "Grow big.", 
+    "{userName} loves gardens."
   ],
   
   // Template 93: Bird Watching
   [
-    "I watch birds.", // 3 words
-    "The birds fly way up.", // 5 words
-    "I look for pretty birds.", // 5 words
-    "The birds sing good songs.", // 5 words
-    "Hear songs.", // 2 words
-    "Birds are pretty." // 3 words
+    "{userName} watches birds.", 
+    "The {favoriteAnimal} flies up.", 
+    "{userName} looks for birds.", 
+    "{userName} does {hobbies}.", 
+    "Hear songs.", 
+    "{userName} loves birds."
   ],
   
   // Template 94: Nature Walk
   [
-    "I walk outside.", // 3 words
-    "See all the pretty trees.", // 5 words
-    "I look at all nature.", // 5 words
-    "The walk shows me trees.", // 5 words
-    "Look around.", // 2 words
-    "Nature is pretty." // 3 words
+    "{userName} walks outside.", 
+    "See pretty trees.", 
+    "{userName} looks at nature.", 
+    "The {favoriteColor} trees are tall.", 
+    "Look around.", 
+    "{userName} loves nature."
   ],
   
   // Template 95: Rain Day
   [
-    "The rain falls.", // 3 words
-    "The water comes from the sky.", // 6 words
-    "I watch the rain fall.", // 5 words
-    "The rain makes plants grow.", // 5 words
-    "Watch rain.", // 2 words
-    "I like rain." // 3 words
+    "The rain falls.", 
+    "Water comes from sky.", 
+    "{userName} watches rain.", 
+    "{userName} sees a {favoriteAnimal}.", 
+    "Watch rain.", 
+    "{userName} likes rain."
   ],
   
   // Template 96: Sunny Day
   [
-    "The sun shines.", // 3 words
-    "The sun is up high.", // 5 words
-    "I play in the sun.", // 5 words
-    "The sun makes me warm.", // 5 words
-    "Feel warm.", // 2 words
-    "I love sunshine." // 3 words
+    "The sun shines.", 
+    "The sun is up.", 
+    "{userName} plays in sun.", 
+    "The {favoriteColor} sun is warm.", 
+    "Feel warm.", 
+    "{userName} loves sunshine."
   ],
   
   // Template 97: Animal Friends
   [
-    "I see animals.", // 3 words
-    "The {favoriteAnimal} runs so fast.", // 5 words
-    "I watch all the animals.", // 5 words
-    "The animals play all day.", // 5 words
-    "Animals play.", // 2 words
-    "Animals are fun." // 3 words
+    "{userName} sees animals.", 
+    "The {favoriteAnimal} runs fast.", 
+    "{userName} watches animals.", 
+    "{userName} does {hobbies}.", 
+    "Animals play.", 
+    "{userName} loves animals."
   ],
   
   // Template 98: Beach Day
   [
-    "We go to beach.", // 4 words
-    "The sand is warm today.", // 5 words
-    "I play in the sand.", // 5 words
-    "The beach has warm sand.", // 5 words
-    "Dig sand.", // 2 words
-    "Beaches are fun." // 3 words
+    "{userName} goes to beach.", 
+    "The sand is warm.", 
+    "{userName} plays in sand.", 
+    "The {favoriteColor} sand is fun.", 
+    "Dig sand.", 
+    "{userName} loves beaches."
   ],
   
   // Template 99: Forest Walk
   [
-    "I walk in forest.", // 4 words
-    "The tall trees grow here.", // 5 words
-    "I see all the trees.", // 5 words
-    "So many trees here.", // 4 words
-    "Big trees.", // 2 words
-    "Trees are pretty." // 3 words
+    "{userName} walks in forest.", 
+    "The tall trees grow.", 
+    "{userName} sees trees.", 
+    "{userName} likes {favoriteAnimal}s.", 
+    "Big trees.", 
+    "{userName} loves trees."
   ],
   
   // Template 100: Star Night
   [
-    "I see stars.", // 3 words
-    "The stars shine way up.", // 5 words
-    "I look up at stars.", // 5 words
-    "The stars shine all night.", // 5 words
-    "Look up.", // 2 words
-    "Stars are pretty." // 3 words
+    "{userName} sees stars.", 
+    "The stars shine up.", 
+    "{userName} looks at stars.", 
+    "{userName} does {hobbies}.", 
+    "Look up.", 
+    "{userName} loves stars."
   ]
 ];
 
