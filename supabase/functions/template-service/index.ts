@@ -54,8 +54,12 @@ function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount:
     };
     processedPage = resolveAllPlaceholders(processedPage, microContext);
     
-    // Apply sophisticated grammar validation
-    processedPage = validateAndEnhanceGrammar(processedPage, "they");
+    // Apply sophisticated grammar validation with crash protection
+    const grammarResult = safeValidateAndEnhanceGrammar(processedPage, "they");
+    processedPage = grammarResult.result;
+    if (!grammarResult.success) {
+      console.warn(`⚠️ Grammar enhancement failed for template page: ${grammarResult.error}`);
+    }
     
     pages.push(processedPage);
   }

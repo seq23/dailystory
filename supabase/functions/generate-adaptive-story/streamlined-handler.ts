@@ -178,8 +178,12 @@ Generate a corrected version that addresses these issues while keeping the story
     
     const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
     
-    // Step 2: Apply grammar enhancement to entire story ONCE
-    const grammarEnhanced = validateAndEnhanceGrammar(storyText, 'they');
+    // Step 2: Apply grammar enhancement to entire story ONCE with crash protection
+    const grammarResult = safeValidateAndEnhanceGrammar(storyText, 'they');
+    const grammarEnhanced = grammarResult.result;
+    if (!grammarResult.success) {
+      console.warn(`⚠️ Grammar enhancement failed for streamlined story: ${grammarResult.error}`);
+    }
     
     // Step 3: Apply placeholder resolution to entire story ONCE  
     const placeholderResolved = resolveAllPlaceholders(grammarEnhanced, { userInfo });

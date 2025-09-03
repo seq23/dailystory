@@ -5,15 +5,45 @@
 
 // Import sophisticated placeholder resolver and grammar validation from shared services
 import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.ts';
-import { validateAndEnhanceGrammar } from './grammarValidator.ts';
+import { safeValidateAndEnhanceGrammar } from './grammarValidator.ts';
 
-// Types matching the frontend
-interface MicroVariants {
-  text: string;
-  alternatives: string[];
-  optionalDetails: string[];
+/**
+ * Template Converter for Story Templates
+ * Converts StoryTemplate objects to string[] arrays with full placeholder resolution
+ */
+
+// Import sophisticated placeholder resolver and grammar validation from shared services
+
+// Define the structure for weather and setting variants
+interface Variants {
+  weatherVariants: string[];
+  settingVariants: string[];
 }
 
+// Define the structure for swappable elements
+interface SwappableElements {
+  [key: string]: string[];
+}
+
+// Define the structure for reusable elements
+interface Reuse {
+  swappableElements: SwappableElements;
+  weatherVariants: string[];
+  settingVariants: string[];
+  randomSeed?: number;
+}
+
+// Define the structure for story templates
+interface StoryTemplate {
+  title: string;
+  theme: string;
+  level: string;
+  scenes: StoryScene[];
+  endings: AttachableEnding[];
+  reuse: Reuse;
+}
+
+// Define the structure for story scenes
 interface StoryScene {
   text: string;
   pause: boolean;
@@ -21,24 +51,18 @@ interface StoryScene {
   microVariants: MicroVariants;
 }
 
+// Define the structure for attachable endings
 interface AttachableEnding {
-  type: 'cozy' | 'silly' | 'triumphant' | 'reflective';
+  type: string;
   text: string;
   microVariants: string[];
 }
 
-interface StoryTemplate {
-  title: string;
-  theme: string;
-  level: string;
-  scenes: StoryScene[];
-  endings: AttachableEnding[];
-  reuse: {
-    swappableElements: Record<string, string[]>;
-    weatherVariants: string[];
-    settingVariants: string[];
-    randomSeed?: number;
-  };
+// Define the structure for micro variants
+interface MicroVariants {
+  text: string;
+  alternatives: string[];
+  optionalDetails: string[];
 }
 
 // Simple seeded random generator (Linear Congruential Generator)
@@ -101,7 +125,6 @@ function applyRandomSeedSelection(template: StoryTemplate, userInfo: UserInfo): 
   return seedData;
 }
 
-
 // Process scene with microVariants and sophisticated placeholder resolution
 function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing'): string {
   // TESTING MODE: Show organized console output and always use main text
@@ -109,8 +132,8 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
     console.log(`\n🔍 SCENE ANALYSIS:`);
     console.log(`📝 Full Scene Text (${scene.text.split(' ').length} words): ${scene.text.substring(0, 100)}...`);
     console.log(`📝 Summary Text (${scene.microVariants.text.split(' ').length} words): ${scene.microVariants.text.substring(0, 100)}...`);
-    console.log(`🔄 Alternatives (${scene.microVariants.alternatives.length}):`, scene.microVariants.alternatives.map(alt => `"${alt.substring(0, 50)}..." (${alt.split(' ').length} words)`));
-    console.log(`📎 Optional Details (${scene.microVariants.optionalDetails.length}):`, scene.microVariants.optionalDetails.map(detail => `"${detail.substring(0, 40)}..."`));
+    console.log(`🔄 Alternatives (${scene.microVariants.alternatives.length}):`, scene.microVariants.alternatives.map(alt => `\"${alt.substring(0, 50)}...\" (${alt.split(' ').length} words)`));
+    console.log(`📎 Optional Details (${scene.microVariants.optionalDetails.length}):`, scene.microVariants.optionalDetails.map(detail => `\"${detail.substring(0, 40)}...\"`));
   }
   
   // REAL USER MODE: Always use full scene content (not short summaries)
@@ -124,7 +147,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
                    template.level === 'medium';
   
   // Log level detection for debugging
-  console.log(`🎯 LEVEL DETECTION: template.level="${template.level}" → isHardOrExpert=${isHardOrExpert}, isMedium=${isMedium}`);
+  console.log(`🎯 LEVEL DETECTION: template.level=\"${template.level}\" → isHardOrExpert=${isHardOrExpert}, isMedium=${isMedium}`);
   
   // AGGRESSIVE content selection for Hard/Expert levels - ALWAYS add content
   let shouldAddDetail = false;
@@ -201,7 +224,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
     targetWords = 30; // Beginner/easy level target: 30 words per page
   }
   
-  console.log(`📊 WORD COUNT TARGET: Level "${template.level}" → Target: ${targetWords} words, Current: ${finalWordCount} words`);
+  console.log(`📊 WORD COUNT TARGET: Level \"${template.level}\" → Target: ${targetWords} words, Current: ${finalWordCount} words`);
   
   // SMARTER WORD COUNT ENFORCEMENT: Use alternatives as replacements, not additions
   const newFinalWordCount = text.split(' ').length;
@@ -268,7 +291,7 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // EMERGENCY FALLBACK: Ensure never empty
   if (!text || text.trim().length === 0) {
     console.log('🚨 EMERGENCY: Empty scene text, creating fallback');
-    text = `This is a story scene from "${template?.title || 'a story'}".`;
+    text = `This is a story scene from \"${template?.title || 'a story'}\".`;
   }
   
   return text;
@@ -320,12 +343,12 @@ export function convertStoryTemplateToStringArray(
   mode: string = 'testing'
 ): string[] | { pages: string[], testingData?: any } {
   if (mode === 'testing') {
-    console.log(`🔄 Converting template: "${template.title}" for ${pageCount} pages (${mode} mode)`);
+    console.log(`🔄 Converting template: \"${template.title}\" for ${pageCount} pages (${mode} mode)`);
   }
   
   // TESTING MODE: Show complete template structure
   if (mode === 'testing') {
-    console.log(`\n🎭 TEMPLATE ANALYSIS: "${template.title}"`);
+    console.log(`\n🎭 TEMPLATE ANALYSIS: \"${template.title}\"`);
     console.log(`📚 Level: ${template.level} | Theme: ${template.theme}`);
     console.log(`🎬 Scenes: ${template.scenes.length} | 🎯 Endings: ${template.endings.length}`);
     console.log(`🔄 Reusable Elements:`, Object.keys(template.reuse.swappableElements || {}));
@@ -375,8 +398,8 @@ export function convertStoryTemplateToStringArray(
   if (mode === 'testing') {
     console.log(`\n🎬 ENDINGS ANALYSIS:`);
     template.endings.forEach((ending, i) => {
-      console.log(`🎯 Ending ${i + 1} (${ending.type}): "${ending.text.substring(0, 100)}..." (${ending.text.split(' ').length} words)`);
-      console.log(`🔄 Micro Variants (${ending.microVariants.length}):`, ending.microVariants.map(variant => `"${variant.substring(0, 50)}..." (${variant.split(' ').length} words)`));
+      console.log(`🎯 Ending ${i + 1} (${ending.type}): \"${ending.text.substring(0, 100)}...\" (${ending.text.split(' ').length} words)`);
+      console.log(`🔄 Micro Variants (${ending.microVariants.length}):`, ending.microVariants.map(variant => `\"${variant.substring(0, 50)}...\" (${variant.split(' ').length} words)`));
     });
   }
   
@@ -450,12 +473,13 @@ export function getNextTemplatePage(
     template.scenes[sceneIndex], 
     userInfo, 
     template, 
-    cycleNumber
+    cycleNumber, 
+    'real-user'
   );
 }
 
 /**
- * Process scene with cycle variation for sustainability (Phase 3 & 4)
+ * Enhanced scene processing with cycle variation for never-ending stories (Phase 4)
  */
 function processSceneWithCycleVariation(
   scene: StoryScene, 
@@ -464,46 +488,31 @@ function processSceneWithCycleVariation(
   cycleNumber: number = 0,
   mode: string = 'testing'
 ): string {
-  // Always use full scene content for proper user experience (not short summaries) 
-  let text = scene.text;
+  // Start with base scene processing
+  let text = processScene(scene, userInfo, template, mode);
   
-  // In real-user mode, add variation with cycle awareness
-  if (mode === 'real-user') {
-    const variationBoost = Math.min(cycleNumber * 0.15, 0.6); // Up to 60% boost
-    const shouldAddDetail = Math.random() < (0.4 + variationBoost);
-  
-    // Enhanced detail addition with cycle awareness (real-user mode only)
-    if (shouldAddDetail && scene.microVariants.optionalDetails.length > 0) {
-      // Use cycle number to ensure different details over time
-      const detailIndex = (cycleNumber % scene.microVariants.optionalDetails.length);
-      const detail = scene.microVariants.optionalDetails[detailIndex];
-      
-      // Add as separate sentence to avoid concatenation issues
-      text = text.trim().endsWith('.') 
-        ? `${text} ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`
-        : `${text}. ${detail.charAt(0).toUpperCase()}${detail.slice(1)}.`;
+  // Apply cycle-specific enhancements only after cycle 0 (real-user mode evolution)
+  if (cycleNumber > 0 && mode === 'real-user') {
+    // Process swappable elements with cycle awareness
+    const swappedElements = processSwappableElementsWithCycle(template, userInfo, cycleNumber);
+    const seedData = applyRandomSeedSelection(template, userInfo);
+    
+    // Create enhanced MicroContext with cycle-aware variations
+    const microContext: MicroContext = {
+      userInfo: userInfo,
+      pageText: text,
+      seed: { ...seedData, ...swappedElements, cycleNumber }
+    };
+    
+    // Apply sophisticated placeholder resolution
+    text = resolveAllPlaceholders(text, microContext);
+    
+    // Apply sophisticated grammar validation with crash protection
+    const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
+    text = grammarResult.result;
+    if (!grammarResult.success) {
+      console.warn(`⚠️ Grammar enhancement failed for cycle variation: ${grammarResult.error}`);
     }
-  }
-  
-  // Process swappable elements with cycle variation
-  const swappedElements = processSwappableElementsWithCycle(template, userInfo, cycleNumber);
-  const seedData = applyRandomSeedSelection(template, userInfo);
-  
-  // Create enhanced MicroContext with cycle-aware variations
-  const microContext: MicroContext = {
-    userInfo: userInfo,
-    pageText: text,
-    seed: { ...seedData, ...swappedElements, cycleNumber }
-  };
-  
-  // Apply sophisticated placeholder resolution
-  text = resolveAllPlaceholders(text, microContext);
-  
-  // Apply sophisticated grammar validation with crash protection
-  const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
-  text = grammarResult.result;
-  if (!grammarResult.success) {
-    console.warn(`⚠️ Grammar enhancement failed for cycle variation: ${grammarResult.error}`);
   }
   
   return text;
@@ -522,12 +531,9 @@ function processSwappableElementsWithCycle(
   if (template.reuse && template.reuse.swappableElements) {
     for (const [key, options] of Object.entries(template.reuse.swappableElements)) {
       if (options && options.length > 0) {
-        // Cycle-aware selection to avoid immediate repetition
-        const baseIndex = Math.floor(Math.random() * options.length);
-        const cycleOffset = cycleNumber % options.length;
-        const finalIndex = (baseIndex + cycleOffset) % options.length;
-        
-        swappedElements[key] = options[finalIndex];
+        // Cycle-aware selection: prevent immediate repetition
+        const cycleAwareIndex = (cycleNumber % options.length);
+        swappedElements[key] = options[cycleAwareIndex];
       }
     }
   }
