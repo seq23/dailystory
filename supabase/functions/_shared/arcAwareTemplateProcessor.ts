@@ -29,6 +29,11 @@ export async function processArcAwarePage(
   mode: string = 'real-user'
 ): Promise<ArcProcessingResult> {
   try {
+    // Level 0 exclusion - should never reach arc-aware processing
+    if (templateLevel === 'level0') {
+      throw new Error('Level 0 should use legacy processing, not arc-aware system');
+    }
+    
     console.log(`🎪 Processing arc-aware page ${pageIndex} for ${templateLevel}`);
     
     // Get or create session state
@@ -178,6 +183,11 @@ export async function batchProcessArcAwarePages(
   mode: string = 'testing'
 ): Promise<ArcProcessingResult> {
   try {
+    // Level 0 exclusion - should never reach arc-aware processing
+    if (templateLevel === 'level0') {
+      throw new Error('Level 0 should use legacy processing, not arc-aware batch system');
+    }
+    
     console.log(`🎪 Batch processing ${pageCount} pages starting from ${startPage}`);
     
     const allPages: string[] = [];

@@ -5,6 +5,13 @@
  */
 
 export const TEMPLATE_REGISTRY = {
+  level0: {
+    count: 100,
+    type: 'template-array',
+    path: null, // Uses level0.js directly
+    // Note: No B value - Level 0 excluded from arc processing
+    templates: null // Uses getLevel0Template() function
+  },
   level1: {
     count: 5,
     type: 'dynamic',

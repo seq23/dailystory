@@ -122,9 +122,9 @@ serve(async (req) => {
       console.log(`🎯 HARD/EXPERT TARGET: ${targetWords}+ words per page for ${dynamicPageCount} pages`);
     }
 
-    // Difficulty mapping (Level 0 removed - Levels 1-4 & Grades 6-10 only)
+    // Difficulty mapping (Level 0 restored but excluded from arc processing)
     const levelMap: Record<string, string> = {
-      'beginner': 'level1', // Promoted from level0 to level1
+      'beginner': 'level0', // Restored to level0
       'easy': 'level1',
       'medium': 'level2',
       'hard': 'level3',
@@ -191,8 +191,8 @@ serve(async (req) => {
       });
     }
 
-    // Arc-aware processing for never-ending stories
-    if (isNeverEnding && pageIndex !== undefined && sessionId) {
+    // Arc-aware processing for never-ending stories (EXCLUDES Level 0)
+    if (isNeverEnding && pageIndex !== undefined && sessionId && templateLevel !== 'level0') {
       console.log(`🎪 Processing never-ending story: page ${pageIndex}, session ${sessionId}`);
       
       try {
@@ -231,8 +231,8 @@ serve(async (req) => {
       }
     }
     
-    // Batch processing for testing mode with arc awareness
-    if (mode === 'testing' && pageIndex !== undefined && dynamicPageCount > 1) {
+    // Batch processing for testing mode with arc awareness (EXCLUDES Level 0)
+    if (mode === 'testing' && pageIndex !== undefined && dynamicPageCount > 1 && templateLevel !== 'level0') {
       console.log(`🎪 Batch arc processing: ${dynamicPageCount} pages from ${pageIndex}`);
       
       try {

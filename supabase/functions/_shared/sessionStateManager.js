@@ -279,8 +279,13 @@ export class ArcSessionManager {
   
   /**
    * Get or create arc-aware session state
+   * EXCLUDES Level 0 - uses legacy session management
    */
   getOrCreateSession(sessionId, userId, templateLevel = 'level1', userInfo = {}) {
+    // Level 0 exclusion - not arc-based
+    if (templateLevel === 'level0') {
+      throw new Error('Level 0 uses legacy session management, not arc-aware sessions');
+    }
     if (this.sessions.has(sessionId)) {
       return this.sessions.get(sessionId);
     }

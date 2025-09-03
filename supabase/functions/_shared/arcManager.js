@@ -32,8 +32,13 @@ const SWAPPABLE_CATEGORIES = ['secondaryCharacter', 'setting', 'keyObject'];
 
 /**
  * Calculate arc position from absolute page index
+ * EXCLUDES Level 0 - uses legacy processing
  */
 export function calculateArcPosition(pageIndex, templateLevel) {
+  // Level 0 exclusion - not arc-based
+  if (templateLevel === 'level0') {
+    throw new Error('Level 0 does not use arc-based processing');
+  }
   const B = ARC_B_VALUES[templateLevel] || 5;
   const arcNumber = Math.floor(pageIndex / (B + 1));
   const positionInArc = pageIndex % (B + 1);
@@ -52,8 +57,13 @@ export function calculateArcPosition(pageIndex, templateLevel) {
 
 /**
  * Determine if arc transition is needed
+ * EXCLUDES Level 0 - uses legacy processing
  */
 export function needsArcTransition(pageIndex, templateLevel) {
+  // Level 0 exclusion - not arc-based
+  if (templateLevel === 'level0') {
+    return false;
+  }
   const { isEndingPage } = calculateArcPosition(pageIndex, templateLevel);
   return isEndingPage;
 }
