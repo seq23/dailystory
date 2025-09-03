@@ -10,7 +10,7 @@ import {
   type ValidationLevel 
 } from "../_shared/validation-utils.ts";
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
-import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
+import { safeValidateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 

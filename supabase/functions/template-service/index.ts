@@ -9,7 +9,7 @@ import { getTemplate, getTemplateCount, getRawTemplate } from '../_shared/templa
 
 // Import sophisticated placeholder resolution and grammar validation
 import { resolveAllPlaceholders, MicroContext, UserInfo } from '../_shared/placeholderResolver.ts';
-import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
+import { safeValidateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {

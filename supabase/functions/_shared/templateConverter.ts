@@ -258,8 +258,12 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   // Apply sophisticated placeholder resolution
   text = resolveAllPlaceholders(text, microContext);
   
-  // Apply sophisticated grammar validation
-  text = validateAndEnhanceGrammar(text, "they");
+  // Apply sophisticated grammar validation with crash protection
+  const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
+  text = grammarResult.result;
+  if (!grammarResult.success) {
+    console.warn(`⚠️ Grammar enhancement failed for scene: ${grammarResult.error}`);
+  }
   
   // EMERGENCY FALLBACK: Ensure never empty
   if (!text || text.trim().length === 0) {
@@ -293,8 +297,12 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template
   // Apply sophisticated placeholder resolution
   text = resolveAllPlaceholders(text, microContext);
   
-  // Apply sophisticated grammar validation to ending (PHASE 4 enhancement)
-  text = validateAndEnhanceGrammar(text, "they");
+  // Apply sophisticated grammar validation to ending with crash protection
+  const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
+  text = grammarResult.result;
+  if (!grammarResult.success) {
+    console.warn(`⚠️ Grammar enhancement failed for ending: ${grammarResult.error}`);
+  }
   
   return text;
 }
@@ -491,8 +499,12 @@ function processSceneWithCycleVariation(
   // Apply sophisticated placeholder resolution
   text = resolveAllPlaceholders(text, microContext);
   
-  // Apply sophisticated grammar validation
-  text = validateAndEnhanceGrammar(text, "they");
+  // Apply sophisticated grammar validation with crash protection
+  const grammarResult = safeValidateAndEnhanceGrammar(text, "they");
+  text = grammarResult.result;
+  if (!grammarResult.success) {
+    console.warn(`⚠️ Grammar enhancement failed for cycle variation: ${grammarResult.error}`);
+  }
   
   return text;
 }
