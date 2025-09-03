@@ -12,6 +12,7 @@ export type ExpertGradeLevel = 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grad
 
 /**
  * Simple token estimation based on word count and punctuation
+ * TOKEN VALIDATION BYPASSED - This function kept for metrics only
  */
 export function estimateTokenCount(text: string): number {
   if (!text?.trim()) return 0;
@@ -298,7 +299,8 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
 }
 
 /**
- * Validate content length for guest mode (6-page stories) - Dual validation system
+ * Validate content length for guest mode (6-page stories) - CHARACTER VALIDATION ONLY
+ * TOKEN VALIDATION BYPASSED - Character validation is now the primary gatekeeper
  */
 export function validateGuestStoryLength(content: string, level: ValidationLevel): {
   isValid: boolean;
@@ -309,39 +311,54 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
   reason?: string;
   passedBy?: 'tokens' | 'characters' | 'both';
 } {
+  // TOKEN VALIDATION BYPASSED - Keep for metrics but don't use for validation decisions
   const tokenCount = estimateTokenCount(content);
   const characterCount = content.length;
-  const tokenLimits = getTokenLimitsForLevel(level);
   const characterLimits = getCharacterLimitsForLevel(level);
   
-  const maxTokens = tokenLimits.guestStory;
-  const minTokens = Math.floor(maxTokens * validationConfig.validationThresholds.minContentRatio);
-  const minChars = characterLimits.minChars;
-  const maxChars = characterLimits.maxChars;
+  // PHASE OUT: Return high token ceiling for compatibility
+  const maxTokens = 100000; // High ceiling - not used for validation
+  const minChars = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
+  const maxChars = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
+  
+  // Detect special content types and apply even more lenient minimums
+  const isSpecialContent = isTransition(content) || isEnding(content) || isCliffhanger(content);
+  
+  if (isSpecialContent) {
+    // Apply 0.5x multiplier for special content types (even more lenient)
+    const adjustedMinChars = Math.floor(minChars * 0.5);
+    
+    console.log(`🎭 [CONTENT-TYPE] Special content detected:`, {
+      isTransition: isTransition(content),
+      isEnding: isEnding(content), 
+      isCliffhanger: isCliffhanger(content),
+      appliedMultiplier: 0.5,
+      originalMinChars: minChars,
+      adjustedMinChars
+    });
+  }
   
   // Enhanced logging for debugging
-  console.log(`🔍 [VALIDATION-DEBUG] Guest story dual validation for ${level}:`, {
+  console.log(`🔍 [VALIDATION-DEBUG] Live page CHARACTER-ONLY validation for ${level}:`, {
     level,
-    tokenCount,
+    tokenCount: `${tokenCount} (not validated - bypassed)`,
     characterCount,
-    tokenLimits: { minTokens, maxTokens },
+    tokenValidation: 'DISABLED',
     characterLimits: { minChars, maxChars },
-    contentLength: content.length,
-    minContentRatio: validationConfig.validationThresholds.minContentRatio
+    contentLength: content.length
   });
   
-  // Check if content passes either validation method
-  const passesTokenValidation = tokenCount >= minTokens && tokenCount <= maxTokens;
+  // CHARACTER VALIDATION ONLY - Token validation completely bypassed
   const passesCharacterValidation = characterCount >= minChars && characterCount <= maxChars;
   
-  if (!passesTokenValidation && !passesCharacterValidation) {
-    const reason = tokenCount < minTokens ? 
-      `Story too short: ${tokenCount} tokens (min: ${minTokens}) and ${characterCount} chars (min: ${minChars})` :
-      `Story too long: ${tokenCount} tokens (max: ${maxTokens}) and ${characterCount} chars (max: ${maxChars})`;
+  if (!passesCharacterValidation) {
+    const reason = characterCount < minChars ? 
+      `Page too short: ${characterCount} chars (min: ${minChars})` :
+      `Page too long: ${characterCount} chars (max: ${maxChars})`;
     
-    console.log(`❌ [VALIDATION-DEBUG] Story failed both validations for ${level}:`, {
-      tokenCount, minTokens, maxTokens,
+    console.log(`❌ [VALIDATION-DEBUG] Page failed CHARACTER validation for ${level}:`, {
       characterCount, minChars, maxChars,
+      tokenValidation: 'BYPASSED',
       reason
     });
     
@@ -355,20 +372,10 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
     };
   }
   
-  // Determine which validation(s) passed
-  let passedBy: 'tokens' | 'characters' | 'both';
-  if (passesTokenValidation && passesCharacterValidation) {
-    passedBy = 'both';
-  } else if (passesTokenValidation) {
-    passedBy = 'tokens';
-  } else {
-    passedBy = 'characters';
-  }
-  
-  console.log(`✅ [VALIDATION-DEBUG] Story validation passed for ${level} (passed by: ${passedBy}):`, {
-    tokenCount, minTokens, maxTokens,
+  console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (character-only):`, {
+    tokenCount: `${tokenCount} (not validated)`,
     characterCount, minChars, maxChars,
-    tokenUtilization: Math.round((tokenCount / maxTokens) * 100),
+    tokenValidation: 'BYPASSED',
     charUtilization: Math.round((characterCount / maxChars) * 100)
   });
   
@@ -378,12 +385,13 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
     characterCount,
     maxAllowedTokens: maxTokens,
     maxAllowedChars: maxChars,
-    passedBy
+    passedBy: 'characters'
   };
 }
 
 /**
- * Validate content length for live mode (single page) - Dual validation system
+ * Validate content length for live mode (page-by-page) - CHARACTER VALIDATION ONLY
+ * TOKEN VALIDATION BYPASSED - Character validation is now the primary gatekeeper
  */
 export function validateLivePageLength(content: string, level: ValidationLevel): {
   isValid: boolean;
@@ -394,14 +402,13 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   reason?: string;
   passedBy?: 'tokens' | 'characters' | 'both';
 } {
+  // TOKEN VALIDATION BYPASSED - Keep for metrics but don't use for validation decisions
   const tokenCount = estimateTokenCount(content);
   const characterCount = content.length;
-  const tokenLimits = getTokenLimitsForLevel(level);
   const characterLimits = getCharacterLimitsForLevel(level);
   
-  const maxTokens = tokenLimits.perPage;
-  const minTokens = Math.floor(maxTokens * validationConfig.validationThresholds.minContentRatio);
-  const maxTokensWithTolerance = maxTokens * validationConfig.validationThresholds.splitTolerance;
+  // PHASE OUT: Return high token ceiling for compatibility
+  const maxTokens = 100000; // High ceiling - not used for validation
   
   // For live pages, use direct per-page character limits (no story-level calculations)
   let minCharsPerPage = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
@@ -409,11 +416,9 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   
   // Detect special content types and apply even more lenient minimums
   const isSpecialContent = isTransition(content) || isEnding(content) || isCliffhanger(content);
-  let adjustedMinTokens = minTokens;
   
   if (isSpecialContent) {
     // Apply 0.5x multiplier for special content types (even more lenient)
-    adjustedMinTokens = Math.floor(minTokens * 0.5);
     minCharsPerPage = Math.floor(minCharsPerPage * 0.5);
     
     console.log(`🎭 [CONTENT-TYPE] Special content detected:`, {
@@ -421,34 +426,32 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
       isEnding: isEnding(content), 
       isCliffhanger: isCliffhanger(content),
       appliedMultiplier: 0.5,
-      originalMinTokens: minTokens,
-      adjustedMinTokens
+      originalMinChars: minCharsPerPage * 2,
+      adjustedMinChars: minCharsPerPage
     });
   }
   
   // Enhanced logging for debugging
-  console.log(`🔍 [VALIDATION-DEBUG] Live page dual validation for ${level}:`, {
+  console.log(`🔍 [VALIDATION-DEBUG] Live page CHARACTER-ONLY validation for ${level}:`, {
     level,
-    tokenCount,
+    tokenCount: `${tokenCount} (not validated - bypassed)`,
     characterCount,
-    tokenLimits: { minTokens, maxTokens, maxTokensWithTolerance },
+    tokenValidation: 'DISABLED',
     characterLimits: { minCharsPerPage, maxCharsPerPage },
-    contentLength: content.length,
-    splitTolerance: validationConfig.validationThresholds.splitTolerance
+    contentLength: content.length
   });
   
-  // Check if content passes either validation method
-  const passesTokenValidation = tokenCount >= adjustedMinTokens && tokenCount <= maxTokensWithTolerance;
+  // CHARACTER VALIDATION ONLY - Token validation completely bypassed
   const passesCharacterValidation = characterCount >= minCharsPerPage && characterCount <= maxCharsPerPage;
   
-  if (!passesTokenValidation && !passesCharacterValidation) {
-    const reason = tokenCount < adjustedMinTokens ? 
-      `Page too short: ${tokenCount} tokens (min: ${adjustedMinTokens}) and ${characterCount} chars (min: ${minCharsPerPage})` :
-      `Page too long: ${tokenCount} tokens (max: ${maxTokensWithTolerance}) and ${characterCount} chars (max: ${maxCharsPerPage})`;
+  if (!passesCharacterValidation) {
+    const reason = characterCount < minCharsPerPage ? 
+      `Page too short: ${characterCount} chars (min: ${minCharsPerPage})` :
+      `Page too long: ${characterCount} chars (max: ${maxCharsPerPage})`;
     
-    console.log(`❌ [VALIDATION-DEBUG] Page failed both validations for ${level}:`, {
-      tokenCount, minTokens: adjustedMinTokens, maxTokensWithTolerance,
+    console.log(`❌ [VALIDATION-DEBUG] Page failed CHARACTER validation for ${level}:`, {
       characterCount, minCharsPerPage, maxCharsPerPage,
+      tokenValidation: 'BYPASSED',
       reason
     });
     
@@ -462,20 +465,10 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     };
   }
   
-  // Determine which validation(s) passed
-  let passedBy: 'tokens' | 'characters' | 'both';
-  if (passesTokenValidation && passesCharacterValidation) {
-    passedBy = 'both';
-  } else if (passesTokenValidation) {
-    passedBy = 'tokens';
-  } else {
-    passedBy = 'characters';
-  }
-  
-  console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (passed by: ${passedBy}):`, {
-    tokenCount, minTokens: adjustedMinTokens, maxTokens,
+  console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (character-only):`, {
+    tokenCount: `${tokenCount} (not validated)`,
     characterCount, minCharsPerPage, maxCharsPerPage,
-    tokenUtilization: Math.round((tokenCount / maxTokens) * 100),
+    tokenValidation: 'BYPASSED',
     charUtilization: Math.round((characterCount / maxCharsPerPage) * 100)
   });
   
@@ -485,7 +478,7 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     characterCount,
     maxAllowedTokens: maxTokens,
     maxAllowedChars: maxCharsPerPage,
-    passedBy
+    passedBy: 'characters'
   };
 }
 

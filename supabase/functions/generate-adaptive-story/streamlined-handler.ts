@@ -332,8 +332,9 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         ]
       };
       
-      // Use correct parameter based on model
-      apiBody[currentModel.paramName] = maxTokens;
+      // TOKEN LIMITS REMOVED - OpenAI uses defaults (much higher than char limits)
+      // Character validation controls content length exclusively
+      // Note: Removed apiBody[currentModel.paramName] = maxTokens
       
       // Add temperature for legacy models that support it
       if (currentModel.supportsTemperature) {
@@ -342,10 +343,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       console.log(`🔍 API Request attempt ${attempt}:`, {
         model: currentModel.model,
-        paramName: currentModel.paramName,
-        tokenLimit: maxTokens,
+        tokenValidation: 'DISABLED',
         supportsTemperature: !!currentModel.supportsTemperature,
-        promptLength: enhancedSystemPrompt.length + finalUserPrompt.length
+        promptLength: enhancedSystemPrompt.length + finalUserPrompt.length,
+        note: 'Token limits removed - OpenAI uses defaults'
       });
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {

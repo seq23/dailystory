@@ -146,14 +146,15 @@ export class UnifiedValidator {
       };
     }
     
+    // TOKEN VALIDATION DISABLED - Using character-only validation
     const validationResult = validateGuestStoryLength(fullContent, config.level);
     
     if (!validationResult.isValid) {
       const reason = validationResult.reason || 'Content validation failed';
       
+      // TOKEN VALIDATION BYPASSED - Only check character-based requirements
       const needsCompleteRegeneration = reason.includes('too short') || 
-                                      reason.includes('insufficient content') ||
-                                      (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.3);
+                                      reason.includes('insufficient content');
       
       if (needsCompleteRegeneration) {
         return {
@@ -166,7 +167,7 @@ export class UnifiedValidator {
             characterCount: validationResult.characterCount
           },
           hints: [
-            `Generate content with at least ${validationResult.maxAllowedTokens * 0.7} tokens`,
+            `Generate content with at least ${validationResult.maxAllowedChars * 0.7} characters`,
             'Include more descriptive details and story development'
           ]
         };
@@ -184,8 +185,8 @@ export class UnifiedValidator {
       }
     }
 
-    // Content exceeds token limits - attempt auto-split
-    if (validationResult.tokenCount > validationResult.maxAllowedTokens) {
+    // TOKEN VALIDATION BYPASSED - Check character limits for auto-split
+    if (validationResult.characterCount > validationResult.maxAllowedChars) {
       const targetPages = getExpectedPagesForService('netflix', config.level) || 12;
       const splitPages = sharedAutoSplitContent(fullContent, config.level, targetPages);
       
