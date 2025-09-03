@@ -368,21 +368,9 @@ serve(async (req) => {
       // Nuclear fallback - never fail completely
       console.log('🚨 NUCLEAR FALLBACK: Using emergency content');
       
-      const emergencyContent = templateLevel.includes('0') || templateLevel === 'beginner' ? [
-        "This is a simple story for you.",
-        "Something interesting happens.",
-        "Then more things happen.",
-        "Everything works out well.",
-        "The story ends happily."
-      ] : [
-        "Once upon a time, there was an adventure.",
-        "The journey began with great curiosity.",
-        "Many challenges appeared along the way.",
-        "With courage, they were all overcome.",
-        "Success and happiness came at the end."
-      ];
-      
-      pages = emergencyContent.slice(0, dynamicPageCount);
+      // Use nuclear system's emergency content (single source of truth)
+      const emergencyPages = getNuclearEmergencyContent(templateLevel);
+      pages = emergencyPages.slice(0, dynamicPageCount);
       console.log('✅ Nuclear fallback content provided');
     }
 

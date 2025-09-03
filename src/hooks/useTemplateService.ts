@@ -31,6 +31,21 @@ export function useTemplateService() {
   const [isMaxRetriesReached, setIsMaxRetriesReached] = useState(false);
   const { toast } = useToast();
 
+  // Show emergency notification for system failures
+  const showEmergencyToast = (userInfo: Partial<UserInfo>) => {
+    const isChildAccount = userInfo?.age && userInfo.age < 13;
+    
+    toast({
+      title: "🚨 Story System Maintenance",
+      description: isChildAccount 
+        ? "Parents: The story system is temporarily down. Please refresh the page or contact support if issues persist."
+        : "Our story generation system is experiencing issues. Please refresh or try again in a few minutes.",
+      variant: "destructive",
+      duration: 8000,
+      className: "bg-red-50 border-red-200 text-red-900",
+    });
+  };
+
   // Show toast when max retries reached
   useEffect(() => {
     if (isMaxRetriesReached) {
@@ -154,6 +169,9 @@ export function useTemplateService() {
       console.error('Template service error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate story';
       setError(errorMessage);
+      
+      // Show emergency notification to parents/users
+      showEmergencyToast(userInfo);
       
       // Increment retry count
       const newRetryCount = retryCount + 1;

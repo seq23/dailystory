@@ -28,39 +28,39 @@ const CIRCUIT_BREAKER_CONFIG = {
 // Nuclear emergency content - guaranteed to work
 const NUCLEAR_EMERGENCY_CONTENT = {
   level0: [
-    "This is a simple story.",
-    "Something happens next.",
-    "Then more things happen.",
-    "Everything works out well.",
-    "The end."
+    "The story is broken.",
+    "We need to fix it.",
+    "Ask a grown-up to help.",
+    "Press the refresh button.",
+    "Stories will come back soon."
   ],
   level1: [
-    "Once there was an adventure.",
-    "The journey began with curiosity.",
-    "Challenges appeared along the way.",
-    "Courage helped overcome them.",
-    "Success came at the end."
+    "Our story machine is taking a rest.",
+    "Sometimes computers need breaks too.",
+    "Ask your grown-up to refresh the page.",
+    "If that does not work, try again later.",
+    "New stories are coming very soon!"
   ],
   level2: [
-    "In a world of possibilities, stories unfold.",
-    "Characters discover their inner strength.",
-    "Through trials and tribulations, they grow.",
-    "Wisdom emerges from experience.",
-    "Hope lights the path forward."
+    "The story system is having some trouble right now.",
+    "This happens sometimes when lots of kids want stories.",
+    "You can try refreshing the page to fix it.",
+    "If it still does not work, wait a few minutes.",
+    "Our team is working hard to bring back your stories!"
   ],
   level3: [
-    "Complex narratives weave through time and space.",
-    "Protagonists face multifaceted challenges requiring strategic thinking.",
-    "Environmental factors influence decision-making processes.",
-    "Character development accelerates through adversity.",
-    "Resolution emerges through collaborative problem-solving."
+    "Our story generation system is experiencing technical difficulties.",
+    "This usually happens when there is high demand from many users.",
+    "Please try refreshing the browser page using Ctrl+R or ⌘+R.",
+    "If the problem continues, our support team can help you.",
+    "We apologize for the inconvenience and expect normal service soon."
   ],
   level4: [
-    "Sophisticated storytelling incorporates psychological depth and narrative complexity.",
-    "Advanced character archetypes navigate intricate moral and ethical dilemmas.",
-    "Multiple plot threads converge through carefully orchestrated dramatic tension.",
-    "Thematic elements explore profound philosophical questions about human nature.",
-    "Culmination delivers both emotional satisfaction and intellectual stimulation."
+    "The AI story generation service is currently experiencing system-wide maintenance issues.",
+    "This may be due to server overload, database connectivity problems, or scheduled maintenance.",
+    "Technical solution: Force refresh the page using Ctrl+Shift+R to clear cached data.",
+    "If issues persist, please report this via our feedback system with your browser details.",
+    "Our engineering team is actively monitoring and working to restore full functionality immediately."
   ]
 };
 
@@ -218,21 +218,27 @@ export async function nuclearLoadTemplate(level: string, templateIndex?: number)
 /**
  * Get Nuclear Emergency Content
  */
-function getNuclearEmergencyContent(level: string): string[] {
+export function getNuclearEmergencyContent(level: string): string[] {
+  console.log('🚨 NUCLEAR EMERGENCY: Serving fallback content for level:', level);
+  
   const normalizedLevel = level.toLowerCase();
   
-  // Map levels to emergency content
+  // Map levels to emergency content with enhanced logging
+  let emergencyContent: string[];
   if (normalizedLevel.includes('0') || normalizedLevel === 'beginner') {
-    return [...NUCLEAR_EMERGENCY_CONTENT.level0];
+    emergencyContent = [...NUCLEAR_EMERGENCY_CONTENT.level0];
   } else if (normalizedLevel.includes('1') || normalizedLevel === 'easy') {
-    return [...NUCLEAR_EMERGENCY_CONTENT.level1];
+    emergencyContent = [...NUCLEAR_EMERGENCY_CONTENT.level1];
   } else if (normalizedLevel.includes('2') || normalizedLevel === 'medium') {
-    return [...NUCLEAR_EMERGENCY_CONTENT.level2];
+    emergencyContent = [...NUCLEAR_EMERGENCY_CONTENT.level2];
   } else if (normalizedLevel.includes('3') || normalizedLevel === 'hard') {
-    return [...NUCLEAR_EMERGENCY_CONTENT.level3];
+    emergencyContent = [...NUCLEAR_EMERGENCY_CONTENT.level3];
   } else {
-    return [...NUCLEAR_EMERGENCY_CONTENT.level4];
+    emergencyContent = [...NUCLEAR_EMERGENCY_CONTENT.level4];
   }
+  
+  console.log('✅ Nuclear emergency content provided:', emergencyContent.length, 'pages');
+  return emergencyContent;
 }
 
 /**
