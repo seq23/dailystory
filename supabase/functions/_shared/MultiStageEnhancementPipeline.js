@@ -2,6 +2,8 @@
 // Reduced from 1,479 lines to systematic service wrappers only
 // All Tier 1 logic moved to orchestrator, BackendTokenManager deleted
 
+import { safeErrorMessage } from './errorPatterns.ts';
+
 export class MultiStageEnhancementPipeline {
   
   // ============= TIER 2: SYSTEMATIC SERVICE WRAPPERS ONLY =============
@@ -66,7 +68,7 @@ export class MultiStageEnhancementPipeline {
         });
       }
     } catch (characterError) {
-      throw new Error(`Tier2.CharacterConsistency failed: ${characterError.message}`);
+      throw new Error(`Tier2.CharacterConsistency failed: ${safeErrorMessage(characterError)}`);
     }
     
     // ============= Step 2: Detect Secondary Characters and Animals =============
@@ -95,7 +97,7 @@ export class MultiStageEnhancementPipeline {
         }
       }
     } catch (detectorError) {
-      throw new Error(`Tier2.SecondaryElementDetector failed: ${detectorError.message}`);
+      throw new Error(`Tier2.SecondaryElementDetector failed: ${safeErrorMessage(detectorError)}`);
     }
     
     // ============= Step 3: Get Visual Details and Objects =============
@@ -113,7 +115,7 @@ export class MultiStageEnhancementPipeline {
         primarySceneComponents.push(`Objects and details: ${visualDetails}`);
       }
     } catch (trackerError) {
-      throw new Error(`Tier2.VisualDetailTracker failed: ${trackerError.message}`);
+      throw new Error(`Tier2.VisualDetailTracker failed: ${safeErrorMessage(trackerError)}`);
     }
     
     // ============= Step 4: Get Story Context and Continuity =============
@@ -131,7 +133,7 @@ export class MultiStageEnhancementPipeline {
         primarySceneComponents.push(`Context: ${contextualAddition}`);
       }
     } catch (contextError) {
-      throw new Error(`Tier2.RealContextCollector failed: ${contextError.message}`);
+      throw new Error(`Tier2.RealContextCollector failed: ${safeErrorMessage(contextError)}`);
     }
     
     // ============= Step 5: Add Style Framework =============
@@ -171,7 +173,7 @@ export class MultiStageEnhancementPipeline {
         }
       }
     } catch (styleError) {
-      throw new Error(`Tier2.StyleFramework failed: ${styleError.message}`);
+      throw new Error(`Tier2.StyleFramework failed: ${safeErrorMessage(styleError)}`);
     }
     
     // ============= Step 6: Enhanced Context Collection with Character Names =============
@@ -186,7 +188,7 @@ export class MultiStageEnhancementPipeline {
         console.log('✅ Added character names for context:', characterNames);
       }
     } catch (contextError) {
-      throw new Error(`Tier2.CharacterNameExtraction failed: ${contextError.message}`);
+      throw new Error(`Tier2.CharacterNameExtraction failed: ${safeErrorMessage(contextError)}`);
     }
     
     // ============= Step 7: Parse Action and Scene Setting =============
@@ -372,7 +374,7 @@ export class MultiStageEnhancementPipeline {
         negativePrompt: this.buildUnifiedNegativePrompt(userInfo, fallbackCultural, {}, pageNumber),
         culturalProfile: {},
         framework: {},
-        metadata: { processingTier: 'tier-1-fallback', error: error.message }
+        metadata: { processingTier: 'tier-1-fallback', error: safeErrorMessage(error) }
       };
     }
   }

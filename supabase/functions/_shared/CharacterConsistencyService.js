@@ -4,6 +4,8 @@
  * Includes all cultural arrays and detection logic from FrontendIntelligence
  */
 
+import { safeErrorMessage } from './errorPatterns.ts';
+
 export class CharacterConsistencyService {
   constructor() {
     console.log('🎭 CharacterConsistencyService initialized with database-backed consistency');
@@ -32,7 +34,7 @@ export class CharacterConsistencyService {
 
     if (error) {
       console.error('❌ Database save error:', error);
-      throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${error.message}`);
+      throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${safeErrorMessage(error)}`);
     }
     
     console.log(`💾 Saved character ${characterKey} to database for session ${sessionId}`);
@@ -60,7 +62,7 @@ export class CharacterConsistencyService {
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is expected sometimes
       console.error('❌ Database fetch error:', error);
-      throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${error.message}`);
+      throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${safeErrorMessage(error)}`);
     }
     
     if (data?.character_data) {
@@ -867,7 +869,7 @@ export class CharacterConsistencyService {
 
     if (error) {
       console.error('❌ Database clear error:', error);
-      throw new Error(`CharacterConsistencyService.clearCharacterData failed: ${error.message}`);
+      throw new Error(`CharacterConsistencyService.clearCharacterData failed: ${safeErrorMessage(error)}`);
     }
     
     console.log(`🎭 Cleared character data for session: ${sessionId}`);
@@ -893,7 +895,7 @@ export class CharacterConsistencyService {
 
     if (error) {
       console.error('❌ Database monitoring error:', error);
-      throw new Error(`CharacterConsistencyService.getActiveCharacterSeeds failed: ${error.message}`);
+      throw new Error(`CharacterConsistencyService.getActiveCharacterSeeds failed: ${safeErrorMessage(error)}`);
     }
 
     const uniqueSessions = [...new Set(data?.map(row => row.session_id) || [])];
@@ -924,7 +926,7 @@ export class CharacterConsistencyService {
 
     if (error) {
       console.error('❌ Database clear all error:', error);
-      throw new Error(`CharacterConsistencyService.clearServerState failed: ${error.message}`);
+      throw new Error(`CharacterConsistencyService.clearServerState failed: ${safeErrorMessage(error)}`);
     }
     
     console.log('🎭 Character consistency service cleared from database');

@@ -12,6 +12,7 @@ import {
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
+import { safeErrorMessage } from '../_shared/errorPatterns.ts';
 
 // Import static caching and error classification
 const { getModelChain, getHairColorMapping, getSystemSettings } = await import('./StaticDataCache.ts');
@@ -223,7 +224,7 @@ Generate a corrected version that addresses these issues while keeping the story
     let userMessage = 'Story generation failed';
     
     if (error instanceof Error) {
-      const errorMessage = error.message.toLowerCase();
+      const errorMessage = safeErrorMessage(error).toLowerCase();
       if (errorMessage.includes('api key') || errorMessage.includes('unauthorized')) {
         errorType = 'api_key_error';
         userMessage = 'AI service authentication failed. Please try again.';
@@ -243,7 +244,7 @@ Generate a corrected version that addresses these issues while keeping the story
       success: false,
       error: userMessage,
       errorType,
-      technicalError: error.message || 'Story generation failed'
+      technicalError: safeErrorMessage(error)
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
