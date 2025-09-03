@@ -94,9 +94,45 @@ export class NetflixStyleStoryService {
         difficulty // Also pass the original difficulty
       });
 
-      if (!result.success || !result.pages || result.pages.length === 0) {
-        console.error('📺 Netflix: 4-tier generation failed:', result.error);
-        return this.generateFallbackStory(userInfo, difficulty, 'unified_system_error');
+      // DIAGNOSTIC LOGGING: Check exact result structure
+      console.log('🔍 Netflix: DETAILED RESULT ANALYSIS:', {
+        resultExists: !!result,
+        resultKeys: result ? Object.keys(result) : 'no result',
+        success: result?.success,
+        hasPages: !!result?.pages,
+        pagesType: typeof result?.pages,
+        pagesIsArray: Array.isArray(result?.pages),
+        pagesLength: result?.pages?.length,
+        pagesContent: result?.pages?.slice(0, 2), // Show first 2 pages for debugging
+        error: result?.error,
+        fullResult: result // Full object for complete diagnosis
+      });
+
+      // Check for different possible response formats
+      if (!result) {
+        console.error('📺 Netflix: No result returned from StoryGenerationService');
+        return this.generateFallbackStory(userInfo, difficulty, 'no_result_returned');
+      }
+
+      if (!result.success) {
+        console.error('📺 Netflix: StoryGenerationService returned success=false:', result.error);
+        return this.generateFallbackStory(userInfo, difficulty, 'generation_failed');
+      }
+
+      // Check for missing or empty pages array
+      if (!result.pages) {
+        console.error('📺 Netflix: Result has no pages property');
+        return this.generateFallbackStory(userInfo, difficulty, 'no_pages_property');
+      }
+
+      if (!Array.isArray(result.pages)) {
+        console.error('📺 Netflix: Pages is not an array:', typeof result.pages);
+        return this.generateFallbackStory(userInfo, difficulty, 'pages_not_array');
+      }
+
+      if (result.pages.length === 0) {
+        console.error('📺 Netflix: Pages array is empty');
+        return this.generateFallbackStory(userInfo, difficulty, 'empty_pages_array');
       }
 
       if (result.pages && Array.isArray(result.pages) && result.pages.length > 0) {
