@@ -308,25 +308,30 @@ export class PremiumVocabularyService {
       },
       'zh': {
         'cat': '/kæt/ → 猫 (māo) - Practice the "a" sound difference',
-        'dog': '/dɔg/ → 狗 (gǒu) - Note the consonant ending',
-        'book': '/bʊk/ → 书 (shū) - Practice the "oo" vs "u" sound'
+        'dog': '/dɔg/ → 狗 (gǒu) - Focus on the "o" vowel sound',
+        'book': '/bʊk/ → 书 (shū) - Practice the short "u" sound'
       },
       'ar': {
-        'cat': '/kæt/ → قطة (qitta) - Focus on the "æ" vowel sound',
-        'dog': '/dɔg/ → كلب (kalb) - Practice final consonant',
-        'book': '/bʊk/ → كتاب (kitāb) - Note the short "oo" sound'
+        'cat': '/kæt/ → قط (qitt) - Practice the short "a" vowel',
+        'dog': '/dɔg/ → كلب (kalb) - Focus on the "o" sound',
+        'book': '/bʊk/ → كتاب (kitāb) - Practice English vowel sounds'
       },
       'hi': {
-        'cat': '/kæt/ → बिल्ली (billi) - Practice the "æ" sound',
-        'dog': '/dɔg/ → कुत्ता (kutta) - Focus on consonant ending',
-        'book': '/bʊk/ → किताब (kitāb) - Note the vowel difference'
+        'cat': '/kæt/ → बिल्ली (billī) - Practice the English "a" sound',
+        'dog': '/dɔg/ → कुत्ता (kuttā) - Focus on the "o" vowel',
+        'book': '/bʊk/ → पुस्तक (pustak) - Practice the "oo" sound'
       },
       'pt': {
-        'cat': '/kæt/ → gato - Practice English "a" vs Portuguese "a"',
-        'dog': '/dɔg/ → cão - Note the different vowel sound',
-        'book': '/bʊk/ → livro - Practice the "oo" sound'
+        'cat': '/kæt/ → Like "gato" but different vowel sound',
+        'dog': '/dɔg/ → Similar to "cão" pronunciation patterns',
+        'book': '/bʊk/ → Compare with "livro" for vowel differences'
       },
       'en': {
+        'cat': '/kæt/ → Standard English pronunciation',
+        'dog': '/dɔg/ → Standard English pronunciation',
+        'book': '/bʊk/ → Standard English pronunciation'
+      },
+      'en-african-american': {
         'cat': '/kæt/ → Standard English pronunciation',
         'dog': '/dɔg/ → Standard English pronunciation',
         'book': '/bʊk/ → Standard English pronunciation'
@@ -382,25 +387,25 @@ export class PremiumVocabularyService {
         'family': 'famille'
       },
       'zh': {
-        'cat': '猫 (māo)',
-        'dog': '狗 (gǒu)',
-        'book': '书 (shū)',
-        'house': '房子 (fángzi)',
-        'family': '家庭 (jiātíng)'
+        'cat': '猫',
+        'dog': '狗',
+        'book': '书',
+        'house': '房子',
+        'family': '家庭'
       },
       'ar': {
-        'cat': 'قطة (qitta)',
-        'dog': 'كلب (kalb)',
-        'book': 'كتاب (kitāb)',
-        'house': 'بيت (bayt)',
-        'family': 'عائلة (ā\'ila)'
+        'cat': 'قط',
+        'dog': 'كلب',
+        'book': 'كتاب',
+        'house': 'بيت',
+        'family': 'عائلة'
       },
       'hi': {
-        'cat': 'बिल्ली (billi)',
-        'dog': 'कुत्ता (kutta)',
-        'book': 'किताब (kitāb)',
-        'house': 'घर (ghar)',
-        'family': 'परिवार (parivār)'
+        'cat': 'बिल्ली',
+        'dog': 'कुत्ता',
+        'book': 'पुस्तक',
+        'house': 'घर',
+        'family': 'परिवार'
       },
       'pt': {
         'cat': 'gato',
@@ -408,6 +413,13 @@ export class PremiumVocabularyService {
         'book': 'livro',
         'house': 'casa',
         'family': 'família'
+      },
+      'en-african-american': {
+        'cat': 'cat',
+        'dog': 'dog',
+        'book': 'book',
+        'house': 'house',
+        'family': 'family'
       }
     };
 
@@ -482,7 +494,8 @@ export class PremiumVocabularyService {
       'ar': ['Practice "p" vs "b" sounds', 'Work on vowel systems', 'Focus on consonant endings'],
       'hi': ['Practice "v" vs "w" sounds', 'Work on "th" sounds', 'Focus on consonant clusters'],
       'pt': ['Practice nasal vowels', 'Work on final consonants', 'Focus on stress patterns'],
-      'en': ['Standard English learning path']
+      'en': ['Standard English learning path'],
+      'en-african-american': ['Standard English learning path']
     };
 
     return adaptations[userInfo.nativeLanguage] || adaptations['en'];
@@ -562,7 +575,8 @@ export class PremiumVocabularyService {
       'pt': ['family', 'animal', 'natural', 'hospital'],
       'ar': [],
       'zh': [],
-      'hi': []
+      'hi': [],
+      'en-african-american': []
     };
     
     return cognates[nativeLanguage]?.includes(word.toLowerCase()) || false;
@@ -577,7 +591,8 @@ export class PremiumVocabularyService {
       'pt': ['embarrassed', 'library'],
       'ar': [],
       'zh': [],
-      'hi': []
+      'hi': [],
+      'en-african-american': []
     };
     
     return falseFriends[nativeLanguage]?.includes(word.toLowerCase()) || false;

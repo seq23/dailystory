@@ -76,10 +76,10 @@ export class CulturalAdaptationService {
 
     'en-african-american': { // African American
       region: 'African American',
-      characterNames: ['Aisha', 'Jamal', 'Zara', 'Malik', 'Nia', 'Darius', 'Amara', 'Khalil', 'Imani', 'Xavier', 'Sanaa', 'Jalen', 'Kaya', 'Terrell', 'Alanna', 'Devin', 'Zuri', 'Marcus', 'Asha', 'Quinton', 'Layla', 'Isaiah', 'Camila', 'Jayden', 'Amina', 'Damon', 'Keisha', 'Antonio', 'Nala', 'Jordan', 'Zoe', 'Tyrone', 'Maya', 'Aaron', 'Destiny'],
+      characterNames: ['Zoe', 'Cheyenne', 'Brooklyn', 'Surrayah', 'Layla', 'Ricky', 'Scooter', 'Kennedy', 'Christian', 'Carter', 'Calli', 'Serenity', 'Asia', 'India', 'Nia', 'Dariane', 'Eden', 'Sofia', 'Hudson', 'Hanson', 'Holland', 'Harper', 'Cameron', 'Brayden', 'Jayden', 'Chyna', 'Lena', 'Ari', 'Mercedes', 'Sequoia', 'Yaw', 'Amara', 'Kenzie', 'Abo', 'Carlos'],
       commonFoods: ['cornbread', 'fried chicken', 'mac and cheese', 'collard greens', 'sweet potato pie', 'black-eyed peas', 'catfish', 'banana pudding', 'peach cobbler', 'gumbo', 'jambalaya', 'barbecue ribs', 'candied yams', 'pound cake', 'red beans and rice', 'biscuits and gravy', 'shrimp and grits', 'pecan pie', 'chess pie'],
       celebrations: ['Juneteenth', 'family reunions', 'church gatherings', 'block parties', 'graduation celebrations'],
-      values: ['community strength', 'family pride', 'perseverance', 'educational achievement'],
+      values: ['community strength', 'family pride', 'perseverance', 'educational achievement', 'cultural heritage', 'resilience'],
       sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field']
     }
   };
@@ -150,24 +150,28 @@ export class CulturalAdaptationService {
 
   static getCulturalGuidanceString(userInfo: UserInfo): string {
     const nativeLanguage = userInfo.nativeLanguage || 'en';
-    const context = this.getCulturalContext(nativeLanguage, userInfo);
+    const skinTone = userInfo.avatar?.skinTone;
     
-    // Special handling for African American context (English + dark skin)
-    if (nativeLanguage === 'en' && userInfo.avatar?.skinTone === 'dark') {
-      return `Subtly incorporate African American cultural elements when natural to the story: foods like ${context.commonFoods[0]} or ${context.commonFoods[1]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`;
+    // Determine cultural context key based on language + skin tone
+    let culturalKey = nativeLanguage;
+    if (nativeLanguage === 'en' && skinTone === 'dark') {
+      culturalKey = 'en-african-american';
     }
     
+    const context = this.getCulturalContext(culturalKey, userInfo);
+    
     const languageGuidance: Record<string, string> = {
-      'fr': `Subtly incorporate French/Francophone cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
-      'es': `Subtly incorporate Hispanic/Latino cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
-      'ar': `Subtly incorporate Arabic/MENA cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
-      'pt': `Subtly incorporate Portuguese/Brazilian cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
-      'zh': `Subtly incorporate Chinese/East Asian cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
-      'hi': `Subtly incorporate Indian/South Asian cultural elements when natural to the story: foods like ${context.commonFoods[0]}, celebrations like ${context.celebrations[0]}, values like ${context.values[0]}, or sports like ${context.sports[0]}`,
-      'en': '' // No cultural additions for English + non-dark skin
+      'fr': `This child is likely from French/Francophone African culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'es': `This child is likely from Hispanic/Latino culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'ar': `This child is likely from Arabic/MENA culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'pt': `This child is likely from Portuguese/Brazilian culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'zh': `This child is likely from Chinese/East Asian culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'hi': `This child is likely from Indian/South Asian culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'en-african-american': `This child is likely from African American culture, subtly weave ${context.commonFoods[0]} or ${context.celebrations[0]} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`,
+      'en': '' // English + non-dark skin = empty string (no cultural context)
     };
 
-    return languageGuidance[nativeLanguage] || '';
+    return languageGuidance[culturalKey] || '';
   }
 
   static generateCulturallyAdaptedCharacterDescription(userInfo: UserInfo): string {
