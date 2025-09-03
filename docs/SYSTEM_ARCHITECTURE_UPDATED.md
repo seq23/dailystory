@@ -110,7 +110,7 @@ Enhanced 4-tier architecture with Expert Circuit Breaker system, progressive mod
 
 **Edge Function Debug Services**:
 - `debug-prompt-history`: AI prompt optimization tracking
-- `debug-ai-enhancer`: Enhancement pipeline monitoring
+- `debug-visual-scene-creator`: Enhancement pipeline monitoring
 - `debug-recent-image-prompts`: Image generation diagnostics
 - `debug-expert-circuit`: Expert level fallback chain analysis
 

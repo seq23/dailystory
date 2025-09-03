@@ -36,9 +36,9 @@
                     }
                 };
 
-                console.log('Calling ai-story-enhancer with:', testData);
+                console.log('Calling ai-visual-scene-creator with:', testData);
                 
-                const { data, error } = await supabase.functions.invoke('ai-story-enhancer', {
+                const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
                     body: testData
                 });
 

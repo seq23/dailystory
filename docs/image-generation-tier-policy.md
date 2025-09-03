@@ -94,7 +94,7 @@ All users, regardless of subscription status, receive the highest quality Tier 1
 - `src/services/BatchImageService.ts` - Batch processing
 
 #### Enhancement Components
-- `supabase/functions/ai-story-enhancer/index.ts` - AI enhancement pipeline
+- `supabase/functions/ai-visual-scene-creator/index.ts` - AI enhancement pipeline
 - `supabase/functions/_shared/CharacterConsistencyService.js` - Character consistency
 
 #### Supporting Infrastructure

@@ -60,7 +60,7 @@ Tier 2 uses enhanced pipeline with advanced capabilities:
 
 ## Fallback Chain
 ```
-Tier 1: AI-Enhanced (ai-story-enhancer + orchestrator validation)
+Tier 1: AI-Enhanced (ai-visual-scene-creator + orchestrator validation)
   ↓ (on failure)
 Tier 2: Multi-Service Dynamic (5+ services + database) ← YOU ARE HERE
   ↓ (on failure)
