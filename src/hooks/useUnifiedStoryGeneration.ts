@@ -11,6 +11,7 @@ export interface UseUnifiedStoryGenerationResult {
     sessionType?: 'free' | 'premium';
     pageNumber?: number;
     existingStory?: string;
+    sessionId?: string;
   }) => Promise<StoryGenerationResult>;
   isGenerating: boolean;
   error: string | null;
@@ -22,7 +23,12 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
   const [error, setError] = useState<string | null>(null);
   const [vocabularyIntegration, setVocabularyIntegration] = useState(null);
 
-  const generateStory = useCallback(async (userInfo: UserInfo, config = {}) => {
+  const generateStory = useCallback(async (userInfo: UserInfo, config: {
+    sessionType?: 'free' | 'premium';
+    pageNumber?: number;
+    existingStory?: string;
+    sessionId?: string;
+  } = {}) => {
     setIsGenerating(true);
     setError(null);
 
@@ -38,7 +44,10 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
       }
 
       // Generate story using unified service (handles all failures internally)
-      const result = await StoryGenerationService.generateStory(userInfo, config);
+      const result = await StoryGenerationService.generateStory(userInfo, {
+        ...config,
+        sessionId: config.sessionId || `unified-${userInfo.name}-${Date.now()}`
+      });
       
       console.log('✅ Simplified generation complete:', {
         success: result.success,

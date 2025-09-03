@@ -10,6 +10,7 @@ import { generateCreativeSeeds } from './inputEnhancementEngine';
 import { CulturalAdaptationService } from './culturalAdaptationService';
 
 export interface StoryGenerationBundle {
+  sessionId: string;              // Session identifier for debugging and caching
   storyContent: string;           // Fully resolved story requirements
   systemSettings: {              // Minimal system requirements
     gradeLevel: number;
@@ -50,6 +51,7 @@ export class StoryGenerationService {
       existingStory?: string;
       expertGradeLevel?: string;
       difficulty?: string;
+      sessionId?: string;
     }
   ): Promise<StoryGenerationResult> {
     try {
@@ -116,6 +118,7 @@ export class StoryGenerationService {
       
       // Step 5: Send resolved string to edge function
       const generationBundle: StoryGenerationBundle = {
+        sessionId: config.sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         storyContent: resolvedStoryContent,
         systemSettings: VocabularyService.getSystemSettings(vocabularyIntegration)
       };

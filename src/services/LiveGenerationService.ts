@@ -59,7 +59,8 @@ export class LiveGenerationService {
         sessionType: 'premium',
         pageNumber: 1,
         expertGradeLevel,
-        difficulty
+        difficulty,
+        sessionId: `live-first-${userInfo.name}-${Date.now()}`
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -130,7 +131,8 @@ export class LiveGenerationService {
       const result = await StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
-        existingStory: (context.storyContext || []).join('\n\n')
+        existingStory: (context.storyContext || []).join('\n\n'),
+        sessionId: `live-next-${context.userInfo.name}-${Date.now()}`
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -191,7 +193,8 @@ export class LiveGenerationService {
       const result = await StoryGenerationService.generateStory(endingUserInfo, {
         sessionType: 'premium', 
         pageNumber: nextPageNumber,
-        existingStory: (context.storyContext || []).join('\n\n')
+        existingStory: (context.storyContext || []).join('\n\n'),
+        sessionId: `live-ending-${context.userInfo.name}-${Date.now()}`
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
