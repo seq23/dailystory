@@ -97,7 +97,7 @@ export class VocabularyService {
     }
 
     // SOURCE 4: System vocabulary (backend validation only - NOT sent to edge function)
-    const gradeLevel: GradeLevel = this.mapDifficultyToGrade(userInfo.difficultyLevel || 'beginner');
+    const gradeLevel: GradeLevel = this.mapDifficultyToGrade(userInfo.difficultyLevel, userInfo);
     const complianceTarget = gradeLevel === 0 ? 0.5 : 0.6; // 50% for Level 0, 60% for others
 
     const totalUserWords = formWords.length + specialRequestWords.length + teacherWords.length;
@@ -129,8 +129,32 @@ export class VocabularyService {
     }
   }
 
-  private static mapDifficultyToGrade(difficulty: DifficultyLevel): GradeLevel {
-    return difficultyToGradeLevel(difficulty);
+  private static mapDifficultyToGrade(difficulty: DifficultyLevel, userInfo?: UserInfo): GradeLevel {
+    // Step 1: Try to use the provided difficulty level
+    if (difficulty && typeof difficulty === 'string') {
+      try {
+        return difficultyToGradeLevel(difficulty);
+      } catch (error) {
+        console.warn('⚠️ Invalid difficulty level:', difficulty, 'falling back to age-based mapping');
+      }
+    }
+
+    // Step 2: Silent fallback to age-based difficulty calculation (from UserInfoForm.tsx logic)
+    if (userInfo?.age && typeof userInfo.age === 'number' && userInfo.age > 0) {
+      const ageDifficulty = userInfo.age <= 5 ? "beginner" : 
+                           userInfo.age <= 8 ? "easy" : 
+                           userInfo.age <= 11 ? "medium" : 
+                           userInfo.age <= 13 ? "hard" : "expert";
+      
+      try {
+        return difficultyToGradeLevel(ageDifficulty as DifficultyLevel);
+      } catch (error) {
+        console.warn('⚠️ Age-based difficulty calculation failed, using default');
+      }
+    }
+
+    // Step 3: Final fallback to Grade Level 1 (easy) - good for AI generation
+    return 1;
   }
 
   private static generatePriorityInstructions(totalUserWords: number, sources: string[]): string {
