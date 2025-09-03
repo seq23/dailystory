@@ -1,6 +1,7 @@
 /**
  * Enhanced Placeholder Validator - Combined Placeholder + Grammar System
- * Consolidates placeholder validation with sophisticated grammar rules moved from edge functions
+ * Consolidates placeholder validation with sophisticated grammar rules for edge functions
+ * Includes crash-safe wrappers for production use
  */
 
 export interface PlaceholderValidationResult {
@@ -31,7 +32,7 @@ const USER_INPUT_PLACEHOLDERS = [
   'userName', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'hobbies', 'specialRequest'
 ];
 
-// Sophisticated grammar rule sets (moved from edge functions)
+// Sophisticated grammar rule sets
 const GRAMMAR_CONFIG = {
   grammar: {
     enableAdvancedValidation: true,
@@ -210,23 +211,61 @@ function advancedCleanup(text: string): string {
 }
 
 /**
- * Enhanced grammar validation and improvement (moved from edge functions)
+ * Enhanced grammar validation and improvement
  */
 export function validateAndEnhanceGrammar(text: string, pronoun: string = 'they'): string {
+  console.log(`🔧 Enhanced grammar validation starting for text: "${text.substring(0, 100)}..."`);
+  
   if (!GRAMMAR_CONFIG.grammar.enableAdvancedValidation) {
+    console.log('⚠️ Advanced grammar validation disabled, using basic cleanup only');
     return advancedCleanup(text);
   }
   
   let result = text;
+  console.log(`📝 Original text: "${result}"`);
   
   // Apply grammar fixes in sequence
   result = applyPronounFixes(result, pronoun);
+  console.log(`👥 After pronoun fixes: "${result}"`);
+  
   result = applyArticleFixes(result);
+  console.log(`📰 After article fixes: "${result}"`);
+  
   result = applyVerbFixes(result);
+  console.log(`🔤 After verb fixes: "${result}"`);
+  
   result = applySentenceStructureFixes(result);
+  console.log(`📚 After structure fixes: "${result}"`);
+  
   result = advancedCleanup(result);
+  console.log(`🧹 Final enhanced result: "${result}"`);
   
   return result;
+}
+
+/**
+ * Safe grammar enhancement with error handling and fallback
+ * CRASH-SAFE WRAPPER for production use
+ */
+export function safeValidateAndEnhanceGrammar(text: string, pronoun: string = 'they'): {
+  result: string;
+  success: boolean;
+  error?: string;
+} {
+  try {
+    const result = validateAndEnhanceGrammar(text, pronoun);
+    return {
+      result,
+      success: true
+    };
+  } catch (error) {
+    console.warn('⚠️ Enhanced grammar validation failed, using original text:', error);
+    return {
+      result: text, // Return original text as fallback
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown enhanced grammar error'
+    };
+  }
 }
 
 /**
@@ -308,13 +347,13 @@ export function getPlaceholderValidationMessage(result: PlaceholderValidationRes
   if (result.isValid) {
     if (result.source === 'ai') {
       if (result.userInputsResolved && result.userInputsTotal && result.userInputsUsed && result.userInputsUsed.length > 0) {
-        const grammarNote = result.grammarEnhanced ? ' (grammar enhanced)' : '';
+        const grammarNote = result.grammarEnhanced ? ' (enhanced grammar applied)' : '';
         return `✅ AI-generated content (incorporates ${result.userInputsResolved}/${result.userInputsTotal} user inputs: ${result.userInputsUsed.join(', ')})${grammarNote}`;
       }
       return '✅ AI-generated content (incorporates user preferences directly)';
     }
     
-    const grammarNote = result.grammarEnhanced ? ' (grammar enhanced)' : '';
+    const grammarNote = result.grammarEnhanced ? ' (enhanced grammar applied)' : '';
     return result.totalPlaceholders > 0 
       ? `✅ All ${result.totalPlaceholders} placeholders resolved successfully${grammarNote}`
       : `✅ No placeholders found (static template)${grammarNote}`;
@@ -362,4 +401,11 @@ export function checkForPlaceholderIssues(pages: string[]): string[] {
  */
 export function quickCleanup(text: string): string {
   return advancedCleanup(text);
+}
+
+/**
+ * Update configuration
+ */
+export function updateGrammarConfig(config: Partial<typeof GRAMMAR_CONFIG>): void {
+  Object.assign(GRAMMAR_CONFIG, config);
 }

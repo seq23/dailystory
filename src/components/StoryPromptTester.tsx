@@ -16,7 +16,7 @@ import { LiveGenerationService } from '@/services/LiveGenerationService';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { UnifiedValidator, type ValidationResult, type ValidationDecision } from '@/utils/unifiedValidator';
-import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/enhancedPlaceholderValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
@@ -63,7 +63,7 @@ interface TestResult {
   generationPath?: string[];
   emergencyContentUsed?: boolean;
   // Enhanced validation fields
-  placeholderValidation?: import('@/utils/enhancedPlaceholderValidator').PlaceholderValidationResult;
+  placeholderValidation?: import('@/utils/placeholderValidator').PlaceholderValidationResult;
   contentIssues?: string[];
   tokenValidation?: any;
   hasEmptyContent?: boolean;

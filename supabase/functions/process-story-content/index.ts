@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Import the sophisticated template system components
 import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";
-import { safeValidateAndEnhanceGrammar } from "../_shared/grammarValidator.ts";
+import { safeValidateAndEnhanceGrammar } from "../_shared/enhancedPlaceholderValidator.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -82,21 +82,21 @@ serve(async (req) => {
       
       if (grammarResult.success) {
         grammarEnhancementSuccesses++;
-        console.log(`✅ Grammar enhanced for page ${i + 1}: ${grammarResult.result.substring(0, 50)}...`);
+        console.log(`✅ Enhanced grammar applied for page ${i + 1}: ${grammarResult.result.substring(0, 50)}...`);
       } else {
         grammarFailureReasons.push(`Page ${i + 1}: ${grammarResult.error}`);
-        console.warn(`⚠️ Grammar enhancement failed for page ${i + 1}, using original text`);
+        console.warn(`⚠️ Enhanced grammar enhancement failed for page ${i + 1}, using original text`);
       }
       
       processedPages.push(grammarResult.result);
     }
 
-    console.log('✅ Unified processing complete', {
+    console.log('✅ Unified processing complete with enhanced grammar system', {
       pagesProcessed: processedPages.length,
       totalPlaceholdersResolved,
-      grammarSuccesses: grammarEnhancementSuccesses,
-      grammarFailures: grammarFailureReasons.length,
-      source: 'unified-processor'
+      enhancedGrammarSuccesses: grammarEnhancementSuccesses,
+      enhancedGrammarFailures: grammarFailureReasons.length,
+      source: 'unified-processor-enhanced'
     });
 
     const response: ProcessResponse = {
@@ -107,7 +107,7 @@ serve(async (req) => {
         grammarEnhanced: grammarEnhancementSuccesses === pages.length,
         grammarEnhancementErrors: grammarFailureReasons.length,
         grammarFailureReasons: grammarFailureReasons.length > 0 ? grammarFailureReasons : undefined,
-        source: 'unified-processor'
+        source: 'unified-processor-enhanced'
       }
     };
 
@@ -125,7 +125,7 @@ serve(async (req) => {
         placeholdersResolved: 0,
         grammarEnhanced: false,
         grammarEnhancementErrors: 0,
-        source: 'unified-processor'
+        source: 'unified-processor-enhanced'
       },
       error: error.message
     };

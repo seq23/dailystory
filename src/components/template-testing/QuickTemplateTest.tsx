@@ -10,7 +10,7 @@ import { useTemplateService } from '@/hooks/useTemplateService';
 import { useTemplateCounts } from '@/hooks/useTemplateCounts';
 import { StoryResultDisplay } from './StoryResultDisplay';
 import { UnifiedValidator } from '@/utils/unifiedValidator';
-import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/enhancedPlaceholderValidator';
+import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
 import type { DifficultyLevel } from '@/types';
 
 export function QuickTemplateTest() {
