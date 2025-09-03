@@ -271,8 +271,41 @@ serve(async (req) => {
       }
     }
     
-    // Simple template selection
+    // Smart template selection for special requests
     let selectedTemplateIndex = templateIndex; // Use provided index if available
+    
+    // Try smart selection if special request exists and no index provided
+    if (!selectedTemplateIndex && userInfo?.specialRequest) {
+      try {
+        console.log('🧠 Attempting smart template selection...');
+        
+        // Import smart template selector
+        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.js');
+        
+        // Get template count for this level
+        const templateCount = await getTemplateCount(templateLevel);
+        
+        if (templateCount > 0) {
+          // Try smart selection with timeout protection
+          const smartIndex = await selectWithTimeout(
+            userInfo.specialRequest,
+            templateLevel,
+            templateCount,
+            100 // 100ms timeout
+          );
+          
+          if (smartIndex !== null && smartIndex >= 0) {
+            selectedTemplateIndex = smartIndex;
+            console.log(`🎯 Smart selection successful: Using template ${smartIndex}`);
+          } else {
+            console.log('📍 Smart selection found no strong matches, using random');
+          }
+        }
+      } catch (smartError) {
+        console.warn('⚠️ Smart template selection failed, using random fallback:', smartError.message);
+        // selectedTemplateIndex remains unchanged (null or provided value)
+      }
+    }
     
     if (!selectedTemplateIndex) {
       // Random fallback selection

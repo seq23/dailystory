@@ -132,12 +132,13 @@ export async function selectBestMatch(specialRequest, templateLevel, templateCou
       return null; // No usable keywords, fall back to random
     }
     
-    console.log(`🔍 Smart template selection for "${processedRequest}"`);
+    console.log(`🔍 Smart template selection for "${processedRequest}" (Level: ${templateLevel})`);
     console.log(`📝 Keywords extracted: [${keywords.join(', ')}]`);
     
     // Get template metadata from registry
     const config = getRegistryConfig(templateLevel);
     if (!config || !config.templates) {
+      console.log(`⚠️ No template metadata found for ${templateLevel}, using fallback`);
       return null; // Registry not available, fall back to random
     }
     

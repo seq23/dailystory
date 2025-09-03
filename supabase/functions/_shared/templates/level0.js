@@ -4,6 +4,123 @@
  * Optimized for 75-80% sight word compliance using Dolch Pre-Primer vocabulary
  */
 
+/**
+ * Level 0 Template Metadata - For Smart Template Selection
+ */
+export const LEVEL_0_METADATA = [
+  // Daily Life Templates (1-20)
+  { title: 'Morning Routine', theme: 'daily-life' },          // Template 1
+  { title: 'Bedtime Story', theme: 'daily-life' },           // Template 2
+  { title: 'Meal Time', theme: 'food' },                     // Template 3
+  { title: 'Getting Dressed', theme: 'daily-life' },         // Template 4
+  { title: 'Cleaning Up', theme: 'daily-life' },            // Template 5
+  { title: 'Bath Time', theme: 'daily-life' },              // Template 6
+  { title: 'Cooking Together', theme: 'food' },             // Template 7
+  { title: 'Family Time', theme: 'family' },                // Template 8
+  { title: 'Chores', theme: 'daily-life' },                 // Template 9
+  { title: 'Shopping', theme: 'community' },                // Template 10
+  { title: 'Phone Call', theme: 'family' },                 // Template 11
+  { title: 'Reading Time', theme: 'learning' },             // Template 12
+  { title: 'Snack Time', theme: 'food' },                   // Template 13
+  { title: 'Waking Up', theme: 'daily-life' },              // Template 14
+  { title: 'House Work', theme: 'daily-life' },             // Template 15
+  { title: 'Visit Doctor', theme: 'healthcare' },           // Template 16
+  { title: 'Teeth Cleaning', theme: 'healthcare' },         // Template 17
+  { title: 'Medicine Time', theme: 'healthcare' },          // Template 18
+  { title: 'Exercise Fun', theme: 'health' },               // Template 19
+  { title: 'Washing Hands', theme: 'health' },              // Template 20
+
+  // Healthcare & Educational Templates (21-45)
+  { title: 'Learning New Things', theme: 'learning' },      // Template 21
+  { title: 'Classroom Fun', theme: 'school' },              // Template 22
+  { title: 'Teacher Helper', theme: 'school' },             // Template 23
+  { title: 'Homework Time', theme: 'school' },              // Template 24
+  { title: 'Circle Time', theme: 'school' },                // Template 25
+  { title: 'Art Class', theme: 'creativity' },              // Template 26
+  { title: 'Music Time', theme: 'creativity' },             // Template 27
+  { title: 'Dancing Fun', theme: 'creativity' },            // Template 28
+  { title: 'Story Reading', theme: 'learning' },            // Template 29
+  { title: 'Writing Practice', theme: 'learning' },         // Template 30
+  { title: 'Number Fun', theme: 'learning' },               // Template 31
+  { title: 'Color Learning', theme: 'learning' },           // Template 32
+  { title: 'Drawing Time', theme: 'creativity' },           // Template 33
+  { title: 'Craft Making', theme: 'creativity' },           // Template 34
+  { title: 'Building Blocks', theme: 'play' },              // Template 35
+  { title: 'Memory Game', theme: 'play' },                  // Template 36
+  { title: 'Singing Songs', theme: 'creativity' },          // Template 37
+  { title: 'Show and Tell', theme: 'school' },              // Template 38
+  { title: 'Learning to Share', theme: 'friendship' },      // Template 39
+  { title: 'Science Fun', theme: 'learning' },              // Template 40
+  { title: 'Puzzle Time', theme: 'play' },                  // Template 41
+  { title: 'Computer Time', theme: 'learning' },            // Template 42
+  { title: 'Alphabet', theme: 'learning' },                 // Template 43
+  { title: 'Math Fun', theme: 'learning' },                 // Template 44
+  { title: 'Learning Shapes', theme: 'learning' },          // Template 45
+
+  // Play & Recreation Templates (46-60)
+  { title: 'Playground Fun', theme: 'play' },               // Template 46
+  { title: 'Ball Game', theme: 'play' },                    // Template 47
+  { title: 'Hide and Seek', theme: 'play' },                // Template 48
+  { title: 'Bike Ride', theme: 'adventure' },               // Template 49
+  { title: 'Swing Time', theme: 'play' },                   // Template 50
+  { title: 'Slide Fun', theme: 'play' },                    // Template 51
+  { title: 'Sandbox Play', theme: 'play' },                 // Template 52
+  { title: 'Jump Rope', theme: 'play' },                    // Template 53
+  { title: 'Tag Game', theme: 'play' },                     // Template 54
+  { title: 'Race Time', theme: 'play' },                    // Template 55
+  { title: 'Toy Cars', theme: 'play' },                     // Template 56
+  { title: 'Doll Play', theme: 'play' },                    // Template 57
+  { title: 'Dress Up', theme: 'play' },                     // Template 58
+  { title: 'Tea Party', theme: 'play' },                    // Template 59
+  { title: 'Playing House', theme: 'play' },                // Template 60
+
+  // Community Templates (61-75)
+  { title: 'Library Visit', theme: 'community' },           // Template 61
+  { title: 'Store Trip', theme: 'community' },              // Template 62
+  { title: 'Park Day', theme: 'community' },                // Template 63
+  { title: 'Post Office', theme: 'community' },             // Template 64
+  { title: 'Fire Station', theme: 'community' },            // Template 65
+  { title: 'Police Helper', theme: 'community' },           // Template 66
+  { title: 'Bus Ride', theme: 'transportation' },           // Template 67
+  { title: 'Train Trip', theme: 'transportation' },         // Template 68
+  { title: 'Airplane Ride', theme: 'transportation' },      // Template 69
+  { title: 'Boat Trip', theme: 'transportation' },          // Template 70
+  { title: 'Car Wash', theme: 'transportation' },           // Template 71
+  { title: 'Gas Station', theme: 'transportation' },        // Template 72
+  { title: 'Traffic Lights', theme: 'transportation' },     // Template 73
+  { title: 'Walking Safe', theme: 'safety' },               // Template 74
+  { title: 'Crossing Street', theme: 'safety' },            // Template 75
+
+  // Special Occasions Templates (76-90)
+  { title: 'Birthday Party', theme: 'celebration' },        // Template 76
+  { title: 'Holiday Fun', theme: 'celebration' },           // Template 77
+  { title: 'Gift Giving', theme: 'celebration' },           // Template 78
+  { title: 'Thanksgiving', theme: 'celebration' },          // Template 79
+  { title: 'Halloween Fun', theme: 'celebration' },         // Template 80
+  { title: 'Christmas Joy', theme: 'celebration' },         // Template 81
+  { title: 'New Year', theme: 'celebration' },              // Template 82
+  { title: 'Valentine Day', theme: 'celebration' },         // Template 83
+  { title: 'Easter Hunt', theme: 'celebration' },           // Template 84
+  { title: 'Summer Fun', theme: 'seasons' },                // Template 85
+  { title: 'Fall Leaves', theme: 'seasons' },               // Template 86
+  { title: 'Winter Snow', theme: 'seasons' },               // Template 87
+  { title: 'Spring Flowers', theme: 'seasons' },            // Template 88
+  { title: 'Winter Fun', theme: 'seasons' },                // Template 89
+  { title: 'Spring Time', theme: 'seasons' },               // Template 90
+
+  // Nature & Animals Templates (91-100)
+  { title: 'Pet Care', theme: 'animals' },                  // Template 91
+  { title: 'Garden Time', theme: 'nature' },                // Template 92
+  { title: 'Bird Watching', theme: 'animals' },             // Template 93
+  { title: 'Nature Walk', theme: 'nature' },                // Template 94
+  { title: 'Rain Day', theme: 'weather' },                  // Template 95
+  { title: 'Sunny Day', theme: 'weather' },                 // Template 96
+  { title: 'Animal Friends', theme: 'animals' },            // Template 97
+  { title: 'Beach Day', theme: 'nature' },                  // Template 98
+  { title: 'Forest Adventure', theme: 'nature' },           // Template 99
+  { title: 'Ocean Waves', theme: 'nature' }                 // Template 100
+];
+
 export const LEVEL_0_TEMPLATES = [
   // Daily Life Templates (1-20)
   
