@@ -108,17 +108,19 @@ This guide documents the current functioning state of the story generation syste
 ```mermaid
 graph TD
     A[User Request] --> B[LiveGenerationService/NetflixStyleStoryService]
-    B --> C[generate-adaptive-story Edge Function]
-    C --> D[GPT-4o-mini API Call]
-    D --> E[Content Processing & Filtering]
-    E --> F[Title/Chapter Removal]
-    F --> G[Smart Content Splitting]
-    G --> H[Grammar Validation]
-    H --> I[Final Story Pages]
+    B --> C[StoryGenerationService - Frontend Placeholder Resolution]
+    C --> D[generate-adaptive-story Edge Function]
+    D --> E[GPT-4o-mini API Call]
+    E --> F[process-story-content Edge Function]
+    F --> G[Enhanced Grammar Processing]
+    G --> H[Backend Placeholder Resolution]
+    H --> I[Content Sanitization & Filtering]
+    I --> J[Final Story Pages]
     
-    C --> J[Fallback on Error]
-    J --> K[Template Service]
-    K --> L[Emergency Content]
+    D --> K[Fallback on Error]
+    K --> L[Template Service]
+    L --> M[process-story-content Processing]
+    M --> N[Emergency Content]
 ```
 
 ### Template System Flow
@@ -129,9 +131,12 @@ graph TD
     C --> D[Individual Template File]
     D --> E[Template Converter]
     E --> F[Smart Content Selection]
-    F --> G[Placeholder Resolution]
-    G --> H[Grammar Validation]
-    H --> I[Processed Story Pages]
+    F --> G[Frontend Placeholder Resolution]
+    G --> H[process-story-content Edge Function]
+    H --> I[Enhanced Grammar Processing]
+    I --> J[Backend Placeholder Resolution]
+    J --> K[Content Sanitization]
+    K --> L[Processed Story Pages]
 ```
 
 ## Testing System
@@ -169,27 +174,43 @@ const tokenLimits = {
 3. **Tier 3**: Creative Rhyming Emergency Content
 4. **Tier 4**: Basic SVG Placeholder (guaranteed success)
 
-### Content Validation Pipeline
+### Enhanced Grammar Processing System
+**Location**: `supabase/functions/_shared/enhancedPlaceholderValidator.ts`
+
+#### Consolidated Grammar Processing
 ```typescript
-// Content processing pipeline
-const processContent = async (content: string, difficulty: string) => {
-  // 1. Remove titles/chapters
-  content = filterTitlesAndChapters(content);
+// Unified crash-safe grammar system used by all content generation
+export function safeValidateAndEnhanceGrammar(
+  content: string,
+  context: { userInfo: UserInfo; metadata?: any }
+): { content: string; success: boolean; metadata: ProcessingMetadata } {
   
-  // 2. Smart content splitting
-  if (difficulty !== 'beginner') {
-    content = applySmatContentSplitting(content, difficulty);
-  }
+  // 1. Advanced pronoun fixes with gender agreement
+  content = fixPronouns(content, context.userInfo);
   
-  // 3. Grammar validation
-  content = await validateGrammar(content);
+  // 2. Article correction (a/an handling)
+  content = correctArticles(content);
   
-  // 4. Token limit enforcement
-  content = enforceTokenLimits(content, difficulty);
+  // 3. Verb conjugation improvements
+  content = improveVerbConjugation(content);
   
-  return content;
-};
+  // 4. Sentence structure enhancement
+  content = enhanceSentenceStructure(content);
+  
+  // 5. Advanced cleanup and text sanitization
+  content = sanitizeAndCleanup(content);
+  
+  // 6. Final placeholder resolution (backend layer)
+  content = resolveRemainingPlaceholders(content, context.userInfo);
+  
+  return { content, success: true, metadata: getProcessingMetadata() };
+}
 ```
+
+#### Dual-Layer Placeholder Resolution
+- **Frontend Layer**: `StoryGenerationService.resolveAllPlaceholders()` (4-tier system)
+- **Backend Layer**: `process-story-content` final cleanup of any remaining placeholders
+- **Purpose**: Ensures 100% placeholder resolution through intentional redundancy
 
 ## Known Issues & Monitoring
 
@@ -197,10 +218,15 @@ const processContent = async (content: string, difficulty: string) => {
 ✅ **AI Generation**: `gpt-4o-mini` stable, ~90% success rate  
 ✅ **Template System**: 136 templates, all accessible  
 ✅ **Grade Levels**: 6th-10th properly supported  
-✅ **Content Filtering**: Titles/chapters removed  
-✅ **Testing System**: Full grade level coverage  
+✅ **Grammar System**: Consolidated crash-safe processing in `/_shared`
+✅ **Placeholder Resolution**: Dual-layer system (frontend + backend)
+✅ **Post-Processing**: `process-story-content` handles all content flows
+✅ **Testing System**: Full grade level coverage
 
 ### Areas Under Active Monitoring
+- **Enhanced Grammar Processing**: Success rates and crash-safe operation
+- **Dual Placeholder Resolution**: Frontend vs backend resolution tracking
+- **Post-Processing Pipeline**: `process-story-content` performance monitoring
 - **Content Splitting**: Ensuring optimal page sizes for all difficulty levels
 - **Token Enforcement**: Monitoring for content length consistency
 - **Grade Recognition**: Ensuring proper type handling throughout system

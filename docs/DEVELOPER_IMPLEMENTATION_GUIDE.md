@@ -76,8 +76,9 @@ static async generateStory(
 ): Promise<StoryGenerationResult>
 ```
 
-#### **4-Layer Priority System Implementation**
+### **Dual-Layer Placeholder Resolution System**
 ```typescript
+// Frontend Layer: StoryGenerationService (4-tier system)
 private static resolveAllPlaceholders(
   userInfo: UserInfo,
   vocabularyIntegration: VocabularyIntegration,
@@ -96,6 +97,13 @@ private static resolveAllPlaceholders(
   resolvedContent = applyCreativeSeeds(resolvedContent);
   
   return resolvedContent;
+}
+
+// Backend Layer: process-story-content (final cleanup)
+export function resolveRemainingPlaceholders(content: string, userInfo: UserInfo): string {
+  // Catches any placeholders missed by frontend processing
+  // Ensures 100% resolution through intentional redundancy
+  return finalPlaceholderCleanup(content, userInfo);
 }
 ```
 
@@ -401,10 +409,12 @@ const { generateStory, isGenerating, error } = useUnifiedStoryGeneration();
 ```
 
 ### **Key Files to Understand**
-1. `src/services/storyGenerationService.ts` - Frontend orchestration
+1. `src/services/storyGenerationService.ts` - Frontend orchestration & placeholder resolution
 2. `supabase/functions/generate-adaptive-story/streamlined-handler.ts` - AI generation
-3. `src/hooks/useUnifiedStoryGeneration.ts` - React integration
-4. `src/services/vocabularyTrackingService.ts` - Vocabulary tracking
+3. `supabase/functions/process-story-content/index.ts` - Post-processing pipeline
+4. `supabase/functions/_shared/enhancedPlaceholderValidator.ts` - Consolidated grammar system
+5. `src/hooks/useUnifiedStoryGeneration.ts` - React integration
+6. `src/services/vocabularyTrackingService.ts` - Vocabulary tracking
 
 ### **Performance Targets**
 - Bundle size: <2KB processed content

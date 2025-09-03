@@ -25,7 +25,14 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 - **Performance Logging**: Success rates, timing, model performance tracking
 - **Vocabulary Integration**: Silent failure system with progress tracking
 
-### **Tier 4: Vocabulary Integration**
+### **Tier 4: Centralized Post-Processing Pipeline**
+**Primary**: `supabase/functions/process-story-content/index.ts`
+- **Enhanced Grammar Processing**: Consolidated crash-safe system from `/_shared/enhancedPlaceholderValidator.ts`
+- **Final Placeholder Resolution**: Backend cleanup layer for 100% placeholder resolution
+- **Content Sanitization**: Advanced cleanup, pronoun fixes, article correction
+- **Quality Assurance**: Sentence structure enhancement and text sanitization
+
+### **Supporting Tier: Vocabulary Integration**
 **Primary**: `src/services/vocabularyTrackingService.ts`
 - **User Progress Tracking**: Authenticated user vocabulary encounters  
 - **Definition Logging**: Word complexity and mastery level progression
@@ -76,23 +83,30 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 ```
 User Input → StoryGenerationService → Bundle Creation → Edge Function Router 
     ↓              ↓                      ↓                    ↓
-4-Layer Resolution → Vocabulary Integration → Streamlined Handler → 2-Attempt AI
+4-Layer Frontend → Vocabulary Integration → Streamlined Handler → 2-Attempt AI
+Placeholder Res.   ↓                      ↓                    ↓
+    ↓         Theme Extraction → GPT-4.1 → GPT-4o-mini → Raw Content
     ↓              ↓                      ↓                    ↓
-Theme Extraction → Silent Tracking → GPT-4.1 → GPT-4o-mini → Story Response
+Frontend Bundle → Silent Tracking → process-story-content → Enhanced Grammar
+    ↓                                     ↓                    ↓
+Final Processing ← Backend Placeholder ← Content Sanitization ← Story Response
 ```
 
 ## **Deployed System Improvements (2025)**
 
 1. **Bundle-Based Architecture**: Unified processing with pre-resolved content
 2. **2-Attempt AI Generation**: GPT-4.1 primary with GPT-4o-mini fallback (95%+ success rate)
-3. **4-Tier Priority System**: Structured prompt resolution with user data prioritization  
-4. **Vocabulary Integration**: Silent failure tracking with user progress monitoring
-5. **Performance Optimization**: 2-10 second generation times with enhanced reliability
-6. **Edge Function Simplification**: Removed 900+ lines of template code for dedicated processing
-7. **Enhanced Prompts**: Cultural context, hair color mapping, user info integration
-8. **Monitoring & Logging**: Comprehensive performance tracking and error reporting
-9. **Graceful Degradation**: Multiple fallback layers ensure story delivery
-10. **Developer Experience**: Unified hooks and services for simplified implementation
+3. **Dual-Layer Placeholder Resolution**: Frontend 4-tier system + backend cleanup layer
+4. **Centralized Post-Processing**: `process-story-content` pipeline for all content flows
+5. **Consolidated Grammar System**: Crash-safe processing in `/_shared/enhancedPlaceholderValidator.ts`
+6. **Enhanced Grammar Features**: Advanced pronoun fixes, article correction, verb conjugation
+7. **Vocabulary Integration**: Silent failure tracking with user progress monitoring
+8. **Performance Optimization**: 2-10 second generation times with enhanced reliability
+9. **Edge Function Simplification**: Removed 900+ lines of template code for dedicated processing
+10. **Enhanced Prompts**: Cultural context, hair color mapping, user info integration
+11. **Monitoring & Logging**: Comprehensive performance tracking and error reporting
+12. **Graceful Degradation**: Multiple fallback layers ensure story delivery
+13. **Developer Experience**: Unified hooks and services for simplified implementation
 
 ## **Performance Metrics (Actual)**
 
