@@ -12,7 +12,7 @@ import {
 import { resolveAllPlaceholders, deriveCompleteGenderInfo } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
-import { safeErrorMessage } from '../_shared/errorPatterns.ts';
+import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 
 // Import static caching and error classification
 const { getModelChain, getHairColorMapping, getSystemSettings } = await import('./StaticDataCache.ts');
@@ -305,6 +305,14 @@ function getLiveTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): numb
 }
 
 /**
+ * Service-specific fallback token limits
+ */
+function getServiceSpecificFallback(config?: StreamlinedConfig): number {
+  const isLiveGeneration = config?.pageNumber === 1 && !config?.existingStory;
+  return isLiveGeneration ? 600 : 6500; // Live: 600, Netflix: 6500
+}
+
+/**
  * Service-aware token limit function - detects Netflix vs Live automatically
  */
 function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): number {
@@ -319,23 +327,38 @@ function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLeve
 }
 
 async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): Promise<string> {
-  // Use service-aware token limits if difficulty is provided, otherwise use custom or high ceiling
-  const maxTokens = customTokenLimit || (difficulty ? getServiceAwareTokenLimit(difficulty, config) : 100000);
+  // Protected token limit calculation with service-specific fallbacks
+  let maxTokens: number;
+  try {
+    maxTokens = customTokenLimit || (difficulty ? getServiceAwareTokenLimit(difficulty, config) : getServiceSpecificFallback(config));
+  } catch (tokenError) {
+    console.warn('⚠️ Token limit calculation failed, using service-specific fallback:', safeErrorMessage(tokenError));
+    maxTokens = getServiceSpecificFallback(config);
+  }
+  
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
-  // Add hair color mapping for English speakers
+  // Protected hair color mapping for English speakers
   let enhancedUserPrompt = prompt.userPrompt;
-  if (userInfo?.avatar?.skinTone && userInfo?.nativeLanguage === 'en') {
-    const hairColor = getHairColorForSkinTone(userInfo.avatar.skinTone);
-    if (hairColor) {
-      enhancedUserPrompt += `\nCharacter appearance: ${userInfo.name} has ${hairColor}.`;
+  try {
+    if (safePropertyAccess(userInfo, 'avatar', null)?.skinTone && safePropertyAccess(userInfo, 'nativeLanguage', null) === 'en') {
+      const hairColor = getHairColorForSkinTone(userInfo.avatar.skinTone);
+      if (hairColor && safePropertyAccess(userInfo, 'name', null)) {
+        enhancedUserPrompt += `\nCharacter appearance: ${userInfo.name} has ${hairColor}.`;
+      }
     }
+  } catch (hairError) {
+    console.warn('⚠️ Hair color mapping failed:', safeErrorMessage(hairError));
   }
 
-  // Add gender/pronoun information for ALL users (universal coverage)
-  if (userInfo?.name && userInfo?.avatar?.type) {
-    const genderInfo = deriveCompleteGenderInfo(userInfo);
-    enhancedUserPrompt += `\nCharacter pronouns: ${userInfo.name} is a ${genderInfo}.`;
+  // Protected gender/pronoun information for ALL users (universal coverage)
+  try {
+    if (safePropertyAccess(userInfo, 'name', null) && safePropertyAccess(userInfo, 'avatar', null)?.type) {
+      const genderInfo = deriveCompleteGenderInfo(userInfo);
+      enhancedUserPrompt += `\nCharacter pronouns: ${userInfo.name} is a ${genderInfo}.`;
+    }
+  } catch (genderError) {
+    console.warn('⚠️ Gender info derivation failed:', safeErrorMessage(genderError));
   }
 
   // Enhanced AI Generation with Intelligent Circuit Breaker
@@ -346,20 +369,37 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   const maxRetriesPerModel = 2;
   const startTime = Date.now(); // Track processing time
   
-  // Expert detection for specialized handling
-  const isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
-  const modelProgression = getModelChain(isExpertLevel);
-  const systemSettings = getSystemSettings();
-  const maxAttempts = systemSettings.maxAttempts[isExpertLevel ? 'expert' : 'regular'];
+  // Protected expert detection and model chain initialization
+  let isExpertLevel: boolean;
+  let modelProgression: any[];
+  let systemSettings: any;
+  let maxAttempts: number;
+  
+  try {
+    isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
+    modelProgression = getModelChain(isExpertLevel);
+    systemSettings = getSystemSettings();
+    maxAttempts = safePropertyAccess(systemSettings, 'maxAttempts', { expert: 6, regular: 3 })[isExpertLevel ? 'expert' : 'regular'];
+  } catch (initError) {
+    console.warn('⚠️ Model chain initialization failed, using defaults:', safeErrorMessage(initError));
+    isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
+    modelProgression = [{ model: 'gpt-5-2025-08-07', description: 'Primary Model', paramName: 'max_completion_tokens', supportsTemperature: false }];
+    systemSettings = { baseInstructions: '\n\nGenerate high-quality, age-appropriate story content.' };
+    maxAttempts = isExpertLevel ? 6 : 3;
+  }
   
   console.log(`🎯 Intelligent Circuit Breaker: ${isExpertLevel ? 'EXPERT' : 'REGULAR'} mode - ${maxAttempts} attempts available`);
   
-  const baseInstructions = systemSettings.baseInstructions;
+  const baseInstructions = safePropertyAccess(systemSettings, 'baseInstructions', '\n\nGenerate high-quality, age-appropriate story content.');
 
   while (attempt <= maxAttempts && !storyText) {
     try {
-      const currentModel = modelProgression[currentModelIndex];
-      console.log(`🤖 AI Attempt ${attempt}/${maxAttempts} using ${currentModel.model} (${currentModel.description}) - Model ${currentModelIndex + 1}/${modelProgression.length}, Retry ${retriesOnCurrentModel + 1}/${maxRetriesPerModel}:`, { 
+      // Protected model access with bounds checking
+      const currentModel = currentModelIndex < modelProgression.length 
+        ? safeModelAccess(modelProgression[currentModelIndex])
+        : { name: 'gpt-5-2025-08-07', description: 'Fallback Model' };
+      
+      console.log(`🤖 AI Attempt ${attempt}/${maxAttempts} using ${currentModel.name} (${currentModel.description}) - Model ${currentModelIndex + 1}/${modelProgression.length}, Retry ${retriesOnCurrentModel + 1}/${maxRetriesPerModel}:`, { 
         gradeLevel,
         tokenBudget: maxTokens,
         qualityFirst: attempt === 1,
@@ -384,22 +424,27 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         finalUserPrompt += ` Create any engaging story with natural flow and clear narrative structure. Include all target vocabulary naturally.`;
       }
       
-      // API call with correct model parameters and enhanced logging
+      // Protected API call with correct model parameters and enhanced logging
       const apiBody: any = {
-        model: currentModel.model,
+        model: safePropertyAccess(currentModel, 'name', 'gpt-5-2025-08-07'),
         messages: [
           { role: 'system', content: enhancedSystemPrompt },
           { role: 'user', content: finalUserPrompt }
         ]
       };
       
-      // Set service-aware OpenAI token limits for story size control (not validation)
-      apiBody[currentModel.paramName] = Math.min(maxTokens, 100000); // Cap at 100k for safety
-
-      console.log(`🎯 Service-Aware Token Limit: ${apiBody[currentModel.paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
+      // Protected parameter assignment with fallback
+      try {
+        const paramName = safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens');
+        apiBody[paramName] = Math.min(maxTokens, 100000); // Cap at 100k for safety
+        console.log(`🎯 Service-Aware Token Limit: ${apiBody[paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
+      } catch (paramError) {
+        console.warn('⚠️ Parameter assignment failed, using default:', safeErrorMessage(paramError));
+        apiBody.max_completion_tokens = Math.min(maxTokens, 100000);
+      }
       
       // Add temperature for legacy models that support it
-      if (currentModel.supportsTemperature) {
+      if (safePropertyAccess(currentModel, 'supportsTemperature', false)) {
         apiBody.temperature = 0.8;
       }
       
@@ -493,23 +538,36 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
     } catch (error) {
       console.error(`❌ Generation attempt ${attempt} failed:`, {
-        error: error instanceof Error ? error.message : String(error),
-        model: currentModel?.model || 'unknown',
+        error: safeErrorMessage(error),
+        model: safePropertyAccess(currentModel, 'model', 'unknown'),
         attempt: attempt,
         maxAttempts: maxAttempts,
         currentModelIndex,
         retriesOnCurrentModel
       });
       
-      // Classify error to determine retry strategy
-      const classification = classifyError(error);
+      // Protected Error Classification
+      let classifiedError;
+      let retryEnhancement = '';
       
-      if (classification.shouldRetryWithSameModel && retriesOnCurrentModel < maxRetriesPerModel) {
-        // Content error - retry same model with enhancement
+      try {
+        classifiedError = classifyError(error);
+        retryEnhancement = getRetryEnhancement(classifiedError.category, attempt);
+        console.log(`📊 Error Classification: ${classifiedError.category}, Retry same model: ${classifiedError.shouldRetryWithSameModel}, Fallback: ${classifiedError.shouldFallbackToNextModel}`);
+      } catch (classificationError) {
+        console.warn('⚠️ Error classification failed, using default fallback:', safeErrorMessage(classificationError));
+        classifiedError = { 
+          category: 'system_error', 
+          shouldRetryWithSameModel: false, 
+          shouldFallbackToNextModel: true 
+        };
+      }
+      
+      if (classifiedError.shouldRetryWithSameModel && retriesOnCurrentModel < maxRetriesPerModel) {
+        // Content validation errors - retry same model with enhanced prompts
         retriesOnCurrentModel++;
-        const enhancement = getRetryEnhancement(classification.category, retriesOnCurrentModel);
-        if (enhancement) {
-          enhancedUserPrompt += `\n\n${enhancement}`;
+        if (retryEnhancement) {
+          enhancedUserPrompt += `\n\n${retryEnhancement}`;
         }
         console.log(`🔄 Retrying same model with content enhancement (${retriesOnCurrentModel}/${maxRetriesPerModel})`);
       } else {
@@ -520,7 +578,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           console.error('❌ All AI generation attempts failed');
           throw new Error('All AI generation attempts failed');
         }
-        console.log(`🔄 Moving to next model: ${modelProgression[currentModelIndex].model}`);
+        const nextModelName = safePropertyAccess(modelProgression[currentModelIndex], 'model', 'next model');
+        console.log(`🔄 Moving to next model: ${nextModelName}`);
       }
       
       attempt++;
