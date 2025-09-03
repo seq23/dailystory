@@ -41,7 +41,15 @@ serve(async (req) => {
           lastPageGenerated: storyState.lastPageGenerated,
           charactersTracked: storyState.characters.size,
           objectsTracked: storyState.objects.size
-        } : null
+        } : null,
+        // NEW: Include bundle data from AI prompts
+        bundleData: aiPrompts.map(prompt => ({
+          sessionId: prompt.sessionId,
+          timestamp: prompt.timestamp,
+          bundle: prompt.bundle,
+          success: prompt.success,
+          attempt: prompt.attempt
+        }))
       });
     }
 

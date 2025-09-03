@@ -262,7 +262,7 @@ export class SessionStateManager {
   }
 
   /**
-   * Store AI prompt for debugging - stores EVERYTHING sent to AI
+   * Store AI prompt for debugging - stores EVERYTHING sent to AI including the original bundle
    */
   storeAIPromptForDebugging(sessionId, aiPromptData) {
     const state = this.getOrCreateSessionState(sessionId);
@@ -282,7 +282,9 @@ export class SessionStateManager {
       timestamp: Date.now(),
       apiResponse: aiPromptData.apiResponse,
       success: aiPromptData.success,
-      sessionId: sessionId
+      sessionId: sessionId,
+      // NEW: Store the original bundle data
+      bundle: aiPromptData.bundle || null
     };
     
     // Add to array and keep only last 3

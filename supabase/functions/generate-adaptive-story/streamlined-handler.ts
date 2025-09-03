@@ -519,7 +519,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
               statusText: response.statusText,
               errorBody: errorText,
               error: `API Error ${response.status}`
-            }
+            },
+            bundle: bundle // NEW: Include the original bundle
           });
         } catch (debugError) {
           console.warn('⚠️ Failed to store failed AI prompt for debugging:', debugError);
@@ -556,7 +557,8 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
             usage: data.usage,
             hasChoices: !!data.choices,
             choicesLength: data.choices?.length || 0
-          }
+          },
+          bundle: bundle // NEW: Include the original bundle
         });
       } catch (debugError) {
         console.warn('⚠️ Failed to store AI prompt for debugging:', debugError);
