@@ -314,7 +314,7 @@ serve(async (req) => {
             
             if (smartIndex !== null && smartIndex >= 0) {
               selectedTemplateIndex = smartIndex;
-              console.log(`🎯 Smart selection successful: Using template ${smartIndex}`);
+              console.log(`🎯 Smart selection successful: Using template ${smartIndex} for ${templateLevel}`);
             } else {
               console.log('📍 Smart selection found no strong matches, using fallback');
             }
