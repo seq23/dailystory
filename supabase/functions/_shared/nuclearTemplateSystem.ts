@@ -28,39 +28,39 @@ const CIRCUIT_BREAKER_CONFIG = {
 // Nuclear emergency content - guaranteed to work
 const NUCLEAR_EMERGENCY_CONTENT = {
   level0: [
-    "The story is broken.",
-    "We need to fix it.",
-    "Ask a grown-up to help.",
-    "Press the refresh button.",
-    "Stories will come back soon."
+    "Story broke.",
+    "We fix soon.",
+    "Ask grown-up help.",
+    "Try again.",
+    "Stories come back."
   ],
   level1: [
-    "Our story machine is taking a rest.",
-    "Sometimes computers need breaks too.",
-    "Ask your grown-up to refresh the page.",
-    "If that does not work, try again later.",
-    "New stories are coming very soon!"
+    "Our story maker needs a break right now.",
+    "Sometimes computers get tired and need to rest.",
+    "Ask your grown-up to refresh this page for you.",
+    "If it still doesn't work, we can try again later.",
+    "New stories are coming back very soon, we promise!"
   ],
   level2: [
     "The story system is having some trouble right now.",
-    "This happens sometimes when lots of kids want stories.",
-    "You can try refreshing the page to fix it.",
-    "If it still does not work, wait a few minutes.",
-    "Our team is working hard to bring back your stories!"
+    "This happens sometimes when lots of kids want stories at once.",
+    "You can try refreshing the page to see if that fixes it.",
+    "If it still doesn't work, waiting a few minutes usually helps.",
+    "Our team is working hard to bring back all your favorite stories!"
   ],
   level3: [
-    "Our story generation system is experiencing technical difficulties.",
-    "This usually happens when there is high demand from many users.",
-    "Please try refreshing the browser page using Ctrl+R or ⌘+R.",
-    "If the problem continues, our support team can help you.",
-    "We apologize for the inconvenience and expect normal service soon."
+    "Our story generation system is experiencing some technical difficulties at the moment.",
+    "This usually happens when there is high demand from many users trying to create stories.",
+    "Please try refreshing the browser page using Ctrl+R on Windows or ⌘+R on Mac.",
+    "If the problem continues after refreshing, our support team is available to help you out.",
+    "We apologize for any inconvenience and expect normal service to resume very soon."
   ],
   level4: [
-    "The AI story generation service is currently experiencing system-wide maintenance issues.",
-    "This may be due to server overload, database connectivity problems, or scheduled maintenance.",
-    "Technical solution: Force refresh the page using Ctrl+Shift+R to clear cached data.",
-    "If issues persist, please report this via our feedback system with your browser details.",
-    "Our engineering team is actively monitoring and working to restore full functionality immediately."
+    "The AI-powered story generation service is currently experiencing system-wide maintenance issues that are affecting story creation capabilities.",
+    "This may be due to server overload conditions, database connectivity problems, scheduled maintenance windows, or upstream API service disruptions.",
+    "Technical solution: Force refresh the page using Ctrl+Shift+R (Windows) or ⌘+Shift+R (Mac) to clear all cached data and reinitialize the connection.",
+    "If issues persist after multiple refresh attempts, please report this incident via our feedback system and include your browser type, version, and any console error messages.",
+    "Our engineering team is actively monitoring system performance metrics and working to restore full functionality with minimal downtime impact."
   ]
 };
 

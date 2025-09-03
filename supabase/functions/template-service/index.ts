@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Import nuclear template system for maximum reliability
-import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth } from '../_shared/nuclearTemplateSystem.ts';
+import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth, getNuclearEmergencyContent } from '../_shared/nuclearTemplateSystem.ts';
 import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager.ts';
 
 // Import arc-aware template processing system
