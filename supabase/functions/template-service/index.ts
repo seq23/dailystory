@@ -61,6 +61,7 @@ function processStoryTemplate(template: string[], userInfo: UserInfo, pageCount:
 }
 
 serve(async (req) => {
+  // DEPLOYMENT TRIGGER: Force fresh template loading - 2025-01-03
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
