@@ -259,8 +259,29 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
   return 'expert';
 }
 
+/**
+ * Get level-aware OpenAI token limits for story size control (not validation)
+ */
+function getOpenAITokenLimit(gradeLevel: number): number {
+  // Level-aware token limits for OpenAI API calls (story size control, not validation)
+  const levelTokenLimits: Record<number, number> = {
+    0: 200,    // Level0 - Very short stories (~50-100 words)
+    1: 400,    // Level1 - Short stories (~100-200 words) 
+    2: 800,    // Level2 - Medium stories (~200-300 words)
+    3: 1500,   // Level3 - Longer stories (~300-400 words)
+    4: 2000,   // Level4 - Expert stories (~400-500 words)
+    6: 6000,   // Grade6 - Maintain old limits
+    7: 6500,   // Grade7 - Slightly higher
+    8: 7000,   // Grade8 - Higher complexity
+    9: 7500,   // Grade9 - More complex
+    10: 8000   // Grade10 - Most complex, highest limit
+  };
+  
+  return levelTokenLimits[gradeLevel] || 2000; // Default fallback
+}
+
 async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number): Promise<string> {
-  const maxTokens = customTokenLimit || 100000; // High ceiling for story generation
+  const maxTokens = customTokenLimit || getOpenAITokenLimit(gradeLevel);
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Add hair color mapping for English speakers
@@ -332,9 +353,11 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         ]
       };
       
-      // TOKEN LIMITS REMOVED - OpenAI uses defaults (much higher than char limits)
-      // Character validation controls content length exclusively
-      // Note: Removed apiBody[currentModel.paramName] = maxTokens
+      // Set level-aware OpenAI token limits for story size control (not validation)
+      const recommendedTokenLimit = getOpenAITokenLimit(gradeLevel);
+      apiBody[currentModel.paramName] = Math.min(recommendedTokenLimit, maxTokens);
+
+      console.log(`🎯 OpenAI Token Limit: ${apiBody[currentModel.paramName]} (grade ${gradeLevel})`);
       
       // Add temperature for legacy models that support it
       if (currentModel.supportsTemperature) {
@@ -346,7 +369,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         tokenValidation: 'DISABLED',
         supportsTemperature: !!currentModel.supportsTemperature,
         promptLength: enhancedSystemPrompt.length + finalUserPrompt.length,
-        note: 'Token limits removed - OpenAI uses defaults'
+        note: 'Level-aware token limits applied for story size control'
       });
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
