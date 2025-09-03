@@ -289,27 +289,37 @@ function processScene(scene: StoryScene, userInfo: UserInfo, template: StoryTemp
   return text;
 }
 
-// Process ending with sophisticated grammar validation (PHASE 4)
-function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing'): string {
+// Process ending with arc-aware rotation and sophisticated grammar validation
+function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template: StoryTemplate, mode: string = 'testing', arcConfig?: any): string {
   if (endings.length === 0) return "And they lived happily ever after.";
   
-  const ending = pick(endings);
-  const shouldUseVariant = Math.random() < 0.4 && ending.microVariants.length > 0;
+  // Use arc-aware ending selection if available
+  let selectedEnding;
+  if (arcConfig?.endingRotation) {
+    // Use arc manager's ending rotation logic
+    const { selectRotatedEnding } = await import('./arcManager.js');
+    selectedEnding = selectRotatedEnding(endings, { endingRotation: arcConfig.endingRotation });
+  } else {
+    selectedEnding = pick(endings);
+  }
   
-  let text = shouldUseVariant ? pick(ending.microVariants) : ending.text;
+  if (!selectedEnding) selectedEnding = pick(endings);
+  
+  const shouldUseVariant = Math.random() < 0.4 && selectedEnding.microVariants.length > 0;
+  let text = shouldUseVariant ? pick(selectedEnding.microVariants) : selectedEnding.text;
   
   // Process swappable elements and seed data for consistent ending
-  const swappedElements = processSwappableElements(template, userInfo);
-  const seedData = applyRandomSeedSelection(template, userInfo);
+  const swappedElements = arcConfig?.swappableElements || processSwappableElements(template, userInfo);
+  const seedData = arcConfig?.environmentalVariants || applyRandomSeedSelection(template, userInfo);
   
-  // Create enhanced MicroContext for ending
+  // Create enhanced MicroContext for ending with arc data
   const microContext: MicroContext = {
     userInfo: userInfo,
     pageText: text,
     seed: { ...seedData, ...swappedElements }
   };
   
-  // Apply sophisticated placeholder resolution (grammar processing moved to process-story-content)
+  // Apply sophisticated placeholder resolution
   text = resolveAllPlaceholders(text, microContext);
   
   return text;
@@ -319,19 +329,31 @@ function processEnding(endings: AttachableEnding[], userInfo: UserInfo, template
  * Convert a StoryTemplate to a string array with sophisticated processing
  */
 /**
- * Convert a StoryTemplate to a string array with sophisticated processing (Phase 5: Dual-Mode)
+ * Convert a StoryTemplate to a string array with arc-aware processing
+ * Supports never-ending stories with modulo-based arc generation
  */
 export function convertStoryTemplateToStringArray(
   template: StoryTemplate, 
   userInfo: UserInfo = {}, 
   pageCount: number = 5,
-  mode: string = 'testing'
+  mode: string = 'testing',
+  arcConfig?: {
+    pageIndex?: number;
+    arcNumber?: number;
+    isArcTransition?: boolean;
+    carriedIntent?: string;
+    environmentalVariants?: Record<string, string>;
+    swappableElements?: Record<string, string>;
+  }
 ): string[] | { pages: string[], testingData?: any } {
   if (mode === 'testing') {
     console.log(`🔄 Converting template: \"${template.title}\" for ${pageCount} pages (${mode} mode)`);
+    if (arcConfig) {
+      console.log(`🎯 Arc Config: pageIndex=${arcConfig.pageIndex}, arcNumber=${arcConfig.arcNumber}, isTransition=${arcConfig.isArcTransition}`);
+    }
   }
   
-  // TESTING MODE: Show complete template structure
+  // TESTING MODE: Show complete template structure with arc awareness
   if (mode === 'testing') {
     console.log(`\n🎭 TEMPLATE ANALYSIS: \"${template.title}\"`);
     console.log(`📚 Level: ${template.level} | Theme: ${template.theme}`);
@@ -339,16 +361,45 @@ export function convertStoryTemplateToStringArray(
     console.log(`🔄 Reusable Elements:`, Object.keys(template.reuse.swappableElements || {}));
     console.log(`🌤️ Weather Variants: ${template.reuse.weatherVariants?.length || 0}`);
     console.log(`🏠 Setting Variants: ${template.reuse.settingVariants?.length || 0}`);
+    
+    // Arc-specific logging
+    if (arcConfig) {
+      console.log(`🎪 Arc Processing: Arc ${arcConfig.arcNumber}, Environmental: ${JSON.stringify(arcConfig.environmentalVariants)}`);
+      console.log(`🔄 Swappable Elements: ${JSON.stringify(arcConfig.swappableElements)}`);
+      if (arcConfig.carriedIntent) {
+        console.log(`💭 Carried Intent: "${arcConfig.carriedIntent}"`);
+      }
+    }
   }
   
-  const pages: string[] = [];
+  // Arc-aware scene processing with modulo logic
+  if (arcConfig?.pageIndex !== undefined) {
+    // Arc-based generation using modulo logic
+    const { calculateArcPosition } = await import('./arcManager.js');
+    const arcPosition = calculateArcPosition(arcConfig.pageIndex, template.level);
+    
+    console.log(`🎪 Arc Processing: Page ${arcConfig.pageIndex} → Arc ${arcPosition.arcNumber}, Scene ${arcPosition.sceneIndex}, isEnding: ${arcPosition.isEndingPage}`);
+    
+    if (arcPosition.isEndingPage) {
+      // Generate ending page with arc transition awareness
+      const ending = processEnding(template.endings, userInfo, template, mode, arcConfig);
+      return [ending];
+    } else {
+      // Generate scene page using modulo to cycle through scenes
+      const scene = template.scenes[arcPosition.sceneIndex] || template.scenes[0];
+      const processedScene = processScene(scene, userInfo, template, mode);
+      return [processedScene];
+    }
+  }
   
+  // Standard processing for testing mode or batch generation
   if (mode === 'real-user' && pageCount === 1) {
-    // Real user mode: generate single page (Phase 4: Never-ending sustainability)
+    // Real user mode: generate single page
     return [getNextTemplatePage(template, userInfo, 0)];
   }
+  const pages: string[] = [];
   
-  // Testing mode: generate specific page count (Phase 3: Intelligent Scene Distribution)
+  // Testing mode: generate specific page count (Intelligent Scene Distribution)
   if (template.scenes.length >= pageCount - 1) {
     // Enough scenes for direct mapping
     for (let i = 0; i < pageCount - 1; i++) {
@@ -375,8 +426,8 @@ export function convertStoryTemplateToStringArray(
     }
   }
   
-  // Always add ending
-  const ending = processEnding(template.endings, userInfo, template, mode);
+  // Always add ending (with arc-aware processing if available)
+  const ending = processEnding(template.endings, userInfo, template, mode, arcConfig);
   pages.push(ending);
   
   // TESTING MODE: Show all endings for validation

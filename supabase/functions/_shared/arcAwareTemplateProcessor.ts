@@ -1,0 +1,261 @@
+/**
+ * Arc-Aware Template Processor
+ * Main orchestrator for modulo-based never-ending story generation
+ * Integrates with smart template selection, cache management, and character validation
+ */
+
+import { convertStoryTemplateToStringArray } from './templateConverter.ts';
+import { calculateArcPosition, generateArcTransition, needsArcTransition, getBValue } from './arcManager.js';
+import { globalArcSessionManager } from './sessionStateManager.js';
+import { getTemplate, getTemplateCount } from './templateImporter.ts';
+import type { UserInfo } from './placeholderResolver.ts';
+
+export interface ArcProcessingResult {
+  pages: string[];
+  arcTransition?: any;
+  sessionState?: any;
+  metadata?: any;
+}
+
+/**
+ * Process story page with full arc awareness
+ * Main entry point for arc-based story generation
+ */
+export async function processArcAwarePage(
+  pageIndex: number,
+  userInfo: UserInfo,
+  templateLevel: string,
+  sessionId: string,
+  mode: string = 'real-user'
+): Promise<ArcProcessingResult> {
+  try {
+    console.log(`🎪 Processing arc-aware page ${pageIndex} for ${templateLevel}`);
+    
+    // Get or create session state
+    const sessionState = globalArcSessionManager.getOrCreateSession(
+      sessionId,
+      userInfo.userId || 'anonymous',
+      templateLevel,
+      userInfo
+    );
+    
+    // Calculate arc position using modulo logic
+    const arcPosition = calculateArcPosition(pageIndex, templateLevel);
+    console.log(`📍 Arc Position:`, arcPosition);
+    
+    // Check if we need arc transition
+    if (needsArcTransition(pageIndex, templateLevel) && pageIndex > 0) {
+      console.log(`🔄 Arc transition needed at page ${pageIndex}`);
+      
+      // Generate arc transition data with smart template selection
+      const arcTransitionData = await generateArcTransition(
+        { arcNumber: arcPosition.arcNumber - 1 }, // Previous arc
+        userInfo,
+        templateLevel,
+        sessionState
+      );
+      
+      // Complete current arc and start new one
+      globalArcSessionManager.completeArc(sessionId, arcTransitionData);
+      
+      // Load new template for next arc
+      const template = await getTemplate(
+        templateLevel,
+        arcTransitionData.nextTemplateIndex,
+        userInfo,
+        1,
+        mode
+      );
+      
+      if (!template) {
+        throw new Error('Failed to load template for arc transition');
+      }
+      
+      // Process ending page with arc transition context
+      const arcConfig = {
+        pageIndex,
+        arcNumber: arcPosition.arcNumber,
+        isArcTransition: true,
+        carriedIntent: arcTransitionData.carriedIntent,
+        environmentalVariants: arcTransitionData.environmentalChanges,
+        swappableElements: arcTransitionData.swappableChanges,
+        continuityLine: arcTransitionData.continuityLine
+      };
+      
+      const pages = await convertStoryTemplateToStringArray(
+        Array.isArray(template) ? template[0] : template,
+        userInfo,
+        1,
+        mode,
+        arcConfig
+      );
+      
+      return {
+        pages: Array.isArray(pages) ? pages : pages.pages,
+        arcTransition: arcTransitionData,
+        sessionState: sessionState.toJSON(),
+        metadata: {
+          arcNumber: arcPosition.arcNumber,
+          isArcTransition: true,
+          templateIndex: arcTransitionData.nextTemplateIndex
+        }
+      };
+    }
+    
+    // Regular scene processing within current arc
+    const currentTemplateIndex = sessionState.currentArc.templateIndex || 0;
+    
+    // Load current template
+    const template = await getTemplate(
+      templateLevel,
+      currentTemplateIndex,
+      userInfo,
+      1,
+      mode
+    );
+    
+    if (!template) {
+      throw new Error(`Failed to load template ${currentTemplateIndex} for ${templateLevel}`);
+    }
+    
+    // Process scene with arc context
+    const arcConfig = {
+      pageIndex,
+      arcNumber: arcPosition.arcNumber,
+      isArcTransition: false,
+      environmentalVariants: sessionState.environmentalState,
+      swappableElements: sessionState.swappableState
+    };
+    
+    const pages = await convertStoryTemplateToStringArray(
+      Array.isArray(template) ? template[0] : template,
+      userInfo,
+      1,
+      mode,
+      arcConfig
+    );
+    
+    // Update session state
+    sessionState.updateCurrentArc({
+      sceneIndex: arcPosition.sceneIndex,
+      totalPages: sessionState.currentArc.totalPages + 1
+    });
+    
+    return {
+      pages: Array.isArray(pages) ? pages : pages.pages,
+      sessionState: sessionState.toJSON(),
+      metadata: {
+        arcNumber: arcPosition.arcNumber,
+        sceneIndex: arcPosition.sceneIndex,
+        isArcTransition: false,
+        templateIndex: currentTemplateIndex
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ Arc-aware processing failed:', error);
+    
+    // Emergency fallback
+    return {
+      pages: [`Chapter ${Math.floor(pageIndex / 10) + 1}: The adventure continues with new discoveries ahead.`],
+      metadata: {
+        error: error.message,
+        fallback: true
+      }
+    };
+  }
+}
+
+/**
+ * Batch process multiple pages for testing mode
+ */
+export async function batchProcessArcAwarePages(
+  startPage: number,
+  pageCount: number,
+  userInfo: UserInfo,
+  templateLevel: string,
+  sessionId: string,
+  mode: string = 'testing'
+): Promise<ArcProcessingResult> {
+  try {
+    console.log(`🎪 Batch processing ${pageCount} pages starting from ${startPage}`);
+    
+    const allPages: string[] = [];
+    const arcTransitions: any[] = [];
+    let sessionState = null;
+    
+    for (let i = 0; i < pageCount; i++) {
+      const pageIndex = startPage + i;
+      const result = await processArcAwarePage(pageIndex, userInfo, templateLevel, sessionId, mode);
+      
+      allPages.push(...result.pages);
+      
+      if (result.arcTransition) {
+        arcTransitions.push(result.arcTransition);
+      }
+      
+      sessionState = result.sessionState;
+    }
+    
+    return {
+      pages: allPages,
+      sessionState,
+      metadata: {
+        batchProcessed: true,
+        totalPages: pageCount,
+        arcTransitions: arcTransitions.length,
+        startPage,
+        endPage: startPage + pageCount - 1
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ Batch arc processing failed:', error);
+    
+    // Emergency fallback
+    const fallbackPages = Array.from({ length: pageCount }, (_, i) => 
+      `Page ${startPage + i + 1}: The story continues with new adventures.`
+    );
+    
+    return {
+      pages: fallbackPages,
+      metadata: {
+        error: error.message,
+        fallback: true,
+        batchProcessed: true
+      }
+    };
+  }
+}
+
+/**
+ * Clear session for new story (rewrite mode)
+ */
+export function clearArcSession(sessionId: string, context: 'rewrite' | 'new-story' | 'session-end' = 'session-end') {
+  console.log(`🧹 Clearing arc session ${sessionId} for ${context}`);
+  
+  if (context === 'session-end') {
+    globalArcSessionManager.clearSession(sessionId);
+  } else {
+    globalArcSessionManager.clearSessionForNewStory(sessionId);
+  }
+}
+
+/**
+ * Get session analytics for monitoring
+ */
+export function getArcSessionAnalytics(sessionId?: string) {
+  if (sessionId) {
+    const session = globalArcSessionManager.sessions.get(sessionId);
+    return session ? {
+      sessionId: session.sessionId,
+      currentArc: session.currentArc.arcNumber,
+      totalPages: session.getCurrentPageIndex(),
+      templateLevel: session.templateLevel,
+      arcHistory: session.arcHistory.length,
+      isNeverEnding: session.isNeverEnding
+    } : null;
+  }
+  
+  return globalArcSessionManager.getActiveSessions();
+}

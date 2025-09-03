@@ -2,11 +2,11 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
-// Template service now uses dynamic loading only
-
-// Import dynamic template system
-import { getTemplate, getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
+// Import arc-aware template processing system
+import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.ts';
+import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
 import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
+import { getBValue } from '../_shared/templates/registry.js';
 
 // Import sophisticated placeholder resolution  
 import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
@@ -84,7 +84,18 @@ serve(async (req) => {
   }
 
   try {
-    const { difficulty, userInfo, pageCount, templateIndex, explore = false, mode = 'testing' } = await req.json();
+    const { 
+      difficulty, 
+      userInfo, 
+      pageCount, 
+      templateIndex, 
+      explore = false, 
+      mode = 'testing',
+      // New arc-aware parameters
+      pageIndex,
+      sessionId,
+      isNeverEnding = false
+    } = await req.json();
     
     // Handle difficulty parameter
     const effectiveDifficulty = difficulty || userInfo?.difficultyLevel;
@@ -98,7 +109,11 @@ serve(async (req) => {
       templateIndex, 
       userInfo: userInfo ? 'provided' : 'missing', 
       explore,
-      mode
+      mode,
+      // Arc-aware logging
+      pageIndex,
+      sessionId,
+      isNeverEnding
     });
     
     // Log Hard/Expert level targets
@@ -107,9 +122,9 @@ serve(async (req) => {
       console.log(`🎯 HARD/EXPERT TARGET: ${targetWords}+ words per page for ${dynamicPageCount} pages`);
     }
 
-    // Difficulty mapping
+    // Difficulty mapping (Level 0 removed - Levels 1-4 & Grades 6-10 only)
     const levelMap: Record<string, string> = {
-      'beginner': 'level0',
+      'beginner': 'level1', // Promoted from level0 to level1
       'easy': 'level1',
       'medium': 'level2',
       'hard': 'level3',
@@ -121,7 +136,7 @@ serve(async (req) => {
       'grade10': 'grade10'
     };
 
-    const templateLevel = levelMap[effectiveDifficulty] || 'level0';
+    const templateLevel = levelMap[effectiveDifficulty] || 'level1';
 
       // Handle exploration requests
     if (explore) {
@@ -135,70 +150,25 @@ serve(async (req) => {
       const templateCount = await getTemplateCount(templateLevel);
       console.log(`✅ Found ${templateCount} templates for ${templateLevel}`);
       
-      // Helper function to extract Level 0 template titles from comments
-      const extractLevel0Title = (templateIndex: number): string => {
-        // Level 0 template titles based on comment structure in level0.js
-        const titles = [
-          "Morning Routine", "Bedtime Story", "Meal Time", "Getting Dressed", "Cleaning Up",
-          "Playground Fun", "Library Visit", "Art Time", "Music Time", "Helping Mom",
-          "Walking the Dog", "Grocery Store", "Cooking Together", "Bath Time", "Story Time",
-          "Garden Work", "Car Ride", "Park Visit", "Friend Visit", "TV Time",
-          "Doctor Visit", "Dental Checkup", "Getting a Shot", "Taking Medicine", "Hospital Visit",
-          "Feeling Better", "Hand Washing", "Exercise Time", "Check-up Day", "Healthy Food",
-          "ABC Learning", "Counting Fun", "Color Names", "Shape Game", "Size Learning",
-          "Weather Talk", "Days of Week", "Month Names", "Number Practice", "Letter Sounds",
-          "Reading Time", "Writing Practice", "School Day", "Teacher Help", "Learning Colors",
-          "Hide and Seek", "Tag Game", "Ball Play", "Swing Time", "Slide Fun",
-          "Sandbox Play", "Bike Ride", "Running Fast", "Jump Rope", "Dance Time",
-          "Toy Sharing", "Building Blocks", "Puzzle Time", "Game Playing", "Fun Together",
-          "Helper Day", "Store Visit", "Post Office", "Fire Station", "Police Visit",
-          "Community Walk", "Neighbor Hello", "Park Clean", "Helping Others", "Being Kind",
-          "Bus Ride", "Car Trip", "Train Ride", "Airplane Fun", "Boat Ride",
-          "Walking Trip", "Scooter Ride", "Bike Path",
-          "Birthday Party", "Holiday Fun", "Gift Giving", "Celebration Time", "Family Day",
-          "Special Meal", "Dress Up", "Party Games", "Cake Time", "Happy Day", "Thank You Day",
-          "Pet Care", "Bird Watching", "Bug Hunt", "Tree Climbing", "Flower Picking",
-          "Beach Day", "Mountain Trip", "River Play", "Forest Walk", "Animal Friends"
-        ];
-        return titles[templateIndex] || `Template ${templateIndex + 1}`;
-      };
-
-      // Get actual template details for better exploration
+      // Get actual template details for better exploration (Level 0 removed)
       let templateDetails = [];
       try {
-        // For Level 0, load ALL 100 templates to show complete dropdown
-        const templatesToLoad = templateLevel === 'level0' ? templateCount : Math.min(templateCount, 5);
+        const templatesToLoad = Math.min(templateCount, 5);
         
         console.log(`🔄 Loading ${templatesToLoad} templates for exploration`);
         
         for (let i = 0; i < templatesToLoad; i++) {
           const rawTemplate = await getRawTemplate(templateLevel, i);
           if (rawTemplate) {
-            // Handle Level 0 templates (string arrays) vs structured templates
-            if (Array.isArray(rawTemplate)) {
-              templateDetails.push({
-                title: extractLevel0Title(i),
-                theme: i < 20 ? "Daily Life" : 
-                       i < 30 ? "Healthcare" : 
-                       i < 45 ? "Educational" : 
-                       i < 60 ? "Play & Recreation" : 
-                       i < 70 ? "Community" : 
-                       i < 78 ? "Transportation" : 
-                       i < 91 ? "Special Occasions" : "Nature & Animals",
-                scenes: 6, // Level 0 templates always show 6 pages per template
-                endings: 1 // Level 0 templates have implicit endings
-              });
-            } else {
-              // Structured template with proper metadata
-              const sceneCount = rawTemplate.scenes?.length || 0;
-              console.log(`📊 Template ${i}: "${rawTemplate.title}" has ${sceneCount} scenes`);
-              templateDetails.push({
-                title: rawTemplate.title || `Template ${i + 1}`,
-                theme: rawTemplate.theme || "Adventure",
-                scenes: sceneCount,
-                endings: rawTemplate.endings?.length || 0
-              });
-            }
+            // All templates are now structured templates (Level 0 removed)
+            const sceneCount = rawTemplate.scenes?.length || 0;
+            console.log(`📊 Template ${i}: "${rawTemplate.title}" has ${sceneCount} scenes`);
+            templateDetails.push({
+              title: rawTemplate.title || `Template ${i + 1}`,
+              theme: rawTemplate.theme || "Adventure",
+              scenes: sceneCount,
+              endings: rawTemplate.endings?.length || 0
+            });
           }
         }
       } catch (error) {
@@ -221,8 +191,85 @@ serve(async (req) => {
       });
     }
 
-    // Smart Template Selection Implementation
-    console.log('📚 Getting template for level:', templateLevel);
+    // Arc-aware processing for never-ending stories
+    if (isNeverEnding && pageIndex !== undefined && sessionId) {
+      console.log(`🎪 Processing never-ending story: page ${pageIndex}, session ${sessionId}`);
+      
+      try {
+        const result = await processArcAwarePage(
+          pageIndex,
+          userInfo || {},
+          templateLevel,
+          sessionId,
+          mode
+        );
+        
+        // Build arc-aware response
+        const responseData = {
+          success: true,
+          pages: result.pages,
+          level: templateLevel,
+          pageCount: result.pages.length,
+          metadata: {
+            sourceSystem: 'Arc-Aware Dynamic Templates',
+            templateLevel,
+            mode,
+            arcProcessing: true,
+            ...result.metadata
+          },
+          ...(result.arcTransition && { arcTransition: result.arcTransition }),
+          ...(result.sessionState && { sessionState: result.sessionState })
+        };
+        
+        return new Response(JSON.stringify(responseData), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+        
+      } catch (arcError) {
+        console.error('❌ Arc-aware processing failed:', arcError);
+        // Fall through to standard processing
+      }
+    }
+    
+    // Batch processing for testing mode with arc awareness
+    if (mode === 'testing' && pageIndex !== undefined && dynamicPageCount > 1) {
+      console.log(`🎪 Batch arc processing: ${dynamicPageCount} pages from ${pageIndex}`);
+      
+      try {
+        const batchSessionId = sessionId || `test-${Date.now()}`;
+        const result = await batchProcessArcAwarePages(
+          pageIndex,
+          dynamicPageCount,
+          userInfo || {},
+          templateLevel,
+          batchSessionId,
+          mode
+        );
+        
+        const responseData = {
+          success: true,
+          pages: result.pages,
+          level: templateLevel,
+          pageCount: result.pages.length,
+          metadata: {
+            sourceSystem: 'Arc-Aware Batch Processing',
+            templateLevel,
+            mode,
+            batchProcessing: true,
+            ...result.metadata
+          },
+          ...(result.sessionState && { sessionState: result.sessionState })
+        };
+        
+        return new Response(JSON.stringify(responseData), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+        
+      } catch (batchError) {
+        console.error('❌ Batch arc processing failed:', batchError);
+        // Fall through to standard processing
+      }
+    }
     
     // Phase 1: Try smart template selection if special request exists
     let selectedTemplateIndex = templateIndex; // Use provided index if available
@@ -302,10 +349,7 @@ serve(async (req) => {
           console.log('✅ Template loaded with', pageCount, 'pages');
         }
         
-        // Apply additional processing for level0 templates (placeholder resolution only)
-        if (templateLevel === 'level0' && Array.isArray(pages)) {
-          pages = processStoryTemplate(pages, userInfo || {}, dynamicPageCount);
-        }
+        // Level 0 processing removed - all templates now use structured processing
       }
     } catch (dynamicError) {
       console.error('❌ Dynamic template import failed:', dynamicError);
