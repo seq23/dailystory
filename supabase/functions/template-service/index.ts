@@ -6,6 +6,7 @@ import { corsHeaders } from '../_shared/cors.ts';
 
 // Import dynamic template system
 import { getTemplate, getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
+import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
 
 // Import sophisticated placeholder resolution  
 import { resolveAllPlaceholders, MicroContext, UserInfo } from '../_shared/placeholderResolver.ts';
@@ -107,6 +108,10 @@ serve(async (req) => {
 
       // Handle exploration requests
     if (explore) {
+      // Clear template cache to ensure fresh data for exploration
+      console.log('🧹 Clearing template cache for fresh exploration data');
+      clearTemplateCache();
+      
       console.log('🔍 Exploration mode for level:', templateLevel);
       console.log(`📊 Getting template count for ${templateLevel}`);
       
