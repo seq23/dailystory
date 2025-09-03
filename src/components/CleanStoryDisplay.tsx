@@ -48,6 +48,8 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles, GraduationCap, Save, Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import { useStorySourceNotifications } from "@/hooks/useStorySourceNotifications";
+import { StoryStatusIndicator } from "@/components/StoryStatusIndicator";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -177,6 +179,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       shouldShowImages: layout !== 'classic' || window.innerWidth >= 1280
     });
   }, [layout, lowEnd, reason]);
+  
+  // Story source notifications - persistent toast system
+  useStorySourceNotifications();
   
   // Legacy state - keeping during migration
   const [story, setStory] = useState<string[]>([]);
@@ -3770,6 +3775,9 @@ const handleRestartTimer = () => {
       <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
       <VoiceHoverController isPremium={isPremium} />
       <PremiumHoverController isPremium={isPremium} />
+      
+      {/* Story Status Indicator - persistent backup/emergency mode indicator */}
+      <StoryStatusIndicator />
       
       </div>
     </ErrorBoundary>

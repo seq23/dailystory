@@ -36,12 +36,12 @@ export function useTemplateService() {
     const isChildAccount = userInfo?.age && userInfo.age < 13;
     
     toast({
-      title: "🚨 Story System Maintenance",
+      title: "🚨 Emergency Content Mode",
       description: isChildAccount 
-        ? "Parents: The story system is temporarily down. Please refresh the page or contact support if issues persist."
-        : "Our story generation system is experiencing issues. Please refresh or try again in a few minutes.",
+        ? "Parents: The story system is experiencing critical issues. Please refresh the page or contact support if issues persist."
+        : "System experiencing critical issues. Using emergency content. Parents: Please refresh the page.",
       variant: "destructive",
-      duration: 8000,
+      duration: 10000,
       className: "bg-red-50 border-red-200 text-red-900",
     });
   };

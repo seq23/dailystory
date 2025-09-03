@@ -145,9 +145,10 @@ export class NetflixStyleStoryService {
     
     // Show toast notification for template usage
     toast({
-      title: "Pre-written Story",
-      description: "AI service temporarily unavailable. Enjoying quality pre-written content instead!",
-      variant: "default"
+      title: "⚠️ Using Pre-Written Content",
+      description: "AI is taking a break. You're reading quality backup stories! Parents: This is normal during high demand.",
+      variant: "warning",
+      duration: 7000
     });
 
     try {
