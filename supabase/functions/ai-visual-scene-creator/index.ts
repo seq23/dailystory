@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
+
+// AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 // Inline implementations for missing tierFailureMonitoring functions
 const TierFailureLogger = {

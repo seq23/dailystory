@@ -542,26 +542,32 @@ export function parseIntoPages(content: string, level: ValidationLevel, service:
 
 /**
  * Get token limits for story generation (used by backend)
+ * PHASE OUT: Returns high ceiling for story generation - character limits are primary validation
  */
 export function getTokensForGrade(gradeLevel: number): number {
-  let level: ValidationLevel;
+  // PHASE OUT TOKEN VALIDATION: Return high ceiling for story generation
+  // Character validation is now the primary gatekeeper for story length
+  return 100000; // No artificial token cutoffs for stories
   
-  if (gradeLevel >= 6 && gradeLevel <= 10) {
-    level = `Grade${gradeLevel}` as ValidationLevel;
-  } else {
-    // Map numeric grade to difficulty level
-    if (gradeLevel === 0) level = 'Level0';
-    else if (gradeLevel === 1) level = 'Level1';
-    else if (gradeLevel === 2) level = 'Level2';
-    else if (gradeLevel === 3) level = 'Level3';
-    else level = 'Level4';
-  }
-  
-  const expectedPages = getExpectedPagesForLevel(level);
-  const tokensPerPage = getTokenLimitsForLevel(level).perPage;
-  
-  // Return total tokens for expected story length
-  return expectedPages * tokensPerPage;
+  // LEGACY CODE (keep for reference/utility functions):
+  // let level: ValidationLevel;
+  // 
+  // if (gradeLevel >= 6 && gradeLevel <= 10) {
+  //   level = `Grade${gradeLevel}` as ValidationLevel;
+  // } else {
+  //   // Map numeric grade to difficulty level
+  //   if (gradeLevel === 0) level = 'Level0';
+  //   else if (gradeLevel === 1) level = 'Level1';
+  //   else if (gradeLevel === 2) level = 'Level2';
+  //   else if (gradeLevel === 3) level = 'Level3';
+  //   else level = 'Level4';
+  // }
+  // 
+  // const expectedPages = getExpectedPagesForLevel(level);
+  // const tokensPerPage = getTokenLimitsForLevel(level).perPage;
+  // 
+  // // Return total tokens for expected story length
+  // return expectedPages * tokensPerPage;
 }
 
 // Backward compatibility alias

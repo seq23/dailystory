@@ -160,10 +160,9 @@ Generate a corrected version that addresses these issues while keeping the story
       (parseInt(expertGrade.replace('grade', '')) || bundle.systemSettings.gradeLevel) : 
       bundle.systemSettings.gradeLevel;
     
-    // Add token buffer for repair operations (repairs need more tokens for context)
-    const baseTokens = sharedGetTokensForGrade(effectiveGradeLevel);
-    const repairTokenBuffer = config.sessionType === 'repair' ? Math.floor(baseTokens * 0.2) : 0;
-    const finalTokenLimit = baseTokens + repairTokenBuffer;
+    // PHASE OUT TOKEN VALIDATION: Use high ceiling for story generation
+    // Character limits are now the primary validation method
+    const finalTokenLimit = 100000; // High ceiling - no artificial token cutoffs
     
     const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, finalTokenLimit);
     
@@ -261,7 +260,7 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
 }
 
 async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number): Promise<string> {
-  const maxTokens = customTokenLimit || sharedGetTokensForGrade(gradeLevel);
+  const maxTokens = customTokenLimit || 100000; // High ceiling for story generation
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Add hair color mapping for English speakers
