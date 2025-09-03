@@ -146,7 +146,7 @@ serve(async (req) => {
     if (!forceTier || forceTier === 1) {
       try {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
-        console.log('🔍 TIER 1 DEBUG - Calling ai-story-enhancer directly (clean architecture)');
+        console.log('🔍 TIER 1 DEBUG - Calling ai-visual-scene-creator directly (clean architecture)');
         
         // Collect previous page text for context continuity
         let previousPageText = '';
@@ -161,8 +161,8 @@ serve(async (req) => {
           console.warn('⚠️ Failed to collect previous page context (non-critical):', error);
         }
         
-        // Call ai-story-enhancer directly with pre-processed avatar identity and previous context
-        const aiEnhancerResult = await callTierFunction('ai-story-enhancer', {
+        // Call ai-visual-scene-creator directly with pre-processed avatar identity and previous context
+        const aiEnhancerResult = await callTierFunction('ai-visual-scene-creator', {
           storyText: pageText,
           userInfo,
           storyId,

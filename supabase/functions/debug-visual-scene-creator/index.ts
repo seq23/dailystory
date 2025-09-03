@@ -9,7 +9,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🔍 AI Story Enhancer Debug Function - Starting diagnostic');
+    console.log('🔍 AI Visual Scene Creator Debug Function - Starting diagnostic');
     
     // Test environment configuration
     const openAIKey = Deno.env.get('OPENAI_API_KEY');
@@ -51,8 +51,8 @@ serve(async (req) => {
       const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-      console.log('🧪 Testing AI Story Enhancer with enhanced avatar identity...');
-      const { data, error } = await supabase.functions.invoke('ai-story-enhancer', {
+      console.log('🧪 Testing AI Visual Scene Creator with enhanced avatar identity...');
+      const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: testPayload
       });
 
@@ -73,7 +73,7 @@ serve(async (req) => {
 
     const result = {
       success: true,
-      message: 'AI Story Enhancer diagnostic completed',
+      message: 'AI Visual Scene Creator diagnostic completed',
       environment: {
         openAIConfigured: !!openAIKey,
         supabaseConfigured: !!supabaseUrl,

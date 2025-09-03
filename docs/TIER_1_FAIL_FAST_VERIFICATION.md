@@ -11,7 +11,7 @@ Tier 1 now implements strict fail-fast validation with **NO repair mechanisms**,
 ## Changes Implemented
 
 ### 1. Removed `applyBasicFixes()` Function
-**File**: `supabase/functions/ai-story-enhancer/index.ts`  
+**File**: `supabase/functions/ai-visual-scene-creator/index.ts`
 **Lines Removed**: 46-70  
 **Function Purpose**: Previously attempted to repair insufficient `primaryScene` data  
 **Replacement**: Direct validation without repair attempts  
@@ -31,7 +31,7 @@ if (!enhanced.primaryScene || enhanced.primaryScene.length < 10) {
 ```
 
 ### 2. Updated Validation Documentation
-**File**: `supabase/functions/ai-story-enhancer/index.ts`  
+**File**: `supabase/functions/ai-visual-scene-creator/index.ts`  
 **Updated Function**: `validateAndEnhanceContent()`  
 **Documentation Change**:
 - **Before**: "ULTRA-SIMPLE VALIDATION: Binary field-existence check - informational only"

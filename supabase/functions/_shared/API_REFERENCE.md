@@ -3,7 +3,7 @@
 ## Core Endpoints
 
 ### AI Story Enhancer
-**Endpoint**: `/functions/v1/ai-story-enhancer`
+**Endpoint**: `/functions/v1/ai-visual-scene-creator`
 **Method**: POST
 **Purpose**: Enhance story content with AI processing
 

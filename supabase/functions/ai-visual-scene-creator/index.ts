@@ -641,7 +641,7 @@ serve(async (req) => {
   }
 
   return EdgeErrorHandler.withPerformanceTracking(
-    'ai-story-enhancer',
+    'ai-visual-scene-creator',
     'fallback-chain',
     async () => {
       // Check for diagnostic mode first - consume body only once

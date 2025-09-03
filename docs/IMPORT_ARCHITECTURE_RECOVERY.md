@@ -22,7 +22,7 @@ Edge functions were failing to boot due to fundamental ES6 module import violati
 
 ### **Phase 1: Import Order Fixes** ✅
 - **`runware-template-generation/index.ts`**: Moved ALL imports to top of file
-- **`ai-story-enhancer/index.ts`**: Added inline implementations for missing functions
+- **`ai-visual-scene-creator/index.ts`**: Added inline implementations for missing functions
 - **`get-monitoring-data/index.ts`**: Fixed MonitoringDashboard import
 
 ### **Phase 2: Export Standardization** ✅
@@ -90,7 +90,7 @@ const TierFailureLogger = {
 ## **Boot Status Verification**
 
 ### **Edge Functions Boot Status** ✅
-- `ai-story-enhancer` - **BOOT SUCCESS** ✅
+- `ai-visual-scene-creator` - **BOOT SUCCESS** ✅
 - `runware-template-generation` - **BOOT SUCCESS** ✅ 
 - `clear-character-cache` - **BOOT SUCCESS** ✅
 - `get-monitoring-data` - **BOOT SUCCESS** ✅
@@ -116,7 +116,7 @@ graph TD
     A --> D[VisualDetailTracker.js]
     A --> E[CharacterConsistencyService.js]
     
-    F[ai-story-enhancer] --> A
+    F[ai-visual-scene-creator] --> A
     F --> G[SessionStateManager.js]
     
     H[runware-template-generation] --> A

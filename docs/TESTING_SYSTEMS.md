@@ -277,7 +277,7 @@ console.log('🖼️ ImageFallback: Generated SVG fallback', {
 
 ### 2. debug-ai-enhancer
 ```typescript
-// Tests ai-story-enhancer function with diagnostic payload
+// Tests ai-visual-scene-creator function with diagnostic payload
 // Checks environment variables and service availability
 // Returns comprehensive diagnostic results
 ```

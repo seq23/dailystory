@@ -53,7 +53,7 @@ Unknown name → "7-year-old child" (safe fallback)
 - **Tier 1**: `supabase/functions/runware-generate-image/index.ts` (lines 32-37, 763)
 - **Tier 2**: `supabase/functions/runware-template-generation/index.ts` (lines 188-198)
 - **Tier 2.5**: `supabase/functions/runware-simple-fallback/index.ts` (lines 24, 246-248, 395-397)
-- **AI Enhancement**: `supabase/functions/ai-story-enhancer/index.ts` (line 430)
+- **AI Enhancement**: `supabase/functions/ai-visual-scene-creator/index.ts` (line 430)
 - **Shared Logic**: `supabase/functions/_shared/UnifiedCharacterConsistency.js` (lines 115, 154, 394-398)
 - **Pipeline Enhancement**: `supabase/functions/_shared/MultiStageEnhancementPipeline.js` (lines 827-829)
 
@@ -220,7 +220,7 @@ Hindi + any skin → Native language cultural profile applied ✅
 
 ### ✅ ENHANCED AI SYSTEM PROMPTS (PHASE 6)
 
-The system prompts in `ai-story-enhancer/index.ts` have been enhanced to explicitly instruct OpenAI to use `previousPageText` for visual inferences and scene continuity:
+The system prompts in `ai-visual-scene-creator/index.ts` have been enhanced to explicitly instruct OpenAI to use `previousPageText` for visual inferences and scene continuity:
 
 #### Core Instructions Added to System Prompts:
 ```javascript
@@ -233,9 +233,9 @@ The system prompts in `ai-story-enhancer/index.ts` have been enhanced to explici
 ```
 
 #### Implementation Locations:
-- **Simplified Model Prompt**: `ai-story-enhancer/index.ts` (lines 540-620)
-- **Legacy Model Prompt**: `ai-story-enhancer/index.ts` (lines 650-750) 
-- **Previous Context Integration**: `ai-story-enhancer/index.ts` (lines 625-630, 722)
+- **Simplified Model Prompt**: `ai-visual-scene-creator/index.ts` (lines 540-620)
+- **Legacy Model Prompt**: `ai-visual-scene-creator/index.ts` (lines 650-750) 
+- **Previous Context Integration**: `ai-visual-scene-creator/index.ts` (lines 625-630, 722)
 
 ### ✅ ENHANCED VALIDATION SYSTEM
 
@@ -257,7 +257,7 @@ The system prompts in `ai-story-enhancer/index.ts` have been enhanced to explici
 #### Request ID Correlation System:
 - **Unique Request IDs**: Generated for each image generation request
 - **Cross-Function Tracking**: IDs passed through all tiers and functions
-- **Detailed Logging**: Enhanced logs with request correlation across ai-story-enhancer, runware-generate-image, and debug functions
+- **Detailed Logging**: Enhanced logs with request correlation across ai-visual-scene-creator, runware-generate-image, and debug functions
 
 #### Enhanced Logging Components:
 1. **OpenAI Prompt Debugging**: Full system and user prompts logged with request IDs
@@ -267,7 +267,7 @@ The system prompts in `ai-story-enhancer/index.ts` have been enhanced to explici
 5. **Tier Fallback Tracking**: Detailed error propagation between tiers
 
 #### Implementation Locations:
-- **AI Story Enhancer**: `ai-story-enhancer/index.ts` (enhanced request structure logging)
+- **AI Visual Scene Creator**: `ai-visual-scene-creator/index.ts` (enhanced request structure logging)
 - **Runware Generator**: `runware-generate-image/index.ts` (tier system debugging)
 - **Debug Function**: `debug-prompt-history/index.ts` (prompt history tracking)
 
@@ -292,7 +292,7 @@ Missing previous context reference → Quality score penalty ✅
 ```bash
 # Test request correlation:
 Generate image → unique request ID created ✅
-Check ai-story-enhancer logs → request ID present ✅
+Check ai-visual-scene-creator logs → request ID present ✅
 Check runware-generate logs → same request ID tracked ✅
 Check debug-prompt-history → request ID correlated ✅
 

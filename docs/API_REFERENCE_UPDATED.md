@@ -6,7 +6,7 @@ This document provides comprehensive API reference for all 38 Supabase Edge Func
 ## Core Story Generation APIs
 
 ### AI Story Enhancer
-**Endpoint**: `/functions/v1/ai-story-enhancer`
+**Endpoint**: `/functions/v1/ai-visual-scene-creator`
 **Method**: POST
 **Purpose**: Central orchestrator for AI-powered story enhancement
 
@@ -483,7 +483,7 @@ All APIs return standardized error responses:
 // Story generation with error handling
 const generateStory = async (userInput: StoryRequest) => {
   try {
-    const response = await supabase.functions.invoke('ai-story-enhancer', {
+    const response = await supabase.functions.invoke('ai-visual-scene-creator', {
       body: userInput
     });
     

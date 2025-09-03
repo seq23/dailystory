@@ -3,7 +3,7 @@ project_id = "cpzeuogomaixamrtnnmj"
 # Add function configurations
 [functions.template-service]
 verify_jwt = false
-[functions.ai-story-enhancer]
+[functions.ai-visual-scene-creator]
 verify_jwt = false
 [functions.elevenlabs-tts]
 verify_jwt = false
@@ -53,7 +53,7 @@ verify_jwt = false
 [functions.model-performance-monitor]
 verify_jwt = false
 
-[functions.debug-ai-enhancer]
+[functions.debug-visual-scene-creator]
 verify_jwt = false
 
 [functions.runware-diagnostic]

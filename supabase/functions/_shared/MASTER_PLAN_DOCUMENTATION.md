@@ -12,7 +12,7 @@
 
 ### ✅ COMPLETED CHANGES
 
-#### 1. AI Schema Transformation (`ai-story-enhancer/index.ts`)
+#### 1. AI Schema Transformation (`ai-visual-scene-creator/index.ts`)
 - **REMOVED**: Complex emotional schema (`mainCharacter`, `secondaryCharacters`, `overallMood`)
 - **IMPLEMENTED**: Streamlined 3-field structure:
   ```json
@@ -42,7 +42,7 @@
 - **REMOVED**: Cultural profile system replaced with direct visual approach
 
 #### 3. **PHASE 2: BackendTokenManager Removal and Simplification**
-- **REMOVED**: BackendTokenManager completely from edge functions (`ai-story-enhancer`, `MultiStageEnhancementPipeline`)
+- **REMOVED**: BackendTokenManager completely from edge functions (`ai-visual-scene-creator`, `MultiStageEnhancementPipeline`)
 - **IMPLEMENTED**: Direct prompt construction logic:
   - Priority Order: Primary Scene → Brand Suffix → Character → Visual → Cultural → Style
   - Simple length checking (remove style framework if > 2900 chars)
@@ -183,7 +183,7 @@ LOW: Style framework (can be truncated if needed)
 ### ✅ COMPLETED: Tier 1 Strict Fail-Fast Implementation
 
 #### 7. **PHASE 5: Tier 1 Fail-Fast Enforcement**
-- **REMOVED**: `applyBasicFixes()` function completely from `ai-story-enhancer/index.ts` (Lines 46-70)
+- **REMOVED**: `applyBasicFixes()` function completely from `ai-visual-scene-creator/index.ts` (Lines 46-70)
 - **ELIMINATED**: All repair attempts and fallback scene generation in Tier 1
 - **IMPLEMENTED**: Strict fail-fast validation:
   - Binary validation: `primaryScene` exists and ≥30 characters
@@ -199,7 +199,7 @@ AFTER:  AI extracts insufficient primaryScene → validation rejects → immedia
 
 ## FILES MODIFIED
 
-1. `supabase/functions/ai-story-enhancer/index.ts` - New 3-field schema + direct prompt building + fail-fast validation
+1. `supabase/functions/ai-visual-scene-creator/index.ts` - New 3-field schema + direct prompt building + fail-fast validation
 2. `supabase/functions/runware-generate-image/index.ts` - Direct avatar descriptions + enhanced error logging
 3. `supabase/functions/_shared/MultiStageEnhancementPipeline.js` - BackendTokenManager removal + negative prompt reordering
 4. `supabase/functions/_shared/styleFrameworks.js` - New negative prompts for Levels 0-1
@@ -229,7 +229,7 @@ AFTER:  AI extracts insufficient primaryScene → validation rejects → immedia
 ### ✅ COMPLETED: Enhanced AI System Prompts for Visual Continuity
 
 #### 8. **PHASE 6: Visual-First Prompt Enhancement**
-- **ENHANCED**: AI system prompts in `ai-story-enhancer/index.ts` to explicitly require previous context usage
+- **ENHANCED**: AI system prompts in `ai-visual-scene-creator/index.ts` to explicitly require previous context usage
 - **IMPLEMENTED**: Previous page visual continuity instructions:
   - "Analyze the PREVIOUS STORY CONTEXT to understand what visual elements should continue or evolve"
   - "Use previous page information to ensure visual progression and continuity"  
@@ -251,7 +251,7 @@ AFTER:  AI extracts insufficient primaryScene → validation rejects → immedia
 #### 10. **PHASE 6: Comprehensive Debugging System**
 - **IMPLEMENTED**: Request ID correlation system across all functions:
   - Unique request IDs generated for each image generation request
-  - IDs propagated through ai-story-enhancer → runware-generate-image → debug functions
+  - IDs propagated through ai-visual-scene-creator → runware-generate-image → debug functions
   - Cross-function request tracking for complete debugging workflow
 - **ENHANCED**: Detailed logging system:
   - OpenAI prompt debugging with full system and user prompts
@@ -302,7 +302,7 @@ Request ID Generation → Cross-Function Tracking → Detailed Logging → Compr
 
 ## FILES MODIFIED (PHASE 6 ADDITIONS)
 
-6. `supabase/functions/ai-story-enhancer/index.ts` - Enhanced system prompts + comprehensive validation + detailed logging
+6. `supabase/functions/ai-visual-scene-creator/index.ts` - Enhanced system prompts + comprehensive validation + detailed logging
 7. `supabase/functions/runware-generate-image/index.ts` - Request ID correlation + enhanced debugging
 8. `supabase/functions/debug-prompt-history/index.ts` - Cross-function request tracking
 

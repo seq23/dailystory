@@ -121,7 +121,7 @@ supabase/functions/_shared/templates/
 
 ### Premium Mode (Tier 1)
 1. **User Input** → `LiveGenerationService`
-2. **AI Enhancement** → `ai-story-enhancer/index.ts`
+2. **AI Enhancement** → `ai-visual-scene-creator/index.ts`
 3. **Cultural Processing** → Cultural context services
 4. **Image Generation** → `runware-generate-image/index.ts`
 5. **Grammar Resolution** → Multi-layer pipeline

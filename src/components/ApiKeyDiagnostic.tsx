@@ -34,7 +34,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
     try {
       // Test 1: Basic API key validation via AI Story Enhancer
       addResult('warning', '🔧 Testing basic API key validation...');
-      const { data: keyValidation, error: keyError } = await supabase.functions.invoke('ai-story-enhancer', {
+      const { data: keyValidation, error: keyError } = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: { test: true, diagnostic: 'key_validation' }
       });
       
@@ -53,25 +53,25 @@ export const ApiKeyDiagnostic: React.FC = () => {
 
       // Test 2: Circuit breaker status check
       addResult('warning', '🔄 Checking circuit breaker status...');
-      const { data: cbStatus, error: cbError } = await supabase.functions.invoke('ai-story-enhancer', {
+      const { data: cbStatus, error: cbError } = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: { test: true, diagnostic: 'circuit_breaker_status' }
       });
       
       if (cbError) {
         if (cbError.message?.includes('Circuit breaker')) {
-          addResult('warning', '⚠️ AI Story Enhancer circuit breaker is OPEN - using fallback tiers', cbError);
+          addResult('warning', '⚠️ AI Visual Scene Creator circuit breaker is OPEN - using fallback tiers', cbError);
         } else {
           addResult('error', `❌ Circuit breaker check failed: ${cbError.message}`, cbError);
         }
       } else {
-        addResult('success', '✅ AI Story Enhancer circuit breaker is CLOSED - service healthy', cbStatus);
+        addResult('success', '✅ AI Visual Scene Creator circuit breaker is CLOSED - service healthy', cbStatus);
       }
 
       // Test 3: Individual tier testing
       addResult('warning', '🎯 Testing individual image generation tiers...');
       
       const tiers = [
-        { name: 'Tier 1 (AI Story Enhancer)', function: 'ai-story-enhancer' },
+        { name: 'Tier 1 (AI Visual Scene Creator)', function: 'ai-visual-scene-creator' },
         { name: 'Tier 3 (OpenAI DALL-E)', function: 'openai-image' }
       ];
 
@@ -107,7 +107,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
     try {
       addResult('warning', '🔄 Attempting to reset circuit breaker...');
       
-      const { data, error } = await supabase.functions.invoke('ai-story-enhancer', {
+      const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: { diagnostic: 'reset_circuit_breaker' }
       });
       

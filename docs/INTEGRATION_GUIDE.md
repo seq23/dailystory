@@ -75,7 +75,7 @@ const processStoryContent = async (pages: string[], userInfo: UserInfo) => {
 ```typescript
 // Primary AI story enhancement
 const enhanceStory = async (storyData: StoryRequest) => {
-  const { data, error } = await supabase.functions.invoke('ai-story-enhancer', {
+  const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
     body: {
       storyText: storyData.content,
       userInfo: storyData.userInfo,
@@ -476,7 +476,7 @@ describe('Story Generation Integration', () => {
     const sessionId = 'test-session-123';
     
     // Mock external services
-    mockSupabaseFunction('ai-story-enhancer', mockAIResponse);
+    mockSupabaseFunction('ai-visual-scene-creator', mockAIResponse);
     mockSupabaseFunction('runware-generate-image', mockImageResponse);
     
     // Execute full pipeline
@@ -495,7 +495,7 @@ describe('Story Generation Integration', () => {
   
   test('should fallback gracefully on service failure', async () => {
     // Simulate service failures
-    mockSupabaseFunction('ai-story-enhancer', () => Promise.reject(new Error('AI service down')));
+    mockSupabaseFunction('ai-visual-scene-creator', () => Promise.reject(new Error('AI service down')));
     
     const result = await StoryGenerationOrchestrator.generatePage({
       userInfo: createTestUserInfo(),

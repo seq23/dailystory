@@ -1,4 +1,4 @@
-# AI Story Enhancer Debugging Guide
+# AI Visual Scene Creator Debugging Guide
 
 ## ⚠️ CRITICAL: COMPREHENSIVE DEBUGGING REFERENCE
 
@@ -11,7 +11,7 @@ This document provides complete debugging guidance for the enhanced AI story gen
 ### Request ID Correlation System
 - **Purpose**: Track requests across all functions for complete debugging workflow
 - **Implementation**: Unique request IDs generated and propagated through entire pipeline
-- **Functions Involved**: `ai-story-enhancer`, `runware-generate-image`, `debug-prompt-history`
+- **Functions Involved**: `ai-visual-scene-creator`, `runware-generate-image`, `debug-prompt-history`
 
 ### Enhanced Logging Components
 1. **OpenAI Prompt Debugging**: Complete system and user prompts with request correlation
@@ -34,7 +34,7 @@ const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
 ### Step 2: Track Request Through Functions
 Use the request ID to correlate logs across:
-1. **ai-story-enhancer**: AI prompt construction and response
+1. **ai-visual-scene-creator**: AI prompt construction and response
 2. **runware-generate-image**: Orchestration and tier management  
 3. **debug-prompt-history**: Historical tracking and analysis
 
@@ -45,15 +45,15 @@ Each function provides specific debugging information tied to the request ID.
 
 ## FUNCTION-SPECIFIC DEBUGGING
 
-### AI Story Enhancer (`ai-story-enhancer/index.ts`)
+### AI Visual Scene Creator (`ai-visual-scene-creator/index.ts`)
 
 #### Key Debug Logs to Look For:
 ```
 📥 Incoming Request Structure: {requestId, method, bodyKeys, bodyTypes, storyTextLength, pageInfo}
 📊 Dependency Verification Results: {cors, errorHandling, MultiStageEnhancementPipeline}
-🔍 AI Story Enhancer: Starting Phase 3 Request Analysis
-⚠️ [ERROR] AI Story Enhancer failed - returning error to Orchestrator
-⏱️ ai-story-enhancer Performance: [time]ms (SUCCESS/FAILURE)
+🔍 AI Visual Scene Creator: Starting Phase 3 Request Analysis
+⚠️ [ERROR] AI Visual Scene Creator failed - returning error to Orchestrator
+⏱️ ai-visual-scene-creator Performance: [time]ms (SUCCESS/FAILURE)
 ```
 
 #### Enhanced Request Structure Analysis:
@@ -79,7 +79,7 @@ console.log("📚 Previous Context Analysis:", {
 ```
 🔍 TIER SYSTEM DEBUG - Starting orchestrated tier progression
 🧠 Starting Tier 1: AI-Enhanced High-Quality Generation
-🔍 TIER 1 DEBUG - Calling ai-story-enhancer directly (clean architecture)
+🔍 TIER 1 DEBUG - Calling ai-visual-scene-creator directly (clean architecture)
 ⚠️ Tier 1 error, falling back to Tier 2: [error message]
 🎨 Starting Tier 2: Template-based Generation
 ⚠️ Tier 2 error, falling back to Tier 2.5: [error message]
@@ -167,14 +167,14 @@ console.log("📚 Previous Context Integration Analysis:", {
 ### Scenario 1: Tier 1 Consistently Failing
 **Symptoms**: Always falls back to Tier 2 or 2.5
 **Debug Steps**:
-1. Check ai-story-enhancer error logs for specific failure reasons
+1. Check ai-visual-scene-creator error logs for specific failure reasons
 2. Analyze validation scores to see which criteria are failing
 3. Verify previous context integration is working properly
 4. Check if OpenAI API is responding correctly
 
 **Look For**:
 ```
-❌ AI Story Enhancer failed - returning error to Orchestrator: {errorMessage, errorStack}
+❌ AI Visual Scene Creator failed - returning error to Orchestrator: {errorMessage, errorStack}
 📊 Enhanced Validation Analysis: {qualityScores, totalScore, validationResult: "FAIL"}
 ```
 
@@ -189,14 +189,14 @@ console.log("📚 Previous Context Integration Analysis:", {
 **Look For**:
 ```
 📚 Previous Context Analysis: {hasPreviousText: false} // Should be true
-🔍 AI Story Enhancer: Starting Phase 3 Request Analysis // Should include previous context
+🔍 AI Visual Scene Creator: Starting Phase 3 Request Analysis // Should include previous context
 ```
 
 ### Scenario 3: Request ID Correlation Issues
 **Symptoms**: Cannot track requests across functions
 **Debug Steps**:
 1. Verify request ID generation in runware-generate-image
-2. Check request ID propagation to ai-story-enhancer
+2. Check request ID propagation to ai-visual-scene-creator
 3. Confirm debug-prompt-history receives request ID
 4. Analyze cross-function correlation logs
 
@@ -233,7 +233,7 @@ Access Supabase edge function logs to view all debugging output:
 
 ```bash
 # Filter logs by function and time range
-supabase functions logs --function ai-story-enhancer --since 1h
+supabase functions logs --function ai-visual-scene-creator --since 1h
 supabase functions logs --function runware-generate-image --since 1h  
 supabase functions logs --function debug-prompt-history --since 1h
 ```
@@ -259,7 +259,7 @@ Track a specific request across all functions:
 ```javascript
 // Search logs for specific request ID
 const requestId = "req_1756069071897_abc123";
-// Look for this ID in ai-story-enhancer, runware-generate-image, and debug logs
+// Look for this ID in ai-visual-scene-creator, runware-generate-image, and debug logs
 ```
 
 ---
