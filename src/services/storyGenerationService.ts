@@ -206,10 +206,10 @@ export class StoryGenerationService {
 
     // LAYER 4 - Creative Seeds (FIXED: Always integrate user preferences)
     const creativeGuidance = creativeSeeds.length > 0 
-      ? `Creative Integration (REQUIRED): ${creativeSeeds.map(seed => 
+      ? `Creative Guidance (complement {specialRequest}): ${creativeSeeds.map(seed => 
           seed.storyPossibilities.join(' ')
         ).join('; ')}.`
-      : 'AI creates personalized elements based on user preferences.';
+      : 'AI creates own creative elements (colors, animals, foods, activities) and weaves them naturally into the story.';
 
     // Enhanced Natural Language Template (more AI-friendly)
     let userPreferences = '';

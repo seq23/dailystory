@@ -45,7 +45,7 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
     seeds.push({
       input: userInfo.favoriteColor,
       inputType: 'color',
-      storyPossibilities: [`Include ${userInfo.favoriteColor} naturally in the story`]
+      storyPossibilities: [`Include ${userInfo.favoriteColor} naturally in the story — it may show up in objects, clothing, scenery, atmosphere, or other creative details.`]
     });
   }
 
@@ -54,7 +54,7 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
     seeds.push({
       input: userInfo.favoriteAnimal,
       inputType: 'animal',
-      storyPossibilities: [`Include ${userInfo.favoriteAnimal} naturally in the story`]
+      storyPossibilities: [`Include ${userInfo.favoriteAnimal} naturally in the story — it may appear as a helper, companion, or character encountered during the adventure.`]
     });
   }
 
@@ -65,7 +65,7 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
       seeds.push({
         input: hobby,
         inputType: 'hobby',
-        storyPossibilities: [`Include ${hobby} naturally in the story`]
+        storyPossibilities: [`Include skills from ${hobby} naturally in the story — they may help solve problems, navigate challenges, or provide useful abilities.`]
       });
     }
   }
@@ -75,7 +75,7 @@ export function generateCreativeSeeds(userInfo: any): CreativeStorySeed[] {
     seeds.push({
       input: userInfo.favoriteFood,
       inputType: 'food',
-      storyPossibilities: [`Include ${userInfo.favoriteFood} naturally in the story`]
+      storyPossibilities: [`Include ${userInfo.favoriteFood} naturally in the story — it may appear as treats, meals, discoveries, or celebration food.`]
     });
   }
 

@@ -81,11 +81,11 @@ export class CulturalAdaptationService {
     },
 
     'fr': { // French
-      region: 'Europe/Africa',
+      region: 'France/Francophone Africa',
       characterNames: ['Marie', 'Pierre', 'Camille', 'Antoine', 'Sophie', 'Louis', 'Émilie', 'Nicolas'],
       familyStructures: ['small families', 'weekend visits', 'café culture', 'evening dinners'],
-      commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'wine culture'],
-      celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics'],
+      commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'couscous', 'tajines', 'plantains'],
+      celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics', 'independence days', 'traditional ceremonies'],
       geographicalFeatures: ['countryside', 'châteaux', 'vineyards', 'coastal areas', 'mountain regions'],
       clothingStyles: ['elegant fashion', 'scarves', 'classic styles', 'seasonal clothing'],
       architecture: ['stone buildings', 'café terraces', 'historic monuments', 'gardens'],
@@ -171,15 +171,15 @@ export class CulturalAdaptationService {
     const context = this.getCulturalContext(nativeLanguage);
     
     const languageGuidance: Record<string, string> = {
-      'fr': `aspects of French culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'es': `aspects of Hispanic/Latino culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'ar': `aspects of Arabic culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'pt': `aspects of Portuguese culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'zh': `aspects of Chinese culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
-      'hi': `aspects of Indian culture. For inspiration: ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'fr': `This person is likely from French/Francophone African culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'es': `This person is likely from Hispanic/Latino culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'ar': `This person is likely from Arabic/MENA culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'pt': `This person is likely from Portuguese/Brazilian culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'zh': `This person is likely from Chinese/East Asian culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
+      'hi': `This person is likely from Indian/South Asian culture, so please incorporate aspects of this culture including ${context.commonFoods[0]}, ${context.celebrations[0]}`,
       'en': '' // No cultural additions for English speakers
     };
-    
+
     return languageGuidance[nativeLanguage] || '';
   }
 
