@@ -193,7 +193,6 @@ export function TemplateExplorer() {
               <div className="text-center">
                 <div className="text-2xl font-bold text-accent">
                   {templateInfo.level === 'level0' ? 600 : 
-                   templateInfo.level === 'grade10' ? 48 :
                    templateInfo.templates?.reduce((sum, t) => sum + t.scenes, 0) || 0}
                 </div>
                 <div className="text-sm text-muted-foreground">
