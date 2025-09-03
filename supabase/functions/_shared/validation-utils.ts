@@ -513,35 +513,6 @@ export function parseIntoPages(content: string, level: ValidationLevel, service:
   return smartSplit;
 }
 
-/**
- * Get token limits for story generation (used by backend)
- * PHASE OUT: Returns high ceiling for story generation - character limits are primary validation
- */
-export function getTokensForGrade(gradeLevel: number): number {
-  // PHASE OUT TOKEN VALIDATION: Return high ceiling for story generation
-  // Character validation is now the primary gatekeeper for story length
-  return 100000; // No artificial token cutoffs for stories
-  
-  // LEGACY CODE (keep for reference/utility functions):
-  // let level: ValidationLevel;
-  // 
-  // if (gradeLevel >= 6 && gradeLevel <= 10) {
-  //   level = `Grade${gradeLevel}` as ValidationLevel;
-  // } else {
-  //   // Map numeric grade to difficulty level
-  //   if (gradeLevel === 0) level = 'Level0';
-  //   else if (gradeLevel === 1) level = 'Level1';
-  //   else if (gradeLevel === 2) level = 'Level2';
-  //   else if (gradeLevel === 3) level = 'Level3';
-  //   else level = 'Level4';
-  // }
-  // 
-  // const expectedPages = getExpectedPagesForLevel(level);
-  // const tokensPerPage = getTokenLimitsForLevel(level).perPage;
-  // 
-  // // Return total tokens for expected story length
-  // return expectedPages * tokensPerPage;
-}
 
 /**
  * Arc-aware validation functions for predictable arc lengths
@@ -567,78 +538,7 @@ export function getBValueForLevel(level: ValidationLevel): number {
   return bValues[level] || 8; // Default to Level 2
 }
 
-/**
- * Validate content based on arc position (scene vs ending)
- */
-export function validateArcPosition(content: string, pageIndex: number, level: ValidationLevel): {
-  isValid: boolean;
-  isEnding: boolean;
-  sceneIndex: number;
-  arcNumber: number;
-  expectedType: 'scene' | 'ending';
-  reason?: string;
-} {
-  const B = getBValueForLevel(level);
-  
-  if (B === 0) {
-    // Level 0 - no arc processing
-    return {
-      isValid: true,
-      isEnding: false,
-      sceneIndex: 0,
-      arcNumber: 0,
-      expectedType: 'scene'
-    };
-  }
-  
-  const isEndingPage = (pageIndex % (B + 1)) === B;
-  const sceneIndex = pageIndex % B;
-  const arcNumber = Math.floor(pageIndex / (B + 1));
-  
-  // Validate expected content type
-  const actuallyIsEnding = isEnding(content);
-  const expectedType = isEndingPage ? 'ending' : 'scene';
-  
-  const typeMatches = isEndingPage ? actuallyIsEnding : !actuallyIsEnding;
-  
-  return {
-    isValid: typeMatches,
-    isEnding: isEndingPage,
-    sceneIndex,
-    arcNumber,
-    expectedType,
-    reason: typeMatches ? undefined : `Expected ${expectedType} but content appears to be ${actuallyIsEnding ? 'ending' : 'scene'}`
-  };
-}
 
-/**
- * Cache validation results based on arc position
- */
-const arcValidationCache = new Map<string, any>();
-
-export function getCachedValidation(level: ValidationLevel, pageIndex: number, contentHash: string) {
-  const B = getBValueForLevel(level);
-  const sceneIndex = pageIndex % B;
-  const isEnding = (pageIndex % (B + 1)) === B;
-  const cacheKey = `${level}-${sceneIndex}-${isEnding ? 'ending' : 'scene'}-${contentHash}`;
-  
-  return arcValidationCache.get(cacheKey);
-}
-
-export function setCachedValidation(level: ValidationLevel, pageIndex: number, contentHash: string, result: any) {
-  const B = getBValueForLevel(level);
-  const sceneIndex = pageIndex % B;
-  const isEnding = (pageIndex % (B + 1)) === B;
-  const cacheKey = `${level}-${sceneIndex}-${isEnding ? 'ending' : 'scene'}-${contentHash}`;
-  
-  arcValidationCache.set(cacheKey, result);
-  
-  // Limit cache size to prevent memory bloat
-  if (arcValidationCache.size > 1000) {
-    const firstKey = arcValidationCache.keys().next().value;
-    arcValidationCache.delete(firstKey);
-  }
-}
 
 // Backward compatibility alias
 export const autoSplitContent = enhancedAutoSplitContent;

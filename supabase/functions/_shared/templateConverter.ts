@@ -6,13 +6,6 @@
 // Import sophisticated placeholder resolver from shared services
 import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.ts';
 
-/**
- * Template Converter for Story Templates
- * Converts StoryTemplate objects to string[] arrays with full placeholder resolution
- */
-
-// Import sophisticated placeholder resolver and grammar validation from shared services
-
 // Define the structure for weather and setting variants
 interface Variants {
   weatherVariants: string[];

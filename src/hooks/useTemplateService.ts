@@ -71,12 +71,6 @@ export function useTemplateService() {
           }
 
           console.log('Template service response:', data);
-          
-          // EMERGENCY DIAGNOSTIC: Log response structure
-          console.log('🔍 DIAGNOSTIC: Response keys:', Object.keys(data || {}));
-          console.log('🔍 DIAGNOSTIC: Pages property:', data?.pages);
-          console.log('🔍 DIAGNOSTIC: Pages length:', data?.pages?.length);
-          console.log('🔍 DIAGNOSTIC: Response type:', typeof data);
 
           // Check for successful response based on actual template service format
           if (!data.pages || data.pages.length === 0) {

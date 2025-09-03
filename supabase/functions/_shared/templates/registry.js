@@ -9,6 +9,10 @@ export const TEMPLATE_REGISTRY = {
     count: 100,
     type: 'static',
     path: 'level0.js',
+    functions: {
+      getter: 'getLevel0Template',
+      counter: 'getLevel0TemplateCount'
+    },
     // Note: No B value - Level 0 excluded from arc processing
     templates: [
       { title: 'Morning Routine', theme: 'daily-life' },
