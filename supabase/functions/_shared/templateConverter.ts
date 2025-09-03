@@ -4,7 +4,7 @@
  */
 
 // Import sophisticated placeholder resolver from shared services
-import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.js';
+import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.ts';
 
 // Define the structure for weather and setting variants
 interface Variants {
