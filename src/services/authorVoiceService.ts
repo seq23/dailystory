@@ -415,6 +415,7 @@ export class AuthorVoiceService {
     switch (avatarType) {
       case 'boy': return 'he';
       case 'girl': return 'she';
+      case 'prefer-not-to-answer': return 'they';
       default: return 'they';
     }
   }

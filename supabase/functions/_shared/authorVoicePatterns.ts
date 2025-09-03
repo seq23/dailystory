@@ -483,11 +483,5 @@ export function resolveMicroPlaceholders(text: string, userInfo: any = {}): stri
   return resolved;
 }
 
-function derivePronoun(userInfo: any = {}): string {
-  switch (userInfo?.avatar?.type) {
-    case "boy": return "he";
-    case "girl": return "she";
-    case "prefer-not-to-answer": return "they";
-    default: return "they";
-  }
-}
+// Use shared pronoun derivation from placeholderResolver
+import { derivePronoun } from './placeholderResolver.ts';

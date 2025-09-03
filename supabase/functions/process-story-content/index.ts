@@ -26,14 +26,8 @@ interface ProcessResponse {
   error?: string;
 }
 
-function derivePronoun(userInfo?: UserInfo): string {
-  switch (userInfo?.avatar?.type) {
-    case "boy": return "he";
-    case "girl": return "she"; 
-    case "prefer-not-to-answer": return "they";
-    default: return "they";
-  }
-}
+// Use shared pronoun derivation from placeholderResolver
+import { derivePronoun } from '../_shared/placeholderResolver.ts';
 
 serve(async (req) => {
   // Handle CORS preflight requests

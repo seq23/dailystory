@@ -83,7 +83,7 @@ function firstName(name?: string): string | undefined {
   return parts[0];
 }
 
-function derivePronoun(userInfo?: UserInfo): string {
+export function derivePronoun(userInfo?: UserInfo): string {
   switch (userInfo?.avatar?.type) {
     case "boy": return "he";
     case "girl": return "she"; 

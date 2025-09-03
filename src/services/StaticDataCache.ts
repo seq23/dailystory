@@ -95,24 +95,78 @@ export const getModelChain = (isExpertLevel: boolean) => {
   return chain;
 };
 
-// Cache hair color mapping rules (not individual user results)
+// Cache hair color mapping rules with enhanced diversity
 export const getHairColorMapping = () => {
   const cacheKey = 'hair_color_mapping';
   
-  let mapping = staticCache.get<Record<string, string>>(cacheKey);
+  let mapping = staticCache.get<Record<string, string[]>>(cacheKey);
   if (!mapping) {
     mapping = {
-      'pale': 'red hair',
-      'light': 'blonde hair', 
-      'medium': 'brown hair',
-      'olive': 'black hair',
-      'dark': 'dark curly hair'
+      'pale': ['red hair', 'auburn hair', 'strawberry blonde hair'],
+      'light': ['blonde hair', 'light brown hair', 'golden hair'], 
+      'medium': ['brown hair', 'chestnut hair', 'dark blonde hair'],
+      'olive': ['black hair', 'dark brown hair', 'jet black hair'],
+      'dark': ['dark curly hair', 'black hair', 'coily hair', 'natural hair']
     };
     
     staticCache.set(cacheKey, mapping);
   }
   
   return mapping;
+};
+
+// Cache gender/pronoun mapping rules
+export const getGenderPronounMapping = () => {
+  const cacheKey = 'gender_pronoun_mapping';
+  
+  let mapping = staticCache.get<any>(cacheKey);
+  if (!mapping) {
+    mapping = {
+      pronouns: {
+        'boy': 'he',
+        'girl': 'she', 
+        'prefer-not-to-answer': 'they'
+      },
+      completeInfo: {
+        'boy': 'boy. Use he/him/his pronouns',
+        'girl': 'girl. Use she/her/hers pronouns', 
+        'prefer-not-to-answer': 'child. Use they/them/their pronouns'
+      },
+      fallbacks: {
+        pronoun: 'they',
+        completeInfo: 'child. Use they/them/their pronouns'
+      }
+    };
+    
+    staticCache.set(cacheKey, mapping);
+  }
+  
+  return mapping;
+};
+
+// Enhanced avatar info processor - UNIVERSAL coverage (no language restriction)
+export const processAvatarIdentityFromCache = (userInfo: any) => {
+  const hairMapping = getHairColorMapping();
+  const genderMapping = getGenderPronounMapping();
+  
+  // Hair color processing - randomly select from available options
+  const skinTone = userInfo?.avatar?.skinTone || 'medium';
+  const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
+  const hairColor = hairOptions[Math.floor(Math.random() * hairOptions.length)];
+  
+  // Gender/pronoun processing  
+  const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+  const pronoun = genderMapping.pronouns[avatarType] || genderMapping.fallbacks.pronoun;
+  const completeGenderInfo = genderMapping.completeInfo[avatarType] || genderMapping.fallbacks.completeInfo;
+  
+  return {
+    hairColor,
+    pronoun, 
+    completeGenderInfo,
+    avatarType,
+    skinTone,
+    userName: userInfo?.name || 'Child'
+  };
 };
 
 // Cache system settings

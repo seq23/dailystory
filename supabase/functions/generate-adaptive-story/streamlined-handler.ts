@@ -9,13 +9,13 @@ import {
   mapDifficultyToLevel,
   type ValidationLevel 
 } from "../_shared/validation-utils.ts";
-import { resolveAllPlaceholders, deriveCompleteGenderInfo } from '../_shared/placeholderResolver.ts';
+import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { validateAndEnhanceGrammar } from '../_shared/grammarValidator.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 
 // Import static caching and error classification
-const { getModelChain, getHairColorMapping, getSystemSettings } = await import('./StaticDataCache.ts');
+import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache } from './StaticDataCache.ts';
 const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
 
 // CORS headers - moved to top to fix ReferenceError
@@ -338,27 +338,22 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
-  // Protected hair color mapping for English speakers
+  // Enhanced avatar processing using StaticDataCache - UNIVERSAL coverage
   let enhancedUserPrompt = prompt.userPrompt;
   try {
-    if (safePropertyAccess(userInfo, 'avatar', null)?.skinTone && safePropertyAccess(userInfo, 'nativeLanguage', null) === 'en') {
-      const hairColor = getHairColorForSkinTone(userInfo.avatar.skinTone);
-      if (hairColor && safePropertyAccess(userInfo, 'name', null)) {
-        enhancedUserPrompt += `\nCharacter appearance: ${userInfo.name} has ${hairColor}.`;
-      }
+    const avatarInfo = processAvatarIdentityFromCache(userInfo);
+    
+    // Universal hair color enhancement (no language restriction)
+    if (avatarInfo.hairColor && avatarInfo.userName) {
+      enhancedUserPrompt += `\nPhysical description: ${avatarInfo.userName} has ${avatarInfo.hairColor}.`;
     }
-  } catch (hairError) {
-    console.warn('⚠️ Hair color mapping failed:', safeErrorMessage(hairError));
-  }
-
-  // Protected gender/pronoun information for ALL users (universal coverage)
-  try {
-    if (safePropertyAccess(userInfo, 'name', null) && safePropertyAccess(userInfo, 'avatar', null)?.type) {
-      const genderInfo = deriveCompleteGenderInfo(userInfo);
-      enhancedUserPrompt += `\nCharacter pronouns: ${userInfo.name} is a ${genderInfo}.`;
+    
+    // Universal gender/pronoun enhancement  
+    if (avatarInfo.completeGenderInfo && avatarInfo.userName) {
+      enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.userName} is a ${avatarInfo.completeGenderInfo}.`;
     }
-  } catch (genderError) {
-    console.warn('⚠️ Gender info derivation failed:', safeErrorMessage(genderError));
+  } catch (avatarError) {
+    console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
   }
 
   // Enhanced AI Generation with Intelligent Circuit Breaker
