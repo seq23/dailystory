@@ -160,11 +160,8 @@ Generate a corrected version that addresses these issues while keeping the story
       (parseInt(expertGrade.replace('grade', '')) || bundle.systemSettings.gradeLevel) : 
       bundle.systemSettings.gradeLevel;
     
-    // PHASE OUT TOKEN VALIDATION: Use high ceiling for story generation
-    // Character limits are now the primary validation method
-    const finalTokenLimit = 100000; // High ceiling - no artificial token cutoffs
-    
-    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, finalTokenLimit);
+    // Use service-aware token limits based on difficulty and service type
+    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config);
     
     // PHASE 5: Bulk Story Processing - Apply validation, grammar, placeholders to ENTIRE story ONCE
     // Compute validation level first
@@ -260,28 +257,70 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
 }
 
 /**
- * Get level-aware OpenAI token limits for story size control (not validation)
+ * Get per-page token limits directly from system prompts - SINGLE SOURCE OF TRUTH
  */
-function getOpenAITokenLimit(gradeLevel: number): number {
-  // Level-aware token limits for OpenAI API calls (story size control, not validation)
-  const levelTokenLimits: Record<number, number> = {
-    0: 200,    // Level0 - Very short stories (~50-100 words)
-    1: 400,    // Level1 - Short stories (~100-200 words) 
-    2: 800,    // Level2 - Medium stories (~200-300 words)
-    3: 1500,   // Level3 - Longer stories (~300-400 words)
-    4: 2000,   // Level4 - Expert stories (~400-500 words)
-    6: 6000,   // Grade6 - Maintain old limits
-    7: 6500,   // Grade7 - Slightly higher
-    8: 7000,   // Grade8 - Higher complexity
-    9: 7500,   // Grade9 - More complex
-    10: 8000   // Grade10 - Most complex, highest limit
-  };
-  
-  return levelTokenLimits[gradeLevel] || 2000; // Default fallback
+function getPerPageTokenLimitLocal(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  try {
+    // Import the function from storyPrompts and call it
+    return getPerPageTokenLimit(difficulty);
+  } catch (error) {
+    console.error(`❌ Failed to get per-page token limit for ${difficulty}:`, error);
+    // Fallback to known values from system prompts
+    const fallbacks: Record<string, number> = {
+      'beginner': 15,  // Level0: "Maximum 15 tokens per page"
+      'easy': 60,      // Level1: "Maximum 60 tokens per page"
+      'medium': 250,   // Level2: "Maximum 250 tokens per page" 
+      'hard': 350,     // Level3: "Maximum 350 tokens per page"
+      'expert': 500,   // Level4: "Maximum 500 tokens per page"
+      'grade6': 500,   // Grade6: "Maximum 500 tokens per page"
+      'grade7': 500,   // Grade7: "Maximum 500 tokens per page"
+      'grade8': 500,   // Grade8: "Maximum 500 tokens per page"
+      'grade9': 500,   // Grade9: "Maximum 500 tokens per page"
+      'grade10': 500,  // Grade10: "Maximum 500 tokens per page"
+    };
+    return fallbacks[difficulty] || 500;
+  }
 }
 
-async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number): Promise<string> {
-  const maxTokens = customTokenLimit || getOpenAITokenLimit(gradeLevel);
+/**
+ * Get Netflix token limits (full story) = per-page × expected pages
+ */
+function getNetflixTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const perPageTokens = getPerPageTokenLimitLocal(difficulty);
+  const expectedPages = getExpectedPages(difficulty);
+  const netflixLimit = perPageTokens * expectedPages;
+  
+  console.log(`📚 Netflix token limit for ${difficulty}: ${perPageTokens}/page × ${expectedPages} pages = ${netflixLimit} tokens`);
+  return netflixLimit;
+}
+
+/**
+ * Get Live token limits (single page) = per-page limit only
+ */
+function getLiveTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): number {
+  const liveLimit = getPerPageTokenLimitLocal(difficulty);
+  
+  console.log(`📄 Live token limit for ${difficulty}: ${liveLimit} tokens per page`);
+  return liveLimit;
+}
+
+/**
+ * Service-aware token limit function - detects Netflix vs Live automatically
+ */
+function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): number {
+  // Detect service type from config or default to Netflix for full stories
+  const isLiveGeneration = config?.pageNumber === 1 && !config?.existingStory;  
+  
+  if (isLiveGeneration) {
+    return getLiveTokenLimit(difficulty);
+  } else {
+    return getNetflixTokenLimit(difficulty);
+  }
+}
+
+async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): Promise<string> {
+  // Use service-aware token limits if difficulty is provided, otherwise use custom or high ceiling
+  const maxTokens = customTokenLimit || (difficulty ? getServiceAwareTokenLimit(difficulty, config) : 100000);
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Add hair color mapping for English speakers
@@ -305,6 +344,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   let currentModelIndex = 0;
   let retriesOnCurrentModel = 0;
   const maxRetriesPerModel = 2;
+  const startTime = Date.now(); // Track processing time
   
   // Expert detection for specialized handling
   const isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
@@ -353,11 +393,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         ]
       };
       
-      // Set level-aware OpenAI token limits for story size control (not validation)
-      const recommendedTokenLimit = getOpenAITokenLimit(gradeLevel);
-      apiBody[currentModel.paramName] = Math.min(recommendedTokenLimit, maxTokens);
+      // Set service-aware OpenAI token limits for story size control (not validation)
+      apiBody[currentModel.paramName] = Math.min(maxTokens, 100000); // Cap at 100k for safety
 
-      console.log(`🎯 OpenAI Token Limit: ${apiBody[currentModel.paramName]} (grade ${gradeLevel})`);
+      console.log(`🎯 Service-Aware Token Limit: ${apiBody[currentModel.paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
       
       // Add temperature for legacy models that support it
       if (currentModel.supportsTemperature) {
@@ -369,7 +408,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         tokenValidation: 'DISABLED',
         supportsTemperature: !!currentModel.supportsTemperature,
         promptLength: enhancedSystemPrompt.length + finalUserPrompt.length,
-        note: 'Level-aware token limits applied for story size control'
+        note: 'Service-aware token limits applied - Netflix (full story) vs Live (per page)'
       });
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {

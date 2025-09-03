@@ -1,12 +1,32 @@
 # Token Validation Bypass Documentation
 
 **Implementation Date:** 2025-01-03  
-**Status:** ACTIVE - Token validation completely disabled for story generation  
-**Approach:** Bypass (preserve functions) vs. Complete removal
+**Status:** EVOLVED - Service-aware token limits re-introduced (2025-01-03)  
+**Latest Update:** Service-aware token limits implemented for Netflix vs Live generation differentiation  
+**Approach:** Bypass + Service-Aware Limits
 
 ## Executive Summary
 
-Token validation has been systematically bypassed across the story generation system to eliminate artificial constraints on AI creativity while maintaining robust character-based content validation. This document serves as a comprehensive record of the bypass implementation and provides rollback procedures.
+Token validation was initially bypassed to eliminate artificial constraints, then evolved to implement **service-aware token limits** that distinguish between Netflix-style (full story) and Live (page-by-page) generation while extracting precise limits directly from system prompts.
+
+## Latest Evolution: Service-Aware Token Limits (2025-01-03)
+
+### New Implementation Strategy
+- **Netflix Service**: Uses `per_page_tokens × expected_pages` for full story generation
+- **Live Service**: Uses direct `per_page_tokens` for individual page generation  
+- **Token Source**: Extracted directly from system prompts (single source of truth)
+- **Character Validation**: Remains primary validation method
+
+### Service-Specific Token Limits
+- **Level 0 (beginner)**: Netflix: 180 tokens (15×12), Live: 15 tokens/page
+- **Level 1 (easy)**: Netflix: 720 tokens (60×12), Live: 60 tokens/page
+- **Grade 6-10**: Netflix: 6000 tokens (500×12), Live: 500 tokens/page
+
+### Implementation Functions
+- `getServiceAwareTokenLimit()` - Auto-detects service type
+- `getNetflixTokenLimit()` - Full story limits (per-page × expected pages)
+- `getLiveTokenLimit()` - Direct per-page limits
+- `getPerPageTokenLimitLocal()` - Extracts from system prompts
 
 ## Rationale for Token Validation Bypass
 
