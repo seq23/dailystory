@@ -192,16 +192,35 @@ export class StoryGenerationService {
     const allUserVocabWords = VocabularyService.getUserVocabulary(vocabularyIntegration);
     const systemSettings = VocabularyService.getSystemSettings(vocabularyIntegration);
     
-    let vocabularyInstructions = '';
-    if (allUserVocabWords.length > 0) {
-      const vocabSources = [];
-      if (vocabularyIntegration.userSpecified.formWords.length > 0) vocabSources.push('form input');
-      if (vocabularyIntegration.userSpecified.specialRequestWords.length > 0) vocabSources.push('special request');
-      if (vocabularyIntegration.userSpecified.teacherWords.length > 0) vocabSources.push('teacher words');
+    // LAYER 3 - Vocabulary Requirements (Conditional Integration)
+    const vocabSources = [];
+    if (vocabularyIntegration.userSpecified.formWords.length > 0) vocabSources.push('form input');
+    if (vocabularyIntegration.userSpecified.specialRequestWords.length > 0) vocabSources.push('special request');
+    if (vocabularyIntegration.userSpecified.teacherWords.length > 0) vocabSources.push('teacher words');
+
+    // Create vocabulary compliance configuration
+    const vocabularyConfig = {
+      hasUserWords: allUserVocabWords.length > 0,
+      userWords: allUserVocabWords,
+      sources: vocabSources,
+      gradeLevel: systemSettings.gradeLevel,
+      complianceTarget: systemSettings.complianceTarget,
+      difficultyLevel: essentialUserInfo.difficultyLevel
+    };
+
+    // Validate vocabulary integration
+    try {
+      const vocabularyValidation = VocabularyService.validateSentenceWithPriority(
+        essentialUserInfo.name || 'test', 
+        vocabularyIntegration, 
+        essentialUserInfo.name
+      );
       
-      vocabularyInstructions = `Priority vocabulary to include: ${allUserVocabWords.join(', ')} (from: ${vocabSources.join(', ')})`;
-    } else {
-      vocabularyInstructions = `Use grade level ${systemSettings.gradeLevel} appropriate vocabulary based on difficulty level ${essentialUserInfo.difficultyLevel}`;
+      if (vocabularyConfig.hasUserWords && vocabularyValidation.compliancePercentage < 0.5) {
+        console.warn('Low vocabulary compliance detected:', vocabularyValidation);
+      }
+    } catch (error) {
+      console.error('Vocabulary validation error:', error);
     }
 
     // LAYER 4 - Creative Seeds (FIXED: Always integrate user preferences)
@@ -228,11 +247,17 @@ export class StoryGenerationService {
 
     const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. 
 
-Vocabulary System (CORRECTED FALLBACK LOGIC):
-1. PRIORITY: Use these specific words if provided: ${vocabularyInstructions}
-2. FALLBACK: Use getVocabularyForGrade(${essentialUserInfo.gradeLevel}) function for grade-appropriate vocabulary  
-3. FALLBACK: Create vocabulary suitable for age ${essentialUserInfo.age}
-4. FINAL FALLBACK: Create vocabulary suitable for ages 7-10
+${vocabularyConfig.hasUserWords 
+  ? `Vocabulary System - User Priority Mode:
+1. MANDATORY (100% INCLUSION): Use ALL of these user-specified words: ${vocabularyConfig.userWords.join(', ')} (sources: ${vocabularyConfig.sources.join(', ')})
+2. SUPPLEMENTAL (${Math.round(vocabularyConfig.complianceTarget * 100)}% compliance): Add words from getVocabularyForGrade(${vocabularyConfig.gradeLevel}) for additional grade-appropriate vocabulary
+3. DIFFICULTY CONTEXT: Story difficulty level is ${vocabularyConfig.difficultyLevel}
+4. FALLBACK: Age-appropriate vocabulary for ${essentialUserInfo.age}-year-olds`
+  : `Vocabulary System - Grade Level Mode:
+1. PRIMARY (${Math.round(vocabularyConfig.complianceTarget * 100)}% compliance): Use getVocabularyForGrade(${vocabularyConfig.gradeLevel}) for grade-appropriate vocabulary
+2. DIFFICULTY CONTEXT: Story difficulty level is ${vocabularyConfig.difficultyLevel}
+3. FALLBACK: Age-appropriate vocabulary for ${essentialUserInfo.age}-year-olds
+4. EMERGENCY: Simple vocabulary for ages 7-10 if needed`}
 
 ${culturalContext ? `Cultural context: When natural to the story, subtly incorporate ${culturalContext}. ` : ''}${creativeGuidance}
 
