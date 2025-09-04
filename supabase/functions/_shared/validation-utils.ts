@@ -387,6 +387,7 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   maxAllowedChars: number;
   reason?: string;
   passedBy?: 'tokens' | 'characters' | 'both';
+  isSeverelyTooLong?: boolean; // For Live service: 2x+ too long needs retry with hint
 } {
   // TOKEN VALIDATION BYPASSED - Keep for metrics but don't use for validation decisions
   const tokenCount = estimateTokenCount(content);
@@ -430,6 +431,10 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   // CHARACTER VALIDATION ONLY - Token validation completely bypassed
   const passesCharacterValidation = characterCount >= minCharsPerPage && characterCount <= maxCharsPerPage;
   
+  // LIVE SERVICE PREMIUM USER PROTECTION:
+  // Check if content is severely too long (2x+ limit) vs moderately too long
+  const isSeverelyTooLong = characterCount > (maxCharsPerPage * 2);
+  
   if (!passesCharacterValidation) {
     const reason = characterCount < minCharsPerPage ? 
       `Page too short: ${characterCount} chars (min: ${minCharsPerPage})` :
@@ -437,6 +442,7 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     
     console.log(`❌ [VALIDATION-DEBUG] Page failed CHARACTER validation for ${level}:`, {
       characterCount, minCharsPerPage, maxCharsPerPage,
+      isSeverelyTooLong,
       tokenValidation: 'BYPASSED',
       reason
     });
@@ -447,7 +453,8 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
       characterCount,
       maxAllowedTokens: maxTokens,
       maxAllowedChars: maxCharsPerPage,
-      reason
+      reason,
+      isSeverelyTooLong
     };
   }
   
@@ -464,7 +471,8 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     characterCount,
     maxAllowedTokens: maxTokens,
     maxAllowedChars: maxCharsPerPage,
-    passedBy: 'characters'
+    passedBy: 'characters',
+    isSeverelyTooLong: false
   };
 }
 

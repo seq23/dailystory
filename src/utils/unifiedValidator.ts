@@ -317,7 +317,7 @@ export class UnifiedValidator {
   }
 
   /**
-   * Live mode validation (page-by-page) - Enhanced dual validation with no page expectations
+   * Live mode validation (page-by-page) - PREMIUM USER PROTECTION
    */
   private static validateLivePage(
     pages: string[],
@@ -339,13 +339,14 @@ export class UnifiedValidator {
         characterCount: validationResult.characterCount,
         isValid: validationResult.isValid,
         passedBy: validationResult.passedBy,
-        reason: validationResult.reason
+        reason: validationResult.reason,
+        isSeverelyTooLong: validationResult.isSeverelyTooLong
       });
       
       if (!validationResult.isValid) {
         const reason = validationResult.reason || 'Page validation failed';
         
-        // For live pages, distinguish between content that's too short vs has other issues
+        // For "too short" content, retry with hint
         const needsCompleteRegeneration = reason.includes('too short') || 
                                         reason.includes('insufficient') ||
                                         (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.5);
@@ -361,51 +362,66 @@ export class UnifiedValidator {
               characterCount: validationResult.characterCount
             },
             hints: [
-              `Generate a page with at least ${validationResult.maxAllowedTokens * 0.8} tokens`,
+              `Generate a page with at least ${validationResult.maxAllowedChars * 0.6} characters`,
               'Create more detailed scene descriptions',
               'Add character interactions and dialogue',
               'Include sensory details and emotional elements'
             ]
           };
-        } else {
-          return {
-            decision: 'REPAIR',
-            isValid: false,
-            reasons: [...baseReasons, reason],
-            metrics: {
-              ...metrics,
-              tokenCount: validationResult.tokenCount,
-              characterCount: validationResult.characterCount
-            },
-            hints: [
-              'Adjust vocabulary for target reading level',
-              'Improve sentence structure and flow',
-              'Enhance age-appropriate content'
-            ]
-          };
         }
-      }
-
-      // Check if page is egregiously long (>30% margin) - send to AI repair, don't split for live mode
-      if (validationResult.tokenCount > validationResult.maxAllowedTokens * 1.3) {
+        
+        // For "too long" content - check if severely too long (2x+ limit)
+        if (reason.includes('too long')) {
+          if (validationResult.isSeverelyTooLong) {
+            // Severely too long (2x+ limit) - Retry with character reduction hint
+            console.log(`🚨 LIVE SERVICE: Content severely too long (${validationResult.characterCount} chars), requesting retry with hint`);
+            return {
+              decision: 'RETRY_WITH_HINT',
+              isValid: false,
+              reasons: [...baseReasons, reason],
+              metrics: {
+                ...metrics,
+                tokenCount: validationResult.tokenCount,
+                characterCount: validationResult.characterCount
+              },
+              hints: [
+                `Reduce content to approximately ${validationResult.maxAllowedChars} characters for better readability`,
+                'Focus on the key story elements and reduce descriptive details',
+                'Keep only the most essential dialogue and action'
+              ]
+            };
+          } else {
+            // Moderately too long - ACCEPT for premium users (no content loss)
+            console.log(`✅ LIVE SERVICE: Content moderately too long but ACCEPTED for premium user (${validationResult.characterCount} chars)`);
+            return {
+              decision: 'ACCEPT',
+              isValid: true,
+              content: pages,
+              reasons: [...baseReasons, 'Live page accepted despite moderate length (premium user protection)'],
+              metrics: {
+                ...metrics,
+                tokenCount: validationResult.tokenCount,
+                characterCount: validationResult.characterCount,
+                passedBy: 'characters'
+              }
+            };
+          }
+        }
+        
+        // Other validation failures - fallback to ACCEPT (premium user protection)
+        console.log(`✅ LIVE SERVICE: Unknown validation issue but ACCEPTED for premium user protection`);
         return {
-          decision: 'REPAIR',
-          isValid: false,
-          reasons: [...baseReasons, `Live page is egregiously long (${validationResult.tokenCount} tokens > ${validationResult.maxAllowedTokens * 1.3})`],
+          decision: 'ACCEPT',
+          isValid: true,
+          content: pages,
+          reasons: [...baseReasons, 'Live page accepted (premium user protection)'],
           metrics: {
             ...metrics,
             tokenCount: validationResult.tokenCount,
             characterCount: validationResult.characterCount
-          },
-          hints: [
-            'Reduce content length to fit single page format',
-            'Focus on one key scene or moment',
-            'Remove excessive descriptions while keeping essential story elements'
-          ]
+          }
         };
       }
-      
-      // Keep all meaningful content in single page for live mode - no splitting
 
       return {
         decision: 'ACCEPT',

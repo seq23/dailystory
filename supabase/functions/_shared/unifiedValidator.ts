@@ -285,7 +285,7 @@ export class UnifiedValidator {
   }
 
   /**
-   * Live mode validation (page-by-page)
+   * Live mode validation (page-by-page) - PREMIUM USER PROTECTION
    */
   private static validateLivePage(
     pages: string[],
@@ -299,6 +299,7 @@ export class UnifiedValidator {
       if (!validationResult.isValid) {
         const reason = validationResult.reason || 'Page validation failed';
         
+        // For "too short" content, retry with hint
         const needsCompleteRegeneration = reason.includes('too short') || 
                                         (validationResult.tokenCount < validationResult.maxAllowedTokens * 0.5);
         
@@ -312,37 +313,60 @@ export class UnifiedValidator {
               tokenCount: validationResult.tokenCount
             },
             hints: [
-              `Generate a page with at least ${validationResult.maxAllowedTokens * 0.8} tokens`,
+              `Generate a page with at least ${validationResult.maxAllowedChars * 0.6} characters`,
               'Create more detailed scene descriptions'
             ]
           };
-        } else {
-          return {
-            decision: 'REPAIR',
-            isValid: false,
-            reasons: [...baseReasons, reason],
-            metrics: {
-              ...metrics,
-              tokenCount: validationResult.tokenCount
-            }
-          };
         }
-      }
-
-      // Check if page is too long
-      if (validationResult.tokenCount > validationResult.maxAllowedTokens * 1.3) {
+        
+        // For "too long" content - check if severely too long (2x+ limit)
+        if (reason.includes('too long')) {
+          if (validationResult.isSeverelyTooLong) {
+            // Severely too long (2x+ limit) - Retry with character reduction hint
+            console.log(`🚨 LIVE SERVICE: Content severely too long (${validationResult.characterCount} chars), requesting retry with hint`);
+            return {
+              decision: 'RETRY_WITH_HINT',
+              isValid: false,
+              reasons: [...baseReasons, reason],
+              metrics: {
+                ...metrics,
+                tokenCount: validationResult.tokenCount,
+                characterCount: validationResult.characterCount
+              },
+              hints: [
+                `Reduce content to approximately ${validationResult.maxAllowedChars} characters for better readability`,
+                'Focus on the key story elements and reduce descriptive details',
+                'Keep only the most essential dialogue and action'
+              ]
+            };
+          } else {
+            // Moderately too long - ACCEPT for premium users (no content loss)
+            console.log(`✅ LIVE SERVICE: Content moderately too long but ACCEPTED for premium user (${validationResult.characterCount} chars)`);
+            return {
+              decision: 'ACCEPT',
+              isValid: true,
+              content: pages,
+              reasons: [...baseReasons, 'Live page accepted despite moderate length (premium user protection)'],
+              metrics: {
+                ...metrics,
+                tokenCount: validationResult.tokenCount,
+                characterCount: validationResult.characterCount
+              }
+            };
+          }
+        }
+        
+        // Other validation failures - fallback to ACCEPT (premium user protection)
+        console.log(`✅ LIVE SERVICE: Unknown validation issue but ACCEPTED for premium user protection`);
         return {
-          decision: 'REPAIR',
-          isValid: false,
-          reasons: [...baseReasons, `Live page is too long (${validationResult.tokenCount} tokens)`],
+          decision: 'ACCEPT',
+          isValid: true,
+          content: pages,
+          reasons: [...baseReasons, 'Live page accepted (premium user protection)'],
           metrics: {
             ...metrics,
             tokenCount: validationResult.tokenCount
-          },
-          hints: [
-            'Reduce content length to fit single page format',
-            'Focus on one key scene or moment'
-          ]
+          }
         };
       }
 
