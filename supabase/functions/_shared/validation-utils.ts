@@ -27,7 +27,17 @@ export function estimateTokenCount(text: string): number {
  */
 export function mapDifficultyToLevel(difficulty: DifficultyLevel | ExpertGradeLevel): ValidationLevel {
   const normalized = difficulty.toLowerCase();
-  return validationConfig.difficultyMapping[normalized] || 'Level2';
+  const mapped = validationConfig.difficultyMapping[normalized];
+  
+  console.log(`🔍 [DIFFICULTY-MAPPING]`, {
+    original: difficulty,
+    normalized,
+    mapped,
+    fallbackUsed: !mapped,
+    availableKeys: Object.keys(validationConfig.difficultyMapping)
+  });
+  
+  return mapped || 'Level0'; // Fallback to Level0 instead of Level2
 }
 
 /**
@@ -50,8 +60,8 @@ export function getTokenLimitsForLevel(level: ValidationLevel) {
   
   const difficulty = difficultyMapping[level];
   if (!difficulty) {
-    console.warn(`⚠️ Unknown validation level: ${level}, using fallback`);
-    return validationConfig.tokenLimits.Level2;
+    console.warn(`⚠️ Unknown validation level: ${level}, using Level0 fallback`);
+    return validationConfig.tokenLimits.Level0;
   }
   
   // TOKEN VALIDATION BYPASSED - Return high ceiling for compatibility  
@@ -91,8 +101,8 @@ export function getExpectedPagesForService(service: 'netflix' | 'live', level: V
  */
 export function getMinCharactersPerPage(level: ValidationLevel): number {
   return validationConfig.characterMinimumsPerPage[level]?.minCharsPerPage || 
-         validationConfig.characterMinimumsPerPage.Level2?.minCharsPerPage || 
-         25; // Fallback to Level2 default
+         validationConfig.characterMinimumsPerPage.Level0?.minCharsPerPage || 
+         5; // Fallback to Level0 default
 }
 
 /**
@@ -109,7 +119,7 @@ export function getMinCharactersTotal(level: ValidationLevel, expectedPages: num
  * Use getMinCharactersPerPage() for new validation logic
  */
 export function getCharacterLimitsForLevel(level: ValidationLevel) {
-  return validationConfig.characterThresholds[level] || validationConfig.characterThresholds.Level2;
+  return validationConfig.characterThresholds[level] || validationConfig.characterThresholds.Level0;
 }
 
 /**
