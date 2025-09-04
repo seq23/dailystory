@@ -175,7 +175,9 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
   if (!content?.trim()) return [];
   
   const characterLimits = getCharacterLimitsForLevel(level);
-  const targetCharsPerPage = Math.floor(characterLimits.maxChars / Math.max(maxPages, 12));
+  const targetCharsPerPage = characterLimits.maxChars; // FIX: Use direct per-page limit, not divided by pages
+  
+  console.log(`🔧 Auto-split debug: level=${level}, targetCharsPerPage=${targetCharsPerPage}, maxPages=${maxPages}`);
   
   // Enhanced sentence splitting - handles multiple punctuation patterns
   const sentences = content
@@ -274,6 +276,11 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     pages.push(currentPage.trim());
   }
   
+  // TAIL BALANCING: Redistribute content more evenly across pages
+  pages = balanceTailContent(pages, targetCharsPerPage);
+  
+  console.log(`🔧 Pages after tail balancing: ${pages.map((p, i) => `Page ${i+1}: ${p.length} chars`).join(', ')}`);
+  
   // Final truncation safety net for Netflix (enforce 12-page max regardless of content)
   if (maxPages <= 12 && pages.length > 12) {
     console.log(`🔧 FINAL TRUNCATION: Enforcing 12-page limit, truncating ${pages.length} pages to 12`);
@@ -282,6 +289,42 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
   
   // Ensure we have content - fallback to original if splitting failed
   return pages.length > 0 ? pages : [content.trim()];
+}
+
+/**
+ * Balance tail content - redistribute sentences more evenly across pages
+ */
+function balanceTailContent(pages: string[], targetCharsPerPage: number): string[] {
+  if (pages.length <= 1) return pages;
+  
+  const balanced: string[] = [];
+  
+  for (let i = 0; i < pages.length; i++) {
+    const currentPage = pages[i];
+    const currentLength = currentPage.length;
+    
+    // If page is significantly under target and there's a next page, try to redistribute
+    if (i < pages.length - 1 && currentLength < targetCharsPerPage * 0.6) {
+      const nextPage = pages[i + 1];
+      const nextSentences = nextPage.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+      
+      if (nextSentences.length > 1) {
+        // Move first sentence from next page to current page
+        const sentenceToMove = nextSentences[0];
+        const potentialLength = currentLength + sentenceToMove.length + 1;
+        
+        if (potentialLength <= targetCharsPerPage * 1.2) {
+          balanced.push((currentPage + ' ' + sentenceToMove).trim());
+          pages[i + 1] = nextSentences.slice(1).join(' ');
+          continue;
+        }
+      }
+    }
+    
+    balanced.push(currentPage);
+  }
+  
+  return balanced.filter(p => p.trim().length > 0);
 }
 
 /**
