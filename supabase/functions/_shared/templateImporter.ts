@@ -163,7 +163,7 @@ export async function getTemplate(
       console.log(`✅ Found structured template: "${storyTemplate.title}"`);
       
       // Convert structured template to string array with mode support
-      const result = convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
+      const result = await convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
       
       // Handle both return types from convertStoryTemplateToStringArray
       if (typeof result === 'object' && 'pages' in result) {
