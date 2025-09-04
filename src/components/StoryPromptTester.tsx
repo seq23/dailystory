@@ -415,6 +415,13 @@ export function StoryPromptTester() {
       generationPath: [],
       emergencyContentUsed: false
     };
+    
+    // DEBUG: Log what level is being set in test result
+    console.log('🔍 [PROMPT-TESTING-DEBUG] Creating test result with level:', { 
+      resultLevel: level, 
+      service, 
+      userInfoDifficulty: userInfo.difficultyLevel 
+    });
 
     try {
       let response: any = null;
@@ -905,6 +912,10 @@ export function StoryPromptTester() {
       ? [['custom', customUserPrefs] as [string, UserInfo]] 
       : Object.entries(testUserProfiles);
     
+    // DEBUG: Log what profiles are being loaded
+    console.log('🔍 [PROMPT-TESTING-DEBUG] Available test profiles:', Object.keys(testUserProfiles));
+    console.log('🔍 [PROMPT-TESTING-DEBUG] Profiles to test:', profiles.map(([level, info]) => ({ level, name: info.name, difficultyLevel: info.difficultyLevel })));
+    
     const servicesCount = testMode === 'comparison' ? 3 : testMode === 'full' ? 2 : 1;
     const totalTests = profiles.length * servicesCount;
     let completed = 0;
@@ -920,6 +931,13 @@ export function StoryPromptTester() {
       // Process batch in parallel
       await Promise.all(batch.map(async ([level, userInfo]) => {
         setCurrentTest(`Testing ${level} (${userInfo.name})`);
+        
+        // DEBUG: Log the level being tested
+        console.log('🔍 [PROMPT-TESTING-DEBUG] Testing level:', { 
+          levelKey: level, 
+          userName: userInfo.name, 
+          userDifficultyLevel: userInfo.difficultyLevel 
+        });
         
         const comparison: ServiceComparison = { level };
         const batchResults: TestResult[] = [];
