@@ -307,39 +307,70 @@ export class SessionStateManager {
     
     // NEW: Persist to database
     try {
+      // First check environment variables
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error(`Missing environment variables: SUPABASE_URL=${!!supabaseUrl}, SUPABASE_SERVICE_ROLE_KEY=${!!supabaseServiceKey}`);
+      }
+      
+      console.log(`🔧 [AI-DEBUG] Database insertion starting for session ${sessionId}:`, {
+        hasBundle: !!aiPromptData.bundle,
+        bundleKeys: aiPromptData.bundle ? Object.keys(aiPromptData.bundle) : [],
+        systemPromptLength: aiPromptData.systemPrompt?.length || 0,
+        userPromptLength: aiPromptData.userPrompt?.length || 0
+      });
+
       const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'),
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-      const { error: insertError } = await supabase
-        .from('ai_prompt_debug_log')
-        .insert({
-          session_id: sessionId,
-          system_prompt: aiPromptData.systemPrompt || '',
-          user_prompt: aiPromptData.userPrompt || '',
-          bundle_data: aiPromptData.bundle || {},
-          api_response: aiPromptData.apiResponse || {},
-          model: aiPromptData.model || 'gpt-4o-mini',
-          token_limit: aiPromptData.tokenLimit || 4000,
-          page_number: aiPromptData.pageNumber || 1,
-          attempt: aiPromptData.attempt || 1,
-          success: aiPromptData.success || false
-        });
-
-      if (insertError) {
-        console.error('❌ Failed to persist AI debug data to database:', insertError);
-      } else {
-        console.log(`✅ [AI-DEBUG] Persisted to database for session ${sessionId}`);
+      // Extract user_id from bundle if available
+      let userId = null;
+      if (aiPromptData.bundle?.userInfo?.id) {
+        userId = aiPromptData.bundle.userInfo.id;
       }
 
-      // Clean up old entries (keep only last 3 per session)
+      const insertData = {
+        session_id: sessionId,
+        user_id: userId,
+        system_prompt: aiPromptData.systemPrompt || '',
+        user_prompt: aiPromptData.userPrompt || '',
+        bundle_data: aiPromptData.bundle || {},
+        api_response: aiPromptData.apiResponse || {},
+        model: aiPromptData.model || 'gpt-4o-mini',
+        token_limit: aiPromptData.tokenLimit || 4000,
+        page_number: aiPromptData.pageNumber || 1,
+        attempt: aiPromptData.attempt || 1,
+        success: aiPromptData.success || false
+      };
+
+      console.log(`🔧 [AI-DEBUG] Inserting data:`, {
+        session_id: insertData.session_id,
+        user_id: insertData.user_id,
+        model: insertData.model,
+        page_number: insertData.page_number,
+        success: insertData.success
+      });
+
+      const { data: insertResult, error: insertError } = await supabase
+        .from('ai_prompt_debug_log')
+        .insert(insertData)
+        .select('id');
+
+      if (insertError) {
+        // Use throw instead of console.error to make it visible in edge function logs
+        throw new Error(`Database insertion failed: ${JSON.stringify(insertError, null, 2)}`);
+      } else {
+        console.log(`✅ [AI-DEBUG] Successfully persisted to database for session ${sessionId}, record ID: ${insertResult?.[0]?.id}`);
+      }
+
+      // Clean up old entries (keep only last 10 per session)
       const { error: cleanupError } = await supabase
         .from('ai_prompt_debug_log')
         .delete()
         .not('id', 'in', 
-          `(SELECT id FROM ai_prompt_debug_log WHERE session_id = '${sessionId}' ORDER BY created_at DESC LIMIT 3)`
+          `(SELECT id FROM ai_prompt_debug_log WHERE session_id = '${sessionId}' ORDER BY created_at DESC LIMIT 10)`
         )
         .eq('session_id', sessionId);
 
@@ -348,7 +379,9 @@ export class SessionStateManager {
       }
 
     } catch (dbError) {
-      console.error('❌ Database operation failed for AI debug storage:', dbError);
+      // Use throw to make database errors visible in edge function logs
+      console.error('❌ [AI-DEBUG] Database operation failed:', dbError.message || dbError);
+      throw new Error(`AI Debug database storage failed: ${dbError.message || dbError}`);
     }
     
     console.log(`🔍 [AI-DEBUG] Stored complete AI prompt for session ${sessionId}, attempt ${aiPromptData.attempt}:`, {
