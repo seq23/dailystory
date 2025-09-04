@@ -196,29 +196,45 @@ export function emergencyChunkSentence(sentence: string, targetChars: number, ta
 
 /**
  * Word-chunking fallback for unpunctuated/run-on sentences (Level 1-4+ fallback)
+ * Now supports both character AND word count limits
  */
-export function wordChunkSentence(sentence: string, targetChars: number): string[] {
+export function wordChunkSentence(sentence: string, targetChars: number, targetWords?: number): string[] {
   const words = sentence.trim().split(/\s+/);
   const chunks: string[] = [];
   let currentChunk = '';
   let currentChars = 0;
+  let currentWords = 0;
   
   for (const word of words) {
     const wordChars = word.length;
+    const spaceChars = currentChunk.length > 0 ? 1 : 0;
+    const totalCharsWithWord = currentChars + spaceChars + wordChars;
+    const totalWordsWithWord = currentWords + 1;
     
-    if (currentChars + wordChars > targetChars && currentChunk.length > 0) {
+    // Check if adding this word would exceed EITHER character OR word limits
+    const exceedsChars = totalCharsWithWord > targetChars;
+    const exceedsWords = targetWords !== undefined && totalWordsWithWord > targetWords;
+    
+    if ((exceedsChars || exceedsWords) && currentChunk.length > 0) {
       chunks.push(currentChunk.trim() + '.');
+      console.log(`🔧 Word chunk created: ${currentChars} chars, ${currentWords} words (limits: ${targetChars} chars, ${targetWords ?? 'no limit'} words)`);
+      
+      // Start new chunk with current word
       currentChunk = word;
       currentChars = wordChars;
+      currentWords = 1;
     } else {
+      // Add word to current chunk
       if (currentChunk.length > 0) currentChunk += ' ';
       currentChunk += word;
-      currentChars += wordChars + (currentChunk.length > word.length ? 1 : 0); // +1 for space
+      currentChars = totalCharsWithWord;
+      currentWords = totalWordsWithWord;
     }
   }
   
   if (currentChunk.trim().length > 0) {
     chunks.push(currentChunk.trim() + '.');
+    console.log(`🔧 Final word chunk: ${currentChars} chars, ${currentWords} words`);
   }
   
   return chunks.length > 0 ? chunks : [sentence];
@@ -300,7 +316,7 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     
     // If sentence is too long and has no punctuation, word-chunk it
     if (sentenceChars > targetCharsPerPage * 1.5 && !/[.!?]/.test(cleanSentence)) {
-      const chunks = wordChunkSentence(cleanSentence, targetCharsPerPage);
+      const chunks = wordChunkSentence(cleanSentence, targetCharsPerPage, targetWordsPerPage);
       
       for (const chunk of chunks) {
         const chunkChars = chunk.length;
