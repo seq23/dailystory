@@ -580,7 +580,14 @@ export function StoryPromptTester() {
           message: 'Generating with Live service'
         });
         
-        response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(userInfo));
+        console.log('🔄 About to call LiveGenerationService.generateFirstPage with userInfo:', userInfo);
+        try {
+          response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(userInfo));
+          console.log('✅ Live service call completed successfully:', response);
+        } catch (liveServiceError) {
+          console.error('❌ Live service call failed:', liveServiceError);
+          throw liveServiceError; // Re-throw to maintain existing error handling
+        }
         
         // Check global source tracking
         const globalSource = (globalThis as any).__LAST_PAGE_SOURCE__;
@@ -1088,7 +1095,7 @@ export function StoryPromptTester() {
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Session ID</div>
-            <div className="font-mono text-xs truncate" title={result.sessionId}>
+            <div className="font-mono text-xs break-all overflow-x-auto max-w-[200px]" title={result.sessionId}>
               {result.sessionId || 'Not captured'}
             </div>
           </div>
