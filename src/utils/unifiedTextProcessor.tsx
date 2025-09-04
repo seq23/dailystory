@@ -2,11 +2,12 @@ import React from "react";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 
 interface TextProcessorOptions {
   text: string;
   className?: string;
-  difficulty?: "beginner" | "easy" | "medium" | "hard" | "expert";
+  difficulty?: string; // Frontend difficulty format ("beginner", "developing", etc.)
   userInfo?: UserInfo;
   isPremium?: boolean;
   userId?: string;
@@ -22,7 +23,7 @@ interface TextProcessorOptions {
 export const processTextWithConsistentFlow = ({
   text,
   className = "",
-  difficulty = "easy",
+  difficulty = "beginner", // Frontend difficulty default
   userInfo,
   isPremium,
   userId,
@@ -34,6 +35,9 @@ export const processTextWithConsistentFlow = ({
     console.warn('processTextWithConsistentFlow: text is undefined, not a string, or empty', { text });
     return [];
   }
+  
+  // Convert frontend difficulty to backend format for processing
+  const backendDifficulty = DifficultyLevelMapper.toBackend(difficulty);
   
   // Strip page markers as safety net before processing
   const cleanText = text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
@@ -86,7 +90,7 @@ export const processTextWithConsistentFlow = ({
           key={`${index}-${token}`}
           word={token}
           className={finalClassName}
-          difficulty={difficulty}
+          difficulty={backendDifficulty}
           userInfo={userInfo}
           isPremium={isPremium}
           sentenceContext={cleanText}
@@ -101,7 +105,7 @@ export const processTextWithConsistentFlow = ({
         key={`${index}-${token}`}
         word={token}
         className={finalClassName}
-        difficulty={difficulty}
+        difficulty={backendDifficulty}
         userInfo={userInfo}
         isPremium={isPremium}
         sentenceContext={cleanText}

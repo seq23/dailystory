@@ -4,6 +4,7 @@
 import { ContentSecurity } from './security';
 import { StoryQualityChecker } from './storyQualityChecker';
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
+import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
 // Import shared utilities for consistency with backend
 import { 
   estimateTokenCount, 
@@ -486,9 +487,11 @@ export class UnifiedValidator {
 
   /**
    * Map difficulty level to validation level - delegates to shared utilities
+   * Accepts frontend difficulty and converts internally
    */
-  static mapDifficultyToLevel(difficulty: DifficultyLevel | ExpertGradeLevel): ValidationLevel {
-    return mapDifficultyToLevel(difficulty);
+  static mapDifficultyToLevel(frontendDifficulty: string): ValidationLevel {
+    const backendDifficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);
+    return mapDifficultyToLevel(backendDifficulty);
   }
 
   /**

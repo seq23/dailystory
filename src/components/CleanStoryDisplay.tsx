@@ -2752,8 +2752,8 @@ const handleRestartTimer = () => {
           hasLiveContext: !!liveContext
         });
         
-        // Token validation for premium ending page - convert to backend for validation
-        const validationLevel = UnifiedValidator.mapDifficultyToLevel(DifficultyLevelMapper.toBackend(currentDifficulty));
+        // Token validation for premium ending page
+        const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
         // Backend now handles all validation - trust the response
         // Keep analytics logging but remove frontend re-validation
         console.log('📊 Premium ending generated:', {
@@ -2910,8 +2910,8 @@ const handleRestartTimer = () => {
         const newDifficulty = difficultyLevels[newIndex];
         setCurrentDifficulty(newDifficulty);
         
-        // Store the difficulty choice locally - convert to backend for storage
-        DifficultyManager.storeDifficulty(userInfo.name || 'guest', DifficultyLevelMapper.toBackend(newDifficulty), userInfo);
+        // Store the difficulty choice locally
+        DifficultyManager.storeDifficulty(userInfo.name || 'guest', newDifficulty, userInfo);
         
         // Persist to Supabase profile and preferences when authenticated
         try {
@@ -2990,9 +2990,9 @@ const handleRestartTimer = () => {
   // Get difficulty-based text configuration optimized for each reading level
   const currentImage = pageImages[currentPage];
   const hasCurrentImage = !!currentImage;
-  const difficultyBasedTextConfig = getDifficultyBasedTextConfig(DifficultyLevelMapper.toBackend(currentDifficulty), isMobile);
+  const difficultyBasedTextConfig = getDifficultyBasedTextConfig(currentDifficulty, isMobile);
   const wordCount = (currentStoryText || "").trim().split(/\s+/).filter(word => word.length > 0).length;
-  const difficultyBasedContainerConfig = getDifficultyBasedContainer(DifficultyLevelMapper.toBackend(currentDifficulty));
+  const difficultyBasedContainerConfig = getDifficultyBasedContainer(currentDifficulty);
 
   const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const isShortPage = countWords(currentStoryText || "") <= 8;
@@ -3102,7 +3102,7 @@ const handleRestartTimer = () => {
         {/* Responsive Header */}
         <ResponsiveStoryHeader
           storyTitle={storyTitle}
-          currentDifficulty={DifficultyLevelMapper.toBackend(currentDifficulty)}
+          currentDifficulty={currentDifficulty}
           userInfo={userInfo}
           onHome={onHome}
           onNewStory={isPremium && displayedStory.length > 0 ? handleRewriteWithDialog : handleNewStoryClick}
@@ -3315,7 +3315,7 @@ const handleRestartTimer = () => {
                           processTextWithConsistentFlow({
                             text: currentStoryText,
                             className: "interactive-word",
-                            difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+                            difficulty: currentDifficulty,
                             userInfo,
                             isPremium,
                             userId: userInfo.name,
@@ -3401,7 +3401,7 @@ const handleRestartTimer = () => {
                             processTextWithConsistentFlow({
                               text: currentStoryText,
                               className: "interactive-word",
-                              difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+                              difficulty: currentDifficulty,
                               userInfo,
                               isPremium,
                               userId: userInfo.name,

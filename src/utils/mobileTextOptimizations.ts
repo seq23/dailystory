@@ -3,7 +3,8 @@
  * Provides reading-level appropriate text sizing and spacing for mobile devices
  */
 
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
+import type { DifficultyLevel } from '@/types';
 
 export interface MobileTextConfig {
   fontSize: string;
@@ -117,8 +118,12 @@ export interface MobileReadingPreferences {
 /**
  * Enhanced text configuration based on difficulty level and word count per page
  * Optimizes for no scrolling on levels 0-2 and allows scrolling for higher levels
+ * Accepts frontend difficulty and converts internally
  */
-export const getDifficultyBasedTextConfig = (difficulty: DifficultyLevel, isMobile: boolean = true): MobileTextConfig => {
+export const getDifficultyBasedTextConfig = (frontendDifficulty: string, isMobile: boolean = true): MobileTextConfig => {
+  // Convert frontend difficulty to backend format
+  const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
+  
   const baseConfig = {
     letterSpacing: 'tracking-normal',
     paragraphSpacing: 'mb-4',
@@ -177,14 +182,18 @@ export const getDifficultyBasedTextConfig = (difficulty: DifficultyLevel, isMobi
       };
       
     default:
-      return getDifficultyBasedTextConfig('medium', isMobile);
+      return getDifficultyBasedTextConfig('developing', isMobile);
   }
 };
 
 /**
  * Get enhanced difficulty-aware container classes
+ * Accepts frontend difficulty and converts internally
  */
-export const getDifficultyBasedContainer = (difficulty: DifficultyLevel): string => {
+export const getDifficultyBasedContainer = (frontendDifficulty: string): string => {
+  // Convert frontend difficulty to backend format
+  const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
+  
   const baseClasses = 'max-w-full mx-auto px-4';
   
   switch (difficulty) {

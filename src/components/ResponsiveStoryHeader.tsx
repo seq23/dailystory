@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import NewStoryCTA from "@/components/NewStoryCTA";
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
-  currentDifficulty?: DifficultyLevel;
+  currentDifficulty?: string; // Frontend difficulty format ("beginner", "developing", etc.)
   userInfo?: UserInfo;
   onHome?: () => void;
   onNewStory?: () => void;
@@ -35,7 +35,7 @@ interface ResponsiveStoryHeaderProps {
 
 export const ResponsiveStoryHeader = ({
   storyTitle,
-  currentDifficulty = 'easy',
+  currentDifficulty = 'beginner', // Frontend difficulty default
   userInfo,
   onHome,
   onNewStory,

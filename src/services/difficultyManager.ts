@@ -133,9 +133,13 @@ export class DifficultyManager {
 
   /**
    * Store user difficulty preference
+   * Accepts frontend difficulty and converts internally
    */
-  static storeDifficulty(userId: string, difficulty: DifficultyLevel, userInfo: UserInfo): void {
+  static storeDifficulty(userId: string, frontendDifficulty: string, userInfo: UserInfo): void {
     try {
+      // Convert frontend difficulty to backend format for storage
+      const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
+      
       const data = {
         difficulty,
         lastUpdated: Date.now(),
@@ -145,7 +149,7 @@ export class DifficultyManager {
       };
       
       MobileSessionManager.setItem(`${this.STORAGE_KEY}_${userId}`, JSON.stringify(data));
-      console.log(`💾 DifficultyManager: Stored difficulty ${difficulty} for user ${userId}`);
+      console.log(`💾 DifficultyManager: Stored difficulty ${difficulty} (from frontend: ${frontendDifficulty}) for user ${userId}`);
     } catch (error) {
       console.warn('⚠️ DifficultyManager: Failed to store difficulty:', error);
     }
