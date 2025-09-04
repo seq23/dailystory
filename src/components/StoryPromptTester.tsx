@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle, User, Settings } from 'lucide-react';
+import { AvatarPicker } from '@/components/ui/avatar-picker';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { LiveGenerationService } from '@/services/LiveGenerationService';
@@ -21,7 +22,7 @@ import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/f
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
-import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal } from '@/types';
+import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 
 // Robust word counting function
 const countWords = (content: string | string[]): number => {
@@ -51,12 +52,9 @@ interface TestResult {
   pages: number;
   actualPages?: number;
   wordCount: number;
-  tokenCount?: number;
-  maxTokensAllowed?: number;
   source: 'ai' | 'fallback' | 'emergency' | 'unknown';
   contentPreview: string;
   fullContent: string[];
-  withinTokenLimits: boolean;
   responseTime?: number;
   error?: string;
   fallbackReason?: string;
@@ -266,7 +264,8 @@ export function StoryPromptTester() {
     favoriteAnimal: 'dog',
     hobbies: 'playing games',
     favoriteFood: 'pizza',
-    specialRequest: 'adventure stories'
+    specialRequest: 'adventure stories',
+    targetVocabulary: ''
   });
   const [customFormExpanded, setCustomFormExpanded] = useState(false);
 
@@ -411,7 +410,6 @@ export function StoryPromptTester() {
       source: 'unknown',
       contentPreview: '',
       fullContent: [],
-      withinTokenLimits: false,
       generationPath: [],
       emergencyContentUsed: false
     };
@@ -711,13 +709,6 @@ export function StoryPromptTester() {
       result.responseTime = Date.now() - startTime;
       result.success = true;
       
-      // Use UnifiedValidator for proper token validation
-      const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
-      const tokenValidation = UnifiedValidator.validateContent(result.fullContent.join(' '), { mode: 'guest', level: validationLevel });
-      result.withinTokenLimits = tokenValidation.isValid;
-      result.tokenCount = tokenValidation.metrics.tokenCount;
-      result.maxTokensAllowed = UnifiedValidator.getTokenLimits(validationLevel).guestStory;
-      
       // Show final result toast
       showTestToast({
         level,
@@ -798,7 +789,6 @@ export function StoryPromptTester() {
           source: result.source,
           pages: result.pages,
           wordCount: result.wordCount,
-          withinTokenLimits: result.withinTokenLimits,
           fallbackReason: result.fallbackReason,
           error: result.error
         });
@@ -889,23 +879,6 @@ export function StoryPromptTester() {
     };
   };
 
-  // Token validation using UnifiedValidator
-  const analyzeTokenLimits = (content: string[], level: string): { isValid: boolean; tokenCount: number; wordCount: number; maxTokens: number } => {
-    const fullText = (Array.isArray(content) && content.length > 0) ? content.join(' ') : '';
-    const wordCount = countWords(fullText);
-    
-    // Use UnifiedValidator for comprehensive validation
-    const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
-    const validation = UnifiedValidator.validateContent(fullText, { mode: 'guest', level: validationLevel });
-    const tokenLimits = UnifiedValidator.getTokenLimits(validationLevel);
-    
-    return {
-      isValid: validation.isValid,
-      tokenCount: validation.metrics.tokenCount,
-      wordCount,
-      maxTokens: tokenLimits.guestStory
-    };
-  };
 
   // Optimized batch test runner with progressive results
   const runAllTests = async () => {
@@ -1070,7 +1043,7 @@ export function StoryPromptTester() {
 
     return (
       <Card key={resultKey} className={`mb-4 border-2 ${
-          result.success ? (result.withinTokenLimits ? 'border-green-200' : 'border-yellow-200') : 'border-red-200'
+          result.success ? 'border-green-200' : 'border-red-200'
         }`}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -1117,17 +1090,6 @@ export function StoryPromptTester() {
             <div className="text-sm text-muted-foreground">Session ID</div>
             <div className="font-mono text-xs truncate" title={result.sessionId}>
               {result.sessionId || 'Not captured'}
-            </div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Token Limits</div>
-            <div className={`font-semibold ${result.withinTokenLimits ? 'text-green-500' : 'text-red-500'}`}>
-              {result.withinTokenLimits ? '✓ Valid' : '✗ Invalid'}
-              {result.tokenCount && result.maxTokensAllowed && (
-                <div className="text-xs text-muted-foreground">
-                  {result.tokenCount}/{result.maxTokensAllowed} tokens
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -1388,17 +1350,6 @@ export function StoryPromptTester() {
                           <div className="text-muted-foreground">Avg Chars/Page</div>
                           <div className="font-medium">{result.characterAnalysis.averageCharactersPerPage}</div>
                         </div>
-                        <div>
-                          <div className="text-muted-foreground">Quality</div>
-                          <div className={`font-medium ${result.withinTokenLimits ? 'text-green-600' : 'text-red-600'}`}>
-                            {result.withinTokenLimits ? 'Valid' : 'Invalid'}
-                            {result.tokenCount && result.maxTokensAllowed && (
-                              <div className="text-xs text-muted-foreground">
-                                {result.tokenCount}/{result.maxTokensAllowed} tokens
-                              </div>
-                            )}
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -1462,119 +1413,200 @@ export function StoryPromptTester() {
                 </div>
 
                 {useCustomPreferences && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        value={customUserPrefs.name}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Enter user name"
-                      />
+                  <div className="space-y-6">
+                    {/* Basic Info Section */}
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-3">Basic Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Name</Label>
+                          <Input
+                            id="name"
+                            value={customUserPrefs.name}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Enter user name"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="age">Age</Label>
+                          <Input
+                            id="age"
+                            type="number"
+                            min="3"
+                            max="18"
+                            value={customUserPrefs.age}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, age: parseInt(e.target.value) || 6 }))}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="grade">Grade</Label>
+                          <Select
+                            value={customUserPrefs.grade}
+                            onValueChange={(value: Grade) => setCustomUserPrefs(prev => ({ ...prev, grade: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PreK">PreK</SelectItem>
+                              <SelectItem value="K">Kindergarten</SelectItem>
+                              <SelectItem value="1st">1st Grade</SelectItem>
+                              <SelectItem value="2nd">2nd Grade</SelectItem>
+                              <SelectItem value="3rd">3rd Grade</SelectItem>
+                              <SelectItem value="4th">4th Grade</SelectItem>
+                              <SelectItem value="5th">5th Grade</SelectItem>
+                              <SelectItem value="6th+">6th+ Grade</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="difficulty">Difficulty Level</Label>
+                          <Select
+                            value={customUserPrefs.difficultyLevel}
+                            onValueChange={(value: DifficultyLevel) => setCustomUserPrefs(prev => ({ ...prev, difficultyLevel: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="beginner">Beginner</SelectItem>
+                              <SelectItem value="easy">Easy</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="hard">Hard</SelectItem>
+                              <SelectItem value="expert">Expert</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="age">Age</Label>
-                      <Input
-                        id="age"
-                        type="number"
-                        min="3"
-                        max="18"
-                        value={customUserPrefs.age}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, age: parseInt(e.target.value) || 6 }))}
-                      />
+                    {/* Avatar Section */}
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-3">Avatar Preferences</h4>
+                      <div className="space-y-2">
+                        <Label>Avatar Type & Skin Tone</Label>
+                        <AvatarPicker
+                          value={customUserPrefs.avatar}
+                          onChange={(avatar) => setCustomUserPrefs(prev => ({ ...prev, avatar }))}
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="grade">Grade</Label>
-                      <Select
-                        value={customUserPrefs.grade}
-                        onValueChange={(value: Grade) => setCustomUserPrefs(prev => ({ ...prev, grade: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PreK">PreK</SelectItem>
-                          <SelectItem value="K">Kindergarten</SelectItem>
-                          <SelectItem value="1st">1st Grade</SelectItem>
-                          <SelectItem value="2nd">2nd Grade</SelectItem>
-                          <SelectItem value="3rd">3rd Grade</SelectItem>
-                          <SelectItem value="4th">4th Grade</SelectItem>
-                          <SelectItem value="5th">5th Grade</SelectItem>
-                          <SelectItem value="6th+">6th+ Grade</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    {/* Language & Learning Section */}
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-3">Language & Learning</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="nativeLanguage">Native Language</Label>
+                          <Select
+                            value={customUserPrefs.nativeLanguage}
+                            onValueChange={(value: LanguageCode) => setCustomUserPrefs(prev => ({ ...prev, nativeLanguage: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="en">English</SelectItem>
+                              <SelectItem value="es">Spanish</SelectItem>
+                              <SelectItem value="fr">French</SelectItem>
+                              <SelectItem value="zh">Chinese</SelectItem>
+                              <SelectItem value="hi">Hindi</SelectItem>
+                              <SelectItem value="ar">Arabic</SelectItem>
+                              <SelectItem value="pt">Portuguese</SelectItem>
+                              <SelectItem value="fr-francophone-african">French (Francophone African)</SelectItem>
+                              <SelectItem value="en-african-american">English (African American)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="learningGoal">Learning Goal</Label>
+                          <Select
+                            value={customUserPrefs.learningGoal}
+                            onValueChange={(value: LearningGoal) => setCustomUserPrefs(prev => ({ ...prev, learningGoal: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="improve-english-reading">Improve English Reading</SelectItem>
+                              <SelectItem value="learn-english-language">Learn English Language</SelectItem>
+                              <SelectItem value="both">Both</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="difficulty">Difficulty Level</Label>
-                      <Select
-                        value={customUserPrefs.difficultyLevel}
-                        onValueChange={(value: DifficultyLevel) => setCustomUserPrefs(prev => ({ ...prev, difficultyLevel: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="easy">Easy</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="hard">Hard</SelectItem>
-                          <SelectItem value="expert">Expert</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Vocabulary Section */}
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-3">Vocabulary & Preferences</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="targetVocabulary">Target Vocabulary Words</Label>
+                          <Textarea
+                            id="targetVocabulary"
+                            value={customUserPrefs.targetVocabulary || ''}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, targetVocabulary: e.target.value }))}
+                            placeholder="e.g., explore, discover, adventure, friendship (comma-separated)"
+                            rows={2}
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="favoriteColor">Favorite Color</Label>
-                      <Input
-                        id="favoriteColor"
-                        value={customUserPrefs.favoriteColor || ''}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteColor: e.target.value }))}
-                        placeholder="e.g., blue, red, green"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="favoriteColor">Favorite Color</Label>
+                          <Input
+                            id="favoriteColor"
+                            value={customUserPrefs.favoriteColor || ''}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteColor: e.target.value }))}
+                            placeholder="e.g., blue, red, green"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="favoriteAnimal">Favorite Animal</Label>
-                      <Input
-                        id="favoriteAnimal"
-                        value={customUserPrefs.favoriteAnimal || ''}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteAnimal: e.target.value }))}
-                        placeholder="e.g., dog, cat, elephant"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="favoriteAnimal">Favorite Animal</Label>
+                          <Input
+                            id="favoriteAnimal"
+                            value={customUserPrefs.favoriteAnimal || ''}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteAnimal: e.target.value }))}
+                            placeholder="e.g., dog, cat, elephant"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="hobbies">Hobbies</Label>
-                      <Input
-                        id="hobbies"
-                        value={customUserPrefs.hobbies || ''}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, hobbies: e.target.value }))}
-                        placeholder="e.g., reading, sports, art"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="hobbies">Hobbies</Label>
+                          <Input
+                            id="hobbies"
+                            value={customUserPrefs.hobbies || ''}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, hobbies: e.target.value }))}
+                            placeholder="e.g., reading, sports, art"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="favoriteFood">Favorite Food</Label>
-                      <Input
-                        id="favoriteFood"
-                        value={customUserPrefs.favoriteFood || ''}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteFood: e.target.value }))}
-                        placeholder="e.g., pizza, ice cream, tacos"
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="favoriteFood">Favorite Food</Label>
+                          <Input
+                            id="favoriteFood"
+                            value={customUserPrefs.favoriteFood || ''}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, favoriteFood: e.target.value }))}
+                            placeholder="e.g., pizza, ice cream, tacos"
+                          />
+                        </div>
 
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="specialRequest">Special Request</Label>
-                      <Textarea
-                        id="specialRequest"
-                        value={customUserPrefs.specialRequest || ''}
-                        onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, specialRequest: e.target.value }))}
-                        placeholder="e.g., adventure stories, mystery themes, sci-fi elements"
-                        rows={2}
-                      />
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="specialRequest">Special Request</Label>
+                          <Textarea
+                            id="specialRequest"
+                            value={customUserPrefs.specialRequest || ''}
+                            onChange={(e) => setCustomUserPrefs(prev => ({ ...prev, specialRequest: e.target.value }))}
+                            placeholder="e.g., adventure stories, mystery themes, sci-fi elements"
+                            rows={2}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1804,9 +1836,6 @@ export function StoryPromptTester() {
                       ? responseTimeResults.reduce((sum, r) => sum + (r.responseTime || 0), 0) / responseTimeResults.length
                       : 0;
                     
-                    const tokenValidation = testResults.length > 0 
-                      ? testResults.filter(r => r.withinTokenLimits).length / testResults.length
-                      : 0;
                     const emergencyUsage = testResults.length > 0 
                       ? testResults.filter(r => r.emergencyContentUsed).length / testResults.length
                       : 0;
@@ -1817,12 +1846,6 @@ export function StoryPromptTester() {
                           <span>Avg Response Time</span>
                           <span className="font-semibold">
                             {isNaN(avgResponseTime) ? "No data" : Math.round(avgResponseTime)}ms
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Token Validation Rate</span>
-                          <span className="font-semibold">
-                            {isNaN(tokenValidation) ? "No data" : Math.round(tokenValidation * 100)}%
                           </span>
                         </div>
                         <div className="flex justify-between">
