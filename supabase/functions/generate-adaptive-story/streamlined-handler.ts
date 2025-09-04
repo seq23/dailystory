@@ -459,20 +459,9 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   // Enhanced avatar processing using StaticDataCache - UNIVERSAL coverage
   let enhancedUserPrompt = prompt.userPrompt;
   
-  // Extract separate avatar data from bundle for hair mapping only
-  let separateAvatarData = {};
   try {
-    const separateDataMatch = prompt.userPrompt.match(/Separate Avatar Data: ({.*?})/);
-    if (separateDataMatch) {
-      separateAvatarData = JSON.parse(separateDataMatch[1]);
-    }
-  } catch (e) {
-    console.warn('Could not extract separate avatar data from bundle');
-  }
-  
-  try {
-    // Use combined userInfo + separate avatar data for complete processing
-    const completeAvatarInfo = { ...userInfo, ...separateAvatarData };
+    // Use userInfo which already contains avatar data from bundle
+    const completeAvatarInfo = userInfo;
     const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo);
     
     // Universal hair color enhancement (no language restriction)
