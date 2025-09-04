@@ -1428,7 +1428,7 @@ const initializeStory = async () => {
             setIsStoryComplete(!!cached.isComplete);
             setStoryTitle(`${userInfo.name}'s Live Adventure`);
             const ctx: LiveGenerationContext = {
-              userInfo: effectiveUser,
+              userInfo: { ...effectiveUser, difficultyLevel: currentDifficulty },
               difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
               expertGradeLevel: currentDifficulty === 'advanced' ? expertGradeLevel : undefined,
               storyContext: [...cached.pages],
@@ -1839,7 +1839,7 @@ const initializeStory = async () => {
     try {
       const result = await SimpleImageService.generateStoryImage(
         storyText, 
-        userInfo, 
+        { ...userInfo, difficultyLevel: currentDifficulty }, 
         DifficultyLevelMapper.toBackend(currentDifficulty),
         storyId,
         currentPage + 1,
@@ -2086,7 +2086,7 @@ const initializeStory = async () => {
           setIsLoadingNextPage(true);
           try {
             const newContext: LiveGenerationContext = {
-              userInfo,
+              userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
               difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
               expertGradeLevel: currentDifficulty === 'advanced' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
               storyContext: [...story],
@@ -2726,7 +2726,7 @@ const handleRestartTimer = () => {
     });
     
     const newContext: LiveGenerationContext = {
-      userInfo,
+      userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
       difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
       expertGradeLevel: currentDifficulty === 'advanced' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
       storyContext: originalStoryPages,

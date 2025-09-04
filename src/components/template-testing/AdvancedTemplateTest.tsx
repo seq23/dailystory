@@ -44,12 +44,7 @@ export function AdvancedTemplateTest() {
     if (!userInfo.difficultyLevel) return;
     
     // Convert frontend difficulty to backend for the service
-    const userInfoWithBackendDifficulty = {
-      ...userInfo,
-      difficultyLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel)
-    } as UserInfo;
-    
-    await generateStory(userInfoWithBackendDifficulty);
+    await generateStory(userInfo as UserInfo);
   };
 
   return (

@@ -111,8 +111,18 @@ serve(async (req) => {
       isNeverEnding = false
     } = await req.json();
     
-    // Handle difficulty parameter
-    const effectiveDifficulty = difficulty || userInfo?.difficultyLevel;
+    // Import difficulty mapper for frontend->backend conversion
+    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+    
+    // Handle difficulty parameter with proper frontend->backend conversion
+    const rawDifficulty = difficulty || userInfo?.difficultyLevel;
+    const effectiveDifficulty = DifficultyLevelMapper.normalizeLevel(rawDifficulty || 'easy');
+    
+    console.log('🔄 Template service difficulty mapping:', {
+      input: rawDifficulty,
+      output: effectiveDifficulty,
+      source: difficulty ? 'direct_param' : 'userInfo.difficultyLevel'
+    });
     
     // Dynamic page count calculation (Phase 1)
     const dynamicPageCount = pageCount || getExpectedPageCountForDifficulty(effectiveDifficulty);
