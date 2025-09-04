@@ -150,6 +150,64 @@ export const optimizeFontLoading = () => {
 };
 
 /**
+ * Add global error handler to suppress Chrome extension errors
+ */
+export const suppressChromeExtensionErrors = () => {
+  const originalError = console.error;
+  const originalWarn = console.warn;
+
+  // Filter out Chrome extension errors
+  console.error = (...args) => {
+    const message = args.join(' ');
+    if (
+      message.includes('Could not establish connection') ||
+      message.includes('runtime.lastError') ||
+      message.includes('Receiving end does not exist') ||
+      message.includes('chrome-extension://')
+    ) {
+      return; // Suppress Chrome extension errors
+    }
+    originalError.apply(console, args);
+  };
+
+  console.warn = (...args) => {
+    const message = args.join(' ');
+    if (message.includes('chrome-extension://')) {
+      return; // Suppress Chrome extension warnings
+    }
+    originalWarn.apply(console, args);
+  };
+
+  return () => {
+    console.error = originalError;
+    console.warn = originalWarn;
+  };
+};
+
+/**
+ * Debug preload links to identify problematic ones
+ */
+export const debugPreloadLinks = () => {
+  const preloadLinks = document.querySelectorAll('link[rel="preload"]');
+  console.debug('Preload links found:', preloadLinks.length);
+  
+  preloadLinks.forEach((link, index) => {
+    const linkElement = link as HTMLLinkElement;
+    console.debug(`Preload ${index + 1}:`, {
+      href: linkElement.href,
+      as: linkElement.as,
+      type: linkElement.type,
+      crossOrigin: linkElement.crossOrigin
+    });
+    
+    // Check for problematic preload links
+    if (!linkElement.as || linkElement.as.trim() === '') {
+      console.warn('Preload link missing "as" attribute:', linkElement.href);
+    }
+  });
+};
+
+/**
  * Mobile accessibility enhancements
  */
 export const enhanceMobileAccessibility = () => {
@@ -181,6 +239,14 @@ export const enhanceMobileAccessibility = () => {
 export const initializeMobileOptimizations = (config: Partial<MobileOptimizationConfig> = {}) => {
   const finalConfig = { ...DEFAULT_MOBILE_CONFIG, ...config };
   const cleanupFunctions: (() => void)[] = [];
+
+  // Always suppress Chrome extension errors for cleaner console
+  cleanupFunctions.push(suppressChromeExtensionErrors());
+
+  // Debug preload links in development
+  if (process.env.NODE_ENV === 'development') {
+    setTimeout(() => debugPreloadLinks(), 1000); // Wait for page to load
+  }
 
   if (finalConfig.enableTouchOptimizations) {
     cleanupFunctions.push(applyTouchOptimizations());
