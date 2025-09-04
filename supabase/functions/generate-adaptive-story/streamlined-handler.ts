@@ -13,6 +13,11 @@ import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 
+// Import services for function execution
+import { fetchCulturalArrays, type CulturalArrays } from '../_shared/culturalContextService.ts';
+import { fetchVoicePatterns, type VoicePatterns } from '../_shared/authorVoiceService.ts';
+import { getVocabularyForGrade } from '../_shared/vocabularyLoader.ts';
+
 // Import static caching and error classification
 import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache } from './StaticDataCache.ts';
 const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
@@ -652,7 +657,29 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       storyText = data.choices?.[0]?.message?.content || '';
       
-      // PHASE 2: Detect reasoning tokens consuming all budget without content
+      // PHASE 2: Function Call Detection and Execution
+      if (storyText && hasFunctionCalls(storyText)) {
+        console.log('🔧 Function calls detected in AI response, executing functions...');
+        
+        try {
+          const executedContent = await executeFunctionCalls(storyText, {
+            userInfo: completeAvatarInfo,
+            gradeLevel: gradeLevel,
+            difficulty: difficulty
+          });
+          
+          if (executedContent !== storyText) {
+            // Re-inject the executed content back to AI for final processing
+            storyText = await reInjectExecutedContent(executedContent, enhancedSystemPrompt, apiKey, currentModel);
+            console.log('✅ Function calls executed and content re-injected successfully');
+          }
+        } catch (functionError) {
+          console.warn('⚠️ Function execution failed, using original content:', safeErrorMessage(functionError));
+          // Continue with original content - don't break the story generation
+        }
+      }
+      
+      // PHASE 3: Detect reasoning tokens consuming all budget without content
       const usage = data.usage || {};
       const reasoningTokens = usage.completion_tokens_details?.reasoning_tokens || 0;
       const contentLength = storyText?.length || 0;
@@ -870,4 +897,161 @@ function cleanStoryText(text: string): string {
 
 function cleanPageBreakMarkers(text: string): string {
   return text.replace(/\s*\*\*\*\s*/g, '').trim();
+}
+
+// ============================================================================
+// FUNCTION EXECUTION SYSTEM - Phase 2-4 Implementation
+// ============================================================================
+
+/**
+ * Phase 2: Detect if AI response contains function calls
+ */
+function hasFunctionCalls(storyText: string): boolean {
+  const functionCallPatterns = [
+    /getCulturalContext\s*\([^)]*\)/gi,
+    /getAuthorVoicePatterns\s*\([^)]*\)/gi,
+    /getVocabularyForGrade\s*\([^)]*\)/gi
+  ];
+  
+  return functionCallPatterns.some(pattern => pattern.test(storyText));
+}
+
+/**
+ * Phase 3: Execute function calls found in AI response
+ */
+async function executeFunctionCalls(storyText: string, context: any): Promise<string> {
+  let processedText = storyText;
+  
+  console.log('🔧 Executing function calls with context:', {
+    hasUserInfo: !!context.userInfo,
+    gradeLevel: context.gradeLevel,
+    difficulty: context.difficulty
+  });
+  
+  // Execute getCulturalContext() calls
+  const culturalMatches = [...processedText.matchAll(/getCulturalContext\s*\([^)]*\)/gi)];
+  for (const match of culturalMatches) {
+    try {
+      const culturalArrays = fetchCulturalArrays(context.userInfo);
+      
+      if (culturalArrays) {
+        const culturalContent = `Cultural elements: Character names like ${culturalArrays.characterNames.slice(0, 3).join(', ')}, foods such as ${culturalArrays.commonFoods.slice(0, 3).join(', ')}, celebrations including ${culturalArrays.celebrations.slice(0, 2).join(', ')}, and values of ${culturalArrays.values.slice(0, 2).join(' and ')}.`;
+        
+        processedText = processedText.replace(match[0], culturalContent);
+        console.log('✅ Executed getCulturalContext() successfully');
+      } else {
+        processedText = processedText.replace(match[0], 'diverse cultural elements');
+        console.log('⚠️ getCulturalContext() returned null, using fallback');
+      }
+    } catch (error) {
+      processedText = processedText.replace(match[0], 'diverse cultural elements');
+      console.warn('❌ getCulturalContext() execution failed:', safeErrorMessage(error));
+    }
+  }
+  
+  // Execute getAuthorVoicePatterns() calls
+  const voiceMatches = [...processedText.matchAll(/getAuthorVoicePatterns\s*\([^)]*\)/gi)];
+  for (const match of voiceMatches) {
+    try {
+      const difficultyString = context.difficulty?.toString() || 'medium';
+      const voicePatterns = fetchVoicePatterns(difficultyString);
+      
+      if (voicePatterns) {
+        const randomOpening = voicePatterns.openingPatterns[Math.floor(Math.random() * voicePatterns.openingPatterns.length)];
+        const randomTransition = voicePatterns.transitionPatterns[Math.floor(Math.random() * voicePatterns.transitionPatterns.length)];
+        
+        const voiceContent = `Narrative style: ${randomOpening} ${randomTransition}`;
+        processedText = processedText.replace(match[0], voiceContent);
+        console.log('✅ Executed getAuthorVoicePatterns() successfully');
+      } else {
+        processedText = processedText.replace(match[0], 'engaging storytelling voice');
+        console.log('⚠️ getAuthorVoicePatterns() returned null, using fallback');
+      }
+    } catch (error) {
+      processedText = processedText.replace(match[0], 'engaging storytelling voice');
+      console.warn('❌ getAuthorVoicePatterns() execution failed:', safeErrorMessage(error));
+    }
+  }
+  
+  // Execute getVocabularyForGrade() calls
+  const vocabMatches = [...processedText.matchAll(/getVocabularyForGrade\s*\([^)]*\)/gi)];
+  for (const match of vocabMatches) {
+    try {
+      const vocabularySet = await getVocabularyForGrade(context.gradeLevel);
+      
+      if (vocabularySet && vocabularySet.size > 0) {
+        const sampleWords = Array.from(vocabularySet).slice(0, 5).join(', ');
+        const vocabContent = `Grade-appropriate vocabulary including words like: ${sampleWords}`;
+        processedText = processedText.replace(match[0], vocabContent);
+        console.log('✅ Executed getVocabularyForGrade() successfully');
+      } else {
+        processedText = processedText.replace(match[0], 'age-appropriate vocabulary');
+        console.log('⚠️ getVocabularyForGrade() returned empty set, using fallback');
+      }
+    } catch (error) {
+      processedText = processedText.replace(match[0], 'age-appropriate vocabulary');
+      console.warn('❌ getVocabularyForGrade() execution failed:', safeErrorMessage(error));
+    }
+  }
+  
+  return processedText;
+}
+
+/**
+ * Phase 4: Re-inject executed content back to AI for final processing
+ */
+async function reInjectExecutedContent(executedContent: string, systemPrompt: string, apiKey: string, currentModel: any): Promise<string> {
+  console.log('🔄 Re-injecting executed content back to AI for final processing');
+  
+  const reInjectionPrompt = `${systemPrompt}
+
+FUNCTION EXECUTION COMPLETE:
+The following content contains executed function results that need to be integrated into a cohesive story format. Please rewrite this content as a natural, flowing story that incorporates all the provided elements seamlessly.
+
+CONTENT TO PROCESS:
+${executedContent}
+
+Please generate the final story version with natural narrative flow.`;
+
+  try {
+    const apiBody: any = {
+      model: safePropertyAccess(currentModel, 'name', 'gpt-5-2025-08-07'),
+      messages: [
+        { role: 'system', content: 'You are a story writer. Convert the provided content with function results into a natural, flowing story.' },
+        { role: 'user', content: reInjectionPrompt }
+      ]
+    };
+    
+    // Use same token configuration as original model
+    const paramName = safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens');
+    apiBody[paramName] = 2000; // Sufficient for rewriting
+    
+    if (safePropertyAccess(currentModel, 'supportsTemperature', false)) {
+      apiBody.temperature = 0.7;
+    }
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiBody),
+    });
+    
+    if (!response.ok) {
+      console.warn('⚠️ Re-injection API call failed, using executed content as-is');
+      return executedContent;
+    }
+    
+    const data = await response.json();
+    const reprocessedContent = data.choices?.[0]?.message?.content || executedContent;
+    
+    console.log('✅ Content successfully re-injected and reprocessed by AI');
+    return reprocessedContent;
+    
+  } catch (error) {
+    console.warn('❌ Re-injection failed, using executed content as-is:', safeErrorMessage(error));
+    return executedContent;
+  }
 }
