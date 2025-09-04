@@ -4,6 +4,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getTokenLimitForDifficulty, STORY_PROMPTS, EXPERT_STORY_PROMPTS, getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '../../supabase/functions/_shared/storyPrompts';
+import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
@@ -38,9 +39,10 @@ export class LiveGenerationService {
     try {
       LoggerService.milestone('Starting first page generation', 'LiveGeneration', { user: userInfo.name });
       
-      // Use user-selected difficulty only (no automatic overrides)
-      const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
-      LoggerService.info(`Using user-selected difficulty ${difficulty}`, 'LiveGeneration', { user: userInfo.name });
+      // Convert frontend difficulty to backend format for validation system
+      const frontendDifficulty = userInfo.difficultyLevel || userInfo.readingAbility || 'beginner';
+      const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
+      LoggerService.info(`🔄 Live: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}"`, 'LiveGeneration', { user: userInfo.name });
       
       // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;

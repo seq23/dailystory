@@ -34,6 +34,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { getTokenLimitForDifficulty, STORY_PROMPTS, EXPERT_STORY_PROMPTS, getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '../../supabase/functions/_shared/storyPrompts';
+import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { DiagnosticTool } from '@/utils/diagnostics';
@@ -57,9 +58,10 @@ export class NetflixStyleStoryService {
   static async generateStory(userInfo: UserInfo, vocabularyData?: any): Promise<NetflixStoryResult> {
     console.log('📺 Netflix: Starting story generation for', userInfo.name);
     
-    // Use user-selected difficulty (no automatic overrides)
-    const difficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
-    console.log(`🎯 Netflix: Using user-selected difficulty ${difficulty} for ${userInfo.name}`);
+    // Convert frontend difficulty to backend format for validation system
+    const frontendDifficulty = userInfo.difficultyLevel || userInfo.readingAbility || 'beginner';
+    const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
+    console.log(`🔄 Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`);
 
     let promptConfig: any;
     let expertGradeLevel: ExpertGradeLevel | undefined;
