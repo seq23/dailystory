@@ -23,6 +23,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -63,7 +64,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     favoriteFood: "",
     specialRequest: "",
     difficultyLevel: "beginner",
-    readingAbility: "beginner"
+    readingAbility: "pre-reader"
   });
 
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -313,8 +314,11 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
       return;
     }
 
-    // Use the selected reading ability, or fall back to age-based difficulty
-    const difficulty = formData.readingAbility || (formData.age <= 5 ? "beginner" : formData.age <= 8 ? "easy" : formData.age <= 11 ? "medium" : formData.age <= 13 ? "hard" : "expert");
+    // Use the selected reading ability (frontend format), or fall back to age-based frontend difficulty
+    const frontendDifficulty = formData.readingAbility || (formData.age <= 5 ? "pre-reader" : formData.age <= 8 ? "beginner" : formData.age <= 11 ? "developing" : formData.age <= 13 ? "independent" : "advanced");
+    
+    // Convert frontend difficulty to backend using DifficultyLevelMapper
+    const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);
     
     SecurityLogger.log('form_submission_success', {
       difficultyLevel: difficulty,
@@ -579,19 +583,19 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                     <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
-                    <SelectItem value="beginner" className="focus:bg-accent focus:text-accent-foreground">
+                    <SelectItem value="pre-reader" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.preReader")}
                     </SelectItem>
-                    <SelectItem value="easy" className="focus:bg-accent focus:text-accent-foreground">
+                    <SelectItem value="beginner" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.beginner")}
                     </SelectItem>
-                    <SelectItem value="medium" className="focus:bg-accent focus:text-accent-foreground">
+                    <SelectItem value="developing" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.developing")}
                     </SelectItem>
-                    <SelectItem value="hard" className="focus:bg-accent focus:text-accent-foreground">
+                    <SelectItem value="independent" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.independent")}
                     </SelectItem>
-                    <SelectItem value="expert" className="focus:bg-accent focus:text-accent-foreground">
+                    <SelectItem value="advanced" className="focus:bg-accent focus:text-accent-foreground">
                       {t("userInfoForm.fields.readingAbility.options.advanced")}
                     </SelectItem>
                   </SelectContent>
