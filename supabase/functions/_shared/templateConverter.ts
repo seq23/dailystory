@@ -325,7 +325,7 @@ async function processEnding(endings: AttachableEnding[], userInfo: UserInfo, te
  * Convert a StoryTemplate to a string array with arc-aware processing
  * Supports never-ending stories with modulo-based arc generation
  */
-export function convertStoryTemplateToStringArray(
+export async function convertStoryTemplateToStringArray(
   template: StoryTemplate, 
   userInfo: UserInfo = {}, 
   pageCount: number = 5,
@@ -375,7 +375,7 @@ export function convertStoryTemplateToStringArray(
     
     if (arcPosition.isEndingPage) {
       // Generate ending page with arc transition awareness
-      const ending = processEnding(template.endings, userInfo, template, mode, arcConfig);
+      const ending = await processEnding(template.endings, userInfo, template, mode, arcConfig);
       return [ending];
     } else {
       // Generate scene page using modulo to cycle through scenes
