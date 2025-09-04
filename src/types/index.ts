@@ -27,8 +27,7 @@ export interface UserInfo {
   favoriteFood: string;
   specialRequest: string;
   targetVocabulary?: string;
-  difficultyLevel?: DifficultyLevel;
-  readingAbility?: string; // Can store both frontend and backend difficulty values
+  difficultyLevel?: string; // Now stores frontend values: "pre-reader", "beginner", "developing", "independent", "advanced"
   readingLevel?: string; // Add this for compatibility
   interests?: string[]; // Add this for compatibility
   

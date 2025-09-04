@@ -1,5 +1,6 @@
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
 import { LEVEL_1_VOCABULARY, LEVEL_2_VOCABULARY } from '@/constants/gradeBased';
+import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 // Temporarily disabled - service removed
 // import { ThemedSessionManager } from './themedSessionManager';
 import { ProgressiveRevelationSystem } from './progressiveRevelationSystem';
@@ -194,7 +195,7 @@ export class PremiumVocabularyService {
     if (!this.userVocabularyProfiles.has(userId)) {
       this.userVocabularyProfiles.set(userId, {
         wordsLearned: 0,
-        vocabularyLevel: userInfo.difficultyLevel || 'easy',
+        vocabularyLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner'),
         strugglingWords: [],
         masteredWords: [],
         recommendedWords: [],
@@ -205,7 +206,7 @@ export class PremiumVocabularyService {
     // Initialize personalized learning path
     if (!this.personalizedPaths.has(userId)) {
       this.personalizedPaths.set(userId, {
-        currentLevel: userInfo.difficultyLevel || 'easy',
+        currentLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner'),
         nextWords: [],
         challengingWords: [],
         reinforcementWords: [],
@@ -254,7 +255,7 @@ export class PremiumVocabularyService {
     profile.recommendedWords = this.generatePersonalizedRecommendations(userInfo, profile);
 
     // Adaptive difficulty adjustment
-    profile.vocabularyLevel = this.calculateAdaptiveDifficulty(profile, userInfo.difficultyLevel || 'easy');
+    profile.vocabularyLevel = this.calculateAdaptiveDifficulty(profile, DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner'));
 
     this.userVocabularyProfiles.set(userId, profile);
     return { ...profile };
@@ -552,7 +553,7 @@ export class PremiumVocabularyService {
 
   private static createDefaultPath(userInfo: UserInfo): PersonalizedVocabularyPath {
     return {
-      currentLevel: userInfo.difficultyLevel || 'easy',
+      currentLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner'),
       nextWords: ['cat', 'dog', 'book', 'happy', 'play'],
       challengingWords: [],
       reinforcementWords: [],

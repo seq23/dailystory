@@ -1,5 +1,6 @@
 import type { UserInfo, DifficultyLevel } from '../types';
 import { InputEnhancementEngine } from './inputEnhancementEngine';
+import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 
 interface RevelationPhase {
   phase: number;
@@ -43,7 +44,7 @@ export class ProgressiveRevelationSystem {
     const enhanced = InputEnhancementEngine.enhanceUserInputs(userInfo);
     
     // Determine phase based on story progress
-    const phase = this.calculatePhase(storyProgress, userInfo.difficultyLevel || 'medium');
+    const phase = this.calculatePhase(storyProgress, DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'medium'));
     
     if (phase > userState.currentPhase) {
       userState.currentPhase = phase;

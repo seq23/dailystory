@@ -103,7 +103,7 @@ export class ProgressTrackingService {
     // Add specific progress tracking based on user type
     if (userInfo.nativeLanguage === 'en') {
       baseProgress.nativeProgress = {
-        readingLevel: userInfo.readingAbility || 'medium',
+        readingLevel: userInfo.difficultyLevel || 'medium',
         vocabularyGrowth: 0,
         complexWordsEncountered: [],
         readingComprehensionScores: [],

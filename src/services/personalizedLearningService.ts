@@ -79,26 +79,26 @@ export class PersonalizedLearningService {
 
   private static determineUserLevel(userInfo: UserInfo, progress: ReadingProgress): "beginner" | "easy" | "medium" | "hard" | "expert" {
     const age = userInfo.age || 8;
-    const readingAbility = userInfo.readingAbility;
+    const difficultyLevel = userInfo.difficultyLevel;
     const storiesCompleted = progress.storiesCompleted;
     
-    // Convert frontend readingAbility to backend difficulty for comparison
-    const backendReadingAbility = readingAbility ? DifficultyLevelMapper.toBackend(readingAbility) : null;
+    // Convert frontend difficultyLevel to backend difficulty for comparison
+    const backendDifficultyLevel = difficultyLevel ? DifficultyLevelMapper.toBackend(difficultyLevel) : null;
     
     // For ESL learners, be more conservative with level determination
     const isESLLearner = userInfo.nativeLanguage !== 'en';
     
     if (isESLLearner) {
-      if (age < 6 || backendReadingAbility === "beginner" || storiesCompleted < 1) return "beginner";
-      if (age < 8 || backendReadingAbility === "easy" || storiesCompleted < 3) return "easy";
-      if (age < 12 || backendReadingAbility === "medium" || storiesCompleted < 8) return "medium";
-      if (age < 16 || backendReadingAbility === "hard" || storiesCompleted < 15) return "hard";
+      if (age < 6 || backendDifficultyLevel === "beginner" || storiesCompleted < 1) return "beginner";
+      if (age < 8 || backendDifficultyLevel === "easy" || storiesCompleted < 3) return "easy";
+      if (age < 12 || backendDifficultyLevel === "medium" || storiesCompleted < 8) return "medium";
+      if (age < 16 || backendDifficultyLevel === "hard" || storiesCompleted < 15) return "hard";
       return "expert";
     } else {
-      if (age < 6 || backendReadingAbility === "beginner" || storiesCompleted < 2) return "beginner";
-      if (age < 8 || backendReadingAbility === "easy" || storiesCompleted < 5) return "easy";
-      if (age < 10 || backendReadingAbility === "medium" || storiesCompleted < 12) return "medium";
-      if (age < 14 || backendReadingAbility === "hard" || storiesCompleted < 20) return "hard";
+      if (age < 6 || backendDifficultyLevel === "beginner" || storiesCompleted < 2) return "beginner";
+      if (age < 8 || backendDifficultyLevel === "easy" || storiesCompleted < 5) return "easy";
+      if (age < 10 || backendDifficultyLevel === "medium" || storiesCompleted < 12) return "medium";
+      if (age < 14 || backendDifficultyLevel === "hard" || storiesCompleted < 20) return "hard";
       return "expert";
     }
   }

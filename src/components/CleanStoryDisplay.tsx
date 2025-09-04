@@ -96,6 +96,7 @@ import type { UserInfo, SessionStats, Story as StoryType } from "@/types";
 import { NetflixStyleStoryService, type NetflixStoryResult } from "@/services/NetflixStyleStoryService";
 import { LiveGenerationService, type LiveGenerationContext, type LivePageResult } from "@/services/LiveGenerationService";
 import { DifficultyManager } from "@/services/difficultyManager";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import { DiagnosticTool } from "@/utils/diagnostics";
 import { UnifiedValidator } from "@/utils/unifiedValidator";
 
@@ -813,7 +814,7 @@ useEffect(() => {
   }, []);
 
   // Reading Level state with animation support
-  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(userInfo.difficultyLevel || 'beginner');
+  const [currentDifficulty, setCurrentDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>(DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner'));
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
   const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");

@@ -26,8 +26,7 @@ export const useMultiStepForm = () => {
     favoriteFood: "",
     specialRequest: "",
     targetVocabulary: "",
-    difficultyLevel: "beginner",
-    readingAbility: "pre-reader"
+    difficultyLevel: "pre-reader"
   });
 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -122,15 +121,15 @@ export const useMultiStepForm = () => {
       return null;
     }
 
-    // Determine difficulty level - Convert frontend readingAbility to backend difficulty
-    const frontendReadingAbility = formData.readingAbility || 
+    // Determine difficulty level - Convert frontend difficultyLevel to backend difficulty
+    const frontendDifficultyLevel = formData.difficultyLevel || 
       (formData.age <= 5 ? "pre-reader" : 
        formData.age <= 8 ? "beginner" : 
        formData.age <= 11 ? "developing" : 
        formData.age <= 13 ? "independent" : "advanced");
     
     // Convert frontend value to backend value using DifficultyLevelMapper
-    const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendReadingAbility);
+    const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficultyLevel);
     
     SecurityLogger.log('form_submission_success', {
       difficultyLevel: difficulty,

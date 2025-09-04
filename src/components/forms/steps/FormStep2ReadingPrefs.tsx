@@ -131,8 +131,8 @@ export const FormStep2ReadingPrefs = ({
           )}
 
           <Select
-            value={formData.readingAbility || "pre-reader"}
-            onValueChange={(value) => handleInputChange('readingAbility', value)}
+            value={formData.difficultyLevel || "pre-reader"}
+            onValueChange={(value) => handleInputChange('difficultyLevel', value)}
           >
             <SelectTrigger id="readingLevel" className="h-auto">
               <SelectValue placeholder={t("formStep2.readingLevel.placeholder", "Choose reading level")} />

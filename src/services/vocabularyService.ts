@@ -6,6 +6,7 @@ import {
   difficultyToGradeLevel,
   type GradeLevel
 } from "@/constants/gradeBased";
+import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 
 export interface VocabularyIntegration {
   userSpecified: {
@@ -97,7 +98,7 @@ export class VocabularyService {
     }
 
     // SOURCE 4: System vocabulary (backend validation only - NOT sent to edge function)
-    const gradeLevel: GradeLevel = this.mapDifficultyToGrade(userInfo.difficultyLevel, userInfo);
+    const gradeLevel: GradeLevel = this.mapDifficultyToGrade(DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner'), userInfo);
     const complianceTarget = gradeLevel === 0 ? 0.5 : 0.6; // 50% for Level 0, 60% for others
 
     const totalUserWords = formWords.length + specialRequestWords.length + teacherWords.length;

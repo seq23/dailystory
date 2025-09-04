@@ -63,8 +63,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     hobbies: "",
     favoriteFood: "",
     specialRequest: "",
-    difficultyLevel: "beginner",
-    readingAbility: "pre-reader"
+    difficultyLevel: "pre-reader"
   });
 
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -314,8 +313,8 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
       return;
     }
 
-    // Use the selected reading ability (frontend format), or fall back to age-based frontend difficulty
-    const frontendDifficulty = formData.readingAbility || (formData.age <= 5 ? "pre-reader" : formData.age <= 8 ? "beginner" : formData.age <= 11 ? "developing" : formData.age <= 13 ? "independent" : "advanced");
+    // Use the selected difficulty level (frontend format), or fall back to age-based frontend difficulty
+    const frontendDifficulty = formData.difficultyLevel || (formData.age <= 5 ? "pre-reader" : formData.age <= 8 ? "beginner" : formData.age <= 11 ? "developing" : formData.age <= 13 ? "independent" : "advanced");
     
     // Convert frontend difficulty to backend using DifficultyLevelMapper
     const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);
@@ -578,7 +577,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                 <Label htmlFor="readingAbility" className="text-sm font-medium">
                   {t("userInfoForm.fields.readingAbility.label")}
                 </Label>
-                <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
+                <Select value={formData.difficultyLevel} onValueChange={(value) => handleInputChange("difficultyLevel", value)}>
                   <SelectTrigger id="readingAbility" className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
@@ -613,21 +612,21 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   <div className="space-y-3 text-sm">
                     <h4 className="font-medium text-foreground">{t("userInfoForm.fields.readingAbility.learnMore.title")}</h4>
                     <p className="text-muted-foreground">{t("userInfoForm.fields.readingAbility.learnMore.description")}</p>
-                      {formData.readingAbility && (
+                      {formData.difficultyLevel && (
                         <div className="p-3 bg-background rounded border border-border/50">
                           <div className="font-medium text-foreground mb-1">
-                            {formData.readingAbility === 'pre-reader' && t("userInfoForm.fields.readingAbility.options.preReader")}
-                            {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.options.beginner")}
-                            {formData.readingAbility === 'developing' && t("userInfoForm.fields.readingAbility.options.developing")}
-                            {formData.readingAbility === 'independent' && t("userInfoForm.fields.readingAbility.options.independent")}
-                            {formData.readingAbility === 'advanced' && t("userInfoForm.fields.readingAbility.options.advanced")}
+                            {formData.difficultyLevel === 'pre-reader' && t("userInfoForm.fields.readingAbility.options.preReader")}
+                            {formData.difficultyLevel === 'beginner' && t("userInfoForm.fields.readingAbility.options.beginner")}
+                            {formData.difficultyLevel === 'developing' && t("userInfoForm.fields.readingAbility.options.developing")}
+                            {formData.difficultyLevel === 'independent' && t("userInfoForm.fields.readingAbility.options.independent")}
+                            {formData.difficultyLevel === 'advanced' && t("userInfoForm.fields.readingAbility.options.advanced")}
                           </div>
                           <div className="text-muted-foreground">
-                            {formData.readingAbility === 'pre-reader' && t("userInfoForm.fields.readingAbility.details.preReader")}
-                            {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.details.beginner")}
-                            {formData.readingAbility === 'developing' && t("userInfoForm.fields.readingAbility.details.developing")}
-                            {formData.readingAbility === 'independent' && t("userInfoForm.fields.readingAbility.details.independent")}
-                            {formData.readingAbility === 'advanced' && t("userInfoForm.fields.readingAbility.details.advanced")}
+                            {formData.difficultyLevel === 'pre-reader' && t("userInfoForm.fields.readingAbility.details.preReader")}
+                            {formData.difficultyLevel === 'beginner' && t("userInfoForm.fields.readingAbility.details.beginner")}
+                            {formData.difficultyLevel === 'developing' && t("userInfoForm.fields.readingAbility.details.developing")}
+                            {formData.difficultyLevel === 'independent' && t("userInfoForm.fields.readingAbility.details.independent")}
+                            {formData.difficultyLevel === 'advanced' && t("userInfoForm.fields.readingAbility.details.advanced")}
                          </div>
                        </div>
                      )}

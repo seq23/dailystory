@@ -40,7 +40,7 @@ export class LiveGenerationService {
       LoggerService.milestone('Starting first page generation', 'LiveGeneration', { user: userInfo.name });
       
       // Convert frontend difficulty to backend format for validation system
-      const frontendDifficulty = userInfo.difficultyLevel || userInfo.readingAbility || 'beginner';
+      const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
       const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
       LoggerService.info(`🔄 Live: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}"`, 'LiveGeneration', { user: userInfo.name });
       
@@ -121,7 +121,7 @@ export class LiveGenerationService {
     } catch (error) {
       console.error('🚀 Live Generation: Error generating first page:', error);
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateFirstPage');
-      const fallbackDifficulty: DifficultyLevel = (userInfo.difficultyLevel || userInfo.readingAbility || 'beginner') as DifficultyLevel;
+      const fallbackDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner');
       console.log(`🎯 Live Generation Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name}`);
       return this.generateFallbackFirstPage(userInfo, fallbackDifficulty, 'generation_error');
     }

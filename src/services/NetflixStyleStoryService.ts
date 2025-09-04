@@ -59,7 +59,7 @@ export class NetflixStyleStoryService {
     console.log('📺 Netflix: Starting story generation for', userInfo.name);
     
     // Convert frontend difficulty to backend format for validation system
-    const frontendDifficulty = userInfo.difficultyLevel || userInfo.readingAbility || 'beginner';
+    const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
     const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
     console.log(`🔄 Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`);
 

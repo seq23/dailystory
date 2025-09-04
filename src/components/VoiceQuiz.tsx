@@ -114,7 +114,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
     const sentences = storyText.split('.').filter(s => s.trim().length > 10);
     
     const isYoung = userInfo.age < 8;
-    const readingLevel = (userInfo.readingAbility || userInfo.difficultyLevel || 'easy') as any;
+    const readingLevel = (userInfo.difficultyLevel || 'easy') as any;
     const isLowerLevel = readingLevel === 'beginner' || readingLevel === 'easy';
     const questionCount = isLowerLevel ? 2 : (isYoung ? 3 : 4); // Slightly fewer for voice
 
