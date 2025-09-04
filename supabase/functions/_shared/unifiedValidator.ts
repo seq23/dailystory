@@ -42,10 +42,21 @@ export interface ValidationResult {
     expectedPages?: number;
     actualTokens?: number;
     expectedTokens?: number;
+    // NEW WORD COUNT METRICS
+    characterCount?: number;
+    wordCount?: number;
+    wordCountValidation?: {
+      minWords: number;
+      maxWords: number;
+      actualWords: number;
+      isValid: boolean;
+      reason?: string;
+    };
   };
   hints?: string[];
   suggestedTokens?: number;
   actualTokenBudget?: number;
+  retryHint?: string;
 }
 
 export interface ValidationConfig {
@@ -55,6 +66,7 @@ export interface ValidationConfig {
   vocabularyIntegration?: any;
   actualTokenBudget?: number;
   retryAttempt?: number;
+  isEndingPage?: boolean; // NEW: For Live Generation ending page bypass
 }
 
 export class UnifiedValidator {
@@ -294,10 +306,29 @@ export class UnifiedValidator {
     baseReasons: string[] = []
   ): ValidationResult {
     if (pages.length === 1) {
-      const validationResult = validateLivePageLength(pages[0], config.level);
+      const validationResult = validateLivePageLength(pages[0], config.level, config.isEndingPage || false);
       
       if (!validationResult.isValid) {
         const reason = validationResult.reason || 'Page validation failed';
+        
+        // NEW WORD COUNT VALIDATION - Check word count validation from the result
+        if (validationResult.wordCountValidation && !validationResult.wordCountValidation.isValid) {
+          console.log(`📝 [WORD-COUNT] Live page word count validation failed: ${validationResult.wordCountValidation.reason}`);
+          
+          // For word count failures, retry with hint (no repair/splitting in Live mode)
+          return {
+            decision: 'RETRY_WITH_HINT',
+            isValid: false,
+            reasons: [validationResult.wordCountValidation.reason || 'Word count validation failed'],
+            metrics: {
+              ...metrics,
+              characterCount: validationResult.characterCount,
+              wordCount: validationResult.wordCount,
+              wordCountValidation: validationResult.wordCountValidation
+            },
+            retryHint: `Please write exactly ${validationResult.wordCountValidation.minWords}-${validationResult.wordCountValidation.maxWords} words for this ${config.level} level page.`
+          };
+        }
         
         // For "too short" content, retry with hint
         const needsCompleteRegeneration = reason.includes('too short') || 
@@ -377,7 +408,9 @@ export class UnifiedValidator {
         reasons: [...baseReasons, 'Live page validation passed'],
         metrics: {
           ...metrics,
-          tokenCount: validationResult.tokenCount
+          characterCount: validationResult.characterCount,
+          wordCount: validationResult.wordCount,
+          wordCountValidation: validationResult.wordCountValidation
         }
       };
     }

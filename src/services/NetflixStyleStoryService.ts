@@ -55,7 +55,7 @@ export class NetflixStyleStoryService {
   /**
    * Generate a complete story with AI-first preference
    */
-  static async generateStory(userInfo: UserInfo, vocabularyData?: any): Promise<NetflixStoryResult> {
+  static async generateStory(userInfo: UserInfo, vocabularyData?: any, sessionId?: string): Promise<NetflixStoryResult> {
     console.log('📺 Netflix: Starting story generation for', userInfo.name);
     
     // Convert frontend difficulty to backend format for validation system
@@ -89,15 +89,15 @@ export class NetflixStyleStoryService {
         expectedPages: promptConfig?.expectedPages || 'unknown'
       });
       
-      const sessionId = `netflix-${userInfo.name}-${Date.now()}`;
-      console.log(`🆔 Netflix: Session ID: ${sessionId}`);
+      const actualSessionId = sessionId || `netflix-${userInfo.name}-${Date.now()}`;
+      console.log(`🆔 Netflix: Session ID: ${actualSessionId}`);
       
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'free',
         pageNumber: 1,
         expertGradeLevel, // Pass expert grade level to unified system
         difficulty, // Also pass the original difficulty
-        sessionId
+        sessionId: actualSessionId
       });
 
       // DIAGNOSTIC LOGGING: Check exact result structure
@@ -302,7 +302,7 @@ export class NetflixStyleStoryService {
     return false;
   }
 
-  static async generateCompleteStory(userInfo: UserInfo): Promise<NetflixStoryResult> {
-    return this.generateStory(userInfo);
+  static async generateCompleteStory(userInfo: UserInfo, sessionId?: string): Promise<NetflixStoryResult> {
+    return this.generateStory(userInfo, undefined, sessionId);
   }
 }

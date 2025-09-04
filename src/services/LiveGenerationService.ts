@@ -35,7 +35,7 @@ export class LiveGenerationService {
   /**
    * Generate the first page of a story for premium users
    */
-  static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any): Promise<LivePageResult> {
+  static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any, sessionId?: string): Promise<LivePageResult> {
     try {
       LoggerService.milestone('Starting first page generation', 'LiveGeneration', { user: userInfo.name });
       
@@ -57,15 +57,15 @@ export class LiveGenerationService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
-      const sessionId = `live-first-${userInfo.name}-${Date.now()}`;
-      console.log(`🆔 LiveGen: First Page Session ID: ${sessionId}`);
+      const actualSessionId = sessionId || `live-first-${userInfo.name}-${Date.now()}`;
+      console.log(`🆔 LiveGen: First Page Session ID: ${actualSessionId}`);
       
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'premium',
         pageNumber: 1,
         expertGradeLevel,
         difficulty,
-        sessionId
+        sessionId: actualSessionId
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -127,7 +127,7 @@ export class LiveGenerationService {
     }
   }
 
-  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any, userRequestedEnding?: boolean): Promise<LivePageResult> {
+  static async generateNextPage(context: LiveGenerationContext, vocabularyData?: any, userRequestedEnding?: boolean, sessionId?: string): Promise<LivePageResult> {
     try {
       const nextPageNumber = context.currentPage + 1;
       // Never auto-conclude stories - only conclude if user explicitly requests ending
@@ -150,14 +150,14 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} (continuing from: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...)`
       };
       
-      const sessionId = `live-next-${context.userInfo.name}-${Date.now()}`;
-      console.log(`🆔 LiveGen: Next Page Session ID: ${sessionId}`);
+      const actualSessionId = sessionId || `live-next-${context.userInfo.name}-${Date.now()}`;
+      console.log(`🆔 LiveGen: Next Page Session ID: ${actualSessionId}`);
       
       const result = await StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
-        sessionId
+        sessionId: actualSessionId
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -216,7 +216,7 @@ export class LiveGenerationService {
   }
 
   // Generate an explicit concluding page without ending the reading session
-  static async generateEndingPage(context: LiveGenerationContext): Promise<LivePageResult> {
+  static async generateEndingPage(context: LiveGenerationContext, sessionId?: string): Promise<LivePageResult> {
     try {
       const nextPageNumber = context.currentPage + 1;
       
@@ -229,14 +229,14 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} - please provide a satisfying conclusion to this story: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`
       };
       
-      const sessionId = `live-ending-${context.userInfo.name}-${Date.now()}`;
-      console.log(`🆔 LiveGen: Ending Page Session ID: ${sessionId}`);
+      const actualSessionId = sessionId || `live-ending-${context.userInfo.name}-${Date.now()}`;
+      console.log(`🆔 LiveGen: Ending Page Session ID: ${actualSessionId}`);
       
       const result = await StoryGenerationService.generateStory(endingUserInfo, {
         sessionType: 'premium', 
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
-        sessionId
+        sessionId: actualSessionId
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {

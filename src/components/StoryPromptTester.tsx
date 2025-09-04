@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle, User, Settings } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RotateCcw, Zap, Brain, Shuffle, ChevronDown, ChevronUp, Eye, AlertTriangle, User, Settings, Info } from 'lucide-react';
 import { AvatarPicker } from '@/components/ui/avatar-picker';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
@@ -464,7 +464,7 @@ export function StoryPromptTester() {
         
         // PHASE 3: PERFORMANCE ANALYSIS - Track timing breakdown
         const aiStartTime = Date.now();
-        response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(userInfo));
+        response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(userInfo, undefined, sessionId));
         const aiGenerationTime = Date.now() - aiStartTime;
         
         result.source = response.source || 'unknown';
