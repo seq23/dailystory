@@ -52,17 +52,18 @@ export const getModelChain = (isExpertLevel: boolean) => {
   let chain = cache.get<any[]>(cacheKey);
   if (!chain) {
     chain = isExpertLevel ? [
-      { model: 'gpt-5-2025-08-07', description: 'flagship expert quality', paramName: 'max_completion_tokens' },
-      { model: 'gpt-4.1-2025-04-14', description: 'intelligent fallback', paramName: 'max_completion_tokens' }, 
-      { model: 'gpt-5-mini-2025-08-07', description: 'fast & reliable', paramName: 'max_completion_tokens' },
-      { model: 'gpt-4.1-2025-04-14', description: 'retry intelligent', paramName: 'max_completion_tokens' },
-      { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
+      // PHASE 2: Prioritize content-focused models for story generation
+      { name: 'gpt-4.1-2025-04-14', model: 'gpt-4.1-2025-04-14', description: 'content-focused primary', paramName: 'max_completion_tokens' }, 
+      { name: 'gpt-4o', model: 'gpt-4o', description: 'reliable content generator', paramName: 'max_tokens', supportsTemperature: true },
+      { name: 'gpt-5-mini-2025-08-07', model: 'gpt-5-mini-2025-08-07', description: 'fast content generation', paramName: 'max_completion_tokens' },
+      { name: 'gpt-5-2025-08-07', model: 'gpt-5-2025-08-07', description: 'reasoning model (content risk)', paramName: 'max_completion_tokens' },
+      { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'reliable fallback', paramName: 'max_tokens', supportsTemperature: true },
+      { name: 'gpt-4.1-2025-04-14', model: 'gpt-4.1-2025-04-14', description: 'final attempt', paramName: 'max_completion_tokens' }
     ] : [
-      { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true }, 
-      { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
+      { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true }, 
+      { name: 'gpt-4o', model: 'gpt-4o', description: 'content fallback', paramName: 'max_tokens', supportsTemperature: true },
+      { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'backup reliable', paramName: 'max_tokens', supportsTemperature: true },
+      { name: 'gpt-4o', model: 'gpt-4o', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
     ];
     
     cache.set(cacheKey, chain);

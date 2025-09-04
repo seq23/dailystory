@@ -544,15 +544,24 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         ]
       };
       
-      // Protected parameter assignment with fallback
-      try {
-        const paramName = safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens');
-        apiBody[paramName] = Math.min(maxTokens, 100000); // Cap at 100k for safety
-        console.log(`🎯 Service-Aware Token Limit: ${apiBody[paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
-      } catch (paramError) {
-        console.warn('⚠️ Parameter assignment failed, using default:', safeErrorMessage(paramError));
-        apiBody.max_completion_tokens = Math.min(maxTokens, 100000);
-      }
+  // PHASE 3: Enhanced token limits with reasoning overhead for newer models
+  try {
+    const paramName = safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens');
+    let adjustedTokens = Math.min(maxTokens, 100000); // Base limit
+    
+    // Add 50% reasoning overhead for newer models that might use reasoning tokens
+    const isReasoningModel = currentModel.name?.includes('gpt-5') || currentModel.name?.includes('o3') || currentModel.name?.includes('o4');
+    if (isReasoningModel) {
+      adjustedTokens = Math.min(Math.floor(maxTokens * 1.5), 100000);
+      console.log(`🧠 Reasoning model detected: ${currentModel.name}, increased token budget from ${maxTokens} to ${adjustedTokens}`);
+    }
+    
+    apiBody[paramName] = adjustedTokens;
+    console.log(`🎯 Service-Aware Token Limit: ${apiBody[paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
+  } catch (paramError) {
+    console.warn('⚠️ Parameter assignment failed, using default:', safeErrorMessage(paramError));
+    apiBody.max_completion_tokens = Math.min(maxTokens, 100000);
+  }
       
       // Add temperature for legacy models that support it
       if (safePropertyAccess(currentModel, 'supportsTemperature', false)) {
@@ -588,7 +597,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           status: response.status,
           statusText: response.statusText,
           errorBody: errorText,
-          model: currentModel?.model || 'unknown'
+          model: currentModel?.name || 'unknown'
         });
         
         // Store failed AI prompt for debugging (EVERYTHING sent to AI, even failures)
@@ -597,7 +606,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
           systemPrompt: enhancedSystemPrompt,
           userPrompt: finalUserPrompt,
-          model: currentModel.model,
+          model: currentModel.name,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
@@ -628,13 +637,57 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       storyText = data.choices?.[0]?.message?.content || '';
       
+      // PHASE 2: Detect reasoning tokens consuming all budget without content
+      const usage = data.usage || {};
+      const reasoningTokens = usage.completion_tokens_details?.reasoning_tokens || 0;
+      const contentLength = storyText?.length || 0;
+      
+      if (reasoningTokens > 0 && contentLength < 50) {
+        console.log(`⚠️ REASONING TOKEN ISSUE: Model ${currentModel.name} used ${reasoningTokens} reasoning tokens but produced ${contentLength} chars. Advancing to content-focused model.`);
+        
+        // Store failure for debugging
+        try {
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+          globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
+            systemPrompt: enhancedSystemPrompt,
+            userPrompt: finalUserPrompt,
+            model: currentModel.name,
+            tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
+            pageNumber: config?.pageNumber || 1,
+            attempt: attempt,
+            success: false,
+            bundle: bundleForDebug,
+            apiResponse: {
+              status: response.status,
+              contentLength,
+              usage: data.usage,
+              reasoningTokenFailure: true,
+              reasoningTokens
+            }
+          });
+        } catch (debugError) {
+          console.warn('⚠️ Failed to store reasoning token failure for debugging:', debugError);
+        }
+        
+        // Skip to next model (prefer content-focused models)
+        currentModelIndex++;
+        retriesOnCurrentModel = 0;
+        if (currentModelIndex >= modelProgression.length) {
+          console.error('❌ All models failed including reasoning token fallback');
+          throw new Error('All AI generation attempts failed - reasoning models consuming tokens without content');
+        }
+        
+        attempt++;
+        continue;
+      }
+      
       // Store complete AI prompt for debugging (EVERYTHING sent to AI)
       try {
         const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
         globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
           systemPrompt: enhancedSystemPrompt,
           userPrompt: finalUserPrompt,
-          model: currentModel.model,
+          model: currentModel.name,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,

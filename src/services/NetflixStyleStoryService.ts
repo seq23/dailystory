@@ -151,9 +151,15 @@ export class NetflixStyleStoryService {
         
         console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages`);
         
-        try {
-          (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-        } catch {}
+        // PHASE 4: Only set AI source AFTER confirming content is actually present
+        if (result.story && result.story.length > 100 && result.pages && result.pages.length > 0) {
+          try {
+            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+            console.log('✅ Confirmed Netflix AI-generated story content, setting source tracking');
+          } catch {}
+        } else {
+          console.log('⚠️ Netflix AI call succeeded but content insufficient, will not set AI source tracking');
+        }
 
         // Emit story generation complete event
         window.dispatchEvent(new CustomEvent('story:generation:complete'));
