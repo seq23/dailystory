@@ -55,10 +55,10 @@ export const getModelChain = (isExpertLevel: boolean) => {
       // PHASE 2: Prioritize content-focused models for story generation
       { name: 'gpt-4.1-2025-04-14', model: 'gpt-4.1-2025-04-14', description: 'content-focused primary', paramName: 'max_completion_tokens' }, 
       { name: 'gpt-4o', model: 'gpt-4o', description: 'reliable content generator', paramName: 'max_tokens', supportsTemperature: true },
-      { name: 'gpt-5-mini-2025-08-07', model: 'gpt-5-mini-2025-08-07', description: 'fast content generation', paramName: 'max_completion_tokens' },
-      { name: 'gpt-5-2025-08-07', model: 'gpt-5-2025-08-07', description: 'reasoning model (content risk)', paramName: 'max_completion_tokens' },
       { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'reliable fallback', paramName: 'max_tokens', supportsTemperature: true },
-      { name: 'gpt-4.1-2025-04-14', model: 'gpt-4.1-2025-04-14', description: 'final attempt', paramName: 'max_completion_tokens' }
+      { name: 'gpt-4.1-2025-04-14', model: 'gpt-4.1-2025-04-14', description: 'content retry', paramName: 'max_completion_tokens' },
+      { name: 'gpt-5-mini-2025-08-07', model: 'gpt-5-mini-2025-08-07', description: 'reasoning fallback', paramName: 'max_completion_tokens' },
+      { name: 'gpt-5-2025-08-07', model: 'gpt-5-2025-08-07', description: 'reasoning final attempt', paramName: 'max_completion_tokens' }
     ] : [
       { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true }, 
       { name: 'gpt-4o', model: 'gpt-4o', description: 'content fallback', paramName: 'max_tokens', supportsTemperature: true },
