@@ -60,6 +60,63 @@ export const validationConfig = {
     "splitTolerance": 1.5,
     "cacheLimit": 500
   },
+  "wordCountLimits": {
+    "_comment": "WORD COUNT VALIDATION LIMITS - Primary implementation from plan",
+    "_purpose": "Enforce appropriate word count per page based on educational level",
+    "_business_logic": "Netflix: Full story validation, Live: Page-by-page validation",
+    "_plan_requirements": "Level1 currently generating 60-80 words, should be 15-24 max",
+    
+    "Level0": { 
+      "minWordsPerPage": 2, 
+      "maxWordsPerPage": 8,
+      "_example": "'I see.' meets system requirements" 
+    },
+    "Level1": { 
+      "minWordsPerPage": 15, 
+      "maxWordsPerPage": 24,
+      "_problem": "Currently generating 60-80 words per page - needs enforcement"
+    },
+    "Level2": { 
+      "minWordsPerPage": 50, 
+      "maxWordsPerPage": 70,
+      "_example": "Simple paragraphs with appropriate complexity"
+    },
+    "Level3": { 
+      "minWordsPerPage": 80, 
+      "maxWordsPerPage": 120,
+      "_example": "More developed content per page"
+    },
+    "Level4": { 
+      "minWordsPerPage": 120, 
+      "maxWordsPerPage": 200,
+      "_example": "Rich content for advanced readers"
+    },
+    "Grade6": { 
+      "minWordsPerPage": 200, 
+      "maxWordsPerPage": 300,
+      "_example": "Grade-appropriate progressive complexity"
+    },
+    "Grade7": { 
+      "minWordsPerPage": 220, 
+      "maxWordsPerPage": 320,
+      "_example": "Grade-appropriate progressive complexity"
+    },
+    "Grade8": { 
+      "minWordsPerPage": 240, 
+      "maxWordsPerPage": 340,
+      "_example": "Grade-appropriate progressive complexity"
+    },
+    "Grade9": { 
+      "minWordsPerPage": 260, 
+      "maxWordsPerPage": 360,
+      "_example": "Grade-appropriate progressive complexity"
+    },
+    "Grade10": { 
+      "minWordsPerPage": 280, 
+      "maxWordsPerPage": 400,
+      "_example": "Grade-appropriate progressive complexity"
+    }
+  },
   "characterMinimumsPerPage": {
     "_comment": "DYNAMIC PER-PAGE CHARACTER MINIMUMS - Single source of truth for all services",
     "_purpose": "Realistic minimums that catch empty/insufficient responses while allowing natural variation",

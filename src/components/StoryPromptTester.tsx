@@ -373,7 +373,8 @@ export function StoryPromptTester() {
   const testService = async (
     level: string, 
     userInfo: UserInfo, 
-    service: 'netflix' | 'live' | 'template'
+    service: 'netflix' | 'live' | 'template',
+    sessionId?: string
   ): Promise<TestResult> => {
     const startTime = Date.now();
     const testKey = `${level}_${service}`;
@@ -451,8 +452,8 @@ export function StoryPromptTester() {
       if (service === 'netflix') {
         result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
         
-        // Generate session ID for debug tracking (matches service format)
-        result.sessionId = `netflix-${userInfo.name}-${Date.now()}`;
+        // Generate session ID for debug tracking (use passed sessionId or generate new one)
+        result.sessionId = sessionId || `netflix-${userInfo.name}-${Date.now()}`;
         
         // Show AI generation toast
         showTestToast({
@@ -908,6 +909,10 @@ export function StoryPromptTester() {
     // Clear validation cache for fresh tests
     validationCache.clear();
 
+    // SESSION ID SYNCHRONIZATION: Generate single session ID for all services
+    const masterSessionId = `unified-test-${Date.now()}`;
+    console.log(`🆔 Master Session ID for all tests: ${masterSessionId}`);
+
     // Use custom preferences if enabled, otherwise use all predefined profiles
     const profiles: [string, UserInfo][] = useCustomPreferences 
       ? [['custom', customUserPrefs] as [string, UserInfo]] 
@@ -946,8 +951,8 @@ export function StoryPromptTester() {
         try {
           if (testMode === 'full') {
             // Test both Netflix and Live services for comprehensive testing
-            const netflixResult = await testService(level, userInfo, 'netflix');
-            const liveResult = await testService(level, userInfo, 'live');
+            const netflixResult = await testService(level, userInfo, 'netflix', masterSessionId);
+            const liveResult = await testService(level, userInfo, 'live', masterSessionId);
             
             batchResults.push(netflixResult, liveResult);
             comparison.netflix = netflixResult;
@@ -1288,14 +1293,23 @@ export function StoryPromptTester() {
 
             {/* Token Validation */}
             {result.tokenValidation && (
-              <div className={`p-3 rounded-lg border ${result.tokenValidation.isValid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+              <div className={`p-3 rounded-lg border ${
+                result.tokenValidation.isValid ? 'bg-green-50 border-green-200' : 
+                (result.tokenValidation.isBypassed || (testMode && testMode.includes('template'))) ? 
+                'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'
+              }`}>
                 <div className="flex items-center gap-2 mb-2">
                   {result.tokenValidation.isValid ? (
                     <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  ) : (result.tokenValidation.isBypassed || (testMode && testMode.includes('template'))) ? (
+                    <Info className="w-4 h-4 text-blue-600" />
                   ) : (
                     <XCircle className="w-4 h-4 text-red-600" />
                   )}
-                  <span className="text-sm font-medium">Token Validation</span>
+                  <span className="text-sm font-medium">
+                    {result.tokenValidation.isBypassed || (testMode && testMode.includes('template')) ? 
+                    'Token Validation: BYPASSED' : 'Token Validation'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <span>

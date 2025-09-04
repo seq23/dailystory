@@ -115,6 +115,17 @@ export function getMinCharactersTotal(level: ValidationLevel, expectedPages: num
 }
 
 /**
+ * Get word count limits for a validation level - NEW WORD COUNT VALIDATION
+ */
+export function getWordCountLimitsForLevel(level: ValidationLevel): { minWords: number; maxWords: number } {
+  const wordLimits = validationConfig.wordCountLimits[level] || validationConfig.wordCountLimits.Level0;
+  return {
+    minWords: wordLimits.minWordsPerPage,
+    maxWords: wordLimits.maxWordsPerPage
+  };
+}
+
+/**
  * Get character limits for a validation level - LEGACY COMPATIBILITY
  * Use getMinCharactersPerPage() for new validation logic
  */
@@ -457,7 +468,7 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
  * Validate content length for live mode (page-by-page) - CHARACTER VALIDATION ONLY
  * TOKEN VALIDATION BYPASSED - Character validation is now the primary gatekeeper
  */
-export function validateLivePageLength(content: string, level: ValidationLevel): {
+export function validateLivePageLength(content: string, level: ValidationLevel, isEndingPage: boolean = false): {
   isValid: boolean;
   tokenCount: number;
   characterCount: number;
@@ -468,11 +479,40 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   isSeverelyTooLong?: boolean; // For Live service: 2x+ too long needs retry with hint
   wordCount?: number;
   wordsPerPageValid?: boolean;
+  wordCountValidation?: {
+    minWords: number;
+    maxWords: number;
+    actualWords: number;
+    isValid: boolean;
+    reason?: string;
+  };
 } {
   // TOKEN VALIDATION BYPASSED - Keep for metrics but don't use for validation decisions
   const tokenCount = estimateTokenCount(content);
   const characterCount = content.length;
   const wordCount = content.trim().split(/\s+/).length;
+  
+  // ENDING PAGE BYPASS: Skip all validation for ending pages in Live Generation
+  if (isEndingPage) {
+    return {
+      isValid: true,
+      tokenCount,
+      characterCount,
+      maxAllowedTokens: 100000,
+      maxAllowedChars: 100000,
+      wordCount,
+      wordsPerPageValid: true,
+      wordCountValidation: {
+        minWords: 0,
+        maxWords: 100000,
+        actualWords: wordCount,
+        isValid: true,
+        reason: 'Ending page - validation bypassed'
+      },
+      passedBy: 'both',
+      reason: 'Ending page validation bypassed for Live Generation'
+    };
+  }
   
   // NEW DYNAMIC VALIDATION: Use helper functions for consistent per-page validation
   const minCharsPerPage = getMinCharactersPerPage(level);
@@ -482,12 +522,27 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   const maxTokens = 100000; // High ceiling - not used for validation
   let maxCharsPerPage = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
   
-  // PHASE 4: Words-per-page density validation (Level 2 specific: 60-75 words per page)
-  let wordsPerPageValid = true;
+  // NEW WORD COUNT VALIDATION - Primary implementation from plan
+  const wordLimits = getWordCountLimitsForLevel(level);
+  const wordCountValidation = {
+    minWords: wordLimits.minWords,
+    maxWords: wordLimits.maxWords,
+    actualWords: wordCount,
+    isValid: wordCount >= wordLimits.minWords && wordCount <= wordLimits.maxWords,
+    reason: wordCount < wordLimits.minWords 
+      ? `Too few words: ${wordCount} (min: ${wordLimits.minWords})`
+      : wordCount > wordLimits.maxWords 
+      ? `Too many words: ${wordCount} (max: ${wordLimits.maxWords})`
+      : undefined
+  };
+  
+  // LEGACY: Phase 4 words-per-page validation (keeping for compatibility)
+  let wordsPerPageValid = wordCountValidation.isValid;
   if (level === 'Level2') {
-    wordsPerPageValid = wordCount >= 40 && wordCount <= 120; // Flexible range around 60-75 target
-    if (!wordsPerPageValid) {
-      console.log(`📝 Level2 word density check: ${wordCount} words (target: 60-75 words per page)`);
+    // Legacy Level2 specific check - now redundant with wordCountValidation
+    const legacyValid = wordCount >= 40 && wordCount <= 120; 
+    if (!legacyValid) {
+      console.log(`📝 Level2 legacy word density check: ${wordCount} words (target: 60-75 words per page)`);
     }
   }
   
@@ -551,7 +606,8 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
       reason,
       isSeverelyTooLong,
       wordCount,
-      wordsPerPageValid
+      wordsPerPageValid,
+      wordCountValidation
     };
   }
   
@@ -573,7 +629,8 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     passedBy: 'characters',
     isSeverelyTooLong: false,
     wordCount,
-    wordsPerPageValid
+    wordsPerPageValid,
+    wordCountValidation
   };
 }
 
