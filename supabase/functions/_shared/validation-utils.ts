@@ -218,7 +218,11 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
   const characterLimits = getCharacterLimitsForLevel(level);
   const targetCharsPerPage = characterLimits.maxChars; // FIX: Use direct per-page limit, not divided by pages
   
-  console.log(`🔧 Auto-split debug: level=${level}, targetCharsPerPage=${targetCharsPerPage}, maxPages=${maxPages}`);
+  // NEW: Add word count limits for dual-constraint validation
+  const wordLimits = getWordCountLimitsForLevel(level);
+  const targetWordsPerPage = wordLimits.maxWords;
+  
+  console.log(`🔧 Auto-split debug: level=${level}, targetCharsPerPage=${targetCharsPerPage}, targetWordsPerPage=${targetWordsPerPage}, maxPages=${maxPages}`);
   
   // Enhanced sentence splitting - handles multiple punctuation patterns
   const sentences = content
@@ -240,21 +244,27 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
   let pages: string[] = [];
   let currentPage = '';
   let currentChars = 0;
+  let currentWords = 0;  // NEW: Track word count for dual-constraint validation
   
-  // Level 0: Strict 1-sentence per page with emergency chunking
+  // Level 0: Strict 1-sentence per page with emergency chunking and word validation
   if (level === 'Level0') {
     for (const sentence of sentences) {
       const cleanSentence = sentence.trim();
       if (!cleanSentence) continue;
       
       const sentenceChars = cleanSentence.length;
+      const sentenceWords = cleanSentence.trim().split(/\s+/).length;
       
-      // If sentence is too long for Level 0, emergency chunk it
-      if (sentenceChars > targetCharsPerPage) {
+      // If sentence exceeds EITHER character OR word limits, emergency chunk it
+      if (sentenceChars > targetCharsPerPage || sentenceWords > targetWordsPerPage) {
         const chunks = emergencyChunkSentence(cleanSentence, targetCharsPerPage);
         pages.push(...chunks);
+        
+        console.log(`🔧 Level0 emergency chunking: ${sentenceChars} chars, ${sentenceWords} words -> ${chunks.length} chunks`);
       } else {
         pages.push(cleanSentence);
+        
+        console.log(`✅ Level0 page added: ${sentenceChars} chars, ${sentenceWords} words (limits: ${targetCharsPerPage} chars, ${targetWordsPerPage} words)`);
       }
       
       // Stop if we've hit max pages
@@ -264,12 +274,13 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     return pages.length > 0 ? pages : [content.trim()];
   }
   
-  // Level 1-4+: Smart packing with word-chunking fallback
+  // Level 1-4+: Smart packing with dual-constraint (character AND word count) validation
   for (const sentence of sentences) {
     const cleanSentence = sentence.trim();
     if (!cleanSentence) continue;
     
     const sentenceChars = cleanSentence.length;
+    const sentenceWords = cleanSentence.trim().split(/\s+/).length;
     
     // If sentence is too long and has no punctuation, word-chunk it
     if (sentenceChars > targetCharsPerPage * 1.5 && !/[.!?]/.test(cleanSentence)) {
@@ -277,37 +288,65 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
       
       for (const chunk of chunks) {
         const chunkChars = chunk.length;
+        const chunkWords = chunk.trim().split(/\s+/).length;
         
-        if (currentChars + chunkChars > targetCharsPerPage && currentPage.length > 0) {
+        // NEW: Dual-constraint check for chunked content
+        const wouldExceedChars = currentChars + chunkChars > targetCharsPerPage;
+        const wouldExceedWords = currentWords + chunkWords > targetWordsPerPage;
+        
+        if ((wouldExceedChars || wouldExceedWords) && currentPage.length > 0) {
           if (pages.length < maxPages) {
             pages.push(currentPage.trim());
+            
+            console.log(`✅ Level${level} page completed (chunked): ${currentChars} chars, ${currentWords} words (limits: ${targetCharsPerPage} chars, ${targetWordsPerPage} words)`);
+            
             currentPage = chunk;
             currentChars = chunkChars;
+            currentWords = chunkWords;
           } else {
             currentPage += ' ' + chunk;
             currentChars += chunkChars + 1; // +1 for space
+            currentWords += chunkWords;
           }
         } else {
-          if (currentPage.length > 0) currentPage += ' ';
+          if (currentPage.length > 0) {
+            currentPage += ' ';
+            currentChars += 1; // +1 for space
+          }
           currentPage += chunk;
-          currentChars += chunkChars + (currentPage.length > chunk.length ? 1 : 0); // +1 for space
+          currentChars += chunkChars + (currentPage.length > chunk.length ? 0 : 0); // space already added above
+          currentWords += chunkWords;
         }
       }
     } else {
-      // Normal sentence processing with smart packing
-      if (currentChars + sentenceChars > targetCharsPerPage && currentPage.length > 0) {
+      // NEW: Normal sentence processing with dual-constraint validation
+      const wouldExceedChars = currentChars + sentenceChars > targetCharsPerPage;
+      const wouldExceedWords = currentWords + sentenceWords > targetWordsPerPage;
+      
+      if ((wouldExceedChars || wouldExceedWords) && currentPage.length > 0) {
         if (pages.length < maxPages) {
           pages.push(currentPage.trim());
+          
+          const breakReason = wouldExceedChars && wouldExceedWords ? 'both limits' : 
+                            wouldExceedChars ? 'char limit' : 'word limit';
+          console.log(`✅ Level${level} page completed (normal): ${currentChars} chars, ${currentWords} words (break: ${breakReason})`);
+          
           currentPage = cleanSentence;
           currentChars = sentenceChars;
+          currentWords = sentenceWords;
         } else {
           currentPage += ' ' + cleanSentence;
           currentChars += sentenceChars + 1; // +1 for space
+          currentWords += sentenceWords;
         }
       } else {
-        if (currentPage.length > 0) currentPage += ' ';
+        if (currentPage.length > 0) {
+          currentPage += ' ';
+          currentChars += 1; // +1 for space
+        }
         currentPage += cleanSentence;
-        currentChars += sentenceChars + (currentPage.length > cleanSentence.length ? 1 : 0); // +1 for space
+        currentChars += sentenceChars + (currentPage.length > cleanSentence.length ? 0 : 0); // space already added above
+        currentWords += sentenceWords;
       }
     }
   }
@@ -318,9 +357,9 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
   }
   
   // TAIL BALANCING: Redistribute content more evenly across pages
-  pages = balanceTailContent(pages, targetCharsPerPage);
+  pages = balanceTailContent(pages, targetCharsPerPage, targetWordsPerPage);
   
-  console.log(`🔧 Pages after tail balancing: ${pages.map((p, i) => `Page ${i+1}: ${p.length} chars`).join(', ')}`);
+  console.log(`🔧 Pages after tail balancing: ${pages.map((p, i) => `Page ${i+1}: ${p.length} chars, ${p.trim().split(/\s+/).length} words`).join(', ')}`);
   
   // Final truncation safety net for Netflix (enforce 12-page max regardless of content)
   if (maxPages <= 12 && pages.length > 12) {
@@ -333,9 +372,9 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
 }
 
 /**
- * Balance tail content - redistribute sentences more evenly across pages
+ * Balance tail content - redistribute sentences more evenly across pages with dual-constraint validation
  */
-function balanceTailContent(pages: string[], targetCharsPerPage: number): string[] {
+function balanceTailContent(pages: string[], targetCharsPerPage: number, targetWordsPerPage: number): string[] {
   if (pages.length <= 1) return pages;
   
   const balanced: string[] = [];
@@ -343,6 +382,7 @@ function balanceTailContent(pages: string[], targetCharsPerPage: number): string
   for (let i = 0; i < pages.length; i++) {
     const currentPage = pages[i];
     const currentLength = currentPage.length;
+    const currentWords = currentPage.trim().split(/\s+/).length;
     
     // If page is significantly under target and there's a next page, try to redistribute
     if (i < pages.length - 1 && currentLength < targetCharsPerPage * 0.6) {
@@ -352,12 +392,22 @@ function balanceTailContent(pages: string[], targetCharsPerPage: number): string
       if (nextSentences.length > 1) {
         // Move first sentence from next page to current page
         const sentenceToMove = nextSentences[0];
+        const sentenceWords = sentenceToMove.trim().split(/\s+/).length;
         const potentialLength = currentLength + sentenceToMove.length + 1;
+        const potentialWords = currentWords + sentenceWords;
         
-        if (potentialLength <= targetCharsPerPage * 1.2) {
+        // NEW: Check both character AND word count constraints
+        const charConstraintOk = potentialLength <= targetCharsPerPage * 1.2;
+        const wordConstraintOk = potentialWords <= targetWordsPerPage;
+        
+        if (charConstraintOk && wordConstraintOk) {
           balanced.push((currentPage + ' ' + sentenceToMove).trim());
           pages[i + 1] = nextSentences.slice(1).join(' ');
+          
+          console.log(`📊 Balanced content: moved ${sentenceWords} words to page ${i+1} (${currentWords}->${potentialWords} words, ${currentLength}->${potentialLength} chars)`);
           continue;
+        } else {
+          console.log(`🚫 Balance blocked: would exceed ${!charConstraintOk ? 'char' : 'word'} limit (${potentialLength} chars, ${potentialWords} words)`);
         }
       }
     }
