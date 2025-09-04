@@ -28,6 +28,7 @@ import "./services/AdvancedPerformanceMonitor";
 import "./services/ABTestingFramework";
 import { LoggerService } from "./services/LoggerService";
 import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";
+import { suppressChromeExtensionErrors } from "./utils/mobileOptimizations";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,10 +44,18 @@ const queryClient = new QueryClient({
 const App = () => {
   LoggerService.milestone("App component loaded successfully", "DEPLOYMENT_TEST");
 
-  // Initialize Vite log grouper in development
+  // Initialize error suppression and development tools
   React.useEffect(() => {
+    // Suppress Chrome extension errors first
+    const cleanupErrorSuppression = suppressChromeExtensionErrors();
+    
+    // Initialize Vite log grouper in development
     initializeViteLogGrouper();
-    return () => cleanupViteLogGrouper();
+    
+    return () => {
+      cleanupErrorSuppression();
+      cleanupViteLogGrouper();
+    };
   }, []);
 
   return (

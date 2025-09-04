@@ -156,32 +156,73 @@ export const optimizeFontLoading = () => {
 export const suppressChromeExtensionErrors = () => {
   const originalError = console.error;
   const originalWarn = console.warn;
+  const originalInfo = console.info;
+  const originalLog = console.log;
 
-  // Filter out Chrome extension errors
-  console.error = (...args) => {
-    const message = args.join(' ');
-    if (
+  let suppressedCount = 0;
+
+  // Enhanced patterns for Chrome extension errors
+  const isExtensionError = (message: string) => {
+    return (
       message.includes('Could not establish connection') ||
       message.includes('runtime.lastError') ||
       message.includes('Receiving end does not exist') ||
-      message.includes('chrome-extension://')
-    ) {
-      return; // Suppress Chrome extension errors
+      message.includes('chrome-extension://') ||
+      message.includes('Extension context invalidated') ||
+      message.includes('Cannot access contents of') ||
+      message.includes('Unchecked runtime.lastError')
+    );
+  };
+
+  // Override console methods to filter extension errors
+  console.error = (...args) => {
+    const message = args.join(' ');
+    if (isExtensionError(message)) {
+      suppressedCount++;
+      // In development, log suppressed extension errors for transparency
+      if (process.env.NODE_ENV === 'development' && suppressedCount % 10 === 1) {
+        originalInfo(`[Extension Error Suppressed - Count: ${suppressedCount}]:`, message.substring(0, 100));
+      }
+      return;
     }
     originalError.apply(console, args);
   };
 
   console.warn = (...args) => {
     const message = args.join(' ');
-    if (message.includes('chrome-extension://')) {
-      return; // Suppress Chrome extension warnings
+    if (isExtensionError(message)) {
+      suppressedCount++;
+      return;
     }
     originalWarn.apply(console, args);
+  };
+
+  console.info = (...args) => {
+    const message = args.join(' ');
+    if (isExtensionError(message)) {
+      suppressedCount++;
+      return;
+    }
+    originalInfo.apply(console, args);
+  };
+
+  console.log = (...args) => {
+    const message = args.join(' ');
+    if (isExtensionError(message)) {
+      suppressedCount++;
+      return;
+    }
+    originalLog.apply(console, args);
   };
 
   return () => {
     console.error = originalError;
     console.warn = originalWarn;
+    console.info = originalInfo;
+    console.log = originalLog;
+    if (process.env.NODE_ENV === 'development' && suppressedCount > 0) {
+      originalInfo(`[Chrome Extension Error Suppression] Cleaned up. Total suppressed: ${suppressedCount}`);
+    }
   };
 };
 
