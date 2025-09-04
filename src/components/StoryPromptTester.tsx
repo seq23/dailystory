@@ -1095,9 +1095,12 @@ export function StoryPromptTester() {
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Session ID</div>
-            <div className="font-mono text-xs break-all overflow-x-auto max-w-[200px]" title={result.sessionId}>
-              {result.sessionId || 'Not captured'}
-            </div>
+            <Input 
+              readOnly
+              value={result.sessionId || 'Not captured'}
+              className="font-mono text-xs h-6 px-2 max-w-[200px] cursor-text"
+              title={result.sessionId}
+            />
           </div>
         </div>
         
