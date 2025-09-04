@@ -13,6 +13,22 @@ export interface PlaceholderValidationResult {
   userInputsResolved?: number;
   userInputsTotal?: number;
   grammarEnhanced?: boolean;
+  placeholderDetails?: {
+    name: boolean;
+    favoriteColor: boolean;
+    favoriteAnimal: boolean;
+    favoriteFood: boolean;
+    hobbies: boolean;
+    specialRequest: boolean;
+  };
+  foundInstances?: {
+    name: string[];
+    favoriteColor: string[];
+    favoriteAnimal: string[];
+    favoriteFood: string[];
+    hobbies: string[];
+    specialRequest: string[];
+  };
 }
 
 /**
@@ -24,17 +40,44 @@ const USER_INPUT_PLACEHOLDERS = [
 
 /**
  * Validate that all placeholders in story pages are properly resolved
- * Simplified version for frontend components
+ * Enhanced version that searches for actual user input values
  */
 export function validatePlaceholders(
   pages: string[], 
   source?: 'ai' | 'template' | 'fallback' | 'emergency' | 'unknown',
-  applyGrammarEnhancement: boolean = false // Not used in frontend version
+  applyGrammarEnhancement: boolean = false, // Not used in frontend version
+  userInfo?: {
+    name?: string;
+    favoriteColor?: string;
+    favoriteAnimal?: string;
+    favoriteFood?: string;
+    hobbies?: string;
+    specialRequest?: string;
+  }
 ): PlaceholderValidationResult {
   const unresolvedPlaceholders: Set<string> = new Set();
   const userInputsUsed: Set<string> = new Set();
   let totalPlaceholders = 0;
   let userInputsTotal = 0;
+
+  // Initialize placeholder tracking
+  const placeholderDetails = {
+    name: false,
+    favoriteColor: false,
+    favoriteAnimal: false,
+    favoriteFood: false,
+    hobbies: false,
+    specialRequest: false
+  };
+
+  const foundInstances = {
+    name: [] as string[],
+    favoriteColor: [] as string[],
+    favoriteAnimal: [] as string[],
+    favoriteFood: [] as string[],
+    hobbies: [] as string[],
+    specialRequest: [] as string[]
+  };
 
   // Regex to find any remaining placeholder patterns
   const placeholderRegex = /\{([^}]+)\}/g;
@@ -51,26 +94,93 @@ export function validatePlaceholders(
         userInputsTotal++;
       }
     }
-    
-    // For AI content, check which user inputs were actually incorporated
-    if (source === 'ai') {
-      USER_INPUT_PLACEHOLDERS.forEach(userInput => {
-        // Simple heuristic: check if the page contains references that might indicate the user input was used
-        const lowerPage = page.toLowerCase();
-        if (userInput === 'userName' && /\b[A-Z][a-z]+\b/.test(page)) {
-          userInputsUsed.add(userInput);
-        } else if (userInput === 'favoriteColor' && /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown)\b/i.test(page)) {
-          userInputsUsed.add(userInput);
-        } else if (userInput === 'favoriteAnimal' && /\b(cat|dog|bird|fish|rabbit|bear|lion|tiger|elephant|monkey)\b/i.test(page)) {
-          userInputsUsed.add(userInput);
-        }
-        // Add more heuristics as needed
-      });
-    }
   });
+
+  // If userInfo is provided, search for actual user input values in the content
+  if (userInfo && source === 'ai') {
+    const allContent = pages.join(' ').toLowerCase();
+    
+    // Search for name (case insensitive)
+    if (userInfo.name) {
+      const nameRegex = new RegExp(`\\b${userInfo.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      const matches = pages.join(' ').match(nameRegex);
+      if (matches && matches.length > 0) {
+        placeholderDetails.name = true;
+        foundInstances.name = [...new Set(matches)]; // Remove duplicates
+        userInputsUsed.add('name');
+      }
+    }
+
+    // Search for favorite color
+    if (userInfo.favoriteColor) {
+      const colorRegex = new RegExp(`\\b${userInfo.favoriteColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      const matches = pages.join(' ').match(colorRegex);
+      if (matches && matches.length > 0) {
+        placeholderDetails.favoriteColor = true;
+        foundInstances.favoriteColor = [...new Set(matches)];
+        userInputsUsed.add('favoriteColor');
+      }
+    }
+
+    // Search for favorite animal
+    if (userInfo.favoriteAnimal) {
+      const animalRegex = new RegExp(`\\b${userInfo.favoriteAnimal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      const matches = pages.join(' ').match(animalRegex);
+      if (matches && matches.length > 0) {
+        placeholderDetails.favoriteAnimal = true;
+        foundInstances.favoriteAnimal = [...new Set(matches)];
+        userInputsUsed.add('favoriteAnimal');
+      }
+    }
+
+    // Search for favorite food
+    if (userInfo.favoriteFood) {
+      const foodRegex = new RegExp(`\\b${userInfo.favoriteFood.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      const matches = pages.join(' ').match(foodRegex);
+      if (matches && matches.length > 0) {
+        placeholderDetails.favoriteFood = true;
+        foundInstances.favoriteFood = [...new Set(matches)];
+        userInputsUsed.add('favoriteFood');
+      }
+    }
+
+    // Search for hobbies (split by common delimiters and search for each)
+    if (userInfo.hobbies) {
+      const hobbies = userInfo.hobbies.split(/[,&\s]+/).filter(h => h.length > 2);
+      for (const hobby of hobbies) {
+        const hobbyRegex = new RegExp(`\\b${hobby.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        const matches = pages.join(' ').match(hobbyRegex);
+        if (matches && matches.length > 0) {
+          placeholderDetails.hobbies = true;
+          foundInstances.hobbies.push(...matches);
+          userInputsUsed.add('hobbies');
+          break; // Found at least one hobby
+        }
+      }
+      foundInstances.hobbies = [...new Set(foundInstances.hobbies)]; // Remove duplicates
+    }
+
+    // Search for special request keywords
+    if (userInfo.specialRequest) {
+      const keywords = userInfo.specialRequest.split(/[,&\s]+/).filter(k => k.length > 3);
+      for (const keyword of keywords) {
+        const keywordRegex = new RegExp(`\\b${keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        const matches = pages.join(' ').match(keywordRegex);
+        if (matches && matches.length > 0) {
+          placeholderDetails.specialRequest = true;
+          foundInstances.specialRequest.push(...matches);
+          userInputsUsed.add('specialRequest');
+          break; // Found at least one keyword
+        }
+      }
+      foundInstances.specialRequest = [...new Set(foundInstances.specialRequest)]; // Remove duplicates
+    }
+  }
 
   const unresolvedArray = Array.from(unresolvedPlaceholders);
   const resolvedCount = totalPlaceholders - unresolvedArray.length;
+  const userInputsResolved = userInfo && source === 'ai' ? userInputsUsed.size : 0;
+  const totalUserInputs = userInfo && source === 'ai' ? 6 : userInputsTotal;
 
   return {
     isValid: unresolvedArray.length === 0,
@@ -79,9 +189,11 @@ export function validatePlaceholders(
     totalPlaceholders: totalPlaceholders,
     source,
     userInputsUsed: Array.from(userInputsUsed),
-    userInputsResolved: userInputsUsed.size,
-    userInputsTotal: source === 'ai' ? USER_INPUT_PLACEHOLDERS.length : userInputsTotal,
-    grammarEnhanced: false // Grammar enhancement handled by edge functions
+    userInputsResolved,
+    userInputsTotal: totalUserInputs,
+    grammarEnhanced: false, // Grammar enhancement handled by edge functions
+    placeholderDetails: userInfo && source === 'ai' ? placeholderDetails : undefined,
+    foundInstances: userInfo && source === 'ai' ? foundInstances : undefined
   };
 }
 
@@ -89,6 +201,10 @@ export function validatePlaceholders(
  * Get user-friendly message for placeholder validation results
  */
 export function getPlaceholderValidationMessage(result: PlaceholderValidationResult): string {
+  if (result.source === 'ai' && result.userInputsResolved !== undefined && result.userInputsTotal !== undefined) {
+    return `${result.userInputsResolved}/${result.userInputsTotal} placeholders found`;
+  }
+  
   if (result.isValid) {
     if (result.source === 'ai') {
       if (result.userInputsResolved && result.userInputsTotal && result.userInputsUsed && result.userInputsUsed.length > 0) {

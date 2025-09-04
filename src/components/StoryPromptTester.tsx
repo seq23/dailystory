@@ -18,6 +18,7 @@ import { useTemplateService } from '@/hooks/useTemplateService';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
 import { UnifiedValidator, type ValidationResult, type ValidationDecision } from '@/utils/unifiedValidator';
 import { validatePlaceholders, getPlaceholderValidationMessage, checkForPlaceholderIssues } from '@/utils/placeholderValidator';
+import { HighlightText, getFoundTerms } from '@/utils/textHighlighter';
 import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/functions/_shared/validation-utils';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
@@ -730,7 +731,7 @@ export function StoryPromptTester() {
         
         if (!cachedValidation) {
           // Run validation and cache results
-          const placeholderValidation = validatePlaceholders(result.fullContent, result.source);
+          const placeholderValidation = validatePlaceholders(result.fullContent, result.source, false, userInfo);
           const contentIssues = checkForPlaceholderIssues(result.fullContent);
           const validationLevel = UnifiedValidator.mapDifficultyToLevel(level as DifficultyLevel);
           const tokenValidation = UnifiedValidator.validateContent(result.fullContent.join(' '), { mode: 'guest', level: validationLevel });
@@ -1154,20 +1155,106 @@ export function StoryPromptTester() {
         {/* Enhanced Content Validation Results */}
         {result.success && result.fullContent && result.fullContent.length > 0 && (result.placeholderValidation || result.tokenValidation) && (
           <div className="mt-4 space-y-3">
-            {/* Placeholder Validation */}
+            {/* Enhanced Placeholder Validation with 6 Placeholders Tracking */}
             {result.placeholderValidation && (
-              <div className={`p-3 rounded-lg border ${result.placeholderValidation.isValid ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                <div className="flex items-center gap-2 mb-2">
-                  {result.placeholderValidation.isValid ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                  )}
-                  <span className="text-sm font-medium">Placeholder Resolution</span>
+              <div className={`p-3 rounded-lg border ${result.placeholderValidation.userInputsResolved === 6 ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {result.placeholderValidation.userInputsResolved === 6 ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                    )}
+                    <span className="text-sm font-medium">Placeholder Tracking</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {result.placeholderValidation.userInputsResolved || 0}/6 Found
+                  </Badge>
                 </div>
+
+                {/* Show detailed placeholder breakdown if available */}
+                {result.placeholderValidation.placeholderDetails && (
+                  <div className="space-y-2 mb-3">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1">
+                        {result.placeholderValidation.placeholderDetails.name ? 
+                          <CheckCircle2 className="w-3 h-3 text-green-600" /> : 
+                          <XCircle className="w-3 h-3 text-gray-400" />
+                        }
+                        <span className={result.placeholderValidation.placeholderDetails.name ? 'text-green-700' : 'text-gray-500'}>
+                          Name
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {result.placeholderValidation.placeholderDetails.favoriteColor ? 
+                          <CheckCircle2 className="w-3 h-3 text-green-600" /> : 
+                          <XCircle className="w-3 h-3 text-gray-400" />
+                        }
+                        <span className={result.placeholderValidation.placeholderDetails.favoriteColor ? 'text-green-700' : 'text-gray-500'}>
+                          Favorite Color
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {result.placeholderValidation.placeholderDetails.favoriteAnimal ? 
+                          <CheckCircle2 className="w-3 h-3 text-green-600" /> : 
+                          <XCircle className="w-3 h-3 text-gray-400" />
+                        }
+                        <span className={result.placeholderValidation.placeholderDetails.favoriteAnimal ? 'text-green-700' : 'text-gray-500'}>
+                          Favorite Animal
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {result.placeholderValidation.placeholderDetails.favoriteFood ? 
+                          <CheckCircle2 className="w-3 h-3 text-green-600" /> : 
+                          <XCircle className="w-3 h-3 text-gray-400" />
+                        }
+                        <span className={result.placeholderValidation.placeholderDetails.favoriteFood ? 'text-green-700' : 'text-gray-500'}>
+                          Favorite Food
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {result.placeholderValidation.placeholderDetails.hobbies ? 
+                          <CheckCircle2 className="w-3 h-3 text-green-600" /> : 
+                          <XCircle className="w-3 h-3 text-gray-400" />
+                        }
+                        <span className={result.placeholderValidation.placeholderDetails.hobbies ? 'text-green-700' : 'text-gray-500'}>
+                          Hobbies
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {result.placeholderValidation.placeholderDetails.specialRequest ? 
+                          <CheckCircle2 className="w-3 h-3 text-green-600" /> : 
+                          <XCircle className="w-3 h-3 text-gray-400" />
+                        }
+                        <span className={result.placeholderValidation.placeholderDetails.specialRequest ? 'text-green-700' : 'text-gray-500'}>
+                          Special Request
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Show found instances if available */}
+                    {result.placeholderValidation.foundInstances && Object.values(result.placeholderValidation.foundInstances).some(arr => arr.length > 0) && (
+                      <div className="mt-2 p-2 bg-white rounded border">
+                        <p className="text-xs font-medium text-gray-600 mb-1">Found instances:</p>
+                        <div className="space-y-1 text-xs">
+                          {Object.entries(result.placeholderValidation.foundInstances).map(([key, instances]) => 
+                            instances.length > 0 && (
+                              <div key={key} className="flex gap-1">
+                                <span className="font-medium text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                                <span className="text-green-600">{instances.join(', ')}</span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <p className="text-sm text-muted-foreground">
                   {getPlaceholderValidationMessage(result.placeholderValidation)}
                 </p>
+
                 {result.contentIssues && result.contentIssues.length > 0 && (
                   <div className="mt-2 space-y-1">
                     <p className="text-xs font-medium text-yellow-800">Content Issues:</p>
@@ -1269,6 +1356,7 @@ export function StoryPromptTester() {
                                            page.includes('story elves went to play') ||
                                            page.includes('Try Again'));
                     const isEmpty = !page || page.trim().length === 0;
+                    const foundTerms = getFoundTerms(result.placeholderValidation);
                     
                     return (
                       <div key={index} className={`border-l-2 pl-4 ${
@@ -1289,7 +1377,12 @@ export function StoryPromptTester() {
                           isEmpty ? 'text-red-800 italic' :
                           isEmergencyPage ? 'text-red-800' : 'text-foreground'
                         }`}>
-                          {isEmpty ? '(No content generated - likely placeholder resolution failure)' : page}
+                          {isEmpty ? '(No content generated - likely placeholder resolution failure)' : (
+                            <HighlightText 
+                              text={page} 
+                              searchTerms={foundTerms}
+                            />
+                          )}
                         </div>
                       </div>
                     );
