@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { ErrorHandler } from '@/utils/errorHandling';
+import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
 
 // Simple service configuration
 interface ImageGenerationConfig {
@@ -245,12 +246,16 @@ export class SimpleImageService {
   static async generateStoryImage(
     pageText: string,
     userInfo: UserInfo,
-    difficulty: DifficultyLevel = 'medium',
+    difficulty: string = 'developing', // Frontend difficulty level - will be converted to backend
     storyId?: string,
     pageNumber?: number,
     sessionId?: string,
     isPremium?: boolean // For analytics only - does not affect image quality
   ): Promise<ImageResult> {
+    // Convert frontend difficulty to backend format
+    const backendDifficulty = DifficultyLevelMapper.toBackend(difficulty) as DifficultyLevel;
+    console.log(`🔄 SimpleImage: Difficulty mapping - Frontend: "${difficulty}" → Backend: "${backendDifficulty}"`);
+    
     const userKey = this.generateUserKey(userInfo?.name);
     
     try {
@@ -272,7 +277,7 @@ export class SimpleImageService {
           sessionId,
           pageNumber,
           isGuestUser: !isPremium, // For analytics/tracking only - all users get Tier 1
-          difficultyLevel: difficulty
+          difficultyLevel: backendDifficulty
         }
       });
 

@@ -15,7 +15,7 @@ import { LoggerService } from '@/services/LoggerService';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
-  difficulty: DifficultyLevel;
+  difficulty: string; // Frontend difficulty level - will be converted to backend in service methods
   expertGradeLevel?: ExpertGradeLevel;
   storyContext: string[];
   currentPage: number;
@@ -80,7 +80,7 @@ export class LiveGenerationService {
       // Create context for next page
       const context: LiveGenerationContext = {
         userInfo,
-        difficulty,
+        difficulty: frontendDifficulty, // Store frontend difficulty in context
         expertGradeLevel,
         storyContext: [content],
         currentPage: 1,
@@ -136,10 +136,11 @@ export class LiveGenerationService {
       console.log(`🚀 Live Generation: Generating page ${nextPageNumber} (never-ending story, userRequestedEnding=${!!userRequestedEnding})`);
       
       let promptConfig: any;
-      if (context.difficulty === 'expert' && context.expertGradeLevel) {
+      const backendDifficulty = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
+      if (backendDifficulty === 'expert' && context.expertGradeLevel) {
         promptConfig = getExpertStoryPrompt(context.expertGradeLevel);
       } else {
-        promptConfig = getStoryPrompt(context.difficulty);
+        promptConfig = getStoryPrompt(backendDifficulty);
       }
       
       const { StoryGenerationService } = await import('./storyGenerationService');
@@ -180,7 +181,8 @@ export class LiveGenerationService {
       console.log(`🚀 Live Generation: Page ${nextPageNumber} generated successfully`);
       // PHASE 4: Use dynamic character validation for next page
       const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
-      const validationLevel = mapDifficultyToLevel(context.expertGradeLevel || context.difficulty);
+      const backendDifficultyForValidation = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
+      const validationLevel = mapDifficultyToLevel(context.expertGradeLevel || backendDifficultyForValidation);
       const minCharsPerPage = getMinCharactersPerPage(validationLevel);
       if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length >= minCharsPerPage) {
         try {
@@ -254,7 +256,8 @@ export class LiveGenerationService {
       console.log(`🚀 Live Generation: Ending generated with ${allPages.length} page(s)`);
       // PHASE 4: Use dynamic character validation for ending pages
       const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
-      const validationLevel = mapDifficultyToLevel(context.expertGradeLevel || context.difficulty);
+      const backendDifficultyForValidation = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
+      const validationLevel = mapDifficultyToLevel(context.expertGradeLevel || backendDifficultyForValidation);
       const minCharsPerPage = getMinCharactersPerPage(validationLevel);
       if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length >= minCharsPerPage) {
         try {
@@ -329,7 +332,7 @@ export class LiveGenerationService {
 
       const context: LiveGenerationContext = {
         userInfo,
-        difficulty,
+        difficulty: DifficultyLevelMapper.toFrontend(difficulty), // Store frontend difficulty in context
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999, // Preserve unlimited behavior
@@ -369,7 +372,7 @@ export class LiveGenerationService {
       
       const context: LiveGenerationContext = {
         userInfo,
-        difficulty,
+        difficulty: DifficultyLevelMapper.toFrontend(difficulty), // Store frontend difficulty in context
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999,

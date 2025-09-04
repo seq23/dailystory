@@ -46,7 +46,7 @@ export interface Story {
   id: string;
   title: string;
   segments: StorySegment[];
-  difficulty: DifficultyLevel;
+  difficulty: string; // Frontend difficulty level for UI consistency
   estimatedReadingTime: number;
   wordCount: number;
 }

@@ -1429,7 +1429,7 @@ const initializeStory = async () => {
             setStoryTitle(`${userInfo.name}'s Live Adventure`);
             const ctx: LiveGenerationContext = {
               userInfo: { ...effectiveUser, difficultyLevel: currentDifficulty },
-              difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+              difficulty: currentDifficulty,
               expertGradeLevel: currentDifficulty === 'advanced' ? expertGradeLevel : undefined,
               storyContext: [...cached.pages],
               currentPage: cached.currentPage || 0,
@@ -1840,7 +1840,7 @@ const initializeStory = async () => {
       const result = await SimpleImageService.generateStoryImage(
         storyText, 
         { ...userInfo, difficultyLevel: currentDifficulty }, 
-        DifficultyLevelMapper.toBackend(currentDifficulty),
+        currentDifficulty,
         storyId,
         currentPage + 1,
         characterSessionId,
@@ -1936,7 +1936,7 @@ const initializeStory = async () => {
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         userInfo,
-        DifficultyLevelMapper.toBackend(currentDifficulty),
+        currentDifficulty,
         storyId,
         index + 1,
         sessionId,
@@ -2087,7 +2087,7 @@ const initializeStory = async () => {
           try {
             const newContext: LiveGenerationContext = {
               userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
-              difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+              difficulty: currentDifficulty,
               expertGradeLevel: currentDifficulty === 'advanced' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
               storyContext: [...story],
               currentPage: story.length,
@@ -2375,7 +2375,7 @@ const handleSaveStoryNow = async () => {
         id: `story-${Date.now()}`,
         title: storyTitle || `${userInfo.name}'s Adventure`,
         segments,
-        difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+        difficulty: currentDifficulty,
         estimatedReadingTime,
         wordCount,
       };
@@ -2727,7 +2727,7 @@ const handleRestartTimer = () => {
     
     const newContext: LiveGenerationContext = {
       userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
-      difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+      difficulty: currentDifficulty,
       expertGradeLevel: currentDifficulty === 'advanced' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
       storyContext: originalStoryPages,
       currentPage: originalStoryPages.length,
@@ -2752,10 +2752,10 @@ const handleRestartTimer = () => {
           hasLiveContext: !!liveContext
         });
         
-        // Token validation for premium ending page
+        // Token validation for premium ending page - convert to backend for validation
         const validationLevel = UnifiedValidator.mapDifficultyToLevel(DifficultyLevelMapper.toBackend(currentDifficulty));
         // Backend now handles all validation - trust the response
-        // Keep analytics logging but remove frontend re-validation  
+        // Keep analytics logging but remove frontend re-validation
         console.log('📊 Premium ending generated:', {
           contentLength: result.content?.length || 0,
           difficulty: currentDifficulty
@@ -2910,7 +2910,7 @@ const handleRestartTimer = () => {
         const newDifficulty = difficultyLevels[newIndex];
         setCurrentDifficulty(newDifficulty);
         
-        // Store the difficulty choice locally
+        // Store the difficulty choice locally - convert to backend for storage
         DifficultyManager.storeDifficulty(userInfo.name || 'guest', DifficultyLevelMapper.toBackend(newDifficulty), userInfo);
         
         // Persist to Supabase profile and preferences when authenticated
@@ -2942,7 +2942,7 @@ const handleRestartTimer = () => {
         if (liveContext) {
           setLiveContext(prev => prev ? {
             ...prev, 
-            difficulty: DifficultyLevelMapper.toBackend(newDifficulty),
+            difficulty: newDifficulty,
             expertGradeLevel: newDifficulty === 'advanced' ? newGradeLevel : undefined
           } : null);
         }
