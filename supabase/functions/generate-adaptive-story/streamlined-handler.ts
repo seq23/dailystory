@@ -168,7 +168,7 @@ Generate a corrected version that addresses these issues while keeping the story
       bundle.systemSettings.gradeLevel;
     
     // Use service-aware token limits based on difficulty and service type
-    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId);
+    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId, bundle);
     
     // PHASE 5: Bulk Story Processing - Apply validation, grammar, placeholders to ENTIRE story ONCE
     // Compute validation level first
@@ -215,7 +215,7 @@ Generate a corrected version that addresses these issues while keeping the story
       };
       
       console.log(`🔄 Retrying generation with hints (attempt ${retryConfig.repairAttempt})`);
-      const retryStoryText = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig, bundle.sessionId);
+      const retryStoryText = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig, bundle.sessionId, bundle);
       
       // Validate the retry result
       const retryValidationResult = UnifiedValidator.validateContent(retryStoryText, {
@@ -435,7 +435,7 @@ function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLeve
   }
 }
 
-async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig, sessionId?: string): Promise<string> {
+async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig, sessionId?: string, bundleForDebug?: any): Promise<string> {
   // Protected token limit calculation with service-specific fallbacks
   let maxTokens: number;
   try {
@@ -602,6 +602,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
            success: false,
+           bundle: bundleForDebug,
            apiResponse: {
              status: response.status,
                statusText: response.statusText,
@@ -638,6 +639,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
            success: true,
+           bundle: bundleForDebug,
            apiResponse: {
              status: response.status,
              contentLength: storyText?.length || 0,
