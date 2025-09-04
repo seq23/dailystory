@@ -12,6 +12,9 @@ import { CulturalAdaptationService } from './culturalAdaptationService';
 export interface StoryGenerationBundle {
   sessionId: string;              // Session identifier for debugging and caching
   storyContent: string;           // Fully resolved story requirements
+  avatarData: {                   // Separate avatar data for clean prompts
+    skinTone?: string;
+  };
   systemSettings: {              // Minimal system requirements
     gradeLevel: number;
     complianceTarget: number;
@@ -109,7 +112,7 @@ export class StoryGenerationService {
       }
       
       // Step 4: PlaceholderResolution with 4-layer priority (now includes creativeSeeds)
-      const resolvedStoryContent = this.resolveAllPlaceholders(
+      const resolvedResult = this.resolveAllPlaceholders(
         userInfo,
         vocabularyIntegration,
         themeIntent,
@@ -119,15 +122,17 @@ export class StoryGenerationService {
       // Step 5: Send resolved string to edge function
       const generationBundle: StoryGenerationBundle = {
         sessionId: config.sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        storyContent: resolvedStoryContent,
+        storyContent: resolvedResult.storyContent,
+        avatarData: resolvedResult.avatarData,
         systemSettings: VocabularyService.getSystemSettings(vocabularyIntegration)
       };
 
       console.log(`🆔 StoryGen: Session ID: ${generationBundle.sessionId}`);
       console.log('📦 Generation bundle prepared:', {
         sessionId: generationBundle.sessionId,
-        storyContentLength: resolvedStoryContent.length,
-        gradeLevel: generationBundle.systemSettings.gradeLevel
+        storyContentLength: resolvedResult.storyContent.length,
+        gradeLevel: generationBundle.systemSettings.gradeLevel,
+        avatarDataPresent: !!resolvedResult.avatarData.skinTone
       });
 
       const result = await this.callStreamlinedEdgeFunction(generationBundle, config);
@@ -151,7 +156,7 @@ export class StoryGenerationService {
     vocabularyIntegration: VocabularyIntegration,
     themeIntent: ThemeIntent,
     creativeSeeds: any[]
-  ): string {
+  ): { storyContent: string; avatarData: { skinTone?: string } } {
     
     // LAYER 1 - Essential User Info Only (SECURITY FIX: Remove skin tone from AI-visible data)
     const essentialUserInfo = {
@@ -276,10 +281,12 @@ ${vocabularyConfig.hasUserWords
 
 ${culturalContext ? `Cultural context: When natural to the story, subtly incorporate ${culturalContext}. ` : ''}${creativeGuidance}
 
-Character Info: ${JSON.stringify(essentialUserInfo)}
-Separate Avatar Data: ${JSON.stringify(separateAvatarData)}`;
+Character Info: ${JSON.stringify(essentialUserInfo)}`;
 
-    return STORY_TEMPLATE.trim();
+    return {
+      storyContent: STORY_TEMPLATE.trim(),
+      avatarData: separateAvatarData
+    };
   }
 
   /**

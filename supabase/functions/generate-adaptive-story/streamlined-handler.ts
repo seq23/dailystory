@@ -26,6 +26,9 @@ const corsHeaders = {
 interface StreamlinedBundle {
   sessionId: string;
   storyContent: string;
+  avatarData: {
+    skinTone?: string;
+  };
   systemSettings: {
     gradeLevel: number;
     complianceTarget: number;
@@ -117,6 +120,10 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       const matches = bundle.storyContent.match(/Character Info: ({.*})/);
       if (matches) {
         userInfo = JSON.parse(matches[1]);
+        // Add avatar data from separate field (clean prompts)
+        if (bundle.avatarData?.skinTone) {
+          userInfo = { ...userInfo, avatarSkinTone: bundle.avatarData.skinTone };
+        }
       }
     } catch (e) {
       console.warn('Could not extract userInfo from bundle, using defaults');
