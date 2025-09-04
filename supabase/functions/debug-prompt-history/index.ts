@@ -1,6 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
-import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.js';
+
+// Fix import to use proper Deno import for JS files
+let globalSessionManager: any = null;
+try {
+  const { globalSessionManager: sessionManager } = await import('../_shared/SessionStateManager.js');
+  globalSessionManager = sessionManager;
+  console.log('✅ SessionStateManager imported successfully');
+} catch (importError) {
+  console.error('❌ Failed to import SessionStateManager:', importError);
+}
 
 serve(async (req) => {
   console.log(`🔍 Debug: Prompt History Request: ${req.method} ${req.url}`);
@@ -11,6 +20,13 @@ serve(async (req) => {
   }
 
   try {
+    // Add detailed environment and setup logging
+    console.log('🔍 [DEBUG-INIT] Environment check:', {
+      supabaseUrl: Deno.env.get('SUPABASE_URL') ? 'Set' : 'Missing',
+      serviceRoleKey: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ? 'Set' : 'Missing',
+      sessionManagerAvailable: !!globalSessionManager,
+      timestamp: new Date().toISOString()
+    });
     let sessionId: string | null = null;
     let limit = 5;
     let type = 'image';
@@ -35,10 +51,19 @@ serve(async (req) => {
     }
 
     if (!sessionId) {
+      console.error('❌ Missing sessionId parameter');
       return createCorsErrorResponse('Missing sessionId parameter', 400);
     }
 
-    const storyState = globalSessionManager.getOrCreateSessionState(sessionId);
+    console.log(`🔍 [DEBUG-SESSION] Processing session: ${sessionId}, type: ${type}, limit: ${limit}`);
+
+    // Check if session manager is available
+    if (!globalSessionManager) {
+      console.warn('⚠️ Session manager not available, will only use database data');
+    }
+
+    const storyState = globalSessionManager?.getOrCreateSessionState?.(sessionId) || null;
+    console.log(`🔍 [DEBUG-STATE] Session state found: ${!!storyState}`);
 
     // Handle AI prompt debugging - now with database persistence
     if (type === 'ai') {
@@ -48,11 +73,18 @@ serve(async (req) => {
       try {
         // Primary: Query database for persistent data
         const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
-        const supabase = createClient(
-          Deno.env.get('SUPABASE_URL'),
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-        );
+        
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        
+        if (!supabaseUrl || !serviceRoleKey) {
+          throw new Error('Missing Supabase environment variables');
+        }
+        
+        console.log(`🔍 [DEBUG-DB] Connecting to database for session: ${sessionId}`);
+        const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+        console.log(`🔍 [DEBUG-DB] Querying ai_prompt_debug_log for session: ${sessionId}`);
         const { data, error } = await supabase
           .from('ai_prompt_debug_log')
           .select('*')
@@ -62,17 +94,32 @@ serve(async (req) => {
 
         if (!error && data) {
           dbEntries = data;
-          console.log(`🔍 [AI-DEBUG] Retrieved ${dbEntries.length} entries from database for session ${sessionId}`);
+          console.log(`✅ [AI-DEBUG] Retrieved ${dbEntries.length} entries from database for session ${sessionId}`);
+          
+          if (dbEntries.length === 0) {
+            console.log(`🔍 [DEBUG-DB] No database entries found for session: ${sessionId}`);
+          }
         } else {
-          console.warn('⚠️ Database query failed, falling back to in-memory:', error);
+          console.error('❌ Database query failed:', error);
+          console.warn('⚠️ Will fall back to in-memory data');
         }
       } catch (dbError) {
-        console.error('❌ Database connection failed, using in-memory data:', dbError);
+        console.error('❌ Database connection failed:', dbError.message);
+        console.error('❌ Full database error:', dbError);
       }
 
       // Fallback: Get in-memory data
-      const memoryPrompts = globalSessionManager.getAIPrompts(sessionId, limit);
-      console.log(`🔍 [AI-DEBUG] Retrieved ${memoryPrompts.length} in-memory AI prompt entries`);
+      let memoryPrompts = [];
+      if (globalSessionManager?.getAIPrompts) {
+        try {
+          memoryPrompts = globalSessionManager.getAIPrompts(sessionId, limit);
+          console.log(`🔍 [AI-DEBUG] Retrieved ${memoryPrompts.length} in-memory AI prompt entries`);
+        } catch (memoryError) {
+          console.error('❌ Memory retrieval failed:', memoryError);
+        }
+      } else {
+        console.warn('⚠️ Session manager getAIPrompts method not available');
+      }
 
       // Use database data if available, otherwise use in-memory
       aiPrompts = dbEntries.length > 0 ? dbEntries.map(entry => ({
@@ -89,6 +136,14 @@ serve(async (req) => {
         bundle: entry.bundle_data
       })) : memoryPrompts;
 
+      // Final debug logging
+      console.log(`🔍 [DEBUG-FINAL] Result summary:`, {
+        dbEntries: dbEntries.length,
+        memoryEntries: memoryPrompts.length,
+        finalEntries: aiPrompts.length,
+        dataSource: dbEntries.length > 0 ? 'database' : 'memory'
+      });
+
       return createCorsResponse({
         success: true,
         sessionId,
@@ -100,10 +155,19 @@ serve(async (req) => {
           createdAt: storyState.createdAt,
           lastUpdated: storyState.lastUpdated,
           lastPageGenerated: storyState.lastPageGenerated,
-          charactersTracked: storyState.characters.size,
-          objectsTracked: storyState.objects.size
+          charactersTracked: storyState.characters?.size || 0,
+          objectsTracked: storyState.objects?.size || 0
         } : null,
         dataSource: dbEntries.length > 0 ? 'database' : 'memory',
+        debugInfo: {
+          dbEntriesFound: dbEntries.length,
+          memoryEntriesFound: memoryPrompts.length,
+          sessionManagerAvailable: !!globalSessionManager,
+          environmentCheck: {
+            supabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+            serviceRoleKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+          }
+        },
         // Complete bundle data from database or memory
         fullDebugData: aiPrompts.map(prompt => ({
           sessionId: prompt.sessionId,
@@ -144,9 +208,14 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Debug prompt history failed:', error);
+    console.error('❌ Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     
     return createCorsErrorResponse(
-      `Prompt history retrieval failed: ${error.message}`,
+      `Prompt history retrieval failed: ${error.message}. Check edge function logs for details.`,
       500
     );
   }

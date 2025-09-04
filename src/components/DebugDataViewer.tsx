@@ -32,6 +32,15 @@ interface DebugResponse {
   totalEntries: number;
   dataSource?: 'database' | 'memory';
   fullDebugData: AIPromptData[];
+  debugInfo?: {
+    dbEntriesFound: number;
+    memoryEntriesFound: number;
+    sessionManagerAvailable: boolean;
+    environmentCheck: {
+      supabaseUrl: boolean;
+      serviceRoleKey: boolean;
+    };
+  };
 }
 
 export function DebugDataViewer() {
@@ -39,19 +48,39 @@ export function DebugDataViewer() {
   const [debugData, setDebugData] = useState<DebugResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedPrompt, setExpandedPrompt] = useState<number | null>(null);
+  const [lastError, setLastError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchDebugData = async () => {
     if (!sessionId.trim()) {
+      const errorMsg = "Please enter a session ID to fetch debug data.";
+      setLastError(errorMsg);
       toast({
-        title: "Session ID Required",
-        description: "Please enter a session ID to fetch debug data.",
+        title: "Session ID Required", 
+        description: errorMsg,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate session ID format
+    const sessionIdPattern = /^(live-|netflix-|test-)/;
+    if (!sessionIdPattern.test(sessionId.trim())) {
+      const errorMsg = "Session ID should start with 'live-', 'netflix-', or 'test-'";
+      setLastError(errorMsg);
+      toast({
+        title: "Invalid Session ID Format",
+        description: errorMsg,
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
+    setLastError(null);
+    
+    console.log('🔍 [DEBUG-FRONTEND] Fetching data for session:', sessionId.trim());
+    
     try {
       const { data, error } = await supabase.functions.invoke('debug-prompt-history', {
         body: {
@@ -61,20 +90,46 @@ export function DebugDataViewer() {
         }
       });
 
+      console.log('🔍 [DEBUG-FRONTEND] Response received:', { data, error });
+
       if (error) {
+        console.error('🔍 [DEBUG-FRONTEND] Supabase function error:', error);
         throw error;
       }
 
+      if (!data) {
+        throw new Error('No data received from debug function');
+      }
+
+      console.log('🔍 [DEBUG-FRONTEND] Debug info:', data.debugInfo);
+
       setDebugData(data);
+      setLastError(null);
+
       toast({
         title: "Debug Data Retrieved",
         description: `Found ${data.totalEntries} entries from ${data.dataSource || 'unknown'} for session: ${sessionId}`,
       });
+
+      // Log detailed debug info to console
+      if (data.debugInfo) {
+        console.log('🔍 [DEBUG-DETAILED] Environment Check:', data.debugInfo.environmentCheck);
+        console.log('🔍 [DEBUG-DETAILED] Data Sources:', {
+          database: data.debugInfo.dbEntriesFound,
+          memory: data.debugInfo.memoryEntriesFound,
+          sessionManager: data.debugInfo.sessionManagerAvailable
+        });
+      }
+
     } catch (err) {
-      console.error('Failed to fetch debug data:', err);
+      const errorMessage = err.message || 'Unknown error occurred';
+      console.error('❌ [DEBUG-FRONTEND] Failed to fetch debug data:', err);
+      
+      setLastError(`Failed to retrieve debug data: ${errorMessage}`);
+      
       toast({
         title: "Fetch Failed",
-        description: `Failed to retrieve debug data: ${err.message}`,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -130,28 +185,44 @@ export function DebugDataViewer() {
             </Button>
           </div>
 
+          {lastError && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm text-destructive font-medium">Error Details:</p>
+              <p className="text-xs text-destructive/80 mt-1">{lastError}</p>
+            </div>
+          )}
+
           {debugData && (
-            <div className="flex items-center gap-4 pt-2">
-              <Badge variant="outline" className="flex items-center gap-1">
-                {debugData.dataSource === 'database' ? (
-                  <Database className="w-3 h-3" />
-                ) : (
-                  <HardDrive className="w-3 h-3" />
-                )}
-                Source: {debugData.dataSource || 'Unknown'}
-              </Badge>
-              <Badge variant="secondary">
-                {debugData.totalEntries} entries found
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={downloadDebugData}
-                className="flex items-center gap-1"
-              >
-                <Download className="w-3 h-3" />
-                Download JSON
-              </Button>
+            <div className="space-y-2">
+              <div className="flex items-center gap-4 pt-2">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  {debugData.dataSource === 'database' ? (
+                    <Database className="w-3 h-3" />
+                  ) : (
+                    <HardDrive className="w-3 h-3" />
+                  )}
+                  Source: {debugData.dataSource || 'Unknown'}
+                </Badge>
+                <Badge variant="secondary">
+                  {debugData.totalEntries} entries found
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadDebugData}
+                  className="flex items-center gap-1"
+                >
+                  <Download className="w-3 h-3" />
+                  Download JSON
+                </Button>
+              </div>
+              
+              {debugData.debugInfo && (
+                <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                  <div>Database: {debugData.debugInfo.dbEntriesFound} entries | Memory: {debugData.debugInfo.memoryEntriesFound} entries</div>
+                  <div>Session Manager: {debugData.debugInfo.sessionManagerAvailable ? '✅' : '❌'} | Environment: {debugData.debugInfo.environmentCheck.supabaseUrl && debugData.debugInfo.environmentCheck.serviceRoleKey ? '✅' : '❌'}</div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
