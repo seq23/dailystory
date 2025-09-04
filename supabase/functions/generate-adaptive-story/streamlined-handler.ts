@@ -471,42 +471,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.userName} is a ${avatarInfo.completeGenderInfo}.`;
     }
     
-    // Phase 2: Fetch cultural arrays dynamically for AI prompt enhancement
-    try {
-      const { fetchCulturalArrays } = await import('../_shared/culturalContextService.ts');
-      const culturalArrays = await fetchCulturalArrays(userInfo);
-      
-      // Add to AI prompt as light suggestions
-      if (culturalArrays) {
-        enhancedUserPrompt += `\n\nCultural Context (use sparingly as background enrichment): 
-Character names: ${culturalArrays.characterNames.join(', ')}
-Foods: ${culturalArrays.commonFoods.join(', ')}
-Celebrations: ${culturalArrays.celebrations.join(', ')}`;
-      }
-    } catch (error) {
-      // Silent fallback - no cultural context if fails
-      console.warn('⚠️ Cultural context fetching failed (silent fallback):', error.message);
-    }
-
-    // Phase 3: Fetch author voice patterns dynamically for AI prompt enhancement  
-    try {
-      const { fetchVoicePatterns } = await import('../_shared/authorVoiceService.ts');
-      const voicePatterns = await fetchVoicePatterns(difficulty || 'medium');
-      
-      // Add to AI prompt as light inspiration
-      if (voicePatterns) {
-        enhancedUserPrompt += `\n\nAuthor Voice Inspiration (draw from as needed):
-Opening patterns: ${voicePatterns.openingPatterns.join(' | ')}
-Transitions: ${voicePatterns.transitionPatterns.join(' | ')}
-Closing patterns: ${voicePatterns.closingPatterns.join(' | ')}`;
-      }
-    } catch (error) {
-      // Silent fallback - no voice patterns if fails
-      console.warn('⚠️ Author voice patterns fetching failed (silent fallback):', error.message);
-    }
-    
-    // Add vocabulary function access to AI prompt
-    enhancedUserPrompt += `\n\nAvailable Function: getVocabularyForGrade(level) - Use this to fetch grade-appropriate vocabulary dynamically when needed.`;
+    // Add available functions to AI prompt - no static arrays
+    enhancedUserPrompt += `\n\nAvailable Function: getVocabularyForGrade(level) - Use this to fetch grade-appropriate vocabulary dynamically when needed.
+Available Function: getCulturalContext(userInfo) - Use this to fetch culturally relevant character names, foods, and celebrations when needed.
+Available Function: getAuthorVoicePatterns(difficulty) - Use this to fetch narrative voice patterns and transitions when needed.`;
     
   } catch (avatarError) {
     console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
