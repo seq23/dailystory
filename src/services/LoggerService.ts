@@ -30,6 +30,9 @@ class Logger {
   private messageFrequency = new Map<string, { count: number; firstSeen: number; lastSeen: number }>();
   private activeGroups = new Set<string>();
   private readonly MESSAGE_GROUPING_WINDOW = 30000; // 30 seconds
+  
+  // Milestone deduplication tracking
+  private milestoneTimestamps = new Map<string, number>();
 
   private constructor() {
     // Set log level based on environment - more restrictive in production
@@ -173,6 +176,18 @@ class Logger {
 
   // Critical milestones that should always be logged
   milestone(message: string, context?: string, data?: any): void {
+    // Create unique key for this milestone to prevent duplicates in React Strict Mode
+    const milestoneKey = `milestone-${context || 'default'}-${message}`;
+    
+    // Check if this milestone was already logged within the last 5 seconds
+    const now = Date.now();
+    const lastTime = this.milestoneTimestamps.get(milestoneKey) || 0;
+    if (now - lastTime < 5000) {
+      return; // Prevent duplicate milestones
+    }
+    
+    this.milestoneTimestamps.set(milestoneKey, now);
+    
     const entry = this.createEntry(LogLevel.INFO, `🎯 MILESTONE: ${message}`, context, data);
     this.addToBuffer(entry);
     console.log(this.formatMessage(entry), data || '');
