@@ -42,10 +42,11 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  LoggerService.milestone("App component loaded successfully", "DEPLOYMENT_TEST");
-
   // Initialize error suppression and development tools
   React.useEffect(() => {
+    // Log milestone once per mount (prevents React Strict Mode duplicates)
+    LoggerService.milestone("App component loaded successfully", "DEPLOYMENT_TEST");
+    
     // Suppress Chrome extension errors first
     const cleanupErrorSuppression = suppressChromeExtensionErrors();
     
