@@ -11,10 +11,28 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const sessionId = url.searchParams.get('sessionId');
-    const limit = parseInt(url.searchParams.get('limit') || '5');
-    const type = url.searchParams.get('type') || 'image'; // 'image' or 'ai'
+    let sessionId: string | null = null;
+    let limit = 5;
+    let type = 'image';
+
+    // For POST requests, read from request body
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        sessionId = body.sessionId;
+        limit = parseInt(body.limit || '5');
+        type = body.type || 'image';
+      } catch (bodyError) {
+        console.error('❌ Failed to parse request body:', bodyError);
+        return createCorsErrorResponse('Invalid request body', 400);
+      }
+    } else {
+      // For GET requests, read from URL parameters
+      const url = new URL(req.url);
+      sessionId = url.searchParams.get('sessionId');
+      limit = parseInt(url.searchParams.get('limit') || '5');
+      type = url.searchParams.get('type') || 'image';
+    }
 
     if (!sessionId) {
       return createCorsErrorResponse('Missing sessionId parameter', 400);
