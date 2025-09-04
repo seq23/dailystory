@@ -133,7 +133,7 @@ export const FormStep2ReadingPrefs = ({
             value={formData.readingAbility || "beginner"}
             onValueChange={(value) => handleInputChange('readingAbility', value as DifficultyLevel)}
           >
-            <SelectTrigger className="h-auto">
+            <SelectTrigger id="readingLevel" className="h-auto">
               <SelectValue placeholder={t("formStep2.readingLevel.placeholder", "Choose reading level")} />
             </SelectTrigger>
             <SelectContent>
@@ -167,7 +167,7 @@ export const FormStep2ReadingPrefs = ({
             value={formData.learningGoal || "improve-english-reading"}
             onValueChange={(value) => handleInputChange('learningGoal', value as LearningGoal)}
           >
-            <SelectTrigger>
+            <SelectTrigger id="learningGoal">
               <SelectValue placeholder={t("formStep2.learningGoal.placeholder", "Select learning goal")} />
             </SelectTrigger>
             <SelectContent>

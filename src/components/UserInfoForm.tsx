@@ -494,7 +494,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   {t("userInfoForm.fields.age.label")} <span className="text-destructive">*</span>
                 </Label>
                 <Select value={formData.age?.toString()} onValueChange={(value) => handleInputChange("age", parseInt(value))}>
-                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
+                  <SelectTrigger id="age" className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.age.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
@@ -516,7 +516,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   {t("userInfoForm.fields.grade.label")} <span className="text-destructive">*</span>
                 </Label>
                 <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
-                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
+                  <SelectTrigger id="grade" className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.grade.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
@@ -538,7 +538,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   {t("userInfoForm.fields.nativeLanguage.label")} <span className="text-destructive">*</span>
                 </Label>
                 <Select value={formData.nativeLanguage} onValueChange={(value) => handleLanguageChange(value as LanguageCode)}>
-                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
+                  <SelectTrigger id="language" className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.nativeLanguage.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
@@ -575,7 +575,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   {t("userInfoForm.fields.readingAbility.label")}
                 </Label>
                 <Select value={formData.readingAbility} onValueChange={(value) => handleInputChange("readingAbility", value)}>
-                  <SelectTrigger className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
+                  <SelectTrigger id="readingAbility" className="h-10 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary">
                     <SelectValue placeholder={t("userInfoForm.fields.readingAbility.placeholder")} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
