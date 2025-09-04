@@ -325,7 +325,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
       grade: formData.grade
     });
     
-    onSubmit({ ...formData, difficultyLevel: difficulty } as UserInfo);
+    onSubmit(formData);
   };
 
   const validateForm = () => {
