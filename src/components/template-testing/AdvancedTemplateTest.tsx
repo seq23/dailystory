@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 import { useTemplateService } from '@/hooks/useTemplateService';
 import { StoryResultDisplay } from './StoryResultDisplay';
 import type { UserInfo, DifficultyLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
+import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
 
 export function AdvancedTemplateTest() {
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>({
@@ -23,7 +24,7 @@ export function AdvancedTemplateTest() {
     hobbies: 'playing games',
     favoriteFood: 'pizza',
     specialRequest: 'adventure with magic',
-    difficultyLevel: 'easy',
+    difficultyLevel: 'beginner',
   });
 
   const { generateStory, isLoading, result, error } = useTemplateService();
@@ -41,7 +42,14 @@ export function AdvancedTemplateTest() {
 
   const handleTest = async () => {
     if (!userInfo.difficultyLevel) return;
-    await generateStory(userInfo as UserInfo);
+    
+    // Convert frontend difficulty to backend for the service
+    const userInfoWithBackendDifficulty = {
+      ...userInfo,
+      difficultyLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel)
+    } as UserInfo;
+    
+    await generateStory(userInfoWithBackendDifficulty);
   };
 
   return (
@@ -102,11 +110,11 @@ export function AdvancedTemplateTest() {
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">Beginner (Level 0)</SelectItem>
-                  <SelectItem value="easy">Easy (Level 1)</SelectItem>
-                  <SelectItem value="medium">Medium (Level 2)</SelectItem>
-                  <SelectItem value="hard">Hard (Level 3)</SelectItem>
-                  <SelectItem value="expert">Expert (Level 4)</SelectItem>
+                  <SelectItem value="pre-reader">Pre-Reader (Level 0)</SelectItem>
+                  <SelectItem value="beginner">Beginner (Level 1)</SelectItem>
+                  <SelectItem value="developing">Developing (Level 2)</SelectItem>
+                  <SelectItem value="independent">Independent (Level 3)</SelectItem>
+                  <SelectItem value="advanced">Advanced (Level 4)</SelectItem>
                   <SelectItem value="grade6">Grade 6</SelectItem>
                   <SelectItem value="grade7">Grade 7</SelectItem>
                   <SelectItem value="grade8">Grade 8</SelectItem>

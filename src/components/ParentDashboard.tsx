@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { TagInput } from "@/components/ui/tag-input";
 import EnhancedSubscriptionManager from "@/services/enhancedSubscriptionManager";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 interface ParentDashboardProps {
   userInfo: UserInfo;
   isVisible: boolean;
@@ -549,16 +550,17 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Minimum level</Label>
                   {(() => {
-                    const selected = guardrails.minDifficulty === 'expert' ? `expert:${guardrails.minExpertGrade}` : guardrails.minDifficulty;
+                    const selected = guardrails.minDifficulty === 'expert' ? `advanced:${guardrails.minExpertGrade}` : DifficultyLevelMapper.toFrontend(guardrails.minDifficulty);
                     return (
                       <Select
                         value={selected}
                         onValueChange={(v) => {
-                          if (v.startsWith('expert:')) {
+                          if (v.startsWith('advanced:')) {
                             const grade = v.split(':')[1] as ExpertGradeLevel;
                             setGuardrails({ ...guardrails, minDifficulty: 'expert', minExpertGrade: grade });
                           } else {
-                            setGuardrails({ ...guardrails, minDifficulty: v as DifficultyLevel, minExpertGrade: '6th' });
+                            const backendDifficulty = DifficultyLevelMapper.toBackend(v);
+                            setGuardrails({ ...guardrails, minDifficulty: backendDifficulty, minExpertGrade: '6th' });
                           }
                         }}
                       >
@@ -566,15 +568,15 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                           <SelectValue placeholder="Select minimum" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="beginner">Pre-Reader</SelectItem>
-                          <SelectItem value="easy">Beginner</SelectItem>
-                          <SelectItem value="medium">Developing</SelectItem>
-                          <SelectItem value="hard">Independent</SelectItem>
-                          <SelectItem value="expert:6th">Advanced — 6th</SelectItem>
-                          <SelectItem value="expert:7th">Advanced — 7th</SelectItem>
-                          <SelectItem value="expert:8th">Advanced — 8th</SelectItem>
-                          <SelectItem value="expert:9th">Advanced — 9th</SelectItem>
-                          <SelectItem value="expert:10th">Advanced — 10th</SelectItem>
+                          <SelectItem value="pre-reader">Pre-Reader</SelectItem>
+                          <SelectItem value="beginner">Beginner</SelectItem>
+                          <SelectItem value="developing">Developing</SelectItem>
+                          <SelectItem value="independent">Independent</SelectItem>
+                          <SelectItem value="advanced:6th">Advanced — 6th</SelectItem>
+                          <SelectItem value="advanced:7th">Advanced — 7th</SelectItem>
+                          <SelectItem value="advanced:8th">Advanced — 8th</SelectItem>
+                          <SelectItem value="advanced:9th">Advanced — 9th</SelectItem>
+                          <SelectItem value="advanced:10th">Advanced — 10th</SelectItem>
                         </SelectContent>
                       </Select>
                     );
@@ -590,7 +592,12 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                   <Button disabled={saving} onClick={async () => {
                     try {
                       setSaving(true);
-                      await ParentGuardrailsService.saveGuardrails(guardrails);
+                      // Convert any frontend values to backend before saving
+                      const backendGuardrails = {
+                        ...guardrails,
+                        minDifficulty: guardrails.minDifficulty === 'expert' ? 'expert' : DifficultyLevelMapper.normalizeLevel(guardrails.minDifficulty)
+                      };
+                      await ParentGuardrailsService.saveGuardrails(backendGuardrails);
                       toast({ title: 'Settings saved' });
                     } catch (e) {
                       toast({ title: 'Could not save settings', variant: 'destructive' });

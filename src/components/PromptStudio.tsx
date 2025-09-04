@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Play, Download, Palette, Settings, Zap, Image as ImageIcon } from 'lucide-react';
 import { RunwareQualityControls } from './RunwareQualityControls';
+import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
 
 interface PromptStudioState {
   positivePrompt: string;
@@ -78,7 +79,7 @@ export function PromptStudio() {
         skinTone: 'light'
       }
     },
-    difficultyLevel: 'medium'
+    difficultyLevel: 'developing'
   });
 
   const [results, setResults] = useState<GenerationResult[]>([]);
@@ -171,15 +172,16 @@ export function PromptStudio() {
 
     setIsGenerating(true);
     
-    const request = {
-      type: 'generate',
-      positivePrompt: state.positivePrompt,
-      negativePrompt: state.negativePrompt,
-      userInfo: state.userInfo,
-      difficultyLevel: state.difficultyLevel,
-      parameters: state.parameters,
-      enhancementLevel: state.enhancementLevel
-    };
+      // Convert frontend difficulty to backend for API calls
+      const request = {
+        type: 'generate',
+        positivePrompt: state.positivePrompt,
+        negativePrompt: state.negativePrompt,
+        userInfo: state.userInfo,
+        difficultyLevel: DifficultyLevelMapper.toBackend(state.difficultyLevel),
+        parameters: state.parameters,
+        enhancementLevel: state.enhancementLevel
+      };
 
     wsRef.current.send(JSON.stringify(request));
     toast.info('Generating image...');
@@ -194,12 +196,13 @@ export function PromptStudio() {
     setIsGenerating(true);
     setBatchProgress({ completed: 0, total: count });
     
+    // Convert frontend difficulty to backend for API calls
     const request = {
       type: 'batch',
       positivePrompt: state.positivePrompt,
       negativePrompt: state.negativePrompt,
       userInfo: state.userInfo,
-      difficultyLevel: state.difficultyLevel,
+      difficultyLevel: DifficultyLevelMapper.toBackend(state.difficultyLevel),
       parameters: state.parameters,
       enhancementLevel: state.enhancementLevel,
       batchCount: count
@@ -215,11 +218,12 @@ export function PromptStudio() {
       return;
     }
     
+    // Convert frontend difficulty to backend for API calls  
     const request = {
       type: 'analyze',
       positivePrompt: state.positivePrompt,
       userInfo: state.userInfo,
-      difficultyLevel: state.difficultyLevel,
+      difficultyLevel: DifficultyLevelMapper.toBackend(state.difficultyLevel),
       enhancementLevel: state.enhancementLevel
     };
 
@@ -333,11 +337,11 @@ export function PromptStudio() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="pre-reader">Pre-Reader</SelectItem>
                       <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                      <SelectItem value="expert">Expert</SelectItem>
+                      <SelectItem value="developing">Developing</SelectItem>
+                      <SelectItem value="independent">Independent</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
