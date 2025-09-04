@@ -1595,11 +1595,11 @@ export function StoryPromptTester() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="beginner">{DifficultyLevelMapper.getDisplayName('pre-reader')}</SelectItem>
-                              <SelectItem value="easy">{DifficultyLevelMapper.getDisplayName('beginner')}</SelectItem>
-                              <SelectItem value="medium">{DifficultyLevelMapper.getDisplayName('developing')}</SelectItem>
-                              <SelectItem value="hard">{DifficultyLevelMapper.getDisplayName('independent')}</SelectItem>
-                              <SelectItem value="expert">{DifficultyLevelMapper.getDisplayName('advanced')}</SelectItem>
+                              <SelectItem value="beginner">{DifficultyLevelMapper.getDisplayName('beginner')}</SelectItem>
+                              <SelectItem value="easy">{DifficultyLevelMapper.getDisplayName('easy')}</SelectItem>
+                              <SelectItem value="medium">{DifficultyLevelMapper.getDisplayName('medium')}</SelectItem>
+                              <SelectItem value="hard">{DifficultyLevelMapper.getDisplayName('hard')}</SelectItem>
+                              <SelectItem value="expert">{DifficultyLevelMapper.getDisplayName('expert')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
