@@ -23,6 +23,7 @@ import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/f
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
+import * as DifficultyLevelMapper from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 
 // Robust word counting function
@@ -261,7 +262,7 @@ export function StoryPromptTester() {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
-    difficultyLevel: 'medium',
+    difficultyLevel: 'medium', // Backend level, displayed as frontend level
     favoriteColor: 'blue',
     favoriteAnimal: 'dog',
     hobbies: 'playing games',
@@ -1594,11 +1595,11 @@ export function StoryPromptTester() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="beginner">Beginner</SelectItem>
-                              <SelectItem value="easy">Easy</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="hard">Hard</SelectItem>
-                              <SelectItem value="expert">Expert</SelectItem>
+                              <SelectItem value="beginner">{DifficultyLevelMapper.getDisplayName('pre-reader')}</SelectItem>
+                              <SelectItem value="easy">{DifficultyLevelMapper.getDisplayName('beginner')}</SelectItem>
+                              <SelectItem value="medium">{DifficultyLevelMapper.getDisplayName('developing')}</SelectItem>
+                              <SelectItem value="hard">{DifficultyLevelMapper.getDisplayName('independent')}</SelectItem>
+                              <SelectItem value="expert">{DifficultyLevelMapper.getDisplayName('advanced')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
