@@ -349,16 +349,16 @@ function getPerPageTokenLimitLocal(difficulty: DifficultyLevel | ExpertGradeLeve
     const fallbacks: Record<string, number> = {
       'beginner': 15,  // Level0: "Maximum 15 tokens per page"
       'easy': 60,      // Level1: "Maximum 60 tokens per page"
-      'medium': 250,   // Level2: "Maximum 250 tokens per page" 
-      'hard': 350,     // Level3: "Maximum 350 tokens per page"
-      'expert': 500,   // Level4: "Maximum 500 tokens per page"
-      'grade6': 500,   // Grade6: "Maximum 500 tokens per page"
-      'grade7': 500,   // Grade7: "Maximum 500 tokens per page"
-      'grade8': 500,   // Grade8: "Maximum 500 tokens per page"
-      'grade9': 500,   // Grade9: "Maximum 500 tokens per page"
-      'grade10': 500,  // Grade10: "Maximum 500 tokens per page"
+      'medium': 75,    // Level2: "Maximum 75 tokens per page" - FIXED from 250
+      'hard': 120,     // Level3: "Maximum 120 tokens per page" - FIXED from 350
+      'expert': 180,   // Level4: "Maximum 180 tokens per page" - FIXED from 500
+      'grade6': 350,   // Grade6: "Maximum 350 tokens per page" - FIXED from 500
+      'grade7': 350,   // Grade7: "Maximum 350 tokens per page" - FIXED from 500
+      'grade8': 350,   // Grade8: "Maximum 350 tokens per page" - FIXED from 500
+      'grade9': 350,   // Grade9: "Maximum 350 tokens per page" - FIXED from 500
+      'grade10': 350,  // Grade10: "Maximum 350 tokens per page" - FIXED from 500
     };
-    return fallbacks[difficulty] || 500;
+    return fallbacks[difficulty] || 350;
   }
 }
 
@@ -388,27 +388,18 @@ function getLiveTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): numb
  * Service-specific fallback token limits
  */
 function getServiceSpecificFallback(config?: StreamlinedConfig): number {
-  const isLiveGeneration = config?.pageNumber === 1 && !config?.existingStory;
-  return isLiveGeneration ? 600 : 6500; // Live: 600, Netflix: 6500
+  const isLiveGeneration = config?.sessionType === 'premium';
+  return isLiveGeneration ? 350 : 1500; // Live: 350 (single page), Netflix: 1500 (multiple pages)
 }
 
 /**
  * Determine service type based on config
  */
 function getServiceType(config?: StreamlinedConfig): 'netflix' | 'live' {
-  // Netflix service indicators:
-  // - sessionType is 'free' (guest users always get Netflix-style stories)
-  // - No existing story (brand new story generation)
-  // - Not page-by-page generation
+  // Netflix service: Guest users (sessionType: 'free') get full stories
+  // Live service: Premium users (sessionType: 'premium') get page-by-page generation
   
-  // Live service indicators:
-  // - sessionType is 'premium' 
-  // - Has existing story (continuing a story)
-  // - Page-by-page generation (pageNumber > 1)
-  
-  const isLiveGeneration = config?.sessionType === 'premium' && 
-                          (config?.pageNumber > 1 || !!config?.existingStory);
-  
+  const isLiveGeneration = config?.sessionType === 'premium';
   const serviceType = isLiveGeneration ? 'live' : 'netflix';
   
   console.log(`🎯 Service Type Detection:`, {
@@ -426,9 +417,9 @@ function getServiceType(config?: StreamlinedConfig): 'netflix' | 'live' {
  * Service-aware token limit function - detects Netflix vs Live automatically
  */
 function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): number {
-  // Improved service detection logic
-  const isLiveGeneration = config?.sessionType === 'premium' && config?.pageNumber === 1 && !!config?.existingStory;
-  const isNetflixGeneration = config?.sessionType === 'free' || (!config?.sessionType && !config?.existingStory);
+  // Simplified service detection logic
+  const isLiveGeneration = config?.sessionType === 'premium';
+  const isNetflixGeneration = config?.sessionType === 'free';
   
   console.log(`🎯 Service Detection: sessionType=${config?.sessionType}, pageNumber=${config?.pageNumber}, hasExistingStory=${!!config?.existingStory}`);
   console.log(`🎯 Service Decision: isLive=${isLiveGeneration}, isNetflix=${isNetflixGeneration}`);
