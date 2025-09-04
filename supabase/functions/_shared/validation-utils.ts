@@ -2,7 +2,7 @@
 // Single source of truth for core validation logic
 
 // Import shared configuration for fallbacks only
-import validationConfig from './validation-config.json' assert { type: 'json' };
+import { validationConfig } from './validation-config.ts';
 // Import dynamic extraction functions - SINGLE SOURCE OF TRUTH
 import { extractTokenLimitFromPrompt, getStoryPrompt, getExpertStoryPrompt, type DifficultyLevel as PromptDifficultyLevel, type ExpertGradeLevel as PromptExpertGradeLevel } from './storyPrompts.ts';
 

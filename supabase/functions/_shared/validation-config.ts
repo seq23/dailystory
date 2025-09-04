@@ -1,4 +1,7 @@
-{
+// Shared Validation Configuration - TypeScript Export
+// Single source of truth for all validation rules and limits
+
+export const validationConfig = {
   "_comment": "FINAL SINGLE SOURCE OF TRUTH - All validation limits defined here",
   "_version": "3.0.0 - Character-Only Validation System (2025-01-03)",
   "_tokenValidation": "DISABLED - Character validation only",
@@ -114,4 +117,6 @@
       "_comment": "27,000 base × 2.5 buffer = 67,500 chars (10th grade - highest creativity)"
     }
   }
-}
+} as const;
+
+export default validationConfig;

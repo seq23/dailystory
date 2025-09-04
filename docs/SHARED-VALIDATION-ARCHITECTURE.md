@@ -2,11 +2,11 @@
 
 ## Overview
 
-The shared validation architecture provides **character-based validation** as the primary method, with `validation-config.json` as the **FINAL SINGLE SOURCE OF TRUTH**. This eliminates code duplication and ensures consistent validation logic across frontend (TypeScript) and backend (Deno) environments.
+The shared validation architecture provides **character-based validation** as the primary method, with `validation-config.ts` as the **FINAL SINGLE SOURCE OF TRUTH**. This eliminates code duplication and ensures consistent validation logic across frontend (TypeScript) and backend (Deno) environments.
 
 ## Architecture Components
 
-### 1. Single Source of Truth (`supabase/functions/_shared/validation-config.json`)
+### 1. Single Source of Truth (`supabase/functions/_shared/validation-config.ts`)
 
 **FINAL SINGLE SOURCE OF TRUTH** containing data-driven validation rules:
 - **Character Limits (Primary)**: Based on real AI story analysis with creativity buffers
@@ -73,8 +73,8 @@ const tokenResult = validateTokenLimits(content, level);
 ## Key Benefits
 
 ### Single Source of Truth
-- **All validation rules defined in one JSON config file**
-- Changes to validation logic only need to be made in validation-config.json
+- **All validation rules defined in one TypeScript config file**
+- Changes to validation logic only need to be made in validation-config.ts
 - Eliminates synchronization issues between frontend and backend
 - **Character limits as primary method** with comprehensive documentation
 
@@ -97,7 +97,7 @@ const tokenResult = validateTokenLimits(content, level);
 
 ### Maintainability
 - No code duplication between frontend and backend
-- **Single point of configuration changes** in validation-config.json
+- **Single point of configuration changes** in validation-config.ts
 - Clear methodology documentation with creativity buffer explanations
 - Portable utilities that work in any JavaScript environment
 
@@ -141,7 +141,7 @@ const isValid = validateCharacterLimits(content, level);
 
 ### What Changed
 - **Primary Validation**: Character limits now primary, token limits secondary
-- **Single Source**: All limits defined in validation-config.json with comprehensive comments
+- **Single Source**: All limits defined in validation-config.ts with comprehensive comments
 - **Data-Driven**: Limits based on real AI story analysis, not theoretical calculations
 - **Fixed Progression**: Grade 6-10 properly higher than Level 4
 
@@ -161,7 +161,7 @@ const isValid = validateCharacterLimits(content, level);
 
 ```mermaid
 graph TD
-    A[Content Input] --> B[validation-config.json - Single Source]
+    A[Content Input] --> B[validation-config.ts - Single Source]
     B --> C[Character Limits Lookup - Primary]
     C --> D{Character Count Check}
     D -->|Valid| F[Success]

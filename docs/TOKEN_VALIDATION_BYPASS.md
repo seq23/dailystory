@@ -75,7 +75,7 @@ Token validation was initially bypassed to eliminate artificial constraints, the
    - Updated auto-split logic to use character thresholds
 
 ### Configuration Updates
-4. **`supabase/functions/_shared/validation-config.json`**
+4. **`supabase/functions/_shared/validation-config.ts`**
    - Added `"_tokenValidation": "DISABLED - Character validation only"`
    - Marked `tokenLimits` as `"DISABLED - KEPT FOR REFERENCE ONLY"`
    - Updated version to "3.0.0 - Character-Only Validation System"
@@ -205,7 +205,7 @@ const needsCompleteRegeneration = reason.includes('too short') ||
 
 ### Full Rollback Steps
 1. Revert all modified files to pre-bypass state
-2. Update validation-config.json to remove bypass flags
+2. Update validation-config.ts to remove bypass flags
 3. Restore token-based logging and metrics
 4. Update documentation to reflect dual validation
 5. Monitor for 48 hours to ensure stability
@@ -254,7 +254,7 @@ const needsCompleteRegeneration = reason.includes('too short') ||
 ### Potential Permanent Removal
 If bypass proves successful for 3+ months:
 - Remove token validation functions entirely
-- Clean up validation-config.json
+- Clean up validation-config.ts
 - Simplify API responses  
 - Archive this bypass documentation
 

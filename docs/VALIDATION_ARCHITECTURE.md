@@ -138,7 +138,7 @@ estimateTokenCount(content)          // Kept for metrics
 - `validation-utils.ts` - Bypassed token validation
 - `streamlined-handler.ts` - Removed OpenAI token limits
 - `unifiedValidator.ts` - Character-only validation logic
-- `validation-config.json` - Marked token limits as disabled
+- `validation-config.ts` - Marked token limits as disabled
 
 ### Backward Compatibility
 - Token estimation functions preserved for metrics
@@ -152,7 +152,7 @@ If token validation needs to be restored:
 1. **Revert Core Functions:** Remove bypass logic from `validateGuestStoryLength` and `validateLivePageLength`
 2. **Restore OpenAI Limits:** Re-add `apiBody[currentModel.paramName] = maxTokens` in `streamlined-handler.ts`
 3. **Update Unified Validator:** Restore dual validation logic in `unifiedValidator.ts`
-4. **Revert Configuration:** Remove bypass flags from `validation-config.json`
+4. **Revert Configuration:** Remove bypass flags from `validation-config.ts`
 
 ## Future Considerations
 

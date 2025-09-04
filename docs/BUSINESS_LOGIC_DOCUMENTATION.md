@@ -54,7 +54,7 @@
 #### Netflix-Style Service (Guest Users)
 - **File**: `src/services/NetflixStyleStoryService.ts`
 - **Purpose**: Batch generation for guests
-- **Expected Pages**: 12 (configured in validation-config.json)
+- **Expected Pages**: 12 (configured in validation-config.ts)
 - **AI Generation**: Produces 10-12+ pages
 - **Fallback**: Template service if AI fails
 - **Validation**: UnifiedValidator with 'guest' mode
