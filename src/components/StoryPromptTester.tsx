@@ -23,7 +23,7 @@ import { mapDifficultyToLevel, getExpectedPagesForLevel } from '../../supabase/f
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
-import * as DifficultyLevelMapper from '../../supabase/functions/_shared/DifficultyLevelMapper';
+import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 
 // Robust word counting function
