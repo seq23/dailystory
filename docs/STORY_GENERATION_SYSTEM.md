@@ -51,17 +51,42 @@ reducedComplexity: true
 - **Primary Model**: GPT-4.1 success rate ~85%
 - **Fallback Rate**: GPT-4o-mini activated ~15% of requests
 
-### **Enhanced Prompts with User Integration**
+### **Enhanced Creative Directives System**
 ```typescript
-// Hair color integration based on skin tone
-const hairColor = getHairColorForSkinTone(userInfo.avatar?.skinTone);
-if (hairColor && userInfo.nativeLanguage === 'en') {
-  enhancedPrompt += `The main character has ${hairColor}.`;
+// Current Creative Directives (Implemented in streamlined-handler.ts)
+const creativeDirectives = `
+CREATIVE DIRECTIVES:
+- Weave user preferences naturally into the narrative without forcing them
+- Use cultural context sparingly - only when it enhances the story naturally
+- Apply author voice patterns as needed to maintain authenticity
+- Integrate vocabulary liberally while keeping the story engaging and natural
+- Use seed={seed} to control randomized story variation
+`;
+```
+
+### **Integration Depth Framework**
+```typescript
+// Level 0-1 (beginner/easy): Direct Integration
+if (difficultyLevel <= 1) {
+  promptTemplate += "Use {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} DIRECTLY and explicitly in the story";
 }
 
-// Cultural context integration
-const culturalContext = extractCulturalContext(userInfo.nativeLanguage);
-enhancedPrompt += culturalContext;
+// Level 2-4 (medium/hard/expert): Natural Integration  
+if (difficultyLevel >= 2) {
+  promptTemplate += "Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story";
+}
+```
+
+### **Never-Ending Story Architecture**
+```typescript
+// All user prompt templates include never-ending story directive
+const neverEndingDirective = "This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested.";
+```
+
+### **Unified Seed Language Standardization**
+```typescript
+// Consistent across all system prompts and difficulty levels
+const standardSeedLanguage = "Use seed={seed} to control randomized story variation.";
 ```
 
 ## **4-Layer Priority System**

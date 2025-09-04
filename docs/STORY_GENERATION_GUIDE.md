@@ -65,6 +65,26 @@ interface UserInfo {
 }
 ```
 
+### Integration Depth System
+The system now uses differentiated integration strategies based on difficulty level:
+
+#### Level 0-1 (Beginner/Easy): Direct Integration
+- **Approach**: Use user preferences **DIRECTLY and explicitly** in the story
+- **Example**: "Sarah found a blue ball and played with her puppy in the garden"
+- **Target Users**: Early readers who benefit from clear, recognizable elements
+
+#### Level 2-4 (Medium/Hard/Expert): Natural Integration  
+- **Approach**: **Weave preferences NATURALLY and subtly** throughout the story
+- **Example**: "The azure sky reminded Sarah of her favorite color as she watched a small dog chase butterflies"
+- **Target Users**: Advanced readers who appreciate nuanced storytelling
+
+### Never-Ending Story Architecture
+All stories are designed as **never-ending narratives** with:
+- **Natural Hooks**: Built-in continuation points between pages
+- **Pause Mechanics**: Strategic story breaks that invite continuation
+- **Ending Readiness**: AI prepared to provide satisfying conclusions when requested
+- **Infinite Potential**: Stories can theoretically continue indefinitely
+
 ### Input Validation
 - **PlaceholderValidationService**: Ensures data completeness
 - **SecurityValidator**: Input sanitization and safety checks
@@ -92,9 +112,20 @@ Dynamic content generation tokens:
 
 ### Resolution Process
 1. **Canonical Resolution First**: Replace standard placeholders
-2. **Micro Token Processing**: Dynamic content generation
-3. **Fallback Application**: Default values for missing data
-4. **Grammar Validation**: Ensure linguistic correctness
+2. **Integration Depth Application**: Apply level-appropriate integration strategy
+3. **Micro Token Processing**: Dynamic content generation
+4. **Creative Directives Integration**: Apply natural weaving guidelines
+5. **Seed Language Standardization**: Consistent randomization control
+6. **Fallback Application**: Default values for missing data
+7. **Grammar Validation**: Ensure linguistic correctness
+
+### Creative Directives Integration
+The updated system applies enhanced Creative Directives:
+- **Natural Weaving**: User preferences integrated without forcing
+- **Cultural Context**: Applied sparingly for natural enhancement
+- **Author Voice**: Patterns used as needed for authenticity
+- **Vocabulary Integration**: Liberal but natural incorporation
+- **Seed Control**: Unified "Use seed={seed} to control randomized story variation"
 
 ## Grammar Resolution Pipeline
 
