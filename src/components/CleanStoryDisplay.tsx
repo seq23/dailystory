@@ -194,6 +194,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [lastImageError, setLastImageError] = useState<string | null>(null);
   
+  // Performance optimization: Cache user ID to avoid expensive auth calls in timers
+  const [cachedUserId, setCachedUserId] = useState<string>(userInfo.name || 'premium');
+  
   // Multi-page ending & sequel integration state
   const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
@@ -204,6 +207,27 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   useEffect(() => {
     console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
   }, [isLoading]);
+  
+  // Cache user ID for performance - update when auth state changes
+  useEffect(() => {
+    let mounted = true;
+    const updateCachedUserId = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (mounted && user?.id) {
+          setCachedUserId(user.id);
+        }
+      } catch (error) {
+        console.warn('Failed to cache user ID:', error);
+      }
+    };
+    
+    if (isPremium) {
+      updateCachedUserId();
+    }
+    
+    return () => { mounted = false; };
+  }, [isPremium]);
   
   // Mark body during reading session to control global UI (e.g., hide feedback on mobile)
   useEffect(() => {
@@ -1159,19 +1183,29 @@ useEffect(() => {
 const timeRef = useRef(timeRemaining);
 useEffect(() => { timeRef.current = timeRemaining; }, [timeRemaining]);
 useEffect(() => {
-  const iv = setInterval(async () => {
+  const iv = setInterval(() => {
+    // Performance optimization: Use cached user ID to avoid async calls in timer
+    const startTime = performance.now();
+    
     try {
       if (!isPremium) {
         guestSession.saveRemaining(timeRef.current);
       } else {
-        let id = userInfo.name || 'premium';
-        try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
-        sessionStorage.setItem(`premium.timer.remaining.${id}`, String(timeRef.current));
+        // Use cached user ID instead of expensive auth call
+        sessionStorage.setItem(`premium.timer.remaining.${cachedUserId}`, String(timeRef.current));
       }
-    } catch {}
-  }, 5000);
+    } catch (error) {
+      console.warn('Timer persistence failed:', error);
+    }
+    
+    // Performance monitoring: Log if timer handler took too long
+    const duration = performance.now() - startTime;
+    if (duration > 16) {
+      console.warn(`🐌 Slow timer persistence: ${duration.toFixed(2)}ms`);
+    }
+  }, 2000);
   return () => clearInterval(iv);
-}, [isPremium, userInfo.name]);
+}, [isPremium, cachedUserId]);
 
 useEffect(() => {
   if (timeRemaining === 0) {
@@ -2783,9 +2817,19 @@ const handleRestartTimer = () => {
       audio.volume = 0.6;
       audio.play().catch(() => {});
     } catch {}
-    setTimeout(async () => {
+    
+    // Performance optimization: Move heavy logic out of setTimeout
+    setTimeout(() => {
+      const startTime = performance.now();
       setShowManualCelebration(false);
-      await handleEndSession();
+      
+      // Trigger end session asynchronously to avoid blocking timeout
+      Promise.resolve().then(() => handleEndSession());
+      
+      const duration = performance.now() - startTime;
+      if (duration > 16) {
+        console.warn(`🐌 Slow celebration timeout: ${duration.toFixed(2)}ms`);
+      }
     }, 5000);
   };
   const handleDifficultyChange = async (direction: 'up' | 'down') => {
