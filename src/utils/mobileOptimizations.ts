@@ -20,37 +20,43 @@ export const DEFAULT_MOBILE_CONFIG: MobileOptimizationConfig = {
  * Apply mobile-specific touch optimizations
  */
 export const applyTouchOptimizations = () => {
-  // Prevent double-tap zoom
-  let lastTouchEnd = 0;
-  const handleTouchEnd = (e: TouchEvent) => {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
+  try {
+    // Prevent double-tap zoom
+    let lastTouchEnd = 0;
+    const handleTouchEnd = (e: TouchEvent) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    };
+
+    // Prevent pinch-to-zoom
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+
+    // Prevent context menu on long press
+    const handleContextMenu = (e: Event) => {
       e.preventDefault();
-    }
-    lastTouchEnd = now;
-  };
+    };
 
-  // Prevent pinch-to-zoom
-  const handleTouchMove = (e: TouchEvent) => {
-    if (e.touches.length > 1) {
-      e.preventDefault();
-    }
-  };
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('contextmenu', handleContextMenu);
 
-  // Prevent context menu on long press
-  const handleContextMenu = (e: Event) => {
-    e.preventDefault();
-  };
-
-  document.addEventListener('touchend', handleTouchEnd, { passive: false });
-  document.addEventListener('touchmove', handleTouchMove, { passive: false });
-  document.addEventListener('contextmenu', handleContextMenu);
-
-  return () => {
-    document.removeEventListener('touchend', handleTouchEnd);
-    document.removeEventListener('touchmove', handleTouchMove);
-    document.removeEventListener('contextmenu', handleContextMenu);
-  };
+    return () => {
+      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('contextmenu', handleContextMenu);
+    };
+  } catch (error) {
+    // Suppress Chrome extension interference errors
+    console.debug('Touch optimizations skipped:', error);
+    return () => {}; // No-op cleanup
+  }
 };
 
 /**
@@ -130,11 +136,17 @@ export const optimizeFontLoading = () => {
   ];
 
   criticalFonts.forEach(fontUrl => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'style';
-    link.href = fontUrl;
-    document.head.appendChild(link);
+    try {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'style';
+      link.href = fontUrl;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    } catch (error) {
+      // Suppress Chrome extension interference errors
+      console.debug('Font preload skipped:', error);
+    }
   });
 };
 
