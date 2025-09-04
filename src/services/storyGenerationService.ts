@@ -123,7 +123,9 @@ export class StoryGenerationService {
         systemSettings: VocabularyService.getSystemSettings(vocabularyIntegration)
       };
 
+      console.log(`🆔 StoryGen: Session ID: ${generationBundle.sessionId}`);
       console.log('📦 Generation bundle prepared:', {
+        sessionId: generationBundle.sessionId,
         storyContentLength: resolvedStoryContent.length,
         gradeLevel: generationBundle.systemSettings.gradeLevel
       });

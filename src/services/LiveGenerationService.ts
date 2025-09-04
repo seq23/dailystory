@@ -55,12 +55,15 @@ export class LiveGenerationService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
+      const sessionId = `live-first-${userInfo.name}-${Date.now()}`;
+      console.log(`🆔 LiveGen: First Page Session ID: ${sessionId}`);
+      
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'premium',
         pageNumber: 1,
         expertGradeLevel,
         difficulty,
-        sessionId: `live-first-${userInfo.name}-${Date.now()}`
+        sessionId
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -128,11 +131,14 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} (continuing from: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...)`
       };
       
+      const sessionId = `live-next-${context.userInfo.name}-${Date.now()}`;
+      console.log(`🆔 LiveGen: Next Page Session ID: ${sessionId}`);
+      
       const result = await StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
-        sessionId: `live-next-${context.userInfo.name}-${Date.now()}`
+        sessionId
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
@@ -190,11 +196,14 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} - please provide a satisfying conclusion to this story: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`
       };
       
+      const sessionId = `live-ending-${context.userInfo.name}-${Date.now()}`;
+      console.log(`🆔 LiveGen: Ending Page Session ID: ${sessionId}`);
+      
       const result = await StoryGenerationService.generateStory(endingUserInfo, {
         sessionType: 'premium', 
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
-        sessionId: `live-ending-${context.userInfo.name}-${Date.now()}`
+        sessionId
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {

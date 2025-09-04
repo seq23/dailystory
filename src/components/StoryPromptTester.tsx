@@ -62,6 +62,7 @@ interface TestResult {
   fallbackReason?: string;
   generationPath?: string[];
   emergencyContentUsed?: boolean;
+  sessionId?: string;  // Add session ID field
   // Enhanced validation fields
   placeholderValidation?: import('@/utils/placeholderValidator').PlaceholderValidationResult;
   contentIssues?: string[];
@@ -442,6 +443,9 @@ export function StoryPromptTester() {
       if (service === 'netflix') {
         result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
         
+        // Generate session ID for debug tracking (matches service format)
+        result.sessionId = `netflix-${userInfo.name}-${Date.now()}`;
+        
         // Show AI generation toast
         showTestToast({
           level,
@@ -568,6 +572,9 @@ export function StoryPromptTester() {
       } else if (service === 'live') {
         result.generationPath.push('Calling LiveGenerationService.generateFirstPage()');
         
+        // Generate session ID for debug tracking (matches service format)  
+        result.sessionId = `live-first-${userInfo.name}-${Date.now()}`;
+        
         // Show AI generation toast
         showTestToast({
           level,
@@ -633,6 +640,9 @@ export function StoryPromptTester() {
         
       } else if (service === 'template') {
         result.generationPath.push('Calling template service directly');
+        
+        // Generate session ID for debug tracking
+        result.sessionId = `template-test-${userInfo.name}-${Date.now()}`;
         
         // Show template generation toast
         showTestToast({
@@ -1078,7 +1088,7 @@ export function StoryPromptTester() {
           </div>
         </CardHeader>
         <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
           <div>
             <div className="text-sm text-muted-foreground">Pages</div>
             <div className="font-semibold">
@@ -1102,6 +1112,12 @@ export function StoryPromptTester() {
           <div>
             <div className="text-sm text-muted-foreground">Response Time</div>
             <div className="font-semibold">{result.responseTime}ms</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Session ID</div>
+            <div className="font-mono text-xs truncate" title={result.sessionId}>
+              {result.sessionId || 'Not captured'}
+            </div>
           </div>
           <div>
             <div className="text-sm text-muted-foreground">Token Limits</div>

@@ -87,12 +87,15 @@ export class NetflixStyleStoryService {
         expectedPages: promptConfig?.expectedPages || 'unknown'
       });
       
+      const sessionId = `netflix-${userInfo.name}-${Date.now()}`;
+      console.log(`🆔 Netflix: Session ID: ${sessionId}`);
+      
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'free',
         pageNumber: 1,
         expertGradeLevel, // Pass expert grade level to unified system
         difficulty, // Also pass the original difficulty
-        sessionId: `netflix-${userInfo.name}-${Date.now()}`
+        sessionId
       });
 
       // DIAGNOSTIC LOGGING: Check exact result structure
