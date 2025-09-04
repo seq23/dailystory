@@ -613,21 +613,21 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   <div className="space-y-3 text-sm">
                     <h4 className="font-medium text-foreground">{t("userInfoForm.fields.readingAbility.learnMore.title")}</h4>
                     <p className="text-muted-foreground">{t("userInfoForm.fields.readingAbility.learnMore.description")}</p>
-                     {formData.readingAbility && (
-                       <div className="p-3 bg-background rounded border border-border/50">
-                         <div className="font-medium text-foreground mb-1">
-                           {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.options.preReader")}
-                           {formData.readingAbility === 'easy' && t("userInfoForm.fields.readingAbility.options.beginner")}
-                           {formData.readingAbility === 'medium' && t("userInfoForm.fields.readingAbility.options.developing")}
-                           {formData.readingAbility === 'hard' && t("userInfoForm.fields.readingAbility.options.independent")}
-                           {formData.readingAbility === 'expert' && t("userInfoForm.fields.readingAbility.options.advanced")}
-                         </div>
-                         <div className="text-muted-foreground">
-                           {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.details.preReader")}
-                           {formData.readingAbility === 'easy' && t("userInfoForm.fields.readingAbility.details.beginner")}
-                           {formData.readingAbility === 'medium' && t("userInfoForm.fields.readingAbility.details.developing")}
-                           {formData.readingAbility === 'hard' && t("userInfoForm.fields.readingAbility.details.independent")}
-                           {formData.readingAbility === 'expert' && t("userInfoForm.fields.readingAbility.details.advanced")}
+                      {formData.readingAbility && (
+                        <div className="p-3 bg-background rounded border border-border/50">
+                          <div className="font-medium text-foreground mb-1">
+                            {formData.readingAbility === 'pre-reader' && t("userInfoForm.fields.readingAbility.options.preReader")}
+                            {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.options.beginner")}
+                            {formData.readingAbility === 'developing' && t("userInfoForm.fields.readingAbility.options.developing")}
+                            {formData.readingAbility === 'independent' && t("userInfoForm.fields.readingAbility.options.independent")}
+                            {formData.readingAbility === 'advanced' && t("userInfoForm.fields.readingAbility.options.advanced")}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {formData.readingAbility === 'pre-reader' && t("userInfoForm.fields.readingAbility.details.preReader")}
+                            {formData.readingAbility === 'beginner' && t("userInfoForm.fields.readingAbility.details.beginner")}
+                            {formData.readingAbility === 'developing' && t("userInfoForm.fields.readingAbility.details.developing")}
+                            {formData.readingAbility === 'independent' && t("userInfoForm.fields.readingAbility.details.independent")}
+                            {formData.readingAbility === 'advanced' && t("userInfoForm.fields.readingAbility.details.advanced")}
                          </div>
                        </div>
                      )}
