@@ -150,29 +150,45 @@ export function isCliffhanger(content: string): boolean {
 
 /**
  * Emergency chunking for oversized sentences (Level 0 fallback)
+ * Now supports both character AND word count limits
  */
-export function emergencyChunkSentence(sentence: string, targetChars: number): string[] {
+export function emergencyChunkSentence(sentence: string, targetChars: number, targetWords?: number): string[] {
   const words = sentence.trim().split(/\s+/);
   const chunks: string[] = [];
   let currentChunk = '';
   let currentChars = 0;
+  let currentWords = 0;
   
   for (const word of words) {
     const wordChars = word.length;
+    const spaceChars = currentChunk.length > 0 ? 1 : 0; // Space before word
+    const totalCharsWithWord = currentChars + spaceChars + wordChars;
+    const totalWordsWithWord = currentWords + 1;
     
-    if (currentChars + wordChars > targetChars && currentChunk.length > 0) {
+    // Check if adding this word would exceed EITHER character OR word limits
+    const exceedsChars = totalCharsWithWord > targetChars;
+    const exceedsWords = targetWords !== undefined && totalWordsWithWord > targetWords;
+    
+    if ((exceedsChars || exceedsWords) && currentChunk.length > 0) {
       chunks.push(currentChunk.trim());
+      console.log(`🔧 Emergency chunk created: ${currentChars} chars, ${currentWords} words (limits: ${targetChars} chars, ${targetWords ?? 'no limit'} words)`);
+      
+      // Start new chunk with current word
       currentChunk = word;
       currentChars = wordChars;
+      currentWords = 1;
     } else {
+      // Add word to current chunk
       if (currentChunk.length > 0) currentChunk += ' ';
       currentChunk += word;
-      currentChars += wordChars + (currentChunk.length > word.length ? 1 : 0); // +1 for space
+      currentChars = totalCharsWithWord;
+      currentWords = totalWordsWithWord;
     }
   }
   
   if (currentChunk.trim().length > 0) {
     chunks.push(currentChunk.trim());
+    console.log(`🔧 Final emergency chunk: ${currentChars} chars, ${currentWords} words`);
   }
   
   return chunks.length > 0 ? chunks : [sentence];
@@ -257,10 +273,10 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
       
       // If sentence exceeds EITHER character OR word limits, emergency chunk it
       if (sentenceChars > targetCharsPerPage || sentenceWords > targetWordsPerPage) {
-        const chunks = emergencyChunkSentence(cleanSentence, targetCharsPerPage);
+        const chunks = emergencyChunkSentence(cleanSentence, targetCharsPerPage, targetWordsPerPage);
         pages.push(...chunks);
         
-        console.log(`🔧 Level0 emergency chunking: ${sentenceChars} chars, ${sentenceWords} words -> ${chunks.length} chunks`);
+        console.log(`🔧 Level0 emergency chunking: ${sentenceChars} chars, ${sentenceWords} words -> ${chunks.length} chunks (respecting both char and word limits)`);
       } else {
         pages.push(cleanSentence);
         
