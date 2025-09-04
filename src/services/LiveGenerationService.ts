@@ -236,7 +236,8 @@ export class LiveGenerationService {
         sessionType: 'premium', 
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
-        sessionId: actualSessionId
+        sessionId: actualSessionId,
+        isEndingPage: true
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {

@@ -55,6 +55,7 @@ export class StoryGenerationService {
       expertGradeLevel?: string;
       difficulty?: string;
       sessionId?: string;
+      isEndingPage?: boolean;
     }
   ): Promise<StoryGenerationResult> {
     try {
@@ -310,7 +311,8 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
             pageNumber: config.pageNumber || 1,
             existingStory: config.existingStory,
             expertGradeLevel: config.expertGradeLevel,
-            difficulty: config.difficulty
+            difficulty: config.difficulty,
+            isEndingPage: config.isEndingPage
           }
         }
       });

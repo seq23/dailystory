@@ -28,6 +28,7 @@ export const validationConfig = {
     "medium": "Level2",
     "hard": "Level3",
     "expert": "Level4",
+    "custom": "Level1",
     "6th": "Grade6",
     "grade6": "Grade6",
     "7th": "Grade7",

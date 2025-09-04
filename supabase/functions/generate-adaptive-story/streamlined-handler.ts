@@ -44,6 +44,7 @@ interface StreamlinedConfig {
   sessionType: 'free' | 'premium' | 'repair';
   pageNumber: number;
   existingStory?: string;
+  isEndingPage?: boolean;
   // Repair-specific configuration
   repairAttempt?: number;
   originalContent?: string[];
@@ -200,7 +201,8 @@ Generate a corrected version that addresses these issues while keeping the story
       level: validationLevel,
       userLanguage: 'en',
       actualTokenBudget,
-      retryAttempt: config.repairAttempt || 0
+      retryAttempt: config.repairAttempt || 0,
+      isEndingPage: config.isEndingPage || false
     };
     
     console.log(`🔍 Validation Config: mode=${validationConfig.mode}, actualTokenBudget=${actualTokenBudget}, retryAttempt=${config.repairAttempt || 0}`);
@@ -237,7 +239,8 @@ Generate a corrected version that addresses these issues while keeping the story
       // Validate the retry result
       const retryValidationResult = UnifiedValidator.validateContent(retryStoryText, {
         ...validationConfig,
-        retryAttempt: retryConfig.repairAttempt
+        retryAttempt: retryConfig.repairAttempt,
+        isEndingPage: config.isEndingPage || false
       });
       
       if (retryValidationResult.decision === 'ACCEPT' || retryValidationResult.decision === 'REPAIR_AND_SPLIT') {
