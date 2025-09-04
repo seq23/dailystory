@@ -594,11 +594,11 @@ export function getPerPageTokenLimit(difficulty: DifficultyLevel | ExpertGradeLe
   
   // High-quality expert grade fallbacks - updated to match system prompts
   const expertFallbacks: Record<string, number> = {
-    '6th': 350,   // Updated to match system prompt "Maximum 350 tokens per page"
-    '7th': 350,   // Updated to match system prompt "Maximum 350 tokens per page"
-    '8th': 350,   // Updated to match system prompt "Maximum 350 tokens per page"
-    '9th': 350,   // Updated to match system prompt "Maximum 350 tokens per page"
-    '10th': 350,  // Updated to match system prompt "Maximum 350 tokens per page"
+    '6th': 350,   // Updated to match system prompt "350 tokens per page"
+    '7th': 350,   // Updated to match system prompt "350 tokens per page"
+    '8th': 350,   // Updated to match system prompt "350 tokens per page"
+    '9th': 350,   // Updated to match system prompt "350 tokens per page"
+    '10th': 350,  // Updated to match system prompt "350 tokens per page"
   };
   
   // Use normalized format for fallback lookup

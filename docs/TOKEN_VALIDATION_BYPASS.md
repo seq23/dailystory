@@ -9,24 +9,40 @@
 
 Token validation was initially bypassed to eliminate artificial constraints, then evolved to implement **service-aware token limits** that distinguish between Netflix-style (full story) and Live (page-by-page) generation while extracting precise limits directly from system prompts.
 
-## Latest Evolution: Service-Aware Token Limits (2025-01-03)
+## Latest Evolution: Service-Aware Token Limits (2025-01-03 Evening)
 
 ### New Implementation Strategy
 - **Netflix Service**: Uses `per_page_tokens × expected_pages` for full story generation
 - **Live Service**: Uses direct `per_page_tokens` for individual page generation  
 - **Token Source**: Extracted directly from system prompts (single source of truth)
 - **Character Validation**: Remains primary validation method
+- **Terminology**: Removed "Maximum" constraint language from all system prompts
 
-### Service-Specific Token Limits
+### Token Limit Corrections (Evening Update)
+- **Medium**: Corrected from 250 to 75 tokens per page
+- **Hard**: Corrected from 350 to 120 tokens per page  
+- **Expert**: Corrected from 500 to 180 tokens per page
+- **Grade 6-10**: Standardized to 350 tokens per page (from 500)
+
+### Service-Specific Token Limits (Corrected Values)
 - **Level 0 (beginner)**: Netflix: 180 tokens (15×12), Live: 15 tokens/page
 - **Level 1 (easy)**: Netflix: 720 tokens (60×12), Live: 60 tokens/page
-- **Grade 6-10**: Netflix: 6000 tokens (500×12), Live: 500 tokens/page
+- **Level 2 (medium)**: Netflix: 900 tokens (75×12), Live: 75 tokens/page
+- **Level 3 (hard)**: Netflix: 1440 tokens (120×12), Live: 120 tokens/page
+- **Level 4 (expert)**: Netflix: 2160 tokens (180×12), Live: 180 tokens/page
+- **Grade 6-10**: Netflix: 4200 tokens (350×12), Live: 350 tokens/page
 
 ### Implementation Functions
 - `getServiceAwareTokenLimit()` - Auto-detects service type
 - `getNetflixTokenLimit()` - Full story limits (per-page × expected pages)
 - `getLiveTokenLimit()` - Direct per-page limits
 - `getPerPageTokenLimitLocal()` - Extracts from system prompts
+
+### Terminology Standardization (Evening Update)
+- **Removed**: "Maximum" constraint language from all 10 system prompts
+- **Adopted**: Neutral "X tokens per page" specification
+- **Updated**: Regex extraction to match new format (`/(\d+) tokens per page/i`)
+- **Rationale**: Eliminates contradiction with validator authority to increase tokens
 
 ## Rationale for Token Validation Bypass
 

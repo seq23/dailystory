@@ -347,16 +347,16 @@ function getPerPageTokenLimitLocal(difficulty: DifficultyLevel | ExpertGradeLeve
     console.error(`❌ Failed to get per-page token limit for ${difficulty}:`, error);
     // Fallback to known values from system prompts
     const fallbacks: Record<string, number> = {
-      'beginner': 15,  // Level0: "Maximum 15 tokens per page"
-      'easy': 60,      // Level1: "Maximum 60 tokens per page"
-      'medium': 75,    // Level2: "Maximum 75 tokens per page" - FIXED from 250
-      'hard': 120,     // Level3: "Maximum 120 tokens per page" - FIXED from 350
-      'expert': 180,   // Level4: "Maximum 180 tokens per page" - FIXED from 500
-      'grade6': 350,   // Grade6: "Maximum 350 tokens per page" - FIXED from 500
-      'grade7': 350,   // Grade7: "Maximum 350 tokens per page" - FIXED from 500
-      'grade8': 350,   // Grade8: "Maximum 350 tokens per page" - FIXED from 500
-      'grade9': 350,   // Grade9: "Maximum 350 tokens per page" - FIXED from 500
-      'grade10': 350,  // Grade10: "Maximum 350 tokens per page" - FIXED from 500
+      'beginner': 15,  // Level0: "15 tokens per page"
+      'easy': 60,      // Level1: "60 tokens per page"
+      'medium': 75,    // Level2: "75 tokens per page" - FIXED from 250
+      'hard': 120,     // Level3: "120 tokens per page" - FIXED from 350
+      'expert': 180,   // Level4: "180 tokens per page" - FIXED from 500
+      'grade6': 350,   // Grade6: "350 tokens per page" - FIXED from 500
+      'grade7': 350,   // Grade7: "350 tokens per page" - FIXED from 500
+      'grade8': 350,   // Grade8: "350 tokens per page" - FIXED from 500
+      'grade9': 350,   // Grade9: "350 tokens per page" - FIXED from 500
+      'grade10': 350,  // Grade10: "350 tokens per page" - FIXED from 500
     };
     return fallbacks[difficulty] || 350;
   }

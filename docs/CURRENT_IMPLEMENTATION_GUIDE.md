@@ -3,9 +3,30 @@
 ## Overview
 This guide documents the current functioning state of the story generation system as of the latest implementation, including recent fixes, architectural decisions, and actual system behavior.
 
-## Recent Critical Fixes & Enhancements
+## Recent Critical Fixes & Enhancements (2025-01-03 Evening)
 
-### 1. Expert Circuit Breaker System Implementation
+### 1. Service-Aware Token Limits + Corrections (Evening)
+**Files**: `supabase/functions/_shared/storyPrompts.ts`, `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
+
+#### Token Limit Corrections
+- **Medium**: Corrected from 250 to 75 tokens per page
+- **Hard**: Corrected from 350 to 120 tokens per page  
+- **Expert**: Corrected from 500 to 180 tokens per page
+- **Grade 6-10**: Standardized to 350 tokens per page (from 500)
+
+#### Service-Aware Implementation
+- **Netflix Service**: `per_page_tokens × expected_pages` for full story generation
+- **Live Service**: Direct `per_page_tokens` for page-by-page generation
+- **Single Source of Truth**: Token limits extracted directly from system prompts
+- **Auto-Detection**: Service type detected via `config.pageNumber` presence
+
+#### Terminology Standardization
+- **Removed**: "Maximum" constraint language from all 10 system prompts
+- **Adopted**: Neutral "X tokens per page" specification
+- **Updated**: Regex extraction pattern (`/(\d+) tokens per page/i`)
+- **Functions**: `getServiceAwareTokenLimit()`, `getNetflixTokenLimit()`, `getLiveTokenLimit()`
+
+### 2. Expert Circuit Breaker System Implementation
 **File**: `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
 
 #### Expert Level Progressive Model Chain (Grades 6-10)
@@ -150,20 +171,23 @@ graph TD
 - **Concatenation Detection**: Warns when AI output appears concatenated
 - **Profile Testing**: Comprehensive user profile simulation
 
-#### Token Limits by Difficulty
+#### Token Limits by Difficulty (Corrected Values - Evening Update)
 ```typescript
-const tokenLimits = {
-  beginner: 500,
-  easy: 800,
-  medium: 1200,
-  hard: 1500,
-  expert: 2000,
-  '6th': 1800,
-  '7th': 2000,
-  '8th': 2200,
-  '9th': 2400,
-  '10th': 2500
+const perPageTokenLimits = {
+  beginner: 15,    // Level0: 15 tokens per page
+  easy: 60,        // Level1: 60 tokens per page
+  medium: 75,      // Level2: 75 tokens per page (corrected from 250)
+  hard: 120,       // Level3: 120 tokens per page (corrected from 350)
+  expert: 180,     // Level4: 180 tokens per page (corrected from 500)
+  '6th': 350,      // Grade6: 350 tokens per page (corrected from 500)
+  '7th': 350,      // Grade7: 350 tokens per page (corrected from 500)
+  '8th': 350,      // Grade8: 350 tokens per page (corrected from 500)
+  '9th': 350,      // Grade9: 350 tokens per page (corrected from 500)
+  '10th': 350      // Grade10: 350 tokens per page (corrected from 500)
 };
+
+// Netflix Service: Full story limits = per_page_tokens × expected_pages
+// Live Service: Direct per-page limits as shown above
 ```
 
 ## Error Handling & Quality Assurance

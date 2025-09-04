@@ -1,11 +1,11 @@
-# Character-Only Validation Architecture
+# Character-Only Validation Architecture + Service-Aware Token Limits
 
-**Version:** 3.0.0 - Character-Only Validation System (2025-01-03)  
-**Status:** Token validation DISABLED - Character validation only
+**Version:** 3.1.0 - Character-Only + Service-Aware Token System (2025-01-03 Evening)  
+**Status:** Character validation PRIMARY - Service-aware token limits re-introduced
 
 ## Overview
 
-This document describes the simplified validation architecture that uses **character limits only** as the primary content validation method. Token validation has been completely bypassed for story generation to improve AI model flexibility while maintaining content quality control.
+This document describes the evolved validation architecture that uses **character limits as primary validation** while implementing **service-aware token limits** that distinguish between Netflix-style (full story) and Live (page-by-page) generation. Token limits are now extracted directly from system prompts and use neutral terminology.
 
 ## Core Principles
 
@@ -14,10 +14,12 @@ This document describes the simplified validation architecture that uses **chara
 - **Benefits:** Simple, reliable, allows AI models maximum creativity
 - **Implementation:** All validation functions now use character limits exclusively
 
-### 2. **Token Validation: DISABLED** ❌
-- **Status:** Completely bypassed for story generation
-- **Reason:** Token limits artificially constrained AI creativity and story quality
-- **Preserved:** Token estimation kept for metrics but ignored in validation decisions
+### 2. **Service-Aware Token Limits: RE-INTRODUCED** ✅
+- **Status:** Service-aware implementation active (Netflix vs Live generation)
+- **Netflix Service:** Uses `per_page_tokens × expected_pages` for full stories
+- **Live Service:** Uses direct `per_page_tokens` for individual pages
+- **Single Source:** Token limits extracted directly from system prompts
+- **Terminology:** Neutral "X tokens per page" (removed "Maximum" constraint language)
 
 ### 3. **Performance Benefits** 🚀
 - **Faster Processing:** No complex token calculations during validation
@@ -38,9 +40,30 @@ Story Generation Request
    Accept/Repair/Reject
 ```
 
+## Current Token Limits (Service-Aware Implementation)
+
+### Per-Page Token Limits (Corrected Values)
+- **Level0 (beginner):** 15 tokens per page
+- **Level1 (easy):** 60 tokens per page  
+- **Level2 (medium):** 75 tokens per page (corrected from 250)
+- **Level3 (hard):** 120 tokens per page (corrected from 350)
+- **Level4 (expert):** 180 tokens per page (corrected from 500)
+- **Grade6-10:** 350 tokens per page (corrected from 500)
+
+### Service-Specific Token Calculations
+- **Netflix Service (Full Story):** `per_page_tokens × expected_pages`
+  - Level0: 180 tokens (15×12)
+  - Level1: 720 tokens (60×12)
+  - Level2: 900 tokens (75×12)
+  - Level3: 1440 tokens (120×12)
+  - Level4: 2160 tokens (180×12)
+  - Grade6-10: 4200 tokens (350×12)
+
+- **Live Service (Per-Page):** Direct per-page limits as listed above
+
 ## Character Limits by Level
 
-### Educational Progression
+### Educational Progression (Character Validation - Primary)
 - **Level0 (PreK-K):** 5 - 480 characters (1.2x creativity buffer)
 - **Level1 (1st grade):** 5 - 2,400 characters (1.2x creativity buffer)
 - **Level2 (2nd-3rd grade):** 5 - 5,250 characters (1.5x creativity buffer)
@@ -64,12 +87,17 @@ validateGuestStoryLength(content, level)
 validateLivePageLength(content, level)
 ```
 
-### Bypassed Functions
+### Service-Aware Token Functions (Re-Introduced)
 ```typescript
-// Returns high ceiling (100,000) - no longer used for validation
-getTokensForGrade(gradeLevel)        
-getTokenLimitsForLevel(level)        // Kept for compatibility
-estimateTokenCount(content)          // Kept for metrics
+// Service-aware token limits (active)
+getServiceAwareTokenLimit(difficulty, config)  // Auto-detects service type
+getNetflixTokenLimit(difficulty)               // Full story limits
+getLiveTokenLimit(difficulty)                  // Per-page limits
+getPerPageTokenLimitLocal(difficulty)          // Extracts from system prompts
+
+// Legacy functions (preserved for compatibility)
+getTokensForGrade(gradeLevel)                  // Returns high ceiling (100,000)
+estimateTokenCount(content)                    // Kept for metrics
 ```
 
 ## Validation Decisions
