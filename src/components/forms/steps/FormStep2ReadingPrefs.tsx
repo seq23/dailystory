@@ -65,7 +65,7 @@ export const FormStep2ReadingPrefs = ({
       value: "advanced",
       label: t("readingLevels.advanced.title", "Advanced"),
       description: t("readingLevels.advanced.desc", "Mastering complex stories and vocabulary"),
-      educational: t("readingLevels.advanced.educational", "Grade 6+ with sophisticated vocabulary and themes"),
+      educational: t("readingLevels.advanced.educational", "Grade 6-10 with sophisticated vocabulary and themes"),
       suggestedAge: "10+"
     }
   ];
