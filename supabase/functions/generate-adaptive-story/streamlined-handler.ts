@@ -639,12 +639,13 @@ Use these as inspiration but prioritize overall story quality and coherence.
           attempt: attempt,
            success: false,
            bundle: bundleForDebug,
-           apiResponse: {
-             status: response.status,
-               statusText: response.statusText,
-               errorBody: errorText,
-               error: `API Error ${response.status}`
-             }
+            apiResponse: {
+              status: response.status,
+                statusText: response.statusText,
+                errorBody: errorText,
+                error: `API Error ${response.status}`,
+                content: errorText
+              }
            });
         } catch (debugError) {
           console.warn('⚠️ Failed to store failed AI prompt for debugging:', debugError);
@@ -706,13 +707,14 @@ Use these as inspiration but prioritize overall story quality and coherence.
             attempt: attempt,
             success: false,
             bundle: bundleForDebug,
-            apiResponse: {
-              status: response.status,
-              contentLength,
-              usage: data.usage,
-              reasoningTokenFailure: true,
-              reasoningTokens
-            }
+             apiResponse: {
+               status: response.status,
+               contentLength,
+               usage: data.usage,
+               reasoningTokenFailure: true,
+               reasoningTokens,
+               content: storyText || ''
+             }
           });
         } catch (debugError) {
           console.warn('⚠️ Failed to store reasoning token failure for debugging:', debugError);
@@ -742,13 +744,14 @@ Use these as inspiration but prioritize overall story quality and coherence.
           attempt: attempt,
            success: true,
            bundle: bundleForDebug,
-           apiResponse: {
-             status: response.status,
-             contentLength: storyText?.length || 0,
-             usage: data.usage,
-             hasChoices: !!data.choices,
-             choicesLength: data.choices?.length || 0
-           }
+            apiResponse: {
+              status: response.status,
+              contentLength: storyText?.length || 0,
+              usage: data.usage,
+              hasChoices: !!data.choices,
+              choicesLength: data.choices?.length || 0,
+              content: storyText || ''
+            }
          });
       } catch (debugError) {
         console.warn('⚠️ Failed to store AI prompt for debugging:', debugError);

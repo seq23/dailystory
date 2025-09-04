@@ -86,8 +86,13 @@ export class LiveGenerationService {
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
-      // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
-      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 20) {
+      // PHASE 4: Only set AI source AFTER confirming content is actually present (grade-level aware threshold)
+      const isLevel0 = difficulty === 'beginner' || expertGradeLevel === '6th';
+      const contentThreshold = isLevel0 ? 5 : 20;
+      const hasValidContent = result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > contentThreshold;
+      console.log(`🔍 Content validation: Length=${result.pages?.[0]?.length}, Threshold=${contentThreshold}, Level0=${isLevel0}, Difficulty=${difficulty}, Grade=${expertGradeLevel}`);
+      
+      if (hasValidContent) {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
