@@ -86,15 +86,20 @@ export class LiveGenerationService {
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
-      // PHASE 4: Only set AI source AFTER confirming content is actually present
-      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 50) {
+      // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
+      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 20) {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           console.log('✅ Confirmed AI-generated content, setting source tracking');
         } catch {}
       } else {
-        console.log('⚠️ AI call succeeded but content insufficient, will not set AI source tracking');
+        console.log('⚠️ AI call succeeded but content insufficient, setting source to unknown');
+        try {
+          (globalThis as any).__LAST_PAGE_SOURCE__ = 'unknown';
+          (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
+          console.log('⚠️ Set Live source to unknown due to insufficient content');
+        } catch {}
       }
 
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -165,15 +170,20 @@ export class LiveGenerationService {
       };
 
       console.log(`🚀 Live Generation: Page ${nextPageNumber} generated successfully`);
-      // PHASE 4: Only set AI source AFTER confirming content is actually present
-      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 50) {
+      // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
+      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 20) {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           console.log('✅ Confirmed AI-generated next page content, setting source tracking');
         } catch {}
       } else {
-        console.log('⚠️ AI call succeeded but next page content insufficient, will not set AI source tracking');
+        console.log('⚠️ AI call succeeded but next page content insufficient, setting source to unknown');
+        try {
+          (globalThis as any).__LAST_PAGE_SOURCE__ = 'unknown';
+          (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
+          console.log('⚠️ Set Live next page source to unknown due to insufficient content');
+        } catch {}
       }
       console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: 'ai', service: 'Live' });
       
@@ -230,15 +240,20 @@ export class LiveGenerationService {
       }
 
       console.log(`🚀 Live Generation: Ending generated with ${allPages.length} page(s)`);
-      // PHASE 4: Only set AI source AFTER confirming content is actually present
-      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 50) {
+      // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
+      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 20) {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
           console.log('✅ Confirmed AI-generated story ending content, setting source tracking');
         } catch {}
       } else {
-        console.log('⚠️ AI call succeeded but story ending content insufficient, will not set AI source tracking');
+        console.log('⚠️ AI call succeeded but story ending content insufficient, setting source to unknown');
+        try {
+          (globalThis as any).__LAST_PAGE_SOURCE__ = 'unknown';
+          (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
+          console.log('⚠️ Set Live ending source to unknown due to insufficient content');
+        } catch {}
       }
 
       // Emit story generation complete event

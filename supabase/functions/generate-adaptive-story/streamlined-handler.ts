@@ -569,7 +569,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       }
       
       console.log(`🔍 API Request attempt ${attempt}:`, {
-        model: currentModel.model,
+        model: currentModel.name,
         tokenValidation: 'DISABLED',
         supportsTemperature: !!currentModel.supportsTemperature,
         promptLength: enhancedSystemPrompt.length + finalUserPrompt.length,
@@ -707,10 +707,10 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       if (storyText && storyText.trim()) {
         const vocabularyUsage = extractVocabularyUsage(storyText, enhancedUserPrompt);
-        console.log(`✅ [AI-DEBUG] SUCCESS with ${currentModel.model}:`, { 
+        console.log(`✅ [AI-DEBUG] SUCCESS with ${currentModel.name}:`, { 
           attempt,
           contentLength: storyText.length,
-          model: currentModel.model,
+          model: currentModel.name,
           processingTime: `${Date.now() - startTime}ms`,
           vocabularyTracking: vocabularyUsage,
           gradeLevel,
@@ -740,18 +740,26 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         break;
       } else {
-        console.log(`❌ ${currentModel.model} produced empty content:`, {
+        console.log(`❌ ${currentModel.name} produced empty content:`, {
           rawResponse: storyText,
           attempt,
-          model: currentModel.model
+          model: currentModel.name,
+          fullAPIResponse: data,
+          contentPath: 'choices[0].message.content',
+          hasChoices: !!data.choices,
+          choicesLength: data.choices?.length || 0,
+          messageContent: data.choices?.[0]?.message?.content || null
         });
-        storyText = '';
+        
+        // PHASE 2: Treat empty content as an error to trigger model switching
+        const emptyContentError = new Error(`Model ${currentModel.name} produced empty content`);
+        throw emptyContentError;
       }
       
     } catch (error) {
       console.error(`❌ Generation attempt ${attempt} failed:`, {
         error: safeErrorMessage(error),
-        model: safePropertyAccess(currentModel, 'model', 'unknown'),
+        model: safePropertyAccess(currentModel, 'name', 'unknown'),
         attempt: attempt,
         maxAttempts: maxAttempts,
         currentModelIndex,
@@ -790,7 +798,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           console.error('❌ All AI generation attempts failed');
           throw new Error('All AI generation attempts failed');
         }
-        const nextModelName = safePropertyAccess(modelProgression[currentModelIndex], 'model', 'next model');
+        const nextModelName = safePropertyAccess(modelProgression[currentModelIndex], 'name', 'next model');
         console.log(`🔄 Moving to next model: ${nextModelName}`);
       }
       
