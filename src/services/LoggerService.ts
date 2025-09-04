@@ -20,12 +20,16 @@ class Logger {
   private static instance: Logger;
   private logLevel: LogLevel = LogLevel.INFO;
   private logs: LogEntry[] = [];
-  private maxLogs = 1000; // Keep last 1000 logs in memory
+  private maxLogs = 500; // Reduced from 1000 to save memory
+  private logCounts = new Map<string, number>();
+  private lastLogTime = new Map<string, number>();
+  private readonly RATE_LIMIT_WINDOW = 60000; // 1 minute
+  private readonly MAX_LOGS_PER_TYPE = 10; // Max 10 logs per type per minute
 
   private constructor() {
-    // Set log level based on environment
+    // Set log level based on environment - more restrictive in production
     const isDev = typeof window !== 'undefined' && window.location?.hostname === 'localhost';
-    this.logLevel = isDev ? LogLevel.DEBUG : LogLevel.ERROR;
+    this.logLevel = isDev ? LogLevel.DEBUG : LogLevel.WARN; // Only WARN and ERROR in production
   }
 
   static getInstance(): Logger {
@@ -50,10 +54,38 @@ class Logger {
   }
 
   private addToBuffer(entry: LogEntry): void {
+    // Rate limiting check
+    const now = Date.now();
+    const logKey = `${entry.level}-${entry.context || 'default'}`;
+    const lastTime = this.lastLogTime.get(logKey) || 0;
+    const count = this.logCounts.get(logKey) || 0;
+
+    // Reset counter if window expired
+    if (now - lastTime > this.RATE_LIMIT_WINDOW) {
+      this.logCounts.set(logKey, 0);
+    }
+
+    // Skip if rate limit exceeded (except for ERROR level)
+    if (entry.level !== LogLevel.ERROR && count >= this.MAX_LOGS_PER_TYPE) {
+      return;
+    }
+
+    // Deduplication - skip identical messages within 30 seconds
+    const messageHash = `${entry.level}-${entry.message}`;
+    const lastMessageTime = this.lastLogTime.get(messageHash) || 0;
+    if (now - lastMessageTime < 30000 && entry.level !== LogLevel.ERROR) {
+      return;
+    }
+
     this.logs.push(entry);
     if (this.logs.length > this.maxLogs) {
       this.logs.shift();
     }
+
+    // Update counters
+    this.logCounts.set(logKey, count + 1);
+    this.lastLogTime.set(logKey, now);
+    this.lastLogTime.set(messageHash, now);
   }
 
   private formatMessage(entry: LogEntry): string {

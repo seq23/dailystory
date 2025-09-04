@@ -11,15 +11,54 @@ export class SecurityMonitor {
     severity: 'low' | 'medium' | 'high' | 'critical';
   }> = [];
 
+  private static eventCounts = new Map<string, number>();
+  private static lastEventTime = new Map<string, number>();
+  private static readonly RATE_LIMIT_WINDOW = 60000; // 1 minute
+  private static readonly MAX_EVENTS_PER_TYPE = 20; // Max events per type per minute
+  private static readonly SAMPLING_RATES = {
+    low: 0.05,     // 5% sampling for low severity  
+    medium: 0.3,   // 30% sampling for medium severity
+    high: 0.7,     // 70% sampling for high severity
+    critical: 1.0  // 100% sampling for critical severity
+  };
+
   static logEvent(
     type: 'security' | 'performance' | 'error' | 'user',
     event: string,
     data: any = {},
     severity: 'low' | 'medium' | 'high' | 'critical' = 'low'
   ) {
+    // Apply sampling to reduce volume
+    if (Math.random() > this.SAMPLING_RATES[severity]) {
+      return;
+    }
+
+    // Rate limiting per event type
+    const now = Date.now();
+    const eventKey = `${type}-${event}`;
+    const lastTime = this.lastEventTime.get(eventKey) || 0;
+    const count = this.eventCounts.get(eventKey) || 0;
+
+    // Reset counter if window expired
+    if (now - lastTime > this.RATE_LIMIT_WINDOW) {
+      this.eventCounts.set(eventKey, 0);
+    }
+
+    // Skip if rate limit exceeded (except for critical events)
+    if (severity !== 'critical' && count >= this.MAX_EVENTS_PER_TYPE) {
+      return;
+    }
+
+    // Event deduplication - skip identical events within 10 seconds
+    const eventHash = `${type}-${event}-${JSON.stringify(data)}`;
+    const lastEventTime = this.lastEventTime.get(eventHash) || 0;
+    if (now - lastEventTime < 10000 && severity !== 'critical') {
+      return;
+    }
+
     const eventLog = {
       id: this.generateId(),
-      timestamp: Date.now(),
+      timestamp: now,
       type,
       event,
       data: this.sanitizeData(data),
@@ -33,8 +72,13 @@ export class SecurityMonitor {
       this.events.shift();
     }
 
-    // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
+    // Update counters
+    this.eventCounts.set(eventKey, count + 1);
+    this.lastEventTime.set(eventKey, now);
+    this.lastEventTime.set(eventHash, now);
+
+    // Only log high/critical events in production
+    if (process.env.NODE_ENV === 'development' || severity === 'high' || severity === 'critical') {
       const logLevel = severity === 'critical' ? 'error' : 
                      severity === 'high' ? 'warn' : 'log';
       console[logLevel](`[${type.toUpperCase()}] ${event}:`, data);
