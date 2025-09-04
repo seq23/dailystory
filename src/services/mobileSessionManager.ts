@@ -1,4 +1,6 @@
 // Mobile-specific session management with enhanced reliability
+import { LoggerService } from './LoggerService';
+
 export class MobileSessionManager {
   private static memoryStorage: Map<string, string> = new Map();
   private static isSupported: boolean | null = null;
@@ -19,7 +21,7 @@ export class MobileSessionManager {
       return true;
     } catch {
       this.isSupported = false;
-      console.warn('📱 MobileSessionManager: SessionStorage not available, using memory fallback');
+      LoggerService.warn('SessionStorage not available, using memory fallback', 'MobileSessionManager');
       return false;
     }
   }
@@ -35,7 +37,7 @@ export class MobileSessionManager {
       // Always update memory as backup
       this.memoryStorage.set(key, value);
     } catch (error) {
-      console.warn('📱 MobileSessionManager: SessionStorage failed, using memory only:', error);
+      LoggerService.warn('SessionStorage failed, using memory only', 'MobileSessionManager', error);
       this.memoryStorage.set(key, value);
     }
   }
@@ -55,7 +57,7 @@ export class MobileSessionManager {
       }
       return this.memoryStorage.get(key) || null;
     } catch (error) {
-      console.warn('📱 MobileSessionManager: SessionStorage read failed, using memory:', error);
+      LoggerService.warn('SessionStorage read failed, using memory', 'MobileSessionManager', error);
       return this.memoryStorage.get(key) || null;
     }
   }
@@ -70,7 +72,7 @@ export class MobileSessionManager {
       }
       this.memoryStorage.delete(key);
     } catch (error) {
-      console.warn('📱 MobileSessionManager: SessionStorage remove failed:', error);
+      LoggerService.warn('SessionStorage remove failed', 'MobileSessionManager', error);
       this.memoryStorage.delete(key);
     }
   }
@@ -85,7 +87,7 @@ export class MobileSessionManager {
       }
       this.memoryStorage.clear();
     } catch (error) {
-      console.warn('📱 MobileSessionManager: SessionStorage clear failed:', error);
+      LoggerService.warn('SessionStorage clear failed', 'MobileSessionManager', error);
       this.memoryStorage.clear();
     }
   }
@@ -112,7 +114,7 @@ export class MobileSessionManager {
       // Longer debounce during audio playback to prevent interference
       const debounceTime = isAudioPlaying ? 3000 : 1000;
       if (timeSinceLastChange < debounceTime) {
-        console.log('🔄 Debouncing visibility change (audio-aware)');
+        LoggerService.debug('Debouncing visibility change (audio-aware)', 'MobileSessionManager');
         return;
       }
       lastVisibilityChange = now;
@@ -120,13 +122,13 @@ export class MobileSessionManager {
       if (document.hidden) {
         // Only log if not during audio playback to reduce console noise
         if (!isAudioPlaying) {
-          console.log('📱 MobileSessionManager: App backgrounded, preserving session state');
+          LoggerService.debug('App backgrounded, preserving session state', 'MobileSessionManager');
         }
         // Session data is already saved in memory, no additional action needed
       } else {
         // Only log if not during audio playback to reduce console noise
         if (!isAudioPlaying) {
-          console.log('📱 MobileSessionManager: App foregrounded, session state preserved');
+          LoggerService.debug('App foregrounded, session state preserved', 'MobileSessionManager');
         }
       }
     });
@@ -137,7 +139,7 @@ export class MobileSessionManager {
       // Final cleanup when page is being hidden/unloaded
       // Session data is already preserved in memory via visibilitychange handler
       if (this.memoryStorage.size > 0 && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('📱 MobileSessionManager: Page hidden, session state preserved in memory');
+        LoggerService.debug('Page hidden, session state preserved in memory', 'MobileSessionManager');
       }
     });
   }

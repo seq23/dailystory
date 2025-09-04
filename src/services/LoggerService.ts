@@ -25,6 +25,11 @@ class Logger {
   private lastLogTime = new Map<string, number>();
   private readonly RATE_LIMIT_WINDOW = 60000; // 1 minute
   private readonly MAX_LOGS_PER_TYPE = 10; // Max 10 logs per type per minute
+  
+  // Grouping and frequency tracking
+  private messageFrequency = new Map<string, { count: number; firstSeen: number; lastSeen: number }>();
+  private activeGroups = new Set<string>();
+  private readonly MESSAGE_GROUPING_WINDOW = 30000; // 30 seconds
 
   private constructor() {
     // Set log level based on environment - more restrictive in production
@@ -70,11 +75,23 @@ class Logger {
       return;
     }
 
-    // Deduplication - skip identical messages within 30 seconds
-    const messageHash = `${entry.level}-${entry.message}`;
-    const lastMessageTime = this.lastLogTime.get(messageHash) || 0;
-    if (now - lastMessageTime < 30000 && entry.level !== LogLevel.ERROR) {
-      return;
+    // Message frequency tracking for grouping
+    const messageKey = `${entry.level}-${entry.message}-${entry.context || ''}`;
+    const frequency = this.messageFrequency.get(messageKey);
+    
+    if (frequency && (now - frequency.firstSeen) < this.MESSAGE_GROUPING_WINDOW) {
+      // Update existing frequency count
+      frequency.count++;
+      frequency.lastSeen = now;
+      this.messageFrequency.set(messageKey, frequency);
+      return; // Don't add duplicate to buffer, just update count
+    } else {
+      // New message or outside grouping window
+      this.messageFrequency.set(messageKey, {
+        count: 1,
+        firstSeen: now,
+        lastSeen: now
+      });
     }
 
     this.logs.push(entry);
@@ -85,13 +102,37 @@ class Logger {
     // Update counters
     this.logCounts.set(logKey, count + 1);
     this.lastLogTime.set(logKey, now);
-    this.lastLogTime.set(messageHash, now);
   }
 
   private formatMessage(entry: LogEntry): string {
     const levelStr = LogLevel[entry.level];
     const contextStr = entry.context ? `[${entry.context}]` : '';
-    return `${levelStr}${contextStr}: ${entry.message}`;
+    const messageKey = `${entry.level}-${entry.message}-${entry.context || ''}`;
+    const frequency = this.messageFrequency.get(messageKey);
+    
+    // Add frequency count if message was repeated
+    const frequencyStr = frequency && frequency.count > 1 ? ` (×${frequency.count})` : '';
+    
+    return `${levelStr}${contextStr}: ${entry.message}${frequencyStr}`;
+  }
+
+  // Group related log messages
+  group(label: string, collapsed: boolean = false): void {
+    if (this.activeGroups.has(label)) return; // Don't create duplicate groups
+    
+    this.activeGroups.add(label);
+    if (collapsed) {
+      console.groupCollapsed(label);
+    } else {
+      console.group(label);
+    }
+  }
+
+  groupEnd(label?: string): void {
+    if (label && this.activeGroups.has(label)) {
+      this.activeGroups.delete(label);
+    }
+    console.groupEnd();
   }
 
   error(message: string, context?: string, data?: any): void {
@@ -156,5 +197,7 @@ export const LoggerService = {
   info: (message: string, context?: string, data?: any) => logger.info(message, context, data),
   debug: (message: string, context?: string, data?: any) => logger.debug(message, context, data),
   milestone: (message: string, context?: string, data?: any) => logger.milestone(message, context, data),
-  setLevel: (level: LogLevel) => logger.setLogLevel(level)
+  setLevel: (level: LogLevel) => logger.setLogLevel(level),
+  group: (label: string, collapsed?: boolean) => logger.group(label, collapsed),
+  groupEnd: (label?: string) => logger.groupEnd(label)
 };

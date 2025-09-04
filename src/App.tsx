@@ -25,6 +25,8 @@ import { VoiceHoverController } from "./components/VoiceHoverController";
 // Import new services for global availability
 import "./services/AdvancedPerformanceMonitor";
 import "./services/ABTestingFramework";
+import { LoggerService } from "./services/LoggerService";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -37,7 +39,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  console.log("DEPLOYMENT TEST - App component loaded successfully");
+  LoggerService.milestone("App component loaded successfully", "DEPLOYMENT_TEST");
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
