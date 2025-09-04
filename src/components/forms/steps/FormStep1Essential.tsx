@@ -191,7 +191,7 @@ export const FormStep1Essential = ({
             <SelectContent>
               {[3, 4, 5, 6, 7, 8, 9, 10, 11].map((age) => (
                 <SelectItem key={age} value={age.toString()}>
-                  {age} {t("formStep1.age.years", "years old")}
+                  {age === 11 ? `11+ ${t("formStep1.age.years", "years old")}` : `${age} ${t("formStep1.age.years", "years old")}`}
                 </SelectItem>
               ))}
             </SelectContent>
