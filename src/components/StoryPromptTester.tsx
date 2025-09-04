@@ -82,17 +82,18 @@ interface ServiceComparison {
   template?: TestResult;
 }
 
-// Enhanced test profiles with more comprehensive coverage
+// Enhanced test profiles - Using frontend difficulty levels that real users see
+// These will be automatically converted to backend levels by DifficultyLevelMapper in the services
 const testUserProfiles: Record<string, UserInfo> = {
   // Core difficulty levels
   beginner: {
     name: 'Emma',
     age: 4,
     grade: "PreK" as Grade,
-    nativeLanguage: "en" as LanguageCode,
+    nativeLanguage: "en" as LanguageCode,  
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
-    difficultyLevel: 'beginner',
+    difficultyLevel: 'pre-reader' as any, // Frontend level: will map to 'beginner' backend
     favoriteColor: 'pink',
     favoriteAnimal: 'butterfly',
     hobbies: 'coloring',
@@ -106,7 +107,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
-    difficultyLevel: 'easy',
+    difficultyLevel: 'beginner' as any, // Frontend level: will map to 'easy' backend
     favoriteColor: 'blue',
     favoriteAnimal: 'dolphin',
     hobbies: 'swimming',
@@ -120,7 +121,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "medium" },
-    difficultyLevel: 'medium',
+    difficultyLevel: 'developing' as any, // Frontend level: will map to 'medium' backend
     favoriteColor: 'green',
     favoriteAnimal: 'owl',
     hobbies: 'reading mysteries',
@@ -134,7 +135,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "dark" },
-    difficultyLevel: 'hard',
+    difficultyLevel: 'independent' as any, // Frontend level: will map to 'hard' backend
     favoriteColor: 'purple',
     favoriteAnimal: 'wolf',
     hobbies: 'adventure sports',
@@ -148,7 +149,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
-    difficultyLevel: 'expert',
+    difficultyLevel: 'advanced' as any, // Frontend level: will map to 'expert' backend
     expertGradeLevel: '6th' as ExpertGradeLevel,
     favoriteColor: 'silver',
     favoriteAnimal: 'dragon',
@@ -157,7 +158,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     specialRequest: 'complex adventures'
   },
   
-  // Grade-specific expert levels
+  // Grade-specific expert levels - Updated to use frontend difficulty levels
   grade6: {
     name: 'Sam',
     age: 11,
@@ -165,7 +166,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
-    difficultyLevel: 'expert',
+    difficultyLevel: 'advanced' as any, // Frontend level: will map to 'expert' backend
     expertGradeLevel: '6th' as ExpertGradeLevel,
     favoriteColor: 'orange',
     favoriteAnimal: 'tiger',
@@ -180,7 +181,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "dark" },
-    difficultyLevel: 'expert',
+    difficultyLevel: 'advanced' as any, // Frontend level: will map to 'expert' backend
     expertGradeLevel: '7th' as ExpertGradeLevel,
     favoriteColor: 'gold',
     favoriteAnimal: 'falcon',
@@ -195,7 +196,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "medium" },
-    difficultyLevel: 'expert',
+    difficultyLevel: 'advanced' as any, // Frontend level: will map to 'expert' backend
     expertGradeLevel: '8th' as ExpertGradeLevel,
     favoriteColor: 'teal',
     favoriteAnimal: 'whale',
@@ -210,7 +211,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "olive" },
-    difficultyLevel: 'expert',
+    difficultyLevel: 'advanced' as any, // Frontend level: will map to 'expert' backend
     expertGradeLevel: '9th' as ExpertGradeLevel,
     favoriteColor: 'violet',
     favoriteAnimal: 'raven',
@@ -225,7 +226,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "olive" },
-    difficultyLevel: 'expert',
+    difficultyLevel: 'advanced' as any, // Frontend level: will map to 'expert' backend
     expertGradeLevel: '10th' as ExpertGradeLevel,
     favoriteColor: 'crimson',
     favoriteAnimal: 'phoenix',
