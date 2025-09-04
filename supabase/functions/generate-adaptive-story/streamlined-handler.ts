@@ -139,6 +139,12 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     let finalSystemPrompt = promptConfig.systemPrompt;
     let finalUserPrompt = bundle.storyContent;
     
+    // Add available functions to system prompt
+    finalSystemPrompt += `\n\nAVAILABLE FUNCTIONS:
+- getVocabularyForGrade(level) - Fetch grade-appropriate vocabulary when needed
+- getCulturalContext(userInfo) - Fetch culturally relevant character names, foods, and celebrations when needed  
+- getAuthorVoicePatterns(difficulty) - Fetch narrative voice patterns and transitions when needed`;
+    
     // REPAIR MODE: Enhance prompts with repair-specific instructions
     if (config.sessionType === 'repair' && config.originalContent && config.repairReasons) {
       console.log('🔧 STREAMLINED: Applying repair-specific prompt enhancements');
@@ -471,10 +477,11 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.userName} is a ${avatarInfo.completeGenderInfo}.`;
     }
     
-    // Add available functions to AI prompt - no static arrays
-    enhancedUserPrompt += `\n\nAvailable Function: getVocabularyForGrade(level) - Use this to fetch grade-appropriate vocabulary dynamically when needed.
-Available Function: getCulturalContext(userInfo) - Use this to fetch culturally relevant character names, foods, and celebrations when needed.
-Available Function: getAuthorVoicePatterns(difficulty) - Use this to fetch narrative voice patterns and transitions when needed.`;
+    // Add clear directives for AI story creation
+    enhancedUserPrompt += `\n\nCREATIVE DIRECTIVES:
+- When story needs diverse elements, use getCulturalContext() for appropriate cultural options
+- Apply storytelling voice using getAuthorVoicePatterns() for varied openers, smooth transitions, and engaging flow
+- Use vocabulary appropriate for the grade level, accessing getVocabularyForGrade() when needed`;
     
   } catch (avatarError) {
     console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
