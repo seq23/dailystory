@@ -294,41 +294,10 @@ Separate Avatar Data: ${JSON.stringify(separateAvatarData)}`;
     try {
       console.log('🎯 Calling streamlined edge function');
       
-      // CRITICAL FIX: Format the actual user prompt template with resolved data
-      const { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, mapGradeToExpertLevel } = await import('../constants/storyPrompts');
-      
-      // Determine difficulty/grade level
-      const gradeLevel = bundle.systemSettings.gradeLevel;
-      const expertGrade = config.expertGradeLevel || mapGradeToExpertLevel(gradeLevel);
-      const difficulty = config.difficulty || this.mapGradeLevelToDifficulty(gradeLevel);
-      
-      // Get the correct prompt template
-      const promptConfig = expertGrade 
-        ? getExpertStoryPrompt(expertGrade)
-        : getStoryPrompt(difficulty);
-      
-      // Extract user data from the resolved bundle for formatUserPrompt
-      const extractedData = this.extractUserInfoFromBundle(bundle.storyContent);
-      
-      // Format the user prompt template with the extracted data
-      const formattedUserPrompt = formatUserPrompt(promptConfig.userPromptTemplate, extractedData);
-      
-      // Replace bundle.storyContent with the properly formatted prompt
-      const enhancedBundle = {
-        ...bundle,
-        storyContent: formattedUserPrompt
-      };
-      
-      console.log('🔧 Fixed user prompt linkage:', {
-        originalLength: bundle.storyContent.length,
-        formattedLength: formattedUserPrompt.length,
-        difficulty: expertGrade || difficulty
-      });
-      
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
-          // Streamlined payload structure with fixed prompt
-          bundle: enhancedBundle,
+          // Pass original resolved bundle with rich creative guidance
+          bundle: bundle,
           config: {
             sessionType: config.sessionType || 'free',
             pageNumber: config.pageNumber || 1,
@@ -363,7 +332,7 @@ Separate Avatar Data: ${JSON.stringify(separateAvatarData)}`;
         const { data: processResult, error: processError } = await supabase.functions.invoke('process-story-content', {
           body: {
             pages: data.pages || [],
-            userInfo: this.extractUserInfoFromBundle(bundle.storyContent),
+            userInfo: this.reconstructUserInfoFromBundle(bundle),
             sessionId: 'ai-generation-' + Date.now()
           }
         });
@@ -470,6 +439,34 @@ Separate Avatar Data: ${JSON.stringify(separateAvatarData)}`;
     }
     
     return extractedData;
+  }
+
+  /**
+   * Reconstruct UserInfo object from bundle for grammar processing compatibility
+   */
+  private static reconstructUserInfoFromBundle(bundle: StoryGenerationBundle): UserInfo {
+    // Extract character info from storyContent
+    const extractedData = this.extractUserInfoFromBundle(bundle.storyContent);
+    
+    // Reconstruct UserInfo interface
+    return {
+      name: extractedData.name || extractedData.userName || 'Child',
+      age: extractedData.age || 5,
+      nativeLanguage: extractedData.nativeLanguage || 'en',
+      difficultyLevel: extractedData.difficultyLevel || 'beginner',
+      gradeLevel: extractedData.gradeLevel || 'PreK',
+      grade: extractedData.gradeLevel || 'PreK',
+      learningGoal: 'improve-english-reading' as LearningGoal,
+      avatar: {
+        type: (extractedData.avatarType || 'prefer-not-to-answer') as AvatarType,
+        skinTone: 'light'
+      },
+      specialRequest: extractedData.specialRequest || '',
+      favoriteColor: extractedData.favoriteColor,
+      favoriteAnimal: extractedData.favoriteAnimal, 
+      favoriteFood: extractedData.favoriteFood,
+      hobbies: extractedData.hobbies
+    };
   }
 
   /**
