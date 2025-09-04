@@ -129,7 +129,7 @@ export const getMobileAnimationConfig = () => ({
  * Font loading optimizations for mobile
  */
 export const optimizeFontLoading = () => {
-  // Preload critical fonts
+  // Load critical fonts as stylesheets
   const criticalFonts = [
     'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap',
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap'
@@ -138,14 +138,13 @@ export const optimizeFontLoading = () => {
   criticalFonts.forEach(fontUrl => {
     try {
       const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'style';
+      link.rel = 'stylesheet';
       link.href = fontUrl;
       link.crossOrigin = 'anonymous';
       document.head.appendChild(link);
     } catch (error) {
       // Suppress Chrome extension interference errors
-      console.debug('Font preload skipped:', error);
+      console.debug('Font loading skipped:', error);
     }
   });
 };
