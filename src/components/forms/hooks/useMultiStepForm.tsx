@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { SecurityLogger } from "@/utils/security";
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import type { UserInfo, DifficultyLevel } from "@/types";
 
 export const useMultiStepForm = () => {
@@ -26,7 +27,7 @@ export const useMultiStepForm = () => {
     specialRequest: "",
     targetVocabulary: "",
     difficultyLevel: "beginner",
-    readingAbility: "beginner"
+    readingAbility: "pre-reader"
   });
 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -121,12 +122,15 @@ export const useMultiStepForm = () => {
       return null;
     }
 
-    // Determine difficulty level
-    const difficulty: DifficultyLevel = formData.readingAbility || 
-      (formData.age <= 5 ? "beginner" : 
-       formData.age <= 8 ? "easy" : 
-       formData.age <= 11 ? "medium" : 
-       formData.age <= 13 ? "hard" : "expert");
+    // Determine difficulty level - Convert frontend readingAbility to backend difficulty
+    const frontendReadingAbility = formData.readingAbility || 
+      (formData.age <= 5 ? "pre-reader" : 
+       formData.age <= 8 ? "beginner" : 
+       formData.age <= 11 ? "developing" : 
+       formData.age <= 13 ? "independent" : "advanced");
+    
+    // Convert frontend value to backend value using DifficultyLevelMapper
+    const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendReadingAbility);
     
     SecurityLogger.log('form_submission_success', {
       difficultyLevel: difficulty,

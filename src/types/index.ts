@@ -28,7 +28,7 @@ export interface UserInfo {
   specialRequest: string;
   targetVocabulary?: string;
   difficultyLevel?: DifficultyLevel;
-  readingAbility?: DifficultyLevel;
+  readingAbility?: string; // Can store both frontend and backend difficulty values
   readingLevel?: string; // Add this for compatibility
   interests?: string[]; // Add this for compatibility
   

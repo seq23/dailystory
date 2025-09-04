@@ -1,6 +1,7 @@
 // Difficulty Manager - Intelligent difficulty assignment and progression
 import { DifficultyLevel, UserInfo } from '@/types';
 import { MobileSessionManager } from './mobileSessionManager';
+import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 
 interface DifficultyProfile {
   suggestedDifficulty: DifficultyLevel;
@@ -176,12 +177,13 @@ export class DifficultyManager {
     }
     if (userInfo.readingAbility) {
       console.log(`🎯 DifficultyManager: Using user's explicit readingAbility ${userInfo.readingAbility} for ${userId}`);
+      const backendDifficulty = DifficultyLevelMapper.toBackend(userInfo.readingAbility);
       return {
-        difficulty: userInfo.readingAbility,
+        difficulty: backendDifficulty,
         isStored: false,
         profile: {
           ...profile,
-          suggestedDifficulty: userInfo.readingAbility,
+          suggestedDifficulty: backendDifficulty,
           reasoning: ['Using user\'s explicit reading ability choice', ...profile.reasoning]
         }
       };

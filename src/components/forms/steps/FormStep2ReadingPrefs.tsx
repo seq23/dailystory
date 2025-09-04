@@ -7,7 +7,8 @@ import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { ChevronLeft, ArrowRight, BookOpen, Info, ChevronDown } from "lucide-react";
-import type { UserInfo, DifficultyLevel, LearningGoal } from "@/types";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import type { UserInfo, LearningGoal } from "@/types";
 
 interface FormStep2ReadingPrefsProps {
   formData: UserInfo;
@@ -30,38 +31,38 @@ export const FormStep2ReadingPrefs = ({
 }: FormStep2ReadingPrefsProps) => {
   const { t } = useTranslation();
 
-  // Customer-facing reading level mappings
+  // Customer-facing reading level mappings - Using FRONTEND difficulty terms
   const readingLevels = [
     {
-      value: "beginner" as DifficultyLevel,
+      value: "pre-reader",
       label: t("readingLevels.preReader.title", "Pre-Reader"),
       description: t("readingLevels.preReader.desc", "Getting ready to read with picture support"),
       educational: t("readingLevels.preReader.educational", "Based on pre-literacy skills and Dolch Pre-Primer words"),
       suggestedAge: "3-4"
     },
     {
-      value: "easy" as DifficultyLevel,
+      value: "beginner",
       label: t("readingLevels.beginner.title", "Beginner"),
       description: t("readingLevels.beginner.desc", "Learning basic words and simple sentences"),
       educational: t("readingLevels.beginner.educational", "Uses Dolch Primer and Grade 1 sight words (220 most common words)"),
       suggestedAge: "4-6"
     },
     {
-      value: "medium" as DifficultyLevel,
+      value: "developing",
       label: t("readingLevels.developing.title", "Developing"),
       description: t("readingLevels.developing.desc", "Building reading confidence and fluency"),
       educational: t("readingLevels.developing.educational", "Incorporates Grade 2-3 vocabulary with reading comprehension focus"),
       suggestedAge: "6-8"
     },
     {
-      value: "hard" as DifficultyLevel,
+      value: "independent",
       label: t("readingLevels.independent.title", "Independent"),
       description: t("readingLevels.independent.desc", "Reading chapter books independently"),
       educational: t("readingLevels.independent.educational", "Grade 4-5 level with advanced sentence structures"),
       suggestedAge: "8-10"
     },
     {
-      value: "expert" as DifficultyLevel,
+      value: "advanced",
       label: t("readingLevels.advanced.title", "Advanced"),
       description: t("readingLevels.advanced.desc", "Mastering complex stories and vocabulary"),
       educational: t("readingLevels.advanced.educational", "Grade 6+ with sophisticated vocabulary and themes"),
@@ -89,7 +90,7 @@ export const FormStep2ReadingPrefs = ({
     return null;
   };
 
-  const handleInputChange = (field: keyof UserInfo, value: DifficultyLevel | LearningGoal) => {
+  const handleInputChange = (field: keyof UserInfo, value: string | LearningGoal) => {
     onUpdate({ [field]: value });
   };
 
@@ -130,8 +131,8 @@ export const FormStep2ReadingPrefs = ({
           )}
 
           <Select
-            value={formData.readingAbility || "beginner"}
-            onValueChange={(value) => handleInputChange('readingAbility', value as DifficultyLevel)}
+            value={formData.readingAbility || "pre-reader"}
+            onValueChange={(value) => handleInputChange('readingAbility', value)}
           >
             <SelectTrigger id="readingLevel" className="h-auto">
               <SelectValue placeholder={t("formStep2.readingLevel.placeholder", "Choose reading level")} />
