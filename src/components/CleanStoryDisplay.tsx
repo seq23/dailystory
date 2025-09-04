@@ -2812,11 +2812,14 @@ const handleRestartTimer = () => {
   // Manual End Session (Premium): 5s celebration with music then stats
   const handleManualEndSession = async () => {
     setShowManualCelebration(true);
+    // Use direct audio creation to avoid preload warnings
     try {
       const audio = new Audio('/audio/celebration.mp3');
       audio.volume = 0.6;
       audio.play().catch(() => {});
-    } catch {}
+    } catch {
+      // Silently handle audio failures
+    }
     
     // Performance optimization: Move heavy logic out of setTimeout
     setTimeout(() => {

@@ -165,7 +165,7 @@ export const suppressChromeExtensionErrors = () => {
 
   // Enhanced patterns for Chrome extension, postMessage, and development errors
   const suppressPatterns = [
-    // Chrome extension errors
+    // Chrome extension errors - enhanced patterns
     /Could not establish connection/,
     /runtime\.lastError/,
     /Receiving end does not exist/,
@@ -173,6 +173,37 @@ export const suppressChromeExtensionErrors = () => {
     /Extension context invalidated/,
     /Cannot access contents of/,
     /Unchecked runtime\.lastError/,
+    /Error in event handler/,
+    
+    // Feature Policy / Permissions Policy warnings
+    /Unrecognized feature:/,
+    /Unrecognized feature: 'vr'/,
+    /Unrecognized feature: 'ambient-light-sensor'/,
+    /Unrecognized feature: 'battery'/,
+    /Unrecognized feature: 'speaker'/,
+    /Unrecognized feature: 'vibrate'/,
+    
+    // Iframe security warnings
+    /An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing/,
+    /iframe.*sandbox.*escape/,
+    
+    // Performance violation warnings
+    /\[Violation\].*setTimeout.*handler took/,
+    /\[Violation\].*'requestAnimationFrame' handler took/,
+    /\[Violation\].*'click' handler took/,
+    /Forced reflow while executing JavaScript/,
+    /Long running JavaScript task took/,
+    
+    // Audio preload warnings
+    /was preloaded using link preload but not used within a few seconds/,
+    /resource.*preloaded.*not used/,
+    /preload.*not.*used/,
+    
+    // Lovable development environment noise
+    /We're hiring!/,
+    /lovable\.dev\/careers/,
+    /⠀⣠⠴⠚⡙⠙⠲⣤⣠⠖⢋⡛⠙⠲⣄/,  // ASCII art pattern
+    /hiring.*ascii/i,
     
     // PostMessage origin errors - common in iframe/preview environments
     /Failed to execute 'postMessage' on 'DOMWindow'/,

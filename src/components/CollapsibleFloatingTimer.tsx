@@ -95,13 +95,16 @@ export const CollapsibleFloatingTimer = ({
 useEffect(() => {
   if (timeRemaining === 0 && !expiredAcknowledged && !showCelebration && !showChoice) {
     setShowCelebration(true);
-    try {
-      if (!muted) {
+    if (!muted) {
+      // Use direct audio creation to avoid preload warnings
+      try {
         const audio = new Audio('/audio/celebration.mp3');
         audio.volume = 0.5;
         audio.play().catch(() => {});
+      } catch {
+        // Silently handle audio failures
       }
-    } catch {}
+    }
     const timeout = setTimeout(() => {
       setShowCelebration(false);
       if (isPremium) {
