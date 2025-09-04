@@ -751,6 +751,7 @@ export function StoryPromptTester() {
             contentIssues,
             tokenValidation: {
               isValid: tokenValidation.isValid,
+              isBypassed: result.source === 'fallback' || result.source === 'emergency' || result.emergencyContentUsed,
               actualTokens: tokenValidation.metrics.tokenCount,
               maxAllowed: UnifiedValidator.getTokenLimits(validationLevel).guestStory,
               warnings: tokenValidation.reasons
