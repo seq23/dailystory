@@ -2,6 +2,7 @@
  * Mobile Performance and User Experience Optimizations
  * Centralized utilities for mobile-specific enhancements
  */
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 
 export interface MobileOptimizationConfig {
   enableTouchOptimizations: boolean;
@@ -239,6 +240,30 @@ export const enhanceMobileAccessibility = () => {
 export const initializeMobileOptimizations = (config: Partial<MobileOptimizationConfig> = {}) => {
   const finalConfig = { ...DEFAULT_MOBILE_CONFIG, ...config };
   const cleanupFunctions: (() => void)[] = [];
+
+  // Initialize performance monitoring with forced reflow detection
+  try {
+    // Note: This should be called from a React component, but we'll add global detection
+    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.entryType === 'measure' && entry.duration > 16) {
+            console.warn(`⚡ Potential forced reflow: ${entry.name} took ${entry.duration.toFixed(2)}ms`);
+          }
+        }
+      });
+      
+      try {
+        observer.observe({ entryTypes: ['measure', 'navigation'] });
+        cleanupFunctions.push(() => observer.disconnect());
+        console.debug('🚀 Performance monitoring with reflow detection enabled');
+      } catch (e) {
+        console.debug('Performance observer not fully supported');
+      }
+    }
+  } catch (error) {
+    console.debug('Performance monitoring unavailable:', error);
+  }
 
   // Always suppress Chrome extension errors for cleaner console
   cleanupFunctions.push(suppressChromeExtensionErrors());

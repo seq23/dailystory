@@ -28,63 +28,68 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
   const calculatePosition = () => {
     if (!triggerRef.current || !tooltipRef.current) return;
 
-    const triggerRect = triggerRef.current.getBoundingClientRect();
-    const tooltipRect = tooltipRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top') || '0');
-    const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0');
+    requestAnimationFrame(() => {
+      if (!triggerRef.current || !tooltipRef.current) return;
 
-    let x = 0;
-    let y = 0;
+      // Batch DOM reads to minimize reflows
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top') || '0');
+      const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0');
 
-    // Calculate base position
-    switch (side) {
-      case 'top':
-        x = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
-        y = triggerRect.top - tooltipRect.height - 8;
-        break;
-      case 'bottom':
-        x = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
-        y = triggerRect.bottom + 8;
-        break;
-      case 'left':
-        x = triggerRect.left - tooltipRect.width - 8;
-        y = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
-        break;
-      case 'right':
-        x = triggerRect.right + 8;
-        y = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
-        break;
-    }
+      let x = 0;
+      let y = 0;
 
-    // Apply alignment adjustments
-    if (side === 'top' || side === 'bottom') {
-      if (align === 'start') x = triggerRect.left;
-      if (align === 'end') x = triggerRect.right - tooltipRect.width;
-    } else {
-      if (align === 'start') y = triggerRect.top;
-      if (align === 'end') y = triggerRect.bottom - tooltipRect.height;
-    }
-
-    // Mobile and Tablet specific boundary checks with safe areas
-    if (isMobileOrTablet) {
-      const padding = isMobile ? 16 : 24; // Larger padding for tablets
-      
-      // Horizontal boundary check
-      if (x < padding) x = padding;
-      if (x + tooltipRect.width > viewportWidth - padding) {
-        x = viewportWidth - tooltipRect.width - padding;
+      // Calculate base position
+      switch (side) {
+        case 'top':
+          x = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+          y = triggerRect.top - tooltipRect.height - 8;
+          break;
+        case 'bottom':
+          x = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
+          y = triggerRect.bottom + 8;
+          break;
+        case 'left':
+          x = triggerRect.left - tooltipRect.width - 8;
+          y = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+          break;
+        case 'right':
+          x = triggerRect.right + 8;
+          y = triggerRect.top + (triggerRect.height / 2) - (tooltipRect.height / 2);
+          break;
       }
 
-      // Vertical boundary check with safe areas
-      if (y < safeAreaTop + padding) y = safeAreaTop + padding;
-      if (y + tooltipRect.height > viewportHeight - safeAreaBottom - padding) {
-        y = viewportHeight - tooltipRect.height - safeAreaBottom - padding;
+      // Apply alignment adjustments
+      if (side === 'top' || side === 'bottom') {
+        if (align === 'start') x = triggerRect.left;
+        if (align === 'end') x = triggerRect.right - tooltipRect.width;
+      } else {
+        if (align === 'start') y = triggerRect.top;
+        if (align === 'end') y = triggerRect.bottom - tooltipRect.height;
       }
-    }
 
-    setPosition({ x, y });
+      // Mobile and Tablet specific boundary checks with safe areas
+      if (isMobileOrTablet) {
+        const padding = isMobile ? 16 : 24; // Larger padding for tablets
+        
+        // Horizontal boundary check
+        if (x < padding) x = padding;
+        if (x + tooltipRect.width > viewportWidth - padding) {
+          x = viewportWidth - tooltipRect.width - padding;
+        }
+
+        // Vertical boundary check with safe areas
+        if (y < safeAreaTop + padding) y = safeAreaTop + padding;
+        if (y + tooltipRect.height > viewportHeight - safeAreaBottom - padding) {
+          y = viewportHeight - tooltipRect.height - safeAreaBottom - padding;
+        }
+      }
+
+      setPosition({ x, y });
+    });
   };
 
   const showTooltip = () => {
@@ -98,20 +103,34 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
 
   useEffect(() => {
     if (isVisible) {
-      const timer = setTimeout(calculatePosition, 0);
-      return () => clearTimeout(timer);
+      // Use requestAnimationFrame for position calculation
+      const frame = requestAnimationFrame(calculatePosition);
+      return () => cancelAnimationFrame(frame);
     }
   }, [isVisible, side, align, isMobileOrTablet]);
 
   useEffect(() => {
     if (isVisible) {
-      const handleResize = () => calculatePosition();
-      const handleScroll = () => calculatePosition();
+      // Debounce resize and scroll handlers to prevent excessive reflows
+      let resizeTimeout: NodeJS.Timeout;
+      let scrollTimeout: NodeJS.Timeout;
+      
+      const handleResize = () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(calculatePosition, 16); // One frame delay
+      };
+      
+      const handleScroll = () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(calculatePosition, 8); // Faster for scroll
+      };
       
       window.addEventListener('resize', handleResize);
       window.addEventListener('scroll', handleScroll, { passive: true });
       
       return () => {
+        clearTimeout(resizeTimeout);
+        clearTimeout(scrollTimeout);
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('scroll', handleScroll);
       };

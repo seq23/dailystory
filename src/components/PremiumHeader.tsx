@@ -55,17 +55,29 @@ export const PremiumHeader = ({
   useEffect(() => {
     const el = headerRef.current;
     if (!el) return;
+    
+    // Cache height to avoid repeated measurements
+    let cachedHeight = 0;
+    
     const setVar = () => {
-      const h = el.getBoundingClientRect().height;
-      document.documentElement.style.setProperty('--app-header-height', `${h}px`);
+      requestAnimationFrame(() => {
+        const h = el.getBoundingClientRect().height;
+        if (Math.abs(h - cachedHeight) > 1) { // Only update if significantly changed
+          cachedHeight = h;
+          document.documentElement.style.setProperty('--app-header-height', `${h}px`);
+        }
+      });
     };
+    
+    // Initial measurement
     setVar();
+    
+    // Use ResizeObserver for efficient resize detection
     const ro = new ResizeObserver(() => setVar());
     ro.observe(el);
-    window.addEventListener('resize', setVar);
+    
     return () => {
       ro.disconnect();
-      window.removeEventListener('resize', setVar);
     };
   }, []);
 

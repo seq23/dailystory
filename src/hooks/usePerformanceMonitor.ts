@@ -45,6 +45,35 @@ export function usePerformanceMonitor() {
     };
   }, []);
 
+  const detectForcedReflows = useCallback(() => {
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'measure') {
+          // Detect potential forced reflow patterns
+          if (entry.duration > 16) { // Frame budget exceeded
+            console.warn(`⚡ Potential forced reflow: ${entry.name} took ${entry.duration.toFixed(2)}ms`);
+          }
+        }
+      }
+    });
+    
+    if ('PerformanceObserver' in window) {
+      try {
+        observer.observe({ entryTypes: ['measure', 'navigation'] });
+      } catch (e) {
+        console.debug('Performance observer not fully supported');
+      }
+    }
+    
+    return () => {
+      try {
+        observer.disconnect();
+      } catch (e) {
+        // Observer already disconnected
+      }
+    };
+  }, []);
+
   const getMemoryUsage = useCallback(() => {
     if ('memory' in performance) {
       const memory = (performance as any).memory;
@@ -69,6 +98,7 @@ export function usePerformanceMonitor() {
     measureLoadTime,
     measureRenderTime,
     measureInteraction,
+    detectForcedReflows,
     getMemoryUsage
   };
 }

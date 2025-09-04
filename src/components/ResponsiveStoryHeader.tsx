@@ -83,28 +83,58 @@ export const ResponsiveStoryHeader = ({
   const headerRowRef = React.useRef<HTMLDivElement>(null);
   const actionsRef = React.useRef<HTMLDivElement>(null);
   const [forceIconOnly, setForceIconOnly] = useState(false);
+  
   useEffect(() => {
-    if (!isTablet) { setForceIconOnly(false); return; }
+    if (!isTablet) { 
+      setForceIconOnly(false); 
+      return; 
+    }
+    
     const els = [headerRowRef.current, actionsRef.current].filter(Boolean) as HTMLElement[];
+    if (els.length === 0) return;
 
     // Detect sidebar state (expanded/collapsed) without requiring context
     const sidebarEl = document.querySelector('div.peer[data-state]') as HTMLElement | null;
-
-    const check = () => {
-      try {
-        const constrained = els.some(el => el.scrollWidth > el.clientWidth + 2);
-        const isSidebarExpanded = !!(sidebarEl && sidebarEl.getAttribute('data-state') === 'expanded');
-        const active = constrained || (isTablet && isSidebarExpanded);
-        setForceIconOnly(active);
-        // Lightweight console signal for verification
-        console.info('[Header] compact mode:', { constrained, isSidebarExpanded, active });
-      } catch {}
+    
+    // Debounce overflow checks to prevent forced reflows
+    let checkTimeout: NodeJS.Timeout;
+    let isChecking = false;
+    
+    const debouncedCheck = () => {
+      if (isChecking) return;
+      
+      clearTimeout(checkTimeout);
+      checkTimeout = setTimeout(() => {
+        requestAnimationFrame(() => {
+          try {
+            isChecking = true;
+            
+            // Batch DOM reads to minimize reflows
+            const measurements = els.map(el => ({
+              scrollWidth: el.scrollWidth,
+              clientWidth: el.clientWidth
+            }));
+            
+            const constrained = measurements.some(m => m.scrollWidth > m.clientWidth + 2);
+            const isSidebarExpanded = !!(sidebarEl && sidebarEl.getAttribute('data-state') === 'expanded');
+            const active = constrained || (isTablet && isSidebarExpanded);
+            
+            setForceIconOnly(active);
+            console.info('[Header] compact mode:', { constrained, isSidebarExpanded, active });
+            
+            isChecking = false;
+          } catch {
+            isChecking = false;
+          }
+        });
+      }, 16); // One frame delay
     };
 
-    check();
+    debouncedCheck();
 
+    // Use ResizeObserver for efficient resize detection
     const ros = els.map(el => {
-      const ro = new ResizeObserver(() => check());
+      const ro = new ResizeObserver(() => debouncedCheck());
       ro.observe(el);
       return ro;
     });
@@ -112,17 +142,23 @@ export const ResponsiveStoryHeader = ({
     // Observe sidebar attribute changes (expanded/collapsed)
     let mo: MutationObserver | null = null;
     if (sidebarEl) {
-      mo = new MutationObserver(() => check());
-      try { mo.observe(sidebarEl, { attributes: true, attributeFilter: ['data-state', 'style'] }); } catch {}
+      mo = new MutationObserver(() => debouncedCheck());
+      try { 
+        mo.observe(sidebarEl, { 
+          attributes: true, 
+          attributeFilter: ['data-state', 'style'] 
+        }); 
+      } catch {}
     }
 
-    const onResize = () => check();
-    window.addEventListener('resize', onResize);
-
     return () => {
-      ros.forEach(ro => { try { ro.disconnect(); } catch {} });
-      if (mo) { try { mo.disconnect(); } catch {} }
-      window.removeEventListener('resize', onResize);
+      clearTimeout(checkTimeout);
+      ros.forEach(ro => { 
+        try { ro.disconnect(); } catch {} 
+      });
+      if (mo) { 
+        try { mo.disconnect(); } catch {} 
+      }
     };
   }, [isTablet]);
 
