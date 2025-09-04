@@ -431,10 +431,13 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   reason?: string;
   passedBy?: 'tokens' | 'characters' | 'both';
   isSeverelyTooLong?: boolean; // For Live service: 2x+ too long needs retry with hint
+  wordCount?: number;
+  wordsPerPageValid?: boolean;
 } {
   // TOKEN VALIDATION BYPASSED - Keep for metrics but don't use for validation decisions
   const tokenCount = estimateTokenCount(content);
   const characterCount = content.length;
+  const wordCount = content.trim().split(/\s+/).length;
   const characterLimits = getCharacterLimitsForLevel(level);
   
   // PHASE OUT: Return high token ceiling for compatibility
@@ -443,6 +446,15 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   // For live pages, use direct per-page character limits (no story-level calculations)
   let minCharsPerPage = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
   let maxCharsPerPage = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
+  
+  // PHASE 4: Words-per-page density validation (Level 2 specific: 60-75 words per page)
+  let wordsPerPageValid = true;
+  if (level === 'Level2') {
+    wordsPerPageValid = wordCount >= 40 && wordCount <= 120; // Flexible range around 60-75 target
+    if (!wordsPerPageValid) {
+      console.log(`📝 Level2 word density check: ${wordCount} words (target: 60-75 words per page)`);
+    }
+  }
   
   // Detect special content types and apply even more lenient minimums
   const isSpecialContent = isTransition(content) || isEnding(content) || isCliffhanger(content);
@@ -466,6 +478,8 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     level,
     tokenCount: `${tokenCount} (not validated - bypassed)`,
     characterCount,
+    wordCount,
+    wordsPerPageValid,
     tokenValidation: 'DISABLED',
     characterLimits: { minCharsPerPage, maxCharsPerPage },
     contentLength: content.length
@@ -485,6 +499,7 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     
     console.log(`❌ [VALIDATION-DEBUG] Page failed CHARACTER validation for ${level}:`, {
       characterCount, minCharsPerPage, maxCharsPerPage,
+      wordCount, wordsPerPageValid,
       isSeverelyTooLong,
       tokenValidation: 'BYPASSED',
       reason
@@ -497,16 +512,20 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
       maxAllowedTokens: maxTokens,
       maxAllowedChars: maxCharsPerPage,
       reason,
-      isSeverelyTooLong
+      isSeverelyTooLong,
+      wordCount,
+      wordsPerPageValid
     };
   }
   
   console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (character-only):`, {
     tokenCount: `${tokenCount} (not validated)`,
     characterCount, minCharsPerPage, maxCharsPerPage,
+    wordCount, wordsPerPageValid,
     tokenValidation: 'BYPASSED',
     charUtilization: Math.round((characterCount / maxCharsPerPage) * 100)
   });
+  
   
   return {
     isValid: true,
@@ -515,7 +534,9 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     maxAllowedTokens: maxTokens,
     maxAllowedChars: maxCharsPerPage,
     passedBy: 'characters',
-    isSeverelyTooLong: false
+    isSeverelyTooLong: false,
+    wordCount,
+    wordsPerPageValid
   };
 }
 

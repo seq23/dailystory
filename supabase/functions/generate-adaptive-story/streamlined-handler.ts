@@ -120,9 +120,15 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       const matches = bundle.storyContent.match(/Character Info: ({.*})/);
       if (matches) {
         userInfo = JSON.parse(matches[1]);
-        // Add avatar data from separate field (clean prompts)
+        // Add avatar data from separate field (clean prompts) - FIXED STRUCTURE
         if (bundle.avatarData?.skinTone) {
-          userInfo = { ...userInfo, avatarSkinTone: bundle.avatarData.skinTone };
+          userInfo = { 
+            ...userInfo, 
+            avatar: { 
+              skinTone: bundle.avatarData.skinTone, 
+              type: userInfo.avatar?.type || 'prefer-not-to-answer' 
+            } 
+          };
         }
       }
     } catch (e) {
@@ -463,6 +469,40 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     // Universal gender/pronoun enhancement  
     if (avatarInfo.completeGenderInfo && avatarInfo.userName) {
       enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.userName} is a ${avatarInfo.completeGenderInfo}.`;
+    }
+    
+    // Phase 2: Fetch cultural arrays dynamically for AI prompt enhancement
+    try {
+      const { fetchCulturalArrays } = await import('../_shared/culturalContextService.ts');
+      const culturalArrays = await fetchCulturalArrays(userInfo);
+      
+      // Add to AI prompt as light suggestions
+      if (culturalArrays) {
+        enhancedUserPrompt += `\n\nCultural Context (use sparingly as background enrichment): 
+Character names: ${culturalArrays.characterNames.join(', ')}
+Foods: ${culturalArrays.commonFoods.join(', ')}
+Celebrations: ${culturalArrays.celebrations.join(', ')}`;
+      }
+    } catch (error) {
+      // Silent fallback - no cultural context if fails
+      console.warn('⚠️ Cultural context fetching failed (silent fallback):', error.message);
+    }
+
+    // Phase 3: Fetch author voice patterns dynamically for AI prompt enhancement  
+    try {
+      const { fetchVoicePatterns } = await import('../_shared/authorVoiceService.ts');
+      const voicePatterns = await fetchVoicePatterns(difficulty || 'medium');
+      
+      // Add to AI prompt as light inspiration
+      if (voicePatterns) {
+        enhancedUserPrompt += `\n\nAuthor Voice Inspiration (draw from as needed):
+Opening patterns: ${voicePatterns.openingPatterns.join(' | ')}
+Transitions: ${voicePatterns.transitionPatterns.join(' | ')}
+Closing patterns: ${voicePatterns.closingPatterns.join(' | ')}`;
+      }
+    } catch (error) {
+      // Silent fallback - no voice patterns if fails
+      console.warn('⚠️ Author voice patterns fetching failed (silent fallback):', error.message);
     }
     
     // Add vocabulary function access to AI prompt
