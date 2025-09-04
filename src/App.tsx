@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ import { VoiceHoverController } from "./components/VoiceHoverController";
 import "./services/AdvancedPerformanceMonitor";
 import "./services/ABTestingFramework";
 import { LoggerService } from "./services/LoggerService";
+import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +42,13 @@ const queryClient = new QueryClient({
 
 const App = () => {
   LoggerService.milestone("App component loaded successfully", "DEPLOYMENT_TEST");
+
+  // Initialize Vite log grouper in development
+  React.useEffect(() => {
+    initializeViteLogGrouper();
+    return () => cleanupViteLogGrouper();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
