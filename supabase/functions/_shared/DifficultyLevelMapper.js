@@ -105,11 +105,10 @@ export class DifficultyLevelMapper {
    * Map to image generation difficulty with centralized logging
    */
   static mapToImageDifficulty(userInfo) {
-    const rawLevel = userInfo?.readingLevel || userInfo?.difficultyLevel || 'easy';
+    const rawLevel = userInfo?.difficultyLevel || 'easy';
     const normalizedLevel = this.normalizeLevel(rawLevel);
     
     console.log(`🔄 Difficulty mapping: ${rawLevel} → ${normalizedLevel}`, {
-      userReadingLevel: userInfo?.readingLevel,
       userDifficultyLevel: userInfo?.difficultyLevel,
       finalLevel: normalizedLevel
     });

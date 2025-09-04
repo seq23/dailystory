@@ -1383,7 +1383,6 @@ const initializeStory = async () => {
     const effectiveUser = {
       ...userInfo,
       difficultyLevel: currentDifficulty,
-      readingAbility: currentDifficulty,
       expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
     } as UserInfo;
     if (isPremium) {
@@ -2583,7 +2582,6 @@ const handleRestartTimer = () => {
           ...userInfo,
           specialRequest: combinedSpecial,
           difficultyLevel: currentDifficulty,
-          readingAbility: currentDifficulty,
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
         } as UserInfo;
         const sessionTypeParam = isRewrite ? 'rewrite' : 'new';
@@ -2619,7 +2617,6 @@ const handleRestartTimer = () => {
           ...userInfo,
           specialRequest: specialRequestOverride ?? userInfo.specialRequest,
           difficultyLevel: currentDifficulty,
-          readingAbility: currentDifficulty,
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
         } as UserInfo;
         

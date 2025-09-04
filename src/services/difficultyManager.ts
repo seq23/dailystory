@@ -152,7 +152,7 @@ export class DifficultyManager {
   }
 
   /**
-   * Get final difficulty recommendation - prioritizes user's explicit readingAbility choice
+   * Get final difficulty recommendation - prioritizes user's explicit difficultyLevel choice
    */
   static getFinalDifficulty(userInfo: UserInfo): {
     difficulty: DifficultyLevel;

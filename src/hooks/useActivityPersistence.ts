@@ -91,7 +91,7 @@ export async function saveQuizAttempt({
       ...details,
       story_signature: signature,
       child_age: userInfo?.age,
-      difficulty: (userInfo as any)?.difficultyLevel || (userInfo as any)?.readingAbility,
+      difficulty: (userInfo as any)?.difficultyLevel,
     },
   };
 
@@ -155,7 +155,7 @@ export async function saveGameSession({
       ...details,
       story_signature: signature,
       child_age: userInfo?.age,
-      difficulty: (userInfo as any)?.difficultyLevel || (userInfo as any)?.readingAbility,
+      difficulty: (userInfo as any)?.difficultyLevel,
     },
   };
 
