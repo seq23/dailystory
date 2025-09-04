@@ -82,8 +82,8 @@ PAGE TEXT
 ***
 Continue in this exact format, using *** to separate each story page.
 
-Use seed={seed} to vary stories. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
-    userPromptTemplate: 'Create a never-ending pre-reader story for {userName} (age 3-5). Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Sentence Structure: Use 1-8 words per sentence, PREFER 2-4 words, mix lengths for variety. Vocabulary: {vocabularyInstructions} Story Focus: Repetitive learning patterns, positive emotions, safe exploration. Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation. Change settings, activities, characters, and moods while maintaining repetitive patterns for pre-reader learning.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Use {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} DIRECTLY and explicitly in the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   easy: {
@@ -126,8 +126,8 @@ CONTENT SAFETY:
 TOKEN LIMITS:
 60 tokens per page. Target 15-24 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age 5-7). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Use {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} DIRECTLY and explicitly in the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   medium: {
@@ -170,8 +170,8 @@ CONTENT SAFETY:
 TOKEN LIMITS:
 75 tokens per page. Target 50-70 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age 7-9). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Weave in {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} naturally throughout story. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   hard: {
@@ -214,8 +214,8 @@ CONTENT SAFETY:
 TOKEN LIMITS:
 120 tokens per page. Target 80-120 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age 9-11). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create engaging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   },
 
   expert: {
@@ -258,8 +258,8 @@ CONTENT SAFETY:
 TOKEN LIMITS:
 180 tokens per page. Target 120-200 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age 11-13). Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Theme: {specialRequest} or create intellectually challenging adventure. Personalization: Include {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} when they enhance the narrative. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
   }
 };
 
@@ -303,8 +303,8 @@ FORMAT:
 
 350 tokens per page. Target 200-400 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) focusing on transitional themes like growing up and responsibility. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Growing up, responsibility, friendship dynamics. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Story Focus: Growing up, responsibility, friendship dynamics. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -345,8 +345,8 @@ FORMAT:
 
 350 tokens per page. Target 200-400 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) exploring themes of identity and belonging. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Identity, social relationships, belonging. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Story Focus: Identity, social relationships, belonging. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -387,8 +387,8 @@ FORMAT:
 
 350 tokens per page. Target 200-400 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) examining ethics and moral choices. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Ethics, moral choices, right vs wrong. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Story Focus: Ethics, moral choices, right vs wrong. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -429,8 +429,8 @@ FORMAT:
 
 350 tokens per page. Target 200-400 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) exploring philosophical themes and abstract thinking. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Philosophy, abstract thinking, meaning of life. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Story Focus: Philosophy, abstract thinking, meaning of life. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   },
 
@@ -471,8 +471,8 @@ FORMAT:
 
 350 tokens per page. Target 200-400 words per page.
 
-Use seed={seed} for creative expression.`,
-    userPromptTemplate: 'Create a never-ending story for {userName} (age {age}) showcasing literary sophistication and mature themes. Draw inspiration from available author voice patterns in authorVoiceService.ts - use opening styles, transitions, hooks, plot twists, and tone characteristics as needed. Story Focus: Literary sophistication, mature themes, complex analysis. Use {specialRequest} as the main theme and creative direction, or improvise. Naturally weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, and {hobbies} as subtle elements. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
+Use seed={seed} to control randomized story variation.`,
+    userPromptTemplate: 'Create a never-ending story for {userName}, age {age}. User preferences: favorite color: {favoriteColor}, favorite animal: {favoriteAnimal}, favorite food: {favoriteFood}, hobbies: {hobbies}. Theme: {specialRequest}. Integration: Weave {favoriteColor}, {favoriteAnimal}, {favoriteFood}, {hobbies} NATURALLY and subtly throughout the story. This is a never-ending story with natural hooks, pauses, and continuations. Be ready to provide an ending at any time if requested. Story Focus: Literary sophistication, mature themes, complex analysis. Vocabulary: {vocabularyInstructions} Seed: {seed} for variation.',
     wordCount: "200-400 words per page"
   }
 };

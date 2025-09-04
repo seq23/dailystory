@@ -483,10 +483,17 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     }
     
     // Add clear directives for AI story creation
-    enhancedUserPrompt += `\n\nCREATIVE DIRECTIVES:
-- When story needs diverse elements, use getCulturalContext() for appropriate cultural options
-- Apply storytelling voice using getAuthorVoicePatterns() for varied openers, smooth transitions, and engaging flow
-- Use vocabulary appropriate for the grade level, accessing getVocabularyForGrade() when needed`;
+    enhancedUserPrompt += `\n\nCREATIVE Suggestions (guidelines, not hard rules):
+- Weave in user preferences naturally:
+  - favoriteColor → objects, clothing, scenery, atmosphere
+  - favoriteAnimal → companion, helper, or encountered character
+  - hobbies/skills → problem-solving, challenges, abilities
+  - favoriteFood → meals, discoveries, celebrations
+- Subtly reflect cultural background via getCulturalContext(); never offensive or stereotypical. use sparingly.
+- Apply storytelling voice patterns via getAuthorVoicePatterns() (openers, transitions, endings, flow) as needed.
+Use these as inspiration but prioritize overall story quality and coherence.
+
+- Use vocabulary integration liberally.`;
     
   } catch (avatarError) {
     console.warn('⚠️ Avatar processing failed:', safeErrorMessage(avatarError));
