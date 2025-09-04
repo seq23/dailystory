@@ -55,7 +55,7 @@ export const ParentDashboard = ({ userInfo, isVisible, onClose }: ParentDashboar
   const [dailyTimeGoal, setDailyTimeGoal] = useState(20); // minutes per day
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [guardrails, setGuardrails] = useState<{ lockDifficulty: boolean; minDifficulty: DifficultyLevel; minExpertGrade: ExpertGradeLevel; allowDecreaseBelowMin: boolean }>({
+  const [guardrails, setGuardrails] = useState<{ lockDifficulty: boolean; minDifficulty: string; minExpertGrade: ExpertGradeLevel; allowDecreaseBelowMin: boolean }>({
     lockDifficulty: false,
     minDifficulty: 'beginner',
     minExpertGrade: '6th',
@@ -550,7 +550,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Minimum level</Label>
                   {(() => {
-                    const selected = guardrails.minDifficulty === 'expert' ? `advanced:${guardrails.minExpertGrade}` : DifficultyLevelMapper.toFrontend(guardrails.minDifficulty);
+                    const selected = guardrails.minDifficulty === 'advanced' ? `advanced:${guardrails.minExpertGrade}` : guardrails.minDifficulty;
                     return (
                       <Select
                         value={selected}
@@ -559,8 +559,7 @@ setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
                             const grade = v.split(':')[1] as ExpertGradeLevel;
                             setGuardrails({ ...guardrails, minDifficulty: 'expert', minExpertGrade: grade });
                           } else {
-                            const backendDifficulty = DifficultyLevelMapper.toBackend(v);
-                            setGuardrails({ ...guardrails, minDifficulty: backendDifficulty, minExpertGrade: '6th' });
+                            setGuardrails({ ...guardrails, minDifficulty: v, minExpertGrade: '6th' });
                           }
                         }}
                       >
