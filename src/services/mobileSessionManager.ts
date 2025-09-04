@@ -131,11 +131,13 @@ export class MobileSessionManager {
       }
     });
 
-    // Handle page unload
-    window.addEventListener('beforeunload', () => {
-      // Only save if we have critical data to preserve
+    // Handle page hide - modern replacement for deprecated beforeunload
+    // pagehide is more reliable and not deprecated like beforeunload
+    window.addEventListener('pagehide', () => {
+      // Final cleanup when page is being hidden/unloaded
+      // Session data is already preserved in memory via visibilitychange handler
       if (this.memoryStorage.size > 0 && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('📱 MobileSessionManager: Page unloading, session state preserved in memory');
+        console.log('📱 MobileSessionManager: Page hidden, session state preserved in memory');
       }
     });
   }
