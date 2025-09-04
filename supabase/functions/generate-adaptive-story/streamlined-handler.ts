@@ -168,7 +168,7 @@ Generate a corrected version that addresses these issues while keeping the story
       bundle.systemSettings.gradeLevel;
     
     // Use service-aware token limits based on difficulty and service type
-    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config);
+    const storyText = await generateWithOpenAI(aiPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, config, bundle.sessionId);
     
     // PHASE 5: Bulk Story Processing - Apply validation, grammar, placeholders to ENTIRE story ONCE
     // Compute validation level first
@@ -215,7 +215,7 @@ Generate a corrected version that addresses these issues while keeping the story
       };
       
       console.log(`🔄 Retrying generation with hints (attempt ${retryConfig.repairAttempt})`);
-      const retryStoryText = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig);
+      const retryStoryText = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig, bundle.sessionId);
       
       // Validate the retry result
       const retryValidationResult = UnifiedValidator.validateContent(retryStoryText, {
@@ -435,7 +435,7 @@ function getServiceAwareTokenLimit(difficulty: DifficultyLevel | ExpertGradeLeve
   }
 }
 
-async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig): Promise<string> {
+async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: string }, gradeLevel: number, userInfo?: any, customTokenLimit?: number, difficulty?: DifficultyLevel | ExpertGradeLevel, config?: StreamlinedConfig, sessionId?: string): Promise<string> {
   // Protected token limit calculation with service-specific fallbacks
   let maxTokens: number;
   try {
@@ -594,23 +594,21 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         // Store failed AI prompt for debugging (EVERYTHING sent to AI, even failures)
         try {
           const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-        globalSessionManager.storeAIPromptForDebugging(bundle.sessionId, {
+        globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
           systemPrompt: enhancedSystemPrompt,
           userPrompt: finalUserPrompt,
           model: currentModel.model,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
-          success: false,
-          bundle: bundle, // Pass the complete bundle
-          apiResponse: {
-            status: response.status,
-              statusText: response.statusText,
-              errorBody: errorText,
-              error: `API Error ${response.status}`
-            },
-            bundle: bundle // NEW: Include the original bundle
-          });
+           success: false,
+           apiResponse: {
+             status: response.status,
+               statusText: response.statusText,
+               errorBody: errorText,
+               error: `API Error ${response.status}`
+             }
+           });
         } catch (debugError) {
           console.warn('⚠️ Failed to store failed AI prompt for debugging:', debugError);
         }
@@ -632,24 +630,22 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       // Store complete AI prompt for debugging (EVERYTHING sent to AI)
       try {
         const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-        globalSessionManager.storeAIPromptForDebugging(bundle.sessionId, {
+        globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
           systemPrompt: enhancedSystemPrompt,
           userPrompt: finalUserPrompt,
           model: currentModel.model,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
-          success: true,
-          bundle: bundle, // Pass the complete bundle
-          apiResponse: {
-            status: response.status,
-            contentLength: storyText?.length || 0,
-            usage: data.usage,
-            hasChoices: !!data.choices,
-            choicesLength: data.choices?.length || 0
-          },
-          bundle: bundle // NEW: Include the original bundle
-        });
+           success: true,
+           apiResponse: {
+             status: response.status,
+             contentLength: storyText?.length || 0,
+             usage: data.usage,
+             hasChoices: !!data.choices,
+             choicesLength: data.choices?.length || 0
+           }
+         });
       } catch (debugError) {
         console.warn('⚠️ Failed to store AI prompt for debugging:', debugError);
       }
