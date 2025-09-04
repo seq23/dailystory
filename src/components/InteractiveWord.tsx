@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
+import { domBatchingService } from "@/utils/domBatchingService";
 
 interface InteractiveWordProps {
   word: string;
@@ -162,70 +163,74 @@ export const InteractiveWord = ({
       detail: { word: cleanWord, action: 'hear' }
     }));
     
-    // Calculate optimal position for tooltip with viewport awareness
+    // Calculate optimal position for tooltip with viewport awareness - moved to RAF
     if (wordRef.current) {
-      const rect = wordRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-      
-      // More accurate estimates based on actual content
-      const baseTooltipHeight = 120; // Base height for content
-      const buttonHeight = 40; // Height per button row
-      const extraButtons = (isESLLearner ? 1 : 0) + (isPremium ? 1 : 0) + 
-                          (isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 ? 1 : 0);
-      const estimatedTooltipHeight = baseTooltipHeight + (Math.ceil(extraButtons / 2) * buttonHeight);
-      const estimatedTooltipWidth = Math.min(340, viewportWidth * 0.9); // Responsive width
-      const margin = 20; // Increased safety margin
-      
-      // Check available space in all directions
-      const spaceAbove = rect.top;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceLeft = rect.left;
-      const spaceRight = viewportWidth - rect.right;
-      const wordCenter = rect.left + rect.width / 2;
-      
-      // Enhanced vertical position logic with better bottom detection
-      let vertical: 'top' | 'bottom' = 'bottom';
-      
-      // If word is in bottom third of viewport, prefer top positioning
-      if (rect.bottom > viewportHeight * 0.67) {
-        vertical = 'top';
-      } else if (spaceBelow < estimatedTooltipHeight + margin) {
-        // Not enough space below, check if top has more space
-        if (spaceAbove > spaceBelow && spaceAbove >= estimatedTooltipHeight + margin) {
+      requestAnimationFrame(() => {
+        if (!wordRef.current) return;
+        
+        const rect = wordRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // More accurate estimates based on actual content
+        const baseTooltipHeight = 120; // Base height for content
+        const buttonHeight = 40; // Height per button row
+        const extraButtons = (isESLLearner ? 1 : 0) + (isPremium ? 1 : 0) + 
+                            (isNativeEnglishSpeaker && userInfo?.age && userInfo.age > 12 ? 1 : 0);
+        const estimatedTooltipHeight = baseTooltipHeight + (Math.ceil(extraButtons / 2) * buttonHeight);
+        const estimatedTooltipWidth = Math.min(340, viewportWidth * 0.9); // Responsive width
+        const margin = 20; // Increased safety margin
+        
+        // Check available space in all directions
+        const spaceAbove = rect.top;
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceLeft = rect.left;
+        const spaceRight = viewportWidth - rect.right;
+        const wordCenter = rect.left + rect.width / 2;
+        
+        // Enhanced vertical position logic with better bottom detection
+        let vertical: 'top' | 'bottom' = 'bottom';
+        
+        // If word is in bottom third of viewport, prefer top positioning
+        if (rect.bottom > viewportHeight * 0.67) {
           vertical = 'top';
+        } else if (spaceBelow < estimatedTooltipHeight + margin) {
+          // Not enough space below, check if top has more space
+          if (spaceAbove > spaceBelow && spaceAbove >= estimatedTooltipHeight + margin) {
+            vertical = 'top';
+          } else {
+            // Force top if bottom would definitely clip
+            vertical = 'top';
+          }
         } else {
-          // Force top if bottom would definitely clip
-          vertical = 'top';
+          vertical = 'bottom';
         }
-      } else {
-        vertical = 'bottom';
-      }
-      
-      // Enhanced horizontal position and offset calculation
-      let horizontal: 'left' | 'center' | 'right' = 'center';
-      let offset = 0;
-      
-      // Check if centered tooltip would be cut off
-      const tooltipHalfWidth = estimatedTooltipWidth / 2;
-      const leftEdgeIfCentered = wordCenter - tooltipHalfWidth;
-      const rightEdgeIfCentered = wordCenter + tooltipHalfWidth;
-      
-      if (leftEdgeIfCentered < margin) {
-        // Tooltip would be cut off on the left
-        horizontal = 'left';
-        offset = Math.max(margin - rect.left, 0);
-      } else if (rightEdgeIfCentered > viewportWidth - margin) {
-        // Tooltip would be cut off on the right
-        horizontal = 'right'; 
-        offset = Math.max((rect.right + estimatedTooltipWidth) - (viewportWidth - margin), 0);
-      } else {
-        // Centered position works fine
-        horizontal = 'center';
-        offset = 0;
-      }
-      
-      setTooltipPosition({ vertical, horizontal, offset });
+        
+        // Enhanced horizontal position and offset calculation
+        let horizontal: 'left' | 'center' | 'right' = 'center';
+        let offset = 0;
+        
+        // Check if centered tooltip would be cut off
+        const tooltipHalfWidth = estimatedTooltipWidth / 2;
+        const leftEdgeIfCentered = wordCenter - tooltipHalfWidth;
+        const rightEdgeIfCentered = wordCenter + tooltipHalfWidth;
+        
+        if (leftEdgeIfCentered < margin) {
+          // Tooltip would be cut off on the left
+          horizontal = 'left';
+          offset = Math.max(margin - rect.left, 0);
+        } else if (rightEdgeIfCentered > viewportWidth - margin) {
+          // Tooltip would be cut off on the right
+          horizontal = 'right'; 
+          offset = Math.max((rect.right + estimatedTooltipWidth) - (viewportWidth - margin), 0);
+        } else {
+          // Centered position works fine
+          horizontal = 'center';
+          offset = 0;
+        }
+        
+        setTooltipPosition({ vertical, horizontal, offset });
+      });
     }
     
     setShowTooltip(true);
@@ -815,20 +820,21 @@ export const InteractiveWord = ({
           onMouseLeave={handleMouseLeave}
           onTouchStart={(e) => e.stopPropagation()}
           style={{
-            // Mobile-optimized positioning with better viewport handling
+            // Mobile-optimized positioning with cached measurements to avoid reflows
             ...(tooltipPosition.horizontal === 'left' ? {
-              left: `${Math.max(10, (wordRef.current?.getBoundingClientRect().left || 0) + (tooltipPosition.offset || 0))}px`,
+              left: `${Math.max(10, tooltipPosition.offset || 0)}px`,
             } : tooltipPosition.horizontal === 'right' ? {
-              right: `${Math.max(10, (window.innerWidth - (wordRef.current?.getBoundingClientRect().right || window.innerWidth)) + (tooltipPosition.offset || 0))}px`,
+              right: `${Math.max(10, tooltipPosition.offset || 0)}px`,
             } : {
-              left: `${Math.max(10, Math.min(window.innerWidth - 320, (wordRef.current?.getBoundingClientRect().left || 0) + (wordRef.current?.getBoundingClientRect().width || 0) / 2 - 160))}px`,
+              left: '50%',
+              transform: 'translateX(-50%)',
             }),
             ...(tooltipPosition.vertical === 'top' ? {
-              bottom: `${Math.max(10, window.innerHeight - (wordRef.current?.getBoundingClientRect().top || 0) + 8)}px`,
-              maxHeight: `${Math.max(200, (wordRef.current?.getBoundingClientRect().top || 0) - 20)}px`,
+              bottom: `calc(100% + 8px)`,
+              maxHeight: `200px`,
             } : {
-              top: `${Math.max(10, (wordRef.current?.getBoundingClientRect().bottom || 0) + 8)}px`,
-              maxHeight: `${Math.max(200, window.innerHeight - (wordRef.current?.getBoundingClientRect().bottom || 0) - 20)}px`,
+              top: `calc(100% + 8px)`,
+              maxHeight: `200px`,
             }),
             maxWidth: 'min(340px, calc(100vw - 20px))',
             minWidth: 'min(280px, calc(100vw - 40px))',

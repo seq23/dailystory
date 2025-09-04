@@ -165,15 +165,26 @@ export const suppressChromeExtensionErrors = () => {
 
   // Enhanced patterns for Chrome extension, postMessage, and development errors
   const suppressPatterns = [
-    // Chrome extension errors - enhanced patterns
-    /Could not establish connection/,
+    // Chrome Extension errors - enhanced patterns
     /runtime\.lastError/,
     /Receiving end does not exist/,
     /chrome-extension:\/\//,
+    /moz-extension:\/\//,
+    /safari-extension:\/\//,
     /Extension context invalidated/,
     /Cannot access contents of/,
     /Unchecked runtime\.lastError/,
     /Error in event handler/,
+    /Could not establish connection/,
+    
+    // Sentry rate limiting and monitoring (development environment noise)
+    /sentry\.io\/api\/.*\/envelope/,
+    /429\s*\(Too Many Requests\)/,
+    /sentry\.javascript/,
+    /POST.*sentry.*429/,
+    /sentry.*nextjs/,
+    /ingest\.sentry\.io/,
+    /envelope.*sentry/,
     
     // Feature Policy / Permissions Policy warnings
     /Unrecognized feature:/,
@@ -187,10 +198,12 @@ export const suppressChromeExtensionErrors = () => {
     /An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing/,
     /iframe.*sandbox.*escape/,
     
-    // Performance violation warnings
+    // Performance violation warnings - enhanced
     /\[Violation\].*setTimeout.*handler took/,
+    /\[Violation\].*setTimeout.*took.*ms/,
     /\[Violation\].*'requestAnimationFrame' handler took/,
     /\[Violation\].*'click' handler took/,
+    /\[Violation\].*Forced reflow/,
     /Forced reflow while executing JavaScript/,
     /Long running JavaScript task took/,
     
@@ -198,12 +211,14 @@ export const suppressChromeExtensionErrors = () => {
     /was preloaded using link preload but not used within a few seconds/,
     /resource.*preloaded.*not used/,
     /preload.*not.*used/,
+    /celebration\.mp3.*preloaded.*not used/,
     
-    // Lovable development environment noise
+    // Lovable development environment noise - enhanced
     /We're hiring!/,
     /lovable\.dev\/careers/,
     /⠀⣠⠴⠚⡙⠙⠲⣤⣠⠖⢋⡛⠙⠲⣄/,  // ASCII art pattern
     /hiring.*ascii/i,
+    /lovable\.dev/,
     
     // PostMessage origin errors - common in iframe/preview environments
     /Failed to execute 'postMessage' on 'DOMWindow'/,
@@ -219,9 +234,14 @@ export const suppressChromeExtensionErrors = () => {
     /The above error occurred in the/,
     /Consider adding an error boundary/,
     
-    // Vite HMR noise
+    // Vite HMR noise - enhanced patterns
     /\[vite\]/,
     /\[hmr\]/,
+    /client:\d+.*hot updated/,
+    /hot updated:.*\.tsx/,
+    /hot updated:.*\.css/,
+    /connecting\.\.\./,
+    /connected\./,
     
     // Common third-party script noise  
     /third-party/,

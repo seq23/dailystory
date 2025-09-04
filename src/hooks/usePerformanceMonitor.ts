@@ -54,20 +54,51 @@ export function usePerformanceMonitor() {
             console.warn(`⚡ Potential forced reflow: ${entry.name} took ${entry.duration.toFixed(2)}ms`);
           }
         }
+        
+        // Enhanced detection for layout thrashing
+        if (entry.entryType === 'longtask' && entry.duration > 50) {
+          console.warn(`🐌 Long task detected: ${entry.name || 'unknown'} took ${entry.duration.toFixed(2)}ms`);
+        }
       }
     });
     
+    // Also monitor for specific forced reflow patterns
+    const originalGetBoundingClientRect = Element.prototype.getBoundingClientRect;
+    let recentCalls = 0;
+    let lastResetTime = Date.now();
+    
+    Element.prototype.getBoundingClientRect = function() {
+      const now = Date.now();
+      if (now - lastResetTime > 1000) {
+        recentCalls = 0;
+        lastResetTime = now;
+      }
+      
+      recentCalls++;
+      if (recentCalls > 10) {
+        console.warn(`🔄 Potential layout thrashing: ${recentCalls} getBoundingClientRect calls in 1s`);
+      }
+      
+      return originalGetBoundingClientRect.call(this);
+    };
+    
     if ('PerformanceObserver' in window) {
       try {
-        observer.observe({ entryTypes: ['measure', 'navigation'] });
+        observer.observe({ entryTypes: ['measure', 'navigation', 'longtask'] });
       } catch (e) {
-        console.debug('Performance observer not fully supported');
+        // Fallback for browsers with limited support
+        try {
+          observer.observe({ entryTypes: ['measure', 'navigation'] });
+        } catch (e2) {
+          console.debug('Performance observer not fully supported');
+        }
       }
     }
     
     return () => {
       try {
         observer.disconnect();
+        Element.prototype.getBoundingClientRect = originalGetBoundingClientRect;
       } catch (e) {
         // Observer already disconnected
       }
