@@ -183,6 +183,73 @@ Generate a corrected version that addresses these issues while keeping the story
     
     const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
     
+    // Check if validation requires retry with hints
+    if (validationResult.decision === 'RETRY_WITH_HINT' && (config.repairAttempt || 0) < 2) {
+      console.log(`🔄 RETRY WITH HINT: Validation suggests retry (attempt ${(config.repairAttempt || 0) + 1})`);
+      console.log('Validation hints:', validationResult.hints);
+      
+      // Append hints to the AI prompt and retry generation
+      const hintsText = validationResult.hints ? 
+        '\n\nIMPORTANT REQUIREMENTS:\n' + validationResult.hints.join('\n') : '';
+      
+      const retryPrompt = {
+        systemPrompt: aiPrompt.systemPrompt + hintsText,
+        userPrompt: aiPrompt.userPrompt + hintsText
+      };
+      
+      // Retry with updated config
+      const retryConfig = {
+        ...config,
+        repairAttempt: (config.repairAttempt || 0) + 1
+      };
+      
+      console.log(`🔄 Retrying generation with hints (attempt ${retryConfig.repairAttempt})`);
+      const retryStoryText = await generateWithOpenAI(retryPrompt, effectiveGradeLevel, userInfo, undefined, effectiveDifficulty, retryConfig);
+      
+      // Validate the retry result
+      const retryValidationResult = UnifiedValidator.validateContent(retryStoryText, {
+        ...validationConfig,
+        retryAttempt: retryConfig.repairAttempt
+      });
+      
+      if (retryValidationResult.decision === 'ACCEPT' || retryValidationResult.decision === 'REPAIR_AND_SPLIT') {
+        console.log(`✅ Retry successful with decision: ${retryValidationResult.decision}`);
+        // Use the retry result
+        const retryPlaceholderResolved = resolveAllPlaceholders(retryStoryText, { userInfo });
+        const retryPages = sharedParseIntoPages(retryPlaceholderResolved, validationLevel);
+        
+        // Calculate vocabulary compliance for retry result
+        let retryVocabCompliance = 1.0;
+        try {
+          const { calculateVocabularyCompliance } = await import('../_shared/vocabularyLoader.ts');
+          const complianceResult = await calculateVocabularyCompliance(retryPlaceholderResolved, effectiveGradeLevel);
+          retryVocabCompliance = complianceResult.compliance;
+        } catch (error) {
+          // Silent fallback
+        }
+        
+        return new Response(JSON.stringify({
+          success: true,
+          story: retryPlaceholderResolved,
+          pages: retryPages,
+          vocabCompliance: retryVocabCompliance,
+          metadata: {
+            processingMode: 'retry-with-hints',
+            gradeLevel: bundle.systemSettings.gradeLevel,
+            vocabularyCompliance: retryVocabCompliance,
+            retryAttempt: retryConfig.repairAttempt,
+            originalValidationDecision: validationResult.decision,
+            retryValidationDecision: retryValidationResult.decision
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        console.log(`⚠️ Retry still failed with decision: ${retryValidationResult.decision}, proceeding with original`);
+        // Fall through to use original result with any available fixes
+      }
+    }
+    
     // Step 2: Apply placeholder resolution to entire story ONCE (grammar processing moved to process-story-content)
     const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo });
     

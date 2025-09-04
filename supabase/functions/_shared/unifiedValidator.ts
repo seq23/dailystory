@@ -157,8 +157,9 @@ export class UnifiedValidator {
           metrics: { ...metrics, pageCount, expectedPages, actualTokens, expectedTokens },
           hints: [
             `INCREASE TOKEN BUDGET to ${Math.ceil(expectedTokens * 1.33)} tokens (33% buffer)`,
-            `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
-            'Create more story content with additional scenes and development'
+            `Generate around 12 pages, no less than 6 pages`,
+            'Create more story content with additional scenes and development',
+            'Add substantial character interactions, detailed setting descriptions, and extended plot progression'
           ],
           suggestedTokens: Math.ceil(expectedTokens * 1.33),
           actualTokenBudget: actualTokens
@@ -175,12 +176,12 @@ export class UnifiedValidator {
           isValid: false,
           reasons: [...baseReasons, `Story has ${pageCount} pages but needs at least 6 pages (adequate tokens: ${actualTokens})`],
           metrics: { ...metrics, pageCount, expectedPages, actualTokens },
-          hints: [
-            `CRITICAL: You MUST generate exactly 6 or more pages. This is mandatory.`,
-            `Generate a story with at least 6 pages (target: ${expectedPages} pages)`,
-            'Add substantial character interactions, detailed setting descriptions, and extended plot progression',
-            'Each page should have meaningful story content, not just brief summaries'
-          ],
+           hints: [
+             `CRITICAL: You MUST generate around 12 pages, no less than 6 pages`,
+             'Add substantial character interactions, detailed setting descriptions, and extended plot progression',
+             'Each page should have meaningful story content, not just brief summaries',
+             'Create a complete story with proper pacing and development'
+           ],
           suggestedTokens: boostedTokens,
           actualTokenBudget: actualTokens
         };
@@ -233,10 +234,11 @@ export class UnifiedValidator {
             tokenCount: validationResult.tokenCount,
             characterCount: validationResult.characterCount
           },
-          hints: [
-            `Generate content with at least ${validationResult.maxAllowedChars * 0.7} characters`,
-            'Include more descriptive details and story development'
-          ]
+           hints: [
+             `Generate around 12 pages, no less than 6 pages`,
+             `Generate content with at least ${validationResult.maxAllowedChars * 0.7} characters`,
+             'Include more descriptive details and story development'
+           ]
         };
       } else {
         return {

@@ -495,6 +495,13 @@ export function parseIntoPages(content: string, level: ValidationLevel, service:
       .filter(page => page.length > 0);
     
     console.log(`✅ Page splitting: Found ${pages.length} pages using '${detectedPattern}' markers`);
+    
+    // Enforce Netflix page limits (max 12 pages)
+    if (service === 'netflix' && pages.length > 12) {
+      console.log(`🔧 Netflix page limit: Truncating ${pages.length} pages to 12 pages`);
+      return pages.slice(0, 12);
+    }
+    
     return pages;
   }
   
@@ -509,8 +516,14 @@ export function parseIntoPages(content: string, level: ValidationLevel, service:
   const expectedPages = getExpectedPagesForService('netflix', level);
   const smartSplit = enhancedAutoSplitContent(content, level, expectedPages || 12);
   
-  console.log(`✅ Netflix service: Generated ${smartSplit.length} pages using smart fallback (target: ${expectedPages})`);
-  return smartSplit;
+  // Enforce Netflix page limits (max 12 pages)
+  const finalPages = smartSplit.length > 12 ? smartSplit.slice(0, 12) : smartSplit;
+  if (smartSplit.length > 12) {
+    console.log(`🔧 Netflix page limit: Smart fallback truncated ${smartSplit.length} pages to 12 pages`);
+  }
+  
+  console.log(`✅ Netflix service: Generated ${finalPages.length} pages using smart fallback (target: ${expectedPages})`);
+  return finalPages;
 }
 
 
