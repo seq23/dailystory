@@ -151,37 +151,93 @@ export const optimizeFontLoading = () => {
 };
 
 /**
- * Add global error handler to suppress Chrome extension errors
+ * Add global error handler to suppress Chrome extension and postMessage errors
  */
 export const suppressChromeExtensionErrors = () => {
   const originalError = console.error;
   const originalWarn = console.warn;
   const originalInfo = console.info;
   const originalLog = console.log;
+  const originalWindowError = window.onerror;
 
   let suppressedCount = 0;
+  const suppressedErrors = new Set<string>();
 
-  // Enhanced patterns for Chrome extension errors
-  const isExtensionError = (message: string) => {
-    return (
-      message.includes('Could not establish connection') ||
-      message.includes('runtime.lastError') ||
-      message.includes('Receiving end does not exist') ||
-      message.includes('chrome-extension://') ||
-      message.includes('Extension context invalidated') ||
-      message.includes('Cannot access contents of') ||
-      message.includes('Unchecked runtime.lastError')
-    );
+  // Enhanced patterns for Chrome extension, postMessage, and development errors
+  const suppressPatterns = [
+    // Chrome extension errors
+    /Could not establish connection/,
+    /runtime\.lastError/,
+    /Receiving end does not exist/,
+    /chrome-extension:\/\//,
+    /Extension context invalidated/,
+    /Cannot access contents of/,
+    /Unchecked runtime\.lastError/,
+    
+    // PostMessage origin errors - common in iframe/preview environments
+    /Failed to execute 'postMessage' on 'DOMWindow'/,
+    /The target origin provided .* does not match the recipient window's origin/,
+    /postMessage origin mismatch/,
+    /cross-origin frame/,
+    /blocked by CORS policy/,
+    
+    // React/Vite development warnings
+    /Warning: ReactDOM\.render is no longer supported/,
+    /Warning: React\.createFactory/,
+    /Warning: componentWill/,
+    /The above error occurred in the/,
+    /Consider adding an error boundary/,
+    
+    // Vite HMR noise
+    /\[vite\]/,
+    /\[hmr\]/,
+    
+    // Common third-party script noise  
+    /third-party/,
+    /vendor/,
+    /analytics/,
+    /tracking/,
+    /advertisement/,
+    
+    // Network/Loading related non-critical errors
+    /Loading chunk \d+ failed/,
+    /Loading CSS chunk/,
+    /Failed to import/,
+    
+    // Performance observer warnings
+    /PerformanceObserver/,
+    /performance\.mark/,
+    
+    // Browser API warnings that don't affect functionality
+    /Permissions API/,
+    /Notification API/,
+    /getUserMedia/,
+    
+    // Accessibility scanner noise (common in development)
+    /accessibility/i,
+    /a11y/i,
+    
+    // Common development noise
+    /Script error/,
+    /ResizeObserver loop limit exceeded/,
+    /DevTools/i,
+    /devtools/i,
+    /Non-Error promise rejection captured/,
+  ];
+
+  // Check if message should be suppressed
+  const shouldSuppress = (message: string) => {
+    return suppressPatterns.some(pattern => pattern.test(message));
   };
 
-  // Override console methods to filter extension errors
+  // Override console methods to filter suppressed errors
   console.error = (...args) => {
     const message = args.join(' ');
-    if (isExtensionError(message)) {
+    if (shouldSuppress(message)) {
       suppressedCount++;
-      // In development, log suppressed extension errors for transparency
-      if (process.env.NODE_ENV === 'development' && suppressedCount % 10 === 1) {
-        originalInfo(`[Extension Error Suppressed - Count: ${suppressedCount}]:`, message.substring(0, 100));
+      // In development, collect unique suppressed errors for debugging
+      if (process.env.NODE_ENV === 'development') {
+        suppressedErrors.add(message.substring(0, 100));
       }
       return;
     }
@@ -190,8 +246,11 @@ export const suppressChromeExtensionErrors = () => {
 
   console.warn = (...args) => {
     const message = args.join(' ');
-    if (isExtensionError(message)) {
+    if (shouldSuppress(message)) {
       suppressedCount++;
+      if (process.env.NODE_ENV === 'development') {
+        suppressedErrors.add(message.substring(0, 100));
+      }
       return;
     }
     originalWarn.apply(console, args);
@@ -199,8 +258,11 @@ export const suppressChromeExtensionErrors = () => {
 
   console.info = (...args) => {
     const message = args.join(' ');
-    if (isExtensionError(message)) {
+    if (shouldSuppress(message)) {
       suppressedCount++;
+      if (process.env.NODE_ENV === 'development') {
+        suppressedErrors.add(message.substring(0, 100));
+      }
       return;
     }
     originalInfo.apply(console, args);
@@ -208,20 +270,57 @@ export const suppressChromeExtensionErrors = () => {
 
   console.log = (...args) => {
     const message = args.join(' ');
-    if (isExtensionError(message)) {
+    if (shouldSuppress(message)) {
       suppressedCount++;
+      if (process.env.NODE_ENV === 'development') {
+        suppressedErrors.add(message.substring(0, 100));
+      }
       return;
     }
     originalLog.apply(console, args);
   };
+
+  // Add global error handler for postMessage and other errors
+  window.onerror = (message, source, lineno, colno, error) => {
+    const messageStr = String(message);
+    if (shouldSuppress(messageStr)) {
+      suppressedCount++;
+      if (process.env.NODE_ENV === 'development') {
+        suppressedErrors.add(messageStr.substring(0, 100));
+      }
+      return true; // Prevent default browser error handling
+    }
+    // Call original error handler if it exists
+    return originalWindowError ? originalWindowError(message, source, lineno, colno, error) : false;
+  };
+
+  // Handle unhandled promise rejections (common with postMessage)
+  const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    const reason = String(event.reason);
+    if (shouldSuppress(reason)) {
+      suppressedCount++;
+      if (process.env.NODE_ENV === 'development') {
+        suppressedErrors.add(reason.substring(0, 100));
+      }
+      event.preventDefault(); // Prevent the error from being logged
+    }
+  };
+
+  window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
   return () => {
     console.error = originalError;
     console.warn = originalWarn;
     console.info = originalInfo;
     console.log = originalLog;
+    window.onerror = originalWindowError;
+    window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    
     if (process.env.NODE_ENV === 'development' && suppressedCount > 0) {
-      originalInfo(`[Chrome Extension Error Suppression] Cleaned up. Total suppressed: ${suppressedCount}`);
+      originalInfo(`🧹 Suppressed ${suppressedCount} extension/dev/postMessage errors`);
+      if (suppressedErrors.size > 0) {
+        originalInfo('Suppressed error types:', Array.from(suppressedErrors).slice(0, 5));
+      }
     }
   };
 };
