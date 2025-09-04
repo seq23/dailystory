@@ -194,7 +194,7 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
       return acc;
     }, [] as string[]);
   
-  const pages: string[] = [];
+  let pages: string[] = [];
   let currentPage = '';
   let currentChars = 0;
   
