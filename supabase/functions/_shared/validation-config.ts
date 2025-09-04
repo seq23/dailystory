@@ -60,8 +60,72 @@ export const validationConfig = {
     "splitTolerance": 1.5,
     "cacheLimit": 500
   },
+  "characterMinimumsPerPage": {
+    "_comment": "DYNAMIC PER-PAGE CHARACTER MINIMUMS - Single source of truth for all services",
+    "_purpose": "Realistic minimums that catch empty/insufficient responses while allowing natural variation",
+    "_alignment": "Level 0 system prompt requires 2-8 words per sentence, 'I see.' = 5 chars perfect for validation",
+    "_validation_methodology": "Used by both Netflix (multiply by 12 pages) and Live (per-page) services",
+    
+    "Level0": { 
+      "minCharsPerPage": 5,
+      "_example": "'I see.' meets system prompt 2-word minimum, catches empty responses"
+    },
+    "Level1": { 
+      "minCharsPerPage": 15,
+      "_example": "Short sentences like 'Sam runs fast.' = 15 chars"
+    },
+    "Level2": { 
+      "minCharsPerPage": 25,
+      "_example": "Simple paragraphs, basic storytelling"
+    },
+    "Level3": { 
+      "minCharsPerPage": 40,
+      "_example": "More developed content per page"
+    },
+    "Level4": { 
+      "minCharsPerPage": 50,
+      "_example": "Rich content for advanced readers"
+    },
+    "Grade6": { 
+      "minCharsPerPage": 60,
+      "_example": "Grade-level appropriate complexity"
+    },
+    "Grade7": { 
+      "minCharsPerPage": 60,
+      "_example": "Grade-level appropriate complexity"
+    },
+    "Grade8": { 
+      "minCharsPerPage": 60,
+      "_example": "Grade-level appropriate complexity"
+    },
+    "Grade9": { 
+      "minCharsPerPage": 60,
+      "_example": "Grade-level appropriate complexity"
+    },
+    "Grade10": { 
+      "minCharsPerPage": 60,
+      "_example": "Grade-level appropriate complexity"
+    }
+  },
+  "referenceAverages": {
+    "_comment": "REFERENCE DATA - Keep averages for documentation, use minimums for validation",
+    "_purpose": "Ensures we catch real content while allowing natural variation",
+    "_methodology": "Averages observed from real AI stories, minimums set for practical validation",
+    
+    "Level0": { "avgCharsPerPage": 33, "minCharsPerPage": 5 },
+    "Level1": { "avgCharsPerPage": 167, "minCharsPerPage": 15 },
+    "Level2": { "avgCharsPerPage": 292, "minCharsPerPage": 25 },
+    "Level3": { "avgCharsPerPage": 1667, "minCharsPerPage": 40 },
+    "Level4": { "avgCharsPerPage": 2167, "minCharsPerPage": 50 },
+    "Grade6": { "avgCharsPerPage": 2250, "minCharsPerPage": 60 },
+    "Grade7": { "avgCharsPerPage": 2250, "minCharsPerPage": 60 },
+    "Grade8": { "avgCharsPerPage": 2250, "minCharsPerPage": 60 },
+    "Grade9": { "avgCharsPerPage": 2250, "minCharsPerPage": 60 },
+    "Grade10": { "avgCharsPerPage": 2250, "minCharsPerPage": 60 }
+  },
   "characterThresholds": {
-    "_comment": "PRIMARY VALIDATION METHOD - Character limits based on real AI story analysis",
+    "_comment": "LEGACY STORY-LEVEL CHARACTER LIMITS - Kept for compatibility",
+    "_note": "Per-page validation now uses characterMinimumsPerPage above",
     "_base_methodology": "Base limits from actual story data, multiplied by creativity buffers",
     "_buffers": "L0-1: 1.2x, L2-3: 1.5x, L4: 2.0x, Grade6-10: 2.5x for maximum creativity",
     "_data_source": "Jordan story (20,283 chars), other real AI stories analyzed for accuracy",

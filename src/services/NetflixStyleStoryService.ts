@@ -151,8 +151,15 @@ export class NetflixStyleStoryService {
         
         console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages`);
         
-        // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
-        if (result.story && result.story.length > 20 && result.pages && result.pages.length > 0 && finalContent.length > 0) {
+        // PHASE 4: Use dynamic character validation based on difficulty level
+        const { mapDifficultyToLevel, getMinCharactersTotal, getExpectedPagesForService } = await import('../../supabase/functions/_shared/validation-utils');
+        const validationLevel = mapDifficultyToLevel(expertGradeLevel || difficulty);
+        const expectedPages = getExpectedPagesForService('netflix', validationLevel) || 12;
+        const minTotalChars = getMinCharactersTotal(validationLevel, expectedPages);
+        const hasValidContent = result.story && result.story.length >= minTotalChars && result.pages && result.pages.length > 0 && finalContent.length > 0;
+        console.log(`🔍 Netflix dynamic validation: StoryLength=${result.story?.length}, MinRequired=${minTotalChars}, Level=${validationLevel}, Pages=${expectedPages}`);
+        
+        if (hasValidContent) {
           try {
             (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
             console.log('✅ Confirmed Netflix AI-generated story content, setting source tracking');

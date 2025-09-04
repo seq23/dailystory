@@ -86,11 +86,12 @@ export class LiveGenerationService {
         characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
       };
 
-      // PHASE 4: Only set AI source AFTER confirming content is actually present (grade-level aware threshold)
-      const isLevel0 = difficulty === 'beginner' || expertGradeLevel === '6th';
-      const contentThreshold = isLevel0 ? 5 : 20;
-      const hasValidContent = result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > contentThreshold;
-      console.log(`🔍 Content validation: Length=${result.pages?.[0]?.length}, Threshold=${contentThreshold}, Level0=${isLevel0}, Difficulty=${difficulty}, Grade=${expertGradeLevel}`);
+      // PHASE 4: Use dynamic character validation based on level
+      const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
+      const validationLevel = mapDifficultyToLevel(expertGradeLevel || difficulty);
+      const minCharsPerPage = getMinCharactersPerPage(validationLevel);
+      const hasValidContent = result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length >= minCharsPerPage;
+      console.log(`🔍 Dynamic content validation: Length=${result.pages?.[0]?.length}, MinRequired=${minCharsPerPage}, Level=${validationLevel}, Difficulty=${difficulty}, Grade=${expertGradeLevel}`);
       
       if (hasValidContent) {
         try {
@@ -175,8 +176,11 @@ export class LiveGenerationService {
       };
 
       console.log(`🚀 Live Generation: Page ${nextPageNumber} generated successfully`);
-      // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
-      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 20) {
+      // PHASE 4: Use dynamic character validation for next page
+      const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
+      const validationLevel = mapDifficultyToLevel(context.expertGradeLevel || context.difficulty);
+      const minCharsPerPage = getMinCharactersPerPage(validationLevel);
+      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length >= minCharsPerPage) {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
@@ -245,8 +249,11 @@ export class LiveGenerationService {
       }
 
       console.log(`🚀 Live Generation: Ending generated with ${allPages.length} page(s)`);
-      // PHASE 4: Only set AI source AFTER confirming content is actually present (lowered threshold)
-      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length > 20) {
+      // PHASE 4: Use dynamic character validation for ending pages
+      const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
+      const validationLevel = mapDifficultyToLevel(context.expertGradeLevel || context.difficulty);
+      const minCharsPerPage = getMinCharactersPerPage(validationLevel);
+      if (result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length >= minCharsPerPage) {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';

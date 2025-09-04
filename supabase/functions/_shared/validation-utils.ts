@@ -86,7 +86,27 @@ export function getExpectedPagesForService(service: 'netflix' | 'live', level: V
 }
 
 /**
- * Get character limits for a validation level
+ * Get minimum characters per page for a validation level - DYNAMIC HELPER FUNCTION
+ * Single source of truth for both Netflix and Live services
+ */
+export function getMinCharactersPerPage(level: ValidationLevel): number {
+  return validationConfig.characterMinimumsPerPage[level]?.minCharsPerPage || 
+         validationConfig.characterMinimumsPerPage.Level2?.minCharsPerPage || 
+         25; // Fallback to Level2 default
+}
+
+/**
+ * Get minimum total characters for a story based on level and expected pages - DYNAMIC HELPER FUNCTION
+ * Used by Netflix service (level × 12 pages)
+ */
+export function getMinCharactersTotal(level: ValidationLevel, expectedPages: number): number {
+  const minCharsPerPage = getMinCharactersPerPage(level);
+  return minCharsPerPage * expectedPages;
+}
+
+/**
+ * Get character limits for a validation level - LEGACY COMPATIBILITY
+ * Use getMinCharactersPerPage() for new validation logic
  */
 export function getCharacterLimitsForLevel(level: ValidationLevel) {
   return validationConfig.characterThresholds[level] || validationConfig.characterThresholds.Level2;
@@ -343,50 +363,55 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
   // TOKEN VALIDATION BYPASSED - Keep for metrics but don't use for validation decisions
   const tokenCount = estimateTokenCount(content);
   const characterCount = content.length;
+  
+  // NEW DYNAMIC VALIDATION: Use helper functions for consistent validation
+  const expectedPages = getExpectedPagesForService('netflix', level) || 12;
+  const minTotalChars = getMinCharactersTotal(level, expectedPages);
   const characterLimits = getCharacterLimitsForLevel(level);
   
   // PHASE OUT: Return high token ceiling for compatibility
   const maxTokens = 100000; // High ceiling - not used for validation
-  const minChars = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
-  const maxChars = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
+  const maxChars = Math.floor(characterLimits.maxChars * 0.8); // Conservative maximum
   
   // Detect special content types and apply even more lenient minimums
   const isSpecialContent = isTransition(content) || isEnding(content) || isCliffhanger(content);
   
   if (isSpecialContent) {
     // Apply 0.5x multiplier for special content types (even more lenient)
-    const adjustedMinChars = Math.floor(minChars * 0.5);
+    const adjustedMinChars = Math.floor(minTotalChars * 0.5);
     
     console.log(`🎭 [CONTENT-TYPE] Special content detected:`, {
       isTransition: isTransition(content),
       isEnding: isEnding(content), 
       isCliffhanger: isCliffhanger(content),
       appliedMultiplier: 0.5,
-      originalMinChars: minChars,
+      originalMinChars: minTotalChars,
       adjustedMinChars
     });
   }
   
   // Enhanced logging for debugging
-  console.log(`🔍 [VALIDATION-DEBUG] Live page CHARACTER-ONLY validation for ${level}:`, {
+  console.log(`🔍 [VALIDATION-DEBUG] Guest story CHARACTER-ONLY validation for ${level}:`, {
     level,
     tokenCount: `${tokenCount} (not validated - bypassed)`,
     characterCount,
     tokenValidation: 'DISABLED',
-    characterLimits: { minChars, maxChars },
+    expectedPages,
+    minTotalChars: `${minTotalChars} (${getMinCharactersPerPage(level)}/page × ${expectedPages})`,
+    maxChars,
     contentLength: content.length
   });
   
-  // CHARACTER VALIDATION ONLY - Token validation completely bypassed
-  const passesCharacterValidation = characterCount >= minChars && characterCount <= maxChars;
+  // CHARACTER VALIDATION ONLY - Token validation completely bypassed  
+  const passesCharacterValidation = characterCount >= minTotalChars && characterCount <= maxChars;
   
   if (!passesCharacterValidation) {
-    const reason = characterCount < minChars ? 
-      `Page too short: ${characterCount} chars (min: ${minChars})` :
-      `Page too long: ${characterCount} chars (max: ${maxChars})`;
+    const reason = characterCount < minTotalChars ? 
+      `Story too short: ${characterCount} chars (min: ${minTotalChars} = ${getMinCharactersPerPage(level)}/page × ${expectedPages} pages)` :
+      `Story too long: ${characterCount} chars (max: ${maxChars})`;
     
-    console.log(`❌ [VALIDATION-DEBUG] Page failed CHARACTER validation for ${level}:`, {
-      characterCount, minChars, maxChars,
+    console.log(`❌ [VALIDATION-DEBUG] Guest story failed CHARACTER validation for ${level}:`, {
+      characterCount, minTotalChars, maxChars, expectedPages,
       tokenValidation: 'BYPASSED',
       reason
     });
@@ -401,9 +426,9 @@ export function validateGuestStoryLength(content: string, level: ValidationLevel
     };
   }
   
-  console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (character-only):`, {
+  console.log(`✅ [VALIDATION-DEBUG] Guest story validation passed for ${level} (character-only):`, {
     tokenCount: `${tokenCount} (not validated)`,
-    characterCount, minChars, maxChars,
+    characterCount, minTotalChars, maxChars, expectedPages,
     tokenValidation: 'BYPASSED',
     charUtilization: Math.round((characterCount / maxChars) * 100)
   });
@@ -438,13 +463,13 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   const tokenCount = estimateTokenCount(content);
   const characterCount = content.length;
   const wordCount = content.trim().split(/\s+/).length;
+  
+  // NEW DYNAMIC VALIDATION: Use helper functions for consistent per-page validation
+  const minCharsPerPage = getMinCharactersPerPage(level);
   const characterLimits = getCharacterLimitsForLevel(level);
   
   // PHASE OUT: Return high token ceiling for compatibility
   const maxTokens = 100000; // High ceiling - not used for validation
-  
-  // For live pages, use direct per-page character limits (no story-level calculations)
-  let minCharsPerPage = Math.floor(characterLimits.minChars * 0.6); // Conservative per-page minimum
   let maxCharsPerPage = Math.floor(characterLimits.maxChars * 0.8); // Conservative per-page maximum
   
   // PHASE 4: Words-per-page density validation (Level 2 specific: 60-75 words per page)
@@ -458,18 +483,19 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
   
   // Detect special content types and apply even more lenient minimums
   const isSpecialContent = isTransition(content) || isEnding(content) || isCliffhanger(content);
+  let adjustedMinCharsPerPage = minCharsPerPage;
   
   if (isSpecialContent) {
     // Apply 0.5x multiplier for special content types (even more lenient)
-    minCharsPerPage = Math.floor(minCharsPerPage * 0.5);
+    adjustedMinCharsPerPage = Math.floor(minCharsPerPage * 0.5);
     
     console.log(`🎭 [CONTENT-TYPE] Special content detected:`, {
       isTransition: isTransition(content),
       isEnding: isEnding(content), 
       isCliffhanger: isCliffhanger(content),
       appliedMultiplier: 0.5,
-      originalMinChars: minCharsPerPage * 2,
-      adjustedMinChars: minCharsPerPage
+      originalMinChars: minCharsPerPage,
+      adjustedMinChars: adjustedMinCharsPerPage
     });
   }
   
@@ -481,24 +507,25 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     wordCount,
     wordsPerPageValid,
     tokenValidation: 'DISABLED',
-    characterLimits: { minCharsPerPage, maxCharsPerPage },
+    minCharsPerPage: `${adjustedMinCharsPerPage} (base: ${minCharsPerPage})`,
+    maxCharsPerPage,
     contentLength: content.length
   });
   
   // CHARACTER VALIDATION ONLY - Token validation completely bypassed
-  const passesCharacterValidation = characterCount >= minCharsPerPage && characterCount <= maxCharsPerPage;
+  const passesCharacterValidation = characterCount >= adjustedMinCharsPerPage && characterCount <= maxCharsPerPage;
   
   // LIVE SERVICE PREMIUM USER PROTECTION:
   // Check if content is severely too long (2x+ limit) vs moderately too long
   const isSeverelyTooLong = characterCount > (maxCharsPerPage * 2);
   
   if (!passesCharacterValidation) {
-    const reason = characterCount < minCharsPerPage ? 
-      `Page too short: ${characterCount} chars (min: ${minCharsPerPage})` :
+    const reason = characterCount < adjustedMinCharsPerPage ? 
+      `Page too short: ${characterCount} chars (min: ${adjustedMinCharsPerPage})` :
       `Page too long: ${characterCount} chars (max: ${maxCharsPerPage})`;
     
-    console.log(`❌ [VALIDATION-DEBUG] Page failed CHARACTER validation for ${level}:`, {
-      characterCount, minCharsPerPage, maxCharsPerPage,
+    console.log(`❌ [VALIDATION-DEBUG] Live page failed CHARACTER validation for ${level}:`, {
+      characterCount, adjustedMinCharsPerPage, maxCharsPerPage,
       wordCount, wordsPerPageValid,
       isSeverelyTooLong,
       tokenValidation: 'BYPASSED',
@@ -518,9 +545,9 @@ export function validateLivePageLength(content: string, level: ValidationLevel):
     };
   }
   
-  console.log(`✅ [VALIDATION-DEBUG] Page validation passed for ${level} (character-only):`, {
+  console.log(`✅ [VALIDATION-DEBUG] Live page validation passed for ${level} (character-only):`, {
     tokenCount: `${tokenCount} (not validated)`,
-    characterCount, minCharsPerPage, maxCharsPerPage,
+    characterCount, adjustedMinCharsPerPage, maxCharsPerPage,
     wordCount, wordsPerPageValid,
     tokenValidation: 'BYPASSED',
     charUtilization: Math.round((characterCount / maxCharsPerPage) * 100)
