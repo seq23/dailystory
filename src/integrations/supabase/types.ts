@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_prompt_debug_log: {
+        Row: {
+          api_response: Json
+          attempt: number
+          bundle_data: Json
+          created_at: string
+          id: string
+          model: string
+          page_number: number
+          session_id: string
+          success: boolean
+          system_prompt: string
+          token_limit: number
+          user_id: string | null
+          user_prompt: string
+        }
+        Insert: {
+          api_response?: Json
+          attempt?: number
+          bundle_data?: Json
+          created_at?: string
+          id?: string
+          model?: string
+          page_number?: number
+          session_id: string
+          success?: boolean
+          system_prompt: string
+          token_limit?: number
+          user_id?: string | null
+          user_prompt: string
+        }
+        Update: {
+          api_response?: Json
+          attempt?: number
+          bundle_data?: Json
+          created_at?: string
+          id?: string
+          model?: string
+          page_number?: number
+          session_id?: string
+          success?: boolean
+          system_prompt?: string
+          token_limit?: number
+          user_id?: string | null
+          user_prompt?: string
+        }
+        Relationships: []
+      }
       character_consistency_cache: {
         Row: {
           character_data: Json

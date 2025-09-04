@@ -263,8 +263,9 @@ export class SessionStateManager {
 
   /**
    * Store AI prompt for debugging - stores EVERYTHING sent to AI including the original bundle
+   * Now persists to database for permanent storage
    */
-  storeAIPromptForDebugging(sessionId, aiPromptData) {
+  async storeAIPromptForDebugging(sessionId, aiPromptData) {
     const state = this.getOrCreateSessionState(sessionId);
     
     // Initialize aiPrompts array if it doesn't exist
@@ -272,35 +273,88 @@ export class SessionStateManager {
       state.aiPrompts = [];
     }
     
-    const fullAIPrompt = {
-      systemPrompt: aiPromptData.systemPrompt,
-      userPrompt: aiPromptData.userPrompt,
+    console.log(`🔍 [AI-DEBUG] Storing AI prompt data for session ${sessionId}:`, {
+      systemTokens: aiPromptData.systemPrompt?.length || 0,
+      userTokens: aiPromptData.userPrompt?.length || 0,
+      model: aiPromptData.model,
+      pageNumber: aiPromptData.pageNumber,
+      attempt: aiPromptData.attempt,
+      success: aiPromptData.success
+    });
+
+    const debugEntry = {
       model: aiPromptData.model,
       tokenLimit: aiPromptData.tokenLimit,
+      systemPrompt: aiPromptData.systemPrompt,
+      userPrompt: aiPromptData.userPrompt,
       pageNumber: aiPromptData.pageNumber || state.pageNumber,
       attempt: aiPromptData.attempt,
       timestamp: Date.now(),
       apiResponse: aiPromptData.apiResponse,
       success: aiPromptData.success,
       sessionId: sessionId,
-      // NEW: Store the original bundle data
+      // Store the original bundle data
       bundle: aiPromptData.bundle || null
     };
     
-    // Add to array and keep only last 3
-    state.aiPrompts.push(fullAIPrompt);
+    // Add to in-memory array and keep only last 3
+    state.aiPrompts.push(debugEntry);
     if (state.aiPrompts.length > 3) {
-      state.aiPrompts.shift(); // Remove oldest
+      state.aiPrompts.shift();
     }
     
     state.lastUpdated = Date.now();
     
+    // NEW: Persist to database
+    try {
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL'),
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      );
+
+      const { error: insertError } = await supabase
+        .from('ai_prompt_debug_log')
+        .insert({
+          session_id: sessionId,
+          system_prompt: aiPromptData.systemPrompt || '',
+          user_prompt: aiPromptData.userPrompt || '',
+          bundle_data: aiPromptData.bundle || {},
+          api_response: aiPromptData.apiResponse || {},
+          model: aiPromptData.model || 'gpt-4o-mini',
+          token_limit: aiPromptData.tokenLimit || 4000,
+          page_number: aiPromptData.pageNumber || 1,
+          attempt: aiPromptData.attempt || 1,
+          success: aiPromptData.success || false
+        });
+
+      if (insertError) {
+        console.error('❌ Failed to persist AI debug data to database:', insertError);
+      } else {
+        console.log(`✅ [AI-DEBUG] Persisted to database for session ${sessionId}`);
+      }
+
+      // Clean up old entries (keep only last 3 per session)
+      const { error: cleanupError } = await supabase
+        .from('ai_prompt_debug_log')
+        .delete()
+        .not('id', 'in', 
+          `(SELECT id FROM ai_prompt_debug_log WHERE session_id = '${sessionId}' ORDER BY created_at DESC LIMIT 3)`
+        )
+        .eq('session_id', sessionId);
+
+      if (cleanupError) {
+        console.warn('⚠️ Failed to cleanup old AI debug entries:', cleanupError);
+      }
+
+    } catch (dbError) {
+      console.error('❌ Database operation failed for AI debug storage:', dbError);
+    }
+    
     console.log(`🔍 [AI-DEBUG] Stored complete AI prompt for session ${sessionId}, attempt ${aiPromptData.attempt}:`, {
       systemPromptLength: aiPromptData.systemPrompt?.length || 0,
       userPromptLength: aiPromptData.userPrompt?.length || 0,
-      model: aiPromptData.model,
-      success: aiPromptData.success,
-      totalStoredPrompts: state.aiPrompts.length
+      totalInMemoryEntries: state.aiPrompts.length
     });
   }
 
