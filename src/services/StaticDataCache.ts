@@ -69,31 +69,6 @@ class StaticCache {
 // Cached data generators
 const staticCache = StaticCache.getInstance();
 
-// Cache OpenAI model configurations
-export const getModelChain = (isExpertLevel: boolean) => {
-  const cacheKey = `model_chain_${isExpertLevel ? 'expert' : 'regular'}`;
-  
-  let chain = staticCache.get<any[]>(cacheKey);
-  if (!chain) {
-    chain = isExpertLevel ? [
-      { model: 'gpt-4.1-2025-04-14', description: 'content-focused primary', paramName: 'max_completion_tokens' }, 
-      { model: 'gpt-4o', description: 'reliable content generator', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4o-mini', description: 'reliable fallback', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4.1-2025-04-14', description: 'content retry', paramName: 'max_completion_tokens' },
-      { model: 'gpt-5-mini-2025-08-07', description: 'reasoning fallback', paramName: 'max_completion_tokens' },
-      { model: 'gpt-5-2025-08-07', description: 'reasoning final attempt', paramName: 'max_completion_tokens' }
-    ] : [
-      { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true }, 
-      { model: 'gpt-4o-mini', description: 'fast & reliable', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4o', description: 'legacy fallback', paramName: 'max_tokens', supportsTemperature: true },
-      { model: 'gpt-4o-mini', description: 'final legacy attempt', paramName: 'max_tokens', supportsTemperature: true }
-    ];
-    
-    staticCache.set(cacheKey, chain);
-  }
-  
-  return chain;
-};
 
 // Cache hair color mapping rules with enhanced diversity
 export const getHairColorMapping = () => {
