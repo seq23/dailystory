@@ -85,8 +85,8 @@ interface ServiceComparison {
 // Enhanced test profiles - Using frontend difficulty levels that real users see
 // These will be automatically converted to backend levels by DifficultyLevelMapper in the services
 const testUserProfiles: Record<string, UserInfo> = {
-  // Core difficulty levels
-  beginner: {
+  // Core difficulty levels - Keys now match frontend difficulty levels
+  'pre-reader': {
     name: 'Emma',
     age: 4,
     grade: "PreK" as Grade,
@@ -100,7 +100,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'cookies',
     specialRequest: 'stories about rainbows'
   },
-  easy: {
+  beginner: {
     name: 'Alex',
     age: 6,
     grade: "K" as Grade,
@@ -114,7 +114,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'ice cream',
     specialRequest: 'sports adventures'
   },
-  medium: {
+  developing: {
     name: 'Maya',
     age: 8,
     grade: "2nd" as Grade,
@@ -128,7 +128,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'pizza',
     specialRequest: 'mystery adventures'
   },
-  hard: {
+  independent: {
     name: 'Jordan',
     age: 10,
     grade: "4th" as Grade,
@@ -142,7 +142,7 @@ const testUserProfiles: Record<string, UserInfo> = {
     favoriteFood: 'sushi',
     specialRequest: 'science fiction'
   },
-  expert: {
+  advanced: {
     name: 'Taylor',
     age: 12,
     grade: "6th+" as Grade,
