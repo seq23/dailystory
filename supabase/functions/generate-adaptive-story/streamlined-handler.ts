@@ -183,6 +183,10 @@ Generate a corrected version that addresses these issues while keeping the story
     
     const validationResult = UnifiedValidator.validateContent(storyText, validationConfig);
     
+    // Detect service type for proper page parsing
+    const serviceType = getServiceType(config);
+    console.log(`🎯 Service Type Detected: ${serviceType}`);
+    
     // Check if validation requires retry with hints
     if (validationResult.decision === 'RETRY_WITH_HINT' && (config.repairAttempt || 0) < 2) {
       console.log(`🔄 RETRY WITH HINT: Validation suggests retry (attempt ${(config.repairAttempt || 0) + 1})`);
@@ -214,9 +218,9 @@ Generate a corrected version that addresses these issues while keeping the story
       
       if (retryValidationResult.decision === 'ACCEPT' || retryValidationResult.decision === 'REPAIR_AND_SPLIT') {
         console.log(`✅ Retry successful with decision: ${retryValidationResult.decision}`);
-        // Use the retry result
+        // Use the retry result with proper service detection
         const retryPlaceholderResolved = resolveAllPlaceholders(retryStoryText, { userInfo });
-        const retryPages = sharedParseIntoPages(retryPlaceholderResolved, validationLevel);
+        const retryPages = sharedParseIntoPages(retryPlaceholderResolved, validationLevel, serviceType);
         
         // Calculate vocabulary compliance for retry result
         let retryVocabCompliance = 1.0;
@@ -253,8 +257,8 @@ Generate a corrected version that addresses these issues while keeping the story
     // Step 2: Apply placeholder resolution to entire story ONCE (grammar processing moved to process-story-content)
     const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo });
     
-    // Step 4: THEN parse into pages using shared validation utilities
-    const pages = sharedParseIntoPages(placeholderResolved, validationLevel);
+    // Step 4: THEN parse into pages using shared validation utilities with service detection
+    const pages = sharedParseIntoPages(placeholderResolved, validationLevel, serviceType);
     
     // Calculate vocabulary compliance
     let vocabCompliance = 1.0;
@@ -379,6 +383,36 @@ function getLiveTokenLimit(difficulty: DifficultyLevel | ExpertGradeLevel): numb
 function getServiceSpecificFallback(config?: StreamlinedConfig): number {
   const isLiveGeneration = config?.pageNumber === 1 && !config?.existingStory;
   return isLiveGeneration ? 600 : 6500; // Live: 600, Netflix: 6500
+}
+
+/**
+ * Determine service type based on config
+ */
+function getServiceType(config?: StreamlinedConfig): 'netflix' | 'live' {
+  // Netflix service indicators:
+  // - sessionType is 'free' (guest users always get Netflix-style stories)
+  // - No existing story (brand new story generation)
+  // - Not page-by-page generation
+  
+  // Live service indicators:
+  // - sessionType is 'premium' 
+  // - Has existing story (continuing a story)
+  // - Page-by-page generation (pageNumber > 1)
+  
+  const isLiveGeneration = config?.sessionType === 'premium' && 
+                          (config?.pageNumber > 1 || !!config?.existingStory);
+  
+  const serviceType = isLiveGeneration ? 'live' : 'netflix';
+  
+  console.log(`🎯 Service Type Detection:`, {
+    sessionType: config?.sessionType,
+    pageNumber: config?.pageNumber,
+    hasExistingStory: !!config?.existingStory,
+    isLiveGeneration,
+    detectedService: serviceType
+  });
+  
+  return serviceType;
 }
 
 /**

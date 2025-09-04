@@ -274,6 +274,12 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     pages.push(currentPage.trim());
   }
   
+  // Final truncation safety net for Netflix (enforce 12-page max regardless of content)
+  if (maxPages <= 12 && pages.length > 12) {
+    console.log(`🔧 FINAL TRUNCATION: Enforcing 12-page limit, truncating ${pages.length} pages to 12`);
+    pages = pages.slice(0, 12);
+  }
+  
   // Ensure we have content - fallback to original if splitting failed
   return pages.length > 0 ? pages : [content.trim()];
 }
