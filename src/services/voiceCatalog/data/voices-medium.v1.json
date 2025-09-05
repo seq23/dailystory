@@ -1,0 +1,151 @@
+{
+  "schema":"avc.level.v1",
+  "v":"1.0.0",
+  "level":"medium",
+  "voices":[
+    {
+      "id":"neighborhood_realist_med_v1","pn":"Neighborhood Realist",
+      "vf":{"tone":[4,5],"cad":12,"var":4,"wp":[0,3],"fig":0.35,"hum":0.5,"warm":0.9,"nar":2},
+      "st":{"hk":[2],"tr":[6,2],"pz":[3],"ct":[5],"tw":[8],"en":[6]},
+      "ch":{"hp":[8,4],"pov":"third","dlg":[4,1],"arc":[3,11]},
+      "wd":{"set":[18,4,5],"sc":"everyday","mor":"implied","lp":[],"rp":[9]},
+      "rd":{"rh":"none","aa":1,"ono":[16],"sl":1},
+      "eg":{"dir":0,"lst":1,"ip":["what_would_you_do"],"contr":0,"exag":0},
+      "th":["friendship","school day","small wins"],"tg":[6,15],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Realistic-Neighbor"]
+    },
+    {
+      "id":"honest_heartbeat_med_v1","pn":"Honest Heartbeat",
+      "vf":{"tone":[4,20],"cad":12,"var":3,"wp":[0],"fig":0.45,"hum":0.4,"warm":0.85,"nar":0},
+      "st":{"hk":[2],"tr":[6],"pz":[5],"ct":[5],"tw":[14],"en":[11]},
+      "ch":{"hp":[8,4],"pov":"first","dlg":[4,9],"arc":[10,12]},
+      "wd":{"set":[17,3,5],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["reflect_prompt"],"contr":0,"exag":0},
+      "th":["feelings","friendships","identity"],"tg":[22,27],
+      "uig":{"aff":{"u":0.7,"c":0.3,"a":0.2,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":0},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Emotional-Realist"]
+    },
+    {
+      "id":"twisty_trickster_med_v1","pn":"Twisty Trickster",
+      "vf":{"tone":[6,5],"cad":12,"var":4,"wp":[4,3],"fig":0.4,"hum":0.8,"warm":0.75,"nar":2},
+      "st":{"hk":[2],"tr":[5,2],"pz":[2],"ct":[5],"tw":[13,12,15],"en":[3,10]},
+      "ch":{"hp":[4,12],"pov":"third","dlg":[3,5],"arc":[4,3]},
+      "wd":{"set":[7,6,5],"sc":"everyday","mor":"humor_hidden","lp":[3],"rp":[2]},
+      "rd":{"rh":"none","aa":1,"ono":["whizz","thud"],"sl":0},
+      "eg":{"dir":0,"lst":1,"ip":["spot_the_prank"],"contr":1,"exag":1},
+      "th":["mischief","surprise","justice-with-a-wink"],"tg":[6,30],
+      "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.4,"h":0.6},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Mischief-Maker"]
+    },
+    {
+      "id":"pastoral_companion_med_v1","pn":"Pastoral Companion",
+      "vf":{"tone":[4,8],"cad":12,"var":3,"wp":[0],"fig":0.55,"hum":0.35,"warm":0.9,"nar":2},
+      "st":{"hk":[2],"tr":[0,6],"pz":[0,5],"ct":[5],"tw":[14],"en":[3,11]},
+      "ch":{"hp":[2,8],"pov":"third","dlg":[1,4],"arc":[11,10]},
+      "wd":{"set":[17,7],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":1,"ono":["splash"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["notice_the_small"],"contr":0,"exag":0},
+      "th":["nature","friendship","quiet courage"],"tg":[10,27],
+      "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Nature-Friend"]
+    },
+    {
+      "id":"time_quest_duo_med_v1","pn":"Time-Quest Duo",
+      "vf":{"tone":[6,9],"cad":12,"var":4,"wp":[0,3],"fig":0.45,"hum":0.5,"warm":0.8,"nar":1},
+      "st":{"hk":[13],"tr":[2,12],"pz":[6],"ct":[4],"tw":[1,10],"en":[10]},
+      "ch":{"hp":[3,4],"pov":"third","dlg":[2,4],"arc":[11]},
+      "wd":{"set":[18,8,19],"sc":"everyday","mor":"implied","lp":["artifact_awakens"],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":0},
+      "eg":{"dir":0,"lst":1,"ip":["predict_next_place"],"contr":0,"exag":0},
+      "th":["quest","history","teamwork"],"tg":[26,31],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Time-Traveler"]
+    },
+    {
+      "id":"comic_chaos_capt_med_v1","pn":"Comic Chaos Captain",
+      "vf":{"tone":[11,18],"cad":12,"var":4,"wp":[4,3],"fig":0.3,"hum":0.95,"warm":0.8,"nar":0},
+      "st":{"hk":[6],"tr":[5],"pz":[2],"ct":[1],"tw":[5,3],"en":[2]},
+      "ch":{"hp":[4,12],"pov":"first","dlg":[3,8],"arc":[4]},
+      "wd":{"set":[4,5,3],"sc":"everyday","mor":"humor_hidden","lp":[3],"rp":["running_gag"]},
+      "rd":{"rh":"none","aa":1,"ono":["whoom","whizz"],"sl":0},
+      "eg":{"dir":1,"lst":1,"ip":["say_it_fast"],"contr":1,"exag":1},
+      "th":["fun-with-rules","friendship"],"tg":[6,7],
+      "uig":{"aff":{"u":0.8,"c":0.5,"a":0.5,"f":0.6,"h":0.6},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Comic-Captain"]
+    },
+    {
+      "id":"tender_fable_maker_med_v1","pn":"Tender Fable-Maker",
+      "vf":{"tone":[12,4],"cad":12,"var":3,"wp":[0,3],"fig":0.55,"hum":0.4,"warm":0.95,"nar":1},
+      "st":{"hk":[2],"tr":[0,6],"pz":[0,5],"ct":[0],"tw":[0,6],"en":[3,11]},
+      "ch":{"hp":[0,2],"pov":"third","dlg":[1,9],"arc":[1,10]},
+      "wd":{"set":[17,7,5],"sc":"everyday","mor":"symbolic","lp":[0],"rp":[0]},
+      "rd":{"rh":"none","aa":1,"ono":["thrum"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["soft_reflection"],"contr":0,"exag":0},
+      "th":["kindness","hope","found family"],"tg":[20,28],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Gentle-Fabulist"]
+    },
+    {
+      "id":"club_of_caring_med_v1","pn":"Club of Caring Plans",
+      "vf":{"tone":[10,4],"cad":12,"var":3,"wp":[0],"fig":0.35,"hum":0.5,"warm":0.9,"nar":2},
+      "st":{"hk":[11],"tr":[6],"pz":[3],"ct":[5],"tw":[8],"en":[5]},
+      "ch":{"hp":[8,4],"pov":"third","dlg":[4,1],"arc":[3]},
+      "wd":{"set":[5,4,3],"sc":"everyday","mor":"overt","lp":[9],"rp":[9]},
+      "rd":{"rh":"none","aa":0,"ono":["clack","ding"],"sl":0},
+      "eg":{"dir":0,"lst":1,"ip":["what_would_team_do"],"contr":0,"exag":0},
+      "th":["family/school planning","helping","teamwork"],"tg":[14,15,28],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.4,"h":0.4},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Team-Planner"]
+    },
+    {
+      "id":"secret_team_med_v1","pn":"Secret Quest Team",
+      "vf":{"tone":[6,15],"cad":12,"var":4,"wp":[0,3],"fig":0.45,"hum":0.5,"warm":0.8,"nar":1},
+      "st":{"hk":[12,14],"tr":[2,6],"pz":[6],"ct":[4,5],"tw":[1,15],"en":[10]},
+      "ch":{"hp":[12,10,4],"pov":"third","dlg":[2,4],"arc":[11]},
+      "wd":{"set":[17,7,18],"sc":"everyday","mor":"implied","lp":["legend_bleeds_present"],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":0},
+      "eg":{"dir":0,"lst":1,"ip":["spot_the_clue"],"contr":0,"exag":0},
+      "th":["mystery","friendship","adventure"],"tg":[30,6,26],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2}} },
+      "src":["Mystery-Squad"]
+    },
+    {
+      "id":"free_spirit_med_v1","pn":"Free-Spirited Adventurer",
+      "vf":{"tone":[6,4],"cad":12,"var":4,"wp":[0,3],"fig":0.45,"hum":0.5,"warm":0.9,"nar":0},
+      "st":{"hk":[2],"tr":[6,3],"pz":[3],"ct":[5],"tw":[0,6],"en":[3]},
+      "ch":{"hp":[4,0],"pov":"first","dlg":[4,9],"arc":[0,10]},
+      "wd":{"set":[17,7,22],"sc":"everyday","mor":"implied","lp":[],"rp":[0]},
+      "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["try_something_brave"],"contr":0,"exag":0},
+      "th":["independence","kindness","adventure"],"tg":[27,28,26],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2}} },
+      "src":["Independent-Spirit"]
+    },
+    {
+      "id":"quiet_courage_med_v1","pn":"Quiet Courage Chronicler",
+      "vf":{"tone":[4,20],"cad":12,"var":3,"wp":[0],"fig":0.5,"hum":0.35,"warm":0.9,"nar":0},
+      "st":{"hk":[2],"tr":[6],"pz":[5],"ct":[5],"tw":[14],"en":[11]},
+      "ch":{"hp":[8,2],"pov":"first","dlg":[4,9],"arc":[10,12]},
+      "wd":{"set":[17,5,3],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["notice_kindness"],"contr":0,"exag":0},
+      "th":["empathy","identity","kind bravery"],"tg":[27,28],
+      "uig":{"aff":{"u":0.7,"c":0.3,"a":0.2,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2}}},
+      "src":["Empathy-Teacher"]
+    },
+    {
+      "id":"paper_thin_traveler_med_v1","pn":"Paper-Thin Traveler",
+      "vf":{"tone":[6,5],"cad":12,"var":4,"wp":[0,3],"fig":0.35,"hum":0.6,"warm":0.85,"nar":1},
+      "st":{"hk":[2,14],"tr":[6,12],"pz":[2],"ct":[1],"tw":[3,15],"en":[1]},
+      "ch":{"hp":[12,4],"pov":"third","dlg":[2,3],"arc":[11]},
+      "wd":{"set":[3,12,18,20],"sc":"everyday","mor":"implied","lp":["artifact_awakens"],"rp":["running_gag"]},
+      "rd":{"rh":"none","aa":1,"ono":["whoosh","clack"],"sl":0},
+      "eg":{"dir":1,"lst":1,"ip":["spot_the_pun"],"contr":1,"exag":1},
+      "th":["travel","school humor","problem solving"],"tg":[10,15,26],
+      "uig":{"aff":{"u":0.8,"c":0.5,"a":0.4,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2}}},
+      "src":["Flat-Adventurer"]
+    }
+  ]
+}
