@@ -17,7 +17,7 @@ import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_share
 import { fetchVoicePatterns, type VoicePatterns } from '../_shared/authorVoiceService.ts';
 
 // Import static caching and error classification
-import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache, getCulturalContextArrays } from './StaticDataCache.ts';
+import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache, getCulturalContextArrays, getVocabularyCache } from './StaticDataCache.ts';
 const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
 
 // CORS headers - moved to top to fix ReferenceError
@@ -467,6 +467,11 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   // Enhanced avatar processing using StaticDataCache - UNIVERSAL coverage
   let enhancedUserPrompt = prompt.userPrompt;
   
+  // Phase 3: Vocabulary Caching Integration - Inject cached vocabulary BEFORE generation
+  const enhancedPromptWithVocabulary = preprocessVocabularyFromCache(enhancedUserPrompt, gradeLevel);
+  enhancedUserPrompt = enhancedPromptWithVocabulary.prompt;
+  const vocabCachePerformance = enhancedPromptWithVocabulary.performance;
+  
   try {
     // Use userInfo which already contains avatar data from bundle
     const completeAvatarInfo = userInfo;
@@ -758,6 +763,7 @@ Use these as inspiration but prioritize overall story quality and coherence.
           model: currentModel.name,
           processingTime: `${Date.now() - startTime}ms`,
           vocabularyTracking: vocabularyUsage,
+          vocabularyCachePerformance: vocabCachePerformance, // Phase 3: Cache performance tracking
           gradeLevel,
           hasPageMarkers: storyText.includes('***'),
           wordCount: storyText.split(/\s+/).length,
@@ -1096,4 +1102,66 @@ function calculateEducationalCompliance(content: string, gradeLevel: number): nu
   }
   
   return Math.round(score * 100) / 100;
+}
+
+// Phase 3: Vocabulary Caching Enhancement - Preprocessing Function  
+function preprocessVocabularyFromCache(userPrompt: string, gradeLevel: number): { prompt: string; performance: any } {
+  const startTime = Date.now();
+  let enhancedPrompt = userPrompt;
+  
+  try {
+    // Get cached system vocabulary for the grade level
+    const systemVocabulary = getVocabularyCache(gradeLevel, 'system');
+    
+    // Extract any existing user-specified vocabulary from prompt
+    const existingVocabMatch = userPrompt.match(/Priority vocabulary to include: ([^\n]+)/);
+    let userSpecifiedWords: string[] = [];
+    
+    if (existingVocabMatch) {
+      userSpecifiedWords = existingVocabMatch[1].split(', ').map(w => w.trim()).filter(w => w);
+    }
+    
+    // Combine vocabularies with user words taking priority
+    const combinedVocabulary = [...new Set([...userSpecifiedWords, ...systemVocabulary.slice(0, 15)])];
+    
+    // Inject vocabulary into the prompt BEFORE AI generation
+    if (combinedVocabulary.length > 0) {
+      const vocabularySection = `\nPriority vocabulary to include: ${combinedVocabulary.join(', ')}`;
+      
+      // Replace existing vocabulary or append new one
+      if (existingVocabMatch) {
+        enhancedPrompt = enhancedPrompt.replace(/Priority vocabulary to include: [^\n]+/, vocabularySection.trim());
+      } else {
+        enhancedPrompt += vocabularySection;
+      }
+    }
+    
+    const processingTime = Date.now() - startTime;
+    const performance = {
+      cacheHit: true,
+      processingTime: `${processingTime}ms`,
+      systemVocabCount: systemVocabulary.length,
+      userVocabCount: userSpecifiedWords.length,
+      combinedVocabCount: combinedVocabulary.length,
+      gradeLevel,
+      vocabularySource: 'cached'
+    };
+    
+    console.log(`📚 Vocabulary Cache Integration: Grade ${gradeLevel} - ${combinedVocabulary.length} words injected (${systemVocabulary.length} cached + ${userSpecifiedWords.length} user) in ${processingTime}ms`);
+    
+    return { prompt: enhancedPrompt, performance };
+    
+  } catch (error) {
+    console.warn('⚠️ Vocabulary cache integration failed, using original prompt:', safeErrorMessage(error));
+    
+    const performance = {
+      cacheHit: false,
+      processingTime: `${Date.now() - startTime}ms`,
+      error: safeErrorMessage(error),
+      gradeLevel,
+      vocabularySource: 'fallback'
+    };
+    
+    return { prompt: userPrompt, performance };
+  }
 }
