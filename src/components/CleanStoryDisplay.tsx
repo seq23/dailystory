@@ -1493,7 +1493,7 @@ const initializeStory = async () => {
       
       // Show current grade level toast for premium users
       if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
-        const gradeToShow = result.nextContext?.expertGradeLevel || expertGradeLevel;
+        const gradeToShow = ExpertDifficultyManager.getCurrentGradeLevel(userInfo);
         toast({
           title: "Reading Level",
           description: `Reading at ${gradeToShow} Grade Level`,
