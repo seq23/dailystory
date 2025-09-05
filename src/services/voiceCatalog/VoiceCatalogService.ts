@@ -64,21 +64,23 @@ export class VoiceCatalogService {
    * Load raw voice definitions for a level (handles delta format for easy)
    */
   private static async loadRawVoices(level: DifficultyLevel): Promise<VoiceDefinition[]> {
+    const { VoiceDataLoader } = await import('./VoiceDataLoader');
+    
     switch (level) {
       case 'beginner':
-        return this.loadBeginnerVoices();
+        return VoiceDataLoader.loadBeginnerVoices();
       
       case 'easy':
         return this.loadEasyVoices();
       
       case 'medium':
-        return this.loadMediumVoices();
+        return VoiceDataLoader.loadMediumVoices();
       
       case 'hard':
-        return this.loadHardVoices();
+        return VoiceDataLoader.loadHardVoices();
       
       case 'expert':
-        return this.loadExpertVoices();
+        return VoiceDataLoader.loadExpertVoices();
       
       default:
         console.warn(`⚠️ Unknown difficulty level: ${level}`);
@@ -87,61 +89,12 @@ export class VoiceCatalogService {
   }
 
   /**
-   * Load beginner voices (base level)
-   */
-  private static loadBeginnerVoices(): VoiceDefinition[] {
-    // This would contain your full beginner voice data
-    // For now, returning a sample structure
-    return [
-      {
-        "id": "meadow_tales_beg_v1",
-        "pn": "Keeper of Meadow Tales",
-        "vf": { "tone": [1,0], "cad": 9, "var": 3, "wp": [3], "fig": 0.3, "hum": 0.4, "warm": 0.95, "nar": 1 },
-        "st": { "hk": [0], "tr": [0], "pz": [4], "ct": [0], "tw": [0], "en": [0,1] },
-        "ch": { "hp": [0,2], "pov": "third", "dlg": [0,1], "arc": [0,1] },
-        "wd": { "set": [1,2], "sc": "tiny", "mor": "implied", "lp": [0], "rp": [0,1] },
-        "rd": { "rh": "none", "aa": 1, "rf": "just_a_little_more", "ono": [8,1,0], "sl": 1 },
-        "eg": { "dir": 1, "lst": 0, "ip": ["point_meadow"], "contr": 0, "exag": 0 },
-        "th": ["gentle animals","homey comfort","tiny hero"],
-        "tg": [1,2,4,0],
-        "uig": {
-          "aff": { "u": 1.0, "c": 0.7, "a": 0.8, "f": 0.3, "h": 0.2 },
-          "rules": {
-            "u": { "m": "direct", "max": 6, "gap": 1 },
-            "c": { "m": "direct", "max": 3, "gap": 2 },
-            "a": { "m": "direct", "max": 2 },
-            "f": { "m": "direct", "max": 1 },
-            "h": { "m": "direct", "max": 1 }
-          }
-        },
-        "src": ["Beatrix Potter"]
-      }
-      // ... more voices would be added here
-    ];
-  }
-
-  /**
    * Load easy voices (applies overrides to beginner base)
    */
-  private static loadEasyVoices(): VoiceDefinition[] {
-    const beginnerVoices = this.loadBeginnerVoices();
-    const overrides: VoiceOverride[] = [
-      { 
-        "ref": "meadow_tales_beg_v1", 
-        "id": "meadow_tales_easy_v1",
-        "vf": {"cad": 10}, 
-        "uig": {
-          "rules": {
-            "u": {"m": "subtle", "max": 4},
-            "c": {"m": "subtle", "max": 3},
-            "a": {"m": "subtle", "max": 2},
-            "f": {"m": "subtle", "max": 1},
-            "h": {"m": "subtle", "max": 1}
-          }
-        }
-      }
-      // ... more overrides
-    ];
+  private static async loadEasyVoices(): Promise<VoiceDefinition[]> {
+    const { VoiceDataLoader } = await import('./VoiceDataLoader');
+    const beginnerVoices = VoiceDataLoader.loadBeginnerVoices();
+    const overrides = VoiceDataLoader.loadEasyOverrides();
 
     return this.applyOverrides(beginnerVoices, overrides);
   }
@@ -199,22 +152,9 @@ export class VoiceCatalogService {
   }
 
   /**
-   * Placeholder methods for other levels (would contain your provided data)
+   * Placeholder methods for other levels (now using VoiceDataLoader)
    */
-  private static loadMediumVoices(): VoiceDefinition[] {
-    // Would contain your medium level voices
-    return [];
-  }
-
-  private static loadHardVoices(): VoiceDefinition[] {
-    // Would contain your hard level voices
-    return [];
-  }
-
-  private static loadExpertVoices(): VoiceDefinition[] {
-    // Would contain your expert level voices
-    return [];
-  }
+  // These are no longer needed as they're handled by loadRawVoices
 
   /**
    * Clear cache (useful for testing or reloading)
