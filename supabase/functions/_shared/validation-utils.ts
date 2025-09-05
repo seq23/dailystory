@@ -399,11 +399,6 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     pages = pages.slice(0, 12);
   }
   
-  // MINIMUM PAGE GUARANTEE: Force split to at least 6 pages if content is sufficient
-  if (maxPages >= 6 && pages.length < 6 && content.length > 4000) {
-    console.log(`🚨 MINIMUM PAGE GUARANTEE: Content ${content.length} chars but only ${pages.length} pages, force-splitting to 6 pages`);
-    return forceMinimumPageSplit(content, 6);
-  }
 
   // Ensure we have content - fallback to original if splitting failed
   return pages.length > 0 ? pages : [content.trim()];
@@ -774,6 +769,13 @@ export function parseIntoPages(content: string, level: ValidationLevel, service:
     
     console.log(`✅ Page splitting: Found ${pages.length} pages using '${detectedPattern}' markers`);
     
+    // MINIMUM PAGE GUARANTEE FOR FREE USERS: If insufficient pages but sufficient content, force split
+    if (service === 'netflix' && pages.length < 6 && content.length > 4000) {
+      console.log(`🚨 MINIMUM PAGE GUARANTEE: Found ${pages.length} pages via markers but content is ${content.length} chars, force-splitting to 6 pages`);
+      const forcedPages = forceMinimumPageSplit(content, 6);
+      return forcedPages.length > 12 ? forcedPages.slice(0, 12) : forcedPages;
+    }
+
     // Enforce Netflix page limits (max 12 pages)
     if (service === 'netflix' && pages.length > 12) {
       console.log(`🔧 Netflix page limit: Truncating ${pages.length} pages to 12 pages`);
