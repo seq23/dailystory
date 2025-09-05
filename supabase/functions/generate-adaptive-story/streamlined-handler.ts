@@ -970,10 +970,15 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
       const voicePatterns = fetchVoicePatterns(difficultyString);
       
       if (voicePatterns) {
-        const randomOpening = voicePatterns.openingPatterns[Math.floor(Math.random() * voicePatterns.openingPatterns.length)];
-        const randomTransition = voicePatterns.transitionPatterns[Math.floor(Math.random() * voicePatterns.transitionPatterns.length)];
-        
-        const voiceContent = `Narrative style: ${randomOpening} ${randomTransition}`;
+        const voiceContent = `Available Author Voice Patterns for "${voicePatterns.styleSummary}":
+
+OPENING OPTIONS: ${voicePatterns.openingPatterns.join(' | ')}
+
+TRANSITION OPTIONS: ${voicePatterns.transitionPatterns.join(' | ')}
+
+CLOSING OPTIONS: ${voicePatterns.closingPatterns.join(' | ')}
+
+CHARACTERISTICS: ${voicePatterns.characteristics.join(', ')}`;
         processedText = processedText.replace(match[0], voiceContent);
         console.log('✅ Executed getAuthorVoicePatterns() successfully');
       } else {
