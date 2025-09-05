@@ -33,7 +33,10 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   const [hasCountedReview, setHasCountedReview] = useState(false);
 
   const difficulty = props.difficulty || "easy";
-  const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()]/g, ''), [props.word]);
+  const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()—–\-\/]/g, ''), [props.word]);
+  
+  // Skip highlighting for pure punctuation tokens
+  const isPurelyPunctuation = useMemo(() => /^[—–\-\/.,!?;:'"()]+$/.test(props.word.trim()), [props.word]);
 
   // Voice commands status (desktop only)
   const [vcStatus, setVcStatus] = useState<'idle' | 'listening' | 'processing'>('idle');
@@ -50,7 +53,7 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   // Level rules and importance filtering: Level 0 (beginner) = all words; others = important words only
   const shouldBeInteractive = useMemo(() => {
     const lw = cleanWord.toLowerCase();
-    if (!lw) return false;
+    if (!lw || isPurelyPunctuation) return false;
 
     // Exclusions: user's name, family terms/honorifics, proper nouns
     if (props.userInfo?.name && lw === props.userInfo.name.toLowerCase()) return false;

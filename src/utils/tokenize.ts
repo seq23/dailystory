@@ -7,8 +7,8 @@ export interface Tokenization {
 
 // Split text preserving whitespace tokens and compute mapping to word-only indices
 export function tokenizeForHighlighting(text: string): Tokenization {
-  const tokens = text.split(/(\s+)/);
-  const isWhitespace = tokens.map(t => /^\s+$/.test(t));
+  const tokens = text.split(/(\s+|[—–\-\/]+)/);
+  const isWhitespace = tokens.map(t => /^\s+$/.test(t) || /^[—–\-\/]+$/.test(t));
   const wordOnlyIndexByTokenIndex: number[] = new Array(tokens.length);
   const wordsOnly: string[] = [];
   let currentWordIndex = 0;
