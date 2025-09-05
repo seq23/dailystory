@@ -142,6 +142,18 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     let finalSystemPrompt = promptConfig.systemPrompt;
     let finalUserPrompt = bundle.storyContent;
 
+    // Parse control line from bundle
+    let ctrlData = null;
+    try {
+      const ctrlMatch = bundle.storyContent.match(/<CTRL>(.*?)<\/CTRL>/);
+      if (ctrlMatch) {
+        ctrlData = JSON.parse(ctrlMatch[1]);
+        console.log('🎭 Parsed voice control data:', ctrlData);
+      }
+    } catch (error) {
+      console.warn('Could not parse control data, using defaults');
+    }
+
     // Add fail-soft instructions to system prompt
     if (ctrlData) {
       finalSystemPrompt += `\n\nCONTROL PARAMETERS: ${JSON.stringify(ctrlData)}
