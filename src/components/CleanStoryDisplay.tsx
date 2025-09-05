@@ -48,6 +48,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Home, RotateCcw, Loader2, Volume2, VolumeX, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings, Plus, RefreshCw, Clock, Wand, Sparkles, GraduationCap, Save, Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
+import { useDesktopCardHeight } from "@/hooks/useDesktopCardHeight";
 import { useStorySourceNotifications } from "@/hooks/useStorySourceNotifications";
 import { StoryStatusIndicator } from "@/components/StoryStatusIndicator";
 import { SparkleAnimation } from "@/components/SparkleAnimation";
@@ -3068,6 +3069,14 @@ const handleRestartTimer = () => {
   const isShortPage = countWords(currentStoryText || "") <= 8;
   const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
 
+  // Desktop card height calculation for perfect mirroring
+  const { heightStyle, containerClassName } = useDesktopCardHeight({
+    textContent: currentStoryText,
+    fontSize: difficultyBasedTextConfig.fontSize,
+    lineHeight: difficultyBasedTextConfig.lineHeight,
+    isDesktop: !isMobile && window.innerWidth >= 1280 // xl breakpoint
+  });
+
   // Aggressive prefetch: progressively preload many upcoming images without blocking UI
   useEffect(() => {
     const urls: string[] = [];
@@ -3411,7 +3420,7 @@ const handleRestartTimer = () => {
                   {/* DESKTOP IMAGE FIX: Always show images on desktop (xl breakpoint already filters) */}
                   {(
                     <div className="xl:order-1 h-full min-h-0">
-                      <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
+                      <div className={`${containerClassName} w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30`} style={heightStyle}>
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                           <div className="absolute top-3 right-3 z-20">
                             <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
@@ -3445,8 +3454,8 @@ const handleRestartTimer = () => {
                   )}
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
-                  <div className="xl:order-2 flex flex-col h-full min-h-0">
-                    <div className="w-full h-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative">
+                  <div className="xl:order-2 flex flex-col" style={heightStyle}>
+                    <div className={`w-full ${heightStyle ? 'h-full' : 'h-full'} min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative`}>
                       {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
