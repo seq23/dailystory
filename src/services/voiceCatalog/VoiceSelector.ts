@@ -8,8 +8,10 @@ import { VoiceCatalogService, DifficultyLevel } from './VoiceCatalogService';
 import type { UserInfo } from '@/types';
 
 export class VoiceSelector {
+  private static previousSelections: Map<string, string[]> = new Map();
+
   /**
-   * Select the best voice for a user and difficulty level
+   * Select the best voice for a user and difficulty level with enhanced theme matching
    */
   static async selectVoice(
     userInfo: UserInfo, 
@@ -20,18 +22,46 @@ export class VoiceSelector {
       pointOfView?: string;
       warmthPreference?: number; // 0-1
       humorPreference?: number; // 0-1
-    }
+    },
+    enhancedThemes?: string[]
   ): Promise<VoiceSelectionResult> {
-    const voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
+    // Try current level first
+    let voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
+    let bestMatch = await this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
     
+    // If theme matching is poor and themes are provided, try cross-level search
+    if (bestMatch.compatibilityScore < 0.6 && enhancedThemes && enhancedThemes.length > 0) {
+      console.log(`🔄 Cross-level search triggered for themes: ${enhancedThemes.join(', ')}`);
+      bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
+    }
+    
+    // Track selection for novelty
+    const userId = userInfo.name || 'anonymous';
+    if (!this.previousSelections.has(userId)) {
+      this.previousSelections.set(userId, []);
+    }
+    this.previousSelections.get(userId)!.push(bestMatch.voice.id);
+    
+    return bestMatch;
+  }
+
+  /**
+   * Find best voice match from a set of voices
+   */
+  private static async findBestVoiceMatch(
+    voices: ProcessedVoice[], 
+    userInfo: UserInfo, 
+    preferences?: any, 
+    enhancedThemes?: string[]
+  ): Promise<VoiceSelectionResult> {
     if (voices.length === 0) {
-      throw new Error(`No voices available for difficulty level: ${difficulty}`);
+      throw new Error('No voices available');
     }
 
     // Score each voice based on user criteria
     const scoredVoices = voices.map(voice => ({
       voice,
-      score: this.calculateCompatibilityScore(voice, userInfo, preferences),
+      score: this.calculateCompatibilityScore(voice, userInfo, preferences, enhancedThemes),
       reasoning: this.generateSelectionReasoning(voice, userInfo, preferences)
     }));
 
@@ -47,6 +77,45 @@ export class VoiceSelector {
       selectionReasoning: bestMatch.reasoning,
       compatibilityScore: bestMatch.score
     };
+  }
+
+  /**
+   * Perform cross-level search for better theme matching
+   */
+  private static async performCrossLevelSearch(
+    userInfo: UserInfo,
+    preferences: any,
+    enhancedThemes: string[],
+    originalDifficulty: DifficultyLevel
+  ): Promise<VoiceSelectionResult> {
+    const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const otherLevels = levels.filter(level => level !== originalDifficulty);
+    
+    let bestOverallMatch: VoiceSelectionResult | null = null;
+    let bestScore = 0;
+
+    for (const level of otherLevels) {
+      try {
+        const voices = await VoiceCatalogService.getVoicesForLevel(level);
+        const match = await this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
+        
+        if (match.compatibilityScore > bestScore) {
+          bestScore = match.compatibilityScore;
+          bestOverallMatch = match;
+        }
+      } catch (error) {
+        console.warn(`Failed to search level ${level}:`, error);
+      }
+    }
+
+    if (bestOverallMatch && bestScore > 0.6) {
+      console.log(`✨ Cross-level match found: ${bestOverallMatch.voice.pn} from different difficulty level`);
+      return bestOverallMatch;
+    }
+
+    // Fallback to original level
+    const voices = await VoiceCatalogService.getVoicesForLevel(originalDifficulty);
+    return this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
   }
 
   /**
@@ -84,11 +153,27 @@ export class VoiceSelector {
   private static calculateCompatibilityScore(
     voice: ProcessedVoice,
     userInfo: UserInfo,
-    preferences?: any
+    preferences?: any,
+    enhancedThemes?: string[]
   ): number {
     let score = 0.5; // Base score
 
-    // Theme matching
+    // Enhanced theme matching (highest priority)
+    if (enhancedThemes && enhancedThemes.length > 0 && voice.resolvedElements.themes) {
+      const voiceThemes = voice.resolvedElements.themes.map(t => t.toLowerCase());
+      
+      const themeMatches = enhancedThemes.filter(theme => 
+        voiceThemes.some(voiceTheme => 
+          voiceTheme.includes(theme.toLowerCase()) || theme.toLowerCase().includes(voiceTheme)
+        )
+      ).length;
+      
+      if (themeMatches > 0) {
+        score += (themeMatches / enhancedThemes.length) * 0.4; // Heavy weight for theme matching
+      }
+    }
+
+    // Legacy theme matching (for backward compatibility)
     if (userInfo.interests && voice.resolvedElements.themes) {
       const userInterests = userInfo.interests.map(i => i.toLowerCase());
       const voiceThemes = voice.resolvedElements.themes.map(t => t.toLowerCase());
@@ -99,39 +184,57 @@ export class VoiceSelector {
         )
       ).length;
       
-      score += themeMatches * 0.2;
+      score += themeMatches * 0.1;
     }
 
     // Age appropriateness (based on grade level)
     const gradeLevel = parseInt(userInfo.gradeLevel?.replace(/\D/g, '') || '0');
     const ageScore = this.getAgeAppropriatenessScore(voice, gradeLevel);
-    score += ageScore * 0.3;
+    score += ageScore * 0.25;
 
     // Reading level compatibility
     if (userInfo.readingLevel) {
       const readingScore = this.getReadingLevelScore(voice, userInfo.readingLevel);
-      score += readingScore * 0.2;
+      score += readingScore * 0.15;
     }
 
     // User input integration preferences
     const inputScore = this.getUserInputScore(voice, userInfo);
-    score += inputScore * 0.15;
+    score += inputScore * 0.1;
+
+    // Novelty bonus (avoid recently used voices)
+    const noveltyScore = this.getNoveltyScore(voice, userInfo);
+    score += noveltyScore * 0.05;
 
     // Preferences matching
     if (preferences) {
       if (preferences.warmthPreference !== undefined) {
         const warmthDiff = Math.abs(voice.vf.warm - preferences.warmthPreference);
-        score += (1 - warmthDiff) * 0.1;
+        score += (1 - warmthDiff) * 0.05;
       }
       
       if (preferences.humorPreference !== undefined) {
         const humorDiff = Math.abs(voice.vf.hum - preferences.humorPreference);
-        score += (1 - humorDiff) * 0.1;
+        score += (1 - humorDiff) * 0.05;
       }
     }
 
     // Ensure score stays within bounds
     return Math.max(0, Math.min(1, score));
+  }
+
+  /**
+   * Calculate novelty score (bonus for unused voices)
+   */
+  private static getNoveltyScore(voice: ProcessedVoice, userInfo: UserInfo): number {
+    const userId = userInfo.name || 'anonymous';
+    const previousSelections = this.previousSelections.get(userId) || [];
+    
+    if (previousSelections.includes(voice.id)) {
+      return 0; // No bonus for recently used voices
+    }
+    
+    return 1; // Full bonus for new voices
   }
 
   /**

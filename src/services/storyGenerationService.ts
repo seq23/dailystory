@@ -1,13 +1,15 @@
 // Unified Story Generation Service with 4-Layer Priority System
-// Removed author voice processing - AI chooses voice inspiration dynamically
+// Voice Layer replaces Creative Seeds - AI chooses voice with theme priority and level clamping
 // Sends fully resolved bundles to streamlined edge function
 
 import { supabase } from "@/integrations/supabase/client";
 import type { UserInfo, DifficultyLevel, LearningGoal, AvatarType } from "@/types";
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
-import { generateCreativeSeeds } from './inputEnhancementEngine';
 import { getCulturalGuidanceString } from './StaticDataCache';
+import { VoiceCatalogIntegration } from './voiceCatalog/VoiceCatalogIntegration';
+import { ThemeLibraryService } from './voiceCatalog/ThemeLibraryService';
+import { LevelClampingService } from './voiceCatalog/LevelClampingService';
 
 export interface StoryGenerationBundle {
   sessionId: string;              // Session identifier for debugging and caching
@@ -75,7 +77,7 @@ export class StoryGenerationService {
       // PHASE 1: Protected 4-Layer Parallelization with Silent Fallbacks
       let vocabularyIntegration: VocabularyIntegration;
       let themeIntent: ThemeIntent;  
-      let creativeSeeds: any[];
+      let voiceIntegrationResult: any;
 
       try {
         vocabularyIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
@@ -101,23 +103,52 @@ export class StoryGenerationService {
         };
       }
 
+      // LAYER 4: Voice Selection with Enhanced Theme Matching and Level Clamping
       try {
-        creativeSeeds = generateCreativeSeeds(userInfo);
+        // Map themes to enhanced library
+        const enhancedThemes = ThemeLibraryService.mapToLibrary(themeIntent.theme);
+        
+        // Filter themes for age appropriateness
+        const ageAppropriateThemes = ThemeLibraryService.filterThemesForAge(enhancedThemes, userInfo.age || 5);
+        
+        // Select voice with cross-level search capability
+        const difficulty = this.mapToDifficultyLevel(config.difficulty || userInfo.difficultyLevel || 'easy');
+        voiceIntegrationResult = await VoiceCatalogIntegration.selectAndPrepareVoice(
+          userInfo, 
+          difficulty,
+          {
+            themes: ageAppropriateThemes,
+            warmthPreference: 0.7,
+            humorPreference: 0.6
+          }
+        );
+        
+        // Apply level clamping
+        const clampedVoice = LevelClampingService.applyConstraints(
+          voiceIntegrationResult.selectedVoice, 
+          difficulty, 
+          userInfo.age
+        );
+        voiceIntegrationResult.selectedVoice = clampedVoice;
+        
+        console.log('✅ Voice Layer 4: Selected and clamped voice:', voiceIntegrationResult.selectedVoice.pn);
       } catch (error) {
-        console.warn('⚠️ Layer 4 (Creative Seeds) failed silently:', safeErrorMessage(error));
-        creativeSeeds = [{
-          input: 'adventure',
-          inputType: 'theme' as const,
-          storyPossibilities: ['AI creates personalized adventure based on user interests']
-        }];
+        console.warn('⚠️ Layer 4 (Voice) failed silently:', safeErrorMessage(error));
+        // Fallback voice integration
+        voiceIntegrationResult = {
+          selectedVoice: { pn: 'AI Narrator', id: 'fallback' },
+          storyBundle: 'AI creates engaging story based on user preferences',
+          compatibilityScore: 0.5,
+          processingMetadata: { fallbackUsed: true }
+        };
       }
       
-      // Step 4: PlaceholderResolution with 4-layer priority (now includes creativeSeeds)
+      // Step 4: PlaceholderResolution with 4-layer priority (now includes voice layer)
       const resolvedResult = this.resolveAllPlaceholders(
         userInfo,
         vocabularyIntegration,
         themeIntent,
-        creativeSeeds
+        voiceIntegrationResult
       );
       
       // Step 5: Send resolved string to edge function
@@ -150,13 +181,13 @@ export class StoryGenerationService {
   }
 
   /**
-   * 4-Layer Priority System (removed author voice processing)
+   * 4-Layer Priority System with Voice Layer
    */
   private static resolveAllPlaceholders(
     userInfo: UserInfo,
     vocabularyIntegration: VocabularyIntegration,
     themeIntent: ThemeIntent,
-    creativeSeeds: any[]
+    voiceIntegrationResult: any
   ): { storyContent: string; avatarData: { skinTone?: string } } {
     
     // LAYER 1 - Essential User Info Only (SECURITY FIX: Remove skin tone from AI-visible data)
@@ -234,12 +265,32 @@ export class StoryGenerationService {
       console.error('Vocabulary validation error:', error);
     }
 
-    // LAYER 4 - Creative Seeds (FIXED: Always integrate user preferences)
-    const creativeGuidance = creativeSeeds.length > 0 
-      ? `Creative Guidance (complement {specialRequest}): ${creativeSeeds.map(seed => 
-          seed.storyPossibilities.join(' ')
-        ).join('; ')}.`
-      : 'AI creates own creative elements (colors, animals, foods, activities) and weaves them naturally into the story.';
+    // LAYER 4 - Voice Integration with Level Clamping
+    let voiceControlParams = '';
+    if (voiceIntegrationResult.selectedVoice && !voiceIntegrationResult.processingMetadata?.fallbackUsed) {
+      // Generate clamped control parameters for AI
+      if (voiceIntegrationResult.selectedVoice.clampingApplied) {
+        voiceControlParams = LevelClampingService.generateClampedControlParams(voiceIntegrationResult.selectedVoice);
+      } else {
+        // Standard voice fingerprint
+        voiceControlParams = JSON.stringify({
+          voiceName: voiceIntegrationResult.selectedVoice.pn,
+          voiceCharacteristics: voiceIntegrationResult.selectedVoice.resolvedElements?.tones?.slice(0, 3) || ['engaging'],
+          userIntegrationStyle: voiceIntegrationResult.selectedVoice.uig || {},
+          themeAlignment: voiceIntegrationResult.selectedVoice.resolvedElements?.themes?.slice(0, 2) || ['adventure'],
+          levelAppropriate: true
+        });
+      }
+    } else {
+      // Fallback voice guidance
+      voiceControlParams = JSON.stringify({
+        voiceName: 'AI Narrator',
+        voiceCharacteristics: ['warm', 'engaging', 'age-appropriate'],
+        userIntegrationStyle: 'moderate',
+        themeAlignment: themeIntent.theme,
+        levelAppropriate: true
+      });
+    }
 
     // Enhanced Natural Language Template (more AI-friendly)
     let userPreferences = '';
@@ -268,7 +319,10 @@ export class StoryGenerationService {
 
     const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel);
     
-    const STORY_TEMPLATE = `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. 
+    // Generate single CTRL line instead of verbose template
+    const STORY_TEMPLATE = `<CTRL>${voiceControlParams}</CTRL>
+
+Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. 
 
 ${vocabularyConfig.hasUserWords 
   ? `Vocabulary System - User Priority Mode:
@@ -282,9 +336,7 @@ ${vocabularyConfig.hasUserWords
 3. FALLBACK: Age-appropriate vocabulary for ${essentialUserInfo.age}-year-olds
 4. EMERGENCY: Simple vocabulary for ages 7-10 if needed`}
 
-${culturalContext ? `${culturalContext} ` : ''}${creativeGuidance}
-
-Character Info: ${JSON.stringify(essentialUserInfo)}`;
+${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(essentialUserInfo)}`;
 
     return {
       storyContent: STORY_TEMPLATE.trim(),
@@ -376,6 +428,15 @@ Character Info: ${JSON.stringify(essentialUserInfo)}`;
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
+  }
+
+  /**
+   * Map string difficulty to DifficultyLevel enum
+   */
+  private static mapToDifficultyLevel(difficulty?: string): DifficultyLevel {
+    const validLevels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const normalized = difficulty?.toLowerCase() as DifficultyLevel;
+    return validLevels.includes(normalized) ? normalized : 'easy';
   }
 
   /**
