@@ -285,3 +285,149 @@ function getVocabularyByLevel(level: number): string[] {
   };
   return vocab[level] || vocab[2];
 }
+
+// Phase 1: User-Specific Vocabulary Caching (Backend Only) - 1 hour TTL
+interface UserVocabularyCache {
+  userId: string;
+  childId?: string;
+  teacherWords: string[];
+  formWords: string[];
+  specialRequestWords: string[];
+  timestamp: number;
+}
+
+class UserVocabCache {
+  private static instance: UserVocabCache;
+  private cache = new Map<string, UserVocabularyCache>();
+  private readonly USER_CACHE_TTL = 60 * 60 * 1000; // 1 hour TTL for user vocab
+
+  private constructor() {}
+
+  static getInstance(): UserVocabCache {
+    if (!UserVocabCache.instance) {
+      UserVocabCache.instance = new UserVocabCache();
+    }
+    return UserVocabCache.instance;
+  }
+
+  private getCacheKey(userId: string, childId?: string): string {
+    return childId ? `${userId}_${childId}` : userId;
+  }
+
+  get(userId: string, childId?: string): UserVocabularyCache | null {
+    const key = this.getCacheKey(userId, childId);
+    const entry = this.cache.get(key);
+    
+    if (!entry) return null;
+
+    // Check TTL
+    if (Date.now() - entry.timestamp > this.USER_CACHE_TTL) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry;
+  }
+
+  set(userId: string, childId: string | undefined, teacherWords: string[], formWords: string[], specialRequestWords: string[]): void {
+    const key = this.getCacheKey(userId, childId);
+    this.cache.set(key, {
+      userId,
+      childId,
+      teacherWords,
+      formWords,
+      specialRequestWords,
+      timestamp: Date.now()
+    });
+  }
+
+  invalidate(userId: string, childId?: string): void {
+    const key = this.getCacheKey(userId, childId);
+    this.cache.delete(key);
+  }
+
+  getAllUserVocab(userId: string, childId?: string): string[] {
+    const entry = this.get(userId, childId);
+    if (!entry) return [];
+    
+    return [...entry.teacherWords, ...entry.formWords, ...entry.specialRequestWords];
+  }
+}
+
+export const userVocabCache = UserVocabCache.getInstance();
+
+// Enhanced User Vocabulary Cache Functions
+export const getUserVocabularyCache = (userId: string, childId?: string): string[] => {
+  return userVocabCache.getAllUserVocab(userId, childId);
+};
+
+export const setUserVocabularyCache = (
+  userId: string, 
+  childId: string | undefined, 
+  teacherWords: string[], 
+  formWords: string[], 
+  specialRequestWords: string[]
+): void => {
+  userVocabCache.set(userId, childId, teacherWords, formWords, specialRequestWords);
+};
+
+export const invalidateUserVocabularyCache = (userId: string, childId?: string): void => {
+  userVocabCache.invalidate(userId, childId);
+};
+
+// Phase 2: Enhanced Model Configuration Consolidation - Single Source of Truth
+export const getModelChainOptimized = (isExpertLevel: boolean = false, forceRefresh: boolean = false) => {
+  const cacheKey = `model_chain_optimized_${isExpertLevel ? 'expert' : 'regular'}`;
+  
+  if (forceRefresh) {
+    cache.cache.delete(cacheKey);
+  }
+  
+  let chain = cache.get<any[]>(cacheKey);
+  if (!chain) {
+    if (isExpertLevel) {
+      // Expert: Balanced cost optimization - gpt-4o-mini first, gpt-4o fallback only
+      chain = [
+        { 
+          name: 'gpt-4o-mini', 
+          model: 'gpt-4o-mini', 
+          description: 'primary cost-optimized model',
+          paramName: 'max_tokens', 
+          supportsTemperature: true,
+          costMultiplier: 1.0,
+          priority: 1
+        },
+        { 
+          name: 'gpt-4o', 
+          model: 'gpt-4o', 
+          description: 'premium fallback for complex stories',
+          paramName: 'max_tokens', 
+          supportsTemperature: true,
+          costMultiplier: 20.0,
+          priority: 2
+        }
+      ];
+    } else {
+      // Regular: Ultra cost-optimized - only gpt-4o-mini
+      chain = [
+        { 
+          name: 'gpt-4o-mini', 
+          model: 'gpt-4o-mini', 
+          description: 'ultra-cost-optimized primary model',
+          paramName: 'max_tokens', 
+          supportsTemperature: true,
+          costMultiplier: 1.0,
+          priority: 1
+        }
+      ];
+    }
+    
+    cache.set(cacheKey, chain);
+    console.log(`🔧 Model chain cached: ${chain.length} models for ${isExpertLevel ? 'expert' : 'regular'} level`);
+  }
+  
+  return chain;
+};
+
+// Backward compatibility - redirect to optimized version
+export { getModelChainOptimized as getModelChain };

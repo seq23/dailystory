@@ -14,6 +14,9 @@ export interface AnalyticsDashboard {
   usageAnalytics: any;
   templateAnalytics: any;
   systemHealth: any;
+  costAnalytics: any;
+  modelPerformance: any;
+  userSatisfaction: any;
   isLoaded: boolean;
 }
 
@@ -23,6 +26,9 @@ export const useProductionAnalytics = () => {
     usageAnalytics: null,
     templateAnalytics: null,
     systemHealth: null,
+    costAnalytics: null,
+    modelPerformance: null,
+    userSatisfaction: null,
     isLoaded: false
   });
 
@@ -48,6 +54,9 @@ export const useProductionAnalytics = () => {
         usageAnalytics,
         templateAnalytics,
         systemHealth,
+        costAnalytics: null, // Placeholder for future implementation
+        modelPerformance: null, // Placeholder for future implementation  
+        userSatisfaction: null, // Placeholder for future implementation
         isLoaded: true
       });
     } catch (error) {
@@ -127,6 +136,42 @@ export const useProductionAnalytics = () => {
     trackInteraction('quiz_answer', { question, answer, isCorrect });
   }, [trackInteraction]);
 
+  // Phase 3: Cost Tracking Methods (Placeholder - will integrate with backend)
+  const trackCost = useCallback((cost: number, inputTokens: number, outputTokens: number, model: string) => {
+    if (currentSession?.isActive) {
+      console.log('💰 Cost tracking:', { cost, inputTokens, outputTokens, model, sessionId: currentSession.sessionId });
+      // Future: Send to backend cost tracking service
+    }
+  }, [currentSession]);
+
+  const trackModelPerformance = useCallback((model: string, responseTime: number, success: boolean, retryAttempt: number = 0) => {
+    if (currentSession?.isActive) {
+      console.log('⚡ Model performance:', { model, responseTime, success, retryAttempt, sessionId: currentSession.sessionId });
+      // Future: Send to backend analytics service
+    }
+  }, [currentSession]);
+
+  const trackUserSatisfaction = useCallback((rating: number, feedback?: string, pageNumber?: number) => {
+    if (currentSession?.isActive) {
+      console.log('⭐ User satisfaction:', { rating, feedback, pageNumber, sessionId: currentSession.sessionId });
+      // Future: Send to backend analytics service
+    }
+  }, [currentSession]);
+
+  const getDailyCostSummary = useCallback(() => {
+    // Future: Fetch from backend cost tracking service
+    return {
+      date: new Date().toISOString().split('T')[0],
+      totalCost: 0,
+      totalRequests: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      averageCostPerRequest: 0,
+      modelBreakdown: {},
+      isLimitExceeded: false
+    };
+  }, []);
+
   const exportAnalytics = useCallback(() => {
     const data = ProductionAnalyticsTracker.exportAnalyticsData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -165,6 +210,12 @@ export const useProductionAnalytics = () => {
     trackAudioPlay,
     trackStoryRestart,
     trackQuizAnswer,
+
+    // Cost & performance tracking
+    trackCost,
+    trackModelPerformance,
+    trackUserSatisfaction,
+    getDailyCostSummary,
 
     // Dashboard data
     dashboard,

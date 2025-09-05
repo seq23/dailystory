@@ -15,8 +15,18 @@ import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_share
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 
-// Import static caching and error classification
-import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache, getCulturalContextArrays, getVocabularyCache } from './StaticDataCache.ts';
+// Import static caching, cost tracking, and error classification  
+import { 
+  getModelChainOptimized, 
+  getHairColorMapping, 
+  getSystemSettings, 
+  processAvatarIdentityFromCache, 
+  getCulturalContextArrays, 
+  getVocabularyCache,
+  getUserVocabularyCache,
+  setUserVocabularyCache
+} from './StaticDataCache.ts';
+import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTracker.ts';
 const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
 
 // CORS headers - moved to top to fix ReferenceError
@@ -58,7 +68,28 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 export async function handleStreamlinedGeneration(requestBody: any) {
   const { bundle, config }: { bundle: StreamlinedBundle; config: StreamlinedConfig & { expertGradeLevel?: string; difficulty?: string } } = requestBody;
   
-  // PHASE 1: API Key Validation
+  // PHASE 1: Daily Cost Limit Check
+  const { canProceed, remaining, currentCost } = checkDailyLimit();
+  
+  if (!canProceed) {
+    console.error('🚨 DAILY COST LIMIT EXCEEDED');
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Daily generation limit reached. Please try again tomorrow.',
+      errorType: 'daily_limit_exceeded',
+      metadata: {
+        currentCost: currentCost.toFixed(4),
+        dailyLimit: '5.00'
+      }
+    }), {
+      status: 429,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  
+  console.log(`💰 Daily cost check: $${currentCost.toFixed(4)} / $5.00 (Remaining: $${remaining.toFixed(4)})`);
+  
+  // PHASE 2: API Key Validation
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   if (!apiKey) {
@@ -112,6 +143,15 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       console.log(`🔄 STREAMLINED: Fallback mapping - Grade ${bundle.systemSettings.gradeLevel} → ${effectiveDifficulty}`);
     }
     
+    // Phase 1: Check for cached user vocabulary before any database calls
+    let userVocabularyCached = [];
+    if (userInfo && userInfo.id) {
+      userVocabularyCached = getUserVocabularyCache(userInfo.id, userInfo.childId);
+      if (userVocabularyCached.length > 0) {
+        console.log(`📚 Using cached user vocabulary: ${userVocabularyCached.length} words`);
+      }
+    }
+
     // Use existing prompts from storyPrompts.ts - handle expert grades (6-10) separately
     const promptConfig = expertGrade 
       ? getExpertStoryPrompt(expertGrade)
@@ -712,6 +752,31 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         contentLength: data.choices?.[0]?.message?.content?.length || 0,
         usage: data.usage
       });
+      
+      // Phase 3: Cost Tracking Integration
+      if (data.usage && sessionId) {
+        const inputTokens = data.usage.prompt_tokens || 0;
+        const outputTokens = data.usage.completion_tokens || 0;
+        const modelName = currentModel.name || 'gpt-4o-mini';
+        
+        try {
+          const costResult = trackOpenAICost(inputTokens, outputTokens, modelName, sessionId);
+          console.log(`💰 Cost tracked for session ${sessionId}:`, {
+            model: modelName,
+            cost: costResult.cost.toFixed(6),
+            dailyTotal: costResult.dailyTotal.toFixed(4),
+            limitExceeded: costResult.limitExceeded,
+            processingTime: Date.now() - startTime
+          });
+          
+          // Check if limit exceeded after this request
+          if (costResult.limitExceeded) {
+            console.warn('🚨 Daily cost limit exceeded after this generation');
+          }
+        } catch (costError) {
+          console.warn('⚠️ Cost tracking failed:', safeErrorMessage(costError));
+        }
+      }
       
       storyText = data.choices?.[0]?.message?.content || '';
       
