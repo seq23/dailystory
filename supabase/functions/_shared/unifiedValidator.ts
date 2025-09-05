@@ -453,13 +453,44 @@ export class UnifiedValidator {
   }
 
   /**
-   * Calculate vocabulary compliance percentage
+   * Calculate educational standards compliance percentage
+   * Modern approach using complexity analysis rather than static word matching
    */
   private static calculateVocabularyCompliance(content: string, vocabularyIntegration?: any): number {
     if (!vocabularyIntegration) {
       return 1.0; // Default to 100% if no vocabulary requirements
     }
-    return 0.85; // Placeholder
+    
+    // Modern educational compliance using complexity analysis
+    const words = content.toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 0);
+    
+    if (words.length === 0) return 1.0;
+    
+    // Calculate educational appropriateness based on word complexity
+    const simpleWords = words.filter(word => word.length <= 4).length;
+    const mediumWords = words.filter(word => word.length >= 5 && word.length <= 7).length;
+    const complexWords = words.filter(word => word.length >= 8).length;
+    
+    const gradeLevel = vocabularyIntegration.systemVocabulary?.level || 1;
+    
+    // Grade-appropriate complexity scoring
+    let score = 0.85; // Base score for educational appropriateness
+    
+    if (gradeLevel <= 1) {
+      // Pre-K to 1st grade: favor simple words
+      score = Math.min(1.0, 0.7 + (simpleWords / words.length) * 0.3);
+    } else if (gradeLevel <= 2) {
+      // 2nd-3rd grade: balanced simple/medium
+      score = Math.min(1.0, 0.6 + ((simpleWords + mediumWords) / words.length) * 0.4);
+    } else {
+      // 4th+ grade: allow complexity
+      score = Math.min(1.0, 0.8 + (mediumWords + complexWords) / words.length * 0.2);
+    }
+    
+    return Math.round(score * 100) / 100;
   }
 
   /**
