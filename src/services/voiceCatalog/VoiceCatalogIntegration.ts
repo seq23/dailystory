@@ -151,6 +151,9 @@ export class VoiceCatalogIntegration {
       h: userInfo.hobbies,
       themes: voice.resolvedElements?.themes || [],
       level: difficulty,
+      // Surface existing voice catalog input usage rules and affinity hints
+      iu: voice.uig?.rules || undefined,
+      ah: voice.uig?.aff || undefined,
       safetyFilter: shouldAdaptForAge ? "adapt_for_age" : undefined,
       ageAdaptation: shouldAdaptForAge ? {
         originalThemes: voice.resolvedElements?.themes || [],
