@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import type { DifficultyLevel, UserInfo } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import NewStoryCTA from "@/components/NewStoryCTA";
+import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
   currentDifficulty?: string; // Frontend difficulty format ("beginner", "developing", etc.)
@@ -162,18 +163,10 @@ export const ResponsiveStoryHeader = ({
     };
   }, [isTablet]);
 
-  const getDifficultyLabel = (difficulty: string) => {
-    const labels = {
-      beginner: t("storyDisplay.labels.preReader", "Pre‑Reader"),
-      easy: t("storyDisplay.labels.beginner", "Beginner"),
-      medium: t("storyDisplay.labels.developing", "Developing"),
-      hard: t("storyDisplay.labels.independent", "Independent"),
-      expert: t("storyDisplay.labels.advanced", "Advanced")
-    };
-    return (labels as any)[difficulty] || labels.easy;
-  };
-
   const getDifficultyColor = (difficulty: string) => {
+    // Normalize to backend format for consistent mapping
+    const backendLevel = DifficultyLevelMapper.normalizeLevel(difficulty);
+    
     const colors = {
       beginner: "bg-blue-100 text-blue-800 border-blue-200",
       easy: "bg-green-100 text-green-800 border-green-200",
@@ -181,7 +174,7 @@ export const ResponsiveStoryHeader = ({
       hard: "bg-orange-100 text-orange-800 border-orange-200",
       expert: "bg-red-100 text-red-800 border-red-200"
     };
-    return colors[difficulty as keyof typeof colors] || colors.easy;
+    return colors[backendLevel as keyof typeof colors] || colors.easy;
   };
 
   // Truncate title for mobile
@@ -295,7 +288,7 @@ export const ResponsiveStoryHeader = ({
                       buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                     )}
                   >
-                    {getDifficultyLabel(currentDifficulty)}
+                    {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                   </Badge>
 
                   {onIncreaseDifficulty && (
@@ -426,7 +419,7 @@ export const ResponsiveStoryHeader = ({
                     buttonAnimations.badge ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' : ''
                   )}
                 >
-                  {getDifficultyLabel(currentDifficulty)}
+                  {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                 </Badge>
 
                 {onIncreaseDifficulty && (
@@ -663,9 +656,9 @@ export const ResponsiveStoryHeader = ({
                       ? 'animate-[wiggle_0.5s_ease-in-out] scale-110' 
                       : ''
                   )}
-                >
-                  {getDifficultyLabel(currentDifficulty)}
-                </Badge>
+                  >
+                    {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
+                  </Badge>
 
                 {onIncreaseDifficulty && (
                   <TooltipProvider>
@@ -849,7 +842,7 @@ export const ResponsiveStoryHeader = ({
                         : ''
                     )}
                   >
-                    {getDifficultyLabel(currentDifficulty)}
+                    {DifficultyLevelMapper.getDisplayName(currentDifficulty)}
                   </Badge>
 
                   {onIncreaseDifficulty && (
