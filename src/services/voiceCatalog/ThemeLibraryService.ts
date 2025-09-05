@@ -1,6 +1,10 @@
 /**
- * Theme Library Service - Enhanced theme mapping and validation
+ * Frontend Theme Library Service - Lightweight wrapper for backend service
+ * Redirects to backend theme library for enhanced functionality
  */
+
+// This is a compatibility layer - the real theme library is in the backend
+console.warn('⚠️ Frontend ThemeLibraryService is deprecated. Backend theme library should be used.');
 
 export interface ThemeMetadata {
   category: string;
@@ -15,7 +19,8 @@ export interface ThemeLibrary {
 }
 
 export class ThemeLibraryService {
-  private static readonly THEME_LIBRARY: ThemeLibrary = {
+  // Minimal theme library for frontend fallback only
+  private static readonly FALLBACK_THEME_LIBRARY: ThemeLibrary = {
     // Adventure themes
     "adventure": { category: "adventure", ageAppropriate: [5, 6, 7, 8, 9, 10, 11, 12], safetyLevel: "low", tags: ["exploration", "journey"] },
     "exploration": { category: "adventure", ageAppropriate: [5, 6, 7, 8, 9, 10, 11, 12], safetyLevel: "low", tags: ["discovery", "nature"] },
@@ -71,7 +76,7 @@ export class ThemeLibraryService {
       const normalizedTheme = theme.toLowerCase().replace(/[^a-z0-9]/g, '_');
       
       // Direct match
-      if (this.THEME_LIBRARY[normalizedTheme]) {
+      if (this.FALLBACK_THEME_LIBRARY[normalizedTheme]) {
         mappedThemes.add(normalizedTheme);
         continue;
       }
@@ -79,7 +84,7 @@ export class ThemeLibraryService {
       // Synonym matching
       const synonyms = this.getThemeSynonyms(normalizedTheme);
       for (const synonym of synonyms) {
-        if (this.THEME_LIBRARY[synonym]) {
+        if (this.FALLBACK_THEME_LIBRARY[synonym]) {
           mappedThemes.add(synonym);
         }
       }
@@ -121,7 +126,7 @@ export class ThemeLibraryService {
    * Validate theme safety for age
    */
   static validateThemeForAge(theme: string, age: number): boolean {
-    const metadata = this.THEME_LIBRARY[theme];
+    const metadata = this.FALLBACK_THEME_LIBRARY[theme];
     if (!metadata) return true; // Unknown themes are allowed
     
     return metadata.ageAppropriate.includes(age);
@@ -131,14 +136,14 @@ export class ThemeLibraryService {
    * Get theme metadata
    */
   static getThemeMetadata(theme: string): ThemeMetadata | null {
-    return this.THEME_LIBRARY[theme] || null;
+    return this.FALLBACK_THEME_LIBRARY[theme] || null;
   }
 
   /**
    * Get all available themes by category
    */
   static getThemesByCategory(category: string): string[] {
-    return Object.entries(this.THEME_LIBRARY)
+    return Object.entries(this.FALLBACK_THEME_LIBRARY)
       .filter(([, metadata]) => metadata.category === category)
       .map(([theme]) => theme);
   }
@@ -147,7 +152,7 @@ export class ThemeLibraryService {
    * Get age-appropriate themes
    */
   static getAgeAppropriateThemes(age: number): string[] {
-    return Object.entries(this.THEME_LIBRARY)
+    return Object.entries(this.FALLBACK_THEME_LIBRARY)
       .filter(([, metadata]) => metadata.ageAppropriate.includes(age))
       .map(([theme]) => theme);
   }

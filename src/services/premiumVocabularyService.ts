@@ -8,7 +8,6 @@ import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 // Temporarily disabled - service removed
 // import { ThemedSessionManager } from './themedSessionManager';
 import { ProgressiveRevelationSystem } from './progressiveRevelationSystem';
-import { InputEnhancementEngine } from './inputEnhancementEngine';
 
 // Vocabulary bucket management interfaces (consolidated from vocabularyBucketManager)
 interface VocabularyBucket {

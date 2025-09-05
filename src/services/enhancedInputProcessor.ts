@@ -1,8 +1,7 @@
 // Enhanced Input Processing System
-// Extends InputEnhancementEngine with advanced features
+// Simplified version - creative seeds removed
 
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
-import { InputEnhancementEngine } from './inputEnhancementEngine';
 import { extractThemeIntent } from '@/utils/themeIntent';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { validateThemeBatch } from '@/utils/themeValidation';
@@ -35,8 +34,12 @@ export class EnhancedInputProcessor {
   ): Promise<ProcessedUserElements> {
     console.log(`🚀 Starting enhanced input processing for ${userInfo.name}`);
 
-    // Get base enhanced inputs
-    const baseEnhanced = InputEnhancementEngine.enhanceUserInputs(userInfo);
+    // Create base elements without InputEnhancementEngine
+    const baseElements = {
+      enhancedTraits: this.generateBasicTraits(userInfo),
+      storyElements: this.generateBasicStoryElements(userInfo),
+      thematicConnections: this.generateBasicConnections(userInfo)
+    };
     
     // Add cultural context
     const culturalContext = await this.generateCulturalContext(userInfo);
@@ -54,21 +57,21 @@ export class EnhancedInputProcessor {
     const themeIntent = extractThemeIntent(userInfo);
 
     // Learn from user preferences
-    this.learnUserPreferences(userInfo, baseEnhanced);
+    this.learnUserPreferences(userInfo, baseElements);
 
     return {
       characterTraits: [
-        ...baseEnhanced.enhancedTraits,
+        ...baseElements.enhancedTraits,
         ...skillTraits,
         ...culturalContext.narrativeStyles
       ],
       storyElements: [
-        ...baseEnhanced.storyElements.map(e => e.description),
+        ...baseElements.storyElements,
         ...advancedSpecialElements,
         ...culturalContext.culturalElements
       ],
       culturalConnections: [
-        ...baseEnhanced.thematicConnections,
+        ...baseElements.thematicConnections,
         ...culturalContext.culturalElements
       ],
       skillBasedTraits: skillTraits,
@@ -373,6 +376,34 @@ export class EnhancedInputProcessor {
   }
 
   /**
+   * Generate basic traits from user info
+   */
+  private static generateBasicTraits(userInfo: UserInfo): string[] {
+    const traits = [];
+    if (userInfo.favoriteColor) traits.push(`loves ${userInfo.favoriteColor} things`);
+    if (userInfo.favoriteAnimal) traits.push(`enjoys ${userInfo.favoriteAnimal} stories`);
+    if (userInfo.hobbies) traits.push(`interested in ${userInfo.hobbies}`);
+    return traits;
+  }
+
+  /**
+   * Generate basic story elements from user info  
+   */
+  private static generateBasicStoryElements(userInfo: UserInfo): string[] {
+    const elements = [];
+    if (userInfo.favoriteFood) elements.push(`${userInfo.favoriteFood} appears in the story`);
+    if (userInfo.favoriteAnimal) elements.push(`${userInfo.favoriteAnimal} character helps in adventure`);
+    return elements;
+  }
+
+  /**
+   * Generate basic thematic connections
+   */
+  private static generateBasicConnections(userInfo: UserInfo): string[] {
+    return [`${userInfo.favoriteColor || 'colorful'} and ${userInfo.favoriteAnimal || 'friendly'} adventures`];
+  }
+
+  /**
    * Get personalized recommendations based on learning
    */
   static getPersonalizedRecommendations(userInfo: UserInfo): string[] {
@@ -415,7 +446,6 @@ export class EnhancedInputProcessor {
   static clearProcessingData(): void {
     this.culturalContextCache.clear();
     this.userPreferenceHistory.clear();
-    InputEnhancementEngine.clearCache();
   }
 
   /**

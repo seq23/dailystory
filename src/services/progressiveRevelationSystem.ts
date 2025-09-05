@@ -1,5 +1,4 @@
 import type { UserInfo, DifficultyLevel } from '../types';
-import { InputEnhancementEngine } from './inputEnhancementEngine';
 import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 
 interface RevelationPhase {
@@ -41,7 +40,13 @@ export class ProgressiveRevelationSystem {
     this.initializeUserRevelation(userInfo);
     
     const userState = this.userStates.get(userId)!;
-    const enhanced = InputEnhancementEngine.enhanceUserInputs(userInfo);
+    // Create simple enhanced elements without InputEnhancementEngine
+    const enhanced = {
+      enhancedTraits: this.generateBasicTraits(userInfo),
+      storyElements: this.generateBasicStoryElements(userInfo),
+      thematicConnections: this.generateBasicConnections(userInfo),
+      characterElements: []
+    };
     
     // Determine phase based on story progress
     const phase = this.calculatePhase(storyProgress, DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'medium'));
@@ -391,5 +396,26 @@ export class ProgressiveRevelationSystem {
 
   private static getExpertStoryTemplate(userInfo: UserInfo, phase: RevelationPhase, storyProgress: number): string {
     return `In a moment of profound realization, ${userInfo.name} understands that ${phase.storyElements[0]}. This understanding transforms the meaning of ${phase.revealedInputs.join(', ')}, revealing that ${phase.characterDevelopment[0]}. The central question—${phase.narrativeHooks[0]}—becomes not just a puzzle to solve, but a fundamental inquiry into the nature of existence itself. ${userInfo.name}'s response will echo through dimensions of meaning yet unexplored.`;
+  }
+
+  // Helper methods for generating basic traits without InputEnhancementEngine
+  private static generateBasicTraits(userInfo: UserInfo): string[] {
+    const traits = [];
+    if (userInfo.favoriteColor) traits.push(`loves ${userInfo.favoriteColor} things`);
+    if (userInfo.favoriteAnimal) traits.push(`enjoys ${userInfo.favoriteAnimal} stories`);
+    if (userInfo.hobbies) traits.push(`interested in ${userInfo.hobbies}`);
+    return traits;
+  }
+
+  private static generateBasicStoryElements(userInfo: UserInfo): string[] {
+    const elements = [];
+    if (userInfo.favoriteFood) elements.push(`${userInfo.favoriteFood} appears in the story`);
+    if (userInfo.favoriteAnimal) elements.push(`${userInfo.favoriteAnimal} character helps in adventure`);
+    if (userInfo.specialRequest) elements.push(`special theme: ${userInfo.specialRequest}`);
+    return elements;
+  }
+
+  private static generateBasicConnections(userInfo: UserInfo): string[] {
+    return [`${userInfo.favoriteColor || 'colorful'} and ${userInfo.favoriteAnimal || 'friendly'} adventures`];
   }
 }

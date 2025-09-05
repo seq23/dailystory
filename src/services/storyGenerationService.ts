@@ -333,14 +333,14 @@ export class StoryGenerationService {
 
     const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel);
     
-    // Generate single CTRL line instead of verbose template  
-    const { ResourceLoader } = await import('./failSoft/ResourceLoader');
-    const ctrlLine = ResourceLoader.buildControlLine(
-      essentialUserInfo,
-      themeIntent,
-      voiceIntegrationResult,
-      vocabularyConfig.difficultyLevel
-    );
+      // Generate single CTRL line instead of verbose template  
+      const { ResourceLoader } = await import('./failSoft/ResourceLoader');
+      const ctrlLine = ResourceLoader.buildControlLine(
+        essentialUserInfo,
+        themeIntent,
+        voiceIntegrationResult,
+        vocabularyConfig.difficultyLevel
+      );
 
     const STORY_TEMPLATE = `${ctrlLine}
 
