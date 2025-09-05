@@ -316,7 +316,7 @@ export const getCulturalGuidanceString = (userInfo: any) => {
   const foods = context.commonFoods || [];
   const celebrations = context.celebrations || [];
   const names = context.characterNames || [];
-  const values = context.culturalValues || [];
+  const values = context.values || [];
   const sports = context.sports || [];
   
   return `CULTURAL EASTER EGG INSTRUCTIONS for ${regionName} background:
