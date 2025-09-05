@@ -1,5 +1,7 @@
 /**
- * Level Clamping Service - Apply age-appropriate constraints to voices
+ * STORY GENERATION SYSTEM - Level Clamping Service
+ * Purpose: Apply age-appropriate constraints to narrative voices for story generation
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 import type { ProcessedVoice } from './types';

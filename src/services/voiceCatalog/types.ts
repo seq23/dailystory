@@ -1,6 +1,8 @@
 /**
- * Voice Catalog System Types
+ * STORY GENERATION SYSTEM - Voice Catalog Types
  * Based on Advanced Voice Catalog (AVC) schema v1.1.0
+ * Purpose: Type definitions for narrative style selection system
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 // Global Codebook Schema

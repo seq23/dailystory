@@ -1,6 +1,7 @@
 /**
- * Voice Catalog Integration Service
- * Bridges the new AVC voice catalog with existing story generation
+ * STORY GENERATION SYSTEM - Voice Catalog Integration Service
+ * Purpose: Bridges the AVC voice catalog with story generation pipeline
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 import { VoiceCatalogService, VoiceSelector, VoiceProcessor, DifficultyLevel } from './index';

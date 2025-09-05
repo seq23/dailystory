@@ -1,5 +1,8 @@
 /**
- * New Voice Service - Bridge to AVC Voice Catalog
+ * STORY GENERATION SYSTEM - New Voice Service 
+ * Purpose: Bridge to AVC Voice Catalog for story generation pipeline
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
+ * 
  * This service replaces the old AuthorVoiceService while maintaining compatibility
  */
 

@@ -1,3 +1,9 @@
+/**
+ * STORY GENERATION SYSTEM - Codebook Service
+ * Purpose: Manages global AVC codebook for story narrative elements
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
+ */
+
 import { GlobalCodebook } from './types';
 
 // Import codebook data from backend file

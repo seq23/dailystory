@@ -1,6 +1,7 @@
 /**
- * Voice Processor
- * Resolves voice definitions using the global codebook
+ * STORY GENERATION SYSTEM - Voice Processor
+ * Purpose: Resolves voice definitions using the global codebook for story generation
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 import { CodebookService } from './CodebookService';

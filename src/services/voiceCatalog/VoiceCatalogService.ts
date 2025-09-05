@@ -1,6 +1,7 @@
 /**
- * Voice Catalog Service
- * Manages loading and processing of voice level files
+ * STORY GENERATION SYSTEM - Voice Catalog Service
+ * Purpose: Manages loading and processing of voice level files for story generation
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 import type { 

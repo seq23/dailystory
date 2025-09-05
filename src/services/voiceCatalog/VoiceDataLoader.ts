@@ -1,3 +1,9 @@
+/**
+ * STORY GENERATION SYSTEM - Voice Data Loader
+ * Purpose: Loads voice definitions for narrative style selection
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
+ */
+
 import { VoiceDefinition, VoiceOverride } from './types';
 
 // Import voice data from backend files

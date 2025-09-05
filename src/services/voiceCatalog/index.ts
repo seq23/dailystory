@@ -1,6 +1,8 @@
 /**
- * Voice Catalog System - Main Export
+ * STORY GENERATION SYSTEM - Voice Catalog Main Export
  * Advanced Voice Catalog (AVC) v1.1.0 Implementation
+ * Purpose: Narrative style selection for story content generation
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 import { VoiceCatalogService } from './VoiceCatalogService';

@@ -1,6 +1,7 @@
 /**
- * Voice Selector
- * Selects appropriate voices based on user criteria and difficulty
+ * STORY GENERATION SYSTEM - Voice Selector
+ * Purpose: Selects appropriate narrative voices based on user criteria for story generation
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
 import type { ProcessedVoice, VoiceSelectionResult } from './types';

@@ -1,6 +1,9 @@
 /**
- * Frontend Theme Library Service - Lightweight wrapper for backend service
- * Redirects to backend theme library for enhanced functionality
+ * STORY GENERATION SYSTEM - Theme Library Service (Frontend Compatibility Layer)
+ * Purpose: Lightweight wrapper for backend theme library service for story generation
+ * NOT RELATED TO: User voice commands, audio playback, or microphone input
+ * 
+ * ⚠️ DEPRECATED: Backend theme library should be used for enhanced functionality
  */
 
 // This is a compatibility layer - the real theme library is in the backend
