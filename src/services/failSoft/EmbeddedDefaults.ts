@@ -9,6 +9,7 @@ export const RENDER_PROFILES = {
   expert: { max_clause: 4, avg_wps: [13, 14], fig: 0.60, twists: 3, peril: "moderate_implied", inputs: "subtle" }
 } as const;
 
+// DEPRECATED: Reference only - AI handles theme generation/adaptation
 export const THEMES_FALLBACK = [
   "friendship", "school", "portal_fantasy", "quest", "mystery", "cozy", "survival", "magic_school"
 ] as const;
@@ -44,22 +45,14 @@ export function getRenderProfile(level: string) {
   return RENDER_PROFILES[normalizedLevel] || RENDER_PROFILES.medium;
 }
 
+// AI-driven theme generation - no hardcoded fallbacks
 export function getSafeTheme(requestedThemes?: string[]): string {
   if (!requestedThemes || requestedThemes.length === 0) {
-    return "friendship";
+    return "AI_GENERATE_THEMES";
   }
   
-  // Simple keyword matching for theme selection
-  const availableThemes = Array.from(THEMES_FALLBACK);
-  for (const requested of requestedThemes) {
-    const normalized = requested.toLowerCase().replace(/[^a-z]/g, '');
-    const match = availableThemes.find(theme => 
-      theme.includes(normalized) || normalized.includes(theme.replace('_', ''))
-    );
-    if (match) return match;
-  }
-  
-  return "friendship";
+  // If themes provided but none match catalog, let AI adapt
+  return "AI_ADAPT_THEMES";
 }
 
 export function getNeutralVoiceForLevel(level: string, age?: number): any {
@@ -71,7 +64,7 @@ export function getNeutralVoiceForLevel(level: string, age?: number): any {
     pn: "Gentle Narrator",
     resolvedElements: {
       tones: ["warm", "playful"],
-      themes: ["friendship"],
+      themes: ["AI_GENERATE_THEMES"],
       cadence: profile.avg_wps[0],
       figurative: Math.min(0.45, profile.fig)
     },
