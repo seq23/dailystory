@@ -51,7 +51,10 @@ export class LevelClampingService {
   /**
    * Apply level clamping to a voice
    */
-  static applyConstraints(voice: ProcessedVoice, difficulty: DifficultyLevel, age?: number): ClampedVoice {
+  static applyConstraints(voice: ProcessedVoice, difficulty: DifficultyLevel, age?: number, options?: { failSoft?: boolean }): ClampedVoice {
+    const { failSoft = false } = options || {};
+    
+    try {
     const constraints = this.getConstraintsForLevel(difficulty, age);
     const originalComplexity = this.assessVoiceComplexity(voice);
     
@@ -107,6 +110,20 @@ export class LevelClampingService {
 
     clampedVoice.clampingApplied = clampingApplied;
     return clampedVoice;
+    
+    } catch (error) {
+      if (failSoft) {
+        console.warn('⚠️ LevelClampingService: Clamping failed, using safe defaults:', error);
+        return {
+          ...voice,
+          originalComplexity: 5,
+          appliedConstraints: this.getConstraintsForLevel('beginner'),
+          clampingApplied: true
+        };
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**

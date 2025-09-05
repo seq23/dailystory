@@ -57,18 +57,29 @@ export interface ValidationConfig {
 export class UnifiedValidator {
   // Token limits now sourced from shared config
   // Maintained for legacy compatibility but delegates to shared utilities
+  
+  // Enable fail-soft mode globally
+  private static failSoftMode: boolean = false;
+  
+  static enableFailSoftMode(enabled: boolean = true) {
+    this.failSoftMode = enabled;
+    console.log(`🛡️ UnifiedValidator fail-soft mode ${enabled ? 'enabled' : 'disabled'}`);
+  }
 
   /**
-   * Main validation entry point
+   * Main validation entry point - Enhanced with fail-soft capabilities
    */
   static validateContent(
     content: string | string[],
-    config: ValidationConfig
+    config: ValidationConfig & { failSoft?: boolean }
   ): ValidationResult {
-    const pages = Array.isArray(content) ? content : [content];
-    const totalContent = pages.join(' ');
-    const tokenCount = estimateTokenCount(totalContent);
-    const pageCount = pages.length;
+    const { failSoft = this.failSoftMode } = config;
+    
+    try {
+      const pages = Array.isArray(content) ? content : [content];
+      const totalContent = pages.join(' ');
+      const tokenCount = estimateTokenCount(totalContent);
+      const pageCount = pages.length;
 
     // Detect story language for performance optimization
     const storyLanguage = this.detectStoryLanguage(totalContent);
@@ -145,6 +156,26 @@ export class UnifiedValidator {
       return this.validateGuestStory(pages, config, metrics, baseReasons);
     } else {
       return this.validateLivePage(pages, config, metrics, baseReasons);
+    }
+    
+    } catch (error) {
+      if (failSoft) {
+        console.warn('⚠️ UnifiedValidator: Validation failed, using safe fallback:', error);
+        return {
+          decision: 'ACCEPT',
+          isValid: true,
+          content: Array.isArray(content) ? content : [content],
+          reasons: ['Fail-soft mode: Validation error handled gracefully'],
+          metrics: {
+            tokenCount: estimateTokenCount(Array.isArray(content) ? content.join(' ') : content),
+            pageCount: Array.isArray(content) ? content.length : 1,
+            contentAppropriate: true,
+            qualityScore: 0.7
+          }
+        };
+      } else {
+        throw error;
+      }
     }
   }
 

@@ -72,11 +72,37 @@ export class ResourceLoader {
   }
 
   /**
-   * Attempt CDN loading (with proper timeout handling)
+   * Attempt CDN loading - Now integrates with Voice Catalog JSON files
    */
   private static async loadFromCDN(level: string): Promise<Partial<ResourceLoadResult> | null> {
-    // Simulate CDN loading - in real implementation, this would fetch from actual CDN
-    // For now, return null to trigger embedded fallbacks
+    try {
+      // Try to load from the new JSON voice catalog structure
+      const { VoiceCatalogService } = await import('../voiceCatalog/VoiceCatalogService');
+      
+      // Map level to difficulty
+      const levelToDialifficulty: { [key: string]: any } = {
+        'beginner': 'beginner',
+        'easy': 'easy', 
+        'medium': 'medium',
+        'hard': 'hard',
+        'expert': 'expert'
+      };
+      
+      const difficulty = levelToDialifficulty[level.toLowerCase()] || 'medium';
+      const voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
+      
+      if (voices && voices.length > 0) {
+        console.log(`✅ Loaded ${voices.length} voices from Voice Catalog for ${level}`);
+        return {
+          voices: voices,
+          themes: Array.from(THEMES_FALLBACK).map(theme => ({ id: theme, metadata: {} })),
+          codebook: null // Will use inline generation
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ Voice Catalog integration failed, falling back to embedded defaults:', error);
+    }
+    
     return null;
   }
 

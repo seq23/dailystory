@@ -142,7 +142,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     let finalSystemPrompt = promptConfig.systemPrompt;
     let finalUserPrompt = bundle.storyContent;
 
-    // Parse control line from bundle
+    // Parse control line from bundle - Enhanced with fail-soft defaults
     let ctrlData = null;
     try {
       const ctrlMatch = bundle.storyContent.match(/<CTRL>(.*?)<\/CTRL>/);
@@ -151,7 +151,15 @@ export async function handleStreamlinedGeneration(requestBody: any) {
         console.log('🎭 Parsed voice control data:', ctrlData);
       }
     } catch (error) {
-      console.warn('Could not parse control data, using defaults');
+      console.warn('⚠️ Could not parse control data, using fail-soft defaults');
+      
+      // Fail-soft: Create minimal control data structure
+      ctrlData = {
+        vf: { id: 'neutral_v0', cad: 12, var: 3, fig: 0.45, hum: 0.5, warm: 0.85, nar: 'storybook' },
+        iu: { mode: 'direct', caps: { u: { max: 4 }, c: { max: 3 }, a: { max: 2 }, f: { max: 1 }, h: { max: 1 } } },
+        themes: ['friendship'],
+        level: effectiveDifficulty || 'medium'
+      };
     }
 
     // Add fail-soft instructions to system prompt
