@@ -142,6 +142,22 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     // Bundle already contains resolved natural language - use directly
     let finalSystemPrompt = promptConfig.systemPrompt;
     let finalUserPrompt = bundle.storyContent;
+
+    // Add fail-soft instructions to system prompt
+    if (ctrlData) {
+      finalSystemPrompt += `\n\nCONTROL PARAMETERS: ${JSON.stringify(ctrlData)}
+- Voice characteristics: ${ctrlData.vf?.nar || 'storybook'} narrative style
+- Input integration mode: ${ctrlData.iu?.mode || 'direct'}
+- Theme focus: ${ctrlData.themes?.join(', ') || 'adventure'}
+- Level: ${ctrlData.level || 'medium'}`;
+    }
+
+    finalSystemPrompt += `\n\nFAIL-SOFT RULES:
+- If CTRL data is missing or minimal, choose reasonable defaults and continue
+- Never reference missing information or apologize for limitations
+- Always produce a complete story regardless of input quality
+- Use provided user inputs only if they exist, otherwise omit gracefully
+- Default to gentle, age-appropriate themes if none specified`;
     
     // Add available functions to system prompt
     finalSystemPrompt += `\n\nAVAILABLE FUNCTIONS:

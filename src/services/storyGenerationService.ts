@@ -174,6 +174,12 @@ export class StoryGenerationService {
         gradeLevel: generationBundle.systemSettings.gradeLevel,
         avatarDataPresent: !!resolvedResult.avatarData.skinTone
       });
+      console.log('📦 Generation bundle prepared:', {
+        sessionId: generationBundle.sessionId,
+        storyContentLength: resolvedResult.storyContent.length,
+        gradeLevel: generationBundle.systemSettings.gradeLevel,
+        avatarDataPresent: !!resolvedResult.avatarData.skinTone
+      });
 
       const result = await this.callStreamlinedEdgeFunction(generationBundle, config);
       
