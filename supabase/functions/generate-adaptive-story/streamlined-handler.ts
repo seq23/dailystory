@@ -156,11 +156,27 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       // Fail-soft: Create minimal control data structure
       ctrlData = {
         vf: { id: 'neutral_v0', cad: 12, var: 3, fig: 0.45, hum: 0.5, warm: 0.85, nar: 'storybook' },
-        iu: { mode: 'direct', caps: { u: { max: 4 }, c: { max: 3 }, a: { max: 2 }, f: { max: 1 }, h: { max: 1 } } },
+        iu: { mode: 'direct', rules: { u: { max: 4 }, c: { max: 3 }, a: { max: 2 }, f: { max: 1 }, h: { max: 1 } } },
         ah: { u: 0.8, c: 0.6, a: 0.5, f: 0.3, h: 0.4 }, // neutral affinity baseline
         themes: ['friendship'],
         level: effectiveDifficulty || 'medium'
       };
+    }
+
+    // Lean validation: ensure consistent data structure
+    if (ctrlData?.iu) {
+      // Handle legacy caps format (convert to rules)
+      if (ctrlData.iu.caps && !ctrlData.iu.rules) {
+        ctrlData.iu.rules = ctrlData.iu.caps;
+        delete ctrlData.iu.caps;
+        console.warn('🔄 Converted legacy iu.caps to iu.rules format');
+      }
+      
+      // Ensure rules exist
+      if (!ctrlData.iu.rules || typeof ctrlData.iu.rules !== 'object') {
+        ctrlData.iu.rules = { u: { max: 4 }, c: { max: 3 }, a: { max: 2 }, f: { max: 1 }, h: { max: 1 } };
+        console.warn('⚠️ Missing iu.rules, using defaults');
+      }
     }
 
     // Add fail-soft instructions to system prompt
@@ -169,7 +185,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 - Voice characteristics: ${ctrlData.vf?.nar || 'storybook'} narrative style
 - Input integration mode: ${ctrlData.iu?.mode || 'direct'}
 - Affinity hints: ${JSON.stringify(ctrlData.ah || {})} (prioritize high-scoring inputs)
-- Input usage caps: ${JSON.stringify(ctrlData.iu?.caps || {})} (max usage per type)
+- Input usage rules: ${JSON.stringify(ctrlData.iu?.rules || {})} (max usage per type)
 - Theme focus: ${ctrlData.themes?.join(', ') || 'adventure'}
 - Level: ${ctrlData.level || 'medium'}`;
     }
