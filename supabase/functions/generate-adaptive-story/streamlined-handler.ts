@@ -157,6 +157,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       ctrlData = {
         vf: { id: 'neutral_v0', cad: 12, var: 3, fig: 0.45, hum: 0.5, warm: 0.85, nar: 'storybook' },
         iu: { mode: 'direct', caps: { u: { max: 4 }, c: { max: 3 }, a: { max: 2 }, f: { max: 1 }, h: { max: 1 } } },
+        ah: { u: 0.8, c: 0.6, a: 0.5, f: 0.3, h: 0.4 }, // neutral affinity baseline
         themes: ['friendship'],
         level: effectiveDifficulty || 'medium'
       };
@@ -167,6 +168,8 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       finalSystemPrompt += `\n\nCONTROL PARAMETERS: ${JSON.stringify(ctrlData)}
 - Voice characteristics: ${ctrlData.vf?.nar || 'storybook'} narrative style
 - Input integration mode: ${ctrlData.iu?.mode || 'direct'}
+- Affinity hints: ${JSON.stringify(ctrlData.ah || {})} (prioritize high-scoring inputs)
+- Input usage caps: ${JSON.stringify(ctrlData.iu?.caps || {})} (max usage per type)
 - Theme focus: ${ctrlData.themes?.join(', ') || 'adventure'}
 - Level: ${ctrlData.level || 'medium'}`;
     }
