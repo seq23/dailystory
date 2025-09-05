@@ -982,12 +982,22 @@ CHARACTERISTICS: ${voicePatterns.characteristics.join(', ')}`;
         processedText = processedText.replace(match[0], voiceContent);
         console.log('✅ Executed getAuthorVoicePatterns() successfully');
       } else {
-        processedText = processedText.replace(match[0], 'engaging storytelling voice');
-        console.log('⚠️ getAuthorVoicePatterns() returned null, using fallback');
+        processedText = processedText.replace(match[0], 
+          `Create your own engaging author voice patterns for this story. Consider the age group and generate appropriate:
+- Opening phrases that draw readers in
+- Smooth transition techniques  
+- Satisfying closing elements
+- A consistent narrative personality throughout`);
+        console.log('⚠️ getAuthorVoicePatterns() returned null, instructing AI to create custom voice patterns');
       }
     } catch (error) {
-      processedText = processedText.replace(match[0], 'engaging storytelling voice');
-      console.warn('❌ getAuthorVoicePatterns() execution failed:', safeErrorMessage(error));
+      processedText = processedText.replace(match[0], 
+        `Create your own engaging author voice patterns for this story. Consider the age group and generate appropriate:
+- Opening phrases that draw readers in
+- Smooth transition techniques  
+- Satisfying closing elements
+- A consistent narrative personality throughout`);
+      console.warn('❌ getAuthorVoicePatterns() failed, instructing AI to create custom voice patterns:', safeErrorMessage(error));
     }
   }
   
