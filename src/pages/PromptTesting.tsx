@@ -3,10 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Zap, Cable, ArrowRight, Bug } from 'lucide-react';
+import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
 
 export default function PromptTesting() {
   const [searchParams] = useSearchParams();
@@ -53,6 +55,28 @@ export default function PromptTesting() {
                   <h2 className="text-2xl font-semibold">Debug Data Viewer</h2>
                 </div>
                 <DebugDataViewer />
+              </section>
+
+              <Separator />
+
+              {/* Analytics Dashboard */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-semibold">Analytics Dashboard</h2>
+                </div>
+                <AnalyticsDashboard />
+              </section>
+
+              <Separator />
+
+              {/* Advanced Monitoring Dashboard */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-semibold">Advanced Monitoring</h2>
+                </div>
+                <AdvancedMonitoringDashboard />
               </section>
 
               <Separator />
