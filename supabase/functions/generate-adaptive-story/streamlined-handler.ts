@@ -13,12 +13,11 @@ import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 
-// Import services for function execution
-import { fetchCulturalArrays, type CulturalArrays } from '../_shared/culturalContextService.ts';
+// Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 import { fetchVoicePatterns, type VoicePatterns } from '../_shared/authorVoiceService.ts';
 
 // Import static caching and error classification
-import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache } from './StaticDataCache.ts';
+import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache, getCulturalContextArrays } from './StaticDataCache.ts';
 const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
 
 // CORS headers - moved to top to fix ReferenceError
@@ -577,12 +576,7 @@ Use these as inspiration but prioritize overall story quality and coherence.
     const paramName = safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens');
     let adjustedTokens = Math.min(maxTokens, 100000); // Base limit
     
-    // Add 50% reasoning overhead for newer models that might use reasoning tokens
-    const isReasoningModel = currentModel.name?.includes('gpt-5') || currentModel.name?.includes('o3') || currentModel.name?.includes('o4');
-    if (isReasoningModel) {
-      adjustedTokens = Math.min(Math.floor(maxTokens * 1.5), 100000);
-      console.log(`🧠 Reasoning model detected: ${currentModel.name}, increased token budget from ${maxTokens} to ${adjustedTokens}`);
-    }
+    // Phase 1: Remove reasoning overhead for ultra-cost optimization
     
     apiBody[paramName] = adjustedTokens;
     console.log(`🎯 Service-Aware Token Limit: ${apiBody[paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
@@ -943,10 +937,21 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
   const culturalMatches = [...processedText.matchAll(/getCulturalContext\s*\([^)]*\)/gi)];
   for (const match of culturalMatches) {
     try {
-      const culturalArrays = fetchCulturalArrays(context.userInfo);
+      const culturalArrays = getCulturalContextArrays();
+      const userLanguage = context.userInfo?.nativeLanguage || 'en';
+      const skinTone = context.userInfo?.avatar?.skinTone;
       
-      if (culturalArrays) {
-        const culturalContent = `Cultural elements: Character names like ${culturalArrays.characterNames.slice(0, 3).join(', ')}, foods such as ${culturalArrays.commonFoods.slice(0, 3).join(', ')}, celebrations including ${culturalArrays.celebrations.slice(0, 2).join(', ')}, and values of ${culturalArrays.values.slice(0, 2).join(' and ')}.`;
+      let culturalKey = userLanguage;
+      if (userLanguage === 'en' && skinTone === 'dark') {
+        culturalKey = 'en-african-american';
+      } else if (userLanguage === 'fr' && skinTone === 'dark') {
+        culturalKey = 'fr-francophone-african';
+      }
+      
+      const selectedCultural = culturalArrays[culturalKey];
+      
+      if (selectedCultural) {
+        const culturalContent = `Cultural elements: Character names like ${selectedCultural.characterNames.slice(0, 3).join(', ')}, foods such as ${selectedCultural.commonFoods.slice(0, 3).join(', ')}, celebrations including ${selectedCultural.celebrations.slice(0, 2).join(', ')}, and values of ${selectedCultural.values.slice(0, 2).join(' and ')}.`;
         
         processedText = processedText.replace(match[0], culturalContent);
         console.log('✅ Executed getCulturalContext() successfully');

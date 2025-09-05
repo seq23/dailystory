@@ -7,7 +7,7 @@ import type { UserInfo, DifficultyLevel, LearningGoal, AvatarType } from "@/type
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { generateCreativeSeeds } from './inputEnhancementEngine';
-import { CulturalAdaptationService } from './culturalAdaptationService';
+import { getCulturalGuidanceString } from './StaticDataCache';
 
 export interface StoryGenerationBundle {
   sessionId: string;              // Session identifier for debugging and caching
@@ -264,7 +264,7 @@ export class StoryGenerationService {
       },
       specialRequest: themeIntent.rawInput || userInfo.specialRequest || ''
     };
-    const culturalContext = CulturalAdaptationService.getCulturalGuidanceString(reconstructedUserInfo);
+    const culturalContext = getCulturalGuidanceString(reconstructedUserInfo);
 
     const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel);
     
