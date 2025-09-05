@@ -3074,7 +3074,7 @@ const handleRestartTimer = () => {
     textContent: currentStoryText,
     fontSize: difficultyBasedTextConfig.fontSize,
     lineHeight: difficultyBasedTextConfig.lineHeight,
-    isDesktop: !isMobile && window.innerWidth >= 1280 // xl breakpoint
+    isDesktop: !isMobile && typeof window !== 'undefined' && window.innerWidth >= 1280 // xl breakpoint
   });
 
   // Aggressive prefetch: progressively preload many upcoming images without blocking UI
