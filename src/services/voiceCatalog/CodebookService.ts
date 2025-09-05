@@ -1,7 +1,7 @@
 import { GlobalCodebook } from './types';
 
-// Import codebook data from JSON file
-import codebookData from './data/codebook.v1.1.json';
+// Import codebook data from backend file
+import codebookData from '../../../supabase/functions/_shared/voice-catalog/codebook.v1.1.json';
 
 /**
  * Codebook Service for managing the global AVC codebook v1.1
