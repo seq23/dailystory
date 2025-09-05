@@ -1,124 +1,132 @@
-// Grade-Based Vocabulary System - Central Export
-// This replaces all previous vocabulary systems with a unified grade-based approach
-
-import { 
-  ENHANCED_LEVEL_0_VOCABULARY as LEVEL_0_VOCABULARY, 
-  validateLevel0Sentence 
-} from '../../../supabase/functions/_shared/vocabulary/dolchPrePrimer';
-
-// Legacy wrapper for backward compatibility
-function isLevel0Word(word: string): boolean {
-  return LEVEL_0_VOCABULARY.has(word.toLowerCase());
-}
-
-import { 
-  LEVEL_1_VOCABULARY, 
-  isLevel1Word, 
-  validateLevel1Sentence 
-} from '../../../supabase/functions/_shared/vocabulary/level1Vocabulary';
-
-import { 
-  LEVEL_2_VOCABULARY, 
-  isLevel2Word, 
-  validateLevel2Sentence 
-} from '../../../supabase/functions/_shared/vocabulary/level2Vocabulary';
-
-import { 
-  LEVEL_3_VOCABULARY, 
-  isLevel3Word, 
-  validateLevel3Sentence 
-} from '../../../supabase/functions/_shared/vocabulary/level3Vocabulary';
-
-import { 
-  LEVEL_4_VOCABULARY, 
-  isLevel4Word, 
-  validateLevel4Sentence 
-} from '../../../supabase/functions/_shared/vocabulary/level4Vocabulary';
-
-// Note: Level 4 vocabulary exists for reference but Expert difficulty 
-// bypasses vocabulary simplification and uses grade-based progression instead
+// Educational Standards Grade-Based System
+// Migrated from static vocabulary imports to educational compliance approach
+// Aligns with backend educational standards
 
 import { DifficultyLevel } from '@/types';
+import { 
+  difficultyToEducationalLevel,
+  educationalLevelToDifficulty,
+  isEducationallyAppropriate,
+  calculateEducationalCompliance,
+  CORE_EDUCATIONAL_WORDS,
+  getEducationalLevelInfo,
+  type EducationalLevel
+} from '@/constants/educationalStandards';
 
-// Type for grade levels
-export type GradeLevel = 0 | 1 | 2 | 3 | 4;
+// Type for grade levels - now using educational levels
+export type GradeLevel = EducationalLevel;
 
-// Export all vocabularies
-export {
-  LEVEL_0_VOCABULARY,
-  LEVEL_1_VOCABULARY, 
-  LEVEL_2_VOCABULARY,
-  LEVEL_3_VOCABULARY,
-  LEVEL_4_VOCABULARY,
-  isLevel0Word,
-  isLevel1Word,
-  isLevel2Word,
-  isLevel3Word,
-  isLevel4Word,
-  validateLevel0Sentence,
-  validateLevel1Sentence,
-  validateLevel2Sentence,
-  validateLevel3Sentence,
-  validateLevel4Sentence
-};
+// Legacy vocabulary sets for backward compatibility
+// These use core educational words instead of deleted static files
+export const LEVEL_0_VOCABULARY: Set<string> = CORE_EDUCATIONAL_WORDS[0];
+export const LEVEL_1_VOCABULARY: Set<string> = new Set([
+  ...CORE_EDUCATIONAL_WORDS[0],
+  ...CORE_EDUCATIONAL_WORDS[1]
+]);
+export const LEVEL_2_VOCABULARY: Set<string> = LEVEL_1_VOCABULARY; // Educational progression
+export const LEVEL_3_VOCABULARY: Set<string> = LEVEL_1_VOCABULARY; // Educational progression  
+export const LEVEL_4_VOCABULARY: Set<string> = new Set<string>(); // Expert level - no restrictions
 
-// Difficulty Level to Grade Level mapping
-// Note: Expert difficulty doesn't use vocabulary simplification
-export function difficultyToGradeLevel(difficulty: DifficultyLevel): GradeLevel {
-  switch (difficulty) {
-    case 'beginner': return 0;
-    case 'easy': return 1;
-    case 'medium': return 2;
-    case 'hard': return 3;
-    case 'expert': return 4; // Used only for reference, not vocabulary simplification
-    default: return 0;
-  }
+// Educational word checking functions
+export function isLevel0Word(word: string, userName?: string): boolean {
+  return isEducationallyAppropriate(word, 0, userName);
 }
 
-// Grade Level to Difficulty mapping
-export function gradeLevelToDifficulty(grade: GradeLevel): DifficultyLevel {
-  switch (grade) {
-    case 0: return 'beginner';
-    case 1: return 'easy';
-    case 2: return 'medium';
-    case 3: return 'hard';
-    case 4: return 'expert';
-    default: return 'beginner';
-  }
+export function isLevel1Word(word: string, userName?: string): boolean {
+  return isEducationallyAppropriate(word, 1, userName);
 }
 
-// Universal vocabulary checker
-// Note: Level 4 (Expert) should not use vocabulary checking - returns true for all words
-export function isValidWord(word: string, gradeLevel: GradeLevel): boolean {
-  switch (gradeLevel) {
-    case 0: return isLevel0Word(word);
-    case 1: return isLevel1Word(word);
-    case 2: return isLevel2Word(word);
-    case 3: return isLevel3Word(word);
-    case 4: return isLevel4Word(word);
-    default: return isLevel0Word(word);
-  }
+export function isLevel2Word(word: string, userName?: string): boolean {
+  return isEducationallyAppropriate(word, 2, userName);
 }
 
-// Universal sentence validator
-// Note: Level 4 (Expert) should not use vocabulary validation - returns valid for all sentences
+export function isLevel3Word(word: string, userName?: string): boolean {
+  return isEducationallyAppropriate(word, 3, userName);
+}
+
+export function isLevel4Word(word: string, userName?: string): boolean {
+  return isEducationallyAppropriate(word, 4, userName);
+}
+
+// Educational sentence validation functions
+export function validateLevel0Sentence(sentence: string, userName?: string): { 
+  isValid: boolean; 
+  invalidWords: string[];
+} {
+  const result = calculateEducationalCompliance(sentence, 0, userName);
+  return {
+    isValid: result.isCompliant,
+    invalidWords: result.inappropriateWords
+  };
+}
+
+export function validateLevel1Sentence(sentence: string, userName?: string): { 
+  isValid: boolean; 
+  invalidWords: string[];
+} {
+  const result = calculateEducationalCompliance(sentence, 1, userName);
+  return {
+    isValid: result.isCompliant,
+    invalidWords: result.inappropriateWords
+  };
+}
+
+export function validateLevel2Sentence(sentence: string, userName?: string): { 
+  isValid: boolean; 
+  invalidWords: string[];
+} {
+  const result = calculateEducationalCompliance(sentence, 2, userName);
+  return {
+    isValid: result.isCompliant,
+    invalidWords: result.inappropriateWords
+  };
+}
+
+export function validateLevel3Sentence(sentence: string, userName?: string): { 
+  isValid: boolean; 
+  invalidWords: string[];
+} {
+  const result = calculateEducationalCompliance(sentence, 3, userName);
+  return {
+    isValid: result.isCompliant,
+    invalidWords: result.inappropriateWords
+  };
+}
+
+export function validateLevel4Sentence(sentence: string, userName?: string): { 
+  isValid: boolean; 
+  invalidWords: string[];
+} {
+  const result = calculateEducationalCompliance(sentence, 4, userName);
+  return {
+    isValid: result.isCompliant,
+    invalidWords: result.inappropriateWords
+  };
+}
+
+// Educational level mapping functions
+export const difficultyToGradeLevel = difficultyToEducationalLevel;
+export const gradeLevelToDifficulty = educationalLevelToDifficulty;
+
+// Universal vocabulary checker using educational standards
+export function isValidWord(word: string, gradeLevel: GradeLevel, userName?: string): boolean {
+  return isEducationallyAppropriate(word, gradeLevel, userName);
+}
+
+// Universal sentence validator using educational compliance
 export function validateSentence(
   sentence: string, 
   gradeLevel: GradeLevel, 
   userName?: string
 ): { isValid: boolean; invalidWords: string[] } {
-  switch (gradeLevel) {
-    case 0: return validateLevel0Sentence(sentence, userName);
-    case 1: return validateLevel1Sentence(sentence, userName);
-    case 2: return validateLevel2Sentence(sentence, userName);
-    case 3: return validateLevel3Sentence(sentence, userName);
-    case 4: return validateLevel4Sentence(sentence, userName);
-    default: return validateLevel0Sentence(sentence, userName);
-  }
+  const result = calculateEducationalCompliance(sentence, gradeLevel, userName);
+  return {
+    isValid: result.isCompliant,
+    invalidWords: result.inappropriateWords
+  };
 }
 
-// Get vocabulary set for a grade level
-// Note: Level 4 (Expert) returns empty set since it doesn't use vocabulary restrictions
+// Get vocabulary set for a grade level using educational standards
 export function getVocabularySet(gradeLevel: GradeLevel): Set<string> {
   switch (gradeLevel) {
     case 0: return LEVEL_0_VOCABULARY;
@@ -132,14 +140,15 @@ export function getVocabularySet(gradeLevel: GradeLevel): Set<string> {
 
 // Get vocabulary count for a grade level
 export function getVocabularyCount(gradeLevel: GradeLevel): number {
-  return getVocabularySet(gradeLevel).size;
+  const info = getEducationalLevelInfo(gradeLevel);
+  return typeof info.targetWords === 'number' ? info.targetWords : 0;
 }
 
-// Grade level information
+// Grade level information using educational standards
 export const GRADE_LEVEL_INFO = {
-  0: { ages: '3-5', description: 'Dolch Pre-Primer', words: 40 },
-  1: { ages: '5-7', description: '1st-2nd Grade', words: 120 },
-  2: { ages: '7-9', description: '2nd-3rd Grade', words: 200 },
-  3: { ages: '9-11', description: 'Sophisticated 4th Grade', words: 200 },
-  4: { ages: '11+', description: 'Expert (6th-10th Grade)', words: 'No limit - uses adaptive grade system' }
+  0: { ages: '3-5', description: 'Pre-Reader/Early Learning', words: 40 },
+  1: { ages: '5-7', description: 'Beginning Reader', words: 120 },
+  2: { ages: '7-9', description: 'Developing Reader', words: 200 },
+  3: { ages: '9-11', description: 'Independent Reader', words: 300 },
+  4: { ages: '11+', description: 'Advanced/Adaptive Learning', words: 'Unlimited - Adaptive System' }
 } as const;

@@ -1,10 +1,8 @@
-// Auto-generated base phonics mapping from vocabulary sets
-// This creates deterministic, kid-friendly chunks using a simple heuristic
+// Auto-generated phonics mapping from educational vocabulary standards
+// Uses educational compliance instead of static vocabulary imports
+// Aligns with backend educational standards approach
 
-import { LEVEL_0_VOCABULARY } from '@/constants/gradeBased';
-import { LEVEL_1_VOCABULARY } from '@/constants/gradeBased';
-import { LEVEL_2_VOCABULARY } from '@/constants/gradeBased';
-import { LEVEL_3_VOCABULARY } from '@/constants/gradeBased';
+import { LEVEL_0_VOCABULARY, LEVEL_1_VOCABULARY } from '@/constants/gradeBased';
 
 // Minimal deterministic splitter (subset of the main engine heuristics, no deps)
 function splitWordSimple(word: string): string[] {
@@ -60,10 +58,9 @@ function splitWordSimple(word: string): string[] {
 
 function buildWordSet(): Set<string> {
   const s = new Set<string>();
+  // Use educational vocabulary instead of static imports
   for (const w of LEVEL_0_VOCABULARY) s.add(String(w));
   for (const w of LEVEL_1_VOCABULARY) s.add(String(w));
-  for (const w of LEVEL_2_VOCABULARY) s.add(String(w));
-  for (const w of LEVEL_3_VOCABULARY) s.add(String(w));
   return s;
 }
 

@@ -1,5 +1,9 @@
+// Premium Vocabulary Service - Educational Standards Migration 
+// Now uses educational compliance instead of static vocabulary imports
+// Aligns with backend educational standards approach
+
 import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
-import { LEVEL_1_VOCABULARY, LEVEL_2_VOCABULARY } from '@/constants/gradeBased';
+import { LEVEL_0_VOCABULARY, LEVEL_1_VOCABULARY } from '@/constants/gradeBased';
 import { DifficultyLevelMapper } from './DifficultyLevelMapper';
 // Temporarily disabled - service removed
 // import { ThemedSessionManager } from './themedSessionManager';
@@ -15,8 +19,7 @@ interface VocabularyBucket {
 }
 
 interface UserVocabularyState {
-  level1Buckets: VocabularyBucket[];
-  level2Buckets: VocabularyBucket[];
+  educationalBuckets: VocabularyBucket[];
   encounterHistory: Map<string, number>;
   lastSessionBuckets: string[];
 }
@@ -54,23 +57,24 @@ export class PremiumVocabularyService {
   static initializeUserState(userId: string): void {
     if (this.userStates.has(userId)) return;
 
-    const level1Buckets: VocabularyBucket[] = [{
-      category: 'Level 1 Words',
-      words: [...LEVEL_1_VOCABULARY],
-      usedWords: new Set(),
-      priority: 1
-    }];
-
-    const level2Buckets: VocabularyBucket[] = [{
-      category: 'Level 2 Words', 
-      words: [...LEVEL_2_VOCABULARY],
-      usedWords: new Set(),
-      priority: 1
-    }];
+    // Use educational vocabulary buckets instead of static levels
+    const educationalBuckets: VocabularyBucket[] = [
+      {
+        category: 'Core Educational Words',
+        words: [...LEVEL_0_VOCABULARY],
+        usedWords: new Set(),
+        priority: 1
+      },
+      {
+        category: 'Expanding Vocabulary',
+        words: [...LEVEL_1_VOCABULARY],
+        usedWords: new Set(),
+        priority: 2
+      }
+    ];
 
     this.userStates.set(userId, {
-      level1Buckets,
-      level2Buckets,
+      educationalBuckets,
       encounterHistory: new Map(),
       lastSessionBuckets: []
     });
@@ -80,8 +84,8 @@ export class PremiumVocabularyService {
     this.initializeUserState(userId);
     const userState = this.userStates.get(userId)!;
 
-    const isLevel2 = ['medium', 'hard', 'expert'].includes(difficulty);
-    const buckets = isLevel2 ? userState.level2Buckets : userState.level1Buckets;
+    // Use educational buckets instead of level-specific buckets
+    const buckets = userState.educationalBuckets;
 
     // Avoid recently used categories
     const availableBuckets = buckets.filter(bucket => 
@@ -126,8 +130,7 @@ export class PremiumVocabularyService {
     const userState = this.userStates.get(userId)!;
 
     // Find the bucket and mark words as used
-    const allBuckets = [...userState.level1Buckets, ...userState.level2Buckets];
-    const bucket = allBuckets.find(b => b.category === category);
+    const bucket = userState.educationalBuckets.find(b => b.category === category);
     
     if (bucket) {
       words.forEach(word => {
@@ -149,21 +152,14 @@ export class PremiumVocabularyService {
   }
 
   static getVocabularyStats(userId: string): {
-    level1Progress: { category: string; used: number; total: number }[];
-    level2Progress: { category: string; used: number; total: number }[];
+    educationalProgress: { category: string; used: number; total: number }[];
     totalWordsEncountered: number;
     mostPracticedWords: { word: string; count: number }[];
   } {
     this.initializeUserState(userId);
     const userState = this.userStates.get(userId)!;
 
-    const level1Progress = userState.level1Buckets.map(bucket => ({
-      category: bucket.category,
-      used: bucket.usedWords.size,
-      total: bucket.words.length
-    }));
-
-    const level2Progress = userState.level2Buckets.map(bucket => ({
+    const educationalProgress = userState.educationalBuckets.map(bucket => ({
       category: bucket.category,
       used: bucket.usedWords.size,
       total: bucket.words.length
@@ -177,8 +173,7 @@ export class PremiumVocabularyService {
       .map(([word, count]) => ({ word, count }));
 
     return {
-      level1Progress,
-      level2Progress,
+      educationalProgress,
       totalWordsEncountered,
       mostPracticedWords
     };

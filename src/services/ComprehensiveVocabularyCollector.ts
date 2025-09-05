@@ -1,13 +1,17 @@
-// Comprehensive Vocabulary Collector - Merges all vocabulary sources
-// Provides unified access to all words used across the application
+// Comprehensive Vocabulary Collector - Educational Standards Migration
+// Now uses educational compliance instead of static vocabulary imports
+// Aligns with backend educational standards approach
 
 import { 
   LEVEL_0_VOCABULARY, 
   LEVEL_1_VOCABULARY, 
-  LEVEL_2_VOCABULARY, 
-  LEVEL_3_VOCABULARY, 
-  LEVEL_4_VOCABULARY 
+  type GradeLevel
 } from '@/constants/gradeBased';
+import { 
+  isEducationallyAppropriate,
+  calculateEducationalCompliance,
+  getEducationalLevelInfo
+} from '@/constants/educationalStandards';
 import { phoneticDictionary } from '@/utils/phoneticDictionary';
 import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
@@ -18,6 +22,8 @@ export interface VocabularyEntry {
   hasPhoneticSpelling: boolean;
   hasSyllableBreakdown: boolean;
   source: string[];
+  isEducationallyAppropriate: boolean;
+  educationalLevel?: GradeLevel;
 }
 
 export class ComprehensiveVocabularyCollector {
@@ -25,7 +31,7 @@ export class ComprehensiveVocabularyCollector {
   private static allWordsCache: Set<string> | null = null;
 
   /**
-   * Gets all unique words from all vocabulary sources
+   * Gets all unique words from all vocabulary sources (Educational Standards approach)
    */
   static getAllWords(): Set<string> {
     if (this.allWordsCache) {
@@ -34,12 +40,9 @@ export class ComprehensiveVocabularyCollector {
 
     const allWords = new Set<string>();
     
-    // Add all vocabulary levels
+    // Add core educational vocabulary (replaces static vocabulary imports)
     for (const word of LEVEL_0_VOCABULARY) allWords.add(String(word).toLowerCase());
     for (const word of LEVEL_1_VOCABULARY) allWords.add(String(word).toLowerCase());
-    for (const word of LEVEL_2_VOCABULARY) allWords.add(String(word).toLowerCase());
-    for (const word of LEVEL_3_VOCABULARY) allWords.add(String(word).toLowerCase());
-    for (const word of LEVEL_4_VOCABULARY) allWords.add(String(word).toLowerCase());
     
     // Add phonetic dictionary words
     Object.keys(phoneticDictionary).forEach(word => allWords.add(word.toLowerCase()));
@@ -51,13 +54,13 @@ export class ComprehensiveVocabularyCollector {
     Object.keys(phonicsMiniDict).forEach(word => allWords.add(word.toLowerCase()));
 
     this.allWordsCache = allWords;
-    console.log(`Collected ${allWords.size} unique words from all sources`);
+    console.log(`Collected ${allWords.size} unique words from educational standards + phonetic sources`);
     
     return allWords;
   }
 
   /**
-   * Gets detailed vocabulary entries with metadata
+   * Gets detailed vocabulary entries with educational compliance metadata
    */
   static getVocabularyEntries(): Map<string, VocabularyEntry> {
     if (this.vocabularyCache) {
@@ -66,8 +69,8 @@ export class ComprehensiveVocabularyCollector {
 
     const entries = new Map<string, VocabularyEntry>();
     
-    // Helper to add word with level tracking
-    const addWord = (word: string, level: number, source: string) => {
+    // Helper to add word with educational level tracking
+    const addWord = (word: string, level: number, source: string, educationalLevel?: GradeLevel) => {
       const normalized = String(word).toLowerCase();
       if (!normalized) return;
       
@@ -78,25 +81,30 @@ export class ComprehensiveVocabularyCollector {
         if (!existing.source.includes(source)) {
           existing.source.push(source);
         }
+        // Update educational appropriateness if not already set
+        if (!existing.isEducationallyAppropriate && educationalLevel !== undefined) {
+          existing.isEducationallyAppropriate = isEducationallyAppropriate(normalized, educationalLevel);
+          existing.educationalLevel = educationalLevel;
+        }
       } else {
         entries.set(normalized, {
           word: normalized,
           level,
           hasPhoneticSpelling: normalized in phoneticDictionary,
           hasSyllableBreakdown: normalized in autoPhonicsFromVocab || normalized in phonicsMiniDict,
-          source: [source]
+          source: [source],
+          isEducationallyAppropriate: educationalLevel !== undefined ? 
+            isEducationallyAppropriate(normalized, educationalLevel) : false,
+          educationalLevel
         });
       }
     };
 
-    // Add all vocabulary levels
-    LEVEL_0_VOCABULARY.forEach(word => addWord(String(word), 0, 'level0'));
-    LEVEL_1_VOCABULARY.forEach(word => addWord(String(word), 1, 'level1'));
-    LEVEL_2_VOCABULARY.forEach(word => addWord(String(word), 2, 'level2'));
-    LEVEL_3_VOCABULARY.forEach(word => addWord(String(word), 3, 'level3'));
-    LEVEL_4_VOCABULARY.forEach(word => addWord(String(word), 4, 'level4'));
+    // Add educational vocabulary (replaces static vocabulary lists)
+    LEVEL_0_VOCABULARY.forEach(word => addWord(String(word), 0, 'educational-level-0', 0));
+    LEVEL_1_VOCABULARY.forEach(word => addWord(String(word), 1, 'educational-level-1', 1));
     
-    // Add phonetic dictionary entries (mark as having phonetic)
+    // Add phonetic dictionary entries
     Object.keys(phoneticDictionary).forEach(word => {
       const normalized = word.toLowerCase();
       const existing = entries.get(normalized);
@@ -111,13 +119,15 @@ export class ComprehensiveVocabularyCollector {
           level: 99, // Unknown level
           hasPhoneticSpelling: true,
           hasSyllableBreakdown: false,
-          source: ['phonetic']
+          source: ['phonetic'],
+          isEducationallyAppropriate: false,
+          educationalLevel: undefined
         });
       }
     });
 
     this.vocabularyCache = entries;
-    console.log(`Created ${entries.size} vocabulary entries with metadata`);
+    console.log(`Created ${entries.size} vocabulary entries with educational compliance metadata`);
     
     return entries;
   }

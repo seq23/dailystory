@@ -1,86 +1,79 @@
 /**
- * Level 0 Vocabulary Auditor - Ensures ALL content complies with Enhanced Level 0 standards (50% compliance)
- * This tool helps identify any remaining vocabulary violations in Level 0 content
+ * Level 0 Vocabulary Auditor - Educational Standards Migration
+ * Uses educational compliance instead of static vocabulary validation
+ * Aligns with backend educational standards approach
  */
 
-import { LEVEL_0_VOCABULARY } from '@/constants/gradeBased';
-import { validateLevel0Sentence } from '@/constants/gradeBased';
+import { 
+  LEVEL_0_VOCABULARY,
+  validateLevel0Sentence,
+  type GradeLevel
+} from '@/constants/gradeBased';
+import { 
+  calculateEducationalCompliance,
+  isEducationallyAppropriate,
+  getEducationalLevelInfo
+} from '@/constants/educationalStandards';
 
 export interface VocabularyAuditResult {
   isCompliant: boolean;
   violations: string[];
   totalViolations: number;
   compliancePercentage: number;
+  educationalLevel?: GradeLevel;
+  threshold?: number;
 }
 
 export class Level0VocabularyAuditor {
   /**
-   * Audit text content for Level 0 vocabulary and grammar compliance (50% threshold)
+   * Audit text content using educational compliance standards
    */
-  static auditText(text: string, context: string = 'unknown', userName?: string): VocabularyAuditResult {
-    const sentences = text.split(/[.!?]+/)
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+  static auditText(text: string, context: string = 'unknown', userName?: string, educationalLevel: GradeLevel = 0): VocabularyAuditResult {
+    // Use educational compliance calculation
+    const compliance = calculateEducationalCompliance(text, educationalLevel, userName);
+    const levelInfo = getEducationalLevelInfo(educationalLevel);
     
-    let totalViolations = 0;
-    const violations: string[] = [];
-    
-    sentences.forEach((sentence, index) => {
-        const validation = validateLevel0Sentence(sentence, userName);
-      if (!validation.isValid) {
-        // Add vocabulary violations
-        validation.invalidWords.forEach(word => {
-          violations.push(`[${context}] Sentence ${index + 1}: "${word}" not in Level 0 vocabulary`);
-          totalViolations++;
-        });
-        
-        // Grammar validation moved to edge functions for consistency
-      }
-    });
-    
-    const totalWords = text.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(word => word.length > 0).length;
-    
-    const compliantWords = totalWords - totalViolations;
-    const compliancePercentage = totalWords > 0 ? Math.round((compliantWords / totalWords) * 100) : 100;
-    
-    // Update compliance threshold to 50% for Level 0
-    const isCompliant = compliancePercentage >= 50;
+    const violations = compliance.inappropriateWords.map((word, index) => 
+      `[${context}] Word ${index + 1}: "${word}" not appropriate for educational level ${educationalLevel}`
+    );
     
     return {
-      isCompliant,
+      isCompliant: compliance.isCompliant,
       violations,
-      totalViolations,
-      compliancePercentage
+      totalViolations: compliance.inappropriateWords.length,
+      compliancePercentage: compliance.compliancePercentage,
+      educationalLevel,
+      threshold: levelInfo.complianceThreshold
     };
   }
 
   /**
-   * Audit an array of story pages
+   * Audit an array of story pages using educational standards
    */
-  static auditStoryPages(pages: string[], userName?: string): VocabularyAuditResult {
+  static auditStoryPages(pages: string[], userName?: string, educationalLevel: GradeLevel = 0): VocabularyAuditResult {
     const combinedText = pages.join(' ');
-    return this.auditText(combinedText, 'story-pages', userName);
+    return this.auditText(combinedText, 'story-pages', userName, educationalLevel);
   }
 
   /**
-   * Audit template arrays for vocabulary compliance
+   * Audit templates using educational compliance
    */
-  static auditTemplates(templates: string[][], templateName: string = 'templates', userName?: string): VocabularyAuditResult {
+  static auditTemplates(templates: string[][], templateName: string = 'templates', userName?: string, educationalLevel: GradeLevel = 0): VocabularyAuditResult {
     const allTemplateText = templates.flat().join(' ');
-    return this.auditText(allTemplateText, templateName, userName);
+    return this.auditText(allTemplateText, templateName, userName, educationalLevel);
   }
 
   /**
-   * Generate a detailed audit report with 50% compliance threshold
+   * Generate detailed audit report using educational compliance
    */
-  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Level 0 Vocabulary & Grammar Audit (50% Compliance)'): string {
+  static generateAuditReport(auditResult: VocabularyAuditResult, title: string = 'Educational Compliance Audit'): string {
+    const level = auditResult.educationalLevel ?? 0;
+    const threshold = auditResult.threshold ?? 50;
+    
     const report = [
-      `\n📊 ${title}`,
+      `\n📊 ${title} (Level ${level} - ${threshold}% Required)`,
       `${'='.repeat(50)}`,
-      `✅ Compliant (≥50%): ${auditResult.isCompliant ? 'YES' : 'NO'}`,
+      `✅ Compliant (≥${threshold}%): ${auditResult.isCompliant ? 'YES' : 'NO'}`,
       `📈 Compliance: ${auditResult.compliancePercentage}%`,
       `🚨 Total Violations: ${auditResult.totalViolations}`,
       ''
@@ -92,12 +85,9 @@ export class Level0VocabularyAuditor {
         report.push(`${index + 1}. ${violation}`);
       });
       report.push('');
-      report.push('📚 Reminder: Level 0 allows 50% compliance with these 100 Enhanced Level 0 words:');
-      report.push(Array.from(LEVEL_0_VOCABULARY).sort().join(', '));
-      report.push('');
-      report.push('🎯 50% of words can be story-specific, user inputs, or slightly advanced vocabulary.');
+      report.push(`📚 Educational Level ${level} allows ${100 - threshold}% flexibility for story-specific and user vocabulary.`);
     } else {
-      report.push('🎉 All content meets the 50% vocabulary compliance standard!');
+      report.push(`🎉 All content meets Level ${level} educational compliance standards!`);
     }
 
     return report.join('\n');
