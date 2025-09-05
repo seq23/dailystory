@@ -3455,7 +3455,7 @@ const handleRestartTimer = () => {
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col" style={heightStyle}>
-                    <div className={`w-full ${heightStyle ? 'h-full' : 'h-full'} min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative`}>
+                    <div className={`${containerClassName} w-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative`}>
                       {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
