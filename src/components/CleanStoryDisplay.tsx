@@ -120,6 +120,7 @@ import { StoryRefreshService } from "@/utils/storyRefresh";
 import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
+import { ExpertDifficultyManager } from "@/services/expertDifficultyManager";
 
 import { convertImagesToRecord } from "@/utils/imageUtils";
 
@@ -1489,6 +1490,16 @@ const initializeStory = async () => {
       }
       setIsStoryComplete(result.isComplete);
       setStoryTitle(`${userInfo.name}'s Live Adventure`);
+      
+      // Show current grade level toast for premium users
+      if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
+        const gradeToShow = result.nextContext?.expertGradeLevel || expertGradeLevel;
+        toast({
+          title: "Reading Level",
+          description: `Reading at ${gradeToShow} Grade Level`,
+          duration: 3000,
+        });
+      }
       const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
       console.log('🧭 UI SOURCE', { source: srcPremium, tier: 'premium' });
       setStorySource(srcPremium);
@@ -1547,16 +1558,26 @@ const initializeStory = async () => {
               currentPage: cachedPage,
               isContentLocked: true
             });
-            setStory(cached.pages);
-            StoryContentLogger.logStoryChange('guest_cache_restore', 'after', cached.pages, {
-              restoredCurrentPage: restoredPage,
-              title: `${userInfo.name}'s Adventure`,
-              storySource: 'unknown'
+          setStory(cached.pages);
+          StoryContentLogger.logStoryChange('guest_cache_restore', 'after', cached.pages, {
+            restoredCurrentPage: restoredPage,
+            title: `${userInfo.name}'s Adventure`,
+            storySource: 'unknown'
+          });
+          setCurrentPage(restoredPage);
+          setStoryTitle(`${userInfo.name}'s Adventure`);
+          setIsStoryComplete(true);
+          setStorySource('unknown');
+          
+          // Show random grade level toast for free users (from cache restore)
+          if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
+            const randomGrade = ExpertDifficultyManager.getRandomGradeLevel();
+            toast({
+              title: "Reading Level",
+              description: `You're reading a ${randomGrade} Grade story today!`,
+              duration: 4000,
             });
-            setCurrentPage(restoredPage);
-            setStoryTitle(`${userInfo.name}'s Adventure`);
-            setIsStoryComplete(true);
-            setStorySource('unknown');
+          }
             
             // Load cached images using unified conversion logic
             const convertedImages = convertImagesToRecord(cached.images, 'Cache restoration');
@@ -1684,6 +1705,16 @@ const initializeStory = async () => {
       setStoryTitle(`Story for ${effectiveUser.name}`);
       setIsStoryComplete(true);
       const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      
+      // Show random grade level toast for free users (new story)
+      if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
+        const randomGrade = ExpertDifficultyManager.getRandomGradeLevel();
+        toast({
+          title: "Reading Level",
+          description: `You're reading a ${randomGrade} Grade story today!`,
+          duration: 4000,
+        });
+      }
       
       StoryContentLogger.logStoryChange('free_complete_story', 'after', processedPages, {
         isComplete: true,
@@ -2305,6 +2336,8 @@ const handleDockCoach = () => {
   const handleEndSession = async () => {
     const timeSpent = (20 * 60 - timeRemaining) * 1000; // Convert to milliseconds
     const totalWordsRead = sessionWordsRead;
+    const wpm = Math.round((totalWordsRead / timeSpent) * 60000);
+    const pagesRead = pagesCompleted.size;
     
     // Clear character state when session ends for both free and premium users
     try {
@@ -2317,7 +2350,7 @@ const handleDockCoach = () => {
     const sessionStats = {
       timeSpent,
       wordsRead: totalWordsRead,
-      pagesRead: pagesCompleted.size,
+      pagesRead: pagesRead,
       startTime: sessionStartTime,
       accuracy: 100
     };
@@ -2325,10 +2358,47 @@ const handleDockCoach = () => {
     recordReadingSession({
       timeSpent,
       wordsRead: totalWordsRead,
-      pagesRead: pagesCompleted.size,
+      pagesRead: pagesRead,
       storyCompleted: currentPage === displayedStory.length - 1,
-      readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
+      readingSpeed: wpm
     });
+    
+    // Handle expert grade progression for premium users
+    if (isPremium && (currentDifficulty === 'expert' || currentDifficulty === 'advanced')) {
+      try {
+        const progressionResult = ExpertDifficultyManager.updateProgress(
+          userInfo,
+          expertGradeLevel,
+          {
+            readingSpeed: wpm,
+            pagesCompleted: pagesRead,
+            completed: true
+          }
+        );
+        
+        if (progressionResult?.progressed) {
+          // Show advancement celebration toast
+          toast({
+            title: "🎉 Congratulations!",
+            description: `Advanced to ${progressionResult.newLevel} Grade Level!`,
+            variant: "default",
+            duration: 5000,
+          });
+          
+          // Update the UI state to reflect progression
+          setExpertGradeLevel(progressionResult.newLevel);
+        } else if (wpm < 80) {
+          // Optional feedback for users who didn't advance
+          toast({
+            title: "Keep Practicing",
+            description: `Continue reading at ${expertGradeLevel} Grade Level`,
+            duration: 3000,
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to update expert progression:', error);
+      }
+    }
     
     try { sessionStorage.removeItem('readingTimerPausedSeconds'); } catch {}
     // Persist essentials for SessionEnded fallback across reloads

@@ -182,8 +182,8 @@ export class ProgressTrackingService {
       };
       
       ExpertDifficultyManager.updateProgress(userInfo, sessionData.expertGradeLevel, {
-        comprehensionScore: sessionData.comprehensionScore,
         readingSpeed: updatedProgress.readingSpeed,
+        pagesCompleted: sessionData.storiesCompleted || 0,
         completed: sessionData.storiesCompleted > 0
       });
     }

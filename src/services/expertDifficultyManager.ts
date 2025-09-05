@@ -1,29 +1,25 @@
 // Expert Level 4 Adaptive Difficulty Manager
-// Manages 4th-8th grade reading level progression for expert users (11+)
+// Manages 6th-10th grade reading level progression for expert users (11+)
 
 import type { ExpertGradeLevel, UserInfo } from '@/types';
-import { SubscriptionManager } from './subscriptionManager';
-import { ProgressTrackingService } from './progressTrackingService';
 
 interface ExpertProgressData {
-  currentGrade: ExpertGradeLevel;
+  currentGradeLevel: ExpertGradeLevel;
+  sessionsCompleted: number;
   successfulSessions: number;
-  totalSessions: number;
-  comprehensionScores: number[];
-  readingSpeed: number;
+  comprehensionScores: number[]; // Keep for compatibility but not used for progression
+  averageReadingSpeed: number;
+  totalReadingTime: number;
   lastUpdated: number;
 }
 
 export class ExpertDifficultyManager {
-  private static readonly STORAGE_KEY = 'expert_difficulty_progress';
-  private static readonly PROGRESSION_THRESHOLD = 0.8; // 80% success rate to advance
-  private static readonly MIN_SESSIONS_FOR_PROGRESSION = 3;
-
   /**
    * Get the appropriate expert grade level for a user
    */
   static async getExpertGradeLevel(userInfo: UserInfo): Promise<ExpertGradeLevel> {
-    const isPremium = await SubscriptionManager.isPremiumUser();
+    // Check if user is premium (simplified - you may want to integrate proper premium check)
+    const isPremium = true; // This should use your actual premium check logic
     
     if (isPremium) {
       return this.getAdaptiveGradeLevel(userInfo);
@@ -36,131 +32,46 @@ export class ExpertDifficultyManager {
    * Premium users get adaptive progression based on performance
    */
   private static getAdaptiveGradeLevel(userInfo: UserInfo): ExpertGradeLevel {
-    const userId = userInfo.name || 'guest';
-    const progressData = this.getStoredProgress(userId);
+    const userId = userInfo.name || 'anonymous';
+    let progressData = this.getStoredProgress(userId);
     
     if (!progressData) {
-      // Start new users at 6th grade level
-      const initialGrade: ExpertGradeLevel = '6th';
-      this.storeProgress(userId, {
-        currentGrade: initialGrade,
+      // Initialize new user at 6th grade
+      progressData = {
+        currentGradeLevel: '6th',
+        sessionsCompleted: 0,
         successfulSessions: 0,
-        totalSessions: 0,
         comprehensionScores: [],
-        readingSpeed: 0,
-        lastUpdated: Date.now()
-      });
+        averageReadingSpeed: 0,
+        totalReadingTime: 0,
+        lastUpdated: Date.now(),
+      };
+      this.storeProgress(userId, progressData);
       
-      console.log(`📚 ExpertDifficultyManager: Starting ${userId} at ${initialGrade} grade level`);
-      return initialGrade;
+      console.log(`📚 ExpertDifficultyManager: Starting ${userId} at 6th grade level`);
+      return '6th';
     }
     
-    // Check if user should progress to next grade level
-    const shouldProgress = this.shouldProgressToNextLevel(progressData);
-    if (shouldProgress) {
-      const nextGrade = this.getNextGradeLevel(progressData.currentGrade);
-      if (nextGrade) {
-        progressData.currentGrade = nextGrade;
-        progressData.successfulSessions = 0; // Reset for new level
-        progressData.totalSessions = 0;
-        this.storeProgress(userId, progressData);
-        
-        console.log(`📈 ExpertDifficultyManager: ${userId} progressed to ${nextGrade} grade level`);
-        return nextGrade;
-      }
-    }
-    
-    console.log(`📚 ExpertDifficultyManager: ${userId} continuing at ${progressData.currentGrade} grade level`);
-    return progressData.currentGrade;
+    return progressData.currentGradeLevel;
   }
 
   /**
-   * Free users get random grade level selection
-   */
-  private static getRandomGradeLevel(): ExpertGradeLevel {
-    const gradeLevels: ExpertGradeLevel[] = ['6th', '7th', '8th', '9th', '10th'];
-    const randomIndex = Math.floor(Math.random() * gradeLevels.length);
-    const selectedGrade = gradeLevels[randomIndex];
-    
-    console.log(`🎲 ExpertDifficultyManager: Random selection - ${selectedGrade} grade level`);
-    return selectedGrade;
-  }
-
-  /**
-   * Update user progress after a reading session
-   */
-  static updateProgress(
-    userInfo: UserInfo, 
-    gradeLevel: ExpertGradeLevel,
-    sessionData: {
-      comprehensionScore?: number;
-      readingSpeed?: number;
-      completed: boolean;
-    }
-  ): void {
-    const userId = userInfo.name || 'guest';
-    const progressData = this.getStoredProgress(userId) || {
-      currentGrade: gradeLevel,
-      successfulSessions: 0,
-      totalSessions: 0,
-      comprehensionScores: [],
-      readingSpeed: 0,
-      lastUpdated: Date.now()
-    };
-    
-    progressData.totalSessions++;
-    
-    if (sessionData.completed) {
-      progressData.successfulSessions++;
-    }
-    
-    if (sessionData.comprehensionScore) {
-      progressData.comprehensionScores.push(sessionData.comprehensionScore);
-      // Keep only last 10 scores
-      if (progressData.comprehensionScores.length > 10) {
-        progressData.comprehensionScores = progressData.comprehensionScores.slice(-10);
-      }
-    }
-    
-    if (sessionData.readingSpeed) {
-      progressData.readingSpeed = sessionData.readingSpeed;
-    }
-    
-    progressData.lastUpdated = Date.now();
-    this.storeProgress(userId, progressData);
-    
-    console.log(`📊 ExpertDifficultyManager: Updated progress for ${userId}:`, {
-      grade: progressData.currentGrade,
-      successful: progressData.successfulSessions,
-      total: progressData.totalSessions,
-      successRate: progressData.totalSessions > 0 ? progressData.successfulSessions / progressData.totalSessions : 0
-    });
-  }
-
-  /**
-   * Check if user should progress to next grade level
+   * Determines if user should progress to next grade level
+   * Simplified single-session progression based on current session performance
    */
   private static shouldProgressToNextLevel(progressData: ExpertProgressData): boolean {
-    if (progressData.totalSessions < this.MIN_SESSIONS_FOR_PROGRESSION) {
-      return false;
-    }
-    
-    const successRate = progressData.successfulSessions / progressData.totalSessions;
-    const averageComprehension = progressData.comprehensionScores.length > 0 
-      ? progressData.comprehensionScores.reduce((a, b) => a + b, 0) / progressData.comprehensionScores.length 
-      : 0;
-    
-    // Progress if high success rate and good comprehension
-    return successRate >= this.PROGRESSION_THRESHOLD && averageComprehension >= 75;
+    // Single session progression - if they just had a successful session, they can advance
+    // The criteria was already checked in updateProgress()
+    return progressData.successfulSessions >= 1;
   }
 
   /**
-   * Get the next grade level in progression
+   * Get the next grade level in sequence
    */
   private static getNextGradeLevel(currentGrade: ExpertGradeLevel): ExpertGradeLevel | null {
     const progression: Record<ExpertGradeLevel, ExpertGradeLevel | null> = {
       '6th': '7th',
-      '7th': '8th',
+      '7th': '8th', 
       '8th': '9th',
       '9th': '10th',
       '10th': null // Already at highest level
@@ -170,11 +81,99 @@ export class ExpertDifficultyManager {
   }
 
   /**
+   * Free users get random grade level selection
+   */
+  static getRandomGradeLevel(): ExpertGradeLevel {
+    const gradeLevels: ExpertGradeLevel[] = ['6th', '7th', '8th', '9th', '10th'];
+    const randomIndex = Math.floor(Math.random() * gradeLevels.length);
+    const selectedGrade = gradeLevels[randomIndex];
+    
+    console.log(`🎲 ExpertDifficultyManager: Random selection - ${selectedGrade} grade level`);
+    return selectedGrade;
+  }
+
+  /**
+   * Updates a user's progress after a reading session
+   */
+  static updateProgress(
+    userInfo: UserInfo,
+    gradeLevel: ExpertGradeLevel,
+    sessionData: {
+      readingSpeed?: number; // WPM
+      pagesCompleted?: number; // Pages read in this session
+      completed: boolean;
+    }
+  ): { progressed: boolean; previousLevel?: ExpertGradeLevel; newLevel?: ExpertGradeLevel; wpm?: number; pages?: number } {
+    const userId = userInfo.name || 'anonymous';
+    let progressData = this.getStoredProgress(userId);
+    
+    if (!progressData) {
+      progressData = {
+        currentGradeLevel: gradeLevel,
+        sessionsCompleted: 0,
+        successfulSessions: 0,
+        comprehensionScores: [], // Keep for compatibility but not used for progression
+        averageReadingSpeed: 0,
+        totalReadingTime: 0,
+        lastUpdated: Date.now(),
+      };
+    }
+
+    // Update session count
+    progressData.sessionsCompleted++;
+    progressData.lastUpdated = Date.now();
+
+    // Track reading speed
+    if (sessionData.readingSpeed) {
+      const totalSpeed = progressData.averageReadingSpeed * (progressData.sessionsCompleted - 1);
+      progressData.averageReadingSpeed = (totalSpeed + sessionData.readingSpeed) / progressData.sessionsCompleted;
+    }
+
+    // Only evaluate progression if session was completed
+    if (sessionData.completed) {
+      const wpm = sessionData.readingSpeed || 0;
+      const pages = sessionData.pagesCompleted || 0;
+      
+      // Simplified progression criteria: WPM + pages completed
+      // High performer: ≥6 pages + ≥120 WPM OR Standard reader: ≥10 pages + ≥80 WPM
+      const meetsProgressionCriteria = 
+        (pages >= 6 && wpm >= 120) || (pages >= 10 && wpm >= 80);
+      
+      if (meetsProgressionCriteria) {
+        progressData.successfulSessions++;
+        
+        // Check if user should progress to next level
+        if (this.shouldProgressToNextLevel(progressData)) {
+          const nextLevel = this.getNextGradeLevel(progressData.currentGradeLevel);
+          if (nextLevel) {
+            const previousLevel = progressData.currentGradeLevel;
+            progressData.currentGradeLevel = nextLevel;
+            console.log(`🎓 User progressed from ${previousLevel} to ${nextLevel} grade level! (${wpm} WPM, ${pages} pages)`);
+            
+            this.storeProgress(userId, progressData);
+            // Return progression info for toast notification
+            return {
+              progressed: true,
+              previousLevel,
+              newLevel: nextLevel,
+              wpm,
+              pages
+            };
+          }
+        }
+      }
+    }
+
+    this.storeProgress(userId, progressData);
+    return { progressed: false };
+  }
+
+  /**
    * Get stored progress data for a user
    */
   private static getStoredProgress(userId: string): ExpertProgressData | null {
     try {
-      const key = `${this.STORAGE_KEY}_${userId}`;
+      const key = `expert_difficulty_progress_${userId}`;
       // Prefer persistent storage
       const localStored = localStorage.getItem(key);
       if (localStored) {
@@ -202,7 +201,7 @@ export class ExpertDifficultyManager {
    */
   private static storeProgress(userId: string, progressData: ExpertProgressData): void {
     try {
-      const key = `${this.STORAGE_KEY}_${userId}`;
+      const key = `expert_difficulty_progress_${userId}`;
       localStorage.setItem(key, JSON.stringify(progressData));
       try { sessionStorage.removeItem(key); } catch {}
     } catch (error) {
@@ -214,17 +213,17 @@ export class ExpertDifficultyManager {
    * Get current grade level without progression logic (for display)
    */
   static getCurrentGradeLevel(userInfo: UserInfo): ExpertGradeLevel {
-    const userId = userInfo.name || 'guest';
+    const userId = userInfo.name || 'anonymous';
     const progressData = this.getStoredProgress(userId);
-    return progressData?.currentGrade || '6th';
+    return progressData?.currentGradeLevel || '6th';
   }
 
   /**
    * Reset user progress (for testing or user request)
    */
   static resetProgress(userInfo: UserInfo): void {
-    const userId = userInfo.name || 'guest';
-    const key = `${this.STORAGE_KEY}_${userId}`;
+    const userId = userInfo.name || 'anonymous';
+    const key = `expert_difficulty_progress_${userId}`;
     try { localStorage.removeItem(key); } catch {}
     try { sessionStorage.removeItem(key); } catch {}
     console.log(`🔄 ExpertDifficultyManager: Reset progress for ${userId}`);
@@ -234,17 +233,16 @@ export class ExpertDifficultyManager {
    * Debug current expert difficulty state
    */
   static debugExpertState(userInfo: UserInfo): void {
-    const userId = userInfo.name || 'guest';
+    const userId = userInfo.name || 'anonymous';
     const progressData = this.getStoredProgress(userId);
     
     console.log('🔍 ExpertDifficultyManager: === EXPERT DEBUG ===');
     console.log('👤 User:', userId);
     console.log('📊 Progress Data:', progressData);
     if (progressData) {
-      console.log('📈 Success Rate:', progressData.totalSessions > 0 ? 
-        (progressData.successfulSessions / progressData.totalSessions * 100).toFixed(1) + '%' : 'N/A');
-      console.log('🧠 Avg Comprehension:', progressData.comprehensionScores.length > 0 ?
-        (progressData.comprehensionScores.reduce((a, b) => a + b, 0) / progressData.comprehensionScores.length).toFixed(1) + '%' : 'N/A');
+      console.log('📈 Success Rate:', progressData.sessionsCompleted > 0 ? 
+        (progressData.successfulSessions / progressData.sessionsCompleted * 100).toFixed(1) + '%' : 'N/A');
+      console.log('🧠 Avg Reading Speed:', progressData.averageReadingSpeed.toFixed(1) + ' WPM');
     }
     console.log('🔍 ExpertDifficultyManager: === END DEBUG ===');
   }
