@@ -55,3 +55,32 @@ test('session ends when timer reaches zero', async ({ page }) => {
   // Should show session ended state
   await expect(page.locator('text=Session ended')).toBeVisible();
 });
+
+test('adaptive progression system integration with timer', async ({ page }) => {
+  await page.goto('/');
+  
+  // Mock premium user with expert difficulty
+  await page.evaluate(() => {
+    localStorage.setItem('user-premium-status', 'true');
+    localStorage.setItem('story-difficulty', 'expert');
+    localStorage.setItem('expert_difficulty_progress_testuser', JSON.stringify({
+      currentGradeLevel: '6th',
+      sessionsCompleted: 0,
+      successfulSessions: 0,
+      averageReadingSpeed: 0,
+      totalReadingTime: 0,
+      lastUpdated: Date.now()
+    }));
+  });
+  
+  // Should show current grade level toast when starting
+  await expect(page.locator('text=Reading at 6th Grade Level')).toBeVisible();
+  
+  // Timer should not affect progression logic
+  await page.evaluate(() => {
+    localStorage.setItem('story-session-timer', '600'); // 10 minutes left
+  });
+  
+  // Grade level display should remain consistent
+  await expect(page.locator('text=Reading at 6th Grade Level')).toBeVisible();
+});

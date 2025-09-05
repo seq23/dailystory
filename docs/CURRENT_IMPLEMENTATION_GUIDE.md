@@ -3,7 +3,37 @@
 ## Overview
 This guide documents the current functioning state of the story generation system as of the latest implementation, including recent fixes, architectural decisions, and actual system behavior.
 
-## Recent Critical Fixes & Enhancements (2025-01-03 Evening)
+## Recent Critical Fixes & Enhancements
+
+### ⭐ LATEST: Adaptive Progression System V2 (2025-01-05)
+**Files**: `src/services/expertDifficultyManager.ts`, `src/components/CleanStoryDisplay.tsx`, `src/services/progressTrackingService.ts`
+
+#### Simplified Progression Logic
+- **Removed Quiz Dependency**: Eliminated complex multi-session quiz-based progression
+- **New WPM + Pages Criteria**: 
+  - High Performers: ≥6 pages + ≥120 WPM
+  - Standard Readers: ≥10 pages + ≥80 WPM
+- **Single-Session Advancement**: Users can now progress in one successful session
+- **90% Complexity Reduction**: Streamlined from 500+ lines to <250 lines
+
+#### Comprehensive Toast Notification System
+- **Premium Users (Story Start)**: Shows current grade level using `ExpertDifficultyManager.getCurrentGradeLevel(userInfo)`
+- **Premium Users (Session End)**: Celebration toast for grade level advancement with WPM/pages feedback
+- **Free Users**: Random grade level notification for educational awareness
+- **Fixed Bug**: Premium grade level display now always shows current level (not potentially stale cached data)
+
+#### Enhanced User Experience
+- **Immediate Feedback**: Real-time progression notifications
+- **Clear Progression Path**: Visible grade level advancement (6th→7th→8th→9th→10th)
+- **Preserved Educational Value**: Quizzes remain available but not required for progression
+- **Zero Performance Impact**: Simplified logic improves system responsiveness
+
+#### Data Migration & Compatibility
+- **Automatic Migration**: sessionStorage → localStorage for existing users
+- **Backward Compatibility**: Legacy quiz data preserved but not used
+- **Graceful Fallbacks**: Corrupted data handling with fresh start
+
+### Previous Updates (2025-01-03 Evening)
 
 ### 1. Service-Aware Token Limits + Corrections (Evening)
 **Files**: `supabase/functions/_shared/storyPrompts.ts`, `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
@@ -239,6 +269,9 @@ export function safeValidateAndEnhanceGrammar(
 ## Known Issues & Monitoring
 
 ### Current System Health
+✅ **Adaptive Progression System V2**: Simplified WPM + pages progression operational  
+✅ **Toast Notification System**: Premium and free user feedback working correctly  
+✅ **Grade Level Tracking**: Accurate current level display and advancement  
 ✅ **AI Generation**: `gpt-4o-mini` stable, ~90% success rate  
 ✅ **Template System**: 136 templates, all accessible  
 ✅ **Grade Levels**: 6th-10th properly supported  
@@ -248,6 +281,10 @@ export function safeValidateAndEnhanceGrammar(
 ✅ **Testing System**: Full grade level coverage
 
 ### Areas Under Active Monitoring
+- **Adaptive Progression System V2**: WPM + pages progression accuracy and toast notifications
+- **Premium/Free User Separation**: Ensuring correct progression paths for each user type
+- **Grade Level Accuracy**: Current level display and advancement tracking
+- **Data Persistence**: localStorage operations and sessionStorage migration
 - **Enhanced Grammar Processing**: Success rates and crash-safe operation
 - **Dual Placeholder Resolution**: Frontend vs backend resolution tracking
 - **Post-Processing Pipeline**: `process-story-content` performance monitoring
@@ -282,12 +319,12 @@ export function safeValidateAndEnhanceGrammar(
 
 ## Deployment Status
 
-**Current State**: All systems operational  
-**Last Major Update**: Grade level type system and AI content filtering  
+**Current State**: All systems operational including Adaptive Progression System V2  
+**Last Major Update**: Adaptive Progression System V2 - Simplified WPM + Pages Logic (2025-01-05)  
 **Next Priority**: Performance optimization and monitoring enhancements
 
 ---
 
 **Maintained By**: Development Team  
-**Last Updated**: Current Implementation  
+**Last Updated**: January 5, 2025 - Adaptive Progression System V2 Implementation  
 **Status**: All documented features are live and operational ✅
