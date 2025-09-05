@@ -108,7 +108,7 @@
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":0},
       "eg":{"dir":0,"lst":1,"ip":["spot_the_clue"],"contr":0,"exag":0},
       "th":["mystery","friendship","adventure"],"tg":[30,6,26],
-      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2}} },
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Mystery-Squad"]
     },
     {
@@ -120,7 +120,7 @@
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["try_something_brave"],"contr":0,"exag":0},
       "th":["independence","kindness","adventure"],"tg":[27,28,26],
-      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2}} },
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Independent-Spirit"]
     },
     {
@@ -132,7 +132,7 @@
       "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_kindness"],"contr":0,"exag":0},
       "th":["empathy","identity","kind bravery"],"tg":[27,28],
-      "uig":{"aff":{"u":0.7,"c":0.3,"a":0.2,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2}}},
+      "uig":{"aff":{"u":0.7,"c":0.3,"a":0.2,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Empathy-Teacher"]
     },
     {
@@ -144,7 +144,7 @@
       "rd":{"rh":"none","aa":1,"ono":["whoosh","clack"],"sl":0},
       "eg":{"dir":1,"lst":1,"ip":["spot_the_pun"],"contr":1,"exag":1},
       "th":["travel","school humor","problem solving"],"tg":[10,15,26],
-      "uig":{"aff":{"u":0.8,"c":0.5,"a":0.4,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2}}},
+      "uig":{"aff":{"u":0.8,"c":0.5,"a":0.4,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Flat-Adventurer"]
     }
   ]

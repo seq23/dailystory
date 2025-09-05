@@ -12,7 +12,7 @@
       "rd":{"rh":"none","aa":0,"ono":["whoosh","clang"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["solve_with_team"],"contr":0,"exag":0},
       "th":["magic_school","found_family","responsibility"],"tg":[31,28,29],
-      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Magic-Academy"]
     },
     {
@@ -24,7 +24,7 @@
       "rd":{"rh":"none","aa":0,"ono":["thrum"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["ethics_prompt"],"contr":0,"exag":0},
       "th":["myth_adventure","identity","destiny"],"tg":[33,27,29],
-      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Cosmic-Navigator"]
     },
     {
@@ -36,7 +36,7 @@
       "rd":{"rh":"none","aa":0,"ono":["whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["wonder_prompt"],"contr":0,"exag":0},
       "th":["science-fantasy","family","courage"],"tg":[26,29],
-      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Sci-Fantasy-Explorer"]
     },
     {
@@ -48,7 +48,7 @@
       "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["hard_choice_prompt"],"contr":0,"exag":0},
       "th":["coming_of_age","identity","family"],"tg":[35,27,28],
-      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Street-Realist"]
     },
     {
@@ -60,7 +60,7 @@
       "rd":{"rh":"none","aa":0,"ono":["thud","splash"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["survival_prompt"],"contr":0,"exag":0},
       "th":["survival","courage","resourcefulness"],"tg":[31,29],
-      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Wilderness-Guide"]
     },
     {
@@ -72,7 +72,7 @@
       "rd":{"rh":"none","aa":0,"ono":["whoosh","clang"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["bond_prompt"],"contr":0,"exag":0},
       "th":["dragon","quest","destiny"],"tg":[36,26,29],
-      "uig":{"aff":{"u":0.4,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.4,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Dragon-Rider"]
     },
     {
@@ -84,7 +84,7 @@
       "rd":{"rh":"none","aa":0,"ono":["clang"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["mentor_prompt"],"contr":0,"exag":0},
       "th":["courage","responsibility","found_family"],"tg":[29,28],
-      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Warrior-Heart"]
     },
     {
@@ -96,7 +96,7 @@
       "rd":{"rh":"none","aa":0,"ono":["whoom"],"sl":1},
       "eg":{"dir":0,"lst":1,"ip":["tension_prompt"],"contr":0,"exag":0},
       "th":["courage","responsibility","society"],"tg":[29],
-      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Arena-Survivor"]
     },
     {
@@ -108,7 +108,7 @@
       "rd":{"rh":"none","aa":0,"ono":["whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["song_prompt"],"contr":0,"exag":0},
       "th":["quest","friendship","home"],"tg":[26,6],
-      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Epic-Wanderer"]
     },
     {
@@ -120,7 +120,7 @@
       "rd":{"rh":"none","aa":0,"ono":["shhh","thud"],"sl":1},
       "eg":{"dir":0,"lst":1,"ip":["spot_the_clue"],"contr":0,"exag":0},
       "th":["ghosts","detective","team"],"tg":[37,38,28],
-      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Paranormal-Detective"]
     }
   ]

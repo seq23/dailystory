@@ -24,7 +24,7 @@
       "rd":{"rh":"none","aa":1,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_place"],"contr":0,"exag":0},
       "th":["coming_of_age","community","place"],"tg":[35,28],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Island-Keeper"]
     },
     {
@@ -36,7 +36,7 @@
       "rd":{"rh":"none","aa":0,"ono":["clang","whoom"],"sl":1},
       "eg":{"dir":0,"lst":1,"ip":["what_choice_now"],"contr":0,"exag":1},
       "th":["myth_adventure","teamwork","responsibility"],"tg":[33,28,29],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Myth-Hunter"]
     },
     {
@@ -48,7 +48,7 @@
       "rd":{"rh":"none","aa":1,"ono":["thud","shhh"],"sl":1},
       "eg":{"dir":0,"lst":1,"ip":["safe_spook_prompt"],"contr":1,"exag":1},
       "th":["horror_safe","pranks","mystery"],"tg":[32,30],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Safe-Scare-Master"]
     },
     {
@@ -60,7 +60,7 @@
       "rd":{"rh":"none","aa":1,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["gentle_reflect"],"contr":0,"exag":0},
       "th":["friendship","loss","empathy"],"tg":[6,27],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Tender-Bridge-Builder"]
     },
     {
@@ -72,7 +72,7 @@
       "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_rules"],"contr":0,"exag":0},
       "th":["identity","responsibility","choice"],"tg":[27,29],
-      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Thoughtful-Society"]
     },
     {
@@ -84,7 +84,7 @@
       "rd":{"rh":"none","aa":1,"ono":["thud","whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_visual"],"contr":0,"exag":0},
       "th":["mystery","art","history"],"tg":[30,18],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Visual-Storyteller"]
     },
     {
@@ -96,7 +96,7 @@
       "rd":{"rh":"none","aa":0,"ono":["shhh","thud"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["hold_breath"],"contr":0,"exag":0},
       "th":["horror_safe","portal_fantasy","identity"],"tg":[32,16,27],
-      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Shadow-Walker"]
     },
     {
@@ -108,7 +108,7 @@
       "rd":{"rh":"none","aa":1,"ono":["clack"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_oddball"],"contr":1,"exag":1},
       "th":["identity","small town","humor"],"tg":[27,30],
-      "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2}}},
+      "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Small-Town-Character"]
     },
     {
@@ -120,7 +120,7 @@
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["spot_fairy_logic"],"contr":0,"exag":0},
       "th":["quest","choice","kindness"],"tg":[26,20],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.4,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.4,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Fairy-Tale-Crafter"]
     },
     {
@@ -132,7 +132,7 @@
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["spot_rule_bend"],"contr":1,"exag":0},
       "th":["wizardry","contraptions","family"],"tg":[16,28],
-      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1}}},
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Whimsical-Wizard"]
     }
   ]
