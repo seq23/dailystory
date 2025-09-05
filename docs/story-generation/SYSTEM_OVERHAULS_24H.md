@@ -141,19 +141,12 @@ const result = await VoiceSelector.selectVoice(
 - **Vocabulary Clamping**: Grade-level appropriate language complexity
 - **Psychological Depth**: Age-appropriate emotional and thematic complexity
 
-### ✅ Novelty Tracking System
-**Anti-Repetition Features:**
-- **Usage History Tracking**: Track recently selected voices per user
-- **Novelty Scoring**: Penalize recently used voices in selection algorithm
-- **Variety Encouragement**: Promote voice diversity in repeated story sessions
-- **User Experience Optimization**: Prevent monotonous voice selections
-
-**Implementation:**
-```typescript
-// Novelty score reduces compatibility for recently used voices
-const noveltyScore = this.getNoveltyScore(voice, userInfo);
-const totalScore = baseScore + themeScore + ageScore + noveltyScore;
-```
+### ✅ Variety System Implementation
+**Built-in Diversity Features:**
+- **Seed Randomization**: System prompt ensures natural story variety via seed randomization  
+- **41-Theme Library**: Comprehensive theme diversity provides natural voice selection variety
+- **Cross-Level Search**: Enhanced theme matching across difficulty levels increases voice options
+- **Theme Priority**: User-specified themes create unique voice selection patterns
 
 ---
 

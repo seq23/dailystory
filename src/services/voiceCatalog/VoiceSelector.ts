@@ -9,7 +9,6 @@ import { VoiceCatalogService, DifficultyLevel } from './VoiceCatalogService';
 import type { UserInfo } from '@/types';
 
 export class VoiceSelector {
-  private static previousSelections: Map<string, string[]> = new Map();
 
   /**
    * Select the best voice for a user and difficulty level with enhanced theme matching
@@ -39,13 +38,6 @@ export class VoiceSelector {
         console.log(`🔄 Cross-level search triggered for themes: ${enhancedThemes.join(', ')}`);
         bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
       }
-      
-      // Track selection for novelty
-      const userId = userInfo.name || 'anonymous';
-      if (!this.previousSelections.has(userId)) {
-        this.previousSelections.set(userId, []);
-      }
-      this.previousSelections.get(userId)!.push(bestMatch.voice.id);
       
       return bestMatch;
 
@@ -225,9 +217,6 @@ export class VoiceSelector {
     const inputScore = this.getUserInputScore(voice, userInfo);
     score += inputScore * 0.1;
 
-    // Novelty bonus (avoid recently used voices)
-    const noveltyScore = this.getNoveltyScore(voice, userInfo);
-    score += noveltyScore * 0.05;
 
     // Preferences matching
     if (preferences) {
@@ -246,19 +235,6 @@ export class VoiceSelector {
     return Math.max(0, Math.min(1, score));
   }
 
-  /**
-   * Calculate novelty score (bonus for unused voices)
-   */
-  private static getNoveltyScore(voice: ProcessedVoice, userInfo: UserInfo): number {
-    const userId = userInfo.name || 'anonymous';
-    const previousSelections = this.previousSelections.get(userId) || [];
-    
-    if (previousSelections.includes(voice.id)) {
-      return 0; // No bonus for recently used voices
-    }
-    
-    return 1; // Full bonus for new voices
-  }
 
   /**
    * Generate human-readable reasoning for voice selection
@@ -364,35 +340,4 @@ export class VoiceSelector {
     return Math.min(1, score);
   }
 
-  /**
-   * Get voice recommendations based on previous selections
-   */
-  static async getRecommendations(
-    userInfo: UserInfo,
-    previousVoiceIds: string[],
-    difficulty: DifficultyLevel
-  ): Promise<VoiceSelectionResult[]> {
-    const voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
-    
-    // Filter out previously used voices
-    const unusedVoices = voices.filter(voice => !previousVoiceIds.includes(voice.id));
-    
-    if (unusedVoices.length === 0) {
-      // If all voices have been used, return all voices
-      return this.getVoiceOptions(userInfo, difficulty, 3);
-    }
-
-    // Score and return top unused voices
-    const scoredVoices = unusedVoices.map(voice => ({
-      voice,
-      score: this.calculateCompatibilityScore(voice, userInfo),
-      reasoning: this.generateSelectionReasoning(voice, userInfo)
-    })).sort((a, b) => b.score - a.score);
-
-    return scoredVoices.slice(0, 3).map(item => ({
-      voice: item.voice,
-      selectionReasoning: item.reasoning,
-      compatibilityScore: item.score
-    }));
-  }
 }
