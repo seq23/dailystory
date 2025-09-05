@@ -983,7 +983,6 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
   
   return processedText;
 }
-}
 
 /**
  * Phase 4: Re-inject executed content back to AI for final processing
