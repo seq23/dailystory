@@ -187,13 +187,13 @@ export const getModelChainOptimized = (isExpertLevel: boolean = false) => {
     if (isExpertLevel) {
       // Expert: Only gpt-4o-mini → gpt-4o (remove 4 expensive models)
       chain = [
-        { name: 'gpt-4o-mini', temperature: 0.7, max_tokens: 8192 },
-        { name: 'gpt-4o', temperature: 0.7, max_tokens: 8192 }
+        { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'ultra-cheap primary', paramName: 'max_tokens', supportsTemperature: true },
+        { name: 'gpt-4o', model: 'gpt-4o', description: 'cost-optimized fallback', paramName: 'max_tokens', supportsTemperature: true }
       ];
     } else {
       // Regular: Only gpt-4o-mini (remove 3 fallback models)
       chain = [
-        { name: 'gpt-4o-mini', temperature: 0.7, max_tokens: 8192 }
+        { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'ultra-cheap only', paramName: 'max_tokens', supportsTemperature: true }
       ];
     }
     staticCache.set(cacheKey, chain);

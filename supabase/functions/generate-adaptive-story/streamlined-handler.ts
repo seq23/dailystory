@@ -576,8 +576,6 @@ Use these as inspiration but prioritize overall story quality and coherence.
     const paramName = safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens');
     let adjustedTokens = Math.min(maxTokens, 100000); // Base limit
     
-    // Phase 1: Remove reasoning overhead for ultra-cost optimization
-    
     apiBody[paramName] = adjustedTokens;
     console.log(`🎯 Service-Aware Token Limit: ${apiBody[paramName]} (${difficulty ? `${difficulty} - ${config?.pageNumber ? 'Live' : 'Netflix'}` : `grade ${gradeLevel}`})`);
   } catch (paramError) {

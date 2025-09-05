@@ -253,3 +253,34 @@ Continue in this exact format, using *** to separate each story page.
   
   return settings;
 };
+
+// Phase 3: Vocabulary Caching Enhancement - Backend Implementation
+export const getVocabularyCache = (level: number, type: 'user' | 'system' | 'teacher' = 'system') => {
+  const cacheKey = `vocab_${type}_${level}`;
+  
+  let vocabSet = cache.get<string[]>(cacheKey);
+  if (!vocabSet) {
+    // Smart rotation: 50 words per level, 3 daily sets
+    const dailySet = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) % 3;
+    const baseWords = getVocabularyByLevel(level);
+    const setSize = Math.min(50, Math.floor(baseWords.length / 3));
+    const startIdx = dailySet * setSize;
+    
+    vocabSet = baseWords.slice(startIdx, startIdx + setSize);
+    cache.set(cacheKey, vocabSet);
+  }
+  
+  return vocabSet;
+};
+
+function getVocabularyByLevel(level: number): string[] {
+  // Simplified vocabulary sets for caching
+  const vocab = {
+    0: ['the', 'a', 'is', 'it', 'in', 'you', 'that', 'he', 'was', 'for', 'on', 'are', 'as', 'with', 'his'],
+    1: ['and', 'to', 'of', 'said', 'have', 'go', 'get', 'do', 'see', 'now', 'way', 'who', 'its', 'did', 'yes'],
+    2: ['all', 'were', 'they', 'we', 'when', 'your', 'can', 'had', 'her', 'what', 'oil', 'sit', 'set', 'run', 'eat'],
+    3: ['about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'into', 'him'],
+    4: ['people', 'could', 'first', 'water', 'been', 'call', 'who', 'made', 'now', 'find', 'long', 'down', 'day', 'did']
+  };
+  return vocab[level] || vocab[2];
+}
