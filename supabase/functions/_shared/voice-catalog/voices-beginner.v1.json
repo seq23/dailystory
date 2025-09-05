@@ -1,0 +1,121 @@
+{
+  "schema": {
+    "level": "beginner",
+    "ageRange": "3-6",
+    "description": "Simple, nurturing voices for early learners"
+  },
+  "voices": [
+    {
+      "id": "gentle-nature",
+      "name": "Gentle Nature Guide",
+      "description": "Warm, nurturing storytelling with nature imagery",
+      "voiceFingerprint": {
+        "warmth": 0.9,
+        "playfulness": 0.7,
+        "complexity": 0.3,
+        "pace": "slow",
+        "sentenceLength": "short"
+      },
+      "inputIntegration": {
+        "mode": "gentle",
+        "userNameUsage": "frequent",
+        "colorIntegration": "descriptive",
+        "animalIntegration": "companion"
+      },
+      "themes": [0, 3, 6, 7],
+      "hooks": [1, 4, 5],
+      "transitions": [0, 1, 2],
+      "endings": [0, 1],
+      "characteristics": [
+        "Uses simple, comforting language",
+        "Emphasizes growth and learning",
+        "Gentle, nurturing tone throughout",
+        "Nature metaphors and imagery"
+      ]
+    },
+    {
+      "id": "playful-friend",
+      "name": "Playful Friend",
+      "description": "Fun, energetic voice for active storytelling",
+      "voiceFingerprint": {
+        "warmth": 0.8,
+        "playfulness": 0.9,
+        "complexity": 0.3,
+        "pace": "medium",
+        "sentenceLength": "short"
+      },
+      "inputIntegration": {
+        "mode": "enthusiastic",
+        "userNameUsage": "frequent",
+        "colorIntegration": "bright",
+        "animalIntegration": "playful"
+      },
+      "themes": [1, 8, 10, 13],
+      "hooks": [2, 6, 9],
+      "transitions": [3, 7],
+      "endings": [2, 6],
+      "characteristics": [
+        "High-energy, enthusiastic tone",
+        "Celebrates curiosity and fun",
+        "Simple but engaging language",
+        "Encourages participation"
+      ]
+    },
+    {
+      "id": "wise-storyteller",
+      "name": "Wise Storyteller",
+      "description": "Gentle wisdom with simple life lessons",
+      "voiceFingerprint": {
+        "warmth": 0.9,
+        "playfulness": 0.5,
+        "complexity": 0.4,
+        "pace": "slow",
+        "sentenceLength": "medium"
+      },
+      "inputIntegration": {
+        "mode": "thoughtful",
+        "userNameUsage": "meaningful",
+        "colorIntegration": "symbolic",
+        "animalIntegration": "wise"
+      },
+      "themes": [6, 7, 12, 11],
+      "hooks": [0, 4],
+      "transitions": [1, 9],
+      "endings": [0, 9],
+      "characteristics": [
+        "Gentle wisdom and guidance",
+        "Simple moral lessons",
+        "Patient, understanding tone",
+        "Focuses on character growth"
+      ]
+    },
+    {
+      "id": "cozy-dreamer",
+      "name": "Cozy Dreamer",
+      "description": "Soft, dreamy voice for bedtime stories",
+      "voiceFingerprint": {
+        "warmth": 1.0,
+        "playfulness": 0.4,
+        "complexity": 0.2,
+        "pace": "very-slow",
+        "sentenceLength": "short"
+      },
+      "inputIntegration": {
+        "mode": "soothing",
+        "userNameUsage": "gentle",
+        "colorIntegration": "soft",
+        "animalIntegration": "cuddly"
+      },
+      "themes": [9, 11, 7],
+      "hooks": [4, 5],
+      "transitions": [0, 2],
+      "endings": [7, 9],
+      "characteristics": [
+        "Soothing, calming tone",
+        "Simple, comforting imagery",
+        "Gentle rhythmic language",
+        "Perfect for quiet moments"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "schema": {
+    "level": "hard",
+    "ageRange": "10-16",
+    "description": "Sophisticated voices for advanced readers"
+  },
+  "voices": [
+    {
+      "id": "epic-storyteller",
+      "name": "Epic Storyteller",
+      "description": "Grand voice for sweeping adventures",
+      "voiceFingerprint": {
+        "warmth": 0.6,
+        "playfulness": 0.6,
+        "complexity": 0.8,
+        "pace": "varied",
+        "sentenceLength": "long"
+      },
+      "inputIntegration": {
+        "mode": "epic",
+        "userNameUsage": "legendary",
+        "colorIntegration": "symbolic",
+        "animalIntegration": "powerful"
+      },
+      "themes": [1, 5, 11, 14],
+      "hooks": [2, 3, 9],
+      "transitions": [4, 7, 8],
+      "endings": [5, 6, 8],
+      "characteristics": [
+        "Grand scope and epic themes",
+        "Complex character development",
+        "Rich world-building",
+        "Sophisticated narrative techniques"
+      ]
+    },
+    {
+      "id": "mysterious-sage",
+      "name": "Mysterious Sage",
+      "description": "Enigmatic voice for mystery and wisdom",
+      "voiceFingerprint": {
+        "warmth": 0.5,
+        "playfulness": 0.4,
+        "complexity": 0.9,
+        "pace": "deliberate",
+        "sentenceLength": "varied"
+      },
+      "inputIntegration": {
+        "mode": "cryptic",
+        "userNameUsage": "mysterious",
+        "colorIntegration": "shadowed",
+        "animalIntegration": "enigmatic"
+      },
+      "themes": [4, 7, 12, 14],
+      "hooks": [3, 8],
+      "transitions": [4, 8, 9],
+      "endings": [5, 8, 9],
+      "characteristics": [
+        "Layered meanings and symbolism",
+        "Philosophical undertones",
+        "Mystery and intrigue",
+        "Challenges readers to think deeply"
+      ]
+    },
+    {
+      "id": "passionate-advocate",
+      "name": "Passionate Advocate",
+      "description": "Strong voice for social themes",
+      "voiceFingerprint": {
+        "warmth": 0.9,
+        "playfulness": 0.3,
+        "complexity": 0.8,
+        "pace": "intense",
+        "sentenceLength": "varied"
+      },
+      "inputIntegration": {
+        "mode": "empowering",
+        "userNameUsage": "inspiring",
+        "colorIntegration": "meaningful",
+        "animalIntegration": "noble"
+      },
+      "themes": [5, 6, 11, 12],
+      "hooks": [0, 7],
+      "transitions": [6, 9],
+      "endings": [0, 4, 9],
+      "characteristics": [
+        "Strong moral convictions",
+        "Addresses social issues sensitively",
+        "Empowers readers to make a difference",
+        "Emotionally compelling narratives"
+      ]
+    },
+    {
+      "id": "poetic-visionary",
+      "name": "Poetic Visionary",
+      "description": "Lyrical voice for artistic expression",
+      "voiceFingerprint": {
+        "warmth": 0.7,
+        "playfulness": 0.6,
+        "complexity": 0.9,
+        "pace": "rhythmic",
+        "sentenceLength": "artistic"
+      },
+      "inputIntegration": {
+        "mode": "artistic",
+        "userNameUsage": "poetic",
+        "colorIntegration": "expressive",
+        "animalIntegration": "graceful"
+      },
+      "themes": [4, 8, 10, 14],
+      "hooks": [3, 7, 8],
+      "transitions": [4, 6, 8],
+      "endings": [5, 7, 8],
+      "characteristics": [
+        "Beautiful, lyrical language",
+        "Rich sensory descriptions",
+        "Celebrates beauty and creativity",
+        "Inspires artistic expression"
+      ]
+    }
+  ]
+}

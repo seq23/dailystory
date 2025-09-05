@@ -1,0 +1,121 @@
+{
+  "schema": {
+    "level": "medium",
+    "ageRange": "7-12",
+    "description": "Rich voices for developing readers"
+  },
+  "voices": [
+    {
+      "id": "brave-adventurer",
+      "name": "Brave Adventurer",
+      "description": "Courageous voice for action-packed stories",
+      "voiceFingerprint": {
+        "warmth": 0.7,
+        "playfulness": 0.8,
+        "complexity": 0.6,
+        "pace": "fast",
+        "sentenceLength": "varied"
+      },
+      "inputIntegration": {
+        "mode": "heroic",
+        "userNameUsage": "empowering",
+        "colorIntegration": "bold",
+        "animalIntegration": "brave"
+      },
+      "themes": [1, 5, 11, 13],
+      "hooks": [2, 9],
+      "transitions": [3, 7],
+      "endings": [2, 6],
+      "characteristics": [
+        "Builds courage and confidence",
+        "Action-oriented storytelling",
+        "Celebrates bravery and determination",
+        "Dynamic, engaging pace"
+      ]
+    },
+    {
+      "id": "mystical-dreamer",
+      "name": "Mystical Dreamer",
+      "description": "Magical voice for fantasy adventures",
+      "voiceFingerprint": {
+        "warmth": 0.6,
+        "playfulness": 0.7,
+        "complexity": 0.7,
+        "pace": "flowing",
+        "sentenceLength": "long"
+      },
+      "inputIntegration": {
+        "mode": "enchanting",
+        "userNameUsage": "mystical",
+        "colorIntegration": "magical",
+        "animalIntegration": "mythical"
+      },
+      "themes": [4, 8, 14],
+      "hooks": [3, 8],
+      "transitions": [4, 8],
+      "endings": [5, 8],
+      "characteristics": [
+        "Rich magical imagery",
+        "Lyrical, flowing narrative style",
+        "Embraces wonder and transformation",
+        "Balances mystery with accessibility"
+      ]
+    },
+    {
+      "id": "thoughtful-mentor",
+      "name": "Thoughtful Mentor",
+      "description": "Wise voice for deeper life lessons",
+      "voiceFingerprint": {
+        "warmth": 0.8,
+        "playfulness": 0.5,
+        "complexity": 0.7,
+        "pace": "thoughtful",
+        "sentenceLength": "long"
+      },
+      "inputIntegration": {
+        "mode": "reflective",
+        "userNameUsage": "meaningful",
+        "colorIntegration": "symbolic",
+        "animalIntegration": "wise"
+      },
+      "themes": [6, 7, 11, 12],
+      "hooks": [0, 7],
+      "transitions": [1, 9],
+      "endings": [0, 4, 9],
+      "characteristics": [
+        "Deeper emotional resonance",
+        "Thoughtful character development",
+        "Explores complex themes gently",
+        "Encourages self-reflection"
+      ]
+    },
+    {
+      "id": "spirited-comedian",
+      "name": "Spirited Comedian",
+      "description": "Humorous voice that teaches through laughter",
+      "voiceFingerprint": {
+        "warmth": 0.8,
+        "playfulness": 1.0,
+        "complexity": 0.6,
+        "pace": "bouncy",
+        "sentenceLength": "short"
+      },
+      "inputIntegration": {
+        "mode": "humorous",
+        "userNameUsage": "playful",
+        "colorIntegration": "silly",
+        "animalIntegration": "funny"
+      },
+      "themes": [0, 10, 13],
+      "hooks": [2, 6],
+      "transitions": [3, 7],
+      "endings": [2, 6],
+      "characteristics": [
+        "Uses gentle humor and wordplay",
+        "Teaches through funny situations",
+        "Light-hearted problem solving",
+        "Celebrates joy and laughter"
+      ]
+    }
+  ]
+}

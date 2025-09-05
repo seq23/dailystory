@@ -1,0 +1,89 @@
+{
+  "schema": {
+    "name": "AVC Global Codebook",
+    "version": "1.0",
+    "description": "Shared reference strings for all voice catalogs"
+  },
+  "tones": [
+    "warm",
+    "playful",
+    "gentle",
+    "adventurous",
+    "mystical",
+    "encouraging",
+    "curious",
+    "wise",
+    "joyful",
+    "contemplative",
+    "spirited",
+    "nurturing",
+    "whimsical",
+    "courageous",
+    "compassionate"
+  ],
+  "hooks": [
+    "Once upon a time in a world where...",
+    "In a place where kindness blooms...",
+    "Adventure calls from every corner...",
+    "Among the stars where dreams take flight...",
+    "In the heart of a peaceful garden...",
+    "Where friendship grows like wildflowers...",
+    "When curiosity leads the way...",
+    "In the language of the heart...",
+    "Beyond the veil of ordinary sight...",
+    "Where every step leads to discovery..."
+  ],
+  "transitions": [
+    "With a warm smile, they discovered...",
+    "Like seeds of wisdom taking root...",
+    "As gentle as a morning breeze...",
+    "With excitement bubbling over...",
+    "Through portals of wonder...",
+    "Like stardust scattered across time...",
+    "With tenderness that heals...",
+    "Racing toward the next adventure...",
+    "Where reality bends to imagination...",
+    "With compassion flowing like a river..."
+  ],
+  "endings": [
+    "And so, with hearts full of understanding...",
+    "Like leaves that dance in harmony...",
+    "And their adventure was just beginning...",
+    "In the endless tapestry of wonder...",
+    "Where hearts remain forever connected...",
+    "And the cosmos smiled upon their journey...",
+    "Ready for whatever comes next...",
+    "In the garden of cherished memories...",
+    "Where every ending becomes a new beginning...",
+    "And peace settled over the land like gentle mist..."
+  ],
+  "themes": [
+    "friendship",
+    "adventure",
+    "discovery",
+    "nature",
+    "magic",
+    "courage",
+    "kindness",
+    "growth",
+    "wonder",
+    "family",
+    "creativity",
+    "perseverance",
+    "empathy",
+    "exploration",
+    "transformation"
+  ],
+  "characterTypes": [
+    "gentle guide",
+    "brave explorer",
+    "curious learner",
+    "wise mentor",
+    "playful friend",
+    "creative dreamer",
+    "nature lover",
+    "kind helper",
+    "adventurous spirit",
+    "magical being"
+  ]
+}

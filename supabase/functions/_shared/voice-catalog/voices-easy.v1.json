@@ -1,0 +1,121 @@
+{
+  "schema": {
+    "level": "easy",
+    "ageRange": "5-8",
+    "description": "Engaging voices for emerging readers"
+  },
+  "voices": [
+    {
+      "id": "curious-explorer",
+      "name": "Curious Explorer",
+      "description": "Inquisitive voice that encourages discovery",
+      "voiceFingerprint": {
+        "warmth": 0.8,
+        "playfulness": 0.8,
+        "complexity": 0.4,
+        "pace": "medium",
+        "sentenceLength": "medium"
+      },
+      "inputIntegration": {
+        "mode": "investigative",
+        "userNameUsage": "frequent",
+        "colorIntegration": "descriptive",
+        "animalIntegration": "helper"
+      },
+      "themes": [1, 8, 13, 14],
+      "hooks": [2, 6, 9],
+      "transitions": [3, 6, 7],
+      "endings": [2, 6],
+      "characteristics": [
+        "Encourages questions and discovery",
+        "Uses wonder and curiosity",
+        "Interactive storytelling style",
+        "Celebrates learning moments"
+      ]
+    },
+    {
+      "id": "cheerful-guide",
+      "name": "Cheerful Guide",
+      "description": "Upbeat, encouraging voice for adventures",
+      "voiceFingerprint": {
+        "warmth": 0.9,
+        "playfulness": 0.7,
+        "complexity": 0.4,
+        "pace": "medium",
+        "sentenceLength": "medium"
+      },
+      "inputIntegration": {
+        "mode": "encouraging",
+        "userNameUsage": "supportive",
+        "colorIntegration": "bright",
+        "animalIntegration": "loyal"
+      },
+      "themes": [0, 1, 5, 6],
+      "hooks": [0, 1, 5],
+      "transitions": [0, 3, 8],
+      "endings": [0, 2, 3],
+      "characteristics": [
+        "Optimistic and encouraging",
+        "Celebrates small victories",
+        "Builds confidence through story",
+        "Warm, supportive guidance"
+      ]
+    },
+    {
+      "id": "creative-artist",
+      "name": "Creative Artist",
+      "description": "Imaginative voice for creative expression",
+      "voiceFingerprint": {
+        "warmth": 0.7,
+        "playfulness": 0.9,
+        "complexity": 0.5,
+        "pace": "varied",
+        "sentenceLength": "varied"
+      },
+      "inputIntegration": {
+        "mode": "creative",
+        "userNameUsage": "artistic",
+        "colorIntegration": "vivid",
+        "animalIntegration": "magical"
+      },
+      "themes": [4, 8, 10, 14],
+      "hooks": [3, 8],
+      "transitions": [4, 8],
+      "endings": [5, 8],
+      "characteristics": [
+        "Celebrates creativity and imagination",
+        "Uses vivid, colorful language",
+        "Encourages artistic expression",
+        "Playful with words and ideas"
+      ]
+    },
+    {
+      "id": "nature-friend",
+      "name": "Nature Friend",
+      "description": "Gentle voice connecting children with nature",
+      "voiceFingerprint": {
+        "warmth": 0.9,
+        "playfulness": 0.6,
+        "complexity": 0.4,
+        "pace": "gentle",
+        "sentenceLength": "medium"
+      },
+      "inputIntegration": {
+        "mode": "harmonious",
+        "userNameUsage": "natural",
+        "colorIntegration": "earthy",
+        "animalIntegration": "wild"
+      },
+      "themes": [3, 6, 7, 13],
+      "hooks": [1, 4, 5],
+      "transitions": [1, 2, 9],
+      "endings": [0, 1, 9],
+      "characteristics": [
+        "Deep connection to nature",
+        "Teaches environmental awareness",
+        "Gentle, respectful tone",
+        "Uses natural imagery and metaphors"
+      ]
+    }
+  ]
+}

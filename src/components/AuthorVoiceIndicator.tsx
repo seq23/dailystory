@@ -1,21 +1,21 @@
-// Author Voice Indicator - Shows users when they have enhanced storytelling
+// Voice Style Indicator - Shows users when they have enhanced storytelling
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, BookOpen } from 'lucide-react';
 import type { DifficultyLevel } from '@/types';
 // import { DifficultyManager } from '@/services/difficultyManager';
 
-interface AuthorVoiceIndicatorProps {
+interface VoiceStyleIndicatorProps {
   difficulty: DifficultyLevel;
   className?: string;
 }
 
-export const AuthorVoiceIndicator: React.FC<AuthorVoiceIndicatorProps> = ({ 
+export const AuthorVoiceIndicator: React.FC<VoiceStyleIndicatorProps> = ({ 
   difficulty, 
   className = "" 
 }) => {
-  // All difficulty levels now have author voice patterns in the 10-author system
-  const hasAuthorVoice = true;
+  // All difficulty levels now have voice style patterns in the unified system
+  const hasVoiceStyle = true;
 
   const getStyleForDifficulty = () => {
     switch (difficulty) {
@@ -34,27 +34,27 @@ export const AuthorVoiceIndicator: React.FC<AuthorVoiceIndicatorProps> = ({
     }
   };
 
-  const getAuthorPair = () => {
+  const getStyleDescriptor = () => {
     switch (difficulty) {
       case 'beginner':
-        return 'Eric Carle & Sandra Boynton Style';
+        return 'Gentle & Playful Style';
       case 'easy':
-        return 'Mo Willems & Arnold Lobel Style';
+        return 'Curious & Cheerful Style';
       case 'medium':
-        return 'Beverly Cleary & Roald Dahl Style';
+        return 'Brave & Creative Style';
       case 'hard':
-        return 'Rick Riordan & J.K. Rowling Style';
+        return 'Epic & Mysterious Style';
       case 'expert':
-        return 'Suzanne Collins & Madeleine L\'Engle Style';
+        return 'Complex & Visionary Style';
       default:
-        return 'Author Voice Storytelling';
+        return 'Enhanced Storytelling';
     }
   };
 
   return (
     <Badge variant="secondary" className={`${className} ${getStyleForDifficulty()}`}>
       <Sparkles className="w-3 h-3 mr-1" />
-      {getAuthorPair()}
+      {getStyleDescriptor()}
     </Badge>
   );
 };

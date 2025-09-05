@@ -14,7 +14,6 @@ import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValid
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
-import { fetchVoicePatterns, type VoicePatterns } from '../_shared/authorVoiceService.ts';
 
 // Import static caching and error classification
 import { getModelChain, getHairColorMapping, getSystemSettings, processAvatarIdentityFromCache, getCulturalContextArrays, getVocabularyCache } from './StaticDataCache.ts';
@@ -161,8 +160,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     
     // Add available functions to system prompt
     finalSystemPrompt += `\n\nAVAILABLE FUNCTIONS:
-- getCulturalContext(userInfo) - Fetch culturally relevant character names, foods, and celebrations when needed  
-- getAuthorVoicePatterns(difficulty) - Fetch narrative voice patterns and transitions when needed`;
+- getCulturalContext(userInfo) - Fetch culturally relevant character names, foods, and celebrations when needed`;
     
     // REPAIR MODE: Enhance prompts with repair-specific instructions
     if (config.sessionType === 'repair' && config.originalContent && config.repairReasons) {
@@ -511,8 +509,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   - hobbies/skills → problem-solving, challenges, abilities
   - favoriteFood → meals, discoveries, celebrations
 - Subtly reflect cultural background: You have access to getCulturalContext() function for authentic cultural elements. Use as background details only - never stereotypical or plot-central. Frequency: 1-2 brief mentions maximum per story.
-- Apply storytelling voice patterns via getAuthorVoicePatterns() (openers, transitions, endings, flow) as needed.
-Use these as inspiration but prioritize overall story quality and coherence.
+- Use natural storytelling flow with engaging openings, smooth transitions, and satisfying conclusions.
 
 - Use vocabulary integration liberally.`;
     
@@ -934,8 +931,7 @@ function cleanPageBreakMarkers(text: string): string {
  */
 function hasFunctionCalls(storyText: string): boolean {
   const functionCallPatterns = [
-    /getCulturalContext\s*\([^)]*\)/gi,
-    /getAuthorVoicePatterns\s*\([^)]*\)/gi
+    /getCulturalContext\s*\([^)]*\)/gi
   ];
   
   return functionCallPatterns.some(pattern => pattern.test(storyText));
@@ -985,46 +981,8 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
     }
   }
   
-  // Execute getAuthorVoicePatterns() calls
-  const voiceMatches = [...processedText.matchAll(/getAuthorVoicePatterns\s*\([^)]*\)/gi)];
-  for (const match of voiceMatches) {
-    try {
-      const difficultyString = context.difficulty?.toString() || 'medium';
-      const voicePatterns = fetchVoicePatterns(difficultyString);
-      
-      if (voicePatterns) {
-        const voiceContent = `Available Author Voice Patterns for "${voicePatterns.styleSummary}":
-
-OPENING OPTIONS: ${voicePatterns.openingPatterns.join(' | ')}
-
-TRANSITION OPTIONS: ${voicePatterns.transitionPatterns.join(' | ')}
-
-CLOSING OPTIONS: ${voicePatterns.closingPatterns.join(' | ')}
-
-CHARACTERISTICS: ${voicePatterns.characteristics.join(', ')}`;
-        processedText = processedText.replace(match[0], voiceContent);
-        console.log('✅ Executed getAuthorVoicePatterns() successfully');
-      } else {
-        processedText = processedText.replace(match[0], 
-          `Create your own engaging author voice patterns for this story. Consider the age group and generate appropriate:
-- Opening phrases that draw readers in
-- Smooth transition techniques  
-- Satisfying closing elements
-- A consistent narrative personality throughout`);
-        console.log('⚠️ getAuthorVoicePatterns() returned null, instructing AI to create custom voice patterns');
-      }
-    } catch (error) {
-      processedText = processedText.replace(match[0], 
-        `Create your own engaging author voice patterns for this story. Consider the age group and generate appropriate:
-- Opening phrases that draw readers in
-- Smooth transition techniques  
-- Satisfying closing elements
-- A consistent narrative personality throughout`);
-      console.warn('❌ getAuthorVoicePatterns() failed, instructing AI to create custom voice patterns:', safeErrorMessage(error));
-    }
-  }
-  
   return processedText;
+}
 }
 
 /**
