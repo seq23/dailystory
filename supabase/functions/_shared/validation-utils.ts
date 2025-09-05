@@ -399,8 +399,32 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
     pages = pages.slice(0, 12);
   }
   
+  // MINIMUM PAGE GUARANTEE: Force split to at least 6 pages if content is sufficient
+  if (maxPages >= 6 && pages.length < 6 && content.length > 4000) {
+    console.log(`🚨 MINIMUM PAGE GUARANTEE: Content ${content.length} chars but only ${pages.length} pages, force-splitting to 6 pages`);
+    return forceMinimumPageSplit(content, 6);
+  }
+
   // Ensure we have content - fallback to original if splitting failed
   return pages.length > 0 ? pages : [content.trim()];
+}
+
+/**
+ * Force split content into minimum required pages
+ */
+function forceMinimumPageSplit(content: string, minPages: number): string[] {
+  const sentences = content.split(/[.!?]+/).filter(s => s.trim());
+  const sentencesPerPage = Math.ceil(sentences.length / minPages);
+  
+  const pages: string[] = [];
+  for (let i = 0; i < minPages; i++) {
+    const start = i * sentencesPerPage;
+    const end = Math.min(start + sentencesPerPage, sentences.length);
+    const pageContent = sentences.slice(start, end).join('. ').trim() + '.';
+    if (pageContent.length > 2) pages.push(pageContent);
+  }
+  
+  return pages.length >= minPages ? pages : pages.concat(Array(minPages - pages.length).fill('Continue the story...'));
 }
 
 /**
