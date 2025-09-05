@@ -494,7 +494,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   - favoriteAnimal → companion, helper, or encountered character
   - hobbies/skills → problem-solving, challenges, abilities
   - favoriteFood → meals, discoveries, celebrations
-- Subtly reflect cultural background via getCulturalContext(); never offensive or stereotypical. use sparingly.
+- Subtly reflect cultural background: You have access to getCulturalContext() function for authentic cultural elements. Use as background details only - never stereotypical or plot-central. Frequency: 1-2 brief mentions maximum per story.
 - Apply storytelling voice patterns via getAuthorVoicePatterns() (openers, transitions, endings, flow) as needed.
 Use these as inspiration but prioritize overall story quality and coherence.
 

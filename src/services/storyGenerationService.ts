@@ -282,7 +282,7 @@ ${vocabularyConfig.hasUserWords
 3. FALLBACK: Age-appropriate vocabulary for ${essentialUserInfo.age}-year-olds
 4. EMERGENCY: Simple vocabulary for ages 7-10 if needed`}
 
-${culturalContext ? `Cultural context: When natural to the story, subtly incorporate ${culturalContext}. ` : ''}${creativeGuidance}
+${culturalContext ? `${culturalContext} ` : ''}${creativeGuidance}
 
 Character Info: ${JSON.stringify(essentialUserInfo)}`;
 

@@ -285,20 +285,47 @@ export const getCulturalGuidanceString = (userInfo: any) => {
   const nativeLanguage = userInfo?.nativeLanguage || 'en';
   const skinTone = userInfo?.avatar?.skinTone;
   
+  // Enhanced regional detection covering all 8 cultural contexts
   let culturalKey = nativeLanguage;
+  let regionName = 'General English';
+  
   if (nativeLanguage === 'en' && skinTone === 'dark') {
     culturalKey = 'en-african-american';
+    regionName = 'African American';
   } else if (nativeLanguage === 'fr' && skinTone === 'dark') {
     culturalKey = 'fr-francophone-african';
+    regionName = 'Francophone African';
+  } else if (nativeLanguage === 'es') {
+    regionName = 'Hispanic/Latino';
+  } else if (nativeLanguage === 'zh') {
+    regionName = 'Chinese';
+  } else if (nativeLanguage === 'hi') {
+    regionName = 'Indian/Hindi';
+  } else if (nativeLanguage === 'ar') {
+    regionName = 'Arabic/Middle Eastern';
+  } else if (nativeLanguage === 'fr') {
+    regionName = 'French';
+  } else if (nativeLanguage === 'pt') {
+    regionName = 'Portuguese/Brazilian';
   }
   
   const context = contexts[culturalKey];
   if (!context || culturalKey === 'en') return '';
   
-  const randomFood = context.commonFoods[0];
-  const randomCelebration = context.celebrations[0];
+  // Comprehensive cultural easter egg instructions
+  const foods = context.commonFoods || [];
+  const celebrations = context.celebrations || [];
+  const names = context.characterNames || [];
+  const values = context.culturalValues || [];
+  const sports = context.sports || [];
   
-  return `This child is likely from ${culturalKey.replace('-', ' ')} culture, subtly weave ${randomFood} or ${randomCelebration} into the story in small, varied ways—like a passing detail and never a stereotype. Use sparingly and randomly. never repeat. never make it the focus. always background noise.`;
+  return `CULTURAL EASTER EGG INSTRUCTIONS for ${regionName} background:
+- You have access to getCulturalContext() function with comprehensive ${regionName} cultural data
+- Use cultural elements as subtle background details ONLY - never main focus or stereotypes
+- Rotate randomly between: foods (${foods.slice(0,3).join(', ')}...), celebrations (${celebrations.slice(0,2).join(', ')}...), names (${names.slice(0,3).join(', ')}...), values (${values.slice(0,2).join(', ')}...), sports (${sports.slice(0,2).join(', ')}...)
+- Frequency: 1-2 brief mentions maximum per story, varied placement
+- Style: Passing details, environmental elements, character names - authentic but respectful
+- NEVER: Make culture the plot center, use outdated stereotypes, or over-emphasize differences`;
 };
 
 // Multi-Layer Vocabulary Caching (Phase 3: 90% DB call reduction)
