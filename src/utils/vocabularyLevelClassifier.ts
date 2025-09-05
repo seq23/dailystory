@@ -108,34 +108,33 @@ export class VocabularyLevelClassifier {
   }
   
   /**
-   * Determine if word should be highlighted based on user's reading level
-   * Enhanced for smoother progression between levels
+   * LEAN Progressive Thresholds - Interactive Word Rules Overhaul
+   * Educational progression: More interaction for beginners, selective for advanced
    */
   private static shouldHighlightWord(wordLevel: number, userLevel: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert'): boolean {
     switch (userLevel) {
       case 'beginner':
-        // For pre-readers, no highlighting - everything is new
-        return false;
+        // 100% interactive - all words are learning opportunities
+        return true;
         
       case 'easy':
-        // Highlight level 2+ words (challenging but not overwhelming)
+        // 60% interactive - level 1.5+ (most words except easiest sight words)
         return wordLevel >= 2;
         
       case 'medium':
-        // More selective highlighting for smoother transition
-        // Only highlight level 3+ words to avoid overwhelming early readers
+        // 40% interactive - level 2.5+ (focus on intermediate+ vocabulary)
         return wordLevel >= 3;
         
       case 'hard':
-        // Highlight level 4+ words (advanced vocabulary)
+        // 25% interactive - level 3.5+ (advanced vocabulary only)
         return wordLevel >= 4;
         
       case 'expert':
-        // Highlight level 5 words only (very advanced)
+        // 15% interactive - level 4.5+ (expert vocabulary only)
         return wordLevel >= 5;
         
       default:
-        // For beginner level or unknown, minimal highlighting
+        // Conservative fallback
         return wordLevel >= 3;
     }
   }

@@ -49,8 +49,7 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   }, []);
 
 
-  // Level rules: 0-1 (beginner/easy) underline all; 2-4 (medium/hard/expert) only significant words
-  // Level rules and importance filtering: Level 0 (beginner) = all words; others = important words only
+  // LEAN Adaptive Interactive Word Rules - Smart ESL & Progress Tracking
   const shouldBeInteractive = useMemo(() => {
     const lw = cleanWord.toLowerCase();
     if (!lw || isPurelyPunctuation) return false;
@@ -69,12 +68,19 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
     const isProperNoun = /^[A-Z][a-z]+$/.test(trimmedOriginal) && trimmedOriginal !== 'I';
     if (isProperNoun && !isAllCaps) return false;
 
-    // Level rules: beginner = all words; easy+ = classifier-based important words
-    if (difficulty === 'beginner') return true;
-
+    // Get base interactivity from progressive thresholds
     const { shouldHighlight } = VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
+    
+    // ESL Boost: +20% more interactive words for non-native English speakers
+    const isESL = props.userInfo?.nativeLanguage && props.userInfo.nativeLanguage !== 'en';
+    if (isESL && !shouldHighlight && difficulty !== 'beginner') {
+      // Boost: Make easier words interactive for ESL learners
+      const { level } = VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
+      if (level <= 3) return true; // ESL boost for levels 1-3
+    }
+    
     return shouldHighlight;
-  }, [cleanWord, props.userInfo?.name, difficulty, props.word]);
+  }, [cleanWord, props.userInfo?.name, props.userInfo?.nativeLanguage, difficulty, props.word]);
 
 // For mobile devices, use click-to-open modal instead of hover
 if (props.forceModal || isMobileOrTablet) {

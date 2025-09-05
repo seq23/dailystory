@@ -3,6 +3,11 @@ import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInte
 import type { UserInfo } from "@/types";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+
+// Performance Cache for word frequency lookups
+const wordDifficultyCache = new Map<string, any>();
+const cacheExpiry = 300000; // 5 minutes
 
 interface TextProcessorOptions {
   text: string;
@@ -20,6 +25,20 @@ interface TextProcessorOptions {
  * Unified text processor that handles both mobile and desktop rendering
  * with consistent highlighting and word flow
  */
+// Performance Optimization: Cache vocabulary lookups per session
+const getCachedWordDifficulty = (word: string, difficulty: string) => {
+  const cacheKey = `${word}-${difficulty}`;
+  const cached = wordDifficultyCache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < cacheExpiry) {
+    return cached.data;
+  }
+  
+  const wordData = VocabularyLevelClassifier.getWordDifficulty(word, difficulty as any);
+  wordDifficultyCache.set(cacheKey, { data: wordData, timestamp: Date.now() });
+  return wordData;
+};
+
 export const processTextWithConsistentFlow = ({
   text,
   className = "",
@@ -38,6 +57,10 @@ export const processTextWithConsistentFlow = ({
   
   // Convert frontend difficulty to backend format for processing
   const backendDifficulty = DifficultyLevelMapper.toBackend(difficulty);
+  
+  // Performance: Pre-cache word difficulties for this text to avoid repeated lookups
+  const { wordsOnly } = tokenizeForHighlighting(text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim());
+  wordsOnly.forEach(word => getCachedWordDifficulty(word, backendDifficulty));
   
   // Strip page markers as safety net before processing
   const cleanText = text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
