@@ -4,7 +4,6 @@
  */
 
 import { VoiceCatalogService, VoiceSelector, VoiceProcessor, DifficultyLevel } from './index';
-import { generateCreativeSeeds } from '../inputEnhancementEngine';
 import type { UserInfo } from '@/types';
 import type { ProcessedVoice, VoiceSelectionResult } from './types';
 
@@ -13,7 +12,7 @@ export interface VoiceIntegrationResult {
   storyBundle: any;
   compatibilityScore: number;
   selectionReasoning: string;
-  userSeeds: any[];
+  controlLine: string;
   processingMetadata: {
     voiceId: string;
     voiceName: string;
@@ -47,22 +46,11 @@ export class VoiceCatalogIntegration {
       preferences
     );
 
-    // 2. Generate user input seeds (legacy compatibility)
-    const userSeeds = generateCreativeSeeds(userInfo);
-
-    // 3. Create story bundle from processed voice
+    // 2. Create story bundle from processed voice
     const storyBundle = VoiceProcessor.createStoryBundle(voiceSelection.voice, userInfo);
 
-    // 4. Add user seeds to the bundle for complete context
-    const enhancedBundle = {
-      ...storyBundle,
-      userSeeds: userSeeds,
-      legacyCompatibility: {
-        authorVoiceName: voiceSelection.voice.pn,
-        inspirationSources: voiceSelection.voice.src,
-        difficultyLevel: difficulty
-      }
-    };
+    // 3. Generate compact control line
+    const controlLine = this.createControlLine(userInfo, voiceSelection.voice, difficulty);
 
     const processingTime = Date.now() - startTime;
 
@@ -70,10 +58,10 @@ export class VoiceCatalogIntegration {
 
     return {
       selectedVoice: voiceSelection.voice,
-      storyBundle: enhancedBundle,
+      storyBundle: storyBundle,
       compatibilityScore: voiceSelection.compatibilityScore,
       selectionReasoning: voiceSelection.selectionReasoning,
-      userSeeds,
+      controlLine: controlLine,
       processingMetadata: {
         voiceId: voiceSelection.voice.id,
         voiceName: voiceSelection.voice.pn,
@@ -93,18 +81,18 @@ export class VoiceCatalogIntegration {
     count: number = 3
   ): Promise<VoiceIntegrationResult[]> {
     const options = await VoiceSelector.getVoiceOptions(userInfo, difficulty, count);
-    const userSeeds = generateCreativeSeeds(userInfo);
 
     return Promise.all(
       options.map(async (option) => {
         const storyBundle = VoiceProcessor.createStoryBundle(option.voice, userInfo);
+        const controlLine = this.createControlLine(userInfo, option.voice, difficulty);
         
         return {
           selectedVoice: option.voice,
-          storyBundle: { ...storyBundle, userSeeds },
+          storyBundle: storyBundle,
           compatibilityScore: option.compatibilityScore,
           selectionReasoning: option.selectionReasoning,
-          userSeeds,
+          controlLine: controlLine,
           processingMetadata: {
             voiceId: option.voice.id,
             voiceName: option.voice.pn,
@@ -135,46 +123,30 @@ export class VoiceCatalogIntegration {
   }
 
   /**
-   * Create a story prompt bundle for the AI generation system
+   * Create a compact control line for the AI generation system
    */
-  static createStoryPromptBundle(integrationResult: VoiceIntegrationResult): string {
-    const { selectedVoice, storyBundle, userSeeds } = integrationResult;
-    const { resolvedElements } = selectedVoice;
+  static createControlLine(userInfo: UserInfo, voice: ProcessedVoice, difficulty: DifficultyLevel): string {
+    const ctrlData = {
+      vf: {
+        id: voice.id,
+        pn: voice.pn,
+        tone: voice.vf.tone,
+        cad: voice.vf.cad,
+        var: voice.vf.var,
+        warm: voice.vf.warm,
+        hum: voice.vf.hum,
+        nar: voice.vf.nar
+      },
+      u: userInfo.name,
+      c: userInfo.favoriteColor,
+      a: userInfo.favoriteAnimal,
+      f: userInfo.favoriteFood,
+      h: userInfo.hobbies,
+      themes: voice.resolvedElements?.themes || [],
+      level: difficulty
+    };
 
-    return `
-VOICE PROFILE: ${selectedVoice.pn}
-Inspired by: ${selectedVoice.src.join(', ')}
-
-TONE & STYLE:
-- Primary tones: ${resolvedElements.tones.join(', ')}
-- Warmth level: ${selectedVoice.vf.warm}
-- Humor level: ${selectedVoice.vf.hum}
-- Narrative perspective: ${selectedVoice.ch.pov} person
-- Cadence: ${selectedVoice.vf.cad}/14
-
-STORY ELEMENTS:
-- Settings: ${resolvedElements.settings.join(', ')}
-- Story scale: ${selectedVoice.wd.sc}
-- Themes: ${resolvedElements.themes.join(', ')}
-- Potential helpers: ${resolvedElements.helpers.join(', ')}
-
-STRUCTURE GUIDANCE:
-- Opening hooks: ${resolvedElements.hooks.join(', ')}
-- Transitions: ${resolvedElements.transitions.join(', ')}
-- Possible twists: ${resolvedElements.twists.join(', ')}
-- Ending styles: ${resolvedElements.endings.join(', ')}
-
-USER INTEGRATION:
-${userSeeds.map(seed => `- ${seed.storyPossibilities[0]}`).join('\n')}
-
-VOICE-SPECIFIC GUIDANCE:
-- Dialog style: ${resolvedElements.dialogStyles.join(', ')}
-- Sound effects: ${resolvedElements.sounds.join(', ')}
-- User name integration: ${storyBundle.userInputRules.aff.u > 0.7 ? 'frequent' : 'moderate'}
-- Moral approach: ${selectedVoice.wd.mor}
-
-Create a story that embodies this voice profile while incorporating the user's interests naturally.
-`.trim();
+    return `<CTRL>${JSON.stringify(ctrlData)}</CTRL>`;
   }
 
   /**

@@ -72,11 +72,11 @@ export async function testVoiceCatalogSystem() {
     });
     console.log('');
 
-    // 5. Test story prompt generation
-    console.log('5️⃣ Testing story prompt generation...');
-    const promptBundle = VoiceCatalogIntegration.createStoryPromptBundle(userResult);
-    console.log('✅ Generated story prompt bundle:');
-    console.log(promptBundle.substring(0, 300) + '...\n');
+    // 5. Test control line generation
+    console.log('5️⃣ Testing control line generation...');
+    const controlLine = userResult.controlLine;
+    console.log('✅ Generated control line:');
+    console.log(controlLine + '\n');
 
     // 6. Get catalog info
     console.log('6️⃣ Getting catalog information...');

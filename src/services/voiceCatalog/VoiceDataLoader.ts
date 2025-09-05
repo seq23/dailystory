@@ -32,7 +32,7 @@ export class VoiceDataLoader {
             "h": { "m": "direct", "max": 1 }
           }
         },
-        "src": ["Beatrix Potter"]
+        "src": ["Gentle-Guide"]
       },
       {
         "id": "goodnight_whisper_beg_v1",
@@ -55,7 +55,7 @@ export class VoiceDataLoader {
             "h": { "m": "direct", "max": 0 } 
           } 
         },
-        "src": ["Margaret Wise Brown"]
+        "src": ["Bedtime-Whisperer"]
       },
       {
         "id": "bear_and_bee_beg_v1",
@@ -78,7 +78,7 @@ export class VoiceDataLoader {
             "h": { "m": "direct", "max": 1 } 
           } 
         },
-        "src": ["A. A. Milne"]
+        "src": ["Playful-Friend"]
       }
     ];
   }
@@ -135,7 +135,7 @@ export class VoiceDataLoader {
             "h":{"m":"subtle","max":1}
           }
         },
-        "src":["Beverly Cleary"]
+        "src":["Neighborhood-Voice"]
       }
     ];
   }
@@ -166,7 +166,7 @@ export class VoiceDataLoader {
             "h":{"m":"subtle","max":1}
           }
         },
-        "src":["C. S. Lewis"]
+        "src":["Epic-Chronicler"]
       }
     ];
   }
@@ -197,7 +197,7 @@ export class VoiceDataLoader {
             "h":{"m":"subtle","max":1}
           }
         },
-        "src":["J. K. Rowling"]
+        "src":["Mystery-Weaver"]
       }
     ];
   }

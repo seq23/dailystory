@@ -59,15 +59,15 @@ export class NewVoiceService {
       }
     );
 
-    // Create story prompt bundle
-    const storyPrompt = VoiceCatalogIntegration.createStoryPromptBundle(integrationResult);
+    // Create control line for AI
+    const controlLine = integrationResult.controlLine;
 
     const processingTime = Date.now() - startTime;
 
     const result: NewVoiceResult = {
       voiceId: integrationResult.selectedVoice.id,
       voiceName: integrationResult.selectedVoice.pn,
-      storyPrompt,
+      storyPrompt: controlLine,
       compatibilityScore: integrationResult.compatibilityScore,
       processingTime,
       voiceMetadata: {
@@ -106,7 +106,7 @@ export class NewVoiceService {
     return alternatives.map(alt => ({
       voiceId: alt.selectedVoice.id,
       voiceName: alt.selectedVoice.pn,
-      storyPrompt: VoiceCatalogIntegration.createStoryPromptBundle(alt),
+      storyPrompt: alt.controlLine,
       compatibilityScore: alt.compatibilityScore,
       processingTime: alt.processingMetadata.processingTime,
       voiceMetadata: {
