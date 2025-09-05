@@ -105,13 +105,13 @@ export class StoryGenerationService {
 
       // LAYER 4: Voice Selection with Enhanced Theme Matching and Level Clamping
       try {
-        // Map themes to enhanced library
-        const enhancedThemes = ThemeLibraryService.mapToLibrary(themeIntent.theme);
+        // Map themes to enhanced library with fail-soft
+        const enhancedThemes = ThemeLibraryService.mapToLibrary(themeIntent.theme, true);
         
-        // Filter themes for age appropriateness
+        // Filter themes for age appropriateness  
         const ageAppropriateThemes = ThemeLibraryService.filterThemesForAge(enhancedThemes, userInfo.age || 5);
         
-        // Select voice with cross-level search capability
+        // Select voice with cross-level search and fail-soft capability
         const difficulty = this.mapToDifficultyLevel(config.difficulty || userInfo.difficultyLevel || 'easy');
         voiceIntegrationResult = await VoiceCatalogIntegration.selectAndPrepareVoice(
           userInfo, 
@@ -122,6 +122,14 @@ export class StoryGenerationService {
             humorPreference: 0.6
           }
         );
+
+        // Add fail-soft flag for downstream processing
+        if (voiceIntegrationResult) {
+          voiceIntegrationResult.processingMetadata = {
+            ...voiceIntegrationResult.processingMetadata,
+            failSoftUsed: false
+          };
+        }
         
         // Apply level clamping
         const clampedVoice = LevelClampingService.applyConstraints(
@@ -144,7 +152,7 @@ export class StoryGenerationService {
       }
       
       // Step 4: PlaceholderResolution with 4-layer priority (now includes voice layer)
-      const resolvedResult = this.resolveAllPlaceholders(
+      const resolvedResult = await this.resolveAllPlaceholders(
         userInfo,
         vocabularyIntegration,
         themeIntent,
@@ -183,12 +191,12 @@ export class StoryGenerationService {
   /**
    * 4-Layer Priority System with Voice Layer
    */
-  private static resolveAllPlaceholders(
+  private static async resolveAllPlaceholders(
     userInfo: UserInfo,
     vocabularyIntegration: VocabularyIntegration,
     themeIntent: ThemeIntent,
     voiceIntegrationResult: any
-  ): { storyContent: string; avatarData: { skinTone?: string } } {
+  ): Promise<{ storyContent: string; avatarData: { skinTone?: string } }> {
     
     // LAYER 1 - Essential User Info Only (SECURITY FIX: Remove skin tone from AI-visible data)
     const essentialUserInfo = {
@@ -319,10 +327,18 @@ export class StoryGenerationService {
 
     const educationalStandards = this.getEducationalVocabularyInstructions(vocabularyConfig.gradeLevel, vocabularyConfig.difficultyLevel);
     
-    // Generate single CTRL line instead of verbose template
-    const STORY_TEMPLATE = `<CTRL>${voiceControlParams}</CTRL>
+    // Generate single CTRL line instead of verbose template  
+    const { ResourceLoader } = await import('./failSoft/ResourceLoader');
+    const ctrlLine = ResourceLoader.buildControlLine(
+      essentialUserInfo,
+      themeIntent,
+      voiceIntegrationResult,
+      vocabularyConfig.difficultyLevel
+    );
 
-Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}. 
+    const STORY_TEMPLATE = `${ctrlLine}
+
+Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}.
 
 ${vocabularyConfig.hasUserWords 
   ? `Vocabulary System - User Priority Mode:

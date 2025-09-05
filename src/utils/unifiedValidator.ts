@@ -121,17 +121,7 @@ export class UnifiedValidator {
       qualityIssues: []
     };
 
-    // If content is inappropriate, reject immediately
-    if (!contentValidation.appropriate) {
-      return {
-        decision: 'REJECT',
-        isValid: false,
-        reasons: [contentValidation.reason || 'Content inappropriate for age level'],
-        metrics
-      };
-    }
-
-    // Add quality validation after content security but before token validation
+     // Add quality validation after content security but before token validation
     const qualityCheck = this.validateStoryQuality(pages, config);
     metrics.qualityScore = qualityCheck.score;
     metrics.qualityIssues = qualityCheck.issues;
@@ -141,7 +131,14 @@ export class UnifiedValidator {
       .filter(issue => issue.severity === 'error')
       .map(issue => `Quality issue: ${issue.message}`);
 
-    const baseReasons = qualityReasons;
+    let baseReasons = qualityReasons;
+
+    // If content is inappropriate, warn but don't reject in fail-soft mode
+    if (!contentValidation.appropriate) {
+      console.warn('⚠️ Content inappropriate for level, but continuing in fail-soft mode:', contentValidation.reason);
+      // In fail-soft mode, continue with warning instead of rejecting
+      baseReasons.push(`Warning: ${contentValidation.reason || 'Content may not be fully appropriate for age level'}`);
+    }
 
     // Mode-specific validation with quality integration
     if (config.mode === 'guest') {

@@ -20,29 +20,51 @@ export class VoiceSelector {
       themes?: string[];
       tones?: string[];
       pointOfView?: string;
-      warmthPreference?: number; // 0-1
-      humorPreference?: number; // 0-1
+      warmthPreference?: number;
+      humorPreference?: number;
     },
-    enhancedThemes?: string[]
+    enhancedThemes?: string[],
+    options?: { failSoft?: boolean; timeout?: number }
   ): Promise<VoiceSelectionResult> {
-    // Try current level first
-    let voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
-    let bestMatch = await this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
-    
-    // If theme matching is poor and themes are provided, try cross-level search
-    if (bestMatch.compatibilityScore < 0.6 && enhancedThemes && enhancedThemes.length > 0) {
-      console.log(`🔄 Cross-level search triggered for themes: ${enhancedThemes.join(', ')}`);
-      bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
+    const { failSoft = false, timeout = 150 } = options || {};
+
+    try {
+      // Try current level first
+      let voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
+      let bestMatch = await this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
+      
+      // If theme matching is poor and themes are provided, try cross-level search
+      if (bestMatch.compatibilityScore < 0.6 && enhancedThemes && enhancedThemes.length > 0) {
+        console.log(`🔄 Cross-level search triggered for themes: ${enhancedThemes.join(', ')}`);
+        bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
+      }
+      
+      // Track selection for novelty
+      const userId = userInfo.name || 'anonymous';
+      if (!this.previousSelections.has(userId)) {
+        this.previousSelections.set(userId, []);
+      }
+      this.previousSelections.get(userId)!.push(bestMatch.voice.id);
+      
+      return bestMatch;
+
+    } catch (error) {
+      if (failSoft) {
+        console.warn('⚠️ Voice selection failed, using neutral fallback:', error);
+        
+        // Import embedded fallback
+        const { getNeutralVoiceForLevel } = await import('../failSoft/EmbeddedDefaults');
+        const neutralVoice = getNeutralVoiceForLevel(difficulty, userInfo.age);
+        
+        return {
+          voice: neutralVoice,
+          compatibilityScore: 0.5,
+          selectionReasoning: 'Fail-soft neutral voice fallback due to voice catalog failure'
+        };
+      } else {
+        throw error;
+      }
     }
-    
-    // Track selection for novelty
-    const userId = userInfo.name || 'anonymous';
-    if (!this.previousSelections.has(userId)) {
-      this.previousSelections.set(userId, []);
-    }
-    this.previousSelections.get(userId)!.push(bestMatch.voice.id);
-    
-    return bestMatch;
   }
 
   /**

@@ -58,9 +58,13 @@ export class ThemeLibraryService {
   };
 
   /**
-   * Map theme intent to enhanced library themes
+   * Map theme intent to enhanced library themes (fail-soft enabled)
    */
-  static mapToLibrary(themes: string[]): string[] {
+  static mapToLibrary(themes: string[], failSoft = false): string[] {
+    if (failSoft && (!themes || themes.length === 0)) {
+      console.warn('⚠️ ThemeLibrary: No themes provided, using fail-soft default');
+      return ['friendship'];
+    }
     const mappedThemes = new Set<string>();
     
     for (const theme of themes) {
