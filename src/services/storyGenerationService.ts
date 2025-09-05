@@ -8,7 +8,7 @@ import { VocabularyService, type VocabularyIntegration } from "./vocabularyServi
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { getCulturalGuidanceString } from './StaticDataCache';
 import { VoiceCatalogIntegration } from './voiceCatalog/VoiceCatalogIntegration';
-import { ThemeLibraryService } from './voiceCatalog/ThemeLibraryService';
+
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
 
 export interface StoryGenerationBundle {
@@ -103,13 +103,9 @@ export class StoryGenerationService {
         };
       }
 
-      // LAYER 4: Voice Selection with Enhanced Theme Matching and Level Clamping
+      // LAYER 4: Voice Selection with Raw Themes - Backend Handles Processing
       try {
-        // Map themes to enhanced library with fail-soft
-        const enhancedThemes = ThemeLibraryService.mapToLibrary(themeIntent.theme, true);
-        
-        // Filter themes for age appropriateness  
-        const ageAppropriateThemes = ThemeLibraryService.filterThemesForAge(enhancedThemes, userInfo.age || 5);
+        // Pass raw themes to backend for AI-driven processing
         
         // Select voice with cross-level search and fail-soft capability
         const difficulty = this.mapToDifficultyLevel(config.difficulty || userInfo.difficultyLevel || 'easy');
@@ -117,7 +113,7 @@ export class StoryGenerationService {
           userInfo, 
           difficulty,
           {
-            themes: ageAppropriateThemes,
+            themes: themeIntent.theme,  // Raw themes - backend processes
             warmthPreference: 0.7,
             humorPreference: 0.6
           }

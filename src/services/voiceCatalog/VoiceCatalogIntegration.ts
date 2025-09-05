@@ -124,9 +124,15 @@ export class VoiceCatalogIntegration {
   }
 
   /**
-   * Create a compact control line for the AI generation system
+   * Create a compact control line for the AI generation system with age adaptation
    */
   static createControlLine(userInfo: UserInfo, voice: ProcessedVoice, difficulty: DifficultyLevel): string {
+    const shouldAdaptForAge = (
+      difficulty === 'beginner' || 
+      difficulty === 'easy' || 
+      (userInfo.age && userInfo.age <= 8)
+    );
+
     const ctrlData = {
       vf: {
         id: voice.id,
@@ -144,7 +150,13 @@ export class VoiceCatalogIntegration {
       f: userInfo.favoriteFood,
       h: userInfo.hobbies,
       themes: voice.resolvedElements?.themes || [],
-      level: difficulty
+      level: difficulty,
+      safetyFilter: shouldAdaptForAge ? "adapt_for_age" : undefined,
+      ageAdaptation: shouldAdaptForAge ? {
+        originalThemes: voice.resolvedElements?.themes || [],
+        userAge: userInfo.age,
+        instruction: "Create age-appropriate, original content avoiding copyright violations"
+      } : undefined
     };
 
     return `<CTRL>${JSON.stringify(ctrlData)}</CTRL>`;

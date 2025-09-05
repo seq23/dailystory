@@ -35,8 +35,8 @@ export class ThemeLibraryService {
    */
   static mapToLibrary(themes: string[], failSoft = false): string[] {
     if (failSoft && (!themes || themes.length === 0)) {
-      console.warn('⚠️ ThemeLibrary: No themes provided, using fail-soft default');
-      return ['friendship'];
+      console.warn('⚠️ ThemeLibrary: No themes provided, using AI generation');
+      return ['AI_GENERATE_THEMES'];
     }
     
     const mappedThemes = new Set<string>();
@@ -65,9 +65,9 @@ export class ThemeLibraryService {
       }
     }
     
-    // If no matches found, add safe default
+    // If no matches found, flag for AI adaptation
     if (mappedThemes.size === 0) {
-      mappedThemes.add("friendship");
+      return ['AI_ADAPT_THEMES'];
     }
     
     return Array.from(mappedThemes);
@@ -172,10 +172,14 @@ export class ThemeLibraryService {
   }
 
   /**
-   * Filter unsafe themes for age
+   * Filter unsafe themes for age - AI adaptation instead of removal
    */
   static filterThemesForAge(themes: string[], age: number): string[] {
-    return themes.filter(theme => this.validateThemeForAge(theme, age));
+    const hasUnsafeThemes = themes.some(theme => !this.validateThemeForAge(theme, age));
+    if (hasUnsafeThemes) {
+      return ['AI_ADAPT_FOR_AGE'];
+    }
+    return themes;
   }
 
   /**
