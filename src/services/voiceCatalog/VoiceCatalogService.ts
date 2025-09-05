@@ -18,27 +18,6 @@ export class VoiceCatalogService {
   private static voiceCache = new Map<DifficultyLevel, ProcessedVoice[]>();
   private static rawLevelData = new Map<DifficultyLevel, LevelFile | DeltaLevelFile>();
 
-  // Embedded level data (your provided files)
-  private static readonly LEVEL_DATA = {
-    beginner: {
-      "schema": "avc.level.v1",
-      "v": "1.0.0",
-      "level": "beginner",
-      "voices": [
-        // ... full beginner voice data would go here
-        // For now, I'll include a few examples and implement the loading logic
-      ]
-    } as LevelFile,
-
-    easy: {
-      "schema": "avc.level.delta.v1",
-      "v": "1.0.0",
-      "level": "easy",
-      "overrides": [
-        // ... easy overrides would go here
-      ]
-    } as DeltaLevelFile
-  };
 
   /**
    * Get processed voices for a specific difficulty level
