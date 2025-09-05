@@ -1,0 +1,139 @@
+{
+  "schema":"avc.level.v1",
+  "v":"1.0.0",
+  "level":"hard",
+  "voices":[
+    {
+      "id":"doorway_chronicler_hard_v1","pn":"Doorway Chronicler",
+      "vf":{"tone":[9,4],"cad":13,"var":3,"wp":[0],"fig":0.6,"hum":0.3,"warm":0.75,"nar":2},
+      "st":{"hk":[12],"tr":[4,10],"pz":[0,5],"ct":[4],"tw":[1,10,11],"en":[8,9]},
+      "ch":{"hp":[12,0],"pov":"third","dlg":[5,9],"arc":[11,10]},
+      "wd":{"set":[6,21,8],"sc":"grand","mor":"symbolic","lp":["portal"],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":1,"ono":["thrum"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":[],"contr":0,"exag":0},
+      "th":["portal_fantasy","choice","friendship"],"tg":[16,26,27],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Portal-Guide"]
+    },
+    {
+      "id":"island_hearth_hard_v1","pn":"Island Hearth",
+      "vf":{"tone":[4,20],"cad":13,"var":3,"wp":[0],"fig":0.55,"hum":0.35,"warm":0.9,"nar":2},
+      "st":{"hk":[2],"tr":[6],"pz":[5],"ct":[5],"tw":[14],"en":[11]},
+      "ch":{"hp":[8,4],"pov":"third","dlg":[9,4],"arc":[10]},
+      "wd":{"set":[22,17],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":1,"ono":[],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["notice_place"],"contr":0,"exag":0},
+      "th":["coming_of_age","community","place"],"tg":[35,28],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Island-Keeper"]
+    },
+    {
+      "id":"myth_squad_hard_v1","pn":"The Myth Squad",
+      "vf":{"tone":[18,19],"cad":14,"var":4,"wp":[0],"fig":0.5,"hum":0.6,"warm":0.7,"nar":0},
+      "st":{"hk":[13],"tr":[10,12],"pz":[5],"ct":[4],"tw":[1,10,12],"en":[9]},
+      "ch":{"hp":[11,12,4],"pov":"first","dlg":[8,3],"arc":[9,11]},
+      "wd":{"set":[15,3,18],"sc":"grand","mor":"implied","lp":["legend_bleeds_present"],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":0,"ono":["clang","whoom"],"sl":1},
+      "eg":{"dir":0,"lst":1,"ip":["what_choice_now"],"contr":0,"exag":1},
+      "th":["myth_adventure","teamwork","responsibility"],"tg":[33,28,29],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Myth-Hunter"]
+    },
+    {
+      "id":"goosebump_jester_hard_v1","pn":"Goosebump Jester",
+      "vf":{"tone":[15,16],"cad":13,"var":4,"wp":[0,3],"fig":0.45,"hum":0.6,"warm":0.6,"nar":2},
+      "st":{"hk":[12],"tr":[2,6],"pz":[5],"ct":[5],"tw":[14,15],"en":[11]},
+      "ch":{"hp":[12,4],"pov":"third","dlg":[3,5],"arc":[12]},
+      "wd":{"set":[17,6,3],"sc":"everyday","mor":"implied","lp":[],"rp":["series_button"]},
+      "rd":{"rh":"none","aa":1,"ono":["thud","shhh"],"sl":1},
+      "eg":{"dir":0,"lst":1,"ip":["safe_spook_prompt"],"contr":1,"exag":1},
+      "th":["horror_safe","pranks","mystery"],"tg":[32,30],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Safe-Scare-Master"]
+    },
+    {
+      "id":"bridge_of_quiet_hard_v1","pn":"Bridge of Quiet Tears",
+      "vf":{"tone":[20,8],"cad":13,"var":3,"wp":[0],"fig":0.6,"hum":0.25,"warm":0.85,"nar":2},
+      "st":{"hk":[2],"tr":[0,6],"pz":[5],"ct":[5],"tw":[14],"en":[11]},
+      "ch":{"hp":[8,2],"pov":"third","dlg":[9,4],"arc":[6,10]},
+      "wd":{"set":[17,18],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":1,"ono":[],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["gentle_reflect"],"contr":0,"exag":0},
+      "th":["friendship","loss","empathy"],"tg":[6,27],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Tender-Bridge-Builder"]
+    },
+    {
+      "id":"measured_utopia_hard_v1","pn":"The Measured Utopia",
+      "vf":{"tone":[8,20],"cad":13,"var":3,"wp":[0],"fig":0.55,"hum":0.2,"warm":0.7,"nar":2},
+      "st":{"hk":[2],"tr":[6],"pz":[5],"ct":[5],"tw":[11,14],"en":[11]},
+      "ch":{"hp":[12],"pov":"third","dlg":[4,5],"arc":[10]},
+      "wd":{"set":[17,3],"sc":"everyday","mor":"symbolic","lp":[],"rp":["series_button"]},
+      "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["notice_rules"],"contr":0,"exag":0},
+      "th":["identity","responsibility","choice"],"tg":[27,29],
+      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Thoughtful-Society"]
+    },
+    {
+      "id":"cinematic_pageturner_hard_v1","pn":"Cinematic Page-Turner",
+      "vf":{"tone":[8,4],"cad":13,"var":4,"wp":[0],"fig":0.6,"hum":0.3,"warm":0.75,"nar":2},
+      "st":{"hk":[2,12],"tr":[6,10],"pz":[5],"ct":[4],"tw":[15],"en":[10]},
+      "ch":{"hp":[12],"pov":"third","dlg":[9,4],"arc":[11]},
+      "wd":{"set":[3,21,19],"sc":"grand","mor":"implied","lp":["artifact_awakens"],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":1,"ono":["thud","whoosh"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["notice_visual"],"contr":0,"exag":0},
+      "th":["mystery","art","history"],"tg":[30,18],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Visual-Storyteller"]
+    },
+    {
+      "id":"doorway_of_shadows_hard_v1","pn":"Doorway of Shadows",
+      "vf":{"tone":[15,16,20],"cad":13,"var":3,"wp":[0],"fig":0.6,"hum":0.3,"warm":0.7,"nar":2},
+      "st":{"hk":[12],"tr":[10],"pz":[5],"ct":[4],"tw":[1,14,15],"en":[8,11]},
+      "ch":{"hp":[12],"pov":"third","dlg":[5,9],"arc":[12,11]},
+      "wd":{"set":[6,21,8],"sc":"grand","mor":"symbolic","lp":["portal"],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":0,"ono":["shhh","thud"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["hold_breath"],"contr":0,"exag":0},
+      "th":["horror_safe","portal_fantasy","identity"],"tg":[32,16,27],
+      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Shadow-Walker"]
+    },
+    {
+      "id":"quirky_town_poet_hard_v1","pn":"Quirky Town Poet",
+      "vf":{"tone":[5,8],"cad":13,"var":3,"wp":[0,3],"fig":0.55,"hum":0.6,"warm":0.85,"nar":0},
+      "st":{"hk":[2],"tr":[6],"pz":[5],"ct":[5],"tw":[15],"en":[3]},
+      "ch":{"hp":[12,4],"pov":"first","dlg":[4,5],"arc":[10]},
+      "wd":{"set":[17,18],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":1,"ono":["clack"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["notice_oddball"],"contr":1,"exag":1},
+      "th":["identity","small town","humor"],"tg":[27,30],
+      "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Small-Town-Character"]
+    },
+    {
+      "id":"fairy_tale_forge_hard_v1","pn":"Fairy-Tale Forge",
+      "vf":{"tone":[9,4],"cad":13,"var":3,"wp":[0,3],"fig":0.6,"hum":0.4,"warm":0.85,"nar":1},
+      "st":{"hk":[14],"tr":[6,4],"pz":[0,5],"ct":[4],"tw":[0,1,11],"en":[10]},
+      "ch":{"hp":[12,0,10],"pov":"third","dlg":[1,9],"arc":[0,11]},
+      "wd":{"set":[21,7],"sc":"grand","mor":"symbolic","lp":["artifact_awakens"],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["spot_fairy_logic"],"contr":0,"exag":0},
+      "th":["quest","choice","kindness"],"tg":[26,20],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.4,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Fairy-Tale-Crafter"]
+    },
+    {
+      "id":"contrary_wizardry_hard_v1","pn":"Contrary Wizardry",
+      "vf":{"tone":[9,5],"cad":13,"var":4,"wp":[0,3],"fig":0.6,"hum":0.5,"warm":0.8,"nar":2},
+      "st":{"hk":[12,14],"tr":[2,6],"pz":[5],"ct":[5],"tw":[1,15],"en":[9]},
+      "ch":{"hp":[12,10],"pov":"third","dlg":[5,9],"arc":[11]},
+      "wd":{"set":[21,8],"sc":"grand","mor":"implied","lp":["portal"],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["spot_rule_bend"],"contr":1,"exag":0},
+      "th":["wizardry","contraptions","family"],"tg":[16,28],
+      "uig":{"aff":{"u":0.6,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Whimsical-Wizard"]
+    }
+  ]
+}

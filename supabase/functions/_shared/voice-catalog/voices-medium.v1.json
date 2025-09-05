@@ -1,121 +1,19 @@
 {
-  "schema": {
-    "level": "medium",
-    "ageRange": "7-12",
-    "description": "Rich voices for developing readers"
-  },
-  "voices": [
+  "schema":"avc.level.v1",
+  "v":"1.0.0",
+  "level":"medium",
+  "voices":[
     {
-      "id": "brave-adventurer",
-      "name": "Brave Adventurer",
-      "description": "Courageous voice for action-packed stories",
-      "voiceFingerprint": {
-        "warmth": 0.7,
-        "playfulness": 0.8,
-        "complexity": 0.6,
-        "pace": "fast",
-        "sentenceLength": "varied"
-      },
-      "inputIntegration": {
-        "mode": "heroic",
-        "userNameUsage": "empowering",
-        "colorIntegration": "bold",
-        "animalIntegration": "brave"
-      },
-      "themes": [1, 5, 11, 13],
-      "hooks": [2, 9],
-      "transitions": [3, 7],
-      "endings": [2, 6],
-      "characteristics": [
-        "Builds courage and confidence",
-        "Action-oriented storytelling",
-        "Celebrates bravery and determination",
-        "Dynamic, engaging pace"
-      ]
-    },
-    {
-      "id": "mystical-dreamer",
-      "name": "Mystical Dreamer",
-      "description": "Magical voice for fantasy adventures",
-      "voiceFingerprint": {
-        "warmth": 0.6,
-        "playfulness": 0.7,
-        "complexity": 0.7,
-        "pace": "flowing",
-        "sentenceLength": "long"
-      },
-      "inputIntegration": {
-        "mode": "enchanting",
-        "userNameUsage": "mystical",
-        "colorIntegration": "magical",
-        "animalIntegration": "mythical"
-      },
-      "themes": [4, 8, 14],
-      "hooks": [3, 8],
-      "transitions": [4, 8],
-      "endings": [5, 8],
-      "characteristics": [
-        "Rich magical imagery",
-        "Lyrical, flowing narrative style",
-        "Embraces wonder and transformation",
-        "Balances mystery with accessibility"
-      ]
-    },
-    {
-      "id": "thoughtful-mentor",
-      "name": "Thoughtful Mentor",
-      "description": "Wise voice for deeper life lessons",
-      "voiceFingerprint": {
-        "warmth": 0.8,
-        "playfulness": 0.5,
-        "complexity": 0.7,
-        "pace": "thoughtful",
-        "sentenceLength": "long"
-      },
-      "inputIntegration": {
-        "mode": "reflective",
-        "userNameUsage": "meaningful",
-        "colorIntegration": "symbolic",
-        "animalIntegration": "wise"
-      },
-      "themes": [6, 7, 11, 12],
-      "hooks": [0, 7],
-      "transitions": [1, 9],
-      "endings": [0, 4, 9],
-      "characteristics": [
-        "Deeper emotional resonance",
-        "Thoughtful character development",
-        "Explores complex themes gently",
-        "Encourages self-reflection"
-      ]
-    },
-    {
-      "id": "spirited-comedian",
-      "name": "Spirited Comedian",
-      "description": "Humorous voice that teaches through laughter",
-      "voiceFingerprint": {
-        "warmth": 0.8,
-        "playfulness": 1.0,
-        "complexity": 0.6,
-        "pace": "bouncy",
-        "sentenceLength": "short"
-      },
-      "inputIntegration": {
-        "mode": "humorous",
-        "userNameUsage": "playful",
-        "colorIntegration": "silly",
-        "animalIntegration": "funny"
-      },
-      "themes": [0, 10, 13],
-      "hooks": [2, 6],
-      "transitions": [3, 7],
-      "endings": [2, 6],
-      "characteristics": [
-        "Uses gentle humor and wordplay",
-        "Teaches through funny situations",
-        "Light-hearted problem solving",
-        "Celebrates joy and laughter"
-      ]
+      "id":"neighborhood_realist_med_v1","pn":"Neighborhood Realist",
+      "vf":{"tone":[4,5],"cad":12,"var":4,"wp":[0,3],"fig":0.35,"hum":0.5,"warm":0.9,"nar":2},
+      "st":{"hk":[2],"tr":[6,2],"pz":[3],"ct":[5],"tw":[8],"en":[6]},
+      "ch":{"hp":[8,4],"pov":"third","dlg":[4,1],"arc":[3,11]},
+      "wd":{"set":[18,4,5],"sc":"everyday","mor":"implied","lp":[],"rp":[9]},
+      "rd":{"rh":"none","aa":1,"ono":[16],"sl":1},
+      "eg":{"dir":0,"lst":1,"ip":["what_would_you_do"],"contr":0,"exag":0},
+      "th":["friendship","school day","small wins"],"tg":[6,15],
+      "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Realistic-Neighbor"]
     }
   ]
 }
