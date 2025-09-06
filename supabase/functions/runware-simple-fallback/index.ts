@@ -1,5 +1,5 @@
-// ============= TIER 2.5 NUCLEAR INDEPENDENCE - ZERO EXTERNAL DEPENDENCIES =============
-// This edge function is completely self-contained with no external imports
+// ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
+// This edge function uses the shared nuclear negative prompt system for consistency
 
 // Nuclear Independent CORS Headers
 const corsHeaders = {
@@ -871,60 +871,152 @@ function getHardcodedStyle(difficulty: string): { quality: string, suffix?: stri
   return styleMap[difficulty] || styleMap.medium;
 }
 
-function getEnhancedNegativePrompt(culturalProfile: string, avatarType: string, difficulty: string, pageNumber: number = 1): string {
-  // HARDCODED COMPLETE NEGATIVE PROMPT SYSTEM - Comprehensive content filtering
+// ============= NUCLEAR HARDCODE NEGATIVE PROMPT SYSTEM =============
+// Nuclear Independence: 90%+ hardcoded arrays for comprehensive safety filtering
+
+// NUCLEAR BASE NEGATIVE PROMPT (Quality & Safety)
+const NUCLEAR_BASE_NEGATIVE_PROMPT = [
+  // Quality Filters
+  'low quality', 'blurry', 'distorted', 'deformed', 'bad anatomy', 'weird proportions', 
+  'extra limbs', 'missing limbs', 'bad hands', 'malformed hands', 'extra fingers', 
+  'missing fingers', 'crossed eyes', 'bad facial features', 'unrealistic skin', 
+  'plastic appearance', 'oversaturated', 'undersaturated', 'overexposed', 'underexposed',
   
-  // Base Negative Components (comprehensive quality and safety filters)
-  const baseNegative = [
-    'no text, no words, no letters, no writing, no signatures, watermarks, low quality, blurry, distorted, deformed, extra limbs, missing limbs, bad anatomy, weird proportions, bad hands, malformed hands, extra fingers, missing fingers, crossed eyes, bad facial features, unrealistic skin, plastic appearance, oversaturated, cartoon style, anime style, adult content, inappropriate content'
-  ];
+  // Safety Filters  
+  'no text', 'no words', 'no letters', 'no writing', 'no signatures', 'watermarks',
+  'adult content', 'inappropriate content', 'violence', 'weapons', 'scary imagery',
   
-  // Framework-Specific Negative Prompts (from styleFrameworks.js)
-  if (difficulty === 'beginner' || difficulty === 'easy') {
+  // Technical Filters
+  'artifacts', 'noise', 'grain', 'pixelated', 'compression artifacts', 'jpeg artifacts',
+  'digital noise', 'color banding', 'posterization', 'aliasing',
+  
+  // Style Prevention
+  'cartoon style', 'anime style', 'manga style', 'comic book style', 'sketch style',
+  'abstract art', 'surreal art', 'horror style', 'gothic style'
+];
+
+// NUCLEAR OPPOSITE GENDER NEGATIVE PROMPT 
+const NUCLEAR_OPPOSITE_GENDER_NEGATIVES = {
+  boy: [
+    // Exclude feminine characteristics for boys
+    'makeup', 'lipstick', 'mascara', 'nail polish', 'jewelry', 'earrings', 'necklace', 
+    'bracelet', 'rings', 'feminine hairstyles', 'long flowing hair', 'curled hair', 
+    'braided hair', 'ponytails', 'pigtails', 'hair bows', 'hair ribbons', 'feminine clothing',
+    'dress', 'skirt', 'blouse', 'feminine tops', 'high heels', 'ballet shoes', 
+    'feminine accessories', 'purse', 'handbag', 'feminine colors', 'pink clothing',
+    'feminine poses', 'feminine gestures', 'feminine expressions', 'delicate features',
+    'soft feminine features', 'feminine body language'
+  ],
+  girl: [
+    // Exclude masculine characteristics for girls  
+    'facial hair', 'beard', 'mustache', 'masculine haircut', 'buzz cut', 'crew cut',
+    'masculine clothing', 'suit', 'tie', 'masculine shirt', 'baggy clothing', 
+    'masculine shoes', 'work boots', 'masculine accessories', 'masculine colors',
+    'masculine poses', 'masculine gestures', 'masculine expressions', 'rugged features',
+    'angular features', 'masculine body language', 'broad shoulders', 'masculine build',
+    'deep voice indicators', 'masculine stance'
+  ]
+};
+
+// NUCLEAR GENDER NEUTRAL NEGATIVE PROMPT (Excludes ALL gendered characteristics)
+const NUCLEAR_GENDER_NEUTRAL_NEGATIVES = [
+  // Exclude ALL masculine characteristics
+  'facial hair', 'beard', 'mustache', 'masculine haircut', 'buzz cut', 'crew cut',
+  'masculine clothing', 'suit', 'tie', 'masculine shirt', 'masculine shoes', 
+  'work boots', 'masculine accessories', 'masculine poses', 'masculine gestures', 
+  'rugged features', 'angular features', 'masculine body language', 'broad shoulders',
+  
+  // Exclude ALL feminine characteristics  
+  'makeup', 'lipstick', 'mascara', 'nail polish', 'jewelry', 'earrings', 'necklace',
+  'bracelet', 'rings', 'feminine hairstyles', 'long flowing hair', 'curled hair',
+  'braided hair', 'ponytails', 'pigtails', 'hair bows', 'hair ribbons', 'feminine clothing',
+  'dress', 'skirt', 'blouse', 'high heels', 'ballet shoes', 'feminine accessories',
+  'purse', 'handbag', 'feminine poses', 'feminine gestures', 'delicate features',
+  'soft feminine features', 'feminine body language',
+  
+  // Gender-neutral enhancement
+  'gendered clothing', 'gendered accessories', 'gendered hairstyles', 'gendered poses',
+  'gendered expressions', 'gendered colors', 'gendered toys', 'gendered activities'
+];
+
+// NUCLEAR AFRICAN AMERICAN NEGATIVE PROMPT (Protection against whitewashing/lightening)
+const NUCLEAR_AFRICAN_AMERICAN_NEGATIVES = [
+  // Skin tone protection
+  'skin lightening', 'whitewashing', 'pale skin', 'light skin', 'caucasian features',
+  'european features', 'fair complexion', 'light complexion', 'white skin tone',
+  'bleached skin', 'lightened skin', 'washed out skin', 'faded skin tone',
+  
+  // Cultural sensitivity
+  'stereotypes', 'caricature', 'exaggerated features', 'cultural appropriation',
+  'offensive stereotypes', 'racial caricature', 'minstrel imagery', 'tokenism',
+  
+  // Hair texture protection  
+  'straight hair texture', 'caucasian hair', 'european hair texture', 'fine hair texture',
+  'silky straight hair', 'pin straight hair', 'unnaturally straight hair',
+  
+  // Feature protection
+  'narrow nose', 'thin lips', 'small features', 'delicate bone structure',
+  'european bone structure', 'caucasian facial structure', 'non-African features'
+];
+
+// NUCLEAR CULTURAL SENSITIVITY NEGATIVES (Universal protection)
+const NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES = [
+  'cultural stereotypes', 'racial stereotypes', 'ethnic stereotypes', 'cultural caricature',
+  'offensive imagery', 'discriminatory content', 'prejudicial representation',
+  'cultural mockery', 'insensitive portrayal', 'appropriative elements',
+  'tokenistic representation', 'oversimplified culture', 'cultural reduction'
+];
+
+function generateNuclearNegativePrompt(culturalProfile: string, avatarType: string, difficulty: string, pageNumber: number = 1): string {
+  console.log(`🛡️ Tier 2.5: Generating nuclear negative prompt for ${avatarType} with cultural profile: ${culturalProfile}`);
+  
+  // Start with nuclear base negative prompt
+  let negativeComponents = [...NUCLEAR_BASE_NEGATIVE_PROMPT];
+  
+  // Add gender-specific negative prompts
+  if (avatarType === 'boy') {
+    negativeComponents.push(...NUCLEAR_OPPOSITE_GENDER_NEGATIVES.boy);
+    console.log('🛡️ Tier 2.5: Added opposite gender negatives for boy (excluding feminine features)');
+  } else if (avatarType === 'girl') {
+    negativeComponents.push(...NUCLEAR_OPPOSITE_GENDER_NEGATIVES.girl);
+    console.log('🛡️ Tier 2.5: Added opposite gender negatives for girl (excluding masculine features)');
+  } else if (avatarType === 'prefer-not-to-answer' || avatarType === 'neutral' || avatarType === 'child') {
+    negativeComponents.push(...NUCLEAR_GENDER_NEUTRAL_NEGATIVES);
+    console.log('🛡️ Tier 2.5: Added gender-neutral negatives (excluding ALL gendered features)');
+  }
+  
+  // Add African American protection for ALL dark-skinned users
+  if (culturalProfile === 'african-american' || 
+      culturalProfile.includes('dark') || 
+      culturalProfile.includes('african') ||
+      culturalProfile.includes('black')) {
+    negativeComponents.push(...NUCLEAR_AFRICAN_AMERICAN_NEGATIVES);
+    console.log('🛡️ Tier 2.5: Added African American protection negatives (anti-whitewashing)');
+  }
+  
+  // Always add cultural sensitivity negatives
+  negativeComponents.push(...NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES);
+  
     // Level 0-1 (Pixar anti-toy) - MUST be first for Level 0-1
-    baseNegative.push('toy, figurine, doll, plastic, simple background, flat lighting, multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words');
+    negativeComponents.push('toy', 'figurine', 'doll', 'plastic', 'simple background', 'flat lighting', 
+                           'multiple characters', 'crowd', 'busy background', 'dark colors', 'scary', 
+                           'photorealistic', 'adult themes');
   }
   
-  // Additional Level 1 negatives
-  baseNegative.push('multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content');
-  
-  // Cultural Sensitivity Filters
-  baseNegative.push('cultural insensitivity, stereotypes, offensive representations, caricatures');
-  
-  // African American Protection (enhanced from MultiStageEnhancementPipeline.js)
-  if (culturalProfile === 'African American') {
-    baseNegative.push('lightened skin, whitewashed, caucasian features, stereotypical, altered ethnicity, artificial skin lightening, european features imposed, generic appearance');
-  }
-  
-  // Technical Quality Filters
-  baseNegative.push('pixelated, artifacts, noise, oversaturated, undersaturated, malformed features');
-  
-  // Content Safety Filters
-  baseNegative.push('weapons, conflict, sadness, fear, negative emotions');
+  // Additional Level 1+ negatives
+  negativeComponents.push('multiple people', 'crowd', 'cluttered background', 'dark atmosphere', 
+                         'scary elements', 'photorealistic');
   
   // Character Consistency Filters (Page > 1)
   if (pageNumber > 1) {
-    baseNegative.push('inconsistent character design, style variations, character appearance changes');
+    negativeComponents.push('inconsistent character design', 'style variations', 'character appearance changes');
   }
   
-  // Gender-Specific Negative Prompts (Enhanced)
-  if (avatarType === 'boy' || (avatarType.includes && avatarType.includes('boy'))) {
-    // For boy characters - exclude feminine features
-    baseNegative.push('feminine features, long eyelashes, makeup, lipstick, feminine clothing, dresses, feminine hairstyles, feminine jewelry, girl character, female character');
-  } else if (avatarType === 'girl' || (avatarType.includes && avatarType.includes('girl'))) {
-    // For girl characters - exclude masculine features  
-    baseNegative.push('masculine features, facial hair, beard, mustache, masculine clothing, masculine build, broad shoulders, masculine jawline, boy character, male character');
-  } else if (avatarType === 'prefer-not-to-answer' || avatarType.includes('child') || avatarType.includes('neutral')) {
-    // For neutral characters - exclude BOTH masculine AND feminine features
-    if (culturalProfile === 'African American') {
-      // Enhanced neutral negatives for African American characters
-      baseNegative.push('masculine features, facial hair, beard, mustache, masculine clothing, masculine build, broad shoulders, masculine jawline, boy character, male character, feminine features, long eyelashes, makeup, lipstick, feminine clothing, dresses, feminine hairstyles, feminine jewelry, girl character, female character, gendered characteristics, gender-specific features');
-    } else {
-      baseNegative.push('masculine features, feminine features, gendered characteristics, gender-specific features');
-    }
-  }
+  // Return complete nuclear negative prompt
+  const finalNegativePrompt = negativeComponents.join(', ');
+  console.log(`🛡️ Tier 2.5: Nuclear negative prompt generated with ${negativeComponents.length} components`);
   
-  return baseNegative.join(', ');
+  return finalNegativePrompt;
 }
 
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, avatarIdentity?: any): string {
@@ -1072,8 +1164,8 @@ Deno.serve(async (req: Request) => {
     const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
     const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
     const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
-    const culturalProfile = detectCulturalProfile(userInfo, avatarIdentity);
-    const negativePrompt = getEnhancedNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
+    const culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
+    const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
     
     // Get style parameters
     const style = getHardcodedStyle(difficulty);

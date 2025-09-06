@@ -954,9 +954,21 @@ serve(async (req) => {
           });
         }
         
-        // Build comprehensive prompts with all framework components
+        import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+        
+        // Generate nuclear negative prompt with comprehensive protection
+        const culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
+        const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
+        const nuclearNegativePrompt = generateNuclearNegativePrompt(
+          culturalProfile, 
+          avatarType, 
+          difficultyLevel, 
+          pageNumber
+        );
+        
+        // Build comprehensive prompts with nuclear negative system
         const enhancedPrompt = segments.filter(s => s && s.trim()).join(', ');
-        const negativePrompt = storyFramework.negativePrompt || 'blurry, low quality, distorted';
+        const negativePrompt = nuclearNegativePrompt;
         
         // PHASE 4: Comprehensive prompt assembly logging
         console.log(`🔧 [${requestId}] Runware Prompt Assembly Complete:`, {
