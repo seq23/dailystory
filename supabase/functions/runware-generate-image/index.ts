@@ -689,34 +689,34 @@ serve(async (req) => {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
               const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-              const skinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
-              const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
-              const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-              
-              console.log(`🌍 [${requestId}] African American cultural context applied (dark skin + English)`);
-              return `African American heritage: ${skinTone}, ${hairstyle}, ${features}`;
+               const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
+               const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+               const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+               
+               console.log(`🌍 [${requestId}] African American cultural context applied (dark skin + English)`);
+               return `African American heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
             } else if (nativeLanguage === 'es') {
               // Afro-Latina arrays (Hispanic/Latino for dark skin)
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
               const hairstyles = isGirl ? HARDCODED_HISPANIC_LATINO_HAIRSTYLES.girls : HARDCODED_HISPANIC_LATINO_HAIRSTYLES.boys;
-              const skinTone = HARDCODED_HISPANIC_LATINO_SKIN_TONES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length)];
-              const features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length)];
-              const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-              
-              console.log(`🌍 [${requestId}] Afro-Latina cultural context applied (dark skin + Spanish)`);
-              return `Afro-Latina heritage: ${skinTone}, ${hairstyle}, ${features}`;
+               const selectedSkinTone = HARDCODED_HISPANIC_LATINO_SKIN_TONES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length)];
+               const features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length)];
+               const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+               
+               console.log(`🌍 [${requestId}] Afro-Latina cultural context applied (dark skin + Spanish)`);
+               return `Afro-Latina heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
             } else if (nativeLanguage === 'fr') {
               // African arrays (same as African American for French speakers)
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
               const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-              const skinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
-              const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
-              const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-              
-              console.log(`🌍 [${requestId}] African cultural context applied (dark skin + French)`);
-              return `African heritage: ${skinTone}, ${hairstyle}, ${features}`;
+               const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
+               const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+               const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+               
+               console.log(`🌍 [${requestId}] African cultural context applied (dark skin + French)`);
+               return `African heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
             }
           }
           
@@ -892,7 +892,7 @@ serve(async (req) => {
             hasFrameworkPrompt: !!storyFramework.frameworkPrompt
           },
           negativePromptLength: negativePrompt.length,
-          assemblyMethod: 'comma-separated concatenation with 5-segment architecture'
+          assemblyMethod: 'comma-separated concatenation with 7-segment architecture'
         });
 
         // COMPREHENSIVE DEBUGGING: Full prompt logging (no truncation for debugging)
