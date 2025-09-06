@@ -87,6 +87,7 @@ import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useGamification } from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTouchDeviceLongPressNotification } from "@/hooks/useTouchDeviceLongPressNotification";
 import { getMobileTextConfig, getMobileStoryContainer, getDifficultyBasedTextConfig, getDifficultyBasedContainer } from "@/utils/mobileTextOptimizations";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
@@ -186,6 +187,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // Story source notifications - persistent toast system
   useStorySourceNotifications();
+  
+  // Touch device long-press instruction notification
+  const { showLongPressInstruction } = useTouchDeviceLongPressNotification();
   
   // Legacy state - keeping during migration
   const [story, setStory] = useState<string[]>([]);
@@ -330,6 +334,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         
         setIsLoading(false);
         setIsStoryStable(true);
+        
+        // Show touch device instruction after saved story loads
+        setTimeout(() => {
+          showLongPressInstruction();
+        }, 1000);
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -1793,12 +1802,22 @@ const initializeStory = async () => {
         // Debounced stability to prevent flickering
       setIsStoryStable(true);
       console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+        
+        // Show touch device instruction after story loads
+        setTimeout(() => {
+          showLongPressInstruction();
+        }, 1000);
       }, storyRemaining);
     } else {
       setIsLoading(false);
       // Debounced stability to prevent flickering
         setIsStoryStable(true);
         console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+        
+        // Show touch device instruction after story loads
+        setTimeout(() => {
+          showLongPressInstruction();
+        }, 1000);
     }
   }
 };
