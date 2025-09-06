@@ -143,21 +143,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       console.log(`🔄 STREAMLINED: Fallback mapping - Grade ${bundle.systemSettings.gradeLevel} → ${effectiveDifficulty}`);
     }
     
-    // Phase 1: Check for cached user vocabulary before any database calls
-    let userVocabularyCached = [];
-    if (userInfo && userInfo.id) {
-      userVocabularyCached = getUserVocabularyCache(userInfo.id, userInfo.childId);
-      if (userVocabularyCached.length > 0) {
-        console.log(`📚 Using cached user vocabulary: ${userVocabularyCached.length} words`);
-      }
-    }
-
-    // Use existing prompts from storyPrompts.ts - handle expert grades (6-10) separately
-    const promptConfig = expertGrade 
-      ? getExpertStoryPrompt(expertGrade)
-      : getStoryPrompt(effectiveDifficulty as DifficultyLevel);
-    
-    // Extract userInfo from already-resolved bundle
+    // Extract userInfo from already-resolved bundle - MOVED UP before first use
     let userInfo = {};
     try {
       const matches = bundle.storyContent.match(/Character Info: ({.*})/);
@@ -177,6 +163,20 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     } catch (e) {
       console.warn('Could not extract userInfo from bundle, using defaults');
     }
+
+    // Phase 1: Check for cached user vocabulary before any database calls
+    let userVocabularyCached = [];
+    if (userInfo && userInfo.id) {
+      userVocabularyCached = getUserVocabularyCache(userInfo.id, userInfo.childId);
+      if (userVocabularyCached.length > 0) {
+        console.log(`📚 Using cached user vocabulary: ${userVocabularyCached.length} words`);
+      }
+    }
+
+    // Use existing prompts from storyPrompts.ts - handle expert grades (6-10) separately
+    const promptConfig = expertGrade 
+      ? getExpertStoryPrompt(expertGrade)
+      : getStoryPrompt(effectiveDifficulty as DifficultyLevel);
 
     // Bundle already contains resolved natural language - use directly
     let finalSystemPrompt = promptConfig.systemPrompt;
