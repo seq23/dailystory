@@ -524,102 +524,11 @@ serve(async (req) => {
           });
         }
         
-        console.log('⚠️ Tier 1 failed, falling back to Tier 2');
+        console.log('⚠️ Tier 1 failed, falling back to Tier 2.5');
         console.log('🔍 TIER 1 FAILURE DEBUG - Generation failed but no error thrown');
       } catch (error) {
-        console.log('⚠️ Tier 1 error, falling back to Tier 2:', error.message);
+        console.log('⚠️ Tier 1 error, falling back to Tier 2.5:', error.message);
         console.log('🔍 TIER 1 ERROR DEBUG - Full error:', {
-          message: error.message,
-          stack: error.stack?.substring(0, 200) || 'no stack'
-        });
-      }
-    }
-
-    // TIER 2: Template-based Generation  
-    if (!forceTier || forceTier === 2) {
-      try {
-        console.log('🎨 Starting Tier 2: Template-based Generation (using stripped MultiStageEnhancementPipeline)');
-        
-        // Import stripped pipeline for systematic services only
-        const { MultiStageEnhancementPipeline } = await import('../_shared/MultiStageEnhancementPipeline.js');
-        
-        const tier2Result = await MultiStageEnhancementPipeline.processTier2HighQuality(
-          pageText,
-          userInfo,
-          storyId,
-          sessionId,
-          pageNumber,
-          null, // totalPages
-          null, // enhancedStoryData
-          avatarIdentity
-        );
-        
-        if (tier2Result?.enhancedPrompt) {
-          console.log('✅ Tier 2 Template-based succeeded');
-          
-          // Check for avatar quality issues that should trigger Tier 2.5
-          if (tier2Result.metadata?.avatarQualityCheck && !tier2Result.metadata.avatarQualityCheck.isQualityAcceptable) {
-            console.log('🔍 TIER 2.5 TRIGGER: Avatar quality check failed, forcing Tier 2.5 fallback');
-            console.log('🔍 QUALITY CHECK: Avatar quality unacceptable -', tier2Result.metadata.avatarQualityCheck.reason);
-            throw new Error(`Avatar quality check failed: ${tier2Result.metadata.avatarQualityCheck.reason}`);
-          }
-          
-          // Generate with Runware using Tier 2 prompt
-          const tier2GenerationResult = await generateWithRunwarePremium(
-            apiKey, 
-            tier2Result.enhancedPrompt, 
-            tier2Result.negativePrompt,
-            undefined, // no seed for Tier 2
-            sessionId,
-            pageNumber
-          );
-          
-          if (tier2GenerationResult.success) {
-            // PHASE 1: Store Tier 2 image prompt
-            const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-            globalSessionManager.storeImagePrompt(sessionId, {
-              tier: '2',
-              promptText: tier2Result.enhancedPrompt,
-              negativePrompt: tier2Result.negativePrompt,
-              originalPageText: pageText,
-              enhancedPrompt: tier2Result.enhancedPrompt,
-              pageNumber: pageNumber,
-              success: true,
-              imageURL: tier2GenerationResult.imageURL,
-              seed: tier2GenerationResult.seed,
-              provider: 'runware-premium',
-              model: 'runware:100@1',
-              cost: tier2GenerationResult.cost || 0.01,
-              generationTime: tier2GenerationResult.generationTime || 0,
-              metadata: {
-                strippedPipeline: true,
-                fallbackFromTier1: true,
-                tier2Processing: true,
-                ...tier2Result.metadata
-              }
-            });
-            
-            return createCorsResponse({
-              success: true,
-              imageURL: tier2GenerationResult.imageURL,
-              seed: tier2GenerationResult.seed,
-              provider: 'runware-orchestrator',
-              tier: 2,
-              enhancementLevel: 'systematic-services',
-              metadata: { 
-                ...tier2Result.metadata, 
-                orchestrated: true,
-                promptLength: tier2Result.enhancedPrompt.length
-              }
-            });
-          }
-        }
-        
-        console.log('⚠️ Tier 2 failed, falling back to Tier 2.5');
-        console.log('🔍 TIER 2 FAILURE DEBUG - Systematic services failed');
-      } catch (error) {
-        console.log('⚠️ Tier 2 error, falling back to Tier 2.5:', error.message);
-        console.log('🔍 TIER 2 ERROR DEBUG - Full error:', {
           message: error.message,
           stack: error.stack?.substring(0, 200) || 'no stack'
         });
@@ -663,52 +572,7 @@ serve(async (req) => {
           });
         }
         
-        console.log('⚠️ Tier 2.5 failed, falling back to Tier 3');
-      } catch (error) {
-        console.log('⚠️ Tier 2.5 error, falling back to Tier 3:', error.message);
-      }
-    }
-
-    // TIER 3: OpenAI DALL-E Fallback
-    if (!forceTier || forceTier === 3) {
-      try {
-        console.log('🎯 Starting Tier 3: OpenAI DALL-E Generation');
-        
-        // Apply dynamic style framework for OpenAI tier (same as Tier 1 & 2)
-        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
-        const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-        const tier3Style = getStyleFramework(mappedDifficulty);
-        
-        const tier3Result = await callTierFunction('openai-image', {
-          positivePrompt: `${tier3Style?.artStyle || 'Children\'s book illustration'}: ${pageText}. ${tier3Style?.quality || 'High quality rendering'}.`,
-          negativePrompt: "text, letters, words, writing, signs, watermarks, ugly, deformed, bad anatomy, photorealistic, anime",
-          size: '1024x1024',
-          model: 'gpt-image-1',
-          quality: 'standard',
-          avatarIdentity // Pass optimized avatar identity to all tiers
-        });
-
-        if (tier3Result.success) {
-          // PHASE 1: Store Tier 3 image prompt (already stored in openai-image function)
-          console.log('✅ Tier 3 OpenAI succeeded');
-          return createCorsResponse({
-            success: true,
-            imageURL: tier3Result.imageURL,
-            provider: 'runware-orchestrator',
-            tier: 3,
-            enhancementLevel: 'openai-fallback',
-            metadata: { orchestrated: true }
-          });
-        }
-        
-        console.log('⚠️ Tier 3 failed, falling back to Tier 4');
-      } catch (error) {
-        console.log('⚠️ Tier 3 error, falling back to Tier 4:', error.message);
-      }
-    }
-
-    // TIER 4: SVG Placeholder (Guaranteed Success)
+    // TIER 4: SVG Placeholder (Ultimate Fallback)
     console.log('📝 Generating Tier 4: SVG Placeholder');
     const svgResult = generateSVGPlaceholder(pageText, userInfo);
     

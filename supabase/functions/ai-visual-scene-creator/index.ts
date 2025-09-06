@@ -33,6 +33,12 @@ function createCorsOptionsResponse(): Response {
 
 // AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
+
+// PHASE 1: Import Enhanced Character Consistency Services
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
+import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.js";
+import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
+
 // Inline implementations for missing tierFailureMonitoring functions
 const TierFailureLogger = {
   logTier1OpenAIFailure(error, details) {
@@ -57,7 +63,6 @@ const QualityGateMonitor = {
     console.log(`✅ Quality Gate [${gate}]: ${status}`, details);
   }
 };
-import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
@@ -1084,13 +1089,55 @@ serve(async (req) => {
         // =================== PHASE 1: MINIMAL AI REQUEST (Scene Generation Only) ===================
         console.log('🚀 PHASE 1: Minimal AI Request (Scene Generation Only)');
         
-        // PHASE 1.1: Simple Character Description from mapAvatarIdentity
-        const avatarIdentity = mapAvatarIdentity(userInfo);
-        const basicCharacterDescription = `${avatarIdentity.name} is a child age ${userInfo?.age || '6-8'} with ${avatarIdentity.hairColor || 'brown hair'}`;
+        // PHASE 1.1: Enhanced Character Description using CharacterConsistencyService
+        console.log('🎭 PHASE 1.1: Using CharacterConsistencyService for database-backed character consistency');
         
-        console.log('👤 PHASE 1.1: Basic Character Description:', {
+        const avatarIdentity = mapAvatarIdentity(userInfo);
+        const characterConsistencyService = new CharacterConsistencyService();
+        
+        // Get or create character seed with database persistence
+        const characterData = await characterConsistencyService.getCharacterSeed(
+          sessionId,
+          userInfo?.id || `user-${Date.now()}`,
+          userInfo,
+          storyText,
+          avatarIdentity,
+          'continuing', // session type
+          null // page text clothing
+        );
+        
+        const enhancedCharacterDescription = characterData.characterDescription || 
+          `${avatarIdentity.name} is a child age ${userInfo?.age || '6-8'} with ${avatarIdentity.hairColor || 'brown hair'}`;
+        
+        console.log('👤 PHASE 1.1: Enhanced Character Description:', {
           avatarIdentity: avatarIdentity,
-          basicDescription: basicCharacterDescription
+          characterSeed: characterData.seed,
+          enhancedDescription: enhancedCharacterDescription,
+          characterConsistency: 'database-backed'
+        });
+        
+        // PHASE 1.1b: Detect Secondary Characters  
+        console.log('🔍 PHASE 1.1b: Detecting secondary characters using SecondaryElementDetector');
+        const secondaryElements = await SecondaryElementDetector.parseElements(
+          sessionId,
+          '', // primaryScene not available yet
+          storyText,
+          pageNumber
+        );
+        
+        console.log('👥 PHASE 1.1b: Secondary elements detected:', {
+          count: secondaryElements.length,
+          elements: secondaryElements.map(e => `${e.name} (${e.type})`)
+        });
+        
+        // PHASE 1.1c: Track Visual Details
+        console.log('🎨 PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
+        VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+        const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+        
+        console.log('🖼️ PHASE 1.1c: Visual details tracked:', {
+          visualDetailsCount: visualDetails.length,
+          details: visualDetails
         });
         
         // PHASE 1.2: Minimal AI Prompt (NO cultural features, NO complex prompts)
@@ -1114,16 +1161,20 @@ Focus on creating a comprehensive primaryScene only - no other fields needed.`
           {
             role: 'user', 
             content: `Story text: "${storyText}"
-Character: ${basicCharacterDescription}
+Primary Character: ${enhancedCharacterDescription}
+${secondaryElements.length > 0 ? `Secondary Characters: ${secondaryElements.map(e => e.name).join(', ')}` : ''}
+${visualDetails ? `Visual Details: ${visualDetails}` : ''}
 
 Generate a detailed primaryScene description (30+ characters minimum) that shows what's happening visually in this story moment.`
           }
         ];
         
-        console.log(`🧠 [${requestId}] PHASE 1.2: Minimal prompt constructed:`, {
+        console.log(`🧠 [${requestId}] PHASE 1.2: Enhanced prompt constructed:`, {
           systemPromptLength: minimalMessages[0].content.length,
           userPromptLength: minimalMessages[1].content.length,
-          characterDescription: basicCharacterDescription,
+          enhancedCharacterDescription: enhancedCharacterDescription,
+          secondaryElementsCount: secondaryElements.length,
+          visualDetailsIncluded: !!visualDetails,
           storyTextLength: storyText.length
         });
         
@@ -1150,6 +1201,17 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
             primaryScenePreview: primaryScene.substring(0, 100) + '...'
           });
           
+          // PHASE 1.3b: Update Visual Details with Generated Scene
+          console.log('🔄 PHASE 1.3b: Updating visual details with generated primary scene');
+          VisualDetailTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
+          
+          // PHASE 1.3c: Inject Consistent Visual Details into Scene
+          const updatedPrimaryScene = VisualDetailTracker.injectConsistentDetails(sessionId, primaryScene, pageNumber);
+          if (updatedPrimaryScene !== primaryScene) {
+            console.log('🔄 PHASE 1.3c: Primary scene updated with consistent visual details');
+            primaryScene = updatedPrimaryScene;
+          }
+          
         } catch (error) {
           console.error(`❌ [${requestId}] PHASE 1.3: AI call failed:`, error.message);
           // Return error to trigger Tier 2
@@ -1165,9 +1227,9 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         // =================== PHASE 2: POST-AI PROMPT CONSTRUCTION ===================
         console.log('🎨 PHASE 2: Post-AI Prompt Construction');
         
-        // PHASE 2.1: Base Character Description (sentence 1)
-        const baseCharacterDescription = basicCharacterDescription;
-        console.log(`📝 PHASE 2.1: Base character: ${baseCharacterDescription}`);
+        // PHASE 2.1: Enhanced Character Description (sentence 1) with Database Consistency
+        const baseCharacterDescription = enhancedCharacterDescription;
+        console.log(`📝 PHASE 2.1: Enhanced character: ${baseCharacterDescription}`);
         
         // PHASE 2.2: Primary Scene Integration (sentence 2+)
         const sceneIntegration = primaryScene;
@@ -1237,8 +1299,31 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         
         console.log(`🎨 PHASE 2.4: Style framework applied - Level ${difficultyNum} (${difficultyNum <= 2 ? 'Contemporary' : '2.9D'})`);
         
-        // PHASE 2.5: Character Consistency Cache (Placeholder for now)
-        console.log('💾 PHASE 2.5: Character consistency cache - [PLACEHOLDER FOR FUTURE IMPLEMENTATION]');
+        // PHASE 2.5: Character Consistency Database Storage (Enhanced Implementation)
+        console.log('💾 PHASE 2.5: Character consistency stored in database via CharacterConsistencyService');
+        console.log(`🎭 Character seed ${characterData.seed} persisted for session ${sessionId}`);
+        
+        // PHASE 2.5b: Generate Secondary Character Descriptions if Present
+        let secondaryCharacterPrompts = '';
+        if (secondaryElements.length > 0) {
+          console.log('👥 PHASE 2.5b: Generating descriptions for secondary characters');
+          
+          for (const element of secondaryElements.filter(e => e.needsConsistency)) {
+            if (element.category === 'secondary_character') {
+              const secondaryChar = await characterConsistencyService.generateSecondaryCharacter(
+                element.relationshipType,
+                { name: element.name, type: element.type },
+                userInfo,
+                sessionId
+              );
+              
+              if (secondaryChar) {
+                secondaryCharacterPrompts += `, with ${secondaryChar.characterDescription || element.name}`;
+                console.log(`👤 Secondary character: ${element.name} → ${secondaryChar.characterDescription}`);
+              }
+            }
+          }
+        }
         
         // =================== PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1) ===================
         console.log('📚 PHASE 3: Story Text Attachment Check');
@@ -1254,23 +1339,29 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           console.log(`📚 PHASE 3: Story text skipped for level ${difficulty || 'unknown'}`);
         }
         
-        // =================== FINAL ASSEMBLY ===================
-        const finalPrompt = `${baseCharacterDescription}. ${sceneIntegration}${culturalContext}${baseBrandSuffix}${stepsAndCFG}${storyTextAttachment}`;
+        // =================== ENHANCED FINAL ASSEMBLY ===================
+        const finalPrompt = `${baseCharacterDescription}. ${sceneIntegration}${secondaryCharacterPrompts}${culturalContext}${baseBrandSuffix}${stepsAndCFG}${storyTextAttachment}`;
         const finalNegativePrompt = culturalNegativePrompt;
         
-        console.log('🏗️ FINAL ASSEMBLY: Reorganized Tier 1 Complete', {
+        console.log('🏗️ ENHANCED FINAL ASSEMBLY: Tier 1 Complete with Character Consistency', {
           promptLength: finalPrompt.length,
           negativePromptLength: finalNegativePrompt.length,
-          phases: '✅ Phase 1 (AI Scene) → ✅ Phase 2 (Cultural+Style) → ✅ Phase 3 (Story Text)',
+          phases: '✅ Phase 1 (AI Scene + Character DB) → ✅ Phase 2 (Cultural+Style+Secondary) → ✅ Phase 3 (Story Text)',
           hasStoryText: !!storyTextAttachment,
           hasCulturalFeatures: !!culturalContext,
+          hasSecondaryCharacters: secondaryElements.length > 0,
+          hasVisualDetails: !!visualDetails,
+          characterSeed: characterData.seed,
           primarySceneLength: primaryScene.length
         });
         
-        // Create enhanced story data for return
+        // Create enhanced story data for return with character consistency
         enhancedStoryData = {
           primaryScene: primaryScene,
           characters: baseCharacterDescription,
+          secondaryCharacters: secondaryElements,
+          visualDetails: visualDetails,
+          characterSeed: characterData.seed,
           visualComponents: {
             sceneType: 'illustration',
             lighting: 'natural',
@@ -1279,15 +1370,21 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           // NEW: Include final assembled prompt for Runware
           finalAssembledPrompt: finalPrompt,
           finalNegativePrompt: finalNegativePrompt,
-          reorganizedTier1: true,
+          enhancedTier1: true, // Updated from reorganizedTier1
+          characterConsistency: {
+            databaseBacked: true,
+            characterSeed: characterData.seed,
+            secondaryCharactersCount: secondaryElements.length,
+            visualDetailsTracked: !!visualDetails
+          },
           phases: {
-            phase1: 'AI scene generation complete',
-            phase2: 'Cultural features and style applied',
+            phase1: 'AI scene generation + character DB + secondary detection + visual tracking',
+            phase2: 'Cultural features + style + secondary character descriptions',
             phase3: isBeginnerLevel ? 'Story text attached' : 'Story text skipped'
           }
         };
         
-        console.log(`✅ REORGANIZED TIER 1: All phases complete - returning enhanced data with assembled prompts`);
+        console.log(`✅ ENHANCED TIER 1: All phases complete - returning enhanced data with character consistency and assembled prompts`);
         
         // =================== VALIDATION & RETURN RESULTS ===================
         // No complex validation needed since we built the prompts ourselves
@@ -1300,18 +1397,24 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           }
         };
         
-        console.log(`✅ REORGANIZED TIER 1: Validation passed - all phases complete`);
+        console.log(`✅ ENHANCED TIER 1: Validation passed - all phases complete with character consistency`);
         
         // Return enhanced data with assembled prompts for Runware
         const result = {
           success: true,
           aiSchema: enhancedStoryData,
           metadata: {
-            reorganizedTier1: true,
+            enhancedTier1: true, // Updated from reorganizedTier1
+            characterConsistency: {
+              databaseBacked: true,
+              characterSeed: characterData.seed,
+              secondaryCharactersDetected: secondaryElements.length,
+              visualDetailsTracked: !!visualDetails
+            },
             validation: {
-              fieldsPresent: 3,
+              fieldsPresent: 5, // Updated count
               fieldsPassed: true,
-              processingMethod: '3-phase-reorganized',
+              processingMethod: '3-phase-enhanced-with-consistency',
               modelUsed: 'openai-enhanced'
             },
             extractedElements: {
@@ -1335,15 +1438,15 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
               schemaVersion: '3-phase-reorganized'
             },
             phases: {
-              phase1: 'AI scene generation',
-              phase2: 'Cultural features and style framework', 
+              phase1: 'AI scene generation + character DB + secondary detection + visual tracking',
+              phase2: 'Cultural features + style framework + secondary character descriptions', 
               phase3: isBeginnerLevel ? 'Story text attached' : 'Story text skipped'
             }
           },
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`✅ REORGANIZED TIER 1: Complete - Phases: AI Scene(✅) → Cultural+Style(✅) → Story Text(${isBeginnerLevel ? '✅' : '⚠️ skipped'}) - Final prompt ready for Runware`);
+        console.log(`✅ ENHANCED TIER 1: Complete - Phases: AI Scene + Character DB + Secondary + Visual(✅) → Cultural+Style+Secondary(✅) → Story Text(${isBeginnerLevel ? '✅' : '⚠️ skipped'}) - Final prompt ready for Runware`);
 
         return createCorsResponse(result);
 

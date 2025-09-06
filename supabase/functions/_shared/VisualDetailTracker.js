@@ -1,210 +1,137 @@
-// VisualDetailTracker - Backend JavaScript version
-// Tracks visual details and object consistency across story pages
+/**
+ * Visual Detail Tracker - Simplified Implementation
+ * Tracks and manages visual details for consistency across story pages
+ */
 
-class VisualDetailTracker {
+export class VisualDetailTracker {
+  // Static registry to store details for each session
   static detailRegistry = new Map();
 
+  /**
+   * Analyze text for visual details and store them for consistency
+   */
   static analyzeTextForDetails(sessionId, text, pageNumber) {
-    console.log('🔍 VisualDetailTracker: Starting text analysis...');
+    console.log(`🎨 VisualDetailTracker - Analyzing text for session ${sessionId}, page ${pageNumber}`);
     
-    // Input validation - fail fast
-    if (!sessionId) throw new Error('VisualDetailTracker.analyzeTextForDetails: sessionId is required');
-    if (typeof text !== 'string') throw new Error('VisualDetailTracker.analyzeTextForDetails: text must be a string');
-    if (typeof pageNumber !== 'number') throw new Error('VisualDetailTracker.analyzeTextForDetails: pageNumber must be a number');
+    if (!sessionId || !text) return;
     
-    console.log(`🎨 Analyzing text for visual details: session=${sessionId}, page=${pageNumber}, textLength=${text.length}`);
-    
+    // Initialize session registry if needed
     if (!this.detailRegistry.has(sessionId)) {
-      this.detailRegistry.set(sessionId, []);
+      this.detailRegistry.set(sessionId, new Map());
     }
     
     const sessionDetails = this.detailRegistry.get(sessionId);
-    const newDetails = [];
     
-    // Detection patterns for objects with attributes
-    const patterns = [
-      {
-        regex: /(a|an|the)?\s*(big|small|tiny|huge|large|little)?\s*(red|blue|green|yellow|purple|orange|pink|black|white|brown|gray)\s+(car|ball|book|toy|bike|house|tree|flower|bird|cat|dog|dress|shirt|hat|shoes)/gi,
-        type: 'object',
-        extractAttributes: (match) => {
-          const attributes = new Map();
-          const words = match.toLowerCase().split(/\s+/);
-          
-          // Extract color
-          const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'black', 'white', 'brown', 'gray'];
-          const color = words.find(word => colors.includes(word));
-          if (color) attributes.set('color', color);
-          
-          // Extract size
-          const sizes = ['big', 'small', 'tiny', 'huge', 'large', 'little'];
-          const size = words.find(word => sizes.includes(word));
-          if (size) attributes.set('size', size);
-          
-          return attributes;
-        },
-        extractName: (match) => {
-          const objects = ['car', 'ball', 'book', 'toy', 'bike', 'house', 'tree', 'flower', 'bird', 'cat', 'dog', 'dress', 'shirt', 'hat', 'shoes'];
-          const words = match.toLowerCase().split(/\s+/);
-          return words.find(word => objects.includes(word)) || 'object';
-        }
-      },
-      {
-        regex: /(sunny|rainy|cloudy|snowy|foggy|stormy)\s+(day|morning|afternoon|evening|night)/gi,
-        type: 'weather',
-        extractAttributes: (match) => {
-          const attributes = new Map();
-          const words = match.toLowerCase().split(/\s+/);
-          const weather = ['sunny', 'rainy', 'cloudy', 'snowy', 'foggy', 'stormy'];
-          const time = ['day', 'morning', 'afternoon', 'evening', 'night'];
-          
-          const weatherType = words.find(word => weather.includes(word));
-          const timeOfDay = words.find(word => time.includes(word));
-          
-          if (weatherType) attributes.set('weather', weatherType);
-          if (timeOfDay) attributes.set('time', timeOfDay);
-          
-          return attributes;
-        },
-        extractName: (match) => 'weather'
+    // Extract visual details using patterns
+    const colorPattern = /(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey)\s+(car|house|dress|shirt|hat|ball|toy|flower)/gi;
+    const sizePattern = /(big|small|large|tiny|huge|little)\s+(car|house|tree|dog|cat|ball|toy)/gi;
+    
+    // Process color details
+    let match;
+    while ((match = colorPattern.exec(text)) !== null) {
+      const color = match[1].toLowerCase();
+      const object = match[2].toLowerCase();
+      const detailKey = `${object}_color`;
+      
+      if (!sessionDetails.has(detailKey)) {
+        sessionDetails.set(detailKey, {
+          type: 'color',
+          object: object,
+          value: color,
+          firstSeen: pageNumber,
+          lastSeen: pageNumber
+        });
+        console.log(`🎨 New color detail: ${object} is ${color}`);
+      } else {
+        // Update last seen
+        const existing = sessionDetails.get(detailKey);
+        existing.lastSeen = pageNumber;
       }
-    ];
+    }
     
-    patterns.forEach(pattern => {
-      let match;
-      while ((match = pattern.regex.exec(text)) !== null) {
-        const fullMatch = match[0];
-        const name = pattern.extractName(fullMatch);
-        const attributes = pattern.extractAttributes(fullMatch);
-        const detailId = `${sessionId}-${name}-${pageNumber}`;
-        
-        // Check if this detail already exists
-        const existingDetail = sessionDetails.find(d => d.name === name && d.type === pattern.type);
-        
-        if (existingDetail) {
-          // Update existing detail
-          existingDetail.lastMentionedPage = pageNumber;
-          // Merge attributes
-          attributes.forEach((value, key) => {
-            existingDetail.attributes.set(key, value);
-          });
-        } else {
-          // Create new detail
-          const newDetail = {
-            id: detailId,
-            type: pattern.type,
-            name: name,
-            description: fullMatch,
-            firstMentionedPage: pageNumber,
-            lastMentionedPage: pageNumber,
-            context: text.substring(Math.max(0, match.index - 50), match.index + fullMatch.length + 50),
-            attributes: attributes
-          };
-          
-          sessionDetails.push(newDetail);
-          newDetails.push(newDetail);
-        }
+    // Process size details
+    while ((match = sizePattern.exec(text)) !== null) {
+      const size = match[1].toLowerCase();
+      const object = match[2].toLowerCase();
+      const detailKey = `${object}_size`;
+      
+      if (!sessionDetails.has(detailKey)) {
+        sessionDetails.set(detailKey, {
+          type: 'size',
+          object: object,
+          value: size,
+          firstSeen: pageNumber,
+          lastSeen: pageNumber
+        });
+        console.log(`📏 New size detail: ${object} is ${size}`);
+      } else {
+        // Update last seen
+        const existing = sessionDetails.get(detailKey);
+        existing.lastSeen = pageNumber;
       }
-    });
-    
-    return newDetails;
+    }
   }
 
+  /**
+   * Get consistent detail description for a tracked object
+   */
   static getConsistentDetailDescription(sessionId, detailName, type) {
-    console.log(`🔍 VisualDetailTracker: Getting consistent description for ${detailName} (${type})...`);
-    
-    // Input validation - fail fast
-    if (!sessionId) throw new Error('VisualDetailTracker.getConsistentDetailDescription: sessionId is required');
-    if (!detailName) throw new Error('VisualDetailTracker.getConsistentDetailDescription: detailName is required');
-    if (!type) throw new Error('VisualDetailTracker.getConsistentDetailDescription: type is required');
-    
-    if (!this.detailRegistry.has(sessionId)) {
-      return null;
-    }
+    if (!this.detailRegistry.has(sessionId)) return null;
     
     const sessionDetails = this.detailRegistry.get(sessionId);
-    const detail = sessionDetails.find(d => d.name === detailName && d.type === type);
+    const detailKey = `${detailName}_${type}`;
     
-    if (!detail) return null;
-    
-    // Build description from attributes
-    let description = '';
-    
-    if (detail.attributes.has('size')) {
-      description += detail.attributes.get('size') + ' ';
+    if (sessionDetails.has(detailKey)) {
+      const detail = sessionDetails.get(detailKey);
+      return `${detail.value} ${detail.object}`;
     }
     
-    if (detail.attributes.has('color')) {
-      description += detail.attributes.get('color') + ' ';
-    }
-    
-    description += detailName;
-    
-    return description.trim();
+    return null;
   }
 
+  /**
+   * Inject consistent details into text
+   */
   static injectConsistentDetails(sessionId, text, pageNumber) {
-    console.log(`🔍 VisualDetailTracker: Injecting consistent details for session ${sessionId}, page ${pageNumber}...`);
+    if (!this.detailRegistry.has(sessionId)) return text;
     
-    // Input validation - fail fast
-    if (!sessionId) throw new Error('VisualDetailTracker.injectConsistentDetails: sessionId is required');
-    if (typeof text !== 'string') throw new Error('VisualDetailTracker.injectConsistentDetails: text must be a string');
-    
-    if (!this.detailRegistry.has(sessionId)) {
-      return text;
-    }
-    
+    let updatedText = text;
     const sessionDetails = this.detailRegistry.get(sessionId);
-    let enhancedText = text;
     
     // Replace vague references with consistent descriptions
-    sessionDetails.forEach(detail => {
-      if (detail.type === 'object') {
-        // Look for patterns like "the car" or "a ball"
-        const vaguePattern = new RegExp(`\\b(the|a|an)\\s+${detail.name}\\b`, 'gi');
-        const consistentDescription = this.getConsistentDetailDescription(sessionId, detail.name, detail.type);
-        
-        if (consistentDescription && consistentDescription !== detail.name) {
-          enhancedText = enhancedText.replace(vaguePattern, `the ${consistentDescription}`);
-        }
+    sessionDetails.forEach((detail, key) => {
+      if (detail.type === 'color') {
+        const vaguePattern = new RegExp(`\\bthe\\s+${detail.object}\\b`, 'gi');
+        updatedText = updatedText.replace(vaguePattern, `the ${detail.value} ${detail.object}`);
       }
     });
     
-    return enhancedText;
+    return updatedText;
   }
 
-  static getSessionDetails(sessionId) {
-    return this.detailRegistry.get(sessionId) || [];
-  }
-
-  static clearSessionDetails(sessionId) {
-    this.detailRegistry.delete(sessionId);
-  }
-
+  /**
+   * Get all visual details for a session as prompt addition
+   */
   static getVisualDetailsForPrompt(sessionId) {
-    console.log(`🔍 VisualDetailTracker: Getting visual details for prompt, session ${sessionId}...`);
+    if (!this.detailRegistry.has(sessionId)) return '';
     
-    // Input validation - fail fast
-    if (!sessionId) throw new Error('VisualDetailTracker.getVisualDetailsForPrompt: sessionId is required');
+    const sessionDetails = this.detailRegistry.get(sessionId);
+    const details = [];
     
-    const details = this.getSessionDetails(sessionId);
-    
-    if (details.length === 0) return null;
-    
-    const consistencyPrompts = [];
-    
-    details.forEach(detail => {
-      const description = this.getConsistentDetailDescription(sessionId, detail.name, detail.type);
-      if (description && description !== detail.name) {
-        consistencyPrompts.push(`consistent ${description}`);
-      }
+    sessionDetails.forEach((detail) => {
+      details.push(`${detail.value} ${detail.object}`);
     });
     
-    return consistencyPrompts.length > 0 ? consistencyPrompts.join(', ') : null;
+    return details.join(', ');
+  }
+
+  /**
+   * Clear all details for a session
+   */
+  static clearSessionDetails(sessionId) {
+    if (this.detailRegistry.has(sessionId)) {
+      this.detailRegistry.delete(sessionId);
+      console.log(`🧹 Cleared visual details for session ${sessionId}`);
+    }
   }
 }
-
-// ES6 Export for modern modules (CommonJS removed for compatibility)
-export { VisualDetailTracker };
-
-// Also make it available as a global for direct import
-globalThis.VisualDetailTracker = VisualDetailTracker;
