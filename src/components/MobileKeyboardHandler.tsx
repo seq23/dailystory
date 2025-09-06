@@ -13,34 +13,46 @@ export const MobileKeyboardHandler: React.FC<MobileKeyboardHandlerProps> = ({ ch
 
     let originalViewportHeight = window.innerHeight;
     let keyboardOpen = false;
+    let resizeTimeout: number;
+    let resizeFrame: number;
 
     const handleResize = () => {
-      const currentHeight = window.innerHeight;
-      const heightDifference = originalViewportHeight - currentHeight;
+      // Cancel any pending resize operations to prevent performance issues
+      clearTimeout(resizeTimeout);
+      cancelAnimationFrame(resizeFrame);
       
-      // Keyboard is considered open if viewport shrinks by more than 150px (mobile) or 200px (tablet)
-      const wasKeyboardOpen = keyboardOpen;
-      keyboardOpen = heightDifference > 150;
+      // Use requestAnimationFrame to batch DOM operations and throttle to 60fps
+      resizeFrame = requestAnimationFrame(() => {
+        const currentHeight = window.innerHeight;
+        const heightDifference = originalViewportHeight - currentHeight;
+        
+        // Keyboard is considered open if viewport shrinks by more than 150px (mobile) or 200px (tablet)
+        const wasKeyboardOpen = keyboardOpen;
+        keyboardOpen = heightDifference > 150;
 
-      if (keyboardOpen !== wasKeyboardOpen) {
-        if (keyboardOpen) {
-          // Keyboard opened
-          document.body.classList.add('keyboard-open');
-          document.documentElement.style.setProperty('--keyboard-height', `${heightDifference}px`);
-          
-          // Scroll active input into view
-          const activeElement = document.activeElement as HTMLElement;
-          if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-            setTimeout(() => {
-              activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-          }
-        } else {
-          // Keyboard closed
-          document.body.classList.remove('keyboard-open');
-          document.documentElement.style.setProperty('--keyboard-height', '0px');
+        if (keyboardOpen !== wasKeyboardOpen) {
+          // Batch DOM writes to prevent forced reflows
+          requestAnimationFrame(() => {
+            if (keyboardOpen) {
+              // Keyboard opened
+              document.body.classList.add('keyboard-open');
+              document.documentElement.style.setProperty('--keyboard-height', `${heightDifference}px`);
+              
+              // Debounced scroll to prevent excessive operations
+              resizeTimeout = window.setTimeout(() => {
+                const activeElement = document.activeElement as HTMLElement;
+                if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                  activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }, 300);
+            } else {
+              // Keyboard closed
+              document.body.classList.remove('keyboard-open');
+              document.documentElement.style.setProperty('--keyboard-height', '0px');
+            }
+          });
         }
-      }
+      });
     };
 
     const handleFocusIn = (e: FocusEvent) => {
@@ -57,6 +69,9 @@ export const MobileKeyboardHandler: React.FC<MobileKeyboardHandlerProps> = ({ ch
     document.addEventListener('focusin', handleFocusIn);
 
     return () => {
+      // Clean up all pending operations
+      clearTimeout(resizeTimeout);
+      cancelAnimationFrame(resizeFrame);
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('focusin', handleFocusIn);
       document.body.classList.remove('keyboard-open');

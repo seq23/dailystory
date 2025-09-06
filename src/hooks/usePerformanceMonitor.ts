@@ -62,25 +62,27 @@ export function usePerformanceMonitor() {
       }
     });
     
-    // Also monitor for specific forced reflow patterns
-    const originalGetBoundingClientRect = Element.prototype.getBoundingClientRect;
-    let recentCalls = 0;
-    let lastResetTime = Date.now();
+    // Lightweight monitoring without overriding native methods
+    // This prevents the performance overhead of intercepting every getBoundingClientRect call
+    let layoutCallCount = 0;
+    let lastLayoutReset = Date.now();
     
-    Element.prototype.getBoundingClientRect = function() {
+    const monitorLayoutCalls = () => {
       const now = Date.now();
-      if (now - lastResetTime > 1000) {
-        recentCalls = 0;
-        lastResetTime = now;
+      if (now - lastLayoutReset > 1000) {
+        if (layoutCallCount > 20) {
+          console.warn(`🔄 High layout activity detected: ${layoutCallCount} operations in 1s`);
+        }
+        layoutCallCount = 0;
+        lastLayoutReset = now;
       }
       
-      recentCalls++;
-      if (recentCalls > 10) {
-        console.warn(`🔄 Potential layout thrashing: ${recentCalls} getBoundingClientRect calls in 1s`);
-      }
-      
-      return originalGetBoundingClientRect.call(this);
+      layoutCallCount++;
+      requestAnimationFrame(monitorLayoutCalls);
     };
+    
+    // Start lightweight monitoring
+    requestAnimationFrame(monitorLayoutCalls);
     
     if ('PerformanceObserver' in window) {
       try {
@@ -98,7 +100,6 @@ export function usePerformanceMonitor() {
     return () => {
       try {
         observer.disconnect();
-        Element.prototype.getBoundingClientRect = originalGetBoundingClientRect;
       } catch (e) {
         // Observer already disconnected
       }

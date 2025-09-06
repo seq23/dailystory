@@ -31,7 +31,7 @@ export const MobileTooltip: React.FC<MobileTooltipProps> = ({
     requestAnimationFrame(() => {
       if (!triggerRef.current || !tooltipRef.current) return;
 
-      // Batch DOM reads to minimize reflows
+      // Batch all DOM reads together to minimize forced reflows
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
