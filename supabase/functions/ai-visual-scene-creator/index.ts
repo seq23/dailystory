@@ -345,6 +345,52 @@ const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   ]
 };
 
+// ============= COMBINED AFRICAN AMERICAN FEATURES ARRAY =============
+const HARDCODED_AFRICAN_AMERICAN_FEATURES = [
+  { skinTone: 'rich brown complexion', eyeColor: 'warm brown eyes', facialFeature: 'expressive almond-shaped eyes' },
+  { skinTone: 'deep mahogany skin tone', eyeColor: 'deep brown eyes', facialFeature: 'full lips and high cheekbones' },
+  { skinTone: 'warm caramel complexion', eyeColor: 'amber-flecked brown eyes', facialFeature: 'defined jawline and bright smile' },
+  { skinTone: 'dark chocolate skin', eyeColor: 'dark espresso eyes', facialFeature: 'prominent cheekbones and gentle features' },
+  { skinTone: 'honey-bronze complexion', eyeColor: 'golden-brown eyes', facialFeature: 'curved eyebrows and dimpled smile' },
+  { skinTone: 'deep ebony skin tone', eyeColor: 'rich dark brown eyes', facialFeature: 'strong facial structure and kind expression' },
+  { skinTone: 'warm copper complexion', eyeColor: 'hazel-brown eyes', facialFeature: 'round cheeks and sparkling eyes' },
+  { skinTone: 'rich cocoa skin', eyeColor: 'deep amber eyes', facialFeature: 'elegant bone structure and natural glow' },
+  { skinTone: 'dark toffee complexion', eyeColor: 'warm chocolate eyes', facialFeature: 'smooth skin and genuine smile' },
+  { skinTone: 'deep bronze skin tone', eyeColor: 'rich mahogany eyes', facialFeature: 'distinctive features and confident expression' },
+  { skinTone: 'warm sienna complexion', eyeColor: 'deep golden-brown eyes', facialFeature: 'symmetrical features and bright personality' },
+  { skinTone: 'dark mocha skin', eyeColor: 'intense brown eyes', facialFeature: 'natural beauty and expressive face' }
+];
+
+// ============= COMBINED AFRICAN AMERICAN FEATURES SELECTION LOGIC =============
+function selectAfricanAmericanFeatures(avatarIdentity) {
+  if (!avatarIdentity) return null;
+  
+  // Detect African American character
+  const skinTone = avatarIdentity.skinTone || avatarIdentity.culturalProfile?.skinTone;
+  const culturalProfile = avatarIdentity.culturalProfile;
+  const isAfricanAmerican = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
+                           (culturalProfile?.ethnicity === 'African American') ||
+                           (culturalProfile?.background?.includes('African American'));
+  
+  if (!isAfricanAmerican) return null;
+  
+  const selectedFeatures = HARDCODED_AFRICAN_AMERICAN_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FEATURES.length)];
+  
+  console.log('🎨 TIER 1 COMBINED FEATURES SELECTION:', {
+    isAfricanAmerican,
+    skinTone,
+    culturalProfile: culturalProfile?.background || 'unknown',
+    selectedFeatures: {
+      skinTone: selectedFeatures.skinTone,
+      eyeColor: selectedFeatures.eyeColor,
+      facialFeature: selectedFeatures.facialFeature
+    },
+    arraySize: HARDCODED_AFRICAN_AMERICAN_FEATURES.length
+  });
+  
+  return selectedFeatures;
+}
+
 // ============= HAIRSTYLE SELECTION LOGIC =============
 function selectAfricanAmericanHairstyle(avatarIdentity) {
   if (!avatarIdentity) return null;
@@ -377,6 +423,36 @@ function selectAfricanAmericanHairstyle(avatarIdentity) {
   });
   
   return selectedHairstyle;
+}
+
+// ============= ANTI-WHITEWASHING NEGATIVE PROMPT BUILDER =============
+function buildTier1NegativePrompt(avatarIdentity) {
+  const baseNegativePrompts = [
+    'bad anatomy', 'distorted', 'deformed', 'extra limbs', 'weird proportions', 
+    'blurry', 'low quality', 'poor composition', 'unrealistic proportions',
+    'artificial lighting', 'oversaturated', 'pixelated', 'grainy'
+  ];
+
+  // Check if this is an African American character
+  const skinTone = avatarIdentity?.skinTone || avatarIdentity?.culturalProfile?.skinTone;
+  const culturalProfile = avatarIdentity?.culturalProfile;
+  const isAfricanAmerican = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
+                           (culturalProfile?.ethnicity === 'African American') ||
+                           (culturalProfile?.background?.includes('African American'));
+
+  if (isAfricanAmerican) {
+    const antiWhitewashingPrompts = [
+      'lightened skin', 'whitewashed', 'caucasian features', 'stereotypical',
+      'altered ethnicity', 'artificial skin lightening', 'pale skin', 
+      'european features', 'changed skin color', 'inaccurate representation'
+    ];
+    
+    console.log('🎨 TIER 1 ANTI-WHITEWASHING: Added protective negative prompts for African American character');
+    
+    return [...baseNegativePrompts, ...antiWhitewashingPrompts].join(', ');
+  }
+
+  return baseNegativePrompts.join(', ');
 }
 
 // Initialize circuit breaker state tracking
@@ -922,7 +998,7 @@ serve(async (req) => {
         const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`🧠 [${requestId}] Starting OpenAI prompt construction phase`);
 
-        // ============= PHASE 1.5: AFRICAN AMERICAN HAIRSTYLE SELECTION =============
+        // ============= PHASE 1.5: AFRICAN AMERICAN FEATURES & HAIRSTYLE SELECTION =============
         const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
         let hairstyleGuidance = '';
         if (selectedHairstyle) {
@@ -932,6 +1008,28 @@ serve(async (req) => {
             hairstylePreview: selectedHairstyle.substring(0, 100) + '...'
           });
         }
+
+        // Combined African American features selection
+        const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
+        let featuresGuidance = '';
+        if (selectedFeatures) {
+          featuresGuidance = `\n\nFEATURES GUIDANCE: Skin: ${selectedFeatures.skinTone}, Eyes: ${selectedFeatures.eyeColor}, Features: ${selectedFeatures.facialFeature}. Integrate these authentic physical characteristics into the primaryScene description.`;
+          console.log(`🎨 [${requestId}] African American features selected for Tier 1:`, {
+            skinTone: selectedFeatures.skinTone,
+            eyeColor: selectedFeatures.eyeColor,
+            facialFeature: selectedFeatures.facialFeature
+          });
+        }
+
+        // Build negative prompt with anti-whitewashing protection
+        const negativePrompt = buildTier1NegativePrompt(avatarIdentity);
+        const negativePromptGuidance = `\n\nNEGATIVE PROMPT GUIDANCE: Avoid these elements in the visual description: ${negativePrompt}`;
+
+        console.log(`🎨 [${requestId}] Negative prompt built:`, {
+          negativePromptLength: negativePrompt.length,
+          hasAntiWhitewashing: negativePrompt.includes('lightened skin'),
+          negativePromptPreview: negativePrompt.substring(0, 100) + '...'
+        });
 
         const messages = [
           {
@@ -949,7 +1047,7 @@ SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
   "settingDetails": "optional environment details"
 }
 
-Avatar Identity: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}
+Avatar Identity: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}${featuresGuidance}${negativePromptGuidance}
 CRITICAL: Focus on creating a comprehensive primaryScene - this is the MAIN requirement.`
             :
               // Legacy models - SIMPLIFIED visual-first approach
@@ -971,18 +1069,18 @@ VISUAL QUALITY STANDARDS:
 - Descriptive Language: Rich adjectives, specific details, atmospheric elements
 - Minimum Length: 30+ characters with detailed visual specificity
 
-Example primaryScene: "${avatarIdentity?.visualDescription || 'An attractive child with symmetrical features'} positioned in a portrait-style composition, soft natural lighting, with a beautifully blurred background creating depth and focus on the child's expression and character details"${hairstyleGuidance ? '\n\nHAIRSTYLE INTEGRATION: ' + selectedHairstyle : ''}`
+Example primaryScene: "${avatarIdentity?.visualDescription || 'An attractive child with symmetrical features'} positioned in a portrait-style composition, soft natural lighting, with a beautifully blurred background creating depth and focus on the child's expression and character details"${hairstyleGuidance ? '\n\nHAIRSTYLE INTEGRATION: ' + selectedHairstyle : ''}${featuresGuidance ? '\n\nFEATURES INTEGRATION: Ensure authentic representation with specified physical characteristics' : ''}${negativePromptGuidance ? '\n\nQUALITY CONTROL: ' + negativePrompt : ''}`
           },
           {
             role: 'user', 
             content: `Content for visual scene generation: "${storyText}"
 
-Character Identity Foundation: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}
+Character Identity Foundation: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}${featuresGuidance}${negativePromptGuidance}
 ${previousContext}
 
 Generate a comprehensive visual scene description using the schema structure with ${hasMultipleCharacters ? 'secondary character elements integrated' : 'primary character focus'}. 
 
-Focus on creating the most detailed, visually rich primaryScene possible that captures every visual element needed for professional illustration generation. Make it comprehensive, descriptive, and atmospherically rich.${selectedHairstyle ? '\n\nIMPORTANT: Integrate the specified African American hairstyle into the character description within the primaryScene.' : ''}`
+Focus on creating the most detailed, visually rich primaryScene possible that captures every visual element needed for professional illustration generation. Make it comprehensive, descriptive, and atmospherically rich.${selectedHairstyle ? '\n\nIMPORTANT: Integrate the specified African American hairstyle into the character description within the primaryScene.' : ''}${selectedFeatures ? '\n\nIMPORTANT: Integrate the specified African American physical features (skin tone, eye color, facial features) authentically into the character description within the primaryScene.' : ''}`
           }
         ];
 
