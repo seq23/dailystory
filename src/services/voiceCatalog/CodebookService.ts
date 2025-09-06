@@ -95,7 +95,7 @@ export class CodebookService {
       'twists': ['unexpected_discovery', 'surprise_helper', 'hidden_door'],
       'helpers': ['wise_friend', 'magical_guide', 'kind_stranger'],
       'settings': ['magical_place', 'cozy_corner', 'secret_spot'],
-      'themes': ['adventure', 'friendship', 'discovery']
+      'themes': ['friendship', 'school', 'cozy', 'portal_fantasy', 'quest', 'mystery', 'survival', 'magic_school']
     };
     
     const arrayFallbacks = fallbacks[arrayName as string];

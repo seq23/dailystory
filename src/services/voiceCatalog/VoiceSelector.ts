@@ -7,6 +7,7 @@
 import type { ProcessedVoice, VoiceSelectionResult } from './types';
 import { VoiceCatalogService, DifficultyLevel } from './VoiceCatalogService';
 import type { UserInfo } from '@/types';
+import { safeThemeJoin } from "@/lib/utils";
 
 export class VoiceSelector {
 
@@ -35,7 +36,7 @@ export class VoiceSelector {
       
       // If theme matching is poor and themes are provided, try cross-level search
       if (bestMatch.compatibilityScore < 0.6 && enhancedThemes && enhancedThemes.length > 0) {
-        console.log(`🔄 Cross-level search triggered for themes: ${enhancedThemes.join(', ')}`);
+        console.log(`🔄 Cross-level search triggered for themes: ${safeThemeJoin(enhancedThemes)}`);
         bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
       }
       
@@ -258,7 +259,7 @@ export class VoiceSelector {
       );
       
       if (matchingThemes.length > 0) {
-        reasons.push(`aligns with interest in ${matchingThemes.join(', ')}`);
+        reasons.push(`aligns with interest in ${safeThemeJoin(matchingThemes)}`);
       }
     }
 

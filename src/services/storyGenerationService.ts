@@ -8,6 +8,7 @@ import { VocabularyService, type VocabularyIntegration } from "./vocabularyServi
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { getCulturalGuidanceString } from './StaticDataCache';
 import { VoiceCatalogIntegration } from './voiceCatalog/VoiceCatalogIntegration';
+import { safeThemeJoin } from "@/lib/utils";
 
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
 
@@ -227,10 +228,10 @@ export class StoryGenerationService {
         themeIntent.characters.length > 0 || themeIntent.keywords.length > 0) {
       // Structured theme intent found
       const themeElements = [];
-      if (themeIntent.theme.length > 0) themeElements.push(`themes: ${themeIntent.theme.join(', ')}`);
-      if (themeIntent.setting.length > 0) themeElements.push(`settings: ${themeIntent.setting.join(', ')}`);
-      if (themeIntent.characters.length > 0) themeElements.push(`characters: ${themeIntent.characters.join(', ')}`);
-      if (themeIntent.keywords.length > 0) themeElements.push(`keywords: ${themeIntent.keywords.join(', ')}`);
+      if (themeIntent.theme.length > 0) themeElements.push(`themes: ${safeThemeJoin(themeIntent.theme)}`);
+      if (themeIntent.setting.length > 0) themeElements.push(`settings: ${safeThemeJoin(themeIntent.setting)}`);
+      if (themeIntent.characters.length > 0) themeElements.push(`characters: ${safeThemeJoin(themeIntent.characters)}`);
+      if (themeIntent.keywords.length > 0) themeElements.push(`keywords: ${safeThemeJoin(themeIntent.keywords)}`);
       specialRequestContent = themeElements.join('; ');
     } else if (themeIntent.rawInput) {
       // Fallback to raw specialRequest - let AI determine all creative elements
