@@ -612,14 +612,7 @@ serve(async (req) => {
           frameworkName: storyFramework.name,
           gradeLevel: userInfo.gradeLevel || 'K',
           hasAllComponents: {
-            artStyle: !!storyFramework.artStyle,
-            colorPalette: !!storyFramework.colorPalette,
-            lighting: !!storyFramework.lighting,
-            texture: !!storyFramework.texture,
-            composition: !!storyFramework.composition,
-            quality: !!storyFramework.quality,
-            brandSuffix: !!storyFramework.brandSuffix,
-            prompt: !!storyFramework.prompt,
+            frameworkPrompt: !!storyFramework.frameworkPrompt,
             negativePrompt: !!storyFramework.negativePrompt
           }
         });
