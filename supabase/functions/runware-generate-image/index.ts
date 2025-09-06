@@ -37,32 +37,70 @@ import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatar
  */
 
 // ============= CULTURAL DESCRIPTION ARRAYS =============
-// African American Arrays
+// African American Arrays - Standardized with debug-tier-2-5-templates
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   boys: [
     'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
     'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
-    'natural textured cut', 'clean tapered style', 'short textured waves', 'modern fade style'
+    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design'
   ],
   girls: [
-    'natural textured ponytail', 'beautiful curly afro', 'stylish protective braids', 'natural textured hair',
-    'elegant twisted updo', 'curly textured style', 'natural afro puffs', 'beautiful braided style',
-    'textured curly ponytail', 'natural coily hair', 'stylish textured waves', 'protective styled hair'
+    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
+    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
+    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
+    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
+    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
+    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
+    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
+    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
+    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
+    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
+    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
   ]
 };
 
 const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
-  'rich dark chocolate complexion', 'warm deep brown skin', 'rich mahogany complexion', 
-  'beautiful dark ebony skin tone', 'warm caramel brown complexion', 'deep cocoa skin', 
-  'rich chestnut brown complexion', 'warm coffee-colored skin', 'beautiful bronze complexion', 
-  'radiant dark brown skin', 'warm toffee complexion', 'rich walnut skin tone'
+  'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
+  'warm caramel complexion', 'golden brown skin', 'mahogany complexion', 'dark chocolate skin',
+  'ebony complexion', 'honey-toned skin', 'bronze complexion', 'chestnut brown skin'
 ];
 
 const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-  'beautiful expressive dark eyes and warm genuine smile', 'strong confident features with bright cheerful expression',
-  'graceful facial structure with kind welcoming demeanor', 'striking natural beauty with joyful animated expression',
-  'elegant bone structure with warm inviting smile', 'radiant complexion with bright engaging eyes',
-  'expressive almond-shaped eyes with natural charm', 'warm smiling features with confident expression'
+  // Light Tones
+  "light brown skin tone with warm amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "caramel skin tone with deep brown eyes, soft full lips, high cheekbones, elegant nose shape",
+  "honey complexion with hazel-green eyes, naturally full lips, sculpted cheekbones, refined nose",
+  "warm beige skin with golden brown eyes, full expressive lips, defined facial structure, natural nose",
+  "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
+  
+  // Medium Tones
+  "medium brown skin tone with golden amber eyes, full lips, strong cheekbones, natural nose bridge",
+  "cocoa skin tone with warm honey eyes, naturally full lips, defined cheekbones, elegant nose shape",
+  "warm brown complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "chestnut skin tone with hazel-brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "amber skin tone with deep brown eyes, soft full lips, high cheekbones, natural nose shape",
+  
+  // Medium-Dark Tones
+  "deep brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "rich chocolate complexion with warm honey eyes, naturally full lips, strong cheekbones, elegant nose",
+  "mahogany skin tone with bright hazel eyes, full expressive lips, sculpted cheekbones, refined nose shape",
+  "warm deep brown skin with golden brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "bronze skin tone with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  
+  // Dark Tones
+  "dark brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "ebony skin tone with warm honey eyes, naturally full lips, strong cheekbones, elegant nose shape",
+  "deep mahogany complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "rich dark chocolate skin with golden hazel eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "beautiful dark brown skin with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  "deep ebony skin tone with warm golden eyes, naturally full lips, defined cheekbones, elegant nose bridge",
+  "dark mahogany complexion with honey-colored eyes, full expressive lips, strong cheekbones, refined nose shape",
+  "rich chocolate brown skin with bright hazel eyes, full lips, sculpted cheekbones, authentic nose bridge",
+  "beautiful deep brown skin with golden amber eyes, soft full lips, prominent cheekbones, natural nose shape",
+  "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
 ];
 
 // Hispanic/Latino Arrays (for Afro-Latina when dark skin + Spanish)

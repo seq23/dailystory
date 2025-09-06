@@ -407,46 +407,7 @@ class UnifiedCircuitBreaker {
 const circuitBreaker = new UnifiedCircuitBreaker();
 console.log('🔧 Enhanced circuit breaker with monitoring initialized');
 
-// ============= AFRICAN AMERICAN HAIRSTYLE ARRAYS - COPIED FROM TIER 2.5 =============
-const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
-  boys: [
-    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
-    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
-    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
-    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
-    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
-    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design'
-  ],
-  girls: [
-    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
-    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
-    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
-    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
-    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
-    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
-    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
-    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
-    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
-    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
-    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
-  ]
-};
-
-// ============= COMBINED AFRICAN AMERICAN FEATURES ARRAY =============
-const HARDCODED_AFRICAN_AMERICAN_FEATURES = [
-  { skinTone: 'rich brown complexion', eyeColor: 'warm brown eyes', facialFeature: 'expressive almond-shaped eyes' },
-  { skinTone: 'deep mahogany skin tone', eyeColor: 'deep brown eyes', facialFeature: 'full lips and high cheekbones' },
-  { skinTone: 'warm caramel complexion', eyeColor: 'amber-flecked brown eyes', facialFeature: 'defined jawline and bright smile' },
-  { skinTone: 'dark chocolate skin', eyeColor: 'dark espresso eyes', facialFeature: 'prominent cheekbones and gentle features' },
-  { skinTone: 'honey-bronze complexion', eyeColor: 'golden-brown eyes', facialFeature: 'curved eyebrows and dimpled smile' },
-  { skinTone: 'deep ebony skin tone', eyeColor: 'rich dark brown eyes', facialFeature: 'strong facial structure and kind expression' },
-  { skinTone: 'warm copper complexion', eyeColor: 'hazel-brown eyes', facialFeature: 'round cheeks and sparkling eyes' },
-  { skinTone: 'rich cocoa skin', eyeColor: 'deep amber eyes', facialFeature: 'elegant bone structure and natural glow' },
-  { skinTone: 'dark toffee complexion', eyeColor: 'warm chocolate eyes', facialFeature: 'smooth skin and genuine smile' },
-  { skinTone: 'deep bronze skin tone', eyeColor: 'rich mahogany eyes', facialFeature: 'distinctive features and confident expression' },
-  { skinTone: 'warm sienna complexion', eyeColor: 'deep golden-brown eyes', facialFeature: 'symmetrical features and bright personality' },
-  { skinTone: 'dark mocha skin', eyeColor: 'intense brown eyes', facialFeature: 'natural beauty and expressive face' }
-];
+// Arrays removed - now standardized in runware-generate-image and debug-tier-2-5-templates only
 
 // ============= COMBINED AFRICAN AMERICAN FEATURES SELECTION LOGIC =============
 function selectAfricanAmericanFeatures(avatarIdentity) {

@@ -492,9 +492,38 @@ const HARDCODED_AFRICAN_AMERICAN_EYE_COLORS = [
 ];
 
 const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-  'expressive almond-shaped eyes', 'bright wide-set eyes', 'sparkling round eyes', 'gentle oval-shaped eyes',
-  'striking large eyes', 'warm smiling eyes', 'intelligent alert eyes', 'kind gentle eyes',
-  'full natural lips', 'warm smiling lips', 'gentle curved lips', 'expressive full lips'
+  // Light Tones
+  "light brown skin tone with warm amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "caramel skin tone with deep brown eyes, soft full lips, high cheekbones, elegant nose shape",
+  "honey complexion with hazel-green eyes, naturally full lips, sculpted cheekbones, refined nose",
+  "warm beige skin with golden brown eyes, full expressive lips, defined facial structure, natural nose",
+  "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
+  
+  // Medium Tones
+  "medium brown skin tone with golden amber eyes, full lips, strong cheekbones, natural nose bridge",
+  "cocoa skin tone with warm honey eyes, naturally full lips, defined cheekbones, elegant nose shape",
+  "warm brown complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "chestnut skin tone with hazel-brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "amber skin tone with deep brown eyes, soft full lips, high cheekbones, natural nose shape",
+  
+  // Medium-Dark Tones
+  "deep brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "rich chocolate complexion with warm honey eyes, naturally full lips, strong cheekbones, elegant nose",
+  "mahogany skin tone with bright hazel eyes, full expressive lips, sculpted cheekbones, refined nose shape",
+  "warm deep brown skin with golden brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "bronze skin tone with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  
+  // Dark Tones
+  "dark brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "ebony skin tone with warm honey eyes, naturally full lips, strong cheekbones, elegant nose shape",
+  "deep mahogany complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "rich dark chocolate skin with golden hazel eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "beautiful dark brown skin with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  "deep ebony skin tone with warm golden eyes, naturally full lips, defined cheekbones, elegant nose bridge",
+  "dark mahogany complexion with honey-colored eyes, full expressive lips, strong cheekbones, refined nose shape",
+  "rich chocolate brown skin with bright hazel eyes, full lips, sculpted cheekbones, authentic nose bridge",
+  "beautiful deep brown skin with golden amber eyes, soft full lips, prominent cheekbones, natural nose shape",
+  "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
 ];
 
 const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
