@@ -282,6 +282,9 @@ export class SessionStateManager {
       success: aiPromptData.success
     });
 
+    // Enhanced cultural data extraction
+    const culturalInfo = this.extractCulturalDebugInfo(aiPromptData);
+    
     const debugEntry = {
       model: aiPromptData.model,
       tokenLimit: aiPromptData.tokenLimit,
@@ -293,6 +296,9 @@ export class SessionStateManager {
       apiResponse: aiPromptData.apiResponse,
       success: aiPromptData.success,
       sessionId: sessionId,
+      culturalGuidance: culturalInfo.guidance || 'None detected',
+      detectedRegion: culturalInfo.region || 'Not specified',
+      functionsAvailable: culturalInfo.functionsAvailable || false,
       // Store the original bundle data
       bundle: aiPromptData.bundle || null
     };
@@ -403,6 +409,34 @@ export class SessionStateManager {
     }
     
     return prompts;
+  }
+
+  extractCulturalDebugInfo(aiPromptData) {
+    const systemPrompt = aiPromptData.systemPrompt || '';
+    const userPrompt = aiPromptData.userPrompt || '';
+    const messages = aiPromptData.messages || [];
+    
+    // Extract cultural guidance from system prompt
+    const hasCulturalGuidance = systemPrompt.includes('CULTURAL INTEGRATION:');
+    
+    // Extract detected region from messages
+    let detectedRegion = 'Not detected';
+    for (const message of messages) {
+      const content = message.content || '';
+      if (content.includes('DETECTED REGION:')) {
+        const match = content.match(/DETECTED REGION:\s*([^\n]+)/);
+        if (match) detectedRegion = match[1].trim();
+      }
+    }
+    
+    // Check for function availability
+    const functionsAvailable = systemPrompt.includes('getCulturalContext');
+    
+    return {
+      guidance: hasCulturalGuidance ? 'Cultural integration guidelines active' : 'No cultural guidance',
+      region: detectedRegion,
+      functionsAvailable
+    };
   }
 
   /**

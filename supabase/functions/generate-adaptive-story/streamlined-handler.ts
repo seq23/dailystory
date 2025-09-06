@@ -236,6 +236,12 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 - Always produce a complete story regardless of input quality
 - Use provided user inputs only if they exist, otherwise omit gracefully
 - Default to gentle, age-appropriate themes if none specified`;
+
+    finalSystemPrompt += `\n\nCULTURAL INTEGRATION:
+• Use getCulturalContext() when character names, foods, or celebrations are needed
+• Select elements that enhance story authenticity - don't force inclusion
+• Blend cultural details naturally into narrative flow
+• Respect cultural accuracy and avoid stereotypes`;
     
     // Add available functions to system prompt
     finalSystemPrompt += `\n\nAVAILABLE FUNCTIONS:
@@ -1058,20 +1064,54 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
   for (const match of culturalMatches) {
     try {
       const culturalArrays = getCulturalContextArrays();
-      const userLanguage = context.userInfo?.nativeLanguage || 'en';
-      const skinTone = context.userInfo?.avatar?.skinTone;
+      const userInfo = context.userInfo || {};
       
-      let culturalKey = userLanguage;
-      if (userLanguage === 'en' && skinTone === 'dark') {
-        culturalKey = 'en-african-american';
-      } else if (userLanguage === 'fr' && skinTone === 'dark') {
-        culturalKey = 'fr-francophone-african';
+      // Detect cultural context from user language/background
+      let culturalKey = 'en-general'; // Default
+      let regionName = 'GENERAL ENGLISH';
+      
+      if (userInfo?.native_language) {
+        const lang = userInfo.native_language.toLowerCase();
+        const background = userInfo.cultural_background?.toLowerCase() || '';
+        
+        // Enhanced detection for all 8 contexts
+        if (lang.includes('es') || lang.includes('spanish')) {
+          culturalKey = 'es-general';
+          regionName = 'SPANISH/LATINO';
+        } else if (background.includes('african') || background.includes('black')) {
+          culturalKey = 'en-african-american';
+          regionName = 'AFRICAN-AMERICAN';
+        } else if (background.includes('asian') || lang.includes('zh') || lang.includes('chinese')) {
+          culturalKey = 'en-asian-american';
+          regionName = 'ASIAN-AMERICAN';
+        } else if (background.includes('native') || background.includes('indigenous')) {
+          culturalKey = 'en-native-american';
+          regionName = 'NATIVE AMERICAN';
+        } else if (background.includes('middle') || background.includes('arab')) {
+          culturalKey = 'en-middle-eastern';
+          regionName = 'MIDDLE EASTERN';
+        } else if (background.includes('south asian') || background.includes('indian')) {
+          culturalKey = 'en-south-asian';
+          regionName = 'SOUTH ASIAN';
+        } else if (background.includes('jewish')) {
+          culturalKey = 'en-jewish-american';
+          regionName = 'JEWISH-AMERICAN';
+        }
       }
       
       const selectedCultural = culturalArrays[culturalKey];
       
       if (selectedCultural) {
-        const culturalContent = `Cultural elements: Character names like ${selectedCultural.characterNames.slice(0, 3).join(', ')}, foods such as ${selectedCultural.commonFoods.slice(0, 3).join(', ')}, celebrations including ${selectedCultural.celebrations.slice(0, 2).join(', ')}, and values of ${selectedCultural.values.slice(0, 2).join(' and ')}.`;
+        const culturalContent = `DETECTED REGION: ${regionName}
+
+AVAILABLE CULTURAL ELEMENTS:
+Names: [${selectedCultural.characterNames.map(name => `"${name}"`).join(', ')}]
+Foods: [${selectedCultural.commonFoods.map(food => `"${food}"`).join(', ')}]
+Celebrations: [${selectedCultural.celebrations.map(cel => `"${cel}"`).join(', ')}]
+Values: [${selectedCultural.values.map(val => `"${val}"`).join(', ')}]
+Sports: [${selectedCultural.sports.map(sport => `"${sport}"`).join(', ')}]
+
+INTEGRATION GUIDANCE: Select elements that authentically enhance your story. Quality over quantity - choose what fits naturally rather than forcing inclusion.`;
         
         processedText = processedText.replace(match[0], culturalContent);
         console.log('✅ Executed getCulturalContext() successfully');
