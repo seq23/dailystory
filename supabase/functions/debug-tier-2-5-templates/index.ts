@@ -287,8 +287,8 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
       scene,
       setting,
       emotion,
-      quality: style.quality,
-      suffix: style.suffix || '',
+      quality: styleSettings.quality,
+      suffix: styleSettings.suffix || '',
       pageText: processedPageText
     },
     arraySelections,
@@ -472,7 +472,7 @@ function debugDifficultyComparison(pageText: string, userInfo?: any, avatarIdent
         styleFramework: difficulty === 'beginner' || difficulty === 'easy' || difficulty === 'medium' ? 'Contemporary Children\'s Book Illustration' : '2.9D Rendered Illustration',
         steps: styleSettings.steps,
         cfgScale: styleSettings.CFGScale,
-        strength: style.strength
+        strength: styleSettings.strength || 0.8
       },
       finalPrompt: templateResult.filledTemplate
     };
