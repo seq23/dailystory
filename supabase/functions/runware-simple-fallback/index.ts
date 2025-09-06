@@ -412,6 +412,55 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
   }
 }
 
+// CHARACTER CONSISTENCY ENHANCEMENT FUNCTION  
+// Enhances nuclear mapping with consistent character data while preserving nuclear independence
+function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string, characterData: any, sessionId: string): any {
+  try {
+    console.log('🎭 Tier 2.5: Starting character consistency enhancement');
+    
+    // STEP 1: Get the nuclear mapping (always safe)
+    const nuclearMapping = getNuclearAvatarMapping(userInfo, difficulty);
+    console.log('🛡️ Tier 2.5: Nuclear mapping obtained successfully');
+    
+    // STEP 2: If no character data, return nuclear mapping (existing behavior)
+    if (!characterData || !characterData.seed) {
+      console.log('🛡️ Tier 2.5: No character data available - using nuclear mapping');
+      return nuclearMapping;
+    }
+    
+    // STEP 3: Enhance nuclear mapping with consistent traits
+    console.log('🎭 Tier 2.5: Enhancing nuclear mapping with consistent character data');
+    
+    const enhancedMapping = {
+      ...nuclearMapping, // Start with nuclear safety
+      
+      // Override with consistent traits when available
+      ...(characterData.consistentEyeColor && { eyeColor: characterData.consistentEyeColor }),
+      ...(characterData.consistentClothingStyle && { clothing: characterData.consistentClothingStyle }),
+      ...(characterData.consistentHairDescription && { hair: characterData.consistentHairDescription }),
+      
+      // Preserve nuclear safety features
+      seed: characterData.seed, // Use consistent seed
+      source: 'enhanced-nuclear-mapping'
+    };
+    
+    console.log('✅ Tier 2.5: Character consistency enhancement completed:', {
+      hasConsistentEyeColor: !!characterData.consistentEyeColor,
+      hasConsistentClothing: !!characterData.consistentClothingStyle,
+      hasConsistentHair: !!characterData.consistentHairDescription,
+      seed: characterData.seed,
+      sessionId: sessionId
+    });
+    
+    return enhancedMapping;
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Character consistency enhancement failed - falling back to nuclear mapping:', error);
+    // BULLETPROOF FALLBACK: Return nuclear mapping on any error
+    return getNuclearAvatarMapping(userInfo, difficulty);
+  }
+}
+
 function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): string {
   try {
     const rawLevel = userInfo?.readingLevel || userInfo?.difficultyLevel || userInfo?.gradeLevel;
@@ -974,9 +1023,14 @@ Deno.serve(async (req: Request) => {
   }
   
   try {
-    const { pageText, userInfo } = await req.json();
+    const { pageText, userInfo, characterData, sessionId } = await req.json();
     
     console.log('🛡️ Tier 2.5: Processing request with nuclear independence');
+    console.log('🎭 Tier 2.5: Character consistency data received:', {
+      hasCharacterData: !!characterData,
+      sessionId: sessionId,
+      characterSeed: characterData?.seed || 'none'
+    });
     
     // Extract scene components with complete placeholder support
     const { scene, setting, objects, secondary_characters } = extractSceneWithPremiumTemplate(pageText);
@@ -993,8 +1047,8 @@ Deno.serve(async (req: Request) => {
     // Fill premium template with all placeholders including page text
     const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
     
-    // Generate negative prompt with fixed avatar mapping and cultural detection
-    const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
+    // Generate avatar mapping with character consistency enhancement
+    const avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId);
     const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
     const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
     const culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
@@ -1068,19 +1122,25 @@ Deno.serve(async (req: Request) => {
               } else if (item.taskType === "imageInference") {
                 console.log('🛡️ Tier 2.5: Image generation successful!');
                 
-                resolveOnce(createCorsResponse({
-                  success: true,
-                  imageURL: item.imageURL,
-                  prompt: prompt,
-                  negativePrompt: negativePrompt,
-                  difficulty: difficulty,
-                  culturalProfile: culturalProfile,
-                  tier: '2.5 Nuclear Independence',
-                  placeholders: {
-                    objects: objects || 'none',
-                    secondary_characters: secondary_characters || 'none'
-                  }
-                }));
+                 resolveOnce(createCorsResponse({
+                   success: true,
+                   imageURL: item.imageURL,
+                   prompt: prompt,
+                   negativePrompt: negativePrompt,
+                   difficulty: difficulty,
+                   culturalProfile: culturalProfile,
+                   tier: '2.5 Nuclear Independence + Character Consistency',
+                   placeholders: {
+                     objects: objects || 'none',
+                     secondary_characters: secondary_characters || 'none'
+                   },
+                   characterConsistency: {
+                     sessionId: sessionId,
+                     characterSeed: characterData?.seed || 'none',
+                     enhancementApplied: !!(characterData && characterData.seed),
+                     source: avatarMapping?.source || 'nuclear-mapping'
+                   }
+                 }));
               }
             }
           }

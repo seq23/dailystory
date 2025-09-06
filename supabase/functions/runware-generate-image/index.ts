@@ -1178,15 +1178,18 @@ serve(async (req) => {
           pageText,
           userInfo,
           difficultyLevel: mappedDifficulty,
-          avatarIdentity // Pass optimized avatar identity to all tiers
+          avatarIdentity, // Pass optimized avatar identity to all tiers
+          characterData, // Pass consistent character data for Tier 2.5 consistency
+          sessionId // Pass session ID for consistency tracking
         });
         
-        console.log('🔍 TIER 2.5 DEBUG - Function response:', {
-          success: tier25Result?.success || false,
-          hasImageURL: !!tier25Result?.imageURL,
-          error: tier25Result?.error || 'none',
-          tier: '2.5 (ANIMAL BIAS FIXED)'
-        });
+         console.log('🔍 TIER 2.5 DEBUG - Function response:', {
+           success: tier25Result?.success || false,
+           hasImageURL: !!tier25Result?.imageURL,
+           error: tier25Result?.error || 'none',
+           tier: '2.5 (CHARACTER CONSISTENCY ENHANCED)',
+           characterConsistency: tier25Result?.characterConsistency || {}
+         });
 
         if (tier25Result.success) {
           console.log('✅ Tier 2.5 Nuclear Hardcoded succeeded');
