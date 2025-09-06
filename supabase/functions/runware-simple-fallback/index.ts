@@ -680,7 +680,8 @@ function fillPremiumTemplate(
   objects: string,
   secondary_characters: string,
   emotion: string,
-  pageText: string
+  pageText: string,
+  avatarIdentity?: any
 ): string {
   try {
     console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${difficulty}`);
@@ -691,35 +692,81 @@ function fillPremiumTemplate(
     const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
     console.log(`🛡️ Tier 2.5: Nuclear avatar mapping applied: ${avatarMapping.character}`);
     
-    // Special case: Keep African American arrays for English + dark skin (cultural preservation)
-    const language = userInfo?.language || 'en';
-    const isEnglishDarkSkin = language === 'en' && userInfo?.avatar?.skinTone === 'dark';
+    // Detect cultural contexts with standardized language detection
+    const userLanguage = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || '';
+    
+    const isEnglishDarkSkin = (userLanguage === 'en' || userLanguage === 'english') && 
+                              (skinTone.toLowerCase().includes('dark') || 
+                               skinTone.toLowerCase().includes('brown') ||
+                               skinTone.toLowerCase().includes('black'));
+    
+    const isFrenchDarkSkin = (userLanguage === 'fr' || userLanguage === 'french') && 
+                             (skinTone.toLowerCase().includes('dark') || 
+                              skinTone.toLowerCase().includes('brown') ||
+                              skinTone.toLowerCase().includes('black'));
+    
+    const isSpanishDarkSkin = (userLanguage === 'es' || userLanguage === 'spanish') && 
+                              (skinTone.toLowerCase().includes('dark') || 
+                               skinTone.toLowerCase().includes('brown') ||
+                               skinTone.toLowerCase().includes('black'));
     
     let finalMapping = avatarMapping;
     
+    // English + Dark Skin: African American hairstyles + facial features
     if (isEnglishDarkSkin) {
       console.log('🛡️ Tier 2.5: Using African American cultural arrays for English + dark skin');
       
-      // Use African American arrays for cultural authenticity
-      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character; // Default neutral to boy for array access
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
       const extractedGender = extractGenderFromCharacter(character);
       const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
       
-      // Deterministic selection based on user name (no randomization)
-      const nameHash = (userInfo?.name || 'default').length % 10;
+      finalMapping = {
+        ...avatarMapping,
+        skin: getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES),
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        eyes: getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES),
+        clothing: getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING)
+      };
+    }
+    // French + Dark Skin: African American hairstyles + facial features  
+    else if (isFrenchDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for French + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
       
       finalMapping = {
         ...avatarMapping,
-        skin: HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[nameHash % HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length],
-        hair: HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey][nameHash % HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey].length],
-        eyes: HARDCODED_AFRICAN_AMERICAN_EYE_COLORS[nameHash % HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length],
-        features: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[nameHash % HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length],
-        clothing: HARDCODED_AFRICAN_AMERICAN_CLOTHING[nameHash % HARDCODED_AFRICAN_AMERICAN_CLOTHING.length]
+        skin: getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES),
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        eyes: getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES),
+        clothing: getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING)
+      };
+    }
+    // Spanish + Dark Skin: Hispanic/Latino hairstyles + African American facial features
+    else if (isSpanishDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using Hispanic/Latino hairstyles + African American facial features for Spanish + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
+      
+      finalMapping = {
+        ...avatarMapping,
+        skin: getRandomItem(HARDCODED_HISPANIC_LATINO_SKIN_TONES),
+        hair: getRandomItem(HARDCODED_HISPANIC_LATINO_HAIRSTYLES[genderKey]),
+        eyes: getRandomItem(HARDCODED_HISPANIC_LATINO_EYE_COLORS),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES), // African American facial features
+        clothing: getRandomItem(HARDCODED_HISPANIC_LATINO_CLOTHING)
       };
     }
     
     // Apply cultural setting enhancement
-    const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo);
+    const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo, avatarIdentity);
     
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
@@ -880,12 +927,16 @@ function getEnhancedNegativePrompt(culturalProfile: string, avatarType: string, 
   return baseNegative.join(', ');
 }
 
-function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any): string {
+function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, avatarIdentity?: any): string {
   try {
-    const language = userInfo?.language || 'en';
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
     
     if (language === 'es' || language === 'spanish') {
       return baseSetting.replace('a ', 'a culturally rich ').replace('an ', 'a vibrant ');
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      return baseSetting.replace('a ', 'a charming ').replace('an ', 'an elegant ');
     }
     
     if (language === 'zh' || language === 'chinese') {
@@ -904,9 +955,9 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any): st
   }
 }
 
-function detectCulturalProfile(userInfo: any): string {
+function detectCulturalProfile(userInfo: any, avatarIdentity?: any): string {
   try {
-    const language = userInfo?.language || 'en';
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || '';
     
     console.log(`🛡️ Tier 2.5: Detecting cultural profile - Language: ${language}, Skin: ${skinTone}`);
@@ -925,6 +976,11 @@ function detectCulturalProfile(userInfo: any): string {
     if (language === 'es' || language === 'spanish') {
       console.log('🛡️ Tier 2.5: Hispanic/Latino profile detected via language');
       return 'Hispanic/Latino';
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      console.log('🛡️ Tier 2.5: French profile detected via language');
+      return 'French';
     }
     
     if (language === 'zh' || language === 'chinese') {
@@ -1006,14 +1062,17 @@ Deno.serve(async (req: Request) => {
     // Detect emotion
     const emotion = detectEmotionFromText(pageText);
     
+    // Extract avatarIdentity for consistent parameter passing
+    const avatarIdentity = userInfo?.avatarIdentity || null;
+    
     // Fill premium template with all placeholders including page text
-    const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText);
+    const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
     
     // Generate negative prompt with fixed avatar mapping and cultural detection
     const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
     const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
     const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
-    const culturalProfile = detectCulturalProfile(userInfo);
+    const culturalProfile = detectCulturalProfile(userInfo, avatarIdentity);
     const negativePrompt = getEnhancedNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
     
     // Get style parameters
