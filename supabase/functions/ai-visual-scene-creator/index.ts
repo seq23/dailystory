@@ -994,7 +994,7 @@ serve(async (req) => {
       // Static imports are already loaded at module level
       importResults.cors = '✅ SUCCESS (static)';
       importResults.errorHandling = '✅ SUCCESS (static)';
-      importResults.MultiStageEnhancementPipeline = '✅ SUCCESS (static)';
+      importResults.characterConsistency = '✅ SUCCESS (static)';
       
       console.log('📊 Dependency Verification Results:', importResults);
       

@@ -825,9 +825,9 @@ function getHardcodedStyle(difficulty: string): { quality: string, suffix?: stri
 }
 
 function getEnhancedNegativePrompt(culturalProfile: string, avatarType: string, difficulty: string, pageNumber: number = 1): string {
-  // HARDCODED COMPLETE NEGATIVE PROMPT SYSTEM - All components from MultiStageEnhancementPipeline.js
+  // HARDCODED COMPLETE NEGATIVE PROMPT SYSTEM - Comprehensive content filtering
   
-  // Base Negative Components (from MultiStageEnhancementPipeline.js)
+  // Base Negative Components (comprehensive quality and safety filters)
   const baseNegative = [
     'no text, no words, no letters, no writing, no signatures, watermarks, low quality, blurry, distorted, deformed, extra limbs, missing limbs, bad anatomy, weird proportions, bad hands, malformed hands, extra fingers, missing fingers, crossed eyes, bad facial features, unrealistic skin, plastic appearance, oversaturated, cartoon style, anime style, adult content, inappropriate content'
   ];

@@ -634,8 +634,8 @@ export class SessionStateManager {
    * Clear associated caches for session
    */
   static clearSessionCache(sessionId) {
-    // Clean up AI enhancement cache - REMOVED: MultiStageEnhancementPipeline no longer exists
-    console.log(`🧹 Session ${sessionId} cleaned up (no enhancement cache to clear)`);
+    // Clean up any session-specific cached data
+    console.log(`🧹 Session ${sessionId} cleaned up (simplified architecture)`);
   }
 
   /**

@@ -368,6 +368,55 @@ function generateSVGPlaceholder(pageText: string): { url: string, success: boole
   return { url, success: true };
 }
 
+// ============= TIER 1 RUNWARE PREMIUM GENERATION =============
+async function generateWithRunwarePremium(
+  apiKey: string,
+  positivePrompt: string,
+  negativePrompt: string,
+  seed?: number,
+  sessionId?: string,
+  pageNumber?: number,
+  requestId?: string
+): Promise<any> {
+  console.log(`🚀 [${requestId || 'unknown'}] Starting Runware Premium Generation:`, {
+    sessionId,
+    pageNumber,
+    promptLength: positivePrompt.length,
+    negativePromptLength: negativePrompt.length,
+    seed: seed || 'random'
+  });
+
+  try {
+    const result = await RunwareWebSocketManager.connectWithRetry(
+      apiKey,
+      positivePrompt,
+      negativePrompt,
+      seed,
+      sessionId,
+      pageNumber,
+      1, // attempt number
+      requestId
+    );
+
+    console.log(`✅ [${requestId || 'unknown'}] Runware Premium Generation Success:`, {
+      sessionId,
+      pageNumber,
+      imageURL: result.imageURL,
+      seed: result.seed,
+      provider: result.provider,
+      tier: result.tier
+    });
+
+    return {
+      success: true,
+      ...result
+    };
+  } catch (error) {
+    console.error(`❌ [${requestId || 'unknown'}] Runware Premium Generation Failed:`, error);
+    throw error;
+  }
+}
+
 // Phase 2: Enhanced Backend Orchestrator for All Image Generation Tiers
 // Now handles: AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
 serve(async (req) => {
@@ -904,6 +953,11 @@ serve(async (req) => {
           });
         }
         
+        console.log('⚠️ Tier 2.5 failed, falling back to Tier 4');
+      } catch (error) {
+        console.log('⚠️ Tier 2.5 error, falling back to Tier 4:', error.message);
+      }
+    }
     // TIER 4: SVG Placeholder (Ultimate Fallback)
     console.log('📝 Generating Tier 4: SVG Placeholder');
     const svgResult = generateSVGPlaceholder(pageText, userInfo);
