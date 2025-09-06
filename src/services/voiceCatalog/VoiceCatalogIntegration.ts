@@ -124,6 +124,42 @@ export class VoiceCatalogIntegration {
   }
 
   /**
+   * Merge voice-specific UIG rules with sensible defaults by difficulty level
+   */
+  static mergeUsageRules(difficulty: DifficultyLevel, voiceUIG: any) {
+    const defaults = {
+      beginner: { mode: "direct", gap: 1, t: { u: 6, c: 3, a: 2, f: 1, h: 1 } },
+      easy: { mode: "direct", gap: 2, t: { u: 4, c: 3, a: 2, f: 1, h: 1 } },
+      medium: { mode: "subtle", gap: 3, t: { u: 2, c: 2, a: 1, f: 1, h: 1 } },
+      hard: { mode: "subtle", gap: 3, t: { u: 2, c: 2, a: 1, f: 1, h: 1 } },
+      expert: { mode: "subtle", gap: 4, t: { u: 2, c: 2, a: 1, f: 1, h: 1 } }
+    };
+    
+    const base = defaults[difficulty] || defaults.medium;
+    const rules = voiceUIG?.rules || {};
+    
+    const modeFromRules = Object.values(rules).find((r: any) => r && typeof r === 'object' && (r as any).m);
+    
+    return {
+      mode: modeFromRules ? (modeFromRules as any).m : base.mode,
+      maxUses: {
+        u: (rules as any).u?.max || (rules as any).u?.max_uses || base.t.u,
+        c: (rules as any).c?.max || (rules as any).c?.max_uses || base.t.c, 
+        a: (rules as any).a?.max || (rules as any).a?.max_uses || base.t.a,
+        f: (rules as any).f?.max || (rules as any).f?.max_uses || base.t.f,
+        h: (rules as any).h?.max || (rules as any).h?.max_uses || base.t.h
+      },
+      minGaps: {
+        u: (rules as any).u?.gap || (rules as any).u?.min_gap || base.gap,
+        c: (rules as any).c?.gap || (rules as any).c?.min_gap || base.gap,
+        a: (rules as any).a?.gap || (rules as any).a?.min_gap || base.gap, 
+        f: (rules as any).f?.gap || (rules as any).f?.min_gap || base.gap,
+        h: (rules as any).h?.gap || (rules as any).h?.min_gap || base.gap
+      }
+    };
+  }
+
+  /**
    * Create a compact control line for the AI generation system with age adaptation
    */
   static createControlLine(userInfo: UserInfo, voice: ProcessedVoice, difficulty: DifficultyLevel): string {
@@ -151,8 +187,8 @@ export class VoiceCatalogIntegration {
       h: userInfo.hobbies,
       themes: voice.resolvedElements?.themes || [],
       level: difficulty,
-      // Surface existing voice catalog input usage rules and affinity hints
-      iu: voice.uig?.rules || undefined,
+      // Process voice catalog input usage rules with sensible defaults
+      iu: this.mergeUsageRules(difficulty, voice.uig),
       ah: voice.uig?.aff || undefined,
       safetyFilter: shouldAdaptForAge ? "adapt_for_age" : undefined,
       ageAdaptation: shouldAdaptForAge ? {

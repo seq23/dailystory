@@ -225,12 +225,19 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 - Voice characteristics: ${ctrlData.vf?.nar || 'storybook'} narrative style
 - Input integration mode: ${ctrlData.iu?.mode || 'direct'}
 - Affinity hints: ${JSON.stringify(ctrlData.ah || {})} (prioritize high-scoring inputs)
-- Input usage rules: ${JSON.stringify(ctrlData.iu?.rules || {})} (max usage per type)
+- Input usage rules: ${JSON.stringify(ctrlData.iu?.rules || {})} (max mentions per input type - NOT character limits)
 - Theme focus: ${ctrlData.themes?.join(', ') || 'adventure'}
 - Level: ${ctrlData.level || 'medium'}`;
     }
 
-    finalSystemPrompt += `\n\nFAIL-SOFT RULES:
+    finalSystemPrompt += `\n\nUSER INPUT INTEGRATION RULES:
+• NEVER truncate or abbreviate user names, foods, hobbies, animals, or colors
+• Use complete user inputs as provided (e.g., "Alexandria" not "Alex", "pizza" not "p")
+• maxUses values control story mentions only (how many times to weave input into narrative)
+• minGaps values control spacing (minimum pages/beats between mentions)
+• mode: "direct" = explicit mentions, "subtle" = woven naturally into context
+
+FAIL-SOFT RULES:
 - If CTRL data is missing or minimal, choose reasonable defaults and continue
 - Never reference missing information or apologize for limitations
 - Always produce a complete story regardless of input quality
