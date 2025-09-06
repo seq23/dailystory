@@ -295,7 +295,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy', 
     age: '6-year-old',
     skin: 'warm light skin',
-    hair: 'light brown hair style', 
+    hair: 'sandy blonde hair', 
     features: 'expressive animated eyes and warm genuine smile',
     clothing: 'hoodie and sneakers'
   },
@@ -338,7 +338,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl',
     age: '6-year-old', 
     skin: 'warm light skin',
-    hair: 'light brown wavy hair',
+    hair: 'blonde hair in ponytail',
     features: 'lively enthusiastic expression and kind gentle demeanor', 
     clothing: 'blouse and skirt'
   },
@@ -381,7 +381,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'warm light skin',
-    hair: 'neat brown hair',
+    hair: 'neat blonde hair',
     features: 'kind gentle expression and bright smile',
     clothing: 'simple comfortable outfit'
   },
