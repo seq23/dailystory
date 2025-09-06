@@ -46,28 +46,8 @@ class EdgeStaticCache {
 const cache = EdgeStaticCache.getInstance();
 
 // Ultra-Cheap Model Chain Configuration (90% cost reduction)
-export const getModelChain = (isExpertLevel: boolean = false) => {
-  const cacheKey = `model_chain_${isExpertLevel ? 'expert' : 'regular'}`;
-  
-  let chain = cache.get<any[]>(cacheKey);
-  if (!chain) {
-    if (isExpertLevel) {
-      // Expert: Only gpt-4o-mini → gpt-4o (remove 4 expensive models)
-      chain = [
-        { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'ultra-cheap primary', paramName: 'max_tokens', supportsTemperature: true },
-        { name: 'gpt-4o', model: 'gpt-4o', description: 'cost-optimized fallback', paramName: 'max_tokens', supportsTemperature: true }
-      ];
-    } else {
-      // Regular: Only gpt-4o-mini (remove 3 fallback models)
-      chain = [
-        { name: 'gpt-4o-mini', model: 'gpt-4o-mini', description: 'ultra-cheap only', paramName: 'max_tokens', supportsTemperature: true }
-      ];
-    }
-    cache.set(cacheKey, chain);
-  }
-  
-  return chain;
-};
+// NOTE: Removed duplicate getModelChain export to fix edge function boot failure
+// Using getModelChainOptimized as the single source of truth (line 440)
 
 // Cultural Context Embedded Data (Phase 2: 24h cache, no external files)
 export const getCulturalContextArrays = () => {

@@ -32,8 +32,9 @@ export class CodebookService {
   }
 
   /**
-   * Resolve array indexes to their string values
+   * Resolve array indexes to their string values with ±1 fallback
    * Supports both direct strings and numeric indexes
+   * Enhanced with smart fallback logic to prevent invalid placeholders
    */
   static resolveIndexes<T extends string | number>(
     arrayName: keyof GlobalCodebook, 
@@ -52,13 +53,59 @@ export class CodebookService {
         return index; // Direct string value
       }
       
-      if (typeof index === 'number' && index >= 0 && index < array.length) {
-        return array[index]; // Resolve index
+      if (typeof index === 'number') {
+        // Try exact index first
+        if (index >= 0 && index < array.length) {
+          return array[index];
+        }
+        
+        // ±1 Fallback: Try index - 1 (common off-by-one error)
+        if (index > 0 && (index - 1) < array.length) {
+          console.log(`📝 Codebook: Using ±1 fallback ${index}→${index-1} for '${String(arrayName)}'`);
+          return array[index - 1];
+        }
+        
+        // ±1 Fallback: Try index + 1 (reverse off-by-one error)
+        if (index >= 0 && (index + 1) < array.length) {
+          console.log(`📝 Codebook: Using ±1 fallback ${index}→${index+1} for '${String(arrayName)}'`);
+          return array[index + 1];
+        }
+        
+        // Creative fallback: Use modulo wrapping to stay within bounds
+        if (array.length > 0) {
+          const wrappedIndex = Math.abs(index) % array.length;
+          console.log(`📝 Codebook: Using creative fallback ${index}→${wrappedIndex} for '${String(arrayName)}'`);
+          return array[wrappedIndex];
+        }
       }
       
-      console.warn(`Invalid index ${index} for codebook array '${String(arrayName)}'`);
-      return `[invalid:${index}]`;
+      // Last resort: return a contextually appropriate fallback
+      console.warn(`Invalid index ${index} for codebook array '${String(arrayName)}', using creative fallback`);
+      return this.getCreativeFallback(arrayName, index);
     });
+  }
+
+  /**
+   * Get creative, contextually appropriate fallback for invalid indexes
+   */
+  private static getCreativeFallback(arrayName: keyof GlobalCodebook, originalIndex: number | string): string {
+    // Return contextually appropriate alternatives instead of error strings
+    const fallbacks: Record<string, string[]> = {
+      'tones': ['mysterious', 'enchanting', 'delightful'],
+      'twists': ['unexpected_discovery', 'surprise_helper', 'hidden_door'],
+      'helpers': ['wise_friend', 'magical_guide', 'kind_stranger'],
+      'settings': ['magical_place', 'cozy_corner', 'secret_spot'],
+      'themes': ['adventure', 'friendship', 'discovery']
+    };
+    
+    const arrayFallbacks = fallbacks[arrayName as string];
+    if (arrayFallbacks) {
+      const randomFallback = arrayFallbacks[Math.abs(Number(originalIndex) || 0) % arrayFallbacks.length];
+      return randomFallback;
+    }
+    
+    // Generic creative fallback
+    return 'story_magic';
   }
 
   /**

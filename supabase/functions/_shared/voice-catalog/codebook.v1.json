@@ -8,7 +8,7 @@
   "trans": ["and_then_softly", "one_by_one", "meanwhile", "next", "beyond_woods", "but_then", "later", "soon", "across_street", "down_hall", "meanwhile_back_at", "after_training", "across_the_sea"],
   "pauses": ["hush", "breath_hold", "wait_for_it", "thinking_pause", "quiet_for_a_moment", "no_one_breathed", "heartbeat_pause"],
   "conts": ["not_done", "only_beginning", "keep_watching", "one_more_try", "next_clue", "new_rule"],
-  "twists": ["ordinary_to_magical", "helper_reveals", "misunderstanding_to_friend", "chain_loops_back", "lost_found", "mistake_becomes_fun", "kindness_returns", "pattern_becomes_object", "worry_to_plan", "ally_is_opponent", "home_is_key", "power_has_cost", "mentor_falls", "red_herring", "ordinary_is_special"],
+  "twists": ["ordinary_to_magical", "helper_reveals", "misunderstanding_to_friend", "chain_loops_back", "lost_found", "mistake_becomes_fun", "kindness_returns", "pattern_becomes_object", "worry_to_plan", "ally_is_opponent", "home_is_key", "power_has_cost", "mentor_falls", "red_herring", "ordinary_is_special", "reader_is_key"],
   "ends": ["bedtime_close", "full_circle", "group_celebration", "calm_return", "open_invite", "lesson_light", "quiet_pride", "hearth_warm", "return_home_door_remains", "open_series_hook", "bittersweet_end", "celebration_with_shadow"],
   "helpers": ["animal_guide", "talkative_toy", "kind_neighbor", "mentor", "best_friend", "caregiver", "teacher", "elder", "parent", "strange_but_kind", "squad", "rival_friend", "mysterious_guide"],
   "dialog": ["simple", "warm", "playful", "snappy", "realistic", "wry", "minimal", "chorus", "banter", "lyrical"],

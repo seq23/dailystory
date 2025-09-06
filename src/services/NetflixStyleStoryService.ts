@@ -218,7 +218,7 @@ export class NetflixStyleStoryService {
         body: {
           difficulty: difficulty,
           userInfo: userInfo,
-          pageCount: 5, // Default page count for fallback
+          pageCount: 12, // Enhanced fallback page count for unlimited experience
           templateIndex: 0
         }
       });
