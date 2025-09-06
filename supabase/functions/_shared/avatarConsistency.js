@@ -96,13 +96,13 @@ export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
   return prompt.replace('{name}', userName);
 }
 
-// Quality-based avatar validation for Tier 2.5 fallback trigger
+// Quality-based avatar validation for fallback trigger
 export function validateAvatarQuality(prompt, avatarIdentity, userInfo) {
   const userName = userInfo?.name || 'child';
   
   // Missing avatar identity - quality failure
   if (!avatarIdentity) {
-    console.log('🔍 QUALITY CHECK: Missing avatar identity - triggering Tier 2.5');
+    console.log('🔍 QUALITY CHECK: Missing avatar identity - triggering fallback');
     return { isQualityAcceptable: false, reason: 'missing_avatar_identity' };
   }
   
@@ -122,13 +122,13 @@ export function validateAvatarQuality(prompt, avatarIdentity, userInfo) {
   );
   
   if (hasLowQuality) {
-    console.log('🔍 QUALITY CHECK: Low quality avatar description - triggering Tier 2.5');
+    console.log('🔍 QUALITY CHECK: Low quality avatar description - triggering fallback');
     return { isQualityAcceptable: false, reason: 'generic_description' };
   }
   
   // Missing visual description from avatar identity
   if (!avatarIdentity.visualDescription || avatarIdentity.visualDescription.length < 20) {
-    console.log('🔍 QUALITY CHECK: Insufficient visual description - triggering Tier 2.5');
+    console.log('🔍 QUALITY CHECK: Insufficient visual description - triggering fallback');
     return { isQualityAcceptable: false, reason: 'insufficient_visual_description' };
   }
   

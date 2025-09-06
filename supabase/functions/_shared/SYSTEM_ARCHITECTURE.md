@@ -40,29 +40,31 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 
 ### 2. Image Generation Services
 
-#### OpenAI Image Generator (`openai-image/index.ts`)
-- **Model**: DALL-E 3 (gpt-image-1)
-- **Tier**: Nuclear Fallback (Tier 3)
-- **Features**: Simplified independence - 12 avatar descriptions, full page text, children's book style
-- **Key Simplification**: Removed AI enhancement pipeline, direct DALL-E 3 calls only
-
 #### Runware Image Generator (`runware-generate-image/index.ts`)
-- **Model**: Multiple Flux models
-- **Tier**: Balanced (Tier 2) 
-- **Features**: Systematic service integration
+- **Model**: Multiple Flux models  
+- **Tier**: Enhanced Premium (Tier 1) with Fallback Architecture
+- **Features**: Character consistency, secondary character detection, visual tracking
+- **Architecture**: Tier 1 → Tier 2.5 → Tier 4 fallback system
 
-### 3. Enhancement Pipeline (`_shared/MultiStageEnhancementPipeline.js`)
-- **Tier 1**: Premium pipeline with cultural profiling
-- **Tier 2**: Enhanced systematic service wrappers with advanced narrative processing
-- **Utilities**: Prompt building, cultural integration, narrative coherence
-
-### 4. Support Services
+### 3. Character Consistency Services
 
 #### Character Consistency (`_shared/CharacterConsistencyService.js`)
 - **Database-backed avatar identity management** via `character_consistency_cache` table
 - Character appearance tracking with race condition elimination
 - Cultural representation with scalable architecture
 - Eliminates memory-based cache limitations
+
+#### Secondary Element Detection (`_shared/SecondaryElementDetector.js`)
+- Identifies and tracks secondary characters (family, friends, community)
+- Character animal detection and consistency management
+- Integrated into Tier 1 image generation pipeline
+
+#### Visual Detail Tracking (`_shared/VisualDetailTracker.js`)
+- Tracks visual elements (colors, objects, settings) across story pages
+- Maintains story world visual consistency
+- Provides consistent detail descriptions for image generation
+
+### 4. Support Services
 
 #### Security & Monitoring (`_shared/SecurityValidator.js`, `_shared/MetricsCollector.js`)
 - **Request validation**: Rate limiting, content security, malicious pattern detection
@@ -90,6 +92,13 @@ Placeholder Res.   ↓                      ↓                    ↓
 Frontend Bundle → Silent Tracking → process-story-content → Enhanced Grammar
     ↓                                     ↓                    ↓
 Final Processing ← Backend Placeholder ← Content Sanitization ← Story Response
+
+Image Generation Flow:
+Story Text → AI Enhancement (Tier 1) → Character Consistency → Image Generation
+    ↓              ↓                      ↓                    ↓
+Visual Analysis → Secondary Characters → Visual Tracking → Enhanced Prompt
+    ↓              ↓                      ↓                    ↓
+Tier 1 Generation → (Fallback: Tier 2.5) → (Final: Tier 4) → Image Response
 ```
 
 ## **Deployed System Improvements (2025)**
@@ -102,9 +111,9 @@ Final Processing ← Backend Placeholder ← Content Sanitization ← Story Resp
 6. **Enhanced Grammar Features**: Advanced pronoun fixes, article correction, verb conjugation
 7. **Vocabulary Integration**: Silent failure tracking with user progress monitoring
 8. **Performance Optimization**: 2-10 second generation times with enhanced reliability
-9. **Edge Function Simplification**: Removed 900+ lines of template code for dedicated processing
-10. **Enhanced Prompts**: Cultural context, hair color mapping, user info integration
-11. **Monitoring & Logging**: Comprehensive performance tracking and error reporting
+9. **Simplified Architecture**: 3-tier image generation system (Tier 1 → Tier 2.5 → Tier 4)
+10. **Character Consistency**: Database-backed character tracking and visual element consistency
+11. **Enhanced Tier 1**: Full character consistency, secondary character detection, and visual tracking
 12. **Graceful Degradation**: Multiple fallback layers ensure story delivery
 13. **Developer Experience**: Unified hooks and services for simplified implementation
 
@@ -126,14 +135,20 @@ Final Processing ← Backend Placeholder ← Content Sanitization ← Story Resp
 
 ### Advanced Validation Framework
 - **5-Criteria Quality Scoring**: Character presence, setting details, visual composition, actionable elements, narrative coherence
-- **Enhanced Length Requirements**: Minimum 120+ characters for primary scene descriptions
+- **Enhanced Length Requirements**: Minimum 120+ characters for primary scene descriptions  
 - **Quality Thresholds**: 60+ point requirement (60% pass rate) for Tier 1 acceptance
-- **Fail-Fast Implementation**: Immediate Tier 2 triggering without repair attempts
+- **Fail-Fast Implementation**: Immediate fallback triggering without repair attempts
+
+### Simplified Image Generation Architecture
+- **3-Tier System**: Tier 1 (Enhanced AI) → Tier 2.5 (Nuclear Hardcoded) → Tier 4 (SVG Placeholder)
+- **Character Consistency**: Database-backed character tracking across all story pages
+- **Visual Element Tracking**: Consistent colors, objects, and settings throughout stories
+- **Secondary Character Management**: Automatic detection and consistency for family, friends, and pets
 
 ### Comprehensive Debugging System
 - **Request ID Correlation**: Unique identifiers track requests across all functions
 - **Cross-Function Tracking**: Complete request lifecycle monitoring from orchestration to completion
-- **Enhanced Logging**: Detailed OpenAI prompt debugging, validation step tracking, and Runware assembly analysis
+- **Enhanced Logging**: Detailed AI prompt debugging, validation step tracking, and image generation analysis
 - **Performance Monitoring**: Success rates, validation scores, and response time tracking
 
 ## Configuration

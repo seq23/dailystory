@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
-import { MultiStageEnhancementPipeline } from "../_shared/MultiStageEnhancementPipeline.js";
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
@@ -52,49 +51,30 @@ interface PromptStudioResponse {
   error?: string;
 }
 
-// Enhanced prompt processing using MultiStageEnhancementPipeline
-async function enhancePromptWithPipeline(
+// Simple prompt enhancement using legacy approach
+async function enhancePromptWithBasicEnhancement(
   prompt: string, 
   userInfo?: any, 
   difficultyLevel: string = 'medium',
   enhancementLevel: string = 'standard'
 ): Promise<{ enhancedPrompt: string; analysis: any }> {
   try {
-    console.log(`🎨 Prompt Studio using MultiStageEnhancementPipeline for: "${prompt.substring(0, 50)}..."`);
+    console.log(`🎨 Prompt Studio using basic enhancement for: "${prompt.substring(0, 50)}..."`);
     
-    // Map difficulty level for pipeline
-    const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo || { readingLevel: difficultyLevel });
-    console.log(`🔧 Mapped difficulty: ${mappedDifficulty} from input: ${difficultyLevel}`, {
-      originalInput: difficultyLevel,
-      userReadingLevel: userInfo?.readingLevel,
-      finalMappedLevel: mappedDifficulty
-    });
-
-    // Process through the comprehensive pipeline
-    const enhancementResult = await MultiStageEnhancementPipeline.processTier2HighQuality(
-      prompt,
-      userInfo,
-      crypto.randomUUID(), // sessionId
-      1, // pageNumber
-      1  // totalPages
-    );
-
-    console.log(`✅ Pipeline enhancement completed with quality score: ${enhancementResult.qualityScore}`);
+    // Basic enhancement - add children's book styling
+    const enhancedPrompt = `Children's book illustration: ${prompt}. Bright, colorful, safe for children, professional illustration style, consistent character appearance`;
 
     return {
-      enhancedPrompt: enhancementResult.enhancedPrompt,
+      enhancedPrompt,
       analysis: {
         originalLength: prompt.length,
-        enhancedLength: enhancementResult.enhancedPrompt.length,
-        optimizations: enhancementResult.appliedOptimizations || ['Cultural intelligence', 'Emotional context', 'Quality enhancement'],
-        strategy: enhancementLevel,
-        qualityScore: enhancementResult.qualityScore,
-        culturalContext: enhancementResult.culturalContext,
-        emotionalContext: enhancementResult.emotionalContext
+        enhancedLength: enhancedPrompt.length,
+        optimizations: ['Children book styling', 'Safety guidelines', 'Professional quality'],
+        strategy: enhancementLevel
       }
     };
   } catch (error) {
-    console.error('❌ Pipeline enhancement failed:', error);
+    console.error('❌ Basic enhancement failed:', error);
     return { 
       enhancedPrompt: prompt, 
       analysis: { error: error.message } 
@@ -224,8 +204,8 @@ serve(async (req) => {
         const request: PromptStudioRequest = JSON.parse(event.data);
         
         if (request.type === 'generate') {
-          // Enhance prompt with MultiStageEnhancementPipeline
-          const { enhancedPrompt, analysis } = await enhancePromptWithPipeline(
+          // Enhance prompt with basic enhancement
+          const { enhancedPrompt, analysis } = await enhancePromptWithBasicEnhancement(
             request.positivePrompt,
             request.userInfo,
             request.difficultyLevel || 'medium',
@@ -249,7 +229,7 @@ serve(async (req) => {
           
         } else if (request.type === 'analyze') {
           // Just analyze and enhance the prompt without generation
-          const { enhancedPrompt, analysis } = await enhancePromptWithPipeline(
+          const { enhancedPrompt, analysis } = await enhancePromptWithBasicEnhancement(
             request.positivePrompt,
             request.userInfo,
             request.difficultyLevel || 'medium',
@@ -270,7 +250,7 @@ serve(async (req) => {
           const results = [];
 
           for (let i = 0; i < batchCount; i++) {
-            const { enhancedPrompt } = await enhancePromptWithPipeline(
+            const { enhancedPrompt } = await enhancePromptWithBasicEnhancement(
               request.positivePrompt,
               request.userInfo,
               request.difficultyLevel || 'medium',
@@ -326,7 +306,7 @@ serve(async (req) => {
       return createCorsErrorResponse('RUNWARE_API_KEY not configured', 500);
     }
 
-    const { enhancedPrompt, analysis } = await enhancePromptWithPipeline(
+    const { enhancedPrompt, analysis } = await enhancePromptWithBasicEnhancement(
       request.positivePrompt,
       request.userInfo,
       request.difficultyLevel || 'medium',

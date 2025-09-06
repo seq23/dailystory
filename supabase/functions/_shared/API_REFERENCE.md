@@ -38,54 +38,20 @@
 }
 ```
 
-### OpenAI Image Generation
-**Endpoint**: `/functions/v1/openai-image`
-**Method**: POST
-**Purpose**: Generate premium quality images using OpenAI
-
-**Request Body**:
-```json
-{
-  "positivePrompt": "string (required)",
-  "width": "number (default: 1024)",
-  "height": "number (default: 1024)", 
-  "quality": "high | medium | low | auto",
-  "style": "vivid | natural",
-  "userInfo": "object",
-  "pageNumber": "number",
-  "sessionId": "string"
-}
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "imageURL": "string",
-  "provider": "openai",
-  "model": "gpt-image-1",
-  "cost": "number",
-  "seed": "number",
-  "quality": "string",
-  "size": "string"
-}
-```
-
-### Runware Image Generation  
+### Image Generation Orchestrator
 **Endpoint**: `/functions/v1/runware-generate-image`
 **Method**: POST
-**Purpose**: Generate images using Runware Flux models
+**Purpose**: Generate images using advanced tier-based fallback system
 
 **Request Body**:
 ```json
 {
-  "positivePrompt": "string (required)",
-  "negativePrompt": "string",
-  "width": "number", 
-  "height": "number",
-  "userInfo": "object",
+  "pageText": "string (required)",
+  "userInfo": "object (required)",
+  "sessionId": "string",
   "pageNumber": "number",
-  "sessionId": "string"
+  "isGuestUser": "boolean",
+  "difficultyLevel": "string"
 }
 ```
 
@@ -94,10 +60,14 @@
 {
   "success": true,
   "imageURL": "string",
-  "provider": "runware", 
+  "tier": "number",
+  "provider": "string", 
   "model": "string",
-  "processingTime": "number",
-  "seed": "number"
+  "cost": "number",
+  "seed": "number",
+  "enhancementLevel": "string",
+  "qualityScore": "number",
+  "metadata": "object"
 }
 ```
 
@@ -120,8 +90,7 @@ All functions are configured with `verify_jwt = false` for public access. No aut
 
 ## Rate Limits
 
-- OpenAI: Governed by OpenAI API limits
-- Runware: Governed by Runware API limits
+- Image Generation: Governed by Runware API limits
 - AI Story Enhancer: No specific limits (uses OpenAI internally)
 
 ## CORS Support

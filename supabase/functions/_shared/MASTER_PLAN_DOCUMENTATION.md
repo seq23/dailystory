@@ -42,30 +42,28 @@
 - **REMOVED**: Cultural profile system replaced with direct visual approach
 
 #### 3. **PHASE 2: BackendTokenManager Removal and Simplification**
-- **REMOVED**: BackendTokenManager completely from edge functions (`ai-visual-scene-creator`, `MultiStageEnhancementPipeline`)
+- **REMOVED**: BackendTokenManager completely from edge functions (`ai-visual-scene-creator`)
 - **IMPLEMENTED**: Direct prompt construction logic:
   - Priority Order: Primary Scene → Brand Suffix → Character → Visual → Cultural → Style
   - Simple length checking (remove style framework if > 2900 chars)
   - No complex token optimization or segment management
 - **REPLACED**: Complex prompt segments with straightforward array building and filtering
 
-#### 4. **PHASE 3: Negative Prompt Reordering**
-- **REORDERED**: `buildUnifiedNegativePrompt()` method in `MultiStageEnhancementPipeline.js`:
-  - **FIRST**: New Pixar negative for Levels 0-1: `'toy, figurine, doll, plastic, simple background, flat lighting'`
-  - **SECOND**: African American cultural sensitivity: `'lightened skin, whitewashed, caucasian features, stereotypical, blurry, low quality, distorted, altered ethnicity, artificial skin lightening, noise, oversaturated'`
-  - **THEN**: All existing negatives in current order
-- **UPDATED**: `styleFrameworks.js` negative prompts for Levels 0-1 to include new Pixar anti-toy elements
+#### 4. **PHASE 3: Enhanced Tier 1 Character Consistency**
+- **INTEGRATED**: CharacterConsistencyService for database-backed character persistence
+- **INTEGRATED**: SecondaryElementDetector for secondary character detection and tracking
+- **INTEGRATED**: VisualDetailTracker for visual element consistency across pages
+- **ENHANCED**: Tier 1 now provides comprehensive character and visual consistency
 
 #### 5. Character Consistency Updates (`UnifiedCharacterConsistency.js`)
 - **REPLACED**: African-American text generation with direct visual descriptions
 - **IMPLEMENTED**: Uses `avatarIdentity.directVisualDescription` from orchestrator
 - **REMOVED**: Lines 247-250 conditional "African-American" text generation
 
-#### 6. Pipeline Integration (`MultiStageEnhancementPipeline.js`)
-- **UPDATED**: Schema processing for new 3-field structure
-- **REMOVED**: Old `enhancedStoryData.characters`, `enhancedStoryData.setting` references
-- **IMPLEMENTED**: New `primaryScene` and `visualComponents` processing
-- **REMOVED**: Complex token management dependency
+#### 6. Simplified Architecture
+- **SIMPLIFIED**: 3-tier system: Tier 1 → Tier 2.5 → Tier 4
+- **REMOVED**: Tier 2 and Tier 3 complexity
+- **ENHANCED**: Tier 1 includes full character consistency and visual tracking
 
 ## **PHASE 4: DOCUMENTATION UPDATES**
 
@@ -127,9 +125,7 @@ LOW: Style framework (can be truncated if needed)
 4. **DO NOT** separate secondary characters from `primaryScene`
 5. **DO NOT** make brand suffix conditional based on character type
 6. **DO NOT** re-introduce BackendTokenManager to edge functions
-7. **DO NOT** change negative prompt ordering (Pixar anti-toy must be first for Levels 0-1)
-8. **DO NOT** re-introduce `applyBasicFixes()` or any repair mechanisms in Tier 1
-9. **DO NOT** add fallback scene generation or safety nets to Tier 1 validation
+7. **DO NOT** re-introduce deleted Tier 2 or Tier 3 systems
 
 ### ✅ ALWAYS MAINTAIN:
 1. **MAINTAIN**: Direct visual descriptions in avatar mapping
@@ -138,9 +134,8 @@ LOW: Style framework (can be truncated if needed)
 4. **MAINTAIN**: Brand suffix as HIGH priority for ALL English speakers
 5. **MAINTAIN**: Cultural elements as LOW priority (can be truncated)
 6. **MAINTAIN**: Direct prompt construction without BackendTokenManager
-7. **MAINTAIN**: Negative prompt order - Pixar anti-toy FIRST, cultural sensitivity SECOND
-8. **MAINTAIN**: Tier 1 strict fail-fast validation (30-character minimum for `primaryScene`)
-9. **MAINTAIN**: Immediate Tier 2 triggering when Tier 1 validation fails
+7. **MAINTAIN**: Simplified 3-tier architecture (Tier 1 → Tier 2.5 → Tier 4)
+8. **MAINTAIN**: Character consistency and visual tracking in Tier 1
 
 ## EXPECTED PERFORMANCE OUTCOMES
 
@@ -199,11 +194,11 @@ AFTER:  AI extracts insufficient primaryScene → validation rejects → immedia
 
 ## FILES MODIFIED
 
-1. `supabase/functions/ai-visual-scene-creator/index.ts` - New 3-field schema + direct prompt building + fail-fast validation
-2. `supabase/functions/runware-generate-image/index.ts` - Direct avatar descriptions + enhanced error logging
-3. `supabase/functions/_shared/MultiStageEnhancementPipeline.js` - BackendTokenManager removal + negative prompt reordering
-4. `supabase/functions/_shared/styleFrameworks.js` - New negative prompts for Levels 0-1
-5. `supabase/functions/_shared/UnifiedCharacterConsistency.js` - Visual description generation
+1. `supabase/functions/ai-visual-scene-creator/index.ts` - Enhanced with character consistency, secondary character detection, and visual tracking
+2. `supabase/functions/runware-generate-image/index.ts` - Simplified to 3-tier architecture
+3. `src/services/SimpleImageService.ts` - Updated to reflect new architecture
+4. **DELETED**: `supabase/functions/openai-image/` - Removed Tier 3
+5. **DELETED**: `supabase/functions/_shared/MultiStageEnhancementPipeline.js` - Removed Tier 2
 
 ## MONITORING & MAINTENANCE
 
@@ -220,7 +215,7 @@ AFTER:  AI extracts insufficient primaryScene → validation rejects → immedia
 - Complex emotional schema references
 - Conditional brand suffix logic returning
 - BackendTokenManager re-import in edge functions
-- Negative prompt order changes (Pixar anti-toy not first)
+- Re-introduction of deleted Tier 2 or Tier 3 components
 
 ---
 
@@ -292,6 +287,7 @@ Request ID Generation → Cross-Function Tracking → Detailed Logging → Compr
 12. **DO NOT** remove enhanced logging or request ID correlation
 13. **DO NOT** skip previous context analysis in validation scoring
 14. **DO NOT** modify system prompt instructions for visual continuity
+15. **DO NOT** re-introduce deleted Tier 2 or Tier 3 systems
 
 ### ✅ ALWAYS MAINTAIN:
 10. **MAINTAIN**: Enhanced AI system prompts requiring previous context usage
@@ -302,8 +298,8 @@ Request ID Generation → Cross-Function Tracking → Detailed Logging → Compr
 
 ## FILES MODIFIED (PHASE 6 ADDITIONS)
 
-6. `supabase/functions/ai-visual-scene-creator/index.ts` - Enhanced system prompts + comprehensive validation + detailed logging
-7. `supabase/functions/runware-generate-image/index.ts` - Request ID correlation + enhanced debugging
+6. `supabase/functions/ai-visual-scene-creator/index.ts` - Enhanced system prompts + comprehensive validation + detailed logging + character consistency
+7. `supabase/functions/runware-generate-image/index.ts` - Request ID correlation + enhanced debugging + simplified architecture
 8. `supabase/functions/debug-prompt-history/index.ts` - Cross-function request tracking
 
 ## MONITORING & MAINTENANCE (UPDATED)
@@ -319,6 +315,7 @@ Request ID Generation → Cross-Function Tracking → Detailed Logging → Compr
 - Validation scores dropping below quality thresholds
 - Request ID correlation breaking between functions
 - Enhanced logging being removed or simplified
+- Re-introduction of deleted Tier 2 or Tier 3 functionality
 
 ---
 

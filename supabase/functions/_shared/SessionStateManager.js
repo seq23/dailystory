@@ -634,10 +634,9 @@ export class SessionStateManager {
    * Clear associated caches for session
    */
   static clearSessionCache(sessionId) {
-    // Clean up AI enhancement cache
-    if (globalThis.MultiStageEnhancementPipeline) {
-      globalThis.MultiStageEnhancementPipeline.clearSessionCache(sessionId);
-    }
+    // Clean up AI enhancement cache - REMOVED: MultiStageEnhancementPipeline no longer exists
+    console.log(`🧹 Session ${sessionId} cleaned up (no enhancement cache to clear)`);
+  }
     
     // Note: AdvancedPronounResolver removed - functionality replaced by RealContextCollector
     

@@ -238,7 +238,7 @@ export class SimpleImageService {
    * - DOES NOT affect image quality or tier selection
    * 
    * Backend orchestrator ensures 100% success rate through fallback tiers:
-   * Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
+   * Tier 1 → Tier 2.5 → Tier 4
    * 
    * All users start with Tier 1 premium image generation.
    * ============================================================================
@@ -354,9 +354,7 @@ export class SimpleImageService {
     if (result.metadata?.tier) {
       const tierMap = {
         1: 'AI-Enhanced Premium (Tier 1)',
-        2: 'Template-Based (Tier 2)', 
         2.5: 'Nuclear Hardcoded (Tier 2.5)',
-        3: 'OpenAI DALL-E (Tier 3)',
         4: 'SVG Placeholder (Tier 4)'
       };
       return tierMap[result.metadata.tier] || 'Unknown';
@@ -364,9 +362,7 @@ export class SimpleImageService {
     
     // Legacy fallback based on provider
     if (result.provider === 'runware-premium') return 'High-Quality AI-Enhanced (Tier 1)';
-    if (result.provider === 'runware-template') return 'Template-Based (Tier 2)';
     if (result.provider === 'runware-simple-fallback') return 'Nuclear Hardcoded (Tier 2.5)';
-    if (result.provider === 'openai') return 'OpenAI DALL-E (Tier 3)';
     if (result.provider === 'svg') return 'SVG Placeholder (Tier 4)';
     return 'Backend Orchestrated';
   }
