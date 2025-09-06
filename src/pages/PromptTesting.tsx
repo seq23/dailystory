@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,10 +10,23 @@ import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { errorSuppressionManager } from '@/utils/errorSuppression';
 
 export default function PromptTesting() {
   const [searchParams] = useSearchParams();
   const isDebugMode = searchParams.get('debug') === '1';
+
+  // Initialize error suppression for cleaner console
+  useEffect(() => {
+    if (!isDebugMode) {
+      errorSuppressionManager.enable();
+    }
+    
+    return () => {
+      errorSuppressionManager.disable();
+    };
+  }, [isDebugMode]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,7 +103,9 @@ export default function PromptTesting() {
               <Zap className="w-5 h-5 text-primary" />
               <h2 className="text-2xl font-semibold">Advanced Testing Suite</h2>
             </div>
-            <StoryPromptTester />
+            <ErrorBoundary>
+              <StoryPromptTester />
+            </ErrorBoundary>
           </section>
 
           <Separator />
@@ -101,7 +116,9 @@ export default function PromptTesting() {
               <Brain className="w-5 h-5 text-primary" />
               <h2 className="text-2xl font-semibold">Voice Catalog Testing</h2>
             </div>
-            <VoiceCatalogTester />
+            <ErrorBoundary>
+              <VoiceCatalogTester />
+            </ErrorBoundary>
           </section>
 
           <Separator />
@@ -112,7 +129,9 @@ export default function PromptTesting() {
               <Cable className="w-5 h-5 text-primary" />
               <h2 className="text-2xl font-semibold">Infrastructure Testing</h2>
             </div>
-            <RunwareConnectionTest />
+            <ErrorBoundary>
+              <RunwareConnectionTest />
+            </ErrorBoundary>
           </section>
         </div>
       </div>

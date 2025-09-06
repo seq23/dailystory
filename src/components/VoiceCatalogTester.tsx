@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,9 @@ import { VoiceCatalogIntegration, initializeVoiceCatalog } from '@/services/voic
 import { testVoiceCatalogSystem, quickTest } from '@/services/voiceCatalog/test';
 import type { UserInfo } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { batchDOMReads, debounceRAF, globalDOMCache } from '@/utils/performanceOptimizations';
+import { withTimeout, TIMEOUT_CONFIGS, NetworkTimeoutError } from '@/utils/networkTimeout';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 
 interface TestResult {
   status: 'idle' | 'running' | 'success' | 'error';
@@ -82,6 +85,9 @@ const sampleUsers: UserInfo[] = [
 
 export function VoiceCatalogTester() {
   const { toast } = useToast();
+  const performanceMonitor = usePerformanceMonitor();
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const [systemStatus, setSystemStatus] = useState<TestResult>({ status: 'idle' });
   const [quickTestResult, setQuickTestResult] = useState<TestResult>({ status: 'idle' });
   const [difficultyTests, setDifficultyTests] = useState<Record<string, DifficultyTestResult>>({});
@@ -93,47 +99,72 @@ export function VoiceCatalogTester() {
   const [customUser, setCustomUser] = useState<Partial<UserInfo>>({});
   const [alternativesCount, setAlternativesCount] = useState(3);
 
+  // Performance monitoring setup
+  useEffect(() => {
+    const cleanup = performanceMonitor.detectForcedReflows();
+    return cleanup;
+  }, [performanceMonitor]);
+
   const runSystemInit = useCallback(async () => {
+    const measureInit = performanceMonitor.measureInteraction('system-init');
     setSystemStatus({ status: 'running' });
     const startTime = performance.now();
     
     try {
-      const stats = await initializeVoiceCatalog();
+      const stats = await withTimeout(
+        () => initializeVoiceCatalog(),
+        TIMEOUT_CONFIGS.API_CALL
+      );
       const timing = performance.now() - startTime;
       setSystemStatus({ status: 'success', data: stats, timing });
       toast({ title: 'Success', description: 'Voice catalog system initialized successfully' });
     } catch (error) {
       const timing = performance.now() - startTime;
+      const errorMessage = error instanceof NetworkTimeoutError 
+        ? `Initialization timed out (${error.timeout}ms)` 
+        : error instanceof Error ? error.message : 'Unknown error';
       setSystemStatus({ 
         status: 'error', 
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         timing 
       });
       toast({ title: 'Error', description: 'Failed to initialize voice catalog system', variant: 'destructive' });
+    } finally {
+      measureInit();
     }
-  }, [toast]);
+  }, [toast, performanceMonitor]);
 
   const runQuickTest = useCallback(async () => {
+    const measureTest = performanceMonitor.measureInteraction('quick-test');
     setQuickTestResult({ status: 'running' });
     const startTime = performance.now();
     
     try {
-      const result = await quickTest();
+      const result = await withTimeout(
+        () => quickTest(),
+        TIMEOUT_CONFIGS.API_CALL
+      );
       const timing = performance.now() - startTime;
       setQuickTestResult({ status: 'success', data: result, timing });
       toast({ title: 'Success', description: `Quick test passed: ${result.selectedVoice.pn}` });
     } catch (error) {
       const timing = performance.now() - startTime;
+      const errorMessage = error instanceof NetworkTimeoutError 
+        ? `Quick test timed out (${error.timeout}ms)` 
+        : error instanceof Error ? error.message : 'Unknown error';
       setQuickTestResult({ 
         status: 'error', 
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         timing 
       });
       toast({ title: 'Error', description: 'Quick test failed', variant: 'destructive' });
+    } finally {
+      measureTest();
     }
-  }, [toast]);
+  }, [toast, performanceMonitor]);
 
   const runDifficultyTest = useCallback(async (difficulty: string) => {
+    const measureTest = performanceMonitor.measureInteraction(`difficulty-test-${difficulty}`);
     setDifficultyTests(prev => ({ 
       ...prev, 
       [difficulty]: { status: 'running', difficulty } 
@@ -141,7 +172,10 @@ export function VoiceCatalogTester() {
     const startTime = performance.now();
     
     try {
-      const result = await VoiceCatalogIntegration.testVoiceSelection(difficulty as any);
+      const result = await withTimeout(
+        () => VoiceCatalogIntegration.testVoiceSelection(difficulty as any),
+        TIMEOUT_CONFIGS.API_CALL
+      );
       const timing = performance.now() - startTime;
       setDifficultyTests(prev => ({
         ...prev,
@@ -156,17 +190,22 @@ export function VoiceCatalogTester() {
       }));
     } catch (error) {
       const timing = performance.now() - startTime;
+      const errorMessage = error instanceof NetworkTimeoutError 
+        ? `Test timed out for ${difficulty} (${error.timeout}ms)` 
+        : error instanceof Error ? error.message : 'Unknown error';
       setDifficultyTests(prev => ({
         ...prev,
         [difficulty]: {
           status: 'error',
           difficulty,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: errorMessage,
           timing
         }
       }));
+    } finally {
+      measureTest();
     }
-  }, []);
+  }, [performanceMonitor]);
 
   const runAllDifficultyTests = useCallback(async () => {
     for (const difficulty of difficultyLevels) {
@@ -286,7 +325,7 @@ export function VoiceCatalogTester() {
   };
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
