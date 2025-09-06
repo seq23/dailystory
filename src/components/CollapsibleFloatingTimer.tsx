@@ -50,6 +50,12 @@ export const CollapsibleFloatingTimer = ({
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('celebrationMuted') === '1'; } catch { return false; }
   });
+  
+  // Mobile tooltip state
+  const [mobileTooltip, setMobileTooltip] = useState<string>('');
+  
+  // Long press state for timer circle
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   useEffect(() => {
     try {
       if (muted) localStorage.setItem('celebrationMuted','1'); else localStorage.removeItem('celebrationMuted');
@@ -130,9 +136,9 @@ useEffect(() => {
   const getPositionClasses = () => {
     return cn(
       "fixed z-[60]",
-      isMobile ? "bottom-20 left-4" : 
-      isTablet ? "bottom-16 left-6" : 
-      "bottom-8 left-8"
+      isMobile ? "bottom-28 left-4" : 
+      isTablet ? "bottom-24 left-6" : 
+      "bottom-16 left-8"
     );
   };
 
@@ -234,18 +240,45 @@ useEffect(() => {
       {/* Expanded Timer Display */}
       <div className="relative">
         {/* Main Timer Circle */}
-        <div className={cn(
-          "relative bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 flex items-center justify-center",
-          // Paused state - yellow pulsing outline
-          !isReading && [
-            "border-yellow-400/80",
-            "shadow-yellow-500/40", 
-            "shadow-xl",
-            "animate-pulse ring-2 ring-yellow-400/50"
-          ],
-          isReading && "border-border",
-          isMobile ? "w-24 h-24" : isTablet ? "w-28 h-28" : "w-40 h-40"
-        )}>
+        <div 
+          className={cn(
+            "relative bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm rounded-full shadow-2xl border-2 flex items-center justify-center cursor-pointer",
+            // Paused state - yellow pulsing outline
+            !isReading && [
+              "border-yellow-400/80",
+              "shadow-yellow-500/40", 
+              "shadow-xl",
+              "animate-pulse ring-2 ring-yellow-400/50"
+            ],
+            isReading && "border-border",
+            isMobile ? "w-24 h-24" : isTablet ? "w-28 h-28" : "w-40 h-40"
+          )}
+          onClick={() => {
+            if (!isMobileOrTablet) {
+              setIsCollapsed(true);
+            }
+          }}
+          onTouchStart={() => {
+            if (isMobileOrTablet) {
+              const timer = setTimeout(() => {
+                setIsCollapsed(true);
+              }, 2000);
+              setLongPressTimer(timer);
+            }
+          }}
+          onTouchEnd={() => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              setLongPressTimer(null);
+            }
+          }}
+          onTouchCancel={() => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              setLongPressTimer(null);
+            }
+          }}
+        >
           <div id="timer-display" className="text-center">
             <div className={cn(
               "font-bold", 
@@ -268,12 +301,16 @@ useEffect(() => {
       <TooltipProvider>
         <div className="flex items-center gap-2">
           {/* Play/Pause */}
-          <Tooltip>
+          <Tooltip open={isMobileOrTablet ? mobileTooltip === 'play' : undefined}>
             <TooltipTrigger asChild>
                <Button
                  variant="outline"
                  size={isMobile ? "sm" : "default"}
                  onClick={() => {
+                   if (isMobileOrTablet) {
+                     setMobileTooltip('play');
+                     setTimeout(() => setMobileTooltip(''), 3000);
+                   }
                    console.log('🔥 TIMER BUTTON CLICKED! Current state:', { isReading, timeRemaining });
                    onToggleReading();
                  }}
@@ -290,12 +327,18 @@ useEffect(() => {
           </Tooltip>
 
           {/* Reduce Time */}
-          <Tooltip>
+          <Tooltip open={isMobileOrTablet ? mobileTooltip === 'reduce' : undefined}>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                onClick={onReduceTime}
+               <Button
+                 variant="outline"
+                 size={isMobile ? "sm" : "default"}
+                 onClick={() => {
+                   if (isMobileOrTablet) {
+                     setMobileTooltip('reduce');
+                     setTimeout(() => setMobileTooltip(''), 3000);
+                   }
+                   onReduceTime?.();
+                 }}
                 disabled={!onReduceTime || timeRemaining <= 5 * 60}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
                 aria-label={t("floatingTimer.reduceTime", "Reduce time by 5 minutes")}
@@ -309,14 +352,20 @@ useEffect(() => {
             </TooltipContent>
           </Tooltip>
 
-          {/* Increase Time (+15 min) - Premium only */}
-          {isPremium && onIncreaseTime && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  onClick={onIncreaseTime}
+           {/* Increase Time (+15 min) - Premium only */}
+           {isPremium && onIncreaseTime && (
+             <Tooltip open={isMobileOrTablet ? mobileTooltip === 'increase' : undefined}>
+               <TooltipTrigger asChild>
+                 <Button
+                   variant="outline"
+                   size={isMobile ? "sm" : "default"}
+                   onClick={() => {
+                     if (isMobileOrTablet) {
+                       setMobileTooltip('increase');
+                       setTimeout(() => setMobileTooltip(''), 3000);
+                     }
+                     onIncreaseTime?.();
+                   }}
                   className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
                   aria-label={t("floatingTimer.increaseTime", "Add 15 minutes of reading time")}
                   id="timer-increase-button"
@@ -330,21 +379,25 @@ useEffect(() => {
             </Tooltip>
           )}
 
-          {/* X Button - Dismiss timer for premium, end session for guests */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                onClick={() => {
-                  if (isPremium) {
-                    onKeepReadingUntimed?.();
-                    onDismiss?.();
-                  } else {
-                    onEndSession();
-                  }
-                }}
-                className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
+           {/* X Button - Dismiss timer for premium, end session for guests */}
+           <Tooltip open={isMobileOrTablet ? mobileTooltip === 'dismiss' : undefined}>
+             <TooltipTrigger asChild>
+               <Button
+                 variant="outline"
+                 size={isMobile ? "sm" : "default"}
+                 onClick={() => {
+                   if (isMobileOrTablet) {
+                     setMobileTooltip('dismiss');
+                     setTimeout(() => setMobileTooltip(''), 3000);
+                   }
+                   if (isPremium) {
+                     onKeepReadingUntimed?.();
+                     onDismiss?.();
+                   } else {
+                     onEndSession();
+                   }
+                 }}
+                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm border-2 border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600"
                 aria-label={isPremium ? t("floatingTimer.dismissTimer", "Dismiss timer for unlimited reading") : t("floatingTimer.endSession", "End Reading Session")}
                 id="timer-dismiss-x-button"
               >
@@ -356,13 +409,19 @@ useEffect(() => {
             </TooltipContent>
           </Tooltip>
 
-          {/* Collapse Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                onClick={() => setIsCollapsed(true)}
+           {/* Collapse Button */}
+           <Tooltip open={isMobileOrTablet ? mobileTooltip === 'collapse' : undefined}>
+             <TooltipTrigger asChild>
+               <Button
+                 variant="outline"
+                 size={isMobile ? "sm" : "default"}
+                 onClick={() => {
+                   if (isMobileOrTablet) {
+                     setMobileTooltip('collapse');
+                     setTimeout(() => setMobileTooltip(''), 3000);
+                   }
+                   setIsCollapsed(true);
+                 }}
                 className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
                 aria-label={t("floatingTimer.collapse", "Collapse timer")}
                 id="timer-collapse-button"
