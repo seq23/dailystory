@@ -4,6 +4,7 @@ import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse 
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 
 /**
  * ============================================================================
@@ -953,8 +954,6 @@ serve(async (req) => {
             source: 'styleFramework.frameworkPrompt'
           });
         }
-        
-        import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
         
         // Generate nuclear negative prompt with comprehensive protection
         const culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
