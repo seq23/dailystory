@@ -36,6 +36,73 @@ import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatar
  * ============================================================================
  */
 
+// ============= CULTURAL DESCRIPTION ARRAYS =============
+// African American Arrays
+const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+    'natural textured cut', 'clean tapered style', 'short textured waves', 'modern fade style'
+  ],
+  girls: [
+    'natural textured ponytail', 'beautiful curly afro', 'stylish protective braids', 'natural textured hair',
+    'elegant twisted updo', 'curly textured style', 'natural afro puffs', 'beautiful braided style',
+    'textured curly ponytail', 'natural coily hair', 'stylish textured waves', 'protective styled hair'
+  ]
+};
+
+const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
+  'rich dark chocolate complexion', 'warm deep brown skin', 'rich mahogany complexion', 
+  'beautiful dark ebony skin tone', 'warm caramel brown complexion', 'deep cocoa skin', 
+  'rich chestnut brown complexion', 'warm coffee-colored skin', 'beautiful bronze complexion', 
+  'radiant dark brown skin', 'warm toffee complexion', 'rich walnut skin tone'
+];
+
+const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
+  'beautiful expressive dark eyes and warm genuine smile', 'strong confident features with bright cheerful expression',
+  'graceful facial structure with kind welcoming demeanor', 'striking natural beauty with joyful animated expression',
+  'elegant bone structure with warm inviting smile', 'radiant complexion with bright engaging eyes',
+  'expressive almond-shaped eyes with natural charm', 'warm smiling features with confident expression'
+];
+
+// Hispanic/Latino Arrays (for Afro-Latina when dark skin + Spanish)
+const HARDCODED_HISPANIC_LATINO_HAIRSTYLES = {
+  boys: [
+    'dark brown wavy hair', 'straight black hair with side part', 'textured curly brown hair',
+    'medium length dark hair', 'classic short brown cut', 'layered dark hair', 'wavy textured cut',
+    'straight black hair with fringe', 'curly dark brown locks', 'smooth dark hair style'
+  ],
+  girls: [
+    'long straight black hair', 'dark brown wavy hair', 'curly black hair in ponytail',
+    'straight dark hair with bangs', 'wavy brown hair in braids', 'long black hair in loose curls',
+    'shoulder-length dark waves', 'straight black hair with layers', 'curly dark brown hair'
+  ]
+};
+
+const HARDCODED_HISPANIC_LATINO_SKIN_TONES = [
+  'warm olive complexion', 'medium brown skin', 'golden tan complexion', 'warm beige skin',
+  'caramel brown complexion', 'light olive skin', 'bronze complexion', 'honey-toned skin'
+];
+
+const HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES = [
+  'expressive warm brown eyes', 'bright cheerful smile', 'strong defined features',
+  'warm welcoming expression', 'lively animated eyes', 'gentle kind smile',
+  'beautiful natural features', 'confident friendly demeanor', 'radiant warm smile'
+];
+
+// Regional Authenticity Strings for Non-English Speakers
+const REGIONAL_AUTHENTICITY_STRINGS = {
+  'zh': 'authentic East Asian features reflecting Chinese heritage',
+  'hi': 'authentic South Asian features reflecting Indian heritage', 
+  'ar': 'authentic Middle Eastern features reflecting Arabic heritage',
+  'ja': 'authentic East Asian features reflecting Japanese heritage',
+  'ko': 'authentic East Asian features reflecting Korean heritage',
+  'fr': 'authentic European features reflecting French heritage',
+  'de': 'authentic European features reflecting German heritage',
+  'ru': 'authentic Eastern European features reflecting Russian heritage',
+  'pt': 'authentic Latin American features reflecting Portuguese heritage'
+};
+
 // ============= WEBSOCKET ERROR CLASSIFICATION =============
 class WebSocketError extends Error {
   constructor(message: string, public type: 'CONNECTION' | 'TIMEOUT' | 'RATE_LIMIT' | 'AUTH' | 'GENERATION' | 'NETWORK', public isRetryable: boolean = false) {
@@ -604,8 +671,88 @@ serve(async (req) => {
         const requestId = `IMG-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`🎯 [${requestId}] Starting Runware prompt assembly phase`);
 
-        // PHASE 4: Comprehensive Runware prompt construction with proper segment order
+        // PHASE 4: Enhanced 7-Segment Architecture prompt construction
         const segments = [];
+        
+        // Helper function to detect if user is Level 0-1 (beginner/easy)
+        const isLevel01User = difficulty === 'beginner' || difficulty === 'easy';
+        
+        // Helper function to generate cultural context
+        const generateCulturalContext = (avatarIdentity: any, userInfo: any, requestId: string) => {
+          const skinTone = avatarIdentity?.skinTone;
+          const nativeLanguage = avatarIdentity?.nativeLanguage || userInfo?.native_language || 'en';
+          
+          // Dark skin + English/French/Spanish = use detailed cultural arrays
+          if (skinTone === 'dark') {
+            if (nativeLanguage === 'en') {
+              // African American arrays
+              const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
+                           avatarIdentity?.type?.toLowerCase().includes('female');
+              const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+              const skinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
+              const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+              const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+              
+              console.log(`🌍 [${requestId}] African American cultural context applied (dark skin + English)`);
+              return `African American heritage: ${skinTone}, ${hairstyle}, ${features}`;
+            } else if (nativeLanguage === 'es') {
+              // Afro-Latina arrays (Hispanic/Latino for dark skin)
+              const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
+                           avatarIdentity?.type?.toLowerCase().includes('female');
+              const hairstyles = isGirl ? HARDCODED_HISPANIC_LATINO_HAIRSTYLES.girls : HARDCODED_HISPANIC_LATINO_HAIRSTYLES.boys;
+              const skinTone = HARDCODED_HISPANIC_LATINO_SKIN_TONES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length)];
+              const features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length)];
+              const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+              
+              console.log(`🌍 [${requestId}] Afro-Latina cultural context applied (dark skin + Spanish)`);
+              return `Afro-Latina heritage: ${skinTone}, ${hairstyle}, ${features}`;
+            } else if (nativeLanguage === 'fr') {
+              // African arrays (same as African American for French speakers)
+              const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
+                           avatarIdentity?.type?.toLowerCase().includes('female');
+              const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+              const skinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
+              const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+              const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+              
+              console.log(`🌍 [${requestId}] African cultural context applied (dark skin + French)`);
+              return `African heritage: ${skinTone}, ${hairstyle}, ${features}`;
+            }
+          }
+          
+          // Non-English speakers (any skin tone) get regional authenticity string
+          if (nativeLanguage !== 'en' && REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
+            console.log(`🌍 [${requestId}] Regional authenticity context applied for ${nativeLanguage}`);
+            return REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
+          }
+          
+          return null;
+        };
+        
+        // Helper function to generate story context (Level 0-1 only)
+        const generateStoryContext = (pageText: string, difficulty: string, requestId: string) => {
+          if (!isLevel01User) return null;
+          
+          if (!pageText || pageText.length < 10) return null;
+          
+          // Extract visual elements from story text for scene enhancement
+          const visualKeywords = [
+            'sunny', 'rainy', 'snowy', 'cloudy', 'bright', 'dark', 'colorful',
+            'outside', 'inside', 'playground', 'park', 'home', 'school', 'garden',
+            'happy', 'excited', 'surprised', 'curious', 'playful', 'gentle'
+          ];
+          
+          const foundKeywords = visualKeywords.filter(keyword => 
+            pageText.toLowerCase().includes(keyword)
+          );
+          
+          if (foundKeywords.length > 0) {
+            console.log(`📖 [${requestId}] Story context extracted for Level 0-1 user: ${foundKeywords.join(', ')}`);
+            return `Story scene context: ${foundKeywords.slice(0, 3).join(', ')} atmosphere`;
+          }
+          
+          return null;
+        };
         
         console.log(`🎨 [${requestId}] Style Framework Retrieved:`, {
           difficulty,
@@ -640,6 +787,35 @@ serve(async (req) => {
           });
         } else {
           console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema`);
+        }
+        
+        // 2.1. STORY CONTEXT (Level 0-1 only)
+        const storyContext = generateStoryContext(pageText, difficulty, requestId);
+        if (storyContext) {
+          segments.push(storyContext);
+          console.log(`📖 [${requestId}] Segment 2.1 - Story Context Added:`, {
+            content: storyContext,
+            level: `${difficulty} (Level 0-1)`,
+            source: 'pageText visual extraction'
+          });
+        } else if (isLevel01User) {
+          console.log(`📖 [${requestId}] Segment 2.1 - Story Context Skipped (no visual keywords found)`);
+        } else {
+          console.log(`📖 [${requestId}] Segment 2.1 - Story Context Skipped (Level 2+ user)`);
+        }
+        
+        // 2.3. CULTURAL CONTEXT (Conditional based on ethnicity/language)
+        const culturalContext = generateCulturalContext(avatarIdentity, userInfo, requestId);
+        if (culturalContext) {
+          segments.push(culturalContext);
+          console.log(`🌍 [${requestId}] Segment 2.3 - Cultural Context Added:`, {
+            content: culturalContext.substring(0, 100) + '...',
+            skinTone: avatarIdentity?.skinTone,
+            language: avatarIdentity?.nativeLanguage || userInfo?.native_language,
+            source: 'cultural description arrays'
+          });
+        } else {
+          console.log(`🌍 [${requestId}] Segment 2.3 - Cultural Context Skipped (English speaker with non-dark skin)`);
         }
         
         // 2.5. SECONDARY ELEMENTS DETECTION (After Primary Scene)
@@ -723,9 +899,11 @@ serve(async (req) => {
         console.log(`🎯 [${requestId}] FULL Runware Prompt (${enhancedPrompt.length} chars):`);
         console.log(`📝 [${requestId}] COMPLETE POSITIVE PROMPT:`, enhancedPrompt);
         console.log(`🚫 [${requestId}] COMPLETE NEGATIVE PROMPT:`, negativePrompt);
-        console.log(`🏗️ [${requestId}] 5-SEGMENT ARCHITECTURE SUMMARY:`, {
+        console.log(`🏗️ [${requestId}] 7-SEGMENT ARCHITECTURE SUMMARY:`, {
           'Segment 1': 'Character Description',
-          'Segment 2': 'Primary Scene', 
+          'Segment 2': 'Primary Scene',
+          'Segment 2.1': 'Story Context (Level 0-1 only)',
+          'Segment 2.3': 'Cultural Context (conditional)',
           'Segment 2.5': 'Secondary Elements (if detected)',
           'Segment 2.7': 'Visual Details (if tracked)',
           'Segment 3': 'Framework Prompt'
