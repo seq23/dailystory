@@ -201,7 +201,9 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
     features = getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES);
     clothing = getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING);
     
-    const hairstyles = genderType === 'girl' || genderType === 'woman' ? 
+    // Extract gender from descriptive character strings like 'African American girl'
+    const extractedGender = extractGenderFromCharacter(genderType);
+    const hairstyles = extractedGender === 'girl' ? 
       HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : 
       HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
     hair = getRandomItem(hairstyles);
@@ -209,7 +211,7 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
     arraySelections = {
       culturalPath: 'African American Arrays',
       skin: { selected: skin, fromArray: 'HARDCODED_AFRICAN_AMERICAN_SKIN_TONES', arraySize: HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length },
-      hair: { selected: hair, fromArray: `HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.${genderType === 'girl' || genderType === 'woman' ? 'girls' : 'boys'}`, arraySize: hairstyles.length },
+      hair: { selected: hair, fromArray: `HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.${extractedGender === 'girl' ? 'girls' : 'boys'}`, arraySize: hairstyles.length },
       eyes: { selected: eyes, fromArray: 'HARDCODED_AFRICAN_AMERICAN_EYE_COLORS', arraySize: HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length },
       features: { selected: features, fromArray: 'HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES', arraySize: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length },
       clothing: { selected: clothing, fromArray: 'HARDCODED_AFRICAN_AMERICAN_CLOTHING', arraySize: HARDCODED_AFRICAN_AMERICAN_CLOTHING.length }
@@ -497,6 +499,14 @@ const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
 
 function getRandomItem(array: string[]): string {
   return array[Math.floor(Math.random() * array.length)];
+}
+
+function extractGenderFromCharacter(character: string): string {
+  if (!character || typeof character !== 'string') return 'child';
+  const lowerChar = character.toLowerCase();
+  if (lowerChar.includes('girl')) return 'girl';
+  if (lowerChar.includes('boy')) return 'boy';
+  return 'child';
 }
 
 function getAgeFromDifficulty(difficulty: string): string {

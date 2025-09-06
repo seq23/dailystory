@@ -709,7 +709,8 @@ function fillPremiumTemplate(
       
       // Use African American arrays for cultural authenticity
       const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character; // Default neutral to boy for array access
-      const genderKey = character === 'boy' ? 'boys' : 'girls';
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
       
       // Deterministic selection based on user name (no randomization)
       const nameHash = (userInfo?.name || 'default').length % 10;
@@ -763,6 +764,14 @@ function fillPremiumTemplate(
 function getRandomItem(array: string[]): string {
   if (!array || array.length === 0) return 'default';
   return array[Math.floor(Math.random() * array.length)];
+}
+
+function extractGenderFromCharacter(character: string): string {
+  if (!character || typeof character !== 'string') return 'child';
+  const lowerChar = character.toLowerCase();
+  if (lowerChar.includes('girl')) return 'girl';
+  if (lowerChar.includes('boy')) return 'boy';
+  return 'child';
 }
 
 function getAgeFromDifficulty(difficulty: string): string {
