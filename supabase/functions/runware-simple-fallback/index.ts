@@ -34,13 +34,13 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Objects & Secondary Characters)
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Style Framework Integration)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
-  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
-  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}"
+  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
+  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
+  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
+  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
+  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -716,8 +716,8 @@ function fillPremiumTemplate(
     // Apply cultural setting enhancement
     const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo, avatarIdentity);
     
-    // Get style parameters
-    const style = getHardcodedStyle(difficulty);
+    // Get style framework settings
+    const styleSettings = getStyleFrameworkSettings(difficulty);
     
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
@@ -725,7 +725,7 @@ function fillPremiumTemplate(
     // Process pageText based on difficulty
     const processedPageText = truncatePageText(pageText || 'A story about learning and discovery', difficulty);
     
-    // Fill template with nuclear mappings (features already include complexion now) + page text
+    // Fill template with nuclear mappings and style framework integration
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
@@ -737,8 +737,7 @@ function fillPremiumTemplate(
       .replace('{objects}', objects)
       .replace('{secondary_characters}', secondary_characters)
       .replace('{emotion}', emotion)
-      .replace('{quality}', style.quality)
-      .replace('{suffix}', style.suffix || '');
+      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt);
     
     // Add clothing if detected
     if (clothing) {
@@ -835,50 +834,22 @@ function getAgeFromDifficulty(difficulty: string): string {
   return ageMap[difficulty] || 'age 9-10';
 }
 
-function getHardcodedStyle(difficulty: string): { quality: string, suffix?: string, steps: number, CFGScale: number } {
-  const styleMap = {
-    'beginner': {
-      // Concatenated prompt + quality from styleFrameworks.js
-      quality: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers. Professional animation studio quality with depth and dimension',
-      // Added missing suffix from brandSuffix
-      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 25,
-      CFGScale: 8
-    },
-    'easy': {
-      // Concatenated prompt + quality from styleFrameworks.js (identical to beginner)
-      quality: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers. Professional animation studio quality with depth and dimension',
-      // Added missing suffix from brandSuffix
-      suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 25,
-      CFGScale: 8
-    },
-    'medium': {
-      // Concatenated prompt + quality from styleFrameworks.js
-      quality: 'Digital painting style with painterly brush strokes, artistic color harmony, cinematic lighting, professional artwork quality. Professional painterly digital art with artistic sophistication. Ultra professional children\'s book illustration standard',
-      // Updated suffix from brandSuffix
-      suffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 25,
-      CFGScale: 8
-    },
-    'hard': {
-      // Concatenated prompt + quality from styleFrameworks.js
-      quality: 'Professional digital illustration with sophisticated artistic maturity, nuanced color gradients, refined visual storytelling, advanced digital painting techniques. Gallery-worthy professional digital illustration. Sophisticated artistic children\'s book illustration',
-      // Updated suffix from brandSuffix
-      suffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 25,
-      CFGScale: 8
-    },
-    'expert': {
-      // Concatenated prompt + quality from styleFrameworks.js
-      quality: 'Fine art digital illustration with masterful artistic sophistication, complex color harmonies, cinematic visual narrative, museum-quality artistic techniques. Museum-quality fine art digital illustration. Masterful children\'s book art with diverse representation',
-      // Updated suffix from brandSuffix
-      suffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 25,
-      CFGScale: 8
-    }
+// Import style frameworks from shared location
+function getStyleFrameworkSettings(difficulty: string): { frameworkPrompt: string, steps: number, CFGScale: number } {
+  // Map difficulties to style frameworks - levels 0-2 use Contemporary, levels 3-4 use 2.9D
+  const frameworkMap = {
+    'beginner': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    'easy': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    'medium': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    'hard': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
+    'expert': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting'
   };
-  return styleMap[difficulty] || styleMap.medium;
+  
+  return {
+    frameworkPrompt: frameworkMap[difficulty] || frameworkMap.medium,
+    steps: 25,
+    CFGScale: 8
+  };
 }
 
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, avatarIdentity?: any): string {
@@ -1029,8 +1000,8 @@ Deno.serve(async (req: Request) => {
     const culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
     const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
     
-    // Get style parameters
-    const style = getHardcodedStyle(difficulty);
+    // Get style framework settings  
+    const styleSettings = getStyleFrameworkSettings(difficulty);
     
     console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket...');
     
@@ -1088,8 +1059,8 @@ Deno.serve(async (req: Request) => {
                   model: "runware:100@1",
                   numberResults: 1,
                   outputFormat: "WEBP",
-                  steps: style.steps,
-                  CFGScale: style.CFGScale
+                  steps: styleSettings.steps,
+                  CFGScale: styleSettings.CFGScale
                 }];
                 
                 ws.send(JSON.stringify(imageMessage));

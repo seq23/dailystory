@@ -250,7 +250,7 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
   // OTHER COMPONENTS
   const setting = applyCulturalSettingEnhancement('outdoor scene', userInfo);
   const emotion = detectEmotionFromText(scene);
-  const style = getHardcodedStyle(difficulty || 'medium');
+  const styleSettings = getStyleFrameworkSettings(difficulty || 'medium');
 
   // Process pageText based on difficulty
   const processedPageText = truncatePageText(scene, difficulty || 'medium');
@@ -264,8 +264,7 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
     .replace('{scene}', scene)
     .replace('{setting}', setting)
     .replace('{emotion}', emotion)
-    .replace('{quality}', style.quality)
-    .replace('{suffix}', style.suffix || '')
+      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
     .replace('{pageText}', processedPageText)
     .replace('{objects}', '')
     .replace('{secondary_characters}', '');
@@ -463,16 +462,16 @@ function debugDifficultyComparison(pageText: string, userInfo?: any, avatarIdent
 
   difficulties.forEach(difficulty => {
     const templateResult = debugTemplateFilling(pageText, userInfo, avatarIdentity, difficulty);
-    const style = getHardcodedStyle(difficulty);
+    const styleSettings = getStyleFrameworkSettings(difficulty);
     
     comparison[difficulty] = {
       template: PREMIUM_PROMPT_TEMPLATES[difficulty],
       age: getAgeFromDifficulty(difficulty),
       style: {
-        quality: style.quality,
-        suffix: style.suffix,
-        steps: style.steps,
-        cfgScale: style.cfgScale,
+        frameworkPrompt: styleSettings.frameworkPrompt,
+        styleFramework: difficulty === 'beginner' || difficulty === 'easy' || difficulty === 'medium' ? 'Contemporary Children\'s Book Illustration' : '2.9D Rendered Illustration',
+        steps: styleSettings.steps,
+        cfgScale: styleSettings.CFGScale,
         strength: style.strength
       },
       finalPrompt: templateResult.filledTemplate
@@ -498,13 +497,13 @@ function debugDifficultyComparison(pageText: string, userInfo?: any, avatarIdent
 }
 
 // Copy required functions and arrays from runware-simple-fallback
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Objects & Secondary Characters)
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Style Framework Integration)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
-  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
-  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}"
+  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
+  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
+  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
+  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
+  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}"
 };
 
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
@@ -606,46 +605,22 @@ function getAgeFromDifficulty(difficulty: string): string {
   return ageMapping[difficulty] || '7-year-old';
 }
 
-function getHardcodedStyle(difficulty: string) {
-  const styles: { [key: string]: any } = {
-    'beginner': {
-      quality: 'High-quality 3D animated character illustration for early readers',
-      suffix: '3D animated style, Pixar-quality rendering, child-friendly design',
-      steps: 25,
-      cfgScale: 8,
-      strength: 0.75
-    },
-    'easy': {
-      quality: 'High-quality 3D animated character illustration for early readers',
-      suffix: '3D animated style, Pixar-quality rendering, child-friendly design',
-      steps: 25,
-      cfgScale: 8,
-      strength: 0.75
-    },
-    'medium': {
-      quality: 'ultra professional digital illustration standard, high quality professional artwork',
-      suffix: 'Digital illustration with painterly qualities, soft brush strokes, rich textures and depth',
-      steps: 25,
-      cfgScale: 8,
-      strength: 0.8
-    },
-    'hard': {
-      quality: 'Gallery-quality digital illustration with sophisticated artistic maturity',
-      suffix: 'professional digital illustration, sophisticated artistic maturity, refined visual storytelling',
-      steps: 25,
-      cfgScale: 8,
-      strength: 0.85
-    },
-    'expert': {
-      quality: 'Museum-quality fine art digital illustration with masterful artistic sophistication',
-      suffix: 'fine art digital illustration, masterful artistic sophistication, cinematic visual narrative',
-      steps: 25,
-      cfgScale: 8,
-      strength: 0.9
-    }
+// Style framework settings matching main function
+function getStyleFrameworkSettings(difficulty: string): { frameworkPrompt: string, steps: number, CFGScale: number } {
+  // Map difficulties to style frameworks - levels 0-2 use Contemporary, levels 3-4 use 2.9D
+  const frameworkMap = {
+    'beginner': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    'easy': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    'medium': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    'hard': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
+    'expert': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting'
   };
   
-  return styles[difficulty] || styles['medium'];
+  return {
+    frameworkPrompt: frameworkMap[difficulty] || frameworkMap.medium,
+    steps: 25,
+    CFGScale: 8
+  };
 }
 
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo?: any): string {
