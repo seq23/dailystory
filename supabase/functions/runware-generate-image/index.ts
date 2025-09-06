@@ -730,13 +730,6 @@ serve(async (req) => {
           'Segment 2.7': 'Visual Details (if tracked)',
           'Segment 3': 'Framework Prompt'
         });
-        console.log(`🏗️ [${requestId}] 5-SEGMENT ARCHITECTURE SUMMARY:`, {
-          'Segment 1': 'Character Description',
-          'Segment 2': 'Primary Scene', 
-          'Segment 2.5': 'Secondary Elements (if detected)',
-          'Segment 2.7': 'Visual Details (if tracked)',
-          'Segment 3': 'Framework Prompt'
-        });
         
         // Avatar mapping debug logging
         console.log(`👤 [${requestId}] AVATAR MAPPING DEBUG:`, {
