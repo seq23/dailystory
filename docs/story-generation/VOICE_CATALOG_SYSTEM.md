@@ -144,6 +144,13 @@ The Voice Catalog System replaced the Creative Seeds system, providing:
 ### Debug Tools
 - `VoiceCatalogService.getCatalogStats()` - System statistics
 - `VoiceSelector.testVoiceSelection()` - Selection testing
+- **VoiceCatalogTester Component** - Comprehensive testing UI at `/prompt-testing`
+  - System initialization and statistics display
+  - Real-time difficulty level testing across all levels
+  - User scenario testing with sample and custom profiles
+  - Voice alternatives generation and comparison
+  - Performance monitoring and error handling
+  - Control line generation for AI integration
 - Console logging for voice processing steps
 
 ## Performance Considerations

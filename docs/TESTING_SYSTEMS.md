@@ -1,7 +1,49 @@
 # Testing Systems Documentation
 
 ## Overview
-Comprehensive testing and debugging systems for story generation, template validation, and service diagnostics across the entire application.
+Comprehensive testing and debugging systems for story generation, voice catalog validation, template validation, and service diagnostics across the entire application. Enhanced with performance monitoring, error boundaries, and real-time testing capabilities.
+
+## VoiceCatalogTester (NEW - 767 lines)
+
+### Core Functionality  
+The VoiceCatalogTester provides comprehensive voice catalog system testing with real-time performance monitoring, error handling, and advanced validation capabilities across all user scenarios and difficulty levels.
+
+#### System Features
+- **System Initialization Testing**: Real-time catalog statistics, voice counts by difficulty level, system info and version details
+- **Quick Testing**: One-click basic functionality validation with compatibility score display and performance timing
+- **Difficulty Level Testing**: Interactive testing across all levels (beginner, easy, medium, hard, expert) with real-time results
+- **User Scenario Testing**: Pre-configured user profiles and custom user creation for voice selection validation
+- **Voice Alternatives Testing**: Multiple voice options comparison with compatibility scoring and interactive selection
+- **Control Line Generation**: AI system integration testing with JSON formatting and copy-to-clipboard functionality
+- **Performance Monitoring**: Built-in timing measurements, forced reflow detection, and interaction tracking
+- **Error Handling**: Comprehensive error boundaries, network timeout handling, and retry mechanisms
+
+#### Integration Patterns
+```typescript
+// Performance monitoring integration
+const performanceMonitor = usePerformanceMonitor();
+const measureInit = performanceMonitor.measureInteraction('system-init');
+
+// Network timeout with retry logic
+const result = await withTimeout(
+  () => initializeVoiceCatalog(),
+  TIMEOUT_CONFIGS.API_CALL
+);
+
+// Error boundary wrapping
+<ErrorBoundary>
+  <VoiceCatalogTester />
+</ErrorBoundary>
+```
+
+#### Test Coverage
+- Voice catalog system initialization and statistics
+- Voice selection algorithm validation across difficulty levels  
+- User profile compatibility testing with scoring
+- Theme integration and voice alternative generation
+- Control line generation for AI system integration
+- Performance benchmarking and reflow detection
+- Error handling and recovery mechanisms
 
 ## StoryPromptTester (1,236 lines)
 
