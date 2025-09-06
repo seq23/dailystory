@@ -735,23 +735,13 @@ serve(async (req) => {
           
           if (!pageText || pageText.length < 10) return null;
           
-          // Extract visual elements from story text for scene enhancement
-          const visualKeywords = [
-            'sunny', 'rainy', 'snowy', 'cloudy', 'bright', 'dark', 'colorful',
-            'outside', 'inside', 'playground', 'park', 'home', 'school', 'garden',
-            'happy', 'excited', 'surprised', 'curious', 'playful', 'gentle'
-          ];
+          // Return truncated page text (first 25 words or 125 characters, whichever is shorter)
+          const words = pageText.trim().split(/\s+/);
+          const first25Words = words.slice(0, 25).join(' ');
+          const truncatedText = first25Words.length > 125 ? first25Words.substring(0, 125) : first25Words;
           
-          const foundKeywords = visualKeywords.filter(keyword => 
-            pageText.toLowerCase().includes(keyword)
-          );
-          
-          if (foundKeywords.length > 0) {
-            console.log(`📖 [${requestId}] Story context extracted for Level 0-1 user: ${foundKeywords.join(', ')}`);
-            return `Story scene context: ${foundKeywords.slice(0, 3).join(', ')} atmosphere`;
-          }
-          
-          return null;
+          console.log(`📖 [${requestId}] Story context provided for Level 0-1 user: "${truncatedText.substring(0, 50)}${truncatedText.length > 50 ? '...' : ''}"`);
+          return truncatedText;
         };
         
         console.log(`🎨 [${requestId}] Style Framework Retrieved:`, {
