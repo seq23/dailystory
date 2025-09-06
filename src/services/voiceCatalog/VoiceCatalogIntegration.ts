@@ -143,18 +143,18 @@ export class VoiceCatalogIntegration {
     return {
       mode: modeFromRules ? (modeFromRules as any).m : base.mode,
       maxUses: {
-        u: (rules as any).u?.max || (rules as any).u?.max_uses || base.t.u,
-        c: (rules as any).c?.max || (rules as any).c?.max_uses || base.t.c, 
-        a: (rules as any).a?.max || (rules as any).a?.max_uses || base.t.a,
-        f: (rules as any).f?.max || (rules as any).f?.max_uses || base.t.f,
-        h: (rules as any).h?.max || (rules as any).h?.max_uses || base.t.h
+        u: (rules as any).u?.max || base.t.u,
+        c: (rules as any).c?.max || base.t.c, 
+        a: (rules as any).a?.max || base.t.a,
+        f: (rules as any).f?.max || base.t.f,
+        h: (rules as any).h?.max || base.t.h
       },
       minGaps: {
-        u: (rules as any).u?.gap || (rules as any).u?.min_gap || base.gap,
-        c: (rules as any).c?.gap || (rules as any).c?.min_gap || base.gap,
-        a: (rules as any).a?.gap || (rules as any).a?.min_gap || base.gap, 
-        f: (rules as any).f?.gap || (rules as any).f?.min_gap || base.gap,
-        h: (rules as any).h?.gap || (rules as any).h?.min_gap || base.gap
+        u: (rules as any).u?.gap || base.gap,
+        c: (rules as any).c?.gap || base.gap,
+        a: (rules as any).a?.gap || base.gap, 
+        f: (rules as any).f?.gap || base.gap,
+        h: (rules as any).h?.gap || base.gap
       }
     };
   }
