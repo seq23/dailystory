@@ -505,7 +505,7 @@ function parseAIResponse(content, options = {}) {
   }
 }
 
-async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string) {
+async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string, avatarIdentity?: any) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Circuit breaker check with expert content awareness - using avatarIdentity
@@ -980,7 +980,7 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         let primaryScene;
         try {
           console.log(`🧠 [${requestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
-          const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, requestId);
+          const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, requestId, avatarIdentity);
           
           const content = aiResult.choices?.[0]?.message?.content;
           if (!content) {
