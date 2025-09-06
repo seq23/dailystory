@@ -1068,7 +1068,7 @@ serve(async (req) => {
         );
         
         const enhancedCharacterDescription = characterData.characterDescription || 
-          `${avatarIdentity.name} is a child age ${userInfo?.age || '6-8'} with ${avatarIdentity.hairColor || 'brown hair'}`;
+          `${avatarIdentity.name} is a child age ${userInfo?.age || '6-8'}`;
         
         console.log('👤 PHASE 1.1: Enhanced Character Description:', {
           avatarIdentity: avatarIdentity,
