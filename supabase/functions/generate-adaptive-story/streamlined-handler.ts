@@ -1066,37 +1066,50 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
       const culturalArrays = getCulturalContextArrays();
       const userInfo = context.userInfo || {};
       
-      // Detect cultural context from user language/background
+      // Detect cultural context from user language/background  
       let culturalKey = 'en-general'; // Default
       let regionName = 'GENERAL ENGLISH';
-      
-      if (userInfo?.native_language) {
-        const lang = userInfo.native_language.toLowerCase();
-        const background = userInfo.cultural_background?.toLowerCase() || '';
+
+      if (userInfo?.nativeLanguage && userInfo?.avatar?.skinTone) {
+        const lang = userInfo.nativeLanguage.toLowerCase();
+        const skinTone = userInfo.avatar.skinTone;
+        const isDarkSkin = skinTone === 'dark';
         
-        // Enhanced detection for all 8 contexts
-        if (lang.includes('es') || lang.includes('spanish')) {
-          culturalKey = 'es-general';
-          regionName = 'SPANISH/LATINO';
-        } else if (background.includes('african') || background.includes('black')) {
+        if (lang === 'en' && isDarkSkin) {
+          // English + dark skin = African American
           culturalKey = 'en-african-american';
           regionName = 'AFRICAN-AMERICAN';
-        } else if (background.includes('asian') || lang.includes('zh') || lang.includes('chinese')) {
-          culturalKey = 'en-asian-american';
-          regionName = 'ASIAN-AMERICAN';
-        } else if (background.includes('native') || background.includes('indigenous')) {
-          culturalKey = 'en-native-american';
-          regionName = 'NATIVE AMERICAN';
-        } else if (background.includes('middle') || background.includes('arab')) {
-          culturalKey = 'en-middle-eastern';
-          regionName = 'MIDDLE EASTERN';
-        } else if (background.includes('south asian') || background.includes('indian')) {
-          culturalKey = 'en-south-asian';
-          regionName = 'SOUTH ASIAN';
-        } else if (background.includes('jewish')) {
-          culturalKey = 'en-jewish-american';
-          regionName = 'JEWISH-AMERICAN';
+        } else if (lang === 'es' && isDarkSkin) {
+          // Spanish + dark skin = Afro-Latina
+          culturalKey = 'es-general'; // Using existing Spanish arrays
+          regionName = 'AFRO-LATINA';
+        } else if (lang === 'fr' && isDarkSkin) {
+          // French + dark skin = Francophone African
+          culturalKey = 'fr-francophone-african';
+          regionName = 'FRANCOPHONE AFRICAN';
+        } else if (lang !== 'en') {
+          // Non-English (any skin tone) = their regional arrays
+          if (lang === 'es') {
+            culturalKey = 'es-general';
+            regionName = 'SPANISH/LATINO';
+          } else if (lang === 'fr') {
+            culturalKey = 'fr';
+            regionName = 'FRENCH';
+          } else if (lang === 'zh') {
+            culturalKey = 'zh';
+            regionName = 'CHINESE';
+          } else if (lang === 'hi') {
+            culturalKey = 'hi';
+            regionName = 'HINDI/INDIAN';
+          } else if (lang === 'pt') {
+            culturalKey = 'pt';
+            regionName = 'PORTUGUESE';
+          } else if (lang === 'ar') {
+            culturalKey = 'ar';
+            regionName = 'ARABIC';
+          }
         }
+        // English + non-dark skin = NO cultural arrays (stays default 'en-general')
       }
       
       const selectedCultural = culturalArrays[culturalKey];
