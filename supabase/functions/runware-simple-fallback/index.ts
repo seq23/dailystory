@@ -273,8 +273,21 @@ const EXPANDED_OBJECT_ARRAY = {
   // Food Items
   food: ['apple', 'banana', 'sandwich', 'cookie', 'cake', 'pizza', 'ice cream', 'cupcake', 'donut', 'bread', 'cheese', 'crackers', 'fruit', 'vegetables', 'juice box', 'water bottle', 'milk', 'cereal', 'pancakes', 'toast'],
   
-  // Animals & Pets
-  animals: ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'elephant', 'lion', 'tiger', 'bear', 'monkey', 'giraffe', 'zebra', 'penguin', 'dolphin', 'butterfly', 'ladybug', 'frog'],
+  // Animals & Pets (100+ animals across 6 categories - allows any color for user stories)
+  animals: [
+    // Pets & Domesticated
+    'dog', 'cat', 'rabbit', 'hamster', 'guinea pig', 'parakeet', 'goldfish', 'turtle', 'ferret', 'chinchilla', 'hedgehog', 'rat', 'mouse', 'canary', 'cockatiel', 'budgie', 'parrot', 'macaw', 'iguana', 'snake',
+    // Farm Animals  
+    'cow', 'pig', 'sheep', 'chicken', 'duck', 'goose', 'horse', 'goat', 'llama', 'alpaca', 'donkey', 'mule', 'turkey', 'rooster', 'hen',
+    // Wild Animals
+    'lion', 'tiger', 'bear', 'elephant', 'wolf', 'fox', 'deer', 'squirrel', 'raccoon', 'skunk', 'porcupine', 'beaver', 'otter', 'mink', 'badger', 'leopard', 'cheetah', 'jaguar', 'panther', 'lynx', 'bobcat', 'coyote', 'hyena', 'rhino', 'hippo', 'giraffe', 'zebra', 'antelope', 'gazelle', 'buffalo', 'bison', 'moose', 'elk', 'caribou',
+    // Sea Animals
+    'dolphin', 'whale', 'shark', 'fish', 'octopus', 'crab', 'lobster', 'seahorse', 'starfish', 'jellyfish', 'seal', 'sea lion', 'walrus', 'orca', 'stingray',
+    // Birds
+    'eagle', 'owl', 'robin', 'cardinal', 'flamingo', 'penguin', 'pelican', 'heron', 'crane', 'stork', 'swan', 'hawk', 'falcon', 'vulture', 'peacock', 'ostrich', 'emu', 'kiwi', 'toucan', 'hummingbird',
+    // Insects & Small Creatures
+    'butterfly', 'ladybug', 'bee', 'ant', 'spider', 'caterpillar', 'grasshopper', 'cricket', 'dragonfly', 'firefly', 'beetle', 'moth', 'wasp', 'fly', 'mosquito', 'frog', 'toad', 'salamander', 'lizard', 'chameleon'
+  ],
   
   // Vehicles & Transportation
   vehicles: ['car', 'truck', 'bus', 'train', 'airplane', 'helicopter', 'boat', 'ship', 'bicycle', 'scooter', 'skateboard', 'motorcycle', 'fire truck', 'police car', 'ambulance', 'school bus', 'taxi', 'rocket', 'submarine', 'hot air balloon'],
@@ -299,24 +312,6 @@ const EXPANDED_OBJECT_ARRAY = {
   
   // Furniture & Household
   furniture: ['chair', 'table', 'bed', 'desk', 'bookshelf', 'dresser', 'mirror', 'lamp', 'clock', 'picture frame', 'vase', 'pillow', 'blanket', 'curtains', 'rug', 'couch', 'sofa', 'cabinet', 'drawer', 'closet']
-};
-
-const COLORABLE_OBJECT_MAPPING = {
-  // Objects that work well with bright colors
-  bright: ['ball', 'kite', 'balloon', 'toy car', 'blocks', 'crayon', 'marker', 'paint', 'shirt', 'dress', 'hat', 'flower', 'bicycle'],
-  // Objects that work well with natural colors  
-  natural: ['tree', 'leaf', 'rock', 'shell', 'feather', 'wood', 'sand', 'grass', 'stone', 'branch'],
-  // Objects that work well with metallic colors
-  metallic: ['car', 'truck', 'robot', 'jewelry', 'watch', 'key', 'coin', 'trophy', 'medal'],
-  // Objects that commonly have specific colors
-  specific: {
-    'apple': ['red', 'green', 'yellow'],
-    'banana': ['yellow', 'green'],
-    'orange': ['orange'],
-    'grass': ['green'],
-    'sky': ['blue'],
-    'sun': ['yellow', 'orange']
-  }
 };
 
 // ENHANCED INDOOR/OUTDOOR KEYWORDS
@@ -894,50 +889,22 @@ function detectAndResolveObjectColor(sentence: string): string {
     }
   }
   
-  // If both object and color detected, combine them
+  // If both object and color detected, combine them (no restrictions - allow any color for any object)
   if (detectedObject && detectedColor) {
     return `, with a ${detectedColor} ${detectedObject} nearby`;
   }
   
-  // If only object detected, add random appropriate color
+  // If only object detected, let Runware decide the color
   if (detectedObject) {
-    const appropriateColors = getAppropriateColorsForObject(detectedObject);
-    const randomColor = appropriateColors[Math.floor(Math.random() * appropriateColors.length)];
-    return `, with a ${randomColor} ${detectedObject} nearby`;
+    return `, with a ${detectedObject} nearby`;
   }
   
-  // If only color detected, add random colorable object
+  // If only color detected, let Runware decide what object to color
   if (detectedColor) {
-    const colorableObjects = COLORABLE_OBJECT_MAPPING.bright;
-    const randomObject = colorableObjects[Math.floor(Math.random() * colorableObjects.length)];
-    return `, with a ${detectedColor} ${randomObject} nearby`;
+    return '';
   }
   
   return '';
-}
-
-// GET APPROPRIATE COLORS FOR SPECIFIC OBJECTS
-function getAppropriateColorsForObject(object: string): string[] {
-  // Check if object has specific colors
-  if (COLORABLE_OBJECT_MAPPING.specific[object]) {
-    return COLORABLE_OBJECT_MAPPING.specific[object];
-  }
-  
-  // Determine object category and return appropriate colors
-  if (COLORABLE_OBJECT_MAPPING.bright.includes(object)) {
-    return ['bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink'];
-  }
-  
-  if (COLORABLE_OBJECT_MAPPING.natural.includes(object)) {
-    return ['brown', 'green', 'yellow', 'orange', 'gray', 'black'];
-  }
-  
-  if (COLORABLE_OBJECT_MAPPING.metallic.includes(object)) {
-    return ['silver', 'gold', 'metallic blue', 'shiny red', 'black'];
-  }
-  
-  // Default to basic colors
-  return ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink'];
 }
 
 function extractSecondaryCharactersFromSentence(sentence: string): string {
@@ -1159,40 +1126,22 @@ function detectAndResolveClothingColor(text: string): string {
     }
   }
   
-  // If both detected, combine them
+  // If both detected, combine them (no restrictions - allow any color for any clothing)
   if (detectedClothing && detectedColor) {
     return `a ${detectedColor} ${detectedClothing}`;
   }
   
-  // If only clothing detected, add appropriate random color
+  // If only clothing detected, let Runware decide the color
   if (detectedClothing) {
-    const appropriateColors = getAppropriateColorsForClothing(detectedClothing);
-    const randomColor = appropriateColors[Math.floor(Math.random() * appropriateColors.length)];
-    return `a ${randomColor} ${detectedClothing}`;
+    return `a ${detectedClothing}`;
+  }
+  
+  // If only color detected, let Runware decide what clothing to color
+  if (detectedColor) {
+    return '';
   }
   
   return '';
-}
-
-// GET APPROPRIATE COLORS FOR CLOTHING
-function getAppropriateColorsForClothing(clothing: string): string[] {
-  // Formal clothing - more subdued colors
-  if (['jacket', 'blazer', 'suit', 'tie', 'dress shirt'].includes(clothing)) {
-    return ['navy blue', 'black', 'dark blue', 'gray', 'brown', 'white'];
-  }
-  
-  // Casual clothing - bright and fun colors
-  if (['t-shirt', 'hoodie', 'shorts', 'sneakers', 'cap'].includes(clothing)) {
-    return ['bright red', 'bright blue', 'bright green', 'bright yellow', 'orange', 'purple', 'pink'];
-  }
-  
-  // Footwear - practical colors
-  if (['shoes', 'boots', 'sneakers', 'sandals'].includes(clothing)) {
-    return ['black', 'brown', 'white', 'red', 'blue', 'gray'];
-  }
-  
-  // Default - balanced color palette
-  return ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white'];
 }
 
 function truncatePageText(text: string, difficulty: string): string {
