@@ -466,11 +466,17 @@ const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
     'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design'
   ],
   girls: [
-    'textured medium natural hair', 'textured long natural hair', 'textured shoulder-length hair', 
-    'textured chin-length hair', 'detailed twist out', 'detailed bantu knots', 'detailed rod set', 
-    'detailed braid out', 'textured high puff', 'textured low puff', 'textured side puff', 
-    'textured double puff', 'detailed space buns', 'detailed top knot bun', 'detailed low bun', 
-    'detailed messy bun', 'detailed sleek bun', 'detailed cornrows', 'detailed box braids'
+    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
+    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
+    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
+    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
+    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
+    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
+    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
+    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
+    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
+    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
+    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
   ]
 };
 
