@@ -1244,7 +1244,6 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         console.log('📚 PHASE 3: Story Text Attachment Check');
         
         let storyTextAttachment = '';
-        const difficulty = userInfo?.difficultyLevel || userInfo?.readingLevel;
         const isBeginnerLevel = difficulty === '0' || difficulty === '1' || 
                                difficulty === 'beginner' || difficulty === 'level-0' || difficulty === 'level-1';
         
