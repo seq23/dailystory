@@ -677,55 +677,113 @@ serve(async (req) => {
         // Helper function to detect if user is Level 0-1 (beginner/easy)
         const isLevel01User = difficulty === 'beginner' || difficulty === 'easy';
         
-        // Helper function to generate cultural context
+        // Helper function to generate cultural context with identity-specific fallbacks
         const generateCulturalContext = (avatarIdentity: any, userInfo: any, requestId: string) => {
           const skinTone = avatarIdentity?.skinTone;
           const nativeLanguage = avatarIdentity?.nativeLanguage || userInfo?.native_language || 'en';
           
-          // Dark skin + English/French/Spanish = use detailed cultural arrays
-          if (skinTone === 'dark') {
-            if (nativeLanguage === 'en') {
-              // African American arrays
+          // AFRICAN AMERICAN USERS (dark skin + English)
+          if (skinTone === 'dark' && nativeLanguage === 'en') {
+            try {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
               const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-               const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
-               const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
-               const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-               
-               console.log(`🌍 [${requestId}] African American cultural context applied (dark skin + English)`);
-               return `African American heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
-            } else if (nativeLanguage === 'es') {
-              // Afro-Latina arrays (Hispanic/Latino for dark skin)
+              
+              // Attempt to access detailed arrays
+              if (hairstyles && hairstyles.length > 0 && 
+                  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES && HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length > 0 &&
+                  HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
+                
+                const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
+                const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+                const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+                
+                console.log(`🌍 [${requestId}] African American detailed context applied (dark skin + English)`);
+                return `African American heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
+              }
+            } catch (error) {
+              console.warn(`⚠️ [${requestId}] African American detailed arrays failed:`, error);
+            }
+            
+            // AFRICAN AMERICAN FALLBACK: Always provide cultural context for African American users
+            console.log(`🌍 [${requestId}] African American fallback context applied (arrays unavailable)`);
+            return "authentic African American features required";
+          }
+          
+          // AFRO-LATINA USERS (dark skin + Spanish)
+          if (skinTone === 'dark' && nativeLanguage === 'es') {
+            try {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
               const hairstyles = isGirl ? HARDCODED_HISPANIC_LATINO_HAIRSTYLES.girls : HARDCODED_HISPANIC_LATINO_HAIRSTYLES.boys;
-               const selectedSkinTone = HARDCODED_HISPANIC_LATINO_SKIN_TONES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length)];
-               const features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length)];
-               const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-               
-               console.log(`🌍 [${requestId}] Afro-Latina cultural context applied (dark skin + Spanish)`);
-               return `Afro-Latina heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
-            } else if (nativeLanguage === 'fr') {
-              // African arrays (same as African American for French speakers)
+              
+              // Attempt to access detailed arrays
+              if (hairstyles && hairstyles.length > 0 && 
+                  HARDCODED_HISPANIC_LATINO_SKIN_TONES && HARDCODED_HISPANIC_LATINO_SKIN_TONES.length > 0 &&
+                  HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES && HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length > 0) {
+                
+                const selectedSkinTone = HARDCODED_HISPANIC_LATINO_SKIN_TONES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length)];
+                const features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length)];
+                const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+                
+                console.log(`🌍 [${requestId}] Afro-Latina detailed context applied (dark skin + Spanish)`);
+                return `Afro-Latina heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
+              }
+            } catch (error) {
+              console.warn(`⚠️ [${requestId}] Afro-Latina detailed arrays failed:`, error);
+            }
+            
+            // AFRO-LATINA FALLBACK: Always provide cultural context for Afro-Latina users
+            console.log(`🌍 [${requestId}] Afro-Latina fallback context applied (arrays unavailable)`);
+            return "authentic Afro-Latina features required";
+          }
+          
+          // AFRICAN HERITAGE USERS (dark skin + French)
+          if (skinTone === 'dark' && nativeLanguage === 'fr') {
+            try {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
               const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-               const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
-               const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
-               const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-               
-               console.log(`🌍 [${requestId}] African cultural context applied (dark skin + French)`);
-               return `African heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
+              
+              // Attempt to access detailed arrays (reusing African American arrays for French speakers)
+              if (hairstyles && hairstyles.length > 0 && 
+                  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES && HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length > 0 &&
+                  HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
+                
+                const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
+                const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+                const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+                
+                console.log(`🌍 [${requestId}] African heritage detailed context applied (dark skin + French)`);
+                return `African heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
+              }
+            } catch (error) {
+              console.warn(`⚠️ [${requestId}] African heritage detailed arrays failed:`, error);
             }
+            
+            // AFRICAN HERITAGE FALLBACK: Always provide cultural context for African heritage users
+            console.log(`🌍 [${requestId}] African heritage fallback context applied (arrays unavailable)`);
+            return "authentic African heritage features required";
           }
           
-          // Non-English speakers (any skin tone) get regional authenticity string
-          if (nativeLanguage !== 'en' && REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
-            console.log(`🌍 [${requestId}] Regional authenticity context applied for ${nativeLanguage}`);
-            return REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
+          // OTHER LANGUAGE USERS (any skin tone, non-English languages)
+          if (nativeLanguage !== 'en') {
+            try {
+              if (REGIONAL_AUTHENTICITY_STRINGS && REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
+                console.log(`🌍 [${requestId}] Regional authenticity context applied for ${nativeLanguage}`);
+                return REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
+              }
+            } catch (error) {
+              console.warn(`⚠️ [${requestId}] Regional authenticity strings failed for ${nativeLanguage}:`, error);
+            }
+            
+            // OTHER LANGUAGE FALLBACK: Generic cultural context for non-English speakers
+            console.log(`🌍 [${requestId}] Generic cultural fallback applied for ${nativeLanguage}`);
+            return "culturally authentic features required";
           }
           
+          // ENGLISH SPEAKERS WITH NON-DARK SKIN: Intentionally return null (no cultural context needed)
+          console.log(`🌍 [${requestId}] No cultural context needed (English speaker, non-dark skin)`);
           return null;
         };
         
