@@ -1053,7 +1053,6 @@ serve(async (req) => {
         // PHASE 1.1: Enhanced Character Description using CharacterConsistencyService
         console.log('🎭 PHASE 1.1: Using CharacterConsistencyService for database-backed character consistency');
         
-        const avatarIdentity = mapAvatarIdentity(userInfo);
         const characterConsistencyService = new CharacterConsistencyService();
         
         // Get or create character seed with database persistence
@@ -1074,7 +1073,8 @@ serve(async (req) => {
           avatarIdentity: avatarIdentity,
           characterSeed: characterData.seed,
           enhancedDescription: enhancedCharacterDescription,
-          characterConsistency: 'database-backed'
+          characterConsistency: 'database-backed',
+          avatarSource: 'orchestrator-provided'
         });
         
         // PHASE 1.1b: Detect Secondary Characters  
