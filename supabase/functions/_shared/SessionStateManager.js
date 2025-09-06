@@ -637,11 +637,6 @@ export class SessionStateManager {
     // Clean up AI enhancement cache - REMOVED: MultiStageEnhancementPipeline no longer exists
     console.log(`🧹 Session ${sessionId} cleaned up (no enhancement cache to clear)`);
   }
-    
-    // Note: AdvancedPronounResolver removed - functionality replaced by RealContextCollector
-    
-    console.log(`🧹 Cleared caches for session ${sessionId}`);
-  }
 
   /**
    * Context-aware clearing for different story transitions
