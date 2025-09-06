@@ -76,7 +76,7 @@ export const StoryStatusIndicator = () => {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+    <div className="fixed top-16 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
       <Button
         variant="outline"
         size="sm"
