@@ -937,7 +937,7 @@ serve(async (req) => {
         const minimalMessages = [
           {
             role: 'system',
-            content: `Generate a primary scene description for image generation.
+content: `Generate a primary scene description for image generation.
             
 OBJECTIVE: Return ONLY a primary scene description of 30+ characters.
 
@@ -950,7 +950,11 @@ JSON RESPONSE:
   "pose": "Character body position (sitting, standing, etc.) or null if not clear"
 }
 
-Focus on creating a comprehensive primaryScene only - no other fields needed.`
+1. Always return output strictly in JSON format with the key "primaryScene".
+2. Keep description concise (1–2 sentences max).
+3. Focus only on what can be visually depicted (no thoughts, dialogue, or narration).
+4. Include essential subjects, actions, and setting details from the story text.
+5. primaryScene is CRITICAL. All else is secondary`
           },
           {
             role: 'user', 
