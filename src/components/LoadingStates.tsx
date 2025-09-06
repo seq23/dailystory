@@ -1,3 +1,4 @@
+import React from 'react';
 import { Loader2, BookOpen, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

@@ -1,3 +1,4 @@
+import React from 'react';
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import { useEffect } from "react";
 import type { UserInfo, SessionStats } from "@/types";

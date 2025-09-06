@@ -1,3 +1,4 @@
+import React from 'react';
 /*
  * ============================================================================
  * BUSINESS MODEL DOCUMENTATION - CLEAN STORY DISPLAY

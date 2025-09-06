@@ -1,3 +1,4 @@
+import React from "react";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 
 // Function to process text and wrap words in InteractiveWord components
