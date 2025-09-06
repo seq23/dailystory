@@ -608,6 +608,10 @@ serve(async (req) => {
     const avatarIdentity = mapAvatarIdentity(userInfo);
     console.log(`👤 Avatar Identity Mapped: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
     
+    // ORCHESTRATOR SCOPE: Initialize shared variables for nuclear independence
+    let characterData = null; // Safe default - will be populated by Tier 1 if successful
+    console.log('🛡️ Orchestrator: Initialized characterData to null for nuclear scope safety');
+    
     // ENHANCED AVATAR MAPPING DEBUG
     console.log(`🔍 AVATAR MAPPING DETAILED DEBUG:`, {
       input: {
@@ -680,13 +684,14 @@ serve(async (req) => {
         // Initialize character consistency service
         const characterService = new CharacterConsistencyService();
         
-        // 1. Character Consistency Generation
-        const characterData = await characterService.getCharacterSeed(
+        // 1. Character Consistency Generation - Update orchestrator scope variable
+        characterData = await characterService.getCharacterSeed(
           sessionId,
           avatarIdentity,
           pageText,
           'standard'
         );
+        console.log('✅ Orchestrator: characterData successfully populated by Tier 1');
         
         // 2. Style Framework Application - Map grade level to difficulty
         const gradeLevelToDifficulty = (grade) => {
@@ -1148,7 +1153,7 @@ serve(async (req) => {
               orchestrated: true,
               validationApplied: validatedPrompt !== enhancedPrompt,
               segmentCount: segments.length,
-              characterSeed: characterData.seed
+              characterSeed: characterData?.seed || 'fallback-seed'
             }
           });
         }
