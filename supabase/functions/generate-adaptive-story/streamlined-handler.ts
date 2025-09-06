@@ -225,7 +225,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 - Voice characteristics: ${ctrlData.vf?.nar || 'storybook'} narrative style
 - Input integration mode: ${ctrlData.iu?.mode || 'direct'}
 - Affinity hints: ${JSON.stringify(ctrlData.ah || {})} (prioritize high-scoring inputs)
-- Input usage rules: ${JSON.stringify(ctrlData.iu?.rules || {})} (max mentions per input type - NOT character limits)
+- Input usage rules: ${JSON.stringify(ctrlData.iu || {})} (max mentions per input type - NOT character limits)
 - Theme focus: ${ctrlData.themes?.join(', ') || 'adventure'}
 - Level: ${ctrlData.level || 'medium'}`;
     }
