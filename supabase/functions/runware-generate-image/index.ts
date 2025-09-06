@@ -1170,16 +1170,44 @@ serve(async (req) => {
         console.log('🔧 Starting Tier 2.5: Nuclear Hardcoded Fallback');
         console.log('🔍 TIER 2.5 DEBUG - Calling runware-simple-fallback function (FIXED VERSION)');
         
+        // ORCHESTRATOR PARAMETER RESOLUTION - Ensure all parameters are valid before tier calls
+        console.log('🛡️ Orchestrator: Resolving parameters before Tier 2.5 call');
+        
+        // Resolve characterData - if undefined, set to null for nuclear independence
+        let resolvedCharacterData = characterData;
+        if (characterData === undefined) {
+          resolvedCharacterData = null;
+          console.log('⚠️ Orchestrator: characterData was undefined, resolved to null for nuclear independence');
+        } else {
+          console.log('✅ Orchestrator: characterData is valid, passing through');
+        }
+        
+        // Ensure avatarIdentity is valid
+        if (!avatarIdentity) {
+          console.error('❌ Orchestrator: avatarIdentity is missing - this should never happen');
+          throw new Error('Critical orchestrator error: avatarIdentity is undefined');
+        }
+        
         // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
         const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+        
+        // Validate all parameters before tier call
+        console.log('🔍 Orchestrator: Parameter validation complete', {
+          hasPageText: !!pageText,
+          hasUserInfo: !!userInfo,
+          hasDifficulty: !!mappedDifficulty,
+          hasAvatarIdentity: !!avatarIdentity,
+          characterDataStatus: resolvedCharacterData ? 'valid' : 'null (nuclear)',
+          hasSessionId: !!sessionId
+        });
         
         const tier25Result = await callTierFunction('runware-simple-fallback', {
           pageText,
           userInfo,
           difficultyLevel: mappedDifficulty,
           avatarIdentity, // Pass optimized avatar identity to all tiers
-          characterData, // Pass consistent character data for Tier 2.5 consistency
+          characterData: resolvedCharacterData, // Pass resolved character data (null if undefined)
           sessionId // Pass session ID for consistency tracking
         });
         
