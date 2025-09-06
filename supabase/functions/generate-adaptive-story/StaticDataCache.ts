@@ -77,60 +77,67 @@ export const getCulturalContextArrays = () => {
   if (!contexts) {
     contexts = {
       'ar': {
-        characterNames: ['Layla', 'Omar', 'Fatima', 'Hassan', 'Amira', 'Karim', 'Zahra', 'Youssef'],
-        commonFoods: ['dates', 'hummus', 'flatbread', 'lamb', 'rice dishes', 'mint tea', 'olives'],
-        celebrations: ['Eid celebrations', 'family feasts', 'mosque gatherings', 'traditional weddings'],
-        values: ['hospitality', 'family honor', 'community respect', 'sharing with others'],
-        sports: ['football', 'camel racing', 'horseback riding', 'wrestling', 'archery']
+        characterNames: ['Layla', 'Omar', 'Fatima', 'Hassan', 'Amira', 'Karim', 'Zahra', 'Youssef', 'Nadia', 'Tariq'],
+        commonFoods: ['dates', 'hummus', 'flatbread', 'lamb', 'rice dishes', 'mint tea', 'olives', 'baklava', 'tahini', 'falafel'],
+        celebrations: ['Eid celebrations', 'family feasts', 'mosque gatherings', 'traditional weddings', 'Ramadan iftar', 'harvest festivals', 'naming ceremonies', 'homecoming parties', 'religious holidays', 'community festivals'],
+        values: ['hospitality', 'family honor', 'community respect', 'sharing with others', 'wisdom of elders', 'generosity', 'faith', 'perseverance', 'loyalty', 'tradition'],
+        sports: ['football', 'camel racing', 'horseback riding', 'wrestling', 'archery', 'swimming', 'running', 'volleyball', 'tennis', 'basketball']
       },
       'es': {
-        characterNames: ['Sofia', 'Diego', 'Esperanza', 'Carlos', 'Isabella', 'Miguel', 'Valentina', 'Gabriel'],
-        commonFoods: ['tortillas', 'rice and beans', 'tropical fruits', 'empanadas', 'fresh juices'],
-        celebrations: ['quinceañeras', 'Día de los Muertos', 'family parties', 'saint day celebrations'],
-        values: ['family loyalty', 'celebration of life', 'community support', 'respect for elders'],
-        sports: ['football', 'baseball', 'boxing', 'volleyball', 'cycling']
+        characterNames: ['Sofia', 'Diego', 'Esperanza', 'Carlos', 'Isabella', 'Miguel', 'Valentina', 'Gabriel', 'Lucia', 'Alejandro'],
+        commonFoods: ['tortillas', 'rice and beans', 'tropical fruits', 'empanadas', 'fresh juices', 'tamales', 'quesadillas', 'churros', 'plantains', 'mole'],
+        celebrations: ['quinceañeras', 'Día de los Muertos', 'family parties', 'saint day celebrations', 'Las Posadas', 'Cinco de Mayo', 'baptisms', 'Christmas traditions', 'patron saint festivals', 'wedding celebrations'],
+        values: ['family loyalty', 'celebration of life', 'community support', 'respect for elders', 'religious faith', 'hard work', 'hospitality', 'cultural pride', 'perseverance', 'solidarity'],
+        sports: ['football', 'baseball', 'boxing', 'volleyball', 'cycling', 'basketball', 'tennis', 'swimming', 'wrestling', 'track and field']
+      },
+      'es-afro-latina': {
+        characterNames: ['Esperanza', 'Joaquín', 'Marisol', 'Roberto', 'Xiomara', 'Esteban', 'Yolanda', 'Fernando', 'Soledad', 'Ramón'],
+        commonFoods: ['moros y cristianos', 'tostones', 'yuca con mojo', 'ropa vieja', 'tres leches cake', 'platanos maduros', 'arroz con pollo', 'frijoles negros', 'croquetas', 'café cubano'],
+        celebrations: ['carnival celebrations', 'salsa festivals', 'Día de la Raza', 'family reunions', 'quinceañeras', 'religious processions', 'música y baile', 'community block parties', 'cultural heritage festivals', 'Christmas parrandas'],
+        values: ['familia es todo', 'cultural pride', 'resilience', 'community solidarity', 'celebration of heritage', 'respect for ancestors', 'musical expression', 'hospitality', 'perseverance', 'unity in diversity'],
+        sports: ['baseball', 'boxing', 'basketball', 'volleyball', 'football', 'swimming', 'track and field', 'martial arts', 'tennis', 'cycling']
       },
       'zh': {
-        characterNames: ['Li Wei', 'Mei Lin', 'Chen Yu', 'Zhang Min', 'Wang Lei', 'Liu Xin', 'Zhou Yun'],
-        commonFoods: ['rice', 'noodles', 'dumplings', 'tea', 'fresh vegetables', 'tofu dishes'],
-        celebrations: ['Chinese New Year', 'Moon Festival', 'Dragon Boat Festival', 'family reunions'],
-        values: ['hard work', 'education', 'family harmony', 'perseverance'],
-        sports: ['table tennis', 'badminton', 'martial arts', 'diving', 'gymnastics']
+        characterNames: ['Li Wei', 'Mei Lin', 'Chen Yu', 'Zhang Min', 'Wang Lei', 'Liu Xin', 'Zhou Yun', 'Huang Jie', 'Sun Hua', 'Zhao Gang'],
+        commonFoods: ['rice', 'noodles', 'dumplings', 'tea', 'fresh vegetables', 'tofu dishes', 'steamed buns', 'hot pot', 'spring rolls', 'congee'],
+        celebrations: ['Chinese New Year', 'Moon Festival', 'Dragon Boat Festival', 'family reunions', 'Lantern Festival', 'Qingming Festival', 'Children\'s Day', 'National Day', 'wedding banquets', 'birthday celebrations'],
+        values: ['hard work', 'education', 'family harmony', 'perseverance', 'respect for elders', 'diligence', 'patience', 'loyalty', 'modesty', 'wisdom'],
+        sports: ['table tennis', 'badminton', 'martial arts', 'diving', 'gymnastics', 'basketball', 'volleyball', 'swimming', 'track and field', 'football']
       },
       'hi': {
-        characterNames: ['Priya', 'Arjun', 'Kavya', 'Rohan', 'Ananya', 'Vikram', 'Sita', 'Dev'],
-        commonFoods: ['curry', 'rice', 'chapati', 'lentils', 'spices', 'mango', 'chai tea'],
-        celebrations: ['Diwali', 'Holi', 'weddings', 'harvest festivals', 'temple ceremonies'],
-        values: ['respect for teachers', 'spiritual growth', 'community harmony', 'hospitality'],
-        sports: ['cricket', 'kabaddi', 'field hockey', 'badminton', 'wrestling']
+        characterNames: ['Priya', 'Arjun', 'Kavya', 'Rohan', 'Ananya', 'Vikram', 'Sita', 'Dev', 'Ravi', 'Meera'],
+        commonFoods: ['curry', 'rice', 'chapati', 'lentils', 'spices', 'mango', 'chai tea', 'samosas', 'biryani', 'lassi'],
+        celebrations: ['Diwali', 'Holi', 'weddings', 'harvest festivals', 'temple ceremonies', 'Raksha Bandhan', 'Navratri', 'Karva Chauth', 'Eid celebrations', 'Ganesh Chaturthi'],
+        values: ['respect for teachers', 'spiritual growth', 'community harmony', 'hospitality', 'family unity', 'seva (service)', 'dharma (duty)', 'compassion', 'tolerance', 'gratitude'],
+        sports: ['cricket', 'kabaddi', 'field hockey', 'badminton', 'wrestling', 'football', 'volleyball', 'table tennis', 'chess', 'carrom']
       },
       'pt': {
-        characterNames: ['Ana', 'João', 'Mariana', 'Pedro', 'Beatriz', 'Gabriel', 'Camila', 'Rafael'],
-        commonFoods: ['fresh fruits', 'grilled meats', 'beans and rice', 'açaí', 'coconut water'],
-        celebrations: ['Carnival', 'beach parties', 'football matches', 'music festivals'],
-        values: ['joy and celebration', 'friendship', 'environmental care', 'community spirit'],
-        sports: ['football', 'volleyball', 'capoeira', 'surfing', 'beach volleyball']
+        characterNames: ['Ana', 'João', 'Mariana', 'Pedro', 'Beatriz', 'Gabriel', 'Camila', 'Rafael', 'Isabela', 'Lucas'],
+        commonFoods: ['fresh fruits', 'grilled meats', 'beans and rice', 'açaí', 'coconut water', 'pão de açúcar', 'feijoada', 'brigadeiros', 'pastéis', 'tapioca'],
+        celebrations: ['Carnival', 'beach parties', 'football matches', 'music festivals', 'Festa Junina', 'New Year\'s Eve', 'family gatherings', 'saints\' days', 'graduation parties', 'Christmas celebrations'],
+        values: ['joy and celebration', 'friendship', 'environmental care', 'community spirit', 'family bonds', 'optimism', 'creativity', 'hospitality', 'resilience', 'passion for life'],
+        sports: ['football', 'volleyball', 'capoeira', 'surfing', 'beach volleyball', 'basketball', 'swimming', 'futsal', 'tennis', 'martial arts']
       },
       'fr': {
-        characterNames: ['Marie', 'Pierre', 'Camille', 'Antoine', 'Sophie', 'Louis', 'Émilie', 'Nicolas'],
-        commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'croissants', 'baguettes'],
-        celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics', 'Bastille Day'],
-        values: ['appreciation of beauty', 'culinary arts', 'intellectual discussion', 'cultural heritage'],
-        sports: ['football', 'rugby', 'cycling', 'tennis', 'handball']
+        characterNames: ['Marie', 'Pierre', 'Camille', 'Antoine', 'Sophie', 'Louis', 'Émilie', 'Nicolas', 'Chloé', 'Alexandre'],
+        commonFoods: ['bread', 'cheese', 'pastries', 'fresh produce', 'chocolate', 'croissants', 'baguettes', 'wine', 'crêpes', 'coq au vin'],
+        celebrations: ['village festivals', 'harvest celebrations', 'art exhibitions', 'family picnics', 'Bastille Day', 'Christmas markets', 'wine festivals', 'music concerts', 'cultural events', 'regional fairs'],
+        values: ['appreciation of beauty', 'culinary arts', 'intellectual discussion', 'cultural heritage', 'artistic expression', 'joie de vivre', 'sophistication', 'romance', 'philosophy', 'refinement'],
+        sports: ['football', 'rugby', 'cycling', 'tennis', 'handball', 'skiing', 'swimming', 'basketball', 'fencing', 'sailing']
       },
       'fr-francophone-african': {
-        characterNames: ['Aminata', 'Mamadou', 'Fatou', 'Ibrahim', 'Aicha', 'Oumar', 'Mariam', 'Sekou'],
-        commonFoods: ['couscous', 'tajines', 'plantains', 'yassa', 'thieboudienne', 'mafe', 'attiéké'],
-        celebrations: ['independence days', 'traditional ceremonies', 'harvest festivals', 'community gatherings'],
-        values: ['community solidarity', 'respect for elders', 'oral tradition', 'hospitality'],
-        sports: ['football', 'basketball', 'wrestling', 'running', 'handball']
+        characterNames: ['Aminata', 'Mamadou', 'Fatou', 'Ibrahim', 'Aicha', 'Oumar', 'Mariam', 'Sekou', 'Kadiatou', 'Moussa'],
+        commonFoods: ['couscous', 'tajines', 'plantains', 'yassa', 'thieboudienne', 'mafe', 'attiéké', 'fufu', 'jollof rice', 'bissap'],
+        celebrations: ['independence days', 'traditional ceremonies', 'harvest festivals', 'community gatherings', 'naming ceremonies', 'mask festivals', 'drumming circles', 'storytelling nights', 'market days', 'seasonal celebrations'],
+        values: ['community solidarity', 'respect for elders', 'oral tradition', 'hospitality', 'Ubuntu philosophy', 'ancestral wisdom', 'collective responsibility', 'cultural preservation', 'harmony with nature', 'spiritual connection'],
+        sports: ['football', 'basketball', 'wrestling', 'running', 'handball', 'volleyball', 'boxing', 'martial arts', 'track and field', 'swimming']
       },
       'en': {
-        characterNames: ['Emma', 'Liam', 'Olivia', 'Noah', 'Sophia', 'Mason', 'Isabella', 'Jacob'],
-        commonFoods: ['sandwiches', 'pizza', 'burgers', 'salads', 'snacks', 'milk', 'fruit'],
-        celebrations: ['birthdays', 'holidays', 'school events', 'sports games', 'family vacations'],
-        values: ['independence', 'achievement', 'fairness', 'creativity'],
-        sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field']
+        characterNames: ['Emma', 'Liam', 'Olivia', 'Noah', 'Sophia', 'Mason', 'Isabella', 'Jacob', 'Ava', 'William'],
+        commonFoods: ['sandwiches', 'pizza', 'burgers', 'salads', 'snacks', 'milk', 'fruit', 'pasta', 'chicken', 'ice cream'],
+        celebrations: ['birthdays', 'holidays', 'school events', 'sports games', 'family vacations', 'graduation ceremonies', 'Halloween', 'Thanksgiving', 'Christmas', 'summer barbecues'],
+        values: ['independence', 'achievement', 'fairness', 'creativity', 'innovation', 'diversity', 'opportunity', 'freedom', 'self-expression', 'entrepreneurship'],
+        sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field', 'golf', 'volleyball']
       },
       'en-african-american': {
         characterNames: ['Zoe', 'Cheyenne', 'Brooklyn', 'Surrayah', 'Layla', 'Ricky', 'Scooter', 'Kennedy', 'Christian', 'Carter', 'Calli', 'Serenity', 'Asia', 'India', 'Nia', 'Dariane', 'Eden', 'Sofia', 'Hudson', 'Hanson', 'Holland', 'Harper', 'Cameron', 'Brayden', 'Jayden', 'Chyna', 'Lena', 'Ari', 'Mercedes', 'Sequoia', 'Yaw', 'Amara', 'Kenzie', 'Abo', 'Carlos', 'Ace', 'Cruz', 'Crystal', 'Benny', 'Gerzell', 'Isabella', 'Imani', 'Jordan', 'Tori', 'Amari', 'Will', 'Justin', 'Paige', 'Val', 'Akeelah', 'Erin', 'Shannon', 'Reggie', 'Kelsie', 'Aerric', 'Ayden', 'Jared', 'Lennon', 'Brandon', 'Gabriella', 'Noah', 'Oliva', 'Sterling', 'Korri', 'Corey'],

@@ -1081,7 +1081,7 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
           regionName = 'AFRICAN-AMERICAN';
         } else if (lang === 'es' && isDarkSkin) {
           // Spanish + dark skin = Afro-Latina
-          culturalKey = 'es'; // Using existing Spanish arrays
+          culturalKey = 'es-afro-latina';
           regionName = 'AFRO-LATINA';
         } else if (lang === 'fr' && isDarkSkin) {
           // French + dark skin = Francophone African
