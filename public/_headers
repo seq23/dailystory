@@ -1,7 +1,7 @@
 # Enhanced Security Headers Configuration
 /*
-  # Content Security Policy - Enhanced for cross-origin communication
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.runware.ai https://*.elevenlabs.io; connect-src 'self' wss://ws-api.runware.ai https://*.runware.ai https://*.elevenlabs.io https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app ws://localhost:* ws://127.0.0.1:* ws://0.0.0.0:*; font-src 'self' data:; media-src 'self' data: blob:; frame-ancestors 'self' https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app; base-uri 'self'; form-action 'self'; object-src 'none'; child-src 'self' https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app
+  # Content Security Policy - Enhanced security with image proxy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cpzeuogomaixamrtnnmj.supabase.co; connect-src 'self' wss://ws-api.runware.ai https://*.runware.ai https://*.elevenlabs.io https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app https://cpzeuogomaixamrtnnmj.supabase.co ws://localhost:* ws://127.0.0.1:* ws://0.0.0.0:*; font-src 'self' data:; media-src 'self' data: blob:; frame-ancestors 'self' https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app; base-uri 'self'; form-action 'self'; object-src 'none'; child-src 'self' https://*.lovable.dev https://*.lovable.app https://*.gptengineer.app
   
   # Enhanced Security Headers - Allow Lovable iframe communication
   X-Frame-Options: SAMEORIGIN

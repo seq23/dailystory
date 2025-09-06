@@ -852,6 +852,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_debug_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       log_security_event: {
         Args: { details?: Json; event_type: string; user_id_param?: string }
         Returns: undefined

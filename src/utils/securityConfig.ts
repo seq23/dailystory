@@ -111,12 +111,10 @@ export const getSecurityConfig = () => {
 
 // Security validation rules
 export const VALIDATION_RULES = {
-  // User input validation
   USER_INPUT: {
     NAME: {
-      minLength: 1,
+      pattern: /^[a-zA-Z\s.'-]{1,50}$/,
       maxLength: 50,
-      pattern: /^[a-zA-Z\s\-'\.]+$/,
       required: true
     },
     AGE: {
@@ -130,27 +128,58 @@ export const VALIDATION_RULES = {
       required: false
     }
   },
-
-  // Content validation
   CONTENT: {
     STORY_PROMPT: {
+      maxLength: 2000,
       minLength: 10,
-      maxLength: 1000,
-      required: true
+      requiredWords: ['story', 'adventure', 'tale', 'character'],
+      prohibitedPatterns: [
+        /\b(hack|exploit|injection|script|eval|function|constructor)\b/i,
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        /javascript:/i,
+        /vbscript:/i,
+        /data:text\/html/i,
+        /on\w+\s*=/i // Event handlers like onclick=, onload=
+      ]
     },
     USER_MESSAGE: {
+      maxLength: 1000,
       minLength: 1,
-      maxLength: 500,
-      required: true
+      prohibitedPatterns: [
+        /javascript:/i,
+        /<iframe/i,
+        /<object/i,
+        /<embed/i,
+        /data:text\/html/i,
+        /on\w+\s*=/i,
+        /<script/i
+      ]
+    },
+    IMAGE_URL: {
+      allowedDomains: [
+        'im.runware.ai',
+        'images.unsplash.com', 
+        'cdn.openai.com'
+      ],
+      prohibitedPatterns: [
+        /javascript:/i,
+        /data:text\/html/i,
+        /vbscript:/i
+      ],
+      maxLength: 2000
     }
   },
-
-  // File validation
   FILES: {
     IMAGE: {
-      maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif']
+      maxSize: 5 * 1024 * 1024, // 5MB
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+      prohibitedPatterns: [
+        /\.php$/i,
+        /\.js$/i,
+        /\.html$/i,
+        /\.svg$/i // SVG can contain scripts
+      ]
     }
   }
 } as const;
