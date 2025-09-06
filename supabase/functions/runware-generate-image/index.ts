@@ -619,7 +619,6 @@ serve(async (req) => {
       500
     );
   }
-});
 
 // ============= WEBSOCKET ERROR CLASSIFICATION =============
 class WebSocketError extends Error {
@@ -1103,3 +1102,5 @@ function generateSVGPlaceholder(pageText: string, userInfo: any) {
   
   return { url, success: true };
 }
+
+});
