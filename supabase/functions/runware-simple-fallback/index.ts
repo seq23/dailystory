@@ -43,7 +43,7 @@ const PREMIUM_PROMPT_TEMPLATES = {
   expert: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
 };
 
-// AFRICAN AMERICAN ARRAYS (Nuclear Independence)
+// AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   boys: [
     'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
@@ -74,33 +74,22 @@ const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   ]
 };
 
-const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
-  'rich dark chocolate complexion', 'warm deep brown skin', 'rich mahogany complexion', 
-  'beautiful dark ebony skin tone', 'warm caramel brown complexion', 'deep cocoa skin', 
-  'rich chestnut brown complexion', 'warm coffee-colored skin', 'beautiful bronze complexion', 
-  'deep amber brown skin tone', 'rich mocha complexion', 'warm honey brown skin', 
-  'beautiful dark copper complexion', 'deep golden brown skin', 'rich terra cotta complexion', 
-  'warm russet brown skin tone', 'beautiful sienna complexion', 'deep burnt umber skin', 
-  'rich dark oak complexion', 'warm dark maple skin tone'
-];
-
-const HARDCODED_AFRICAN_AMERICAN_EYE_COLORS = [
-  'warm dark chocolate eyes', 'deep rich brown eyes', 'beautiful dark amber eyes', 
-  'warm coffee brown eyes', 'deep mahogany eyes', 'rich cocoa brown eyes', 'warm honey brown eyes', 
-  'beautiful chestnut brown eyes', 'deep mocha eyes', 'warm bronze brown eyes', 
-  'rich dark hazel eyes', 'beautiful golden brown eyes', 'deep caramel eyes', 
-  'warm toffee brown eyes', 'rich dark copper eyes'
-];
-
 const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-  'beautiful expressive dark eyes and warm genuine smile', 'strong confident features with bright cheerful expression',
-  'graceful facial structure with kind welcoming demeanor', 'striking natural beauty with joyful animated expression',
-  'elegant bone structure with warm inviting smile', 'radiant complexion with bright engaging eyes',
-  'natural confident bearing with gentle friendly expression', 'beautiful authentic features with lively cheerful demeanor',
-  'strong dignified presence with warm genuine smile', 'graceful natural beauty with bright expressive eyes',
-  'confident friendly features with welcoming joyful expression', 'striking elegant appearance with kind animated smile',
-  'beautiful natural confidence with warm engaging demeanor', 'radiant authentic beauty with bright cheerful expression',
-  'gentle strong features with kind welcoming smile'
+  'rich dark chocolate complexion with warm dark chocolate eyes, beautiful expressive smile, and strong confident features',
+  'warm deep brown skin with deep rich brown eyes, graceful facial structure, and kind welcoming demeanor',
+  'beautiful dark ebony skin tone with beautiful dark amber eyes, striking natural beauty, and joyful animated expression',
+  'rich mahogany complexion with warm coffee brown eyes, elegant bone structure, and warm inviting smile',
+  'warm caramel brown complexion with deep mahogany eyes, radiant glow, and bright engaging expression',
+  'deep cocoa skin with rich cocoa brown eyes, natural confident bearing, and gentle friendly expression',
+  'rich chestnut brown complexion with warm honey brown eyes, beautiful authentic features, and lively cheerful demeanor',
+  'warm coffee-colored skin with beautiful chestnut brown eyes, strong dignified presence, and warm genuine smile',
+  'beautiful bronze complexion with deep mocha eyes, graceful natural beauty, and bright expressive features',
+  'deep amber brown skin tone with warm bronze brown eyes, confident friendly demeanor, and welcoming joyful expression',
+  'rich mocha complexion with rich dark hazel eyes, striking elegant appearance, and kind animated smile',
+  'warm honey brown skin with beautiful golden brown eyes, natural confidence, and warm engaging demeanor',
+  'beautiful dark copper complexion with deep caramel eyes, radiant authentic beauty, and bright cheerful expression',
+  'deep golden brown skin with warm toffee brown eyes, gentle strong features, and kind welcoming smile',
+  'rich terra cotta complexion with rich dark copper eyes, beautiful natural glow, and confident friendly expression'
 ];
 
 const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
@@ -268,129 +257,96 @@ const NUCLEAR_AVATAR_MAPPINGS = {
   'boy-pale': {
     character: 'boy',
     age: '6-year-old',
-    skin: 'fair light complexion',
     hair: 'red hair',
-    features: 'bright sparkling eyes and cheerful friendly smile',
-    clothing: 'casual t-shirt and jeans'
+    features: 'fair light complexion with bright sparkling eyes and cheerful friendly smile'
   },
   'boy-light': {
     character: 'boy', 
     age: '6-year-old',
-    skin: 'warm light skin',
     hair: 'blonde hair', 
-    features: 'expressive animated eyes and warm genuine smile',
-    clothing: 'hoodie and sneakers'
+    features: 'warm light skin with expressive animated eyes and warm genuine smile'
   },
   'boy-medium': {
     character: 'boy',
     age: '6-year-old', 
-    skin: 'golden tan complexion',
     hair: 'brown hair',
-    features: 'expressive warm brown eyes and bright cheerful smile',
-    clothing: 'colorful casual wear'
+    features: 'golden tan complexion with expressive warm brown eyes and bright cheerful smile'
   },
   'boy-olive': {
     character: 'boy',
     age: '6-year-old',
-    skin: 'warm olive complexion', 
     hair: 'black hair',
-    features: 'striking expressive eyes and warm welcoming expression',
-    clothing: 'traditional-inspired modern wear'
+    features: 'warm olive complexion with striking expressive eyes and warm welcoming expression'
   },
   'boy-dark': {
     character: 'African American boy',
     age: '6-year-old',
-    skin: 'rich dark chocolate complexion',
     hair: 'textured hair',
-    eyes: 'warm dark chocolate eyes', 
-    features: 'beautiful expressive dark eyes and warm genuine smile',
-    clothing: 'vibrant colorful casual wear'
+    features: 'rich dark chocolate complexion with warm dark chocolate eyes, beautiful expressive smile, and strong confident features'
   },
 
   // GIRL MAPPINGS  
   'girl-pale': {
     character: 'girl',
     age: '6-year-old',
-    skin: 'fair light complexion',
     hair: 'red hair',
-    features: 'bright sparkling eyes and cheerful friendly smile',
-    clothing: 'sundress and sandals'
+    features: 'fair light complexion with bright sparkling eyes and cheerful friendly smile'
   },
   'girl-light': {
     character: 'girl',
     age: '6-year-old', 
-    skin: 'warm light skin',
     hair: 'blonde hair',
-    features: 'lively enthusiastic expression and kind gentle demeanor', 
-    clothing: 'blouse and skirt'
+    features: 'warm light skin with lively enthusiastic expression and kind gentle demeanor'
   },
   'girl-medium': {
     character: 'girl',
     age: '6-year-old',
-    skin: 'golden tan complexion', 
     hair: 'brown hair',
-    features: 'warm welcoming expression and lively animated eyes',
-    clothing: 'colorful casual wear'
+    features: 'golden tan complexion with warm welcoming expression and lively animated eyes'
   },
   'girl-olive': {
     character: 'girl', 
     age: '6-year-old',
-    skin: 'warm olive complexion',
     hair: 'black hair',
-    features: 'beautiful olive complexion and confident friendly demeanor',
-    clothing: 'elegant casual clothing'
+    features: 'warm olive complexion with beautiful natural features and confident friendly demeanor'
   },
   'girl-dark': {
     character: 'African American girl',
     age: '6-year-old',
-    skin: 'rich dark chocolate complexion',
     hair: 'textured hair', 
-    eyes: 'warm dark chocolate eyes',
-    features: 'beautiful expressive dark eyes and warm genuine smile',
-    clothing: 'vibrant colorful casual wear'
+    features: 'rich dark chocolate complexion with warm dark chocolate eyes, beautiful expressive smile, and graceful natural beauty'
   },
 
   // GENDER-NEUTRAL MAPPINGS (for prefer-not-to-answer)
   'neutral-pale': {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
-    skin: 'fair light complexion', 
     hair: 'red hair',
-    features: 'friendly welcoming expression and gentle smile',
-    clothing: 'comfortable casual wear'
+    features: 'fair light complexion with friendly welcoming expression and gentle smile'
   },
   'neutral-light': {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
-    skin: 'warm light skin',
     hair: 'blonde hair',
-    features: 'kind gentle expression and bright smile',
-    clothing: 'simple comfortable outfit'
+    features: 'warm light skin with kind gentle expression and bright smile'
   },
   'neutral-medium': {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
-    skin: 'golden tan complexion',
     hair: 'brown hair',
-    features: 'cheerful friendly expression and welcoming smile', 
-    clothing: 'casual everyday wear'
+    features: 'golden tan complexion with cheerful friendly expression and welcoming smile'
   },
   'neutral-olive': {
     character: 'child with gender neutral characteristics', 
     age: '6-year-old',
-    skin: 'warm olive complexion',
     hair: 'black hair',
-    features: 'warm welcoming expression and gentle demeanor',
-    clothing: 'comfortable modern clothing'
+    features: 'warm olive complexion with warm welcoming expression and gentle demeanor'
   },
   'neutral-dark': {
     character: 'African American child with gender neutral characteristics',
     age: '6-year-old', 
-    skin: 'rich dark complexion',
     hair: 'textured hair',
-    eyes: 'warm dark eyes',
-    features: 'beautiful expressive eyes and genuine smile',
-    clothing: 'colorful comfortable wear'
+    features: 'rich dark complexion with warm dark eyes, beautiful expressive features, and genuine smile'
   }
 };
 
@@ -724,11 +680,8 @@ function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        skin: getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES),
         hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        eyes: getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES),
-        clothing: getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING)
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // French + Dark Skin: African American hairstyles + facial features  
@@ -741,11 +694,8 @@ function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        skin: getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES),
         hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        eyes: getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES),
-        clothing: getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING)
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // Spanish + Dark Skin: Hispanic/Latino hairstyles + African American facial features
@@ -758,11 +708,8 @@ function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        skin: getRandomItem(HARDCODED_HISPANIC_LATINO_SKIN_TONES),
         hair: getRandomItem(HARDCODED_HISPANIC_LATINO_HAIRSTYLES[genderKey]),
-        eyes: getRandomItem(HARDCODED_HISPANIC_LATINO_EYE_COLORS),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES), // African American facial features
-        clothing: getRandomItem(HARDCODED_HISPANIC_LATINO_CLOTHING)
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES) // African American facial features
       };
     }
     
@@ -772,15 +719,13 @@ function fillPremiumTemplate(
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
     
-    // Fill template with nuclear mappings (eyes only for African Americans) + page text
+    // Fill template with nuclear mappings (simplified to hair + features only) + page text
     let filledTemplate = template
       .replace('{pageText}', pageText || 'A story about learning and discovery')
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
-      .replace('{skin}', finalMapping.skin)
       .replace('{hair}', finalMapping.hair)
       .replace('{features}', finalMapping.features)
-      .replace('{clothing}', finalMapping.clothing)
       .replace('{scene}', scene)
       .replace('{setting}', enhancedSetting)
       .replace('{objects}', objects)
