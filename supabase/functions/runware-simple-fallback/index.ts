@@ -223,19 +223,7 @@ const HARDCODED_MIDDLE_EASTERN_CLOTHING = [
   'modest fashionable attire', 'contemporary cultural style', 'warm-toned clothing'
 ];
 
-// STANDARD AMERICAN ARRAYS
-const HARDCODED_STANDARD_AMERICAN_HAIRSTYLES = {
-  boys: [
-    'blonde hair with neat cut', 'light brown hair style', 'sandy blonde hair', 'medium brown hair',
-    'blonde hair with fringe', 'light brown wavy hair', 'classic blonde cut', 'brown hair with layers',
-    'golden blonde hair', 'chestnut brown hair', 'ash blonde hair', 'caramel brown hair'
-  ],
-  girls: [
-    'blonde hair in ponytail', 'light brown wavy hair', 'golden blonde locks', 'brown hair in braids',
-    'blonde hair with bangs', 'long light brown hair', 'blonde curly hair', 'straight brown hair',
-    'sandy blonde waves', 'chestnut brown hair', 'honey blonde hair', 'auburn brown hair'
-  ]
-};
+// STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
 
 const HARDCODED_STANDARD_AMERICAN_SKIN_TONES = [
   'fair light complexion', 'warm light skin', 'peachy fair skin', 'light rosy complexion',
@@ -287,7 +275,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy',
     age: '6-year-old',
     skin: 'fair light complexion',
-    hair: 'blonde hair with neat cut',
+    hair: 'red hair',
     features: 'bright sparkling eyes and cheerful friendly smile',
     clothing: 'casual t-shirt and jeans'
   },
@@ -295,7 +283,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy', 
     age: '6-year-old',
     skin: 'warm light skin',
-    hair: 'sandy blonde hair', 
+    hair: 'blonde hair', 
     features: 'expressive animated eyes and warm genuine smile',
     clothing: 'hoodie and sneakers'
   },
@@ -303,7 +291,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy',
     age: '6-year-old', 
     skin: 'golden tan complexion',
-    hair: 'medium brown hair',
+    hair: 'brown hair',
     features: 'expressive warm brown eyes and bright cheerful smile',
     clothing: 'colorful casual wear'
   },
@@ -311,7 +299,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy',
     age: '6-year-old',
     skin: 'warm olive complexion', 
-    hair: 'dark brown wavy hair',
+    hair: 'black hair',
     features: 'striking expressive eyes and warm welcoming expression',
     clothing: 'traditional-inspired modern wear'
   },
@@ -319,7 +307,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'African American boy',
     age: '6-year-old',
     skin: 'rich dark chocolate complexion',
-    hair: 'dark realistic textured short hair with individual strand detail',
+    hair: 'textured hair',
     eyes: 'warm dark chocolate eyes', 
     features: 'beautiful expressive dark eyes and warm genuine smile',
     clothing: 'vibrant colorful casual wear'
@@ -330,7 +318,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl',
     age: '6-year-old',
     skin: 'fair light complexion',
-    hair: 'blonde hair in ponytail',
+    hair: 'red hair',
     features: 'bright sparkling eyes and cheerful friendly smile',
     clothing: 'sundress and sandals'
   },
@@ -338,7 +326,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl',
     age: '6-year-old', 
     skin: 'warm light skin',
-    hair: 'blonde hair in ponytail',
+    hair: 'blonde hair',
     features: 'lively enthusiastic expression and kind gentle demeanor', 
     clothing: 'blouse and skirt'
   },
@@ -346,7 +334,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl',
     age: '6-year-old',
     skin: 'golden tan complexion', 
-    hair: 'dark brown wavy hair',
+    hair: 'brown hair',
     features: 'warm welcoming expression and lively animated eyes',
     clothing: 'colorful casual wear'
   },
@@ -354,7 +342,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl', 
     age: '6-year-old',
     skin: 'warm olive complexion',
-    hair: 'long dark brown hair',
+    hair: 'black hair',
     features: 'beautiful olive complexion and confident friendly demeanor',
     clothing: 'elegant casual clothing'
   },
@@ -362,7 +350,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'African American girl',
     age: '6-year-old',
     skin: 'rich dark chocolate complexion',
-    hair: 'dark realistic textured long hair with individual strand detail', 
+    hair: 'textured hair', 
     eyes: 'warm dark chocolate eyes',
     features: 'beautiful expressive dark eyes and warm genuine smile',
     clothing: 'vibrant colorful casual wear'
@@ -373,7 +361,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'fair light complexion', 
-    hair: 'short light hair',
+    hair: 'red hair',
     features: 'friendly welcoming expression and gentle smile',
     clothing: 'comfortable casual wear'
   },
@@ -381,7 +369,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'warm light skin',
-    hair: 'neat blonde hair',
+    hair: 'blonde hair',
     features: 'kind gentle expression and bright smile',
     clothing: 'simple comfortable outfit'
   },
@@ -389,7 +377,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     skin: 'golden tan complexion',
-    hair: 'medium brown hair',
+    hair: 'brown hair',
     features: 'cheerful friendly expression and welcoming smile', 
     clothing: 'casual everyday wear'
   },
@@ -397,7 +385,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child with gender neutral characteristics', 
     age: '6-year-old',
     skin: 'warm olive complexion',
-    hair: 'dark brown hair',
+    hair: 'black hair',
     features: 'warm welcoming expression and gentle demeanor',
     clothing: 'comfortable modern clothing'
   },
@@ -405,7 +393,7 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'African American child with gender neutral characteristics',
     age: '6-year-old', 
     skin: 'rich dark complexion',
-    hair: 'dark short coily curly fro with individual strand detail',
+    hair: 'textured hair',
     eyes: 'warm dark eyes',
     features: 'beautiful expressive eyes and genuine smile',
     clothing: 'colorful comfortable wear'
