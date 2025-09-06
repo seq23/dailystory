@@ -776,7 +776,8 @@ serve(async (req) => {
             source: 'AI-enhanced primaryScene'
           });
         } else {
-          console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema`);
+          console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema - Triggering Tier 2.5 fallback`);
+          throw new Error('PRIMARY_SCENE_MISSING - Triggering Tier 2.5 fallback');
         }
         
         // 2.1. STORY CONTEXT (Level 0-1 only)
