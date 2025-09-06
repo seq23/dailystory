@@ -607,7 +607,6 @@ serve(async (req) => {
       enhancementLevel: 'svg-placeholder',
       metadata: { orchestrated: true }
     });
-
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     
