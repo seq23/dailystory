@@ -959,7 +959,7 @@ PRIMARY OBJECTIVE: Create detailed, visually rich scene descriptions for image g
 
 SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
 {
-  "primaryScene": "The complete visual scene containing ALL elements needed for image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'child'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Minimum 30+ characters with rich, descriptive language.",
+  "primaryScene": "The complete visual scene containing ALL elements needed for image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'an attractive child with symmetrical features'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Minimum 30+ characters with rich, descriptive language.",
   "characterDetails": "optional additional character information",
   "settingDetails": "optional environment details"
 }
@@ -971,7 +971,7 @@ VISUAL QUALITY STANDARDS:
 - Descriptive Language: Rich adjectives, specific details, atmospheric elements
 - Minimum Length: 30+ characters with detailed visual specificity
 
-Example primaryScene: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'working alongside a encouraging teacher ' : ''}adding colorful wooden blocks to build a tall structure on a polished wooden table, the classroom filled with warm sunlight and educational posters, their expression showing focused concentration"${hairstyleGuidance ? '\n\nHAIRSTYLE INTEGRATION: ' + selectedHairstyle : ''}`
+Example primaryScene: "${avatarIdentity?.visualDescription || 'An attractive child with symmetrical features'} positioned in a portrait-style composition, soft natural lighting, with a beautifully blurred background creating depth and focus on the child's expression and character details"${hairstyleGuidance ? '\n\nHAIRSTYLE INTEGRATION: ' + selectedHairstyle : ''}`
           },
           {
             role: 'user', 
