@@ -1196,120 +1196,15 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         const sceneIntegration = primaryScene;
         console.log(`🎬 PHASE 2.2: Scene integrated: ${sceneIntegration.substring(0, 50)}...`);
         
-        // PHASE 2.3: Cultural Context Application
-        let culturalContext = '';
-        let culturalNegativePrompt = '';
-        
-        // Only apply cultural context for English speakers with dark skin (African American)
-        // PHASE 3: Expanded cultural context application
-        const shouldApplyAfricanAmericanFeatures = 
-          (avatarIdentity.nativeLanguage === 'en' && avatarIdentity.skinTone === 'dark') ||
-          (avatarIdentity.nativeLanguage === 'es' && avatarIdentity.skinTone === 'dark') ||
-          (avatarIdentity.nativeLanguage === 'fr' && avatarIdentity.skinTone === 'dark');
-        
-        if (shouldApplyAfricanAmericanFeatures) {
-          const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
-          const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
-          
-          if (selectedHairstyle) {
-            culturalContext += `, ${selectedHairstyle}`;
-            console.log(`🎨 PHASE 3: African American hairstyle applied to ${avatarIdentity.culturalProfile?.ethnicity}: ${selectedHairstyle.substring(0, 50)}...`);
-          }
-          
-          if (selectedFeatures) {
-            culturalContext += `, ${selectedFeatures.skinTone}, ${selectedFeatures.eyeColor}, ${selectedFeatures.facialFeature}`;
-            console.log(`🎨 PHASE 3: African American features applied to ${avatarIdentity.culturalProfile?.ethnicity}:`, selectedFeatures);
-          }
-        } else {
-          console.log(`🎨 PHASE 3: Cultural context skipped - Language: ${avatarIdentity.nativeLanguage}, Skin: ${avatarIdentity.skinTone}, Ethnicity: ${avatarIdentity.culturalProfile?.ethnicity}`);
-        }
-        
-        // PHASE 3: Base negative prompt with gender-specific additions
-        culturalNegativePrompt = 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
-        
-        // Gender-specific negative prompts
-        if (avatarIdentity.type === 'boy') {
-          culturalNegativePrompt += ', feminine features, makeup, lipstick, earrings, long eyelashes, dresses, skirts, ponytails, pigtails, bows, ribbons, princess style, girly accessories';
-        } else if (avatarIdentity.type === 'girl') {
-          culturalNegativePrompt += ', masculine features, facial hair, mustache, beard, short buzz cut, masculine clothing, ties, suits, masculine poses, broad shoulders, square jaw';
-        } else if (avatarIdentity.type === 'prefer-not-to-answer') {
-          culturalNegativePrompt += ', gender-specific clothing, dresses, suits, ties, makeup, facial hair, gender-defining hairstyles, masculine features, feminine features, gendered accessories';
-        }
-        
-        // Anti-whitewashing for African American features
-        if (shouldApplyAfricanAmericanFeatures) {
-          culturalNegativePrompt += ', pale skin, light skin, white skin, blonde hair, straight hair, blue eyes, green eyes, European features, whitewashed, caucasian features, light eyes';
-        }
-        
-        console.log(`🛡️ PHASE 2.3: Simplified negative prompt applied`);
-        
-        // PHASE 2.4: Style Framework & Technical Assembly
-        const difficulty = userInfo?.difficultyLevel || userInfo?.readingLevel;
-        const difficultyNum = parseInt(difficulty) || 0;
-        
-        let baseBrandSuffix = '';
-        if (difficultyNum <= 2) {
-          // Level 0-2: Contemporary children's book illustration
-          baseBrandSuffix = ', Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting';
-        } else {
-          // Level 3-4: 2.9D rendered illustration  
-          baseBrandSuffix = ', 2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation';
-        }
-        
-        const stepsAndCFG = ', 25 steps, CFG scale 8';
-        
-        console.log(`🎨 PHASE 2.4: Style framework applied - Level ${difficultyNum} (${difficultyNum <= 2 ? 'Contemporary' : '2.9D'})`);
+        console.log('🎭 PHASE 2.3: Scene data prepared for orchestrator');
         
         // PHASE 2.5: Character Consistency Database Storage (Enhanced Implementation)
         console.log('💾 PHASE 2.5: Character consistency stored in database via CharacterConsistencyService');
         console.log(`🎭 Character seed ${characterData.seed} persisted for session ${sessionId}`);
         
-        // PHASE 2.5b: Generate Secondary Character Descriptions if Present
-        let secondaryCharacterPrompts = '';
-        if (secondaryElements.length > 0) {
-          console.log('👥 PHASE 2.5b: Generating descriptions for secondary characters');
-          
-          for (const element of secondaryElements.filter(e => e.needsConsistency)) {
-            if (element.category === 'secondary_character') {
-              const secondaryChar = await characterConsistencyService.generateSecondaryCharacter(
-                element.relationshipType,
-                { name: element.name, type: element.type },
-                userInfo,
-                sessionId
-              );
-              
-              if (secondaryChar) {
-                secondaryCharacterPrompts += `, with ${secondaryChar.characterDescription || element.name}`;
-                console.log(`👤 Secondary character: ${element.name} → ${secondaryChar.characterDescription}`);
-              }
-            }
-          }
-        }
         
-        // =================== PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1) ===================
-        console.log('📚 PHASE 3: Story Text Attachment Check');
         
-        let storyTextAttachment = '';
-        const isBeginnerLevel = difficulty === '0' || difficulty === '1' || 
-                               difficulty === 'beginner' || difficulty === 'level-0' || difficulty === 'level-1';
-        
-        if (isBeginnerLevel) {
-          storyTextAttachment = `. Story context: ${storyText}`;
-          console.log(`📚 PHASE 3: Story text attached for level ${difficulty} (${storyText.length} chars)`);
-        } else {
-          console.log(`📚 PHASE 3: Story text skipped for level ${difficulty || 'unknown'}`);
-        }
-        
-        // =================== ENHANCED FINAL ASSEMBLY ===================
-        const finalPrompt = `${baseCharacterDescription}. ${sceneIntegration}${secondaryCharacterPrompts}${culturalContext}${baseBrandSuffix}${stepsAndCFG}${storyTextAttachment}`;
-        const finalNegativePrompt = culturalNegativePrompt;
-        
-        console.log('🏗️ ENHANCED FINAL ASSEMBLY: Tier 1 Complete with Character Consistency', {
-          promptLength: finalPrompt.length,
-          negativePromptLength: finalNegativePrompt.length,
-          phases: '✅ Phase 1 (AI Scene + Character DB) → ✅ Phase 2 (Cultural+Style+Secondary) → ✅ Phase 3 (Story Text)',
-          hasStoryText: !!storyTextAttachment,
-          hasCulturalFeatures: !!culturalContext,
+        console.log('🏗️ SCENE DATA ASSEMBLY: Character Consistency + Scene Data Ready', {
           hasSecondaryCharacters: secondaryElements.length > 0,
           hasVisualDetails: !!visualDetails,
           characterSeed: characterData.seed,
@@ -1328,9 +1223,6 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
             lighting: 'natural',
             mood: 'cheerful'
           },
-          // NEW: Include final assembled prompt for Runware
-          finalAssembledPrompt: finalPrompt,
-          finalNegativePrompt: finalNegativePrompt,
           enhancedTier1: true, // Updated from reorganizedTier1
           characterConsistency: {
             databaseBacked: true,
@@ -1340,12 +1232,11 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           },
           phases: {
             phase1: 'AI scene generation + character DB + secondary detection + visual tracking',
-            phase2: 'Cultural features + style + secondary character descriptions',
-            phase3: isBeginnerLevel ? 'Story text attached' : 'Story text skipped'
+            phase2: 'Secondary character descriptions'
           }
         };
         
-        console.log(`✅ ENHANCED TIER 1: All phases complete - returning enhanced data with character consistency and assembled prompts`);
+        console.log(`✅ SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
         
         // =================== VALIDATION & RETURN RESULTS ===================
         // No complex validation needed since we built the prompts ourselves
@@ -1400,14 +1291,13 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
             },
             phases: {
               phase1: 'AI scene generation + character DB + secondary detection + visual tracking',
-              phase2: 'Cultural features + style framework + secondary character descriptions', 
-              phase3: isBeginnerLevel ? 'Story text attached' : 'Story text skipped'
+              phase2: 'Secondary character descriptions'
             }
           },
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`✅ ENHANCED TIER 1: Complete - Phases: AI Scene + Character DB + Secondary + Visual(✅) → Cultural+Style+Secondary(✅) → Story Text(${isBeginnerLevel ? '✅' : '⚠️ skipped'}) - Final prompt ready for Runware`);
+        console.log(`✅ SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(✅) → Secondary Characters(✅) - Scene data ready for orchestrator`);
 
         return createCorsResponse(result);
 
