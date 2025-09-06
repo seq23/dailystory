@@ -251,6 +251,89 @@ const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
 
 // ============= NUCLEAR INDEPENDENT CORE FUNCTIONS =============
 
+// DRAMATICALLY EXPANDED COLOR AND OBJECT ARRAYS FOR TIER 2.5
+const EXPANDED_COLOR_ARRAY = [
+  // Basic Colors
+  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey',
+  // Vibrant Colors
+  'bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
+  'vibrant red', 'vibrant blue', 'vibrant green', 'electric blue', 'neon green', 'hot pink', 'lime green',
+  // Pastel Colors
+  'light blue', 'light pink', 'light green', 'light yellow', 'soft blue', 'soft pink', 'soft purple',
+  'pastel blue', 'pastel pink', 'pastel yellow', 'pale blue', 'pale green', 'pale yellow',
+  // Dark Colors
+  'dark blue', 'dark green', 'dark red', 'dark purple', 'navy blue', 'forest green', 'burgundy',
+  // Metallic & Special Colors
+  'silver', 'gold', 'metallic blue', 'shiny red', 'sparkly pink', 'glittery purple', 'rainbow',
+  // Natural Colors
+  'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
+];
+
+const EXPANDED_OBJECT_ARRAY = {
+  // Food Items
+  food: ['apple', 'banana', 'sandwich', 'cookie', 'cake', 'pizza', 'ice cream', 'cupcake', 'donut', 'bread', 'cheese', 'crackers', 'fruit', 'vegetables', 'juice box', 'water bottle', 'milk', 'cereal', 'pancakes', 'toast'],
+  
+  // Animals & Pets
+  animals: ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'elephant', 'lion', 'tiger', 'bear', 'monkey', 'giraffe', 'zebra', 'penguin', 'dolphin', 'butterfly', 'ladybug', 'frog'],
+  
+  // Vehicles & Transportation
+  vehicles: ['car', 'truck', 'bus', 'train', 'airplane', 'helicopter', 'boat', 'ship', 'bicycle', 'scooter', 'skateboard', 'motorcycle', 'fire truck', 'police car', 'ambulance', 'school bus', 'taxi', 'rocket', 'submarine', 'hot air balloon'],
+  
+  // Toys & Games
+  toys: ['ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'kite', 'yo-yo', 'top', 'marbles', 'action figure', 'stuffed animal', 'toy car', 'toy train', 'board game', 'cards', 'dice', 'jump rope', 'hula hoop', 'frisbee', 'bubbles'],
+  
+  // Tools & Instruments
+  tools: ['hammer', 'screwdriver', 'wrench', 'paintbrush', 'scissors', 'ruler', 'magnifying glass', 'telescope', 'microscope', 'calculator', 'compass', 'flashlight', 'camera', 'telephone', 'computer', 'tablet', 'keyboard', 'mouse', 'headphones', 'microphone'],
+  
+  // Nature & Outdoor
+  nature: ['tree', 'flower', 'leaf', 'rock', 'shell', 'stick', 'acorn', 'pinecone', 'feather', 'pebble', 'sand', 'grass', 'moss', 'mushroom', 'berry', 'seed', 'branch', 'log', 'crystal', 'butterfly net'],
+  
+  // Clothing & Accessories
+  clothing: ['hat', 'cap', 'shirt', 'dress', 'pants', 'shoes', 'socks', 'jacket', 'sweater', 'scarf', 'gloves', 'belt', 'tie', 'bow tie', 'necklace', 'bracelet', 'earrings', 'ring', 'watch', 'sunglasses'],
+  
+  // Sports & Recreation
+  sports: ['soccer ball', 'basketball', 'football', 'baseball', 'tennis ball', 'golf ball', 'ping pong ball', 'volleyball', 'hockey stick', 'baseball bat', 'tennis racket', 'golf club', 'skateboard', 'roller skates', 'ice skates', 'helmet', 'bicycle', 'swimming goggles', 'life jacket', 'surfboard'],
+  
+  // Electronics & Technology
+  electronics: ['computer', 'laptop', 'tablet', 'phone', 'television', 'radio', 'speaker', 'headphones', 'camera', 'video game', 'remote control', 'calculator', 'digital clock', 'mp3 player', 'keyboard', 'mouse', 'printer', 'scanner', 'projector', 'smartwatch'],
+  
+  // Furniture & Household
+  furniture: ['chair', 'table', 'bed', 'desk', 'bookshelf', 'dresser', 'mirror', 'lamp', 'clock', 'picture frame', 'vase', 'pillow', 'blanket', 'curtains', 'rug', 'couch', 'sofa', 'cabinet', 'drawer', 'closet']
+};
+
+const COLORABLE_OBJECT_MAPPING = {
+  // Objects that work well with bright colors
+  bright: ['ball', 'kite', 'balloon', 'toy car', 'blocks', 'crayon', 'marker', 'paint', 'shirt', 'dress', 'hat', 'flower', 'bicycle'],
+  // Objects that work well with natural colors  
+  natural: ['tree', 'leaf', 'rock', 'shell', 'feather', 'wood', 'sand', 'grass', 'stone', 'branch'],
+  // Objects that work well with metallic colors
+  metallic: ['car', 'truck', 'robot', 'jewelry', 'watch', 'key', 'coin', 'trophy', 'medal'],
+  // Objects that commonly have specific colors
+  specific: {
+    'apple': ['red', 'green', 'yellow'],
+    'banana': ['yellow', 'green'],
+    'orange': ['orange'],
+    'grass': ['green'],
+    'sky': ['blue'],
+    'sun': ['yellow', 'orange']
+  }
+};
+
+// ENHANCED INDOOR/OUTDOOR KEYWORDS
+const ENHANCED_INDOOR_KEYWORDS = [
+  'kitchen', 'bedroom', 'classroom', 'library', 'home', 'house', 'room', 'reading', 'cooking', 'tv', 'computer', 'tablet', 
+  'indoor', 'inside', 'studying', 'homework', 'bed', 'chair', 'table', 'desk', 'sofa', 'couch', 'floor', 'ceiling', 
+  'wall', 'door', 'window', 'lamp', 'light', 'book', 'newspaper', 'magazine', 'phone', 'television', 'radio', 
+  'bathroom', 'shower', 'bath', 'toilet', 'sink', 'mirror', 'closet', 'cabinet', 'refrigerator', 'oven', 'microwave'
+];
+
+const ENHANCED_OUTDOOR_KEYWORDS = [
+  'park', 'playground', 'garden', 'forest', 'beach', 'mountain', 'backyard', 'ball', 'bat', 'bike', 'outdoor', 'outside', 
+  'nature', 'tree', 'grass', 'flower', 'sky', 'sun', 'moon', 'star', 'cloud', 'rain', 'snow', 'wind', 'air',
+  'field', 'hill', 'river', 'lake', 'ocean', 'sea', 'pond', 'stream', 'path', 'trail', 'road', 'street',
+  'running', 'walking', 'hiking', 'climbing', 'swimming', 'fishing', 'camping', 'picnic', 'barbecue', 'sports'
+];
+
 // NUCLEAR HARDCODED AVATAR MAPPINGS (15 combinations: 3 types × 5 skin tones)
 const NUCLEAR_AVATAR_MAPPINGS = {
   // BOY MAPPINGS
@@ -584,7 +667,7 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
     // Extract components from best sentence
     const result = {
       scene: extractActionFromSentence(bestSentence),
-      setting: extractSettingFromSentence(bestSentence),
+      setting: extractSettingFromSentence(bestSentence), // Note: No previousSetting in extraction phase
       objects: extractObjectsFromSentence(bestSentence),
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
@@ -624,40 +707,147 @@ function extractActionFromSentence(sentence: string): string {
   return 'engaging in activities';
 }
 
-function extractSettingFromSentence(sentence: string): string {
+// ENHANCED SETTING EXTRACTION WITH NUCLEAR-SAFE MEMORY AND EXPANDED KEYWORDS
+function extractSettingFromSentence(sentence: string, previousSetting?: string): string {
   const lowerSentence = sentence.toLowerCase();
+  
+  // Enhanced setting mappings
   const settingMappings = {
-    'park': ' a vibrant community park', 'school': ' a bright modern school', 'home': ' a cozy comfortable home',
-    'garden': ' a beautiful blooming garden', 'playground': ' a fun colorful playground', 'library': ' a quiet peaceful library',
-    'classroom': ' a bright engaging classroom', 'kitchen': ' a warm inviting kitchen', 'bedroom': ' a comfortable personal bedroom',
-    'backyard': ' a spacious family backyard', 'forest': ' a magical green forest', 'beach': ' a sunny sandy beach',
-    'mountain': ' a majestic mountain landscape', 'city': ' a bustling vibrant city', 'street': ' a friendly neighborhood street',
-    'house': ' a welcoming family house', 'room': ' a cozy indoor room', 'outside': ' a beautiful outdoor setting',
-    'inside': ' a comfortable indoor space'
+    'park': ' a vibrant community park with green spaces', 
+    'school': ' a bright modern school with learning areas', 
+    'home': ' a cozy comfortable home with warm atmosphere',
+    'garden': ' a beautiful blooming garden with colorful flowers', 
+    'playground': ' a fun colorful playground with exciting equipment', 
+    'library': ' a quiet peaceful library with rows of books',
+    'classroom': ' a bright engaging classroom with educational materials', 
+    'kitchen': ' a warm inviting kitchen with cooking areas', 
+    'bedroom': ' a comfortable personal bedroom with cozy furnishings',
+    'backyard': ' a spacious family backyard with outdoor fun', 
+    'forest': ' a magical green forest with tall trees', 
+    'beach': ' a sunny sandy beach with ocean waves',
+    'mountain': ' a majestic mountain landscape with scenic views', 
+    'city': ' a bustling vibrant city with urban energy', 
+    'street': ' a friendly neighborhood street with community feel',
+    'house': ' a welcoming family house with homey atmosphere', 
+    'room': ' a cozy indoor room with comfortable space', 
+    'living room': ' a comfortable living room with family seating',
+    'dining room': ' a welcoming dining room with eating space',
+    'bathroom': ' a clean bright bathroom with modern fixtures',
+    'garage': ' an organized garage with storage space',
+    'basement': ' a finished basement with recreation area',
+    'attic': ' a cozy attic with interesting discoveries',
+    'hallway': ' a bright hallway connecting different rooms',
+    'porch': ' a charming front porch with welcoming atmosphere',
+    'patio': ' a lovely outdoor patio with relaxation space',
+    'deck': ' an elevated deck with outdoor entertainment area'
   };
   
+  // Check for specific settings first
   for (const [setting, description] of Object.entries(settingMappings)) {
     if (lowerSentence.includes(setting)) {
       return description;
     }
   }
   
-  return ' a wonderful learning environment';
+  // If no specific setting found, use indoor/outdoor classification
+  let isIndoor = false;
+  let isOutdoor = false;
+  
+  // Check for indoor keywords
+  for (const keyword of ENHANCED_INDOOR_KEYWORDS) {
+    if (lowerSentence.includes(keyword)) {
+      isIndoor = true;
+      break;
+    }
+  }
+  
+  // Check for outdoor keywords
+  if (!isIndoor) {
+    for (const keyword of ENHANCED_OUTDOOR_KEYWORDS) {
+      if (lowerSentence.includes(keyword)) {
+        isOutdoor = true;
+        break;
+      }
+    }
+  }
+  
+  // Apply indoor/outdoor classification
+  if (isIndoor) {
+    return ' a comfortable indoor space with cozy atmosphere';
+  } else if (isOutdoor) {
+    return ' a beautiful outdoor setting with natural environment';
+  }
+  
+  // Nuclear-safe setting memory: Use previousSetting if available
+  if (previousSetting && previousSetting.trim().length > 0) {
+    console.log('🛡️ Tier 2.5: Using previous setting memory:', previousSetting);
+    return previousSetting;
+  }
+  
+  // Ultimate fallback
+  return ' indoor portrait style photo with main character focus';
 }
 
+// DYNAMIC COLOR-OBJECT RESOLUTION SYSTEM
 function extractObjectsFromSentence(sentence: string): string {
   const lowerSentence = sentence.toLowerCase();
+  
+  // First try to detect and resolve object + color combinations
+  const dynamicObjectColor = detectAndResolveObjectColor(sentence);
+  if (dynamicObjectColor) {
+    return dynamicObjectColor;
+  }
+  
+  // Enhanced object mappings with more variety
   const objectMappings = {
-    'book': ', with colorful educational books nearby', 'toy': ', with fun educational toys around',
-    'ball': ', with a bright colorful ball', 'bike': ', with a shiny bicycle nearby',
-    'swing': ', near playground swings', 'slide': ', by a colorful playground slide',
-    'tree': ', under beautiful shade trees', 'flower': ', surrounded by blooming flowers',
-    'car': ', near toy cars and vehicles', 'truck': ', with toy trucks and construction vehicles',
-    'doll': ', with favorite dolls and stuffed animals', 'game': ', with educational games and activities',
-    'puzzle': ', with colorful learning puzzles', 'blocks': ', with building blocks and construction toys',
-    'crayon': ', with bright crayons and art supplies', 'paper': ', with drawing paper and notebooks',
-    'pencil': ', with colorful pencils and writing tools', 'computer': ', with educational technology',
-    'tablet': ', with learning apps and digital tools', 'phone': ', with communication devices'
+    'book': ', with colorful educational books nearby', 
+    'toy': ', with fun educational toys around',
+    'ball': ', with a bright colorful ball', 
+    'bike': ', with a shiny bicycle nearby',
+    'swing': ', near playground swings', 
+    'slide': ', by a colorful playground slide',
+    'tree': ', under beautiful shade trees', 
+    'flower': ', surrounded by blooming flowers',
+    'car': ', near toy cars and vehicles', 
+    'truck': ', with toy trucks and construction vehicles',
+    'doll': ', with favorite dolls and stuffed animals', 
+    'game': ', with educational games and activities',
+    'puzzle': ', with colorful learning puzzles', 
+    'blocks': ', with building blocks and construction toys',
+    'crayon': ', with bright crayons and art supplies', 
+    'paper': ', with drawing paper and notebooks',
+    'pencil': ', with colorful pencils and writing tools', 
+    'computer': ', with educational technology',
+    'tablet': ', with learning apps and digital tools', 
+    'phone': ', with communication devices',
+    // New expanded mappings
+    'apple': ', with fresh red apples nearby',
+    'banana': ', with yellow bananas around',
+    'sandwich': ', with a delicious sandwich to enjoy',
+    'cookie': ', with sweet cookies nearby',
+    'kite': ', with a colorful kite ready to fly',
+    'butterfly': ', with beautiful butterflies around',
+    'dog': ', with a friendly dog companion',
+    'cat': ', with a playful cat nearby',
+    'rabbit': ', with a cute bunny friend',
+    'bird': ', with cheerful birds singing',
+    'fish': ', with colorful fish swimming',
+    'elephant': ', with a gentle elephant friend',
+    'lion': ', with a brave lion character',
+    'tiger': ', with a friendly tiger companion',
+    'bear': ', with a cuddly teddy bear',
+    'monkey': ', with a playful monkey friend',
+    'horse': ', with a beautiful horse nearby',
+    'airplane': ', with toy airplanes soaring',
+    'helicopter': ', with a fun helicopter toy',
+    'train': ', with an exciting toy train',
+    'boat': ', with a colorful toy boat',
+    'rocket': ', with an amazing rocket ship',
+    'hat': ', wearing a stylish hat',
+    'shoes': ', with comfortable shoes on',
+    'glasses': ', wearing smart glasses',
+    'watch': ', with a cool wristwatch',
+    'backpack': ', with a colorful school backpack'
   };
   
   for (const [object, description] of Object.entries(objectMappings)) {
@@ -667,6 +857,87 @@ function extractObjectsFromSentence(sentence: string): string {
   }
   
   return '';
+}
+
+// DYNAMIC OBJECT + COLOR DETECTION SYSTEM
+function detectAndResolveObjectColor(sentence: string): string {
+  const lowerSentence = sentence.toLowerCase();
+  let detectedObject = '';
+  let detectedColor = '';
+  
+  // Detect object from expanded array
+  const allObjects = [
+    ...EXPANDED_OBJECT_ARRAY.food,
+    ...EXPANDED_OBJECT_ARRAY.animals,
+    ...EXPANDED_OBJECT_ARRAY.vehicles,
+    ...EXPANDED_OBJECT_ARRAY.toys,
+    ...EXPANDED_OBJECT_ARRAY.tools,
+    ...EXPANDED_OBJECT_ARRAY.nature,
+    ...EXPANDED_OBJECT_ARRAY.clothing,
+    ...EXPANDED_OBJECT_ARRAY.sports,
+    ...EXPANDED_OBJECT_ARRAY.electronics,
+    ...EXPANDED_OBJECT_ARRAY.furniture
+  ];
+  
+  for (const object of allObjects) {
+    if (lowerSentence.includes(object)) {
+      detectedObject = object;
+      break;
+    }
+  }
+  
+  // Detect color from expanded array
+  for (const color of EXPANDED_COLOR_ARRAY) {
+    if (lowerSentence.includes(color)) {
+      detectedColor = color;
+      break;
+    }
+  }
+  
+  // If both object and color detected, combine them
+  if (detectedObject && detectedColor) {
+    return `, with a ${detectedColor} ${detectedObject} nearby`;
+  }
+  
+  // If only object detected, add random appropriate color
+  if (detectedObject) {
+    const appropriateColors = getAppropriateColorsForObject(detectedObject);
+    const randomColor = appropriateColors[Math.floor(Math.random() * appropriateColors.length)];
+    return `, with a ${randomColor} ${detectedObject} nearby`;
+  }
+  
+  // If only color detected, add random colorable object
+  if (detectedColor) {
+    const colorableObjects = COLORABLE_OBJECT_MAPPING.bright;
+    const randomObject = colorableObjects[Math.floor(Math.random() * colorableObjects.length)];
+    return `, with a ${detectedColor} ${randomObject} nearby`;
+  }
+  
+  return '';
+}
+
+// GET APPROPRIATE COLORS FOR SPECIFIC OBJECTS
+function getAppropriateColorsForObject(object: string): string[] {
+  // Check if object has specific colors
+  if (COLORABLE_OBJECT_MAPPING.specific[object]) {
+    return COLORABLE_OBJECT_MAPPING.specific[object];
+  }
+  
+  // Determine object category and return appropriate colors
+  if (COLORABLE_OBJECT_MAPPING.bright.includes(object)) {
+    return ['bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink'];
+  }
+  
+  if (COLORABLE_OBJECT_MAPPING.natural.includes(object)) {
+    return ['brown', 'green', 'yellow', 'orange', 'gray', 'black'];
+  }
+  
+  if (COLORABLE_OBJECT_MAPPING.metallic.includes(object)) {
+    return ['silver', 'gold', 'metallic blue', 'shiny red', 'black'];
+  }
+  
+  // Default to basic colors
+  return ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink'];
 }
 
 function extractSecondaryCharactersFromSentence(sentence: string): string {
@@ -824,31 +1095,104 @@ function generateEmergencyPrompt(userInfo: any): string {
 
 // ============= HELPER FUNCTIONS =============
 
+// ENHANCED CLOTHING DETECTION WITH COLOR SYSTEM
 function detectClothingFromStory(text: string): string {
   if (!text) return '';
   
+  // Expanded clothing keywords
   const clothingKeywords = [
     'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
     'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
-    'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves'
+    'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves',
+    'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
+    'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
+    'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
   ];
   
   const lowerText = text.toLowerCase();
   
+  // Try dynamic clothing + color detection first
+  const dynamicClothingColor = detectAndResolveClothingColor(text);
+  if (dynamicClothingColor) {
+    return dynamicClothingColor;
+  }
+  
+  // Fallback to basic clothing detection
   for (const keyword of clothingKeywords) {
     if (lowerText.includes(keyword)) {
       // Extract clothing context around the keyword
       const sentences = text.split(/[.!?]+/);
       for (const sentence of sentences) {
         if (sentence.toLowerCase().includes(keyword)) {
-          // Simple extraction - return the clothing item mentioned
-          return keyword;
+          // Add random color if no color specified
+          const randomColor = EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * EXPANDED_COLOR_ARRAY.length)];
+          return `a ${randomColor} ${keyword}`;
         }
       }
     }
   }
   
   return '';
+}
+
+// DYNAMIC CLOTHING + COLOR DETECTION SYSTEM
+function detectAndResolveClothingColor(text: string): string {
+  const lowerText = text.toLowerCase();
+  let detectedClothing = '';
+  let detectedColor = '';
+  
+  // Detect clothing type
+  const clothingTypes = ['dress', 'shirt', 'pants', 'jacket', 'sweater', 'shoes', 'hat', 'shorts', 'skirt', 'hoodie', 'jeans', 'boots', 'sneakers', 'coat', 'scarf', 'gloves'];
+  
+  for (const clothing of clothingTypes) {
+    if (lowerText.includes(clothing)) {
+      detectedClothing = clothing;
+      break;
+    }
+  }
+  
+  // Detect color
+  for (const color of EXPANDED_COLOR_ARRAY) {
+    if (lowerText.includes(color)) {
+      detectedColor = color;
+      break;
+    }
+  }
+  
+  // If both detected, combine them
+  if (detectedClothing && detectedColor) {
+    return `a ${detectedColor} ${detectedClothing}`;
+  }
+  
+  // If only clothing detected, add appropriate random color
+  if (detectedClothing) {
+    const appropriateColors = getAppropriateColorsForClothing(detectedClothing);
+    const randomColor = appropriateColors[Math.floor(Math.random() * appropriateColors.length)];
+    return `a ${randomColor} ${detectedClothing}`;
+  }
+  
+  return '';
+}
+
+// GET APPROPRIATE COLORS FOR CLOTHING
+function getAppropriateColorsForClothing(clothing: string): string[] {
+  // Formal clothing - more subdued colors
+  if (['jacket', 'blazer', 'suit', 'tie', 'dress shirt'].includes(clothing)) {
+    return ['navy blue', 'black', 'dark blue', 'gray', 'brown', 'white'];
+  }
+  
+  // Casual clothing - bright and fun colors
+  if (['t-shirt', 'hoodie', 'shorts', 'sneakers', 'cap'].includes(clothing)) {
+    return ['bright red', 'bright blue', 'bright green', 'bright yellow', 'orange', 'purple', 'pink'];
+  }
+  
+  // Footwear - practical colors
+  if (['shoes', 'boots', 'sneakers', 'sandals'].includes(clothing)) {
+    return ['black', 'brown', 'white', 'red', 'blue', 'gray'];
+  }
+  
+  // Default - balanced color palette
+  return ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white'];
 }
 
 function truncatePageText(text: string, difficulty: string): string {
@@ -996,7 +1340,7 @@ function detectCulturalProfile(userInfo: any, avatarIdentity?: any): string {
 
 function detectEmotionFromText(text: string): string {
   try {
-    if (!text || typeof text !== 'string') return 'Joyful and engaged atmosphere';
+    if (!text || typeof text !== 'string') return ''; // Enhanced: Return empty string for fallback
     
     const lowerText = text.toLowerCase();
     
