@@ -208,8 +208,21 @@ function mapAvatarIdentity(userInfo: any) {
   const { type, skinTone = 'medium' } = avatar;
   const { nativeLanguage = 'en' } = userInfo;
 
+  // Handle "prefer-not-to-answer" with special description
+  if (type === 'prefer-not-to-answer') {
+    const age = userInfo?.age || '6-8';
+    return {
+      type: 'prefer-not-to-answer',
+      skinTone: skinTone,
+      hairColor: null,
+      culturalProfile: { background: 'other', ethnicity: 'other' },
+      nativeLanguage: nativeLanguage,
+      name: `child age ${age} with no gender defining characteristics`
+    };
+  }
+
   // Map avatar type and skin tone to standardized identity
-  const avatarType = type === 'prefer-not-to-answer' ? 'child' : (type || 'child');
+  const avatarType = type || 'child';
   console.log(`🎯 AVATAR MAPPING - Original type: ${type} → Mapped type: ${avatarType}`);
   const genderText = avatarType === 'boy' ? 'boy' : avatarType === 'girl' ? 'girl' : 'child';
   
@@ -1130,28 +1143,51 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         let culturalContext = '';
         let culturalNegativePrompt = '';
         
-        const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
-        const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
+        // Only apply cultural context for English speakers with dark skin (African American)
+        const isEnglishDarkSkin = avatarIdentity.nativeLanguage === 'en' && avatarIdentity.skinTone === 'dark';
         
-        if (selectedHairstyle) {
-          culturalContext += `, ${selectedHairstyle}`;
-          console.log(`🎨 PHASE 2.3: African American hairstyle applied: ${selectedHairstyle.substring(0, 50)}...`);
+        if (isEnglishDarkSkin) {
+          const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
+          const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
+          
+          if (selectedHairstyle) {
+            culturalContext += `, ${selectedHairstyle}`;
+            console.log(`🎨 PHASE 2.3: African American hairstyle applied: ${selectedHairstyle.substring(0, 50)}...`);
+          }
+          
+          if (selectedFeatures) {
+            culturalContext += `, ${selectedFeatures.skinTone}, ${selectedFeatures.eyeColor}, ${selectedFeatures.facialFeature}`;
+            console.log(`🎨 PHASE 2.3: African American features applied:`, selectedFeatures);
+          }
+        } else {
+          console.log(`🎨 PHASE 2.3: Cultural context skipped - Language: ${avatarIdentity.nativeLanguage}, Skin: ${avatarIdentity.skinTone}`);
         }
         
-        if (selectedFeatures) {
-          culturalContext += `, ${selectedFeatures.skinTone}, ${selectedFeatures.eyeColor}, ${selectedFeatures.facialFeature}`;
-          console.log(`🎨 PHASE 2.3: African American features applied:`, selectedFeatures);
+        // Simplified negative prompt with anti-whitewashing for African American characters
+        culturalNegativePrompt = 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
+        
+        if (isEnglishDarkSkin) {
+          culturalNegativePrompt += ', pale skin, light skin, white skin, blonde hair, straight hair, blue eyes, green eyes, European features, whitewashed, caucasian features, light eyes';
         }
         
-        // Anti-whitewashing negative prompt
-        culturalNegativePrompt = buildTier1NegativePrompt(avatarIdentity);
-        console.log(`🛡️ PHASE 2.3: Cultural negative prompt: ${culturalNegativePrompt.substring(0, 50)}...`);
+        console.log(`🛡️ PHASE 2.3: Simplified negative prompt applied`);
         
         // PHASE 2.4: Style Framework & Technical Assembly
-        const stepsAndCFG = ', professional digital art style, 8 steps, CFG scale 1.0';
-        const baseBrandSuffix = ', high-quality children\'s illustration, bright and engaging';
+        const difficulty = userInfo?.difficultyLevel || userInfo?.readingLevel;
+        const difficultyNum = parseInt(difficulty) || 0;
         
-        console.log('🎨 PHASE 2.4: Style framework applied');
+        let baseBrandSuffix = '';
+        if (difficultyNum <= 2) {
+          // Level 0-2: Contemporary children's book illustration
+          baseBrandSuffix = ', Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting';
+        } else {
+          // Level 3-4: 2.9D rendered illustration  
+          baseBrandSuffix = ', 2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation';
+        }
+        
+        const stepsAndCFG = ', 25 steps, CFG scale 8';
+        
+        console.log(`🎨 PHASE 2.4: Style framework applied - Level ${difficultyNum} (${difficultyNum <= 2 ? 'Contemporary' : '2.9D'})`);
         
         // PHASE 2.5: Character Consistency Cache (Placeholder for now)
         console.log('💾 PHASE 2.5: Character consistency cache - [PLACEHOLDER FOR FUTURE IMPLEMENTATION]');

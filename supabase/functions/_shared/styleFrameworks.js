@@ -1,27 +1,27 @@
-// Centralized Art Style Framework - Single Source of Truth
-// Implements comprehensive art style synchronization across all image generation services
+// Simplified Art Style Framework - 2 Frameworks Only
+// Phase 2 Implementation: Levels 0-2 and 3-4 only
 
 export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   'beginner': {
-    // Level 0 - Pre-reader
-    name: '3D Pixar Animation Style',
-    artStyle: '3D Pixar animation style with smooth rounded features and warm golden tones, single main character focus',
-    colorPalette: 'Warm golden tones with soft, natural color harmony',
-    lighting: 'Soft volumetric lighting with warm golden highlights',
-    texture: 'Smooth, rounded surfaces with professional 3D rendering quality',
-    composition: 'Clear, focused single character composition, minimal clean background',
-    quality: 'Professional animation studio quality with depth and dimension',
+    // Levels 0-2: Contemporary children's book illustration
+    name: 'Contemporary Children\'s Book Illustration',
+    artStyle: 'Contemporary children\'s book illustration with sharp facial definition',
+    colorPalette: 'Vibrant color harmony with warm natural lighting',
+    lighting: 'Artistic lighting with warm natural tones',
+    texture: 'Painterly texture quality with detailed rendering',
+    composition: 'Character-focused composition with shallow DOF',
+    quality: 'High rendering quality with facial detail emphasis',
     
     // Prompt components
-    prompt: '3D Pixar inspired animation style with clean polished 3D rendering, soft warm natural lighting, professional portrait photography, crisp focus, high-resolution professional quality with rich detail, soft rounded features, friendly appealing aesthetics, Sharp, crisp edges and clean geometry, Smooth surfaces with realistic lighting, Perfect detail without being overly realistic, distinctive "animated but believable" quality, award winning illustration, contemporary children\'s Book Illustration known for diverse representation',
+    prompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
     complexity: 'standard',
-    colorPaletteKey: 'bright_vibrant',
+    colorPaletteKey: 'vibrant_harmony',
     detailLevel: 'high',
-    rendering: 'pixar_3d',
-    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
-    negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple characters, crowd, busy background, dark colors, scary, photorealistic, adult themes, text, words',
+    rendering: 'contemporary_illustration',
+    brandSuffix: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley',
     
-    // Technical parameters (Ultra Premium Quality)
+    // Technical parameters
     parameters: {
       cfgScale: 8,
       steps: 25,
@@ -32,26 +32,23 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   },
   
   'easy': {
-    // Level 1 - Beginner (identical to Level 0)
-    name: '3D Pixar Animation Style',
-    artStyle: '3D Pixar animation style with smooth rounded features and warm golden tones (NO TEXT)',
-    colorPalette: 'Warm golden tones with soft, natural color harmony',
-    lighting: 'Soft volumetric lighting with warm golden highlights',
-    texture: 'Smooth, rounded surfaces with professional 3D rendering quality',
-    composition: 'Clear, focused composition with appealing depth',
-    quality: 'Professional animation studio quality with depth and dimension',
+    // Levels 0-2: Contemporary children's book illustration (same as beginner)
+    name: 'Contemporary Children\'s Book Illustration',
+    artStyle: 'Contemporary children\'s book illustration with sharp facial definition',
+    colorPalette: 'Vibrant color harmony with warm natural lighting',
+    lighting: 'Artistic lighting with warm natural tones',
+    texture: 'Painterly texture quality with detailed rendering',
+    composition: 'Character-focused composition with shallow DOF',
+    quality: 'High rendering quality with facial detail emphasis',
     
-    // Prompt components
-    prompt: '3D Pixar inspired animation style with clean polished 3D rendering, soft warm natural lighting, professional portrait photography, crisp focus, high-resolution professional quality with rich detail, soft rounded features, friendly appealing aesthetics, Sharp, crisp edges and clean geometry, Smooth surfaces with realistic lighting, Perfect detail without being overly realistic, distinctive "animated but believable" quality, award winning illustration, contemporary children\'s Book Illustration known for diverse representation',
+    prompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
     complexity: 'standard',
-    colorPaletteKey: 'bright_vibrant',
+    colorPaletteKey: 'vibrant_harmony',
     detailLevel: 'high',
-    rendering: 'pixar_3d',
-    brandSuffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
+    rendering: 'contemporary_illustration',
+    brandSuffix: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley',
     
-    negativePrompt: 'toy, figurine, doll, plastic, simple background, flat lighting, multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
-    
-    // Technical parameters (Ultra Premium Quality)
     parameters: {
       cfgScale: 8,
       steps: 25,
@@ -62,56 +59,53 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   },
   
   'medium': {
-    // Level 2 - Developing
-    name: 'Digital Painterly Illustration',
-    artStyle: 'Digital illustration with painterly qualities, soft brush strokes, focused character presentation',
-    colorPalette: 'Warm, muted tones with soft pastels, harmonious palette',
-    lighting: 'Gentle, diffused natural lighting with subtle rim lighting, clear visibility',
-    texture: 'Smooth gradients with subtle texture overlay, clean finish',
-    composition: 'Clean, focused single character composition with depth of field, minimal background',
-    quality: 'Ultra professional children\'s book illustration standard',
+    // Levels 0-2: Contemporary children's book illustration (same as above)
+    name: 'Contemporary Children\'s Book Illustration',
+    artStyle: 'Contemporary children\'s book illustration with sharp facial definition',
+    colorPalette: 'Vibrant color harmony with warm natural lighting',
+    lighting: 'Artistic lighting with warm natural tones',
+    texture: 'Painterly texture quality with detailed rendering',
+    composition: 'Character-focused composition with shallow DOF',
+    quality: 'High rendering quality with facial detail emphasis',
     
-    // Prompt components
-    prompt: 'Digital painting style with painterly brush strokes, artistic color harmony, cinematic lighting, professional artwork quality. Professional painterly digital art with artistic sophistication',
-    complexity: 'minimal',
-    colorPaletteKey: 'warm_pastels',
-    detailLevel: 'medium',
-    rendering: 'painterly',
-    brandSuffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation, warm natural lighting optimized for all skin tones',
-    negativePrompt: 'multiple people, crowd, cluttered background, dark atmosphere, scary elements, photorealistic, text, adult content',
+    prompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    complexity: 'standard',
+    colorPaletteKey: 'vibrant_harmony',
+    detailLevel: 'high',
+    rendering: 'contemporary_illustration',
+    brandSuffix: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley',
     
-    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 7.5,
-      steps: 18,
+      cfgScale: 8,
+      steps: 25,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.8,
+      strength: 0.75,
       outputFormat: 'WEBP'
     }
   },
   
   'hard': {
-    // Level 3 - Sophisticated
-    name: 'Sophisticated 2D Digital Art',
-    artStyle: '2D digital illustration (sophisticated artistic style)',
-    colorPalette: 'Nuanced color gradients, artistic palette',
-    lighting: 'Advanced lighting with sophisticated shadows and highlights',
-    texture: 'Refined digital textures with artistic depth',
-    composition: 'Sophisticated artistic composition with visual hierarchy',
-    quality: 'Sophisticated artistic children\'s book illustration',
+    // Levels 3-4: 2.9D rendered illustration
+    name: '2.9D Rendered Illustration',
+    artStyle: '2.9D rendered illustration with golden hour volumetric lighting',
+    colorPalette: 'Semi-realistic digital art with photorealism-artistic balance',
+    lighting: 'Golden hour volumetric lighting with SSS, AO, GI',
+    texture: 'Dimensional skin rendering with matte finish, realistic materials',
+    composition: 'High-end rendering with raytraced shadows, shallow DOF',
+    quality: 'Beautiful child characters with graceful features, consistent topology & proportions',
     
-    // Prompt components
-    prompt: 'Professional digital illustration with sophisticated artistic maturity, nuanced color gradients, refined visual storytelling, advanced digital painting techniques. Gallery-worthy professional digital illustration',
+    prompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation',
     complexity: 'high',
-    colorPaletteKey: 'nuanced_artistic',
+    colorPaletteKey: 'semi_realistic',
     detailLevel: 'highly detailed',
-    rendering: 'advanced_digital_painting',
-    brandSuffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation, warm natural lighting optimized for all skin tones',
+    rendering: '2_9d_rendered',
+    brandSuffix: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation',
+    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley',
     
-    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 8.0,
-      steps: 20,
+      cfgScale: 8,
+      steps: 25,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.85,
       outputFormat: 'WEBP'
@@ -119,49 +113,43 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
   },
   
   'expert': {
-    // Level 4 - Masterful
-    name: 'Masterful 2D Digital Art',
-    artStyle: '2D digital illustration (masterful artistic technique)',
-    colorPalette: 'Complex color theory, professional artist palette',
-    lighting: 'Complex artistic lighting with intricate shadow work',
-    texture: 'Intricate artistic textures with masterful detail',
-    composition: 'Masterful artistic composition with complex visual storytelling',
-    quality: 'Masterful children\'s book art with diverse representation',
+    // Levels 3-4: 2.9D rendered illustration (same as hard)
+    name: '2.9D Rendered Illustration',
+    artStyle: '2.9D rendered illustration with golden hour volumetric lighting',
+    colorPalette: 'Semi-realistic digital art with photorealism-artistic balance',
+    lighting: 'Golden hour volumetric lighting with SSS, AO, GI',
+    texture: 'Dimensional skin rendering with matte finish, realistic materials',
+    composition: 'High-end rendering with raytraced shadows, shallow DOF',
+    quality: 'Beautiful child characters with graceful features, consistent topology & proportions',
     
-    // Prompt components
-    prompt: 'Fine art digital illustration with masterful artistic sophistication, complex color harmonies, cinematic visual narrative, museum-quality artistic techniques. Museum-quality fine art digital illustration',
-    complexity: 'very_high',
-    colorPaletteKey: 'complex_professional',
-    detailLevel: 'intricate and complex',
-    rendering: 'masterful_artistic_technique',
-    brandSuffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation, warm natural lighting optimized for all skin tones',
+    prompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation',
+    complexity: 'high',
+    colorPaletteKey: 'semi_realistic',
+    detailLevel: 'highly detailed',
+    rendering: '2_9d_rendered',
+    brandSuffix: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation',
+    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley',
     
-    // Technical parameters (Ultra Premium Quality)
     parameters: {
-      cfgScale: 8.5,
+      cfgScale: 8,
       steps: 25,
       scheduler: 'FlowMatchEulerDiscreteScheduler',
-      strength: 0.9,
+      strength: 0.85,
       outputFormat: 'WEBP'
     }
   }
 };
 
-// Color palette definitions
+// Color palette definitions (simplified)
 export const COLOR_PALETTE_DEFINITIONS = {
-  'bright_vibrant': 'bright cheerful colors, natural vibrant hues, harmonious palette',
-  'warm_pastels': 'warm muted tones, soft pastels, gentle color harmony',
-  'nuanced_artistic': 'nuanced color gradients, artistic palette, sophisticated color relationships',
-  'complex_professional': 'complex color theory, professional artist palette, masterful color composition'
+  'vibrant_harmony': 'vibrant color harmony, warm natural lighting, child-friendly colors',
+  'semi_realistic': 'semi-realistic color palette, photorealism-artistic balance'
 };
 
-// Rendering technique definitions
+// Rendering technique definitions (simplified)
 export const RENDERING_TECHNIQUE_DEFINITIONS = {
-  'pixar_3d': '3D Pixar animation style, smooth rounded features, professional animation studio quality',
-  '3d_smooth': '3D rendered, smooth polished surfaces, cartoon aesthetics',
-  'painterly': 'digital painterly style, soft brush strokes, artistic texture',
-  'advanced_digital_painting': 'advanced digital painting techniques, sophisticated rendering',
-  'masterful_artistic_technique': 'masterful artistic technique, complex artistic methods'
+  'contemporary_illustration': 'contemporary children\'s book illustration style',
+  '2_9d_rendered': '2.9D rendered illustration with advanced lighting'
 };
 
 // Helper function to get style framework by difficulty
@@ -169,30 +157,16 @@ export function getStyleFramework(difficulty) {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
   const framework = COMPREHENSIVE_STYLE_FRAMEWORKS[normalizedDifficulty] || COMPREHENSIVE_STYLE_FRAMEWORKS['medium'];
   
-  // Validate framework completeness
-  if (!validateStyleFramework(normalizedDifficulty)) {
-    console.warn(`⚠️ Style framework validation failed for difficulty: ${normalizedDifficulty}`);
-  }
-  
   console.log(`🎨 Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
   return framework;
 }
 
-
-// Helper function to get optimized parameters - KEEP THIS (technical only)
+// Helper function to get optimized parameters
 export function getOptimizedParameters(framework, characterComplexity = 1) {
-  const baseParams = { ...framework.parameters };
-  
-  // Adjust for character complexity (Runware optimized)
-  if (characterComplexity > 2) {
-    baseParams.steps = Math.min(baseParams.steps + 2, 15);
-    baseParams.cfgScale = Math.min(baseParams.cfgScale + 0.3, 4.0);
-  }
-  
-  return baseParams;
+  return { ...framework.parameters };
 }
 
-// Validation function - KEEP THIS (technical validation)
+// Validation function
 export function validateStyleFramework(difficulty) {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
   const framework = COMPREHENSIVE_STYLE_FRAMEWORKS[normalizedDifficulty] || COMPREHENSIVE_STYLE_FRAMEWORKS['medium'];
