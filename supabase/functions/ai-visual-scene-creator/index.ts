@@ -32,12 +32,35 @@ function createCorsOptionsResponse(): Response {
 }
 
 // AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
-import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
 
-// PHASE 1: Import Enhanced Character Consistency Services
-import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
-import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.js";
-import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
+// Inline EdgeErrorHandler replacement
+const EdgeErrorHandler = {
+  handleError(error, functionName, context = {}) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ ${functionName} Error:`, errorMessage, context);
+    return createCorsErrorResponse(errorMessage, 500);
+  },
+  
+  withPerformanceTracking(functionName, model, operation) {
+    const startTime = Date.now();
+    console.log(`🚀 ${functionName} starting with model: ${model}`);
+    
+    return operation().then(result => {
+      const duration = Date.now() - startTime;
+      console.log(`✅ ${functionName} completed in ${duration}ms`);
+      return result;
+    }).catch(error => {
+      const duration = Date.now() - startTime;
+      console.error(`❌ ${functionName} failed after ${duration}ms:`, error);
+      throw error;
+    });
+  }
+};
+
+// Inline service placeholders (not used in current implementation)
+const CharacterConsistencyService = { enabled: false };
+const SecondaryElementDetector = { enabled: false };
+const VisualDetailTracker = { enabled: false };
 
 // Inline implementations for missing tierFailureMonitoring functions
 const TierFailureLogger = {
