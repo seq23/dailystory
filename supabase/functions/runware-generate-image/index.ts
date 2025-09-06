@@ -440,30 +440,118 @@ function mapAvatarIdentity(userInfo: any): any {
   return mappedIdentity;
 }
 
-// ============= SVG PLACEHOLDER GENERATOR =============
-function generateSVGPlaceholder(pageText: string): { url: string, success: boolean } {
-  // Extract scene description (first 100 characters)
-  const shortScene = pageText.substring(0, 100).replace(/[<>&"]/g, '');
+// ============= KID-FRIENDLY PLACEHOLDER GENERATOR =============
+function generateKidFriendlyPlaceholder(pageText: string): { url: string, success: boolean } {
+  // Rotating set of 8 kid-friendly illustrated story scene templates
+  const kidFriendlyScenes = [
+    {
+      name: "Forest Adventure",
+      background: "#8fbc8f",
+      accent: "#228B22", 
+      elements: "🌳🦋🌸",
+      description: "Magical forest adventure"
+    },
+    {
+      name: "Beach Fun", 
+      background: "#87ceeb",
+      accent: "#ff6347",
+      elements: "🏖️🐚⭐",
+      description: "Sunny beach adventure"
+    },
+    {
+      name: "Garden Discovery",
+      background: "#98fb98",
+      accent: "#ff69b4", 
+      elements: "🌻🦋🐛",
+      description: "Beautiful garden exploration"
+    },
+    {
+      name: "Space Journey",
+      background: "#191970", 
+      accent: "#ffd700",
+      elements: "🚀⭐🌙",
+      description: "Amazing space adventure"
+    },
+    {
+      name: "Castle Quest",
+      background: "#dda0dd",
+      accent: "#8a2be2",
+      elements: "🏰✨🗡️", 
+      description: "Magical castle adventure"
+    },
+    {
+      name: "Ocean World",
+      background: "#00ced1",
+      accent: "#ff4500",
+      elements: "🐟🦈🏊",
+      description: "Underwater ocean exploration"
+    },
+    {
+      name: "Mountain Climb",
+      background: "#cd853f",
+      accent: "#2e8b57",
+      elements: "⛰️🦅🏔️",
+      description: "Exciting mountain adventure" 
+    },
+    {
+      name: "Magic Library",
+      background: "#f0e68c", 
+      accent: "#8b4513",
+      elements: "📚✨🔮",
+      description: "Enchanted library discovery"
+    }
+  ];
+  
+  // Select scene based on page text hash to ensure consistency
+  const sceneIndex = Math.abs(pageText.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % kidFriendlyScenes.length;
+  const scene = kidFriendlyScenes[sceneIndex] || kidFriendlyScenes[2]; // Garden Discovery fallback
   
   const svgContent = `
     <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#e0f2fe;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#b3e5fc;stop-opacity:1" />
-        </linearGradient>
+        <radialGradient id="bg" cx="50%" cy="30%" r="70%">
+          <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3" />
+          <stop offset="100%" style="stop-color:${scene.background};stop-opacity:1" />
+        </radialGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge> 
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
       </defs>
-      <rect width="400" height="400" fill="url(#bg)"/>
-      <circle cx="200" cy="150" r="60" fill="#81c784" opacity="0.7"/>
-      <rect x="140" y="220" width="120" height="80" rx="10" fill="#ffb74d" opacity="0.8"/>
-      <text x="200" y="50" text-anchor="middle" font-family="Arial" font-size="16" fill="#37474f" font-weight="bold">
-        Story Scene
+      
+      <!-- Background -->
+      <rect width="400" height="400" fill="url(#bg)" rx="20"/>
+      
+      <!-- Decorative elements -->
+      <circle cx="80" cy="100" r="25" fill="${scene.accent}" opacity="0.6" rx="10"/>
+      <circle cx="320" cy="120" r="30" fill="#ffffff" opacity="0.4"/>
+      <circle cx="100" cy="320" r="20" fill="${scene.accent}" opacity="0.5"/>
+      <circle cx="300" cy="300" r="35" fill="#ffffff" opacity="0.3"/>
+      
+      <!-- Central illustration area -->
+      <rect x="120" y="140" width="160" height="120" rx="25" fill="#ffffff" opacity="0.8" stroke="${scene.accent}" stroke-width="3"/>
+      
+      <!-- Title -->
+      <text x="200" y="60" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="24" fill="${scene.accent}" font-weight="bold" filter="url(#glow)">
+        ${scene.name}
       </text>
-      <text x="200" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">
-        ${shortScene}...
+      
+      <!-- Fun elements -->
+      <text x="200" y="200" text-anchor="middle" font-size="40">
+        ${scene.elements}
       </text>
-      <text x="200" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">
-        Story illustration loading...
+      
+      <!-- Description -->
+      <text x="200" y="290" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="14" fill="#2c3e50" font-weight="bold">
+        ${scene.description}
+      </text>
+      
+      <!-- Loading message -->
+      <text x="200" y="360" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="12" fill="#7f8c8d">
+        Creating your magical story image...
       </text>
     </svg>
   `;
@@ -1242,39 +1330,40 @@ serve(async (req) => {
         console.log('⚠️ Tier 2.5 error, falling back to Tier 4:', error.message);
       }
     }
-    // TIER 4: SVG Placeholder (Ultimate Fallback)
-    console.log('📝 Generating Tier 4: SVG Placeholder');
-    const svgResult = generateSVGPlaceholder(pageText, userInfo);
+    // TIER 4: Kid-Friendly Placeholder (Ultimate Fallback)
+    console.log('📝 Generating Tier 4: Kid-Friendly Placeholder');
+    const placeholderResult = generateKidFriendlyPlaceholder(pageText);
     
-    // PHASE 1: Store Tier 4 SVG prompt
+    // PHASE 1: Store Tier 4 placeholder prompt
     const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
     globalSessionManager.storeImagePrompt(sessionId, {
       tier: '4',
-      promptText: `SVG Placeholder: ${pageText.substring(0, 100)}...`,
+      promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,
       negativePrompt: '',
       originalPageText: pageText,
-      enhancedPrompt: `Generated SVG for ${avatarIdentity.name}`,
+      enhancedPrompt: `Generated kid-friendly placeholder for ${avatarIdentity.name}`,
       pageNumber: pageNumber,
       success: true,
-      imageURL: svgResult.url,
+      imageURL: placeholderResult.url,
       seed: 0,
-      provider: 'svg-placeholder',
-      model: 'internal-svg',
+      provider: 'kid-friendly-placeholder',
+      model: 'internal-rotating-scenes',
       cost: 0,
       generationTime: 0,
       fallbackReason: 'All image generation tiers failed',
       metadata: {
         avatarIdentity,
-        guaranteedFallback: true
+        guaranteedFallback: true,
+        placeholderType: 'rotating-illustrated-scenes'
       }
     });
     
     return createCorsResponse({
       success: true,
-      imageURL: svgResult.url,
+      imageURL: placeholderResult.url,
       provider: 'runware-orchestrator',
       tier: 4,
-      enhancementLevel: 'svg-placeholder',
+      enhancementLevel: 'kid-friendly-placeholder',
       metadata: { orchestrated: true }
     });
   } catch (error) {

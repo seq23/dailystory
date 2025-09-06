@@ -383,9 +383,15 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
     const avatarMapping = NUCLEAR_AVATAR_MAPPINGS[mappingKey];
     
     if (!avatarMapping) {
-      console.warn(`⚠️ Tier 2.5: No mapping found for ${mappingKey}, using fallback`);
-      // Ultimate fallback - boy-light
-      return NUCLEAR_AVATAR_MAPPINGS['boy-light'];
+      console.warn(`⚠️ Tier 2.5: No mapping found for ${mappingKey}, using emergency fallback`);
+      // Enhanced emergency fallback with user's specifications
+      return {
+        character: 'happy child',
+        age: '10-year-old',
+        hair: 'beautiful thick hair',
+        features: 'attractive child character',
+        source: 'emergency-fallback'
+      };
     }
     
     // Adjust age based on difficulty
@@ -407,8 +413,14 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
     
   } catch (error) {
     console.error('❌ Tier 2.5: Nuclear avatar mapping error:', error);
-    // Ultimate failsafe
-    return NUCLEAR_AVATAR_MAPPINGS['boy-light'];
+    // Enhanced ultimate failsafe with user's specifications
+    return {
+      character: 'happy child',
+      age: '10-year-old', 
+      hair: 'beautiful thick hair',
+      features: 'attractive child character',
+      source: 'emergency-fallback'
+    };
   }
 }
 
@@ -798,10 +810,17 @@ function fillPremiumTemplate(
     
   } catch (error) {
     console.error('❌ Tier 2.5: Template filling error:', error);
-    // Fix the avatar type bug in the fallback too
-    const fallbackCharacter = userInfo?.avatar?.type === 'girl' ? 'girl' : userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'child' : 'boy';
-    return `A happy ${fallbackCharacter} reading and learning in a bright classroom. High quality, detailed illustration.`;
+    return generateEmergencyPrompt(userInfo);
   }
+}
+
+// AFTER line 805, ADD emergency prompt generator:
+function generateEmergencyPrompt(userInfo: any): string {
+  const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 
+                userInfo?.avatar?.type === 'boy' ? 'boy' : 'child';
+  
+  return `An attractive ${gender} in a portrait style photo with main character focus. Beautiful children's book illustration, warm lighting, cheerful atmosphere, high quality, detailed art.`;
+}
 }
 
 // ============= HELPER FUNCTIONS =============
@@ -1023,7 +1042,23 @@ Deno.serve(async (req: Request) => {
   }
   
   try {
-    const { pageText, userInfo, characterData, sessionId } = await req.json();
+    let { pageText, userInfo, characterData, sessionId } = await req.json();
+    
+    // COMPREHENSIVE PARAMETER VALIDATION - Add missing defaults
+    if (!pageText) {
+      pageText = 'An attractive child in a bright cheerful environment';
+      console.log('🛡️ Undefined pageText - using default:', pageText);
+    }
+    
+    if (!userInfo) {
+      userInfo = { avatar: { skinTone: 'medium' } };
+      console.log('🛡️ Undefined userInfo - using default:', userInfo);
+    }
+    
+    if (!userInfo.avatar) {
+      userInfo.avatar = { skinTone: 'medium' };
+      console.log('🛡️ Undefined avatarIdentity - using default skinTone: medium');
+    }
     
     console.log('🛡️ Tier 2.5: Processing request with nuclear independence');
     console.log('🎭 Tier 2.5: Character consistency data received:', {
@@ -1152,23 +1187,130 @@ Deno.serve(async (req: Request) => {
       
       ws.onerror = (error) => {
         console.error('❌ Tier 2.5: WebSocket error:', error);
-        resolveOnce(createCorsErrorResponse('WebSocket connection failed', 500));
+        console.log('🔄 Tier 2.5: Attempting HTTP fallback...');
+        
+        // HTTP FALLBACK: Try Runware REST API
+        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
+          .then(result => {
+            if (result.success) {
+              resolveOnce(result);
+            } else {
+              resolveOnce(createCorsErrorResponse('WebSocket and HTTP fallback both failed', 500));
+            }
+          })
+          .catch(() => {
+            resolveOnce(createCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', 500));
+          });
       };
       
       ws.onclose = (event) => {
         console.log('🛡️ Tier 2.5: WebSocket closed:', event.code, event.reason);
         if (!isResolved) {
-          resolveOnce(createCorsErrorResponse('WebSocket connection closed unexpectedly', 500));
+          console.log('🔄 Tier 2.5: Attempting HTTP fallback due to unexpected close...');
+          
+          // HTTP FALLBACK: Try Runware REST API
+          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
+            .then(result => {
+              if (result.success) {
+                resolveOnce(result);
+              } else {
+                resolveOnce(createCorsErrorResponse('WebSocket closed and HTTP fallback failed', 500));
+              }
+            })
+            .catch(() => {
+              resolveOnce(createCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', 500));
+            });
         }
       };
       
       // Timeout after 30 seconds
       setTimeout(() => {
         if (!isResolved) {
-          console.error('❌ Tier 2.5: Request timeout');
-          resolveOnce(createCorsErrorResponse('Request timeout', 408));
+          console.error('❌ Tier 2.5: Request timeout, trying HTTP fallback...');
+          
+          // HTTP FALLBACK: Try Runware REST API
+          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
+            .then(result => {
+              if (result.success) {
+                resolveOnce(result);
+              } else {
+                resolveOnce(createCorsErrorResponse('Request timeout and HTTP fallback failed', 408));
+              }
+            })
+            .catch(() => {
+              resolveOnce(createCorsErrorResponse('Request timeout', 408));
+            });
         }
       }, 30000);
+      
+      // HTTP FALLBACK FUNCTION
+      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters) {
+        try {
+          console.log('🌐 Tier 2.5: Attempting HTTP API fallback...');
+          
+          const httpResponse = await fetch('https://api.runware.ai/v1', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('RUNWARE_API_KEY')}`
+            },
+            body: JSON.stringify([
+              {
+                taskType: "authentication", 
+                apiKey: Deno.env.get('RUNWARE_API_KEY')
+              },
+              {
+                taskType: "imageInference",
+                taskUUID: crypto.randomUUID(),
+                positivePrompt: prompt,
+                negativePrompt: negativePrompt,
+                height: 512,
+                width: 512, 
+                model: "runware:100@1",
+                steps: styleSettings.steps,
+                CFGScale: styleSettings.CFGScale,
+                outputFormat: "WEBP"
+              }
+            ])
+          });
+          
+          if (!httpResponse.ok) {
+            throw new Error(`HTTP ${httpResponse.status}: ${httpResponse.statusText}`);
+          }
+          
+          const httpResult = await httpResponse.json();
+          const imageData = httpResult.data?.find(item => item.taskType === 'imageInference');
+          
+          if (imageData?.imageURL) {
+            console.log('✅ Tier 2.5: HTTP fallback successful!');
+            return createCorsResponse({
+              success: true,
+              imageURL: imageData.imageURL,
+              prompt: prompt,
+              negativePrompt: negativePrompt,
+              difficulty: difficulty,
+              culturalProfile: culturalProfile,
+              tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
+              placeholders: {
+                objects: objects || 'none',
+                secondary_characters: secondary_characters || 'none'
+              },
+              characterConsistency: {
+                sessionId: sessionId,
+                characterSeed: characterData?.seed || 'none',
+                enhancementApplied: !!(characterData && characterData.seed),
+                source: avatarMapping?.source || 'nuclear-mapping'
+              }
+            });
+          } else {
+            throw new Error('No image URL in HTTP response');
+          }
+          
+        } catch (httpError) {
+          console.error('❌ Tier 2.5: HTTP fallback failed:', httpError);
+          return { success: false, error: httpError.message };
+        }
+      }
     });
     
   } catch (error) {

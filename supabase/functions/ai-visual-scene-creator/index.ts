@@ -1058,12 +1058,15 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           secondaryCharacters: secondaryElements,
           visualDetails: visualDetails,
           characterSeed: characterData.seed,
-          visualComponents: {
-            setting: setting,
-            action: action,
-            mood: mood,
-            pose: pose
-          },
+          // Conditionally include visual components only if they exist
+          ...(typeof setting !== 'undefined' && { 
+            visualComponents: {
+              setting: setting || null,
+              action: action || null,
+              mood: mood || null,
+              pose: pose || null
+            }
+          }),
           enhancedTier1: true, // Updated from reorganizedTier1
           characterConsistency: {
             databaseBacked: true,
