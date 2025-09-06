@@ -36,6 +36,338 @@ import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatar
  * ============================================================================
  */
 
+// ============= WEBSOCKET ERROR CLASSIFICATION =============
+class WebSocketError extends Error {
+  constructor(message: string, public type: 'CONNECTION' | 'TIMEOUT' | 'RATE_LIMIT' | 'AUTH' | 'GENERATION' | 'NETWORK', public isRetryable: boolean = false) {
+    super(message);
+    this.name = 'WebSocketError';
+  }
+}
+
+// ============= ENHANCED WEBSOCKET MANAGER =============
+class RunwareWebSocketManager {
+  private static readonly MAX_RETRIES = 3;
+  private static readonly BASE_DELAY = 1000; // 1 second
+  private static readonly MAX_DELAY = 8000; // 8 seconds
+  private static readonly CONNECTION_TIMEOUT = 30000; // 30 seconds
+  
+  static async connectWithRetry(
+    apiKey: string, 
+    positivePrompt: string, 
+    negativePrompt: string, 
+    seed?: number, 
+    sessionId?: string, 
+    pageNumber?: number,
+    attempt: number = 1,
+    requestId?: string // PHASE 5: Cross-function correlation
+  ): Promise<any> {
+    try {
+      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId);
+    } catch (error) {
+      const wsError = error as WebSocketError;
+      const logPrefix = requestId ? `[${requestId}]` : '';
+      
+      // Check if error is retryable and we haven't exceeded max attempts
+      if (wsError.isRetryable && attempt < this.MAX_RETRIES) {
+        const delay = Math.min(this.BASE_DELAY * Math.pow(2, attempt - 1), this.MAX_DELAY);
+        console.warn(`🔄 ${logPrefix} WebSocket attempt ${attempt} failed, retrying in ${delay}ms: ${wsError.message}`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1, requestId);
+      }
+      
+      console.error(`❌ ${logPrefix} WebSocket failed after ${attempt} attempts: ${wsError.message}`);
+      throw wsError;
+    }
+  }
+  
+  private static attemptConnection(
+    apiKey: string, 
+    positivePrompt: string, 
+    negativePrompt: string, 
+    seed?: number, 
+    sessionId?: string, 
+    pageNumber?: number,
+    requestId?: string // PHASE 5: Cross-function correlation
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let ws: WebSocket;
+      let connectionTimeout: number;
+      let isResolved = false;
+      
+      const cleanup = () => {
+        if (connectionTimeout) clearTimeout(connectionTimeout);
+        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      };
+      
+      const safeReject = (error: WebSocketError) => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          reject(error);
+        }
+      };
+      
+      const safeResolve = (result: any) => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          resolve(result);
+        }
+      };
+      
+      try {
+        const logPrefix = requestId ? `[${requestId}]` : '';
+        console.log(`🔌 ${logPrefix} Attempting WebSocket connection to Runware`);
+        
+        // Set connection timeout
+        connectionTimeout = setTimeout(() => {
+          safeReject(new WebSocketError('Connection timeout', 'TIMEOUT', true));
+        }, this.CONNECTION_TIMEOUT);
+        
+        ws = new WebSocket('wss://ws-api.runware.ai/v1');
+        
+        ws.onopen = () => {
+          console.log(`✅ ${logPrefix} WebSocket connected, authenticating...`);
+          
+          // Send authentication
+          ws.send(JSON.stringify({
+            taskType: "authentication",
+            apiKey: apiKey
+          }));
+        };
+        
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log(`📨 ${logPrefix} WebSocket message received:`, data);
+            
+            if (data.data && data.data.length > 0) {
+              const message = data.data[0];
+              
+              // Handle authentication response
+              if (message.authenticationStatus === 'success') {
+                console.log(`🔑 ${logPrefix} Authentication successful, sending image generation request`);
+                
+                // Build generation request
+                const generationRequest = {
+                  taskType: "imageInference",
+                  taskUUID: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  positivePrompt,
+                  negativePrompt,
+                  height: 512,
+                  width: 512,
+                  model: "runware:100@1",
+                  steps: 4,
+                  CFGScale: 1,
+                  clipSkip: 1,
+                  scheduler: "FlowMatchEulerDiscreteScheduler",
+                  onlyUpscale: false,
+                  useCache: false,
+                  numImages: 1
+                };
+                
+                // Add seed if provided
+                if (seed !== undefined) {
+                  generationRequest.seed = seed;
+                }
+                
+                console.log(`🎯 ${logPrefix} Sending generation request:`, {
+                  taskUUID: generationRequest.taskUUID,
+                  promptLength: positivePrompt.length,
+                  negativePromptLength: negativePrompt.length,
+                  model: generationRequest.model,
+                  seed: seed || 'random'
+                });
+                
+                ws.send(JSON.stringify(generationRequest));
+                
+              } else if (message.authenticationStatus === 'failed') {
+                safeReject(new WebSocketError('Authentication failed', 'AUTH', false));
+                
+              } else if (message.taskType === 'imageInference') {
+                // Handle generation response
+                if (message.imageURL) {
+                  console.log(`🎨 ${logPrefix} Image generation successful:`, {
+                    imageURL: message.imageURL,
+                    taskUUID: message.taskUUID,
+                    seed: message.seed
+                  });
+                  
+                  safeResolve({
+                    success: true,
+                    imageURL: message.imageURL,
+                    seed: message.seed,
+                    taskUUID: message.taskUUID,
+                    provider: 'runware',
+                    tier: 1
+                  });
+                  
+                } else if (message.error) {
+                  console.error(`❌ ${logPrefix} Generation error:`, message.error);
+                  
+                  // Classify error type for retry logic
+                  const errorMsg = message.error.toString().toLowerCase();
+                  let errorType: WebSocketError['type'] = 'GENERATION';
+                  let isRetryable = true;
+                  
+                  if (errorMsg.includes('rate limit') || errorMsg.includes('quota')) {
+                    errorType = 'RATE_LIMIT';
+                    isRetryable = false; // Don't retry rate limits immediately
+                  } else if (errorMsg.includes('network') || errorMsg.includes('connection')) {
+                    errorType = 'NETWORK';
+                  } else if (errorMsg.includes('auth')) {
+                    errorType = 'AUTH';
+                    isRetryable = false;
+                  }
+                  
+                  safeReject(new WebSocketError(
+                    `Generation failed: ${message.error}`,
+                    errorType,
+                    isRetryable
+                  ));
+                }
+              }
+            }
+          } catch (parseError) {
+            console.error(`❌ ${logPrefix} Failed to parse WebSocket message:`, parseError);
+            safeReject(new WebSocketError('Message parsing failed', 'NETWORK', true));
+          }
+        };
+        
+        ws.onerror = (error) => {
+          console.error(`❌ ${logPrefix} WebSocket error:`, error);
+          safeReject(new WebSocketError('WebSocket connection error', 'CONNECTION', true));
+        };
+        
+        ws.onclose = (event) => {
+          console.log(`🔌 ${logPrefix} WebSocket closed:`, { code: event.code, reason: event.reason });
+          if (!isResolved) {
+            safeReject(new WebSocketError('WebSocket closed unexpectedly', 'CONNECTION', true));
+          }
+        };
+        
+      } catch (error) {
+        console.error(`❌ ${logPrefix} WebSocket setup error:`, error);
+        safeReject(new WebSocketError(`Setup failed: ${error.message}`, 'CONNECTION', true));
+      }
+    });
+  }
+}
+
+// ============= TIER FUNCTION CALLER =============
+async function callTierFunction(functionName: string, payload: any): Promise<any> {
+  try {
+    console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
+    
+    // Use Deno's fetch for edge function calls
+    const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${functionName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`${functionName} failed: ${result.error || 'Unknown error'}`);
+    }
+    
+    console.log(`✅ ${functionName} completed successfully`);
+    return result;
+    
+  } catch (error) {
+    console.error(`❌ ${functionName} failed:`, error);
+    throw error;
+  }
+}
+
+// ============= AVATAR IDENTITY MAPPER =============
+function mapAvatarIdentity(userInfo: any): any {
+  // Default fallback identity
+  const defaultIdentity = {
+    type: 'child',
+    skinTone: 'light',
+    culturalProfile: 'general',
+    nativeLanguage: 'english',
+    name: userInfo?.name || 'the child'
+  };
+  
+  // If no avatar info provided, return default
+  if (!userInfo?.avatar) {
+    console.log('🔄 Avatar mapping: No avatar data provided, using default identity');
+    return defaultIdentity;
+  }
+  
+  // Map avatar types and skin tones
+  const avatarTypeMap = {
+    'boy': 'boy',
+    'girl': 'girl', 
+    'child': 'child',
+    'kid': 'child'
+  };
+  
+  const skinToneMap = {
+    'light': 'light',
+    'medium': 'medium', 
+    'dark': 'dark',
+    'tan': 'medium'
+  };
+  
+  // Build mapped identity
+  const mappedIdentity = {
+    type: avatarTypeMap[userInfo.avatar.type] || defaultIdentity.type,
+    skinTone: skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone,
+    culturalProfile: userInfo.avatar.culturalProfile || defaultIdentity.culturalProfile,
+    nativeLanguage: userInfo.avatar.nativeLanguage || defaultIdentity.nativeLanguage,
+    name: userInfo.name || defaultIdentity.name
+  };
+  
+  console.log('🔄 Avatar mapping completed:', {
+    input: userInfo.avatar,
+    output: mappedIdentity
+  });
+  
+  return mappedIdentity;
+}
+
+// ============= SVG PLACEHOLDER GENERATOR =============
+function generateSVGPlaceholder(pageText: string): { url: string, success: boolean } {
+  // Extract scene description (first 100 characters)
+  const shortScene = pageText.substring(0, 100).replace(/[<>&"]/g, '');
+  
+  const svgContent = `
+    <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#e0f2fe;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#b3e5fc;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="400" fill="url(#bg)"/>
+      <circle cx="200" cy="150" r="60" fill="#81c784" opacity="0.7"/>
+      <rect x="140" y="220" width="120" height="80" rx="10" fill="#ffb74d" opacity="0.8"/>
+      <text x="200" y="50" text-anchor="middle" font-family="Arial" font-size="16" fill="#37474f" font-weight="bold">
+        Story Scene
+      </text>
+      <text x="200" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">
+        ${shortScene}...
+      </text>
+      <text x="200" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">
+        Story illustration loading...
+      </text>
+    </svg>
+  `;
+  
+  const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  
+  return { url, success: true };
+}
+
 // Phase 2: Enhanced Backend Orchestrator for All Image Generation Tiers
 // Now handles: AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
 serve(async (req) => {
@@ -619,486 +951,3 @@ serve(async (req) => {
     );
   }
 });
-
-// ============= WEBSOCKET ERROR CLASSIFICATION =============
-class WebSocketError extends Error {
-  constructor(message: string, public type: 'CONNECTION' | 'TIMEOUT' | 'RATE_LIMIT' | 'AUTH' | 'GENERATION' | 'NETWORK', public isRetryable: boolean = false) {
-    super(message);
-    this.name = 'WebSocketError';
-  }
-}
-
-// ============= ENHANCED WEBSOCKET MANAGER =============
-class RunwareWebSocketManager {
-  private static readonly MAX_RETRIES = 3;
-  private static readonly BASE_DELAY = 1000; // 1 second
-  private static readonly MAX_DELAY = 8000; // 8 seconds
-  private static readonly CONNECTION_TIMEOUT = 30000; // 30 seconds
-  
-  static async connectWithRetry(
-    apiKey: string, 
-    positivePrompt: string, 
-    negativePrompt: string, 
-    seed?: number, 
-    sessionId?: string, 
-    pageNumber?: number,
-    attempt: number = 1,
-    requestId?: string // PHASE 5: Cross-function correlation
-  ): Promise<any> {
-    try {
-      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId);
-    } catch (error) {
-      const wsError = error as WebSocketError;
-      const logPrefix = requestId ? `[${requestId}]` : '';
-      
-      // Check if error is retryable and we haven't exceeded max attempts
-      if (wsError.isRetryable && attempt < this.MAX_RETRIES) {
-        const delay = Math.min(this.BASE_DELAY * Math.pow(2, attempt - 1), this.MAX_DELAY);
-        console.warn(`🔄 ${logPrefix} WebSocket attempt ${attempt} failed, retrying in ${delay}ms: ${wsError.message}`);
-        
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1, requestId);
-      }
-      
-      console.error(`❌ ${logPrefix} WebSocket failed after ${attempt} attempts: ${wsError.message}`);
-      throw wsError;
-    }
-  }
-  
-  private static attemptConnection(
-    apiKey: string, 
-    positivePrompt: string, 
-    negativePrompt: string, 
-    seed?: number, 
-    sessionId?: string, 
-    pageNumber?: number,
-    requestId?: string // PHASE 5: Cross-function correlation
-  ): Promise<any> {
-    return new Promise((resolve, reject) => {
-      let ws: WebSocket;
-      let connectionTimeout: number;
-      let isResolved = false;
-      
-      const cleanup = () => {
-        if (connectionTimeout) clearTimeout(connectionTimeout);
-        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
-      };
-      
-      const safeReject = (error: WebSocketError) => {
-        if (!isResolved) {
-          isResolved = true;
-          cleanup();
-          reject(error);
-        }
-      };
-      
-      const safeResolve = (result: any) => {
-        if (!isResolved) {
-          isResolved = true;
-          cleanup();
-          resolve(result);
-        }
-      };
-      
-      try {
-        ws = new WebSocket('wss://ws-api.runware.ai/v1');
-        
-        // Enhanced timeout with better error handling
-        connectionTimeout = setTimeout(() => {
-          safeReject(new WebSocketError(
-            `WebSocket timeout after ${this.CONNECTION_TIMEOUT}ms for session ${sessionId || 'unknown'}`,
-            'TIMEOUT',
-            true // Timeout errors are retryable
-          ));
-        }, this.CONNECTION_TIMEOUT);
-
-        ws.onopen = () => {
-          const logPrefix = requestId ? `[${requestId}]` : '';
-          console.log(`📡 ${logPrefix} WebSocket connected to Runware (session ${sessionId || 'unknown'})`);
-          
-          // Send authentication with error handling
-          try {
-            console.log(`🔐 ${logPrefix} Sending Runware authentication...`);
-            ws.send(JSON.stringify([{
-              taskType: "authentication",
-              apiKey: apiKey
-            }]));
-          } catch (sendError) {
-            console.error(`❌ ${logPrefix} Failed to send authentication:`, sendError.message);
-            safeReject(new WebSocketError(
-              `Failed to send authentication: ${sendError.message}`,
-              'AUTH',
-              true
-            ));
-          }
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const response = JSON.parse(event.data);
-            
-            // Enhanced error detection with rate limiting
-            if (response.error || response.errors) {
-              const errorMsg = response.errorMessage || response.errors?.[0]?.message || 'Generation failed';
-              const errorCode = response.errorCode || response.errors?.[0]?.code;
-              
-              console.error('❌ Runware API error:', { errorMsg, errorCode, sessionId });
-              
-              // Classify error types for better handling
-              let errorType: 'RATE_LIMIT' | 'AUTH' | 'GENERATION' = 'GENERATION';
-              let isRetryable = false;
-              
-              if (errorCode === 'RATE_LIMIT_EXCEEDED' || errorMsg.toLowerCase().includes('rate limit')) {
-                errorType = 'RATE_LIMIT';
-                isRetryable = true;
-                console.warn(`🚦 Rate limit detected for session ${sessionId}, will retry with backoff`);
-              } else if (errorCode === 'INVALID_API_KEY' || errorMsg.toLowerCase().includes('authentication')) {
-                errorType = 'AUTH';
-                isRetryable = false;
-              } else if (errorMsg.toLowerCase().includes('busy') || errorMsg.toLowerCase().includes('overload')) {
-                isRetryable = true;
-              }
-              
-              safeReject(new WebSocketError(errorMsg, errorType, isRetryable));
-              return;
-            }
-
-            if (response.data) {
-              for (const item of response.data) {
-                if (item.taskType === "authentication") {
-                  const logPrefix = requestId ? `[${requestId}]` : '';
-                  console.log(`✅ ${logPrefix} Runware authenticated for session ${sessionId || 'unknown'}`);
-                  
-                  // PHASE 4: Detailed prompt length and truncation logging
-                  console.log(`📏 ${logPrefix} Runware Prompt Length Analysis:`, {
-                    originalLength: positivePrompt.length,
-                    limit: 2990,
-                    withinLimit: positivePrompt.length <= 2990,
-                    truncationRequired: positivePrompt.length > 2990,
-                    excessChars: positivePrompt.length > 2990 ? positivePrompt.length - 2990 : 0
-                  });
-
-                  if (positivePrompt.length > 2990) {
-                    console.warn(`🚨 ${logPrefix} EMERGENCY TRUNCATION: Prompt length ${positivePrompt.length} > 2990, truncating for session ${sessionId || 'unknown'} page ${pageNumber || 0}...`);
-                    const originalPrompt = positivePrompt;
-                    positivePrompt = positivePrompt.substring(0, 2990);
-                    console.log(`✂️ ${logPrefix} Prompt truncated:`, {
-                      originalLength: originalPrompt.length,
-                      truncatedLength: positivePrompt.length,
-                      removedChars: originalPrompt.length - positivePrompt.length,
-                      truncatedContent: originalPrompt.substring(2990, 2990 + 50) + '...',
-                      sessionId: sessionId || 'unknown',
-                      pageNumber: pageNumber || 0
-                    });
-                  }
-
-                  // PHASE 4: Detailed Runware generation request construction
-                  const taskUUID = crypto.randomUUID();
-                  const imageRequest = [{
-                    taskType: "imageInference",
-                    taskUUID: taskUUID,
-                    positivePrompt: positivePrompt,
-                    negativePrompt: negativePrompt,
-                    width: 1024,
-                    height: 1024,
-                    model: "runware:100@1",
-                    numberResults: 1,
-                    outputFormat: "WEBP",
-                    CFGScale: 4.0,
-                    scheduler: "FlowMatchEulerDiscreteScheduler",
-                    steps: 12,
-                    ...(seed && { seed })
-                  }];
-                  
-                  console.log(`🚀 ${logPrefix} Runware Generation Request:`, {
-                    taskUUID: taskUUID,
-                    positivePromptLength: positivePrompt.length,
-                    negativePromptLength: negativePrompt.length,
-                    model: "runware:100@1",
-                    dimensions: "1024x1024",
-                    hasSeed: !!seed,
-                    seedValue: seed || 'random',
-                    sessionId: sessionId || 'unknown',
-                    pageNumber: pageNumber || 0,
-                    CFGScale: 4.0,
-                    steps: 12
-                  });
-
-                  console.log(`🎨 ${logPrefix} Final Runware Prompt Being Sent:`, 
-                    positivePrompt.substring(0, 300) + (positivePrompt.length > 300 ? '...' : ''));
-                  
-                  try {
-                    ws.send(JSON.stringify(imageRequest));
-                  } catch (sendError) {
-                    console.error(`❌ ${logPrefix} Failed to send image request:`, sendError.message);
-                    safeReject(new WebSocketError(
-                      `Failed to send image request: ${sendError.message}`,
-                      'NETWORK',
-                      true
-                    ));
-                  }
-                  
-                } else if (item.taskType === "imageInference") {
-                  const logPrefix = requestId ? `[${requestId}]` : '';
-                  console.log(`🎯 ${logPrefix} Runware Generation Complete:`, {
-                    taskUUID: item.taskUUID,
-                    imageURL: item.imageURL,
-                    seed: item.seed,
-                    NSFWContent: item.NSFWContent || false,
-                    cost: item.cost || 'unknown',
-                    sessionId: sessionId || 'unknown',
-                    pageNumber: pageNumber || 0,
-                    generatedSuccessfully: true
-                  });
-                  
-                  safeResolve({
-                    success: true,
-                    imageURL: item.imageURL,
-                    seed: item.seed,
-                    taskUUID: item.taskUUID
-                  });
-                }
-              }
-            }
-          } catch (parseError) {
-            safeReject(new WebSocketError(
-              `Failed to parse WebSocket response: ${parseError.message}`,
-              'NETWORK',
-              true
-            ));
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error(`❌ WebSocket connection error for session ${sessionId || 'unknown'}:`, error);
-          safeReject(new WebSocketError(
-            `WebSocket connection failed: ${error.toString()}`,
-            'CONNECTION',
-            true // Connection errors are retryable
-          ));
-        };
-
-        ws.onclose = (event) => {
-          console.log(`📡 WebSocket closed for session ${sessionId || 'unknown'} (code: ${event.code})`);
-          
-          // Only reject if we haven't already resolved/rejected
-          if (!isResolved) {
-            const isAbnormalClose = event.code !== 1000 && event.code !== 1001;
-            safeReject(new WebSocketError(
-              `WebSocket closed unexpectedly (code: ${event.code})`,
-              'CONNECTION',
-              isAbnormalClose // Abnormal closes are retryable
-            ));
-          }
-        };
-        
-      } catch (error) {
-        safeReject(new WebSocketError(
-          `Failed to create WebSocket: ${error.message}`,
-          'CONNECTION',
-          true
-        ));
-      }
-    });
-  }
-}
-
-// TIER 1: Premium Runware Generation with Enhanced Robustness
-async function generateWithRunwarePremium(
-  apiKey: string, 
-  positivePrompt: string, 
-  negativePrompt: string, 
-  seed?: number, 
-  sessionId?: string, 
-  pageNumber?: number,
-  requestId?: string // PHASE 5: Cross-function correlation
-) {
-  const logPrefix = requestId ? `[${requestId}]` : '';
-  console.log(`🚀 ${logPrefix} Starting enhanced WebSocket generation for session ${sessionId || 'unknown'}, page ${pageNumber || 0}`);
-  
-  // PHASE 4: Detailed Runware generation parameters logging
-  console.log(`🚀 ${logPrefix} Runware Generation Parameters:`, {
-    apiKeyLength: apiKey?.length || 0,
-    positivePromptLength: positivePrompt.length,
-    negativePromptLength: negativePrompt.length,
-    hasSeed: !!seed,
-    seedValue: seed || 'random',
-    sessionId: sessionId || 'unknown',
-    pageNumber: pageNumber || 0,
-    promptPreview: positivePrompt.substring(0, 100) + '...',
-    negativePromptContent: negativePrompt
-  });
-  
-  try {
-    return await RunwareWebSocketManager.connectWithRetry(
-      apiKey, 
-      positivePrompt, 
-      negativePrompt, 
-      seed, 
-      sessionId, 
-      pageNumber,
-      1, // attempt
-      requestId // PHASE 5: Pass requestId for correlation
-    );
-  } catch (error) {
-    const wsError = error as WebSocketError;
-    console.error(`💥 ${logPrefix} Enhanced WebSocket generation failed for session ${sessionId || 'unknown'}:`, {
-      type: wsError.type,
-      retryable: wsError.isRetryable,
-      message: wsError.message,
-      promptLength: positivePrompt.length,
-      sessionId: sessionId
-    });
-    
-    // Re-throw with additional context for tier fallback logic
-    throw new Error(`WebSocket generation failed (${wsError.type}): ${wsError.message}`);
-  }
-}
-
-// Helper: Call other tier functions
-async function callTierFunction(functionName: string, params: any) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase configuration');
-  }
-
-  const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(params)
-  });
-
-  if (!response.ok) {
-    throw new Error(`${functionName} failed: ${response.status}`);
-  }
-
-  return await response.json();
-}
-
-// NEW MASTER PLAN: Avatar Identity Mapper with Direct Visual Descriptions
-function mapAvatarIdentity(userInfo: any) {
-  const avatar = userInfo?.avatar || {};
-  const { type, skinTone = 'medium' } = avatar;
-  const { nativeLanguage = 'en' } = userInfo;
-
-  // Map avatar type and skin tone to standardized identity - PHASE 2: Enhanced mapping logic
-  const avatarType = type === 'prefer-not-to-answer' ? 'child' : (type || 'child');
-  console.log(`🎯 AVATAR MAPPING - Original type: ${type} → Mapped type: ${avatarType} (PHASE 2 FIX: proper null handling)`);
-  const genderText = avatarType === 'boy' ? 'boy' : avatarType === 'girl' ? 'girl' : 'child';
-  
-  // Standardized skin tone mapping
-  const skinToneMap = {
-    'pale': 'fair',
-    'light': 'light', 
-    'medium': 'medium',
-    'olive': 'olive',
-    'dark': 'dark'
-  };
-  const standardizedSkinTone = skinToneMap[skinTone] || 'medium';
-
-  // Age extraction and mapping
-  let age = userInfo?.age;
-  let ageCategory = 'child';
-  
-  if (!age) {
-    // Fallback: map from difficulty level to age
-    const difficulty = userInfo?.readingLevel || userInfo?.difficultyLevel || 'easy';
-    const ageMap = {
-      'beginner': 5,    // Pre-reader
-      'easy': 6,        // Beginner 
-      'medium': 8,      // Developing
-      'hard': 10,       // Independent
-      'expert': 12      // Advanced
-    };
-    age = ageMap[difficulty] || 7;
-  }
-  
-  // Determine age category for descriptions
-  if (age <= 6) ageCategory = 'young child';
-  else if (age <= 9) ageCategory = 'child';  
-  else if (age <= 12) ageCategory = 'older child';
-  else ageCategory = 'teen';
-
-  // NEW MASTER PLAN: Direct Visual Descriptions for English Speakers Only
-  let visualDescription = '';
-  if (nativeLanguage === 'en') {
-    const agePrefix = age ? `${age}-year-old ` : '';
-    const visualDescriptionMap = {
-      'fair': genderText === 'child' ? `${agePrefix}fair skin child with no gender specific characteristics, red hair` : `${agePrefix}fair skin white ${genderText} with red hair`,
-      'light': genderText === 'child' ? `${agePrefix}white child with no gender specific characteristics, blonde hair` : `${agePrefix}white ${genderText} with blonde hair`,
-      'medium': genderText === 'child' ? `${agePrefix}medium skin white child with no gender specific characteristics, brown hair` : `${agePrefix}medium skin white ${genderText} with brown hair`,
-      'olive': genderText === 'child' ? `${agePrefix}olive skin white child with no gender specific characteristics, black hair` : `${agePrefix}olive skin white ${genderText} with black hair`,
-      'dark': genderText === 'child' ? `${agePrefix}black child with no gender specific characteristics` : `${agePrefix}black ${genderText}`
-    };
-    visualDescription = visualDescriptionMap[standardizedSkinTone] || `${agePrefix}${genderText}`;
-  }
-
-  // Cultural profile determination (legacy compatibility)
-  let culturalProfile;
-  if (nativeLanguage === 'en') {
-    if (standardizedSkinTone === 'dark') culturalProfile = 'african-american';
-    else culturalProfile = 'standard-american';
-  } else if (nativeLanguage === 'es') {
-    if (standardizedSkinTone === 'dark') culturalProfile = 'afro-hispanic';
-    else if (standardizedSkinTone === 'olive' || standardizedSkinTone === 'medium') culturalProfile = 'hispanic-latino';
-    else culturalProfile = 'hispanic-multicultural';
-  } else if (nativeLanguage === 'fr') culturalProfile = standardizedSkinTone === 'dark' ? 'african-french' : 'french-multicultural';
-  else if (nativeLanguage === 'zh') culturalProfile = 'chinese-asian';
-  else if (nativeLanguage === 'hi') culturalProfile = 'indian-south-asian';
-  else if (nativeLanguage === 'ar') culturalProfile = 'middle-eastern';
-  else culturalProfile = 'standard-american'; // PHASE 2: Default to standard-american instead of global-multicultural
-
-  // Hair color mapping (legacy compatibility)
-  const hairColorMap = {
-    'fair': 'red',
-    'light': 'blonde',
-    'medium': 'brown', 
-    'olive': 'black',
-    'dark': 'realistic natural black hair texture with individual strand detail'
-  };
-  const inferredHairColor = hairColorMap[standardizedSkinTone] || 'brown';
-
-  return {
-    type: avatarType,
-    skinTone: standardizedSkinTone,
-    inferredHairColor,  // FIXED: Renamed from hairColor for clarity
-    culturalProfile,
-    nativeLanguage,
-    name: userInfo?.name || 'child',
-    age,               // NEW: Age from userInfo or difficulty mapping
-    ageCategory,       // NEW: Age category for descriptions
-    visualDescription  // NEW: Direct visual description for Runware optimization
-  };
-}
-
-// Helper: Generate SVG Placeholder
-function generateSVGPlaceholder(pageText: string, userInfo: any) {
-  const characterName = userInfo?.name || 'Character';
-  const shortScene = pageText.substring(0, 50);
-  
-  const svgContent = `
-    <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-      <rect width="400" height="400" fill="#f0f9ff"/>
-      <circle cx="200" cy="150" r="60" fill="#ddd6fe"/>
-      <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="16" fill="#1f2937">
-        ${characterName}
-      </text>
-      <text x="200" y="280" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">
-        ${shortScene}...
-      </text>
-      <text x="200" y="320" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">
-        Story illustration loading...
-      </text>
-    </svg>
-  `;
-  
-  const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
-  
-  return { url, success: true };
-}
