@@ -36,11 +36,11 @@ function createCorsOptionsResponse(): Response {
 
 // PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Objects & Secondary Characters)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  easy: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
-  medium: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  hard: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}",
-  expert: "{pageText}. {character} {age}, {skin}, {hair}, {features}, wearing {clothing}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}"
+  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
+  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
+  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -258,31 +258,31 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'boy',
     age: '6-year-old',
     hair: 'red hair',
-    features: 'fair light complexion with bright sparkling eyes and cheerful friendly smile'
+    features: 'attractive child character with fair pale complexion'
   },
   'boy-light': {
     character: 'boy', 
     age: '6-year-old',
     hair: 'blonde hair', 
-    features: 'warm light skin with expressive animated eyes and warm genuine smile'
+    features: 'attractive child character with light complexion'
   },
   'boy-medium': {
     character: 'boy',
     age: '6-year-old', 
     hair: 'brown hair',
-    features: 'golden tan complexion with expressive warm brown eyes and bright cheerful smile'
+    features: 'attractive child character with medium complexion'
   },
   'boy-olive': {
     character: 'boy',
     age: '6-year-old',
     hair: 'black hair',
-    features: 'warm olive complexion with striking expressive eyes and warm welcoming expression'
+    features: 'attractive child character with olive complexion'
   },
   'boy-dark': {
     character: 'African American boy',
     age: '6-year-old',
     hair: 'textured hair',
-    features: 'rich dark chocolate complexion with warm dark chocolate eyes, beautiful expressive smile, and strong confident features'
+    features: 'attractive child character with authentic African American features'
   },
 
   // GIRL MAPPINGS  
@@ -290,31 +290,31 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'girl',
     age: '6-year-old',
     hair: 'red hair',
-    features: 'fair light complexion with bright sparkling eyes and cheerful friendly smile'
+    features: 'attractive child character with fair pale complexion'
   },
   'girl-light': {
     character: 'girl',
     age: '6-year-old', 
     hair: 'blonde hair',
-    features: 'warm light skin with lively enthusiastic expression and kind gentle demeanor'
+    features: 'attractive child character with light complexion'
   },
   'girl-medium': {
     character: 'girl',
     age: '6-year-old',
     hair: 'brown hair',
-    features: 'golden tan complexion with warm welcoming expression and lively animated eyes'
+    features: 'attractive child character with medium complexion'
   },
   'girl-olive': {
     character: 'girl', 
     age: '6-year-old',
     hair: 'black hair',
-    features: 'warm olive complexion with beautiful natural features and confident friendly demeanor'
+    features: 'attractive child character with olive complexion'
   },
   'girl-dark': {
     character: 'African American girl',
     age: '6-year-old',
     hair: 'textured hair', 
-    features: 'rich dark chocolate complexion with warm dark chocolate eyes, beautiful expressive smile, and graceful natural beauty'
+    features: 'attractive child character with authentic African American features'
   },
 
   // GENDER-NEUTRAL MAPPINGS (for prefer-not-to-answer)
@@ -322,31 +322,31 @@ const NUCLEAR_AVATAR_MAPPINGS = {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     hair: 'red hair',
-    features: 'fair light complexion with friendly welcoming expression and gentle smile'
+    features: 'attractive gender neutral child character with fair pale complexion and no recognizable gender'
   },
   'neutral-light': {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     hair: 'blonde hair',
-    features: 'warm light skin with kind gentle expression and bright smile'
+    features: 'attractive gender neutral child character with light complexion and no recognizable gender'
   },
   'neutral-medium': {
     character: 'child with gender neutral characteristics',
     age: '6-year-old',
     hair: 'brown hair',
-    features: 'golden tan complexion with cheerful friendly expression and welcoming smile'
+    features: 'attractive gender neutral child character with medium complexion and no recognizable gender'
   },
   'neutral-olive': {
     character: 'child with gender neutral characteristics', 
     age: '6-year-old',
     hair: 'black hair',
-    features: 'warm olive complexion with warm welcoming expression and gentle demeanor'
+    features: 'attractive gender neutral child character with olive complexion and no recognizable gender'
   },
   'neutral-dark': {
     character: 'African American child with gender neutral characteristics',
     age: '6-year-old', 
     hair: 'textured hair',
-    features: 'rich dark complexion with warm dark eyes, beautiful expressive features, and genuine smile'
+    features: 'attractive gender neutral child character with authentic African American features and no recognizable gender'
   }
 };
 
@@ -719,9 +719,15 @@ function fillPremiumTemplate(
     // Get style parameters
     const style = getHardcodedStyle(difficulty);
     
-    // Fill template with nuclear mappings (simplified to hair + features only) + page text
+    // Conditional clothing detection from story text
+    const clothing = detectClothingFromStory(pageText || scene);
+    
+    // Process pageText based on difficulty
+    const processedPageText = truncatePageText(pageText || 'A story about learning and discovery', difficulty);
+    
+    // Fill template with nuclear mappings (features already include complexion now) + page text
     let filledTemplate = template
-      .replace('{pageText}', pageText || 'A story about learning and discovery')
+      .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
       .replace('{hair}', finalMapping.hair)
@@ -733,6 +739,11 @@ function fillPremiumTemplate(
       .replace('{emotion}', emotion)
       .replace('{quality}', style.quality)
       .replace('{suffix}', style.suffix || '');
+    
+    // Add clothing if detected
+    if (clothing) {
+      filledTemplate = filledTemplate.replace('{features}', `${finalMapping.features}, wearing ${clothing}`);
+    }
     
     console.log(`🛡️ Tier 2.5: Template filled successfully with nuclear mapping`);
     return filledTemplate;
@@ -746,6 +757,59 @@ function fillPremiumTemplate(
 }
 
 // ============= HELPER FUNCTIONS =============
+
+function detectClothingFromStory(text: string): string {
+  if (!text) return '';
+  
+  const clothingKeywords = [
+    'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
+    'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
+    'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves'
+  ];
+  
+  const lowerText = text.toLowerCase();
+  
+  for (const keyword of clothingKeywords) {
+    if (lowerText.includes(keyword)) {
+      // Extract clothing context around the keyword
+      const sentences = text.split(/[.!?]+/);
+      for (const sentence of sentences) {
+        if (sentence.toLowerCase().includes(keyword)) {
+          // Simple extraction - return the clothing item mentioned
+          return keyword;
+        }
+      }
+    }
+  }
+  
+  return '';
+}
+
+function truncatePageText(text: string, difficulty: string): string {
+  if (!text) return '';
+  
+  // Beginner/Easy: Use full pageText at beginning
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    return text;
+  }
+  
+  // Medium/Hard/Expert: Truncate pageText for end positioning
+  const maxLength = difficulty === 'medium' ? 100 : difficulty === 'hard' ? 80 : 60;
+  
+  if (text.length <= maxLength) {
+    return text;
+  }
+  
+  // Truncate at word boundary
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.7) { // Only truncate at word if it's not too short
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  
+  return truncated + '...';
+}
 
 function getRandomItem(array: string[]): string {
   if (!array || array.length === 0) return 'default';

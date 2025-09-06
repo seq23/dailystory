@@ -191,15 +191,12 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
   const skinTone = avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
   const isAfricanAmerican = userInfo?.nativeLanguage === 'en' && skinTone === 'dark';
   
-  let skin: string, hair: string, eyes: string, features: string, clothing: string;
+  let hair: string, features: string, clothing: string;
   let arraySelections: any = {};
 
   if (isAfricanAmerican) {
-    // African American arrays
-    skin = getRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES);
-    eyes = getRandomItem(HARDCODED_AFRICAN_AMERICAN_EYE_COLORS);
+    // African American arrays for dark skin users
     features = getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES);
-    clothing = getRandomItem(HARDCODED_AFRICAN_AMERICAN_CLOTHING);
     
     // Extract gender from descriptive character strings like 'African American girl'
     const extractedGender = extractGenderFromCharacter(genderType);
@@ -209,66 +206,74 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
     hair = getRandomItem(hairstyles);
 
     arraySelections = {
-      culturalPath: 'African American Arrays',
-      skin: { selected: skin, fromArray: 'HARDCODED_AFRICAN_AMERICAN_SKIN_TONES', arraySize: HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length },
+      culturalPath: 'African American Arrays (Dark Skin Only)',
       hair: { selected: hair, fromArray: `HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.${extractedGender === 'girl' ? 'girls' : 'boys'}`, arraySize: hairstyles.length },
-      eyes: { selected: eyes, fromArray: 'HARDCODED_AFRICAN_AMERICAN_EYE_COLORS', arraySize: HARDCODED_AFRICAN_AMERICAN_EYE_COLORS.length },
-      features: { selected: features, fromArray: 'HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES', arraySize: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length },
-      clothing: { selected: clothing, fromArray: 'HARDCODED_AFRICAN_AMERICAN_CLOTHING', arraySize: HARDCODED_AFRICAN_AMERICAN_CLOTHING.length }
+      features: { selected: features, fromArray: 'HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES', arraySize: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length }
     };
   } else {
-    // Standard mappings
-    const skinMap: { [key: string]: string } = {
-      'pale': 'fair skin',
-      'light': 'light skin', 
-      'medium': 'medium skin',
-      'olive': 'olive skin',
-      'dark': 'dark skin'
+    // Use NUCLEAR_AVATAR_MAPPINGS for non-dark skin users
+    const characterPrefix = genderType === 'child' ? 'neutral' : genderType;
+    const mappingKey = `${characterPrefix}-${skinTone}`;
+    
+    // Simulate nuclear mapping (simplified for debug)
+    const complexionMap: { [key: string]: string } = {
+      'pale': 'attractive child character with fair pale complexion',
+      'light': 'attractive child character with light complexion',
+      'medium': 'attractive child character with medium complexion',
+      'olive': 'attractive child character with olive complexion'
     };
     
     const hairMap: { [key: string]: string } = {
       'pale': 'red hair',
       'light': 'blonde hair',
-      'medium': 'brown hair', 
-      'olive': 'dark brown hair',
-      'dark': 'black hair'
+      'medium': 'brown hair',
+      'olive': 'black hair'
     };
     
-    skin = skinMap[skinTone] || 'medium skin';
+    features = genderType === 'child' ? 
+      `attractive gender neutral child character with ${skinTone} complexion and no recognizable gender` :
+      complexionMap[skinTone] || 'attractive child character with medium complexion';
+    
     hair = hairMap[skinTone] || 'brown hair';
-    eyes = 'bright eyes';
-    features = 'friendly face';
-    clothing = 'casual comfortable clothing';
 
     arraySelections = {
-      culturalPath: 'Standard Mappings',
-      skin: { selected: skin, fromMapping: 'skinMap', inputSkinTone: skinTone },
-      hair: { selected: hair, fromMapping: 'hairMap', inputSkinTone: skinTone },
-      eyes: { selected: eyes, fromMapping: 'standard' },
-      features: { selected: features, fromMapping: 'standard' },
-      clothing: { selected: clothing, fromMapping: 'standard' }
+      culturalPath: 'NUCLEAR_AVATAR_MAPPINGS (Non-dark users)',
+      mappingKey,
+      hair: { selected: hair, fromMapping: 'avatarIdentity/orchestrator', inputSkinTone: skinTone },
+      features: { selected: features, fromMapping: 'NUCLEAR_AVATAR_MAPPINGS', inputSkinTone: skinTone }
     };
   }
+
+  // Conditional clothing detection
+  clothing = detectClothingFromStory(scene);
 
   // OTHER COMPONENTS
   const setting = applyCulturalSettingEnhancement('outdoor scene', userInfo);
   const emotion = detectEmotionFromText(scene);
   const style = getHardcodedStyle(difficulty || 'medium');
 
+  // Process pageText based on difficulty
+  const processedPageText = truncatePageText(scene, difficulty || 'medium');
+
   // FILL TEMPLATE
-  const filledTemplate = template
+  let filledTemplate = template
     .replace('{character}', character)
     .replace('{age}', age)
-    .replace('{skin}', skin)
     .replace('{hair}', hair)
-    .replace('{eyes}', eyes)
     .replace('{features}', features)
-    .replace('{clothing}', clothing)
     .replace('{scene}', scene)
     .replace('{setting}', setting)
     .replace('{emotion}', emotion)
     .replace('{quality}', style.quality)
-    .replace('{suffix}', style.suffix || '');
+    .replace('{suffix}', style.suffix || '')
+    .replace('{pageText}', processedPageText)
+    .replace('{objects}', '')
+    .replace('{secondary_characters}', '');
+
+  // Add clothing if detected
+  if (clothing) {
+    filledTemplate = filledTemplate.replace(features, `${features}, wearing ${clothing}`);
+  }
 
   console.log(`🎨 Template filling complete`);
 
@@ -277,16 +282,15 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
     placeholders: {
       character,
       age,
-      skin,
-      hair,
-      eyes,  
+      hair,  
       features,
-      clothing,
+      clothing: clothing || 'none detected',
       scene,
       setting,
       emotion,
       quality: style.quality,
-      suffix: style.suffix || ''
+      suffix: style.suffix || '',
+      pageText: processedPageText
     },
     arraySelections,
     culturalDetection: {
@@ -302,6 +306,52 @@ function debugTemplateFilling(scene: string, userInfo?: any, avatarIdentity?: an
     },
     filledTemplate
   };
+}
+
+function detectClothingFromStory(text: string): string {
+  if (!text) return '';
+  
+  const clothingKeywords = [
+    'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
+    'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
+    'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves'
+  ];
+  
+  const lowerText = text.toLowerCase();
+  
+  for (const keyword of clothingKeywords) {
+    if (lowerText.includes(keyword)) {
+      return keyword;
+    }
+  }
+  
+  return '';
+}
+
+function truncatePageText(text: string, difficulty: string): string {
+  if (!text) return '';
+  
+  // Beginner/Easy: Use full pageText at beginning
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    return text;
+  }
+  
+  // Medium/Hard/Expert: Truncate pageText for end positioning
+  const maxLength = difficulty === 'medium' ? 100 : difficulty === 'hard' ? 80 : 60;
+  
+  if (text.length <= maxLength) {
+    return text;
+  }
+  
+  // Truncate at word boundary
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.7) { // Only truncate at word if it's not too short
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  
+  return truncated + '...';
 }
 
 function debugArraySelections(userInfo?: any, avatarIdentity?: any) {
@@ -448,12 +498,13 @@ function debugDifficultyComparison(pageText: string, userInfo?: any, avatarIdent
 }
 
 // Copy required functions and arrays from runware-simple-fallback
+// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Objects & Secondary Characters)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}",
-  easy: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}",
-  medium: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}",
-  hard: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}",
-  expert: "{character} {age}, {skin}, {hair}, {eyes}, {features}, wearing {clothing}, {scene} in {setting}. {emotion}. {quality}. {suffix}"
+  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}",
+  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
+  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}",
+  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {quality}. {suffix}. {pageText}"
 };
 
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
