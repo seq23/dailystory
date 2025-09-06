@@ -107,12 +107,12 @@ const generateStoryImage = async (imageRequest: ImageRequest) => {
       }
     });
   } catch (error) {
-    console.log('Runware failed, falling back to OpenAI');
+    console.log('Runware failed, falling back to Tier 4');
     
-    // Tier 3: OpenAI DALL-E fallback
-    return await supabase.functions.invoke('openai-image', {
+    // Tier 4: SVG Placeholder Generation (guaranteed success)
+    return await supabase.functions.invoke('runware-generate-image', {
       body: {
-        positivePrompt: imageRequest.prompt,
+        pageText: imageRequest.prompt,
         quality: 'high',
         style: 'vivid',
         userInfo: imageRequest.userInfo

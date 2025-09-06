@@ -88,10 +88,10 @@ This document provides comprehensive API reference for all 38 Supabase Edge Func
 }
 ```
 
-### OpenAI Image Generation (Fallback)
-**Endpoint**: `/functions/v1/openai-image`
+### Runware Image Generation (Primary)
+**Endpoint**: `/functions/v1/runware-generate-image`
 **Method**: POST
-**Purpose**: Reliable fallback image generation using DALL-E 3
+**Purpose**: Enhanced image generation with 3-tier fallback system (Tier 1 → Tier 2.5 → Tier 4)
 
 **Request Body**:
 ```json

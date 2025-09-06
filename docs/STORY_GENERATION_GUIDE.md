@@ -26,7 +26,7 @@ This guide covers the complete story generation system, from initial user input 
 6. Grammar resolution pipeline
 7. Final story page delivered
 
-### Template-Based Generation (Tier 2-4)
+### Template-Based Generation (Current Fallback System)
 **Service**: `template-service` Edge Function with enhanced template processing
 **Library**: 136 total templates (100 Level 0 + 36 structured), 400+ pages, 144+ endings
 **Capabilities**:
@@ -291,11 +291,10 @@ const DIFFICULTY_MAPPINGS = [
 
 ## Error Handling & Fallbacks
 
-### Tier Progression System
+### Current Fallback System
 1. **Tier 1**: Premium AI enhancement (primary)
-2. **Tier 2**: Template-based generation (first fallback)
-3. **Tier 3**: Simplified template processing (nuclear fallback)
-4. **Tier 4**: SVG placeholder with basic text (guaranteed success)
+2. **Tier 2.5**: Nuclear hardcoded fallback
+3. **Tier 4**: SVG placeholder with basic text (guaranteed success)
 
 ### Graceful Degradation
 - **Service Failure**: Automatic tier progression
@@ -310,13 +309,13 @@ const generateStoryPage = async (input: StoryInput) => {
     // Attempt Tier 1: Premium AI generation
     return await LiveGenerationService.generatePage(input);
   } catch (error) {
-    console.log("Tier 1 failed, falling back to Tier 2");
+    console.log("Tier 1 failed, falling back to Tier 2.5");
     try {
-      // Attempt Tier 2: Template-based generation
+      // Attempt Tier 2.5: Nuclear hardcoded fallback
       return await EnhancedFallbackManager.generatePage(input);
     } catch (error) {
-      console.log("Tier 2 failed, using Tier 3 nuclear fallback");
-      // Tier 3: Guaranteed success with SVG placeholder
+      console.log("Tier 2.5 failed, using Tier 4 SVG fallback");
+      // Tier 4: Guaranteed success with SVG placeholder
       return generateBasicStoryPage(input);
     }
   }

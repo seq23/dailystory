@@ -60,9 +60,9 @@ interface AIGenerationService {
 **Failure Path**:
 - Timeout after 30 seconds
 - Error handling via standardized error utilities
-- Automatic fallback to Tier 2 (Template System)
+- Automatic fallback to Tier 2.5 (Nuclear Hardcoded Fallback)
 
-#### Tier 2: Template Generation System
+#### Tier 2.5: Nuclear Hardcoded Fallback
 ```typescript
 // Template-based fallback content generation
 interface TemplateService {

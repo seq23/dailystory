@@ -12,15 +12,10 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 - **Orchestration**: Coordinates vocabulary fetching, theme extraction, and content resolution
 - **Performance**: Sub-second bundle creation with <2KB payloads
 
-### **Tier 2: Edge Function Router**
-**Primary**: `supabase/functions/generate-adaptive-story/index.ts`  
-- **Bundle Processing**: Only accepts pre-processed bundles (legacy calls deprecated)
-- **Streamlined Routing**: Direct pass-through to streamlined handler
-- **Legacy Cleanup**: Removed 900+ lines of template code, moved to dedicated services
-
-### **Tier 3: AI Generation Handler**
-**Primary**: `supabase/functions/generate-adaptive-story/streamlined-handler.ts`
-- **2-Attempt AI System**: `gpt-4.1-2025-04-14` (primary) → `gpt-4o-mini` (fallback)  
+### **Tier 2.5: Edge Function Router & AI Handler**
+**Primary**: `supabase/functions/generate-adaptive-story/index.ts` & `streamlined-handler.ts`
+- **Bundle Processing**: Only accepts pre-processed bundles (legacy calls deprecated) 
+- **2-Attempt AI System**: `gpt-4.1-2025-04-14` (primary) → `gpt-4o-mini` (fallback)
 - **Enhanced Prompts**: User info integration, cultural context, hair color mapping
 - **Performance Logging**: Success rates, timing, model performance tracking
 - **Vocabulary Integration**: Silent failure system with progress tracking
