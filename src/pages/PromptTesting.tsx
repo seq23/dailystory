@@ -3,12 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp } from 'lucide-react';
+import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
+import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
 
 export default function PromptTesting() {
   const [searchParams] = useSearchParams();
@@ -90,6 +91,17 @@ export default function PromptTesting() {
               <h2 className="text-2xl font-semibold">Advanced Testing Suite</h2>
             </div>
             <StoryPromptTester />
+          </section>
+
+          <Separator />
+
+          {/* Voice Catalog Testing */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Brain className="w-5 h-5 text-primary" />
+              <h2 className="text-2xl font-semibold">Voice Catalog Testing</h2>
+            </div>
+            <VoiceCatalogTester />
           </section>
 
           <Separator />
