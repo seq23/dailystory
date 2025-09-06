@@ -1,5 +1,35 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse, corsHeaders } from "../_shared/cors.ts";
+
+// Inline CORS utilities to fix boot failure
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+function createCorsResponse(data: any, status = 200): Response {
+  const headers = { 
+    ...corsHeaders, 
+    'Content-Type': 'application/json' 
+  };
+  
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+function createCorsErrorResponse(error: string | Error, status = 500): Response {
+  const errorMessage = error instanceof Error ? error.message : error;
+  console.error('Edge function error:', errorMessage);
+  
+  return createCorsResponse({ 
+    success: false, 
+    error: errorMessage 
+  }, status);
+}
+
+function createCorsOptionsResponse(): Response {
+  return new Response(null, { headers: corsHeaders });
+}
 
 // AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
 import { EdgeErrorHandler, EdgeErrorType } from "../_shared/errorHandling.ts";
