@@ -207,87 +207,8 @@ const AI_MODELS = [
   { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
 ] as const;
 
-// ============= MAP AVATAR IDENTITY FUNCTION (copied from runware-generate-image) =============
-function mapAvatarIdentity(userInfo: any) {
-  const avatar = userInfo?.avatar || {};
-  const { type, skinTone = 'medium' } = avatar;
-  const { nativeLanguage = 'en' } = userInfo;
-
-  // Handle "prefer-not-to-answer" with special description
-  if (type === 'prefer-not-to-answer') {
-    const age = userInfo?.age || '6-8';
-    return {
-      type: 'prefer-not-to-answer',
-      skinTone: skinTone,
-      hairColor: null,
-      culturalProfile: { background: 'other', ethnicity: 'other' },
-      nativeLanguage: nativeLanguage,
-      name: `child age ${age} with no gender defining characteristics`
-    };
-  }
-
-  // Map avatar type and skin tone to standardized identity
-  const avatarType = type || 'child';
-  console.log(`🎯 AVATAR MAPPING - Original type: ${type} → Mapped type: ${avatarType}`);
-  
-  // Hair color mapping for complexion
-  const getHairColorForSkinTone = (skinTone: string | undefined): string | null => {
-    if (!skinTone) return null;
-    const hairColorMap: Record<string, string> = {
-      'pale': 'red hair',
-      'light': 'blonde hair', 
-      'medium': 'brown hair',
-      'olive': 'black hair',
-      'dark': 'textured natural hair'
-    };
-    return hairColorMap[skinTone] || null;
-  };
-
-  const hairColor = getHairColorForSkinTone(skinTone);
-  
-  // PHASE 3: Enhanced Cultural Profile Mapping
-  let culturalProfile = { background: 'other', ethnicity: 'other' };
-  let identityName = userInfo?.name || 'the child';
-  
-  // Dark skin + Spanish/French get African American features with specific identity
-  if (skinTone === 'dark' && (nativeLanguage === 'es' || nativeLanguage === 'fr')) {
-    culturalProfile = {
-      background: 'African American', // Use African American features
-      ethnicity: nativeLanguage === 'es' ? 'Afro-Latina' : 'African'
-    };
-    console.log(`🎯 PHASE 3: Dark skin + ${nativeLanguage} → ${culturalProfile.ethnicity} identity with African American features`);
-  }
-  // Dark skin + English gets standard African American  
-  else if (skinTone === 'dark' && nativeLanguage === 'en') {
-    culturalProfile = {
-      background: 'African American',
-      ethnicity: 'African American'
-    };
-  }
-  // Regional mapping for non-English users (excluding dark+Spanish/French handled above)
-  else if (nativeLanguage !== 'en') {
-    const regionalMapping: Record<string, { background: string; ethnicity: string }> = {
-      'ar': { background: 'Middle Eastern', ethnicity: 'North African' },
-      'pt': { background: 'Brazilian', ethnicity: 'Brazilian' },
-      'zh': { background: 'Chinese', ethnicity: 'Asian' },
-      'hi': { background: 'Indian', ethnicity: 'South Asian' },
-      'fr': { background: 'French', ethnicity: 'European' }, // Non-dark skin French
-      'es': { background: 'Mexican', ethnicity: 'Latin American' } // Non-dark skin Spanish
-    };
-    
-    culturalProfile = regionalMapping[nativeLanguage] || { background: 'other', ethnicity: 'other' };
-    console.log(`🎯 PHASE 3: Regional mapping ${nativeLanguage} → ${culturalProfile.ethnicity}`);
-  }
-
-  return {
-    type: avatarType,
-    skinTone: skinTone,
-    hairColor: hairColor,
-    culturalProfile: culturalProfile,
-    nativeLanguage: nativeLanguage,
-    name: identityName
-  };
-}
+// ============= AVATAR IDENTITY PROCESSING REMOVED =============
+// mapAvatarIdentity function removed - orchestrator provides processed avatarIdentity
 
 // ============= ENHANCED CIRCUIT BREAKER SYSTEM WITH MONITORING =============
 // Bulletproof circuit breaker to prevent cascading failures
@@ -536,6 +457,10 @@ function parseAIResponse(content, options = {}) {
           });
           return {
             primaryScene: primaryScene,
+            setting: null,
+            action: null,
+            mood: null,
+            pose: null,
             extractionMethod: 'fallback_text_extraction'
           };
         }
@@ -549,6 +474,10 @@ function parseAIResponse(content, options = {}) {
         });
         return {
           primaryScene: content.trim(),
+          setting: null,
+          action: null,
+          mood: null,
+          pose: null,
           extractionMethod: 'full_content_fallback'
         };
       }
@@ -579,9 +508,9 @@ function parseAIResponse(content, options = {}) {
 async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
-  // Circuit breaker check with expert content awareness
-  const isExpertContent = userInfo?.difficultyLevel === 'expert' || userInfo?.expertGradeLevel || 
-                         ['6th', '7th', '8th', '9th', '10th'].includes(userInfo?.readingLevel);
+  // Circuit breaker check with expert content awareness - using avatarIdentity
+  const isExpertContent = avatarIdentity?.difficultyLevel === 'expert' || avatarIdentity?.expertGradeLevel || 
+                         ['6th', '7th', '8th', '9th', '10th'].includes(avatarIdentity?.readingLevel);
   
   if (circuitBreaker.isOpen(isExpertContent)) {
     console.warn(`🚫 Circuit breaker is open for ${isExpertContent ? 'expert' : 'regular'} content, skipping OpenAI - using Tier 2 immediately`);
@@ -847,7 +776,7 @@ serve(async (req) => {
         // PHASE 2: POST-AI PROMPT CONSTRUCTION  
         // PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1)
         
-      let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText;
+      let storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText;
       let pageText = '';
       const importResults = {};
       
@@ -887,7 +816,7 @@ serve(async (req) => {
           bodyKeys: Object.keys(requestBody || {}),
           bodyTypes: Object.fromEntries(Object.entries(requestBody || {}).map(([k, v]) => [k, typeof v])),
           storyTextLength: requestBody?.storyText?.length || 0,
-          hasUserInfo: !!requestBody?.userInfo,
+          hasAvatarIdentity: !!requestBody?.avatarIdentity,
           hasSessionId: !!requestBody?.sessionId,
           pageInfo: `${requestBody?.pageNumber}/${requestBody?.totalPages || 'unlimited'}`
         });
@@ -900,14 +829,13 @@ serve(async (req) => {
           };
         }
         
-        ({ storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText = '' } = requestBody);
+        ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText = '' } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
-          userInfo: userInfo ? `✅ Present (${typeof userInfo})` : '❌ Missing',
           sessionId: sessionId ? `✅ Present (${sessionId})` : '❌ Missing',
           pageNumber: pageNumber ? `✅ Present (${pageNumber})` : '❌ Missing',
           totalPages: totalPages ? `✅ Present (${totalPages})` : '⚠️ Undefined (infinite story)',
-          avatarIdentity: avatarIdentity ? `✅ Present (${Object.keys(avatarIdentity).length} properties)` : '⚠️ Missing avatar identity',
+          avatarIdentity: avatarIdentity ? `✅ Present (${Object.keys(avatarIdentity).length} properties)` : '❌ Missing avatar identity (REQUIRED)',
           storyId: storyId ? `✅ Present (${storyId})` : '⚠️ Missing story ID',
           enhancedStoryData: enhancedStoryData ? '✅ Present (pre-enhanced)' : '⚠️ Will process with OpenAI'
         });
@@ -959,8 +887,8 @@ serve(async (req) => {
         // Get or create character seed with database persistence
         const characterData = await characterConsistencyService.getCharacterSeed(
           sessionId,
-          userInfo?.id || `user-${Date.now()}`,
-          userInfo,
+          avatarIdentity?.id || `user-${Date.now()}`,
+          avatarIdentity, // Use avatarIdentity instead of userInfo
           storyText,
           avatarIdentity,
           'continuing', // session type
@@ -968,7 +896,7 @@ serve(async (req) => {
         );
         
         const enhancedCharacterDescription = characterData.characterDescription || 
-          `${avatarIdentity.name} is a child age ${userInfo?.age || '6-8'}`;
+          `${avatarIdentity.name} is a child age ${avatarIdentity?.age || '6-8'}`;
         
         console.log('👤 PHASE 1.1: Enhanced Character Description:', {
           avatarIdentity: avatarIdentity,
@@ -1015,7 +943,11 @@ OBJECTIVE: Return ONLY a primary scene description of 30+ characters.
 
 JSON RESPONSE:
 {
-  "primaryScene": "Complete visual scene description with character, setting, action, and details. Minimum 30 characters."
+  "primaryScene": "Write a concise, descriptive visual scene for image generation",
+  "setting": "Where the scene takes place (bedroom, playground, etc.) or null if not clear",
+  "action": "What characters are doing (reading, playing, etc.) or null if not clear", 
+  "mood": "Emotional tone of the scene (happy, calm, etc.) or null if not clear",
+  "pose": "Character body position (sitting, standing, etc.) or null if not clear"
 }
 
 Focus on creating a comprehensive primaryScene only - no other fields needed.`
@@ -1053,6 +985,11 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           
           const parsedResult = parseAIResponse(content.trim(), { requestId });
           primaryScene = parsedResult.primaryScene;
+          
+          const setting = parsedResult.setting || null;
+          const action = parsedResult.action || null;
+          const mood = parsedResult.mood || null;
+          const pose = parsedResult.pose || null;
           
           if (!primaryScene || primaryScene.length < 30) {
             throw new Error(`Primary scene validation failed: length ${primaryScene?.length || 0} < 30`);
@@ -1120,9 +1057,10 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           visualDetails: visualDetails,
           characterSeed: characterData.seed,
           visualComponents: {
-            sceneType: 'illustration',
-            lighting: 'natural',
-            mood: 'cheerful'
+            setting: setting,
+            action: action,
+            mood: mood,
+            pose: pose
           },
           enhancedTier1: true, // Updated from reorganizedTier1
           characterConsistency: {
