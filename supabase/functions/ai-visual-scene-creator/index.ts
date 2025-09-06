@@ -195,11 +195,11 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
   return { enhancedData: enhancedStoryData, fieldCheck };
 }
 
-// AI Model Fallback Chain Configuration - UPDATED TO FLAGSHIP MODELS
+// AI Model Fallback Chain Configuration - UPDATED TO USER REQUESTED ORDER
 const AI_MODELS = [
-  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false },
   { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
-  { name: 'gpt-4o-mini', maxTokens: 'max_tokens', supportsTemperature: true }
+  { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true },
+  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
 ] as const;
 
 // ============= ENHANCED CIRCUIT BREAKER SYSTEM WITH MONITORING =============
@@ -319,6 +319,65 @@ class UnifiedCircuitBreaker {
 
 const circuitBreaker = new UnifiedCircuitBreaker();
 console.log('🔧 Enhanced circuit breaker with monitoring initialized');
+
+// ============= AFRICAN AMERICAN HAIRSTYLE ARRAYS - COPIED FROM TIER 2.5 =============
+const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design'
+  ],
+  girls: [
+    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
+    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
+    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
+    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
+    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
+    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
+    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
+    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
+    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
+    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
+    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
+  ]
+};
+
+// ============= HAIRSTYLE SELECTION LOGIC =============
+function selectAfricanAmericanHairstyle(avatarIdentity) {
+  if (!avatarIdentity) return null;
+  
+  // Detect African American character
+  const skinTone = avatarIdentity.skinTone || avatarIdentity.culturalProfile?.skinTone;
+  const culturalProfile = avatarIdentity.culturalProfile;
+  const isAfricanAmerican = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
+                           (culturalProfile?.ethnicity === 'African American') ||
+                           (culturalProfile?.background?.includes('African American'));
+  
+  if (!isAfricanAmerican) return null;
+  
+  // Extract gender from avatar type or cultural profile
+  const avatarType = avatarIdentity.type || avatarIdentity.gender;
+  const isGirl = avatarType === 'girl' || avatarType === 'woman' || 
+                 avatarType?.toLowerCase().includes('girl') || 
+                 avatarType?.toLowerCase().includes('female');
+  
+  const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+  const selectedHairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+  
+  console.log('🎨 TIER 1 HAIRSTYLE SELECTION:', {
+    isAfricanAmerican,
+    skinTone,
+    avatarType,
+    isGirl,
+    selectedHairstyle: selectedHairstyle.substring(0, 50) + '...',
+    hairstyleArraySize: hairstyles.length
+  });
+  
+  return selectedHairstyle;
+}
 
 // Initialize circuit breaker state tracking
 CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
@@ -863,6 +922,17 @@ serve(async (req) => {
         const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`🧠 [${requestId}] Starting OpenAI prompt construction phase`);
 
+        // ============= PHASE 1.5: AFRICAN AMERICAN HAIRSTYLE SELECTION =============
+        const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
+        let hairstyleGuidance = '';
+        if (selectedHairstyle) {
+          hairstyleGuidance = `\n\nHAIRSTYLE GUIDANCE: For African American character representation, use this specific hairstyle: "${selectedHairstyle}". This should be integrated into the character's appearance in the primaryScene.`;
+          console.log(`🎨 [${requestId}] African American hairstyle selected for Tier 1:`, {
+            hairstyleLength: selectedHairstyle.length,
+            hairstylePreview: selectedHairstyle.substring(0, 100) + '...'
+          });
+        }
+
         const messages = [
           {
             role: 'system',
@@ -879,7 +949,7 @@ SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
   "settingDetails": "optional environment details"
 }
 
-Avatar Identity: ${JSON.stringify(avatarIdentity)}
+Avatar Identity: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}
 CRITICAL: Focus on creating a comprehensive primaryScene - this is the MAIN requirement.`
             :
               // Legacy models - SIMPLIFIED visual-first approach
@@ -901,18 +971,18 @@ VISUAL QUALITY STANDARDS:
 - Descriptive Language: Rich adjectives, specific details, atmospheric elements
 - Minimum Length: 30+ characters with detailed visual specificity
 
-Example primaryScene: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'working alongside a encouraging teacher ' : ''}adding colorful wooden blocks to build a tall structure on a polished wooden table, the classroom filled with warm sunlight and educational posters, their expression showing focused concentration"`
+Example primaryScene: "${avatarIdentity?.visualDescription || 'A curious child with bright eyes'} ${hasMultipleCharacters ? 'working alongside a encouraging teacher ' : ''}adding colorful wooden blocks to build a tall structure on a polished wooden table, the classroom filled with warm sunlight and educational posters, their expression showing focused concentration"${hairstyleGuidance ? '\n\nHAIRSTYLE INTEGRATION: ' + selectedHairstyle : ''}`
           },
           {
             role: 'user', 
             content: `Content for visual scene generation: "${storyText}"
 
-Character Identity Foundation: ${JSON.stringify(avatarIdentity)}
+Character Identity Foundation: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}
 ${previousContext}
 
 Generate a comprehensive visual scene description using the schema structure with ${hasMultipleCharacters ? 'secondary character elements integrated' : 'primary character focus'}. 
 
-Focus on creating the most detailed, visually rich primaryScene possible that captures every visual element needed for professional illustration generation. Make it comprehensive, descriptive, and atmospherically rich.`
+Focus on creating the most detailed, visually rich primaryScene possible that captures every visual element needed for professional illustration generation. Make it comprehensive, descriptive, and atmospherically rich.${selectedHairstyle ? '\n\nIMPORTANT: Integrate the specified African American hairstyle into the character description within the primaryScene.' : ''}`
           }
         ];
 
