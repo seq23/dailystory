@@ -531,36 +531,36 @@ function getHardcodedStyle(difficulty: string) {
     'beginner': {
       quality: 'High-quality 3D animated character illustration for early readers',
       suffix: '3D animated style, Pixar-quality rendering, child-friendly design',
-      steps: 15,
-      cfgScale: 7.0,
+      steps: 25,
+      cfgScale: 8,
       strength: 0.75
     },
     'easy': {
       quality: 'High-quality 3D animated character illustration for early readers',
       suffix: '3D animated style, Pixar-quality rendering, child-friendly design',
-      steps: 15,
-      cfgScale: 7.0,
+      steps: 25,
+      cfgScale: 8,
       strength: 0.75
     },
     'medium': {
       quality: 'ultra professional digital illustration standard, high quality professional artwork',
       suffix: 'Digital illustration with painterly qualities, soft brush strokes, rich textures and depth',
-      steps: 19,
-      cfgScale: 7.5,
+      steps: 25,
+      cfgScale: 8,
       strength: 0.8
     },
     'hard': {
       quality: 'Gallery-quality digital illustration with sophisticated artistic maturity',
       suffix: 'professional digital illustration, sophisticated artistic maturity, refined visual storytelling',
-      steps: 20,
-      cfgScale: 8.0,
+      steps: 25,
+      cfgScale: 8,
       strength: 0.85
     },
     'expert': {
       quality: 'Museum-quality fine art digital illustration with masterful artistic sophistication',
       suffix: 'fine art digital illustration, masterful artistic sophistication, cinematic visual narrative',
       steps: 25,
-      cfgScale: 8.5,
+      cfgScale: 8,
       strength: 0.9
     }
   };

@@ -68,9 +68,9 @@ class RunwareWebSocketService {
                 model: parameters.model || "runware:100@1",
                 numberResults: parameters.numberResults || 1,
                 outputFormat: parameters.outputFormat || "WEBP",
-                CFGScale: parameters.CFGScale || 3.0,
+                CFGScale: parameters.CFGScale || 8,
                 scheduler: parameters.scheduler || "FlowMatchEulerDiscreteScheduler",
-                steps: parameters.steps || 8,
+                steps: parameters.steps || 25,
                 ...(parameters.seed && { seed: parameters.seed })
               }];
               

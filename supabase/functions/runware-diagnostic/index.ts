@@ -97,10 +97,10 @@ serve(async (req) => {
                   width: 512,
                   height: 512,
                   numberResults: 1,
-                  outputFormat: "WEBP",
-                  steps: 4,
-                  CFGScale: 2.0,
-                  scheduler: "FlowMatchEulerDiscreteScheduler"
+            outputFormat: "WEBP",
+            steps: 25,
+            CFGScale: 8,
+            scheduler: "FlowMatchEulerDiscreteScheduler"
                 }]));
                 
               } else if (item.taskType === "imageInference") {

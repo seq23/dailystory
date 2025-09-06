@@ -785,40 +785,40 @@ function getHardcodedStyle(difficulty: string): { quality: string, suffix?: stri
       quality: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers. Professional animation studio quality with depth and dimension',
       // Added missing suffix from brandSuffix
       suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 4,
-      CFGScale: 1
+      steps: 25,
+      CFGScale: 8
     },
     'easy': {
       // Concatenated prompt + quality from styleFrameworks.js (identical to beginner)
       quality: '3D digital art style, Pixar-inspired character design, soft rounded features, friendly appealing aesthetics, bright cheerful colors, clean polished rendering. High-quality 3D animated character illustration for early readers. Professional animation studio quality with depth and dimension',
       // Added missing suffix from brandSuffix
       suffix: '3D animated style, Pixar-quality rendering, child-friendly design, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 4,
-      CFGScale: 1
+      steps: 25,
+      CFGScale: 8
     },
     'medium': {
       // Concatenated prompt + quality from styleFrameworks.js
       quality: 'Digital painting style with painterly brush strokes, artistic color harmony, cinematic lighting, professional artwork quality. Professional painterly digital art with artistic sophistication. Ultra professional children\'s book illustration standard',
       // Updated suffix from brandSuffix
       suffix: 'painterly digital art, cinematic lighting, artistic quality, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 4,
-      CFGScale: 1
+      steps: 25,
+      CFGScale: 8
     },
     'hard': {
       // Concatenated prompt + quality from styleFrameworks.js
       quality: 'Professional digital illustration with sophisticated artistic maturity, nuanced color gradients, refined visual storytelling, advanced digital painting techniques. Gallery-worthy professional digital illustration. Sophisticated artistic children\'s book illustration',
       // Updated suffix from brandSuffix
       suffix: 'professional digital illustration, sophisticated artistic maturity, gallery-worthy quality, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 4,
-      CFGScale: 1
+      steps: 25,
+      CFGScale: 8
     },
     'expert': {
       // Concatenated prompt + quality from styleFrameworks.js
       quality: 'Fine art digital illustration with masterful artistic sophistication, complex color harmonies, cinematic visual narrative, museum-quality artistic techniques. Museum-quality fine art digital illustration. Masterful children\'s book art with diverse representation',
       // Updated suffix from brandSuffix
       suffix: 'fine art digital illustration, masterful artistic sophistication, museum-quality artwork, diverse representation, warm natural lighting optimized for all skin tones',
-      steps: 4,
-      CFGScale: 1
+      steps: 25,
+      CFGScale: 8
     }
   };
   return styleMap[difficulty] || styleMap.medium;

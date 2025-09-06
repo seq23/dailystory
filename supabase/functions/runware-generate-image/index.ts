@@ -158,8 +158,8 @@ class RunwareWebSocketManager {
                   height: 512,
                   width: 512,
                   model: "runware:100@1",
-                  steps: 4,
-                  CFGScale: 1,
+                  steps: 25,
+                  CFGScale: 8,
                   clipSkip: 1,
                   scheduler: "FlowMatchEulerDiscreteScheduler",
                   onlyUpscale: false,
@@ -649,75 +649,54 @@ serve(async (req) => {
           console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema`);
         }
         
-        // 3. ART STYLE (Third - establishes visual approach)
-        if (storyFramework.artStyle) {
-          segments.push(storyFramework.artStyle);
-          console.log(`🎨 [${requestId}] Segment 3 - Art Style Added:`, {
-            content: storyFramework.artStyle,
-            source: 'styleFramework.artStyle'
-          });
+        // 2.5. SECONDARY ELEMENTS DETECTION (After Primary Scene)
+        try {
+          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
+          const secondaryElements = await SecondaryElementDetector.parseElements(
+            sessionId,
+            segments[1], // Primary scene
+            pageText,
+            pageNumber || 1
+          );
+          
+          if (secondaryElements && secondaryElements.length > 0) {
+            const secondaryDescription = secondaryElements
+              .map(el => `${el.name} (${el.type})`)
+              .join(', ');
+            segments.push(`Secondary characters and elements: ${secondaryDescription}`);
+            console.log(`👥 [${requestId}] Segment 2.5 - Secondary Elements Added:`, {
+              content: secondaryDescription,
+              count: secondaryElements.length,
+              source: 'SecondaryElementDetector'
+            });
+          }
+        } catch (error) {
+          console.log(`⚠️ [${requestId}] Secondary elements detection failed:`, error.message);
         }
         
-        // 4. COLOR PALETTE (Fourth - color harmony)
-        if (storyFramework.colorPalette) {
-          segments.push(storyFramework.colorPalette);
-          console.log(`🎨 [${requestId}] Segment 4 - Color Palette Added:`, {
-            content: storyFramework.colorPalette,
-            source: 'styleFramework.colorPalette'
-          });
+        // 2.7. VISUAL DETAIL TRACKING (Before Framework Prompt)  
+        try {
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1);
+          const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+          
+          if (visualDetails) {
+            segments.push(`Visual consistency details: ${visualDetails}`);
+            console.log(`🎯 [${requestId}] Segment 2.7 - Visual Details Added:`, {
+              content: visualDetails,
+              source: 'VisualDetailTracker'
+            });
+          }
+        } catch (error) {
+          console.log(`⚠️ [${requestId}] Visual detail tracking failed:`, error.message);
         }
         
-        // 5. LIGHTING (Fifth - lighting technique)
-        if (storyFramework.lighting) {
-          segments.push(storyFramework.lighting);
-          console.log(`🎨 [${requestId}] Segment 5 - Lighting Added:`, {
-            content: storyFramework.lighting,
-            source: 'styleFramework.lighting'
-          });
-        }
-        
-        // 6. TEXTURE (Sixth - surface details)
-        if (storyFramework.texture) {
-          segments.push(storyFramework.texture);
-          console.log(`🎨 [${requestId}] Segment 6 - Texture Added:`, {
-            content: storyFramework.texture,
-            source: 'styleFramework.texture'
-          });
-        }
-        
-        // 7. COMPOSITION (Seventh - layout guidelines)
-        if (storyFramework.composition) {
-          segments.push(storyFramework.composition);
-          console.log(`🎨 [${requestId}] Segment 7 - Composition Added:`, {
-            content: storyFramework.composition,
-            source: 'styleFramework.composition'
-          });
-        }
-        
-        // 8. QUALITY STANDARDS (Eighth - rendering quality)
-        if (storyFramework.quality) {
-          segments.push(storyFramework.quality);
-          console.log(`🎨 [${requestId}] Segment 8 - Quality Standards Added:`, {
-            content: storyFramework.quality,
-            source: 'styleFramework.quality'
-          });
-        }
-        
-        // 9. BRAND SUFFIX (Ninth - brand enhancement)
-        if (storyFramework.brandSuffix) {
-          segments.push(storyFramework.brandSuffix);
-          console.log(`🎨 [${requestId}] Segment 9 - Brand Suffix Added:`, {
-            content: storyFramework.brandSuffix,
-            source: 'styleFramework.brandSuffix'
-          });
-        }
-        
-        // 10. FRAMEWORK PROMPT (Tenth - complete framework prompt)
-        if (storyFramework.prompt) {
-          segments.push(storyFramework.prompt);
-          console.log(`🎨 [${requestId}] Segment 10 - Framework Prompt Added:`, {
-            content: storyFramework.prompt,
-            source: 'styleFramework.prompt'
+        // 3. FRAMEWORK PROMPT (Final - complete framework prompt)
+        if (storyFramework.frameworkPrompt) {
+          segments.push(storyFramework.frameworkPrompt);
+          console.log(`🎨 [${requestId}] Segment 3 - Framework Prompt Added:`, {
+            content: storyFramework.frameworkPrompt,
+            source: 'styleFramework.frameworkPrompt'
           });
         }
         
@@ -739,23 +718,32 @@ serve(async (req) => {
           componentStatus: {
             hasCharacterData: !!characterData.characterDescription,
             hasAiSchema: !!aiSchema.primaryScene,
-            hasArtStyle: !!storyFramework.artStyle,
-            hasColorPalette: !!storyFramework.colorPalette,
-            hasLighting: !!storyFramework.lighting,
-            hasTexture: !!storyFramework.texture,
-            hasComposition: !!storyFramework.composition,
-            hasQuality: !!storyFramework.quality,
-            hasBrandSuffix: !!storyFramework.brandSuffix,
-            hasFrameworkPrompt: !!storyFramework.prompt
+            hasSecondaryElements: segments.some(s => s.includes('Secondary characters')),
+            hasVisualDetails: segments.some(s => s.includes('Visual consistency')),
+            hasFrameworkPrompt: !!storyFramework.frameworkPrompt
           },
           negativePromptLength: negativePrompt.length,
-          assemblyMethod: 'comma-separated concatenation with comprehensive style framework'
+          assemblyMethod: 'comma-separated concatenation with 5-segment architecture'
         });
 
         // COMPREHENSIVE DEBUGGING: Full prompt logging (no truncation for debugging)
         console.log(`🎯 [${requestId}] FULL Runware Prompt (${enhancedPrompt.length} chars):`);
         console.log(`📝 [${requestId}] COMPLETE POSITIVE PROMPT:`, enhancedPrompt);
         console.log(`🚫 [${requestId}] COMPLETE NEGATIVE PROMPT:`, negativePrompt);
+        console.log(`🏗️ [${requestId}] 5-SEGMENT ARCHITECTURE SUMMARY:`, {
+          'Segment 1': 'Character Description',
+          'Segment 2': 'Primary Scene', 
+          'Segment 2.5': 'Secondary Elements (if detected)',
+          'Segment 2.7': 'Visual Details (if tracked)',
+          'Segment 3': 'Framework Prompt'
+        });
+        console.log(`🏗️ [${requestId}] 5-SEGMENT ARCHITECTURE SUMMARY:`, {
+          'Segment 1': 'Character Description',
+          'Segment 2': 'Primary Scene', 
+          'Segment 2.5': 'Secondary Elements (if detected)',
+          'Segment 2.7': 'Visual Details (if tracked)',
+          'Segment 3': 'Framework Prompt'
+        });
         
         // Avatar mapping debug logging
         console.log(`👤 [${requestId}] AVATAR MAPPING DEBUG:`, {

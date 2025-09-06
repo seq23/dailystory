@@ -134,9 +134,9 @@ async function generateWithRunware(
                   height: parameters.height || 1024,
                   numberResults: parameters.numberResults || 1,
                   outputFormat: parameters.outputFormat || "WEBP",
-                  CFGScale: parameters.cfgScale || 3,
+                  CFGScale: parameters.cfgScale || 8,
                   scheduler: "FlowMatchEulerDiscreteScheduler",
-                  steps: parameters.steps || 8,
+                  steps: parameters.steps || 25,
                   ...(parameters.seed && { seed: parameters.seed })
                 }];
                 
