@@ -632,6 +632,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   let retriesOnCurrentModel = 0;
   const maxRetriesPerModel = 2;
   const startTime = Date.now(); // Track processing time
+  let currentModel: any; // Define currentModel in function scope for debug logging
   
   // Protected expert detection and model chain initialization
   let isExpertLevel: boolean;
@@ -641,13 +642,13 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   
   try {
     isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
-    modelProgression = getModelChain(isExpertLevel);
+    modelProgression = getModelChainOptimized(isExpertLevel);
     systemSettings = getSystemSettings();
     maxAttempts = safePropertyAccess(systemSettings, 'maxAttempts', { expert: 6, regular: 3 })[isExpertLevel ? 'expert' : 'regular'];
   } catch (initError) {
     console.warn('⚠️ Model chain initialization failed, using defaults:', safeErrorMessage(initError));
     isExpertLevel = gradeLevel >= 6 && gradeLevel <= 10;
-    modelProgression = [{ model: 'gpt-5-2025-08-07', description: 'Primary Model', paramName: 'max_completion_tokens', supportsTemperature: false }];
+    modelProgression = [{ name: 'gpt-5-2025-08-07', description: 'Primary Model', paramName: 'max_completion_tokens', supportsTemperature: false }];
     systemSettings = { baseInstructions: '\n\nGenerate high-quality, age-appropriate story content.' };
     maxAttempts = isExpertLevel ? 6 : 3;
   }
@@ -659,9 +660,9 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   while (attempt <= maxAttempts && !storyText) {
     try {
       // Protected model access with bounds checking
-      const currentModel = currentModelIndex < modelProgression.length 
+      currentModel = currentModelIndex < modelProgression.length 
         ? safeModelAccess(modelProgression[currentModelIndex])
-        : { name: 'gpt-5-2025-08-07', description: 'Fallback Model' };
+        : { name: 'gpt-5-2025-08-07', description: 'Fallback Model', paramName: 'max_completion_tokens', supportsTemperature: false };
       
       console.log(`🤖 AI Attempt ${attempt}/${maxAttempts} using ${currentModel.name} (${currentModel.description}) - Model ${currentModelIndex + 1}/${modelProgression.length}, Retry ${retriesOnCurrentModel + 1}/${maxRetriesPerModel}:`, { 
         gradeLevel,
