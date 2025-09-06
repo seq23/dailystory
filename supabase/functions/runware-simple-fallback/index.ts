@@ -821,7 +821,6 @@ function generateEmergencyPrompt(userInfo: any): string {
   
   return `An attractive ${gender} in a portrait style photo with main character focus. Beautiful children's book illustration, warm lighting, cheerful atmosphere, high quality, detailed art.`;
 }
-}
 
 // ============= HELPER FUNCTIONS =============
 
