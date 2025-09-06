@@ -76,8 +76,8 @@ export class CharacterConsistencyService {
   /**
    * Get or create character seed with full consistency support (DATABASE-BACKED)
    */
-  async getCharacterSeed(sessionId, userId, userInfo, storyContext, avatarIdentity = null, sessionType = 'new', pageTextClothing = null) {
-    const characterName = userInfo.name || 'child';
+  async getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType = 'new', pageTextClothing = null) {
+    const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
     // Check database first
@@ -88,7 +88,7 @@ export class CharacterConsistencyService {
     }
     
     // Generate new character
-    const seedData = await this.createNewCharacterSeed(userId, userInfo, avatarIdentity);
+    const seedData = await this.createNewCharacterSeed(avatarIdentity);
     
     const characterDescription = this.buildCharacterDescription(seedData, storyContext, pageTextClothing);
     
@@ -116,9 +116,10 @@ export class CharacterConsistencyService {
   /**
    * Create new character seed with avatar awareness
    */
-  async createNewCharacterSeed(userId, userInfo, avatarIdentity = null) {
-    const characterName = userInfo.name || 'child';
-    const characterSpecificSeed = `${characterName}-${userId}-${avatarIdentity?.skinTone || userInfo.avatar?.skinTone || 'medium'}`;
+  async createNewCharacterSeed(avatarIdentity) {
+    const characterName = avatarIdentity.name || 'child';
+    const userId = `avatar-${avatarIdentity.type}-${avatarIdentity.skinTone}`; // Generate consistent ID from avatar
+    const characterSpecificSeed = `${characterName}-${userId}-${avatarIdentity.skinTone}`;
     
     const baseSeed = this.generateStableSeed(characterSpecificSeed, characterName);
     
@@ -136,8 +137,8 @@ export class CharacterConsistencyService {
     return {
       baseSeed,
       characterName,
-      avatarType: avatarIdentity?.type || userInfo.avatar?.type || 'child',
-      skinTone: avatarIdentity?.skinTone || userInfo.avatar?.skinTone,
+      avatarType: avatarIdentity.type || 'child',
+      skinTone: avatarIdentity.skinTone || 'medium',
       consistentEyeColor,
       consistentClothingStyle,
       characterSpecificSeed

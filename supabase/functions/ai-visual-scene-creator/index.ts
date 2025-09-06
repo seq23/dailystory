@@ -887,10 +887,8 @@ serve(async (req) => {
         // Get or create character seed with database persistence
         const characterData = await characterConsistencyService.getCharacterSeed(
           sessionId,
-          avatarIdentity?.id || `user-${Date.now()}`,
-          avatarIdentity, // Use avatarIdentity instead of userInfo
-          storyText,
           avatarIdentity,
+          storyText,
           'continuing', // session type
           null // page text clothing
         );

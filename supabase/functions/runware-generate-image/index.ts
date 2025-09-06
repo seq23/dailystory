@@ -681,11 +681,9 @@ serve(async (req) => {
         
         // 1. Character Consistency Generation
         const characterData = await characterService.getCharacterSeed(
-          sessionId, 
-          userInfo.id || 'unknown-user',
-          userInfo,
-          pageText,
+          sessionId,
           avatarIdentity,
+          pageText,
           'standard'
         );
         
