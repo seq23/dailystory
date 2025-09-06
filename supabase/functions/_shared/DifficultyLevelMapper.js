@@ -55,9 +55,14 @@ export class DifficultyLevelMapper {
    * Get display name for any difficulty level
    */
   static getDisplayName(level) {
-    const mapping = this.DIFFICULTY_MAPPINGS.find(
-      m => m.backend === level || m.frontend === level.toLowerCase()
-    );
+    // Priority 1: Try frontend matching first
+    let mapping = this.DIFFICULTY_MAPPINGS.find(m => m.frontend === level.toLowerCase());
+    
+    // Priority 2: Fall back to backend matching
+    if (!mapping) {
+      mapping = this.DIFFICULTY_MAPPINGS.find(m => m.backend === level);
+    }
+    
     return mapping?.displayName || level;
   }
 
