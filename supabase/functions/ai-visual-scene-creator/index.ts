@@ -202,6 +202,46 @@ const AI_MODELS = [
   { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
 ] as const;
 
+// ============= MAP AVATAR IDENTITY FUNCTION (copied from runware-generate-image) =============
+function mapAvatarIdentity(userInfo: any) {
+  const avatar = userInfo?.avatar || {};
+  const { type, skinTone = 'medium' } = avatar;
+  const { nativeLanguage = 'en' } = userInfo;
+
+  // Map avatar type and skin tone to standardized identity
+  const avatarType = type === 'prefer-not-to-answer' ? 'child' : (type || 'child');
+  console.log(`🎯 AVATAR MAPPING - Original type: ${type} → Mapped type: ${avatarType}`);
+  const genderText = avatarType === 'boy' ? 'boy' : avatarType === 'girl' ? 'girl' : 'child';
+  
+  // Hair color mapping for complexion
+  const getHairColorForSkinTone = (skinTone: string | undefined): string | null => {
+    if (!skinTone) return null;
+    const hairColorMap: Record<string, string> = {
+      'pale': 'red hair',
+      'light': 'blonde hair', 
+      'medium': 'brown hair',
+      'olive': 'black hair',
+      'dark': 'textured natural hair'
+    };
+    return hairColorMap[skinTone] || null;
+  };
+
+  const hairColor = getHairColorForSkinTone(skinTone);
+  const culturalProfile = {
+    background: skinTone === 'dark' ? 'African American' : 'other',
+    ethnicity: skinTone === 'dark' ? 'African American' : 'other'
+  };
+
+  return {
+    type: avatarType,
+    skinTone: skinTone,
+    hairColor: hairColor,
+    culturalProfile: culturalProfile,
+    nativeLanguage: nativeLanguage,
+    name: userInfo?.name || 'the child'
+  };
+}
+
 // ============= ENHANCED CIRCUIT BREAKER SYSTEM WITH MONITORING =============
 // Bulletproof circuit breaker to prevent cascading failures
 class UnifiedCircuitBreaker {
@@ -888,25 +928,25 @@ serve(async (req) => {
           timestamp: new Date().toISOString()
         });
       }
-      // =================== PHASE 1: VARIABLE DECLARATION & SCOPE SETUP ===================
+        // =================== REORGANIZED TIER 1: 3-PHASE SYSTEM ===================
+        // PHASE 1: MINIMAL AI REQUEST (Scene Generation Only)
+        // PHASE 2: POST-AI PROMPT CONSTRUCTION  
+        // PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1)
+        
       let storyText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText;
       let pageText = '';
       const importResults = {};
       
-      // =================== PHASE 2: DEPENDENCY & DEPLOYMENT VERIFICATION ===================
-      console.log('🔧 AI Story Enhancer: Starting Phase 2 Dependency Verification');
+      console.log('🔧 REORGANIZED TIER 1: Starting 3-Phase System');
       
-      // Static imports are already loaded at module level - no need for dynamic testing
+      // Static imports are already loaded at module level
       importResults.cors = '✅ SUCCESS (static)';
       importResults.errorHandling = '✅ SUCCESS (static)';
       importResults.MultiStageEnhancementPipeline = '✅ SUCCESS (static)';
       
-      console.log('✅ All shared modules loaded via static imports');
-      
       console.log('📊 Dependency Verification Results:', importResults);
       
-      // =================== PHASE 3: REQUEST FORMAT ANALYSIS ===================
-      console.log('🔍 AI Story Enhancer: Starting Phase 3 Request Analysis');
+      console.log('🔍 REORGANIZED TIER 1: Starting Request Analysis');
       
       try {
         const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -994,267 +1034,233 @@ serve(async (req) => {
         // Model-specific prompt optimization with OPTIMIZED SCHEMA
         const { modelFamily, useSimplifiedPrompt } = detectModelFamily();
         
-        // PHASE 1: Generate unique request ID for cross-function tracing
-        const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
-        console.log(`🧠 [${requestId}] Starting OpenAI prompt construction phase`);
-
-        // ============= PHASE 1.5: AFRICAN AMERICAN FEATURES & HAIRSTYLE SELECTION =============
-        const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
-        let hairstyleGuidance = '';
-        if (selectedHairstyle) {
-          hairstyleGuidance = `\n\nHAIRSTYLE GUIDANCE: For African American character representation, use this specific hairstyle: "${selectedHairstyle}". This should be integrated into the character's appearance in the primaryScene.`;
-          console.log(`🎨 [${requestId}] African American hairstyle selected for Tier 1:`, {
-            hairstyleLength: selectedHairstyle.length,
-            hairstylePreview: selectedHairstyle.substring(0, 100) + '...'
-          });
-        }
-
-        // Combined African American features selection
-        const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
-        let featuresGuidance = '';
-        if (selectedFeatures) {
-          featuresGuidance = `\n\nFEATURES GUIDANCE: Skin: ${selectedFeatures.skinTone}, Eyes: ${selectedFeatures.eyeColor}, Features: ${selectedFeatures.facialFeature}. Integrate these authentic physical characteristics into the primaryScene description.`;
-          console.log(`🎨 [${requestId}] African American features selected for Tier 1:`, {
-            skinTone: selectedFeatures.skinTone,
-            eyeColor: selectedFeatures.eyeColor,
-            facialFeature: selectedFeatures.facialFeature
-          });
-        }
-
-        // Build negative prompt with anti-whitewashing protection
-        const negativePrompt = buildTier1NegativePrompt(avatarIdentity);
-        const negativePromptGuidance = `\n\nNEGATIVE PROMPT GUIDANCE: Avoid these elements in the visual description: ${negativePrompt}`;
-
-        console.log(`🎨 [${requestId}] Negative prompt built:`, {
-          negativePromptLength: negativePrompt.length,
-          hasAntiWhitewashing: negativePrompt.includes('lightened skin'),
-          negativePromptPreview: negativePrompt.substring(0, 100) + '...'
+        // =================== PHASE 1: MINIMAL AI REQUEST (Scene Generation Only) ===================
+        console.log('🚀 PHASE 1: Minimal AI Request (Scene Generation Only)');
+        
+        // PHASE 1.1: Simple Character Description from mapAvatarIdentity
+        const avatarIdentity = mapAvatarIdentity(userInfo);
+        const basicCharacterDescription = `${avatarIdentity.name} is a child age ${userInfo?.age || '6-8'} with ${avatarIdentity.hairColor || 'brown hair'}`;
+        
+        console.log('👤 PHASE 1.1: Basic Character Description:', {
+          avatarIdentity: avatarIdentity,
+          basicDescription: basicCharacterDescription
         });
-
-        const messages = [
+        
+        // PHASE 1.2: Minimal AI Prompt (NO cultural features, NO complex prompts)
+        const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+        console.log(`🧠 [${requestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
+        
+        const minimalMessages = [
           {
             role: 'system',
-            content: useSimplifiedPrompt ? 
-              // GPT-5/4.1+ optimized prompt - SIMPLIFIED STRUCTURE
-              `Generate visual scene descriptions for illustration purposes.
+            content: `Generate a primary scene description for image generation.
+            
+OBJECTIVE: Return ONLY a primary scene description of 30+ characters.
 
-PRIMARY OBJECTIVE: Create rich, detailed visual descriptions for perfect image generation.
-
-SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
+JSON RESPONSE:
 {
-  "primaryScene": "Complete visual scene description containing ALL elements - character appearance (using avatar identity), clothing, pose, expression, actions, setting details, lighting, objects, colors, mood, atmosphere. Minimum 30+ characters with rich descriptive language.",
-  "characterDetails": "optional character-specific details",
-  "settingDetails": "optional environment details"
+  "primaryScene": "Complete visual scene description with character, setting, action, and details. Minimum 30 characters."
 }
 
-Avatar Identity: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}${featuresGuidance}${negativePromptGuidance}
-CRITICAL: Focus on creating a comprehensive primaryScene - this is the MAIN requirement.`
-            :
-              // Legacy models - SIMPLIFIED visual-first approach
-              `Generate visual scene descriptions for professional illustration purposes.
-
-PRIMARY OBJECTIVE: Create detailed, visually rich scene descriptions for image generation.
-
-SIMPLIFIED JSON RESPONSE (primaryScene is REQUIRED, others are optional):
-{
-  "primaryScene": "The complete visual scene containing ALL elements needed for image generation. Must include character appearance (integrating avatar identity: ${avatarIdentity?.visualDescription || 'an attractive child with symmetrical features'}), clothing, pose, expression, activities, setting environment, lighting conditions, objects, colors, mood, atmosphere${hasMultipleCharacters ? ', secondary characters and their details' : ''}. Minimum 30+ characters with rich, descriptive language.",
-  "characterDetails": "optional additional character information",
-  "settingDetails": "optional environment details"
-}
-
-VISUAL QUALITY STANDARDS:
-- primaryScene: The MAIN OUTPUT - comprehensive visual narrative (REQUIRED)
-- Character Integration: Use avatar identity as foundation
-- Visual Richness: Include colors, textures, lighting, mood, spatial relationships
-- Descriptive Language: Rich adjectives, specific details, atmospheric elements
-- Minimum Length: 30+ characters with detailed visual specificity
-
-Example primaryScene: "${avatarIdentity?.visualDescription || 'An attractive child with symmetrical features'} positioned in a portrait-style composition, soft natural lighting, with a beautifully blurred background creating depth and focus on the child's expression and character details"${hairstyleGuidance ? '\n\nHAIRSTYLE INTEGRATION: ' + selectedHairstyle : ''}${featuresGuidance ? '\n\nFEATURES INTEGRATION: Ensure authentic representation with specified physical characteristics' : ''}${negativePromptGuidance ? '\n\nQUALITY CONTROL: ' + negativePrompt : ''}`
+Focus on creating a comprehensive primaryScene only - no other fields needed.`
           },
           {
             role: 'user', 
-            content: `Content for visual scene generation: "${storyText}"
+            content: `Story text: "${storyText}"
+Character: ${basicCharacterDescription}
 
-Character Identity Foundation: ${JSON.stringify(avatarIdentity)}${hairstyleGuidance}${featuresGuidance}${negativePromptGuidance}
-${previousContext}
-
-Generate a comprehensive visual scene description using the schema structure with ${hasMultipleCharacters ? 'secondary character elements integrated' : 'primary character focus'}. 
-
-Focus on creating the most detailed, visually rich primaryScene possible that captures every visual element needed for professional illustration generation. Make it comprehensive, descriptive, and atmospherically rich.${selectedHairstyle ? '\n\nIMPORTANT: Integrate the specified African American hairstyle into the character description within the primaryScene.' : ''}${selectedFeatures ? '\n\nIMPORTANT: Integrate the specified African American physical features (skin tone, eye color, facial features) authentically into the character description within the primaryScene.' : ''}`
+Generate a detailed primaryScene description (30+ characters minimum) that shows what's happening visually in this story moment.`
           }
         ];
-
-        // PHASE 1: Detailed OpenAI Prompt Construction Debugging
-        console.log(`🧠 [${requestId}] OpenAI Prompt Construction Complete:`, {
-          modelFamily: modelFamily,
-          useSimplifiedPrompt: useSimplifiedPrompt,
-          systemPromptLength: messages[0].content.length,
-          userPromptLength: messages[1].content.length,
-          totalMessageLength: messages.reduce((sum, msg) => sum + msg.content.length, 0),
-          avatarIdentityKeys: Object.keys(avatarIdentity || {}),
-          hasMultipleCharacters: hasMultipleCharacters,
-          previousContextLength: previousContext.length,
-          storyTextLength: storyText.length,
-          secondaryCharacterFields: secondaryCharacterFields ? 'included' : 'excluded',
-          timestamp: new Date().toISOString()
-        });
-
-        console.log(`🧠 [${requestId}] System Prompt (${messages[0].content.length} chars):`, 
-          messages[0].content.substring(0, 200) + '...');
-        console.log(`🧠 [${requestId}] User Prompt (${messages[1].content.length} chars):`, 
-          messages[1].content.substring(0, 200) + '...');
-        console.log(`🧠 [${requestId}] Avatar Identity:`, JSON.stringify(avatarIdentity, null, 2));
-
-        let validationResult;
         
+        console.log(`🧠 [${requestId}] PHASE 1.2: Minimal prompt constructed:`, {
+          systemPromptLength: minimalMessages[0].content.length,
+          userPromptLength: minimalMessages[1].content.length,
+          characterDescription: basicCharacterDescription,
+          storyTextLength: storyText.length
+        });
+        
+        // PHASE 1.3: AI Call for Primary Scene ONLY
+        let primaryScene;
         try {
-          // PHASE 1: Enhanced OpenAI API call with detailed logging
-          console.log(`🧠 [${requestId}] Calling OpenAI with model fallback chain...`);
-          const aiResult = await callOpenAIWithFallback(messages, 6000, requestId);
+          console.log(`🧠 [${requestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
+          const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, requestId);
           
-          // PHASE 2: Enhanced OpenAI response analysis with complete structure logging
-          console.log(`🔍 [${requestId}] OpenAI Response Structure Analysis:`, {
-            responseKeys: Object.keys(aiResult || {}),
-            hasChoices: !!aiResult.choices,
-            choicesLength: aiResult.choices?.length || 0,
-            hasFirstChoice: !!aiResult.choices?.[0],
-            firstChoiceKeys: aiResult.choices?.[0] ? Object.keys(aiResult.choices[0]) : [],
-            hasMessage: !!aiResult.choices?.[0]?.message,
-            messageKeys: aiResult.choices?.[0]?.message ? Object.keys(aiResult.choices[0].message) : [],
-            hasContent: !!aiResult.choices?.[0]?.message?.content,
-            contentType: typeof aiResult.choices?.[0]?.message?.content,
-            contentLength: aiResult.choices?.[0]?.message?.content?.length || 0,
-            model: aiResult.model || 'unknown',
-            usage: aiResult.usage || 'no usage data'
-          });
-
-          console.log(`🔍 [${requestId}] Content Preview:`, 
-            aiResult.choices?.[0]?.message?.content?.substring(0, 200) + 
-            (aiResult.choices?.[0]?.message?.content?.length > 200 ? '...' : ''));
-
           const content = aiResult.choices?.[0]?.message?.content;
-          
-          // ============= PHASE 2: ENHANCED CONTENT VALIDATION WITH DEBUGGING =============
-          if (!aiResult.choices || aiResult.choices.length === 0) {
-            throw new Error(`OpenAI response has no choices array. Full response keys: ${Object.keys(aiResult).join(', ')}`);
+          if (!content) {
+            throw new Error('OpenAI returned no content');
           }
           
-          if (!aiResult.choices[0] || !aiResult.choices[0].message) {
-            throw new Error(`OpenAI first choice has no message. Choice keys: ${Object.keys(aiResult.choices[0] || {}).join(', ')}`);
+          const parsedResult = parseAIResponse(content.trim(), { requestId });
+          primaryScene = parsedResult.primaryScene;
+          
+          if (!primaryScene || primaryScene.length < 30) {
+            throw new Error(`Primary scene validation failed: length ${primaryScene?.length || 0} < 30`);
           }
           
-          const trimmedContent = content ? content.trim() : '';
-          if (!content || typeof content !== 'string') {
-            throw new Error(`OpenAI content is null or undefined, expected string. Message keys: ${Object.keys(aiResult.choices[0].message).join(', ')}`);
-          }
+          console.log(`✅ [${requestId}] PHASE 1.3: Primary scene generated successfully:`, {
+            primarySceneLength: primaryScene.length,
+            primaryScenePreview: primaryScene.substring(0, 100) + '...'
+          });
           
-          if (trimmedContent.length === 0) {
-            throw new Error(`OpenAI returned empty content string. Full message: ${JSON.stringify(aiResult.choices[0].message)}`);
-          }
-          
-          if (trimmedContent.length < 10) {  // Reduced from 30 to 10 for debugging
-            console.warn('⚠️ Short content received:', { 
-              actualLength: trimmedContent.length, 
-              content: trimmedContent,
-              fullContent: content
-            });
-          }
-
-          // PHASE 2: Enhanced Progressive JSON parsing with model-specific handling
-          try {
-            console.log(`🔍 [${requestId}] Starting JSON parsing phase`);
-            enhancedStoryData = parseAIResponse(trimmedContent, { modelFamily, requestId });
-            console.log(`✅ [${requestId}] JSON parsing successful - Schema extracted:`, {
-              extractedFields: Object.keys(enhancedStoryData || {}),
-              primarySceneLength: enhancedStoryData.primaryScene?.length || 0,
-              charactersPresent: !!enhancedStoryData.characters,
-              visualComponentsPresent: !!enhancedStoryData.visualComponents,
-              schemaValid: !!(enhancedStoryData.primaryScene && enhancedStoryData.characters && enhancedStoryData.visualComponents)
-            });
-          } catch (parseError) {
-            console.error(`❌ [${requestId}] JSON parsing failed:`, {
-              parseError: parseError.message,
-              contentLength: trimmedContent.length,
-              contentStart: trimmedContent.substring(0, 100),
-              contentEnd: trimmedContent.substring(trimmedContent.length - 100)
-            });
-            throw new Error(`JSON parsing failed: ${parseError.message} - Content: "${trimmedContent.substring(0, 100)}..."`);
-          }
-          
-          // ULTRA-SIMPLE VALIDATION: 3 of 5 fields check only
-          validationResult = validateAndEnhanceContent(enhancedStoryData, storyText);
-          
-          // Simple check: If useTier2 flag set → Return error to Orchestrator for Tier 2
-          if (validationResult.useTier2) {
-            console.log(`🚀 Field validation failed - returning error to Orchestrator for Tier 2`);
-            
-            // Log validation failure that triggers Tier 2
-            TierFailureLogger.logTier1ValidationFailure(validationResult, {
-              sessionId,
-              storyId,
-              pageNumber,
-              trigger: 'insufficient_fields'
-            });
-            
-            return createCorsErrorResponse(`Field validation failed - ${validationResult.fieldCheck.passCount}/5 fields present`, 422);
-          }
-          
-          enhancedStoryData = validationResult.enhancedData;
-          
-        } catch (parseError) {
-          console.error('Failed to parse AI response - returning error to Orchestrator:', parseError.message);
-          
-          // Log parsing failure
-          TierFailureLogger.logTier1OpenAIFailure(parseError, {
+        } catch (error) {
+          console.error(`❌ [${requestId}] PHASE 1.3: AI call failed:`, error.message);
+          // Return error to trigger Tier 2
+          TierFailureLogger.logTier1OpenAIFailure(error, {
             sessionId,
             storyId,
             pageNumber,
-            failureType: 'parsing_failed'
+            phase: 'PHASE_1_AI_CALL'
           });
-          
-          return createCorsErrorResponse(`Parse error: ${parseError.message}`, 422);
+          return createCorsErrorResponse(`Phase 1 AI call failed: ${error.message}`, 422);
         }
-
-        // PHASE 1: Pure AI Extraction - Return schema to orchestrator
-        console.log('🎨 AI Enhancement successful - returning schema to orchestrator for technical assembly');
-
-        // Return pure AI schema to orchestrator for technical assembly
+        
+        // =================== PHASE 2: POST-AI PROMPT CONSTRUCTION ===================
+        console.log('🎨 PHASE 2: Post-AI Prompt Construction');
+        
+        // PHASE 2.1: Base Character Description (sentence 1)
+        const baseCharacterDescription = basicCharacterDescription;
+        console.log(`📝 PHASE 2.1: Base character: ${baseCharacterDescription}`);
+        
+        // PHASE 2.2: Primary Scene Integration (sentence 2+)
+        const sceneIntegration = primaryScene;
+        console.log(`🎬 PHASE 2.2: Scene integrated: ${sceneIntegration.substring(0, 50)}...`);
+        
+        // PHASE 2.3: Cultural Context Application
+        let culturalContext = '';
+        let culturalNegativePrompt = '';
+        
+        const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
+        const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
+        
+        if (selectedHairstyle) {
+          culturalContext += `, ${selectedHairstyle}`;
+          console.log(`🎨 PHASE 2.3: African American hairstyle applied: ${selectedHairstyle.substring(0, 50)}...`);
+        }
+        
+        if (selectedFeatures) {
+          culturalContext += `, ${selectedFeatures.skinTone}, ${selectedFeatures.eyeColor}, ${selectedFeatures.facialFeature}`;
+          console.log(`🎨 PHASE 2.3: African American features applied:`, selectedFeatures);
+        }
+        
+        // Anti-whitewashing negative prompt
+        culturalNegativePrompt = buildTier1NegativePrompt(avatarIdentity);
+        console.log(`🛡️ PHASE 2.3: Cultural negative prompt: ${culturalNegativePrompt.substring(0, 50)}...`);
+        
+        // PHASE 2.4: Style Framework & Technical Assembly
+        const stepsAndCFG = ', professional digital art style, 8 steps, CFG scale 1.0';
+        const baseBrandSuffix = ', high-quality children\'s illustration, bright and engaging';
+        
+        console.log('🎨 PHASE 2.4: Style framework applied');
+        
+        // PHASE 2.5: Character Consistency Cache (Placeholder for now)
+        console.log('💾 PHASE 2.5: Character consistency cache - [PLACEHOLDER FOR FUTURE IMPLEMENTATION]');
+        
+        // =================== PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1) ===================
+        console.log('📚 PHASE 3: Story Text Attachment Check');
+        
+        let storyTextAttachment = '';
+        const difficulty = userInfo?.difficultyLevel || userInfo?.readingLevel;
+        const isBeginnerLevel = difficulty === '0' || difficulty === '1' || 
+                               difficulty === 'beginner' || difficulty === 'level-0' || difficulty === 'level-1';
+        
+        if (isBeginnerLevel) {
+          storyTextAttachment = `. Story context: ${storyText}`;
+          console.log(`📚 PHASE 3: Story text attached for level ${difficulty} (${storyText.length} chars)`);
+        } else {
+          console.log(`📚 PHASE 3: Story text skipped for level ${difficulty || 'unknown'}`);
+        }
+        
+        // =================== FINAL ASSEMBLY ===================
+        const finalPrompt = `${baseCharacterDescription}. ${sceneIntegration}${culturalContext}${baseBrandSuffix}${stepsAndCFG}${storyTextAttachment}`;
+        const finalNegativePrompt = culturalNegativePrompt;
+        
+        console.log('🏗️ FINAL ASSEMBLY: Reorganized Tier 1 Complete', {
+          promptLength: finalPrompt.length,
+          negativePromptLength: finalNegativePrompt.length,
+          phases: '✅ Phase 1 (AI Scene) → ✅ Phase 2 (Cultural+Style) → ✅ Phase 3 (Story Text)',
+          hasStoryText: !!storyTextAttachment,
+          hasCulturalFeatures: !!culturalContext,
+          primarySceneLength: primaryScene.length
+        });
+        
+        // Create enhanced story data for return
+        enhancedStoryData = {
+          primaryScene: primaryScene,
+          characters: baseCharacterDescription,
+          visualComponents: {
+            sceneType: 'illustration',
+            lighting: 'natural',
+            mood: 'cheerful'
+          },
+          // NEW: Include final assembled prompt for Runware
+          finalAssembledPrompt: finalPrompt,
+          finalNegativePrompt: finalNegativePrompt,
+          reorganizedTier1: true,
+          phases: {
+            phase1: 'AI scene generation complete',
+            phase2: 'Cultural features and style applied',
+            phase3: isBeginnerLevel ? 'Story text attached' : 'Story text skipped'
+          }
+        };
+        
+        console.log(`✅ REORGANIZED TIER 1: All phases complete - returning enhanced data with assembled prompts`);
+        
+        // =================== VALIDATION & RETURN RESULTS ===================
+        // No complex validation needed since we built the prompts ourselves
+        const validationResult = {
+          enhancedData: enhancedStoryData,
+          fieldCheck: {
+            primaryScene: true,
+            passCount: 3,
+            details: 'reorganized_tier1_success'
+          }
+        };
+        
+        console.log(`✅ REORGANIZED TIER 1: Validation passed - all phases complete`);
+        
+        // Return enhanced data with assembled prompts for Runware
         const result = {
           success: true,
-          aiSchema: enhancedStoryData, // Pure 3-field schema from AI
+          aiSchema: enhancedStoryData,
           metadata: {
-            aiEnhancement: true,
+            reorganizedTier1: true,
             validation: {
-              fieldsPresent: validationResult?.fieldCheck?.passCount || 0,
-              fieldsPassed: validationResult?.fieldCheck?.passCount >= 3,
-              processingMethod: 'field-validated',
+              fieldsPresent: 3,
+              fieldsPassed: true,
+              processingMethod: '3-phase-reorganized',
               modelUsed: 'openai-enhanced'
             },
-             extractedElements: {
-               hasCharacters: !!enhancedStoryData.characters,
-               hasVisualComponents: !!enhancedStoryData.visualComponents,
-               hasPrimaryScene: !!enhancedStoryData.primaryScene,
-               complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
-             },
-             contextualInfo: {
-               pageNumber,
-               totalPages: totalPages || 'unlimited',
-               sessionId,
-               originalTextLength: storyText.length,
-               processingTimestamp: new Date().toISOString(),
-               isNeverEnding: !totalPages
-             },
-             narrativeEnhancements: {
-               sceneType: enhancedStoryData.visualComponents?.sceneType || 'mixed',
-               lighting: enhancedStoryData.visualComponents?.lighting || 'natural',
-               mood: enhancedStoryData.visualComponents?.mood || 'neutral',
-               schemaVersion: '3-field-streamlined'
-             }
+            extractedElements: {
+              hasCharacters: true,
+              hasVisualComponents: true,
+              hasPrimaryScene: true,
+              complexity: storyText.length > 200 ? 'complex' : storyText.length > 100 ? 'medium' : 'simple'
+            },
+            contextualInfo: {
+              pageNumber,
+              totalPages: totalPages || 'unlimited',
+              sessionId,
+              originalTextLength: storyText.length,
+              processingTimestamp: new Date().toISOString(),
+              isNeverEnding: !totalPages
+            },
+            narrativeEnhancements: {
+              sceneType: 'illustration',
+              lighting: 'natural',
+              mood: 'cheerful',
+              schemaVersion: '3-phase-reorganized'
+            },
+            phases: {
+              phase1: 'AI scene generation',
+              phase2: 'Cultural features and style framework', 
+              phase3: isBeginnerLevel ? 'Story text attached' : 'Story text skipped'
+            }
           },
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`✅ AI Analysis complete - NEW SCHEMA: Characters(${!!enhancedStoryData.characters}), VisualComponents(${!!enhancedStoryData.visualComponents}), PrimaryScene(${!!enhancedStoryData.primaryScene}), fields: ${validationResult?.fieldCheck?.passCount || 0}/5`);
+        console.log(`✅ REORGANIZED TIER 1: Complete - Phases: AI Scene(✅) → Cultural+Style(✅) → Story Text(${isBeginnerLevel ? '✅' : '⚠️ skipped'}) - Final prompt ready for Runware`);
 
         return createCorsResponse(result);
 
