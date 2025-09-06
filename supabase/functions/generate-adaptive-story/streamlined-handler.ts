@@ -198,7 +198,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
         vf: { id: 'neutral_v0', cad: 12, var: 3, fig: 0.45, hum: 0.5, warm: 0.85, nar: 'storybook' },
         iu: { mode: 'direct', rules: { u: { max: 4 }, c: { max: 3 }, a: { max: 2 }, f: { max: 1 }, h: { max: 1 } } },
         ah: { u: 0.8, c: 0.6, a: 0.5, f: 0.3, h: 0.4 }, // neutral affinity baseline
-        themes: ['friendship'],
+        themes: "AI_GENERATE_THEMES",
         level: effectiveDifficulty || 'medium'
       };
     }
@@ -219,6 +219,22 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       }
     }
 
+    // Helper function to safely format themes data
+    function formatThemesForDisplay(themes: any): string {
+      if (!themes) return ''; // Silent fail - let AI decide
+      if (Array.isArray(themes)) return themes.join(', ');
+      if (typeof themes === 'object') {
+        const allThemes = [
+          ...(themes.primary || []),
+          ...(themes.setting || []),
+          ...(themes.characters || [])
+        ];
+        return allThemes.join(', ');
+      }
+      if (typeof themes === 'string') return themes;
+      return ''; // Any other case - silent fail
+    }
+
     // Add fail-soft instructions to system prompt
     if (ctrlData) {
       finalSystemPrompt += `\n\nCONTROL PARAMETERS: ${JSON.stringify(ctrlData)}
@@ -226,7 +242,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 - Input integration mode: ${ctrlData.iu?.mode || 'direct'}
 - Affinity hints: ${JSON.stringify(ctrlData.ah || {})} (prioritize high-scoring inputs)
 - Input usage rules: ${JSON.stringify(ctrlData.iu || {})} (max mentions per input type - NOT character limits)
-- Theme focus: ${ctrlData.themes?.join(', ') || 'adventure'}
+- Theme focus: ${formatThemesForDisplay(ctrlData.themes) || 'let AI decide'}
 - Level: ${ctrlData.level || 'medium'}`;
     }
 
