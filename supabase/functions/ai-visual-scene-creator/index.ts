@@ -224,7 +224,6 @@ function mapAvatarIdentity(userInfo: any) {
   // Map avatar type and skin tone to standardized identity
   const avatarType = type || 'child';
   console.log(`🎯 AVATAR MAPPING - Original type: ${type} → Mapped type: ${avatarType}`);
-  const genderText = avatarType === 'boy' ? 'boy' : avatarType === 'girl' ? 'girl' : 'child';
   
   // Hair color mapping for complexion
   const getHairColorForSkinTone = (skinTone: string | undefined): string | null => {
@@ -240,10 +239,40 @@ function mapAvatarIdentity(userInfo: any) {
   };
 
   const hairColor = getHairColorForSkinTone(skinTone);
-  const culturalProfile = {
-    background: skinTone === 'dark' ? 'African American' : 'other',
-    ethnicity: skinTone === 'dark' ? 'African American' : 'other'
-  };
+  
+  // PHASE 3: Enhanced Cultural Profile Mapping
+  let culturalProfile = { background: 'other', ethnicity: 'other' };
+  let identityName = userInfo?.name || 'the child';
+  
+  // Dark skin + Spanish/French get African American features with specific identity
+  if (skinTone === 'dark' && (nativeLanguage === 'es' || nativeLanguage === 'fr')) {
+    culturalProfile = {
+      background: 'African American', // Use African American features
+      ethnicity: nativeLanguage === 'es' ? 'Afro-Latina' : 'African'
+    };
+    console.log(`🎯 PHASE 3: Dark skin + ${nativeLanguage} → ${culturalProfile.ethnicity} identity with African American features`);
+  }
+  // Dark skin + English gets standard African American  
+  else if (skinTone === 'dark' && nativeLanguage === 'en') {
+    culturalProfile = {
+      background: 'African American',
+      ethnicity: 'African American'
+    };
+  }
+  // Regional mapping for non-English users (excluding dark+Spanish/French handled above)
+  else if (nativeLanguage !== 'en') {
+    const regionalMapping: Record<string, { background: string; ethnicity: string }> = {
+      'ar': { background: 'Middle Eastern', ethnicity: 'North African' },
+      'pt': { background: 'Brazilian', ethnicity: 'Brazilian' },
+      'zh': { background: 'Chinese', ethnicity: 'Asian' },
+      'hi': { background: 'Indian', ethnicity: 'South Asian' },
+      'fr': { background: 'French', ethnicity: 'European' }, // Non-dark skin French
+      'es': { background: 'Mexican', ethnicity: 'Latin American' } // Non-dark skin Spanish
+    };
+    
+    culturalProfile = regionalMapping[nativeLanguage] || { background: 'other', ethnicity: 'other' };
+    console.log(`🎯 PHASE 3: Regional mapping ${nativeLanguage} → ${culturalProfile.ethnicity}`);
+  }
 
   return {
     type: avatarType,
@@ -251,7 +280,7 @@ function mapAvatarIdentity(userInfo: any) {
     hairColor: hairColor,
     culturalProfile: culturalProfile,
     nativeLanguage: nativeLanguage,
-    name: userInfo?.name || 'the child'
+    name: identityName
   };
 }
 
@@ -418,21 +447,23 @@ const HARDCODED_AFRICAN_AMERICAN_FEATURES = [
 function selectAfricanAmericanFeatures(avatarIdentity) {
   if (!avatarIdentity) return null;
   
-  // Detect African American character
+  // PHASE 3: Detect characters eligible for African American features (includes Afro-Latina and African)
   const skinTone = avatarIdentity.skinTone || avatarIdentity.culturalProfile?.skinTone;
   const culturalProfile = avatarIdentity.culturalProfile;
-  const isAfricanAmerican = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
-                           (culturalProfile?.ethnicity === 'African American') ||
-                           (culturalProfile?.background?.includes('African American'));
+  const isEligibleForAfricanAmericanFeatures = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
+                                               (culturalProfile?.ethnicity === 'African American') ||
+                                               (culturalProfile?.ethnicity === 'Afro-Latina') ||
+                                               (culturalProfile?.ethnicity === 'African') ||
+                                               (culturalProfile?.background?.includes('African American'));
   
-  if (!isAfricanAmerican) return null;
+  if (!isEligibleForAfricanAmericanFeatures) return null;
   
   const selectedFeatures = HARDCODED_AFRICAN_AMERICAN_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FEATURES.length)];
   
   console.log('🎨 TIER 1 COMBINED FEATURES SELECTION:', {
-    isAfricanAmerican,
+    isEligibleForAfricanAmericanFeatures,
     skinTone,
-    culturalProfile: culturalProfile?.background || 'unknown',
+    culturalProfile: culturalProfile?.ethnicity || culturalProfile?.background || 'unknown',
     selectedFeatures: {
       skinTone: selectedFeatures.skinTone,
       eyeColor: selectedFeatures.eyeColor,
@@ -448,14 +479,16 @@ function selectAfricanAmericanFeatures(avatarIdentity) {
 function selectAfricanAmericanHairstyle(avatarIdentity) {
   if (!avatarIdentity) return null;
   
-  // Detect African American character
+  // PHASE 3: Detect characters eligible for African American hairstyles (includes Afro-Latina and African)
   const skinTone = avatarIdentity.skinTone || avatarIdentity.culturalProfile?.skinTone;
   const culturalProfile = avatarIdentity.culturalProfile;
-  const isAfricanAmerican = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
-                           (culturalProfile?.ethnicity === 'African American') ||
-                           (culturalProfile?.background?.includes('African American'));
+  const isEligibleForAfricanAmericanHairstyles = (skinTone === 'dark' && culturalProfile?.background === 'African American') ||
+                                                 (culturalProfile?.ethnicity === 'African American') ||
+                                                 (culturalProfile?.ethnicity === 'Afro-Latina') ||
+                                                 (culturalProfile?.ethnicity === 'African') ||
+                                                 (culturalProfile?.background?.includes('African American'));
   
-  if (!isAfricanAmerican) return null;
+  if (!isEligibleForAfricanAmericanHairstyles) return null;
   
   // Extract gender from avatar type or cultural profile
   const avatarType = avatarIdentity.type || avatarIdentity.gender;
@@ -467,10 +500,11 @@ function selectAfricanAmericanHairstyle(avatarIdentity) {
   const selectedHairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
   
   console.log('🎨 TIER 1 HAIRSTYLE SELECTION:', {
-    isAfricanAmerican,
+    isEligibleForAfricanAmericanHairstyles,
     skinTone,
     avatarType,
     isGirl,
+    culturalProfile: culturalProfile?.ethnicity || culturalProfile?.background || 'unknown',
     selectedHairstyle: selectedHairstyle.substring(0, 50) + '...',
     hairstyleArraySize: hairstyles.length
   });
@@ -1144,29 +1178,43 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         let culturalNegativePrompt = '';
         
         // Only apply cultural context for English speakers with dark skin (African American)
-        const isEnglishDarkSkin = avatarIdentity.nativeLanguage === 'en' && avatarIdentity.skinTone === 'dark';
+        // PHASE 3: Expanded cultural context application
+        const shouldApplyAfricanAmericanFeatures = 
+          (avatarIdentity.nativeLanguage === 'en' && avatarIdentity.skinTone === 'dark') ||
+          (avatarIdentity.nativeLanguage === 'es' && avatarIdentity.skinTone === 'dark') ||
+          (avatarIdentity.nativeLanguage === 'fr' && avatarIdentity.skinTone === 'dark');
         
-        if (isEnglishDarkSkin) {
+        if (shouldApplyAfricanAmericanFeatures) {
           const selectedHairstyle = selectAfricanAmericanHairstyle(avatarIdentity);
           const selectedFeatures = selectAfricanAmericanFeatures(avatarIdentity);
           
           if (selectedHairstyle) {
             culturalContext += `, ${selectedHairstyle}`;
-            console.log(`🎨 PHASE 2.3: African American hairstyle applied: ${selectedHairstyle.substring(0, 50)}...`);
+            console.log(`🎨 PHASE 3: African American hairstyle applied to ${avatarIdentity.culturalProfile?.ethnicity}: ${selectedHairstyle.substring(0, 50)}...`);
           }
           
           if (selectedFeatures) {
             culturalContext += `, ${selectedFeatures.skinTone}, ${selectedFeatures.eyeColor}, ${selectedFeatures.facialFeature}`;
-            console.log(`🎨 PHASE 2.3: African American features applied:`, selectedFeatures);
+            console.log(`🎨 PHASE 3: African American features applied to ${avatarIdentity.culturalProfile?.ethnicity}:`, selectedFeatures);
           }
         } else {
-          console.log(`🎨 PHASE 2.3: Cultural context skipped - Language: ${avatarIdentity.nativeLanguage}, Skin: ${avatarIdentity.skinTone}`);
+          console.log(`🎨 PHASE 3: Cultural context skipped - Language: ${avatarIdentity.nativeLanguage}, Skin: ${avatarIdentity.skinTone}, Ethnicity: ${avatarIdentity.culturalProfile?.ethnicity}`);
         }
         
-        // Simplified negative prompt with anti-whitewashing for African American characters
+        // PHASE 3: Base negative prompt with gender-specific additions
         culturalNegativePrompt = 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
         
-        if (isEnglishDarkSkin) {
+        // Gender-specific negative prompts
+        if (avatarIdentity.type === 'boy') {
+          culturalNegativePrompt += ', feminine features, makeup, lipstick, earrings, long eyelashes, dresses, skirts, ponytails, pigtails, bows, ribbons, princess style, girly accessories';
+        } else if (avatarIdentity.type === 'girl') {
+          culturalNegativePrompt += ', masculine features, facial hair, mustache, beard, short buzz cut, masculine clothing, ties, suits, masculine poses, broad shoulders, square jaw';
+        } else if (avatarIdentity.type === 'prefer-not-to-answer') {
+          culturalNegativePrompt += ', gender-specific clothing, dresses, suits, ties, makeup, facial hair, gender-defining hairstyles, masculine features, feminine features, gendered accessories';
+        }
+        
+        // Anti-whitewashing for African American features
+        if (shouldApplyAfricanAmericanFeatures) {
           culturalNegativePrompt += ', pale skin, light skin, white skin, blonde hair, straight hair, blue eyes, green eyes, European features, whitewashed, caucasian features, light eyes';
         }
         
