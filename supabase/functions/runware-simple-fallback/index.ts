@@ -1193,9 +1193,15 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
 
 // ============= ENHANCED CAMERA DIRECTIVE GENERATOR (Context-Aware) =============
 function generateCameraDirective(difficulty: string, scene?: string, setting?: string): string {
-  // OBJECT-FOCUSED SHOTS: When "sees", "looks at", "finds" are detected
-  if (scene && (scene.includes('seeing') || scene.includes('looking') || scene.includes('finding'))) {
-    console.log('🎯 Object-focused camera directive for "sees" action');
+  // OBJECT-FOCUSED SHOTS: When "sees", "looks at", "finds" are detected (checks both original verbs and mapped descriptions)
+  if (scene && (
+    scene.includes('seeing') || 
+    scene.includes('looking at') || 
+    scene.includes('looking') || 
+    scene.includes('finding') ||
+    scene.includes('placing') // for "put" → "placing carefully"
+  )) {
+    console.log('🎯 Object-focused camera directive for visual action');
     return "close-up focused shot, object prominently featured, detailed view";
   }
   
