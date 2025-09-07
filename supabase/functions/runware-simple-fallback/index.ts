@@ -37,16 +37,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= PHASE 5: OPTIMIZED TEMPLATE STRUCTURE - Character-Setting Separation =============
+// ============= PHASE 3 COMPLETE: RESTRUCTURED TEMPLATE SYSTEM - Enhanced Natural Language =============
 const PREMIUM_PROMPT_TEMPLATES = {
   // Levels 0-1: Short content - pageText stays first for immediate context
-  beginner: "Primary Scene: {pageText}. Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}",
+  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}",
   
   // Levels 2-4: Longer content - pageText moved to end for smart extraction with clear separation
-  medium: "Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  hard: "Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  expert: "Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
+  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}. Primary Scene: {pageText}",
+  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}. Primary Scene: {pageText}",
+  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}. Primary Scene: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -1713,8 +1713,8 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
     }
   }
   
-  // Return compact format (no ", with a" prefix to match current token-efficient format)
-  return detectedCharacters.length > 0 ? detectedCharacters[0] + ' nearby' : '';
+  // PHASE 4: Enhanced secondary character resolution with proper formatting
+  return detectedCharacters.length > 0 ? ` with ${detectedCharacters[0]} nearby` : '';
 }
 
 // ============= ENHANCED CAMERA DIRECTIVE WITH ACTION-CONTEXT MAPPING =============
@@ -1947,39 +1947,28 @@ function fillPremiumTemplate(
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
     
-    // ============= RED X FIX 5 & 8: HYBRID ENHANCEMENT LOGIC + FORMULAIC TEMPLATE ASSEMBLY =============
-    // Separate formulaic content (exact story words) from visual enhancement
-    const exactWords = ExactWordExtractor.extractExactWords(processedPageText);
-    const formulaicContent = `${exactWords.action} ${exactWords.objects.join(' ')} in ${exactWords.setting}`;
-    const visualEnhancement = `${cameraDirective}, ${styleSettings.frameworkPrompt}`;
+    // ============= PHASE 1 & 2 COMPLETE: ENHANCED OBJECT INTEGRATION + VARIABLE SCOPE FIX =============
+    // Use enhanced objects from extractSceneWithPremiumTemplate() - no duplicate extraction
+    const enhancedScene = applyContextAwareEnhancement(scene, scene, 'action');
     
-    // Apply context-aware enhancement rules (preserve exact words, enhance visuals)
-    const enhancedScene = applyContextAwareEnhancement(scene, exactWords.action, 'action');
-    const enhancedObjects = applyContextAwareEnhancement(objects, exactWords.objects.join(' '), 'objects');
+    // PHASE 2 FIX: Ensure enhancedSetting is properly scoped for template replacement
+    const scopedEnhancedSetting = enhancedSetting; // Ensure variable is in scope
     
-    // ============= MASTER PLAN: OPTIMIZED TEMPLATE FILLING (Hybrid System) =============
-    // PHASE 1: Bracket-style formulaic replacement BEFORE placeholder replacement
-    const exactWords = ExactWordExtractor.extractExactWords(pageText || '');
-    let bracketTemplate = template
-      .replace('[ACTION]', exactWords.action || enhancedScene)
-      .replace('[OBJECT]', exactWords.objects.join(' ') || enhancedObjects)
-      .replace('[SETTING]', exactWords.setting || enhancedSetting);
-    
-    // PHASE 2: Standard placeholder replacement
-    let filledTemplate = bracketTemplate
+    // ============= PHASE 3: RESTRUCTURED TEMPLATE REPLACEMENT - Natural Language Scene =============
+    let filledTemplate = template
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
+      .replace('{ethnicity}', ethnicity) // PHASE 3: Moved ethnicity to character description
       .replace('{hair}', finalMapping.hair)
       .replace('{features}', finalMapping.features)
       .replace('{scene}', enhancedScene)
-      .replace('{setting}', enhancedSetting)
-      .replace('{objects}', enhancedObjects)
-      .replace('{secondary_characters}', secondary_characters)
-      .replace('{cameraDirective}', cameraDirective) // 🎯 NEW: Wider angle enhancement
+      .replace('{setting}', scopedEnhancedSetting)
+      .replace('{objects}', objects) // Use enhanced objects from extractSceneWithPremiumTemplate
+      .replace('{secondary_characters}', secondary_characters ? ` ${secondary_characters}` : '') // PHASE 4: Handle empty strings
       .replace('{emotion}', emotion)
-      .replace('{ethnicity}', ethnicity)
-      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt);
+      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
+      .replace('{cameraDirective}', cameraDirective); // PHASE 5: Camera directive moved to end
     
     // Add clothing if detected
     if (clothing) {
