@@ -499,11 +499,14 @@ function debugDifficultyComparison(pageText: string, userInfo?: any, avatarIdent
 // Copy required functions and arrays from runware-simple-fallback
 // PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Style Framework Integration)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
-  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
-  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
-  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
-  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}"
+  // Levels 0-1: Full pageText first (short content)
+  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  
+  // Levels 2-4: Smart sentence extraction (2-3 sentences) placed before Brand Suffix
+  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}"
 };
 
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {

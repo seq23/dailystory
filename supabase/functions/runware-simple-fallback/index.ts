@@ -39,14 +39,14 @@ function createCorsOptionsResponse(): Response {
 
 // ============= PHASE 3 COMPLETE: RESTRUCTURED TEMPLATE SYSTEM - Enhanced Natural Language =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // Levels 0-1: Short content - pageText stays first for immediate context
-  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}",
-  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}",
+  // Levels 0-1: Full pageText first (short content)
+  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
   
-  // Levels 2-4: Longer content - pageText moved to end for smart extraction with clear separation
-  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}. Primary Scene: {pageText}",
-  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}. Primary Scene: {pageText}",
-  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {cameraDirective}. Primary Scene: {pageText}"
+  // Levels 2-4: Smart sentence extraction (2-3 sentences) placed before Brand Suffix
+  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -624,7 +624,7 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       scene: exactWords.action,
       setting: exactWords.setting,
       objects: enhancedObjects || exactWords.objects.join(' '), // Fallback to exact words if no enhanced objects
-      secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
+      secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber)
     };
 
     console.log('🛡️ Tier 2.5: Enhanced scene extraction complete with context filtering:', result);
@@ -1066,7 +1066,7 @@ function testPronounResolutionSystem() {
   console.log(`Test 4 - Character extraction: [${test4.join(', ')}] (Expected: ['mom'])`);
   
   // Test 5: Animal detection
-  const test5 = extractSecondaryCharactersFromSentence("She plays with her dog Max");
+  const test5 = extractSecondaryCharactersFromSentence("She plays with her dog Max", "test-session", 1);
   console.log(`Test 5 - Animal detection: "${test5}" (Expected: dog companion)`);
   
   console.log('🧪 Pronoun resolution system testing complete!');
@@ -1312,7 +1312,7 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
   }
   
   // COMPREHENSIVE PRONOUN RESOLUTION: Enhanced with character context and safety
-  const detectedCharacters = extractCharacterNamesFromDescription(extractSecondaryCharactersFromSentence(sentence));
+  const detectedCharacters = extractCharacterNamesFromDescription(extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber));
   const pronounResolved = resolvePronounsInSentence(sentence, originalPageText, detectedCharacters, sessionId, pageNumber);
   const processedSentence = pronounResolved || sentence;
   
@@ -1655,66 +1655,173 @@ function extractCharacterNamesFromDescription(description: string): string[] {
   return [];
 }
 
-function extractSecondaryCharactersFromSentence(sentence: string): string {
+function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: string, pageNumber?: number): string {
+  console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
+  
   const lowerSentence = sentence.toLowerCase();
   const detectedCharacters = [];
   
-  // EXPANDED: Family relationship patterns with pronouns + ANIMALS
-  const familyPatterns = [
-    { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother' },
-    { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father' },
-    { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister' },
-    { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'energetic brother' },
-    { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend' },
-    // ANIMALS AS SECONDARY CHARACTERS
-    { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal dog companion' },
-    { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious cat companion' },
-    { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'singing bird companion' },
-    { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'gentle rabbit companion' },
-    { pattern: /(?:my|your|his|her|their)\s+(pet|animal)/gi, description: 'beloved pet companion' }
+  // PHASE 1: PRIORITIZE PAGE TEXT NAME EXTRACTION
+  const extractedNames = extractCharacterNamesFromPageText(sentence, sessionId);
+  if (extractedNames.length > 0) {
+    detectedCharacters.push(...extractedNames.slice(0, 3)); // Up to 3 names
+    console.log(`✅ Extracted ${extractedNames.length} character names:`, extractedNames);
+  }
+  
+  // PHASE 2: SESSION-BASED CHARACTER CONTINUITY (if we don't have enough characters)
+  if (detectedCharacters.length < 3 && sessionId) {
+    const sessionCharacters = getSessionCharacterContext(sessionId, pageNumber);
+    const additionalCharacters = sessionCharacters.filter(char => 
+      !detectedCharacters.some(detected => detected.toLowerCase().includes(char.name.toLowerCase()))
+    ).slice(0, 3 - detectedCharacters.length);
+    
+    if (additionalCharacters.length > 0) {
+      detectedCharacters.push(...additionalCharacters.map(char => char.description));
+      console.log(`✅ Added ${additionalCharacters.length} session characters:`, additionalCharacters);
+    }
+  }
+  
+  // PHASE 3: EXPANDED CHARACTER KEYWORD ARRAYS (if still need more)
+  if (detectedCharacters.length < 3) {
+    const relationshipPatterns = [
+      // FAMILY EXTENDED
+      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'mom', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'dad', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'sister', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'brother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'grandma', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'grandpa', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'aunt', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'uncle', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'cousin', type: 'human' },
+      
+      // COMMUNITY EXTENDED
+      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'friend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'neighbor', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'classmate', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'teammate', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'coach', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'teacher', type: 'human' },
+      
+      // ANIMALS EXTENDED
+      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'dog', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'cat', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'bird', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'rabbit', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'horse', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'fish', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'hamster', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'guinea pig', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'turtle', type: 'animal' }
+    ];
+    
+    // Process relationship patterns
+    relationshipPatterns.forEach(({ pattern, description, type }) => {
+      if (detectedCharacters.length >= 3) return; // Stop if we have 3 characters
+      
+      const matches = [...lowerSentence.matchAll(pattern)];
+      matches.forEach(match => {
+        if (detectedCharacters.length >= 3) return;
+        
+        const characterName = description;
+        if (!detectedCharacters.some(char => char.toLowerCase().includes(characterName.toLowerCase()))) {
+          detectedCharacters.push(characterName);
+          console.log(`✅ Added relationship character: ${characterName} (${type})`);
+        }
+      });
+    });
+  }
+  
+  // PHASE 4: SMART FORMATTING FOR UP TO 3 CHARACTERS
+  if (detectedCharacters.length === 0) {
+    console.log(`🔍 No secondary characters found in: "${sentence}"`);
+    return '';
+  }
+  
+  let formattedCharacters = '';
+  if (detectedCharacters.length === 1) {
+    formattedCharacters = ` with ${detectedCharacters[0]}`;
+  } else if (detectedCharacters.length === 2) {
+    formattedCharacters = ` with ${detectedCharacters[0]} and ${detectedCharacters[1]}`;
+  } else if (detectedCharacters.length === 3) {
+    formattedCharacters = ` with ${detectedCharacters[0]}, ${detectedCharacters[1]}, and ${detectedCharacters[2]}`;
+  }
+  
+  console.log(`✅ Final secondary characters: "${formattedCharacters}"`);
+  return formattedCharacters;
+}
+
+// PHASE 1: Enhanced Name Extraction Function
+function extractCharacterNamesFromPageText(pageText: string, sessionId?: string): string[] {
+  console.log(`🔍 Extracting character names from: "${pageText}"`);
+  
+  const extractedNames = [];
+  
+  // 1. Extract proper nouns (capitalized names) - Common names only
+  const commonNames = [
+    'Sarah', 'Jake', 'Tommy', 'Maya', 'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Lucas',
+    'Sophia', 'Mason', 'Isabella', 'Ethan', 'Mia', 'Alexander', 'Charlotte', 'Jacob', 'Amelia',
+    'Michael', 'Harper', 'Benjamin', 'Evelyn', 'Elijah', 'Abigail', 'James', 'Emily', 'William',
+    'Elizabeth', 'Henry', 'Sofia', 'Owen', 'Avery', 'Sebastian', 'Ella', 'Jackson', 'Madison',
+    'Aiden', 'Scarlett', 'Matthew', 'Victoria', 'Samuel', 'Aria', 'David', 'Grace', 'Joseph',
+    'Chloe', 'Carter', 'Camila', 'Wyatt', 'Penelope', 'John', 'Riley', 'Jack', 'Layla', 'Luke'
   ];
   
-  // Process pronoun-based family patterns first (more specific)
-  familyPatterns.forEach(({ pattern, description }) => {
-    const matches = [...lowerSentence.matchAll(pattern)];
+  const namePattern = new RegExp(`\\b(${commonNames.join('|')})\\b`, 'gi');
+  const nameMatches = [...pageText.matchAll(namePattern)];
+  
+  nameMatches.forEach(match => {
+    const name = match[1];
+    if (!extractedNames.includes(name.toLowerCase()) && extractedNames.length < 3) {
+      extractedNames.push(name.toLowerCase());
+    }
+  });
+  
+  // 2. Check for relationship patterns with names
+  const relationshipNamePatterns = [
+    /(\w+)'s (mom|dad|sister|brother|friend)/gi,
+    /(\w+) and (\w+)/gi,
+    /(mom|dad|sister|brother|friend) (\w+)/gi
+  ];
+  
+  relationshipNamePatterns.forEach(pattern => {
+    const matches = [...pageText.matchAll(pattern)];
     matches.forEach(match => {
-      const name = match[1].toLowerCase();
-      if (!detectedCharacters.find(c => c.includes(name))) {
-        detectedCharacters.push(description);
+      if (extractedNames.length >= 3) return;
+      
+      // Extract potential names from relationship patterns
+      if (match[1] && commonNames.some(name => name.toLowerCase() === match[1].toLowerCase())) {
+        if (!extractedNames.includes(match[1].toLowerCase())) {
+          extractedNames.push(match[1].toLowerCase());
+        }
+      }
+      if (match[2] && commonNames.some(name => name.toLowerCase() === match[2].toLowerCase())) {
+        if (!extractedNames.includes(match[2].toLowerCase()) && extractedNames.length < 3) {
+          extractedNames.push(match[2].toLowerCase());
+        }
       }
     });
   });
   
-  // If no pronoun-based matches, fall back to simple keyword detection (EXPANDED WITH ANIMALS)
-  if (detectedCharacters.length === 0) {
-    const simpleCharacterMappings = {
-      'teacher': 'kind helpful teacher',
-      'parent': 'loving supportive parent', 
-      'family': 'loving family members',
-      'classmate': 'happy classmates',
-      'student': 'fellow students learning together',
-      'children': 'other joyful children',
-      'kids': 'other excited kids playing',
-      'people': 'friendly community members',
-      // ANIMALS AS SECONDARY CHARACTERS
-      'dog': 'loyal dog companion',
-      'cat': 'curious cat companion', 
-      'bird': 'singing bird companion',
-      'rabbit': 'gentle rabbit companion',
-      'squirrel': 'playful squirrel companion',
-      'butterfly': 'colorful butterfly companion'
-    };
+  console.log(`✅ Extracted names: ${extractedNames.length > 0 ? extractedNames.join(', ') : 'none'}`);
+  return extractedNames;
+}
+
+// PHASE 2: Session Character Context Function
+function getSessionCharacterContext(sessionId: string, pageNumber?: number): Array<{name: string, description: string, type: string}> {
+  // Import the UnifiedCharacterDescriptor class
+  try {
+    // This would normally import from the shared module
+    // For now, return empty array as fallback
+    console.log(`🔍 Checking session ${sessionId} for character context`);
     
-    for (const [character, description] of Object.entries(simpleCharacterMappings)) {
-      if (lowerSentence.includes(character)) {
-        detectedCharacters.push(description);
-        break; // Only take first match to avoid overcrowding
-      }
-    }
+    // TODO: Integrate with UnifiedCharacterDescriptor.getCharacterConsistencyData(sessionId)
+    // For now, return empty array until full integration
+    return [];
+  } catch (error) {
+    console.warn('Session character context not available:', error);
+    return [];
   }
-  
-  // PHASE 4: Enhanced secondary character resolution with proper formatting
-  return detectedCharacters.length > 0 ? ` with ${detectedCharacters[0]} nearby` : '';
 }
 
 // ============= ENHANCED CAMERA DIRECTIVE WITH ACTION-CONTEXT MAPPING =============
@@ -1780,6 +1887,53 @@ function generateCameraDirective(difficulty: string, scene?: string, setting?: s
   const finalDirective = difficultyEnhancements[difficulty] || baseDirective;
   console.log(`🎯 Enhanced wide-angle directive: ${finalDirective}`);
   return finalDirective;
+}
+
+// PHASE 7: Primary Scene Smart Extraction for Levels 2-4
+function extractFirstSentences(pageText: string, difficulty: string): string {
+  console.log(`🔍 Smart sentence extraction for difficulty: ${difficulty}`);
+  
+  if (!pageText || pageText.trim() === '') {
+    console.log('📝 Empty pageText, returning empty string');
+    return '';
+  }
+  
+  // For levels 0-1 (beginner/easy), use full pageText
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    console.log('📝 Beginner/Easy level: Using full pageText');
+    return pageText.trim();
+  }
+  
+  // For levels 2-4, extract first 2-3 sentences
+  try {
+    // Split by sentence boundaries (., !, ?)
+    const sentences = pageText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+    
+    if (sentences.length === 0) {
+      console.log('📝 No sentences found, using full pageText');
+      return pageText.trim();
+    }
+    
+    let sentenceCount;
+    if (difficulty === 'medium') {
+      sentenceCount = 2;
+    } else if (difficulty === 'hard' || difficulty === 'expert') {
+      sentenceCount = 3;
+    } else {
+      sentenceCount = 2; // Default fallback
+    }
+    
+    // Take the first N sentences and rejoin them
+    const extractedSentences = sentences.slice(0, sentenceCount);
+    const result = extractedSentences.join('. ') + (extractedSentences.length > 0 ? '.' : '');
+    
+    console.log(`📝 Extracted ${extractedSentences.length} sentences (${result.length} chars): "${result}"`);
+    return result;
+    
+  } catch (error) {
+    console.warn('⚠️ Sentence extraction failed, using full pageText:', error);
+    return pageText.trim();
+  }
 }
 
 function fillPremiumTemplate(
