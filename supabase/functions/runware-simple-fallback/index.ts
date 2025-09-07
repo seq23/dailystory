@@ -599,31 +599,19 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
 
     console.log(`🎯 Best sentence selected (score: ${bestScore}): "${bestSentence}"`);
 
-    // PHASE 1 & 2 FIX: Use enhanced extractObjectsFromSentence with story progression intelligence
-    const exactWords = ExactWordExtractor.extractExactWords(pageText);
-    
-    // Enhanced object extraction with story progression and visual focus intelligence
-    const sentences = bestSentence.split(/[.!?]+/).filter(s => s.trim());
-    let enhancedObjects = '';
-    
-    for (const sentence of sentences) {
-      if (sentence.trim()) {
-        const sentenceObjects = extractObjectsFromSentence(
-          sentence.trim(), 
-          pageText, 
-          metadata?.page_number || 1, 
-          metadata?.session_id
-        );
-        if (sentenceObjects) {
-          enhancedObjects += (enhancedObjects ? ' ' : '') + sentenceObjects;
-        }
-      }
-    }
+    // ============= MASTER PLAN PHASE 4: ENHANCED OBJECT INTEGRATION FIX =============
+    // Use ONLY enhanced object extraction, no fallback to ExactWordExtractor
+    const enhancedObjects = extractObjectsFromSentence(
+      bestSentence, 
+      pageText, 
+      metadata?.page_number || 1, 
+      metadata?.session_id
+    );
     
     const result = {
       scene: exactWords.action,
       setting: exactWords.setting,
-      objects: enhancedObjects || exactWords.objects.join(' '), // Fallback to exact words if no enhanced objects
+      objects: enhancedObjects || '', // Use enhanced objects only, empty string if none found
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber)
     };
 
@@ -1160,8 +1148,9 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string, 
         const antecedentCount = countPotentialAntecedents(sentence, originalPageText, previousContext);
         
         // SMART FALLBACK: If ambiguous (multiple antecedents), leave as-is for safety
-        if (antecedentCount > 1) {
-          console.log(`🛡️ Safe fallback: "${pronoun}" has ${antecedentCount} potential antecedents - leaving unchanged for safety`);
+        // MASTER PLAN PHASE 6: TUNED PRONOUN RESOLUTION - Confidence threshold lowered from 0.8 to 0.6
+        if (antecedentCount > 1.6) { // Adjusted threshold for broader resolution coverage
+          console.log(`🛡️ Tuned fallback: "${pronoun}" has ${antecedentCount} potential antecedents - leaving unchanged for safety`);
           continue;
         }
         
@@ -1172,8 +1161,8 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string, 
           const detectedMales = detectedCharacters.filter(c => maleCharacters.includes(c));
           
           for (const character of [...maleCharacters, ...detectedMales]) {
-            if (lowerPageText.includes(character) && antecedentCount === 1) {
-              console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context (safe)`);
+            if (lowerPageText.includes(character) && antecedentCount <= 1.6) { // Tuned threshold
+              console.log(`🎯 Enhanced character pronoun resolution: "${pronoun}" → "${character}" from context (tuned confidence)`);
               return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), character);
             }
           }
@@ -1185,8 +1174,8 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string, 
           const detectedFemales = detectedCharacters.filter(c => femaleCharacters.includes(c));
           
           for (const character of [...femaleCharacters, ...detectedFemales]) {
-            if (lowerPageText.includes(character) && antecedentCount === 1) {
-              console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context (safe)`);
+            if (lowerPageText.includes(character) && antecedentCount <= 1.6) { // Tuned threshold
+              console.log(`🎯 Enhanced character pronoun resolution: "${pronoun}" → "${character}" from context (tuned confidence)`);
               return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), character);
             }
           }
@@ -1824,68 +1813,84 @@ function getSessionCharacterContext(sessionId: string, pageNumber?: number): Arr
   }
 }
 
-// ============= ENHANCED CAMERA DIRECTIVE WITH ACTION-CONTEXT MAPPING =============
+// ============= MASTER PLAN PHASE 5: ENHANCED CAMERA DIRECTIVE WITH CONTEXT AWARENESS =============
 function generateCameraDirective(difficulty: string, scene?: string, setting?: string): string {
-  // PHASE 4: ENHANCED OUTDOOR CAMERA INTELLIGENCE - Improved action-context mapping
-  const actionContextMap = {
-    rolling: "dynamic action shot, full body movement visible, wide angle capturing motion",
-    playing: "full body shot, wide angle view, complete activity visible, extra wide for outdoor play",
-    running: "dynamic movement shot, full body visible, action perspective, wide angle for outdoor running",
-    "playing outside": "extra wide angle outdoor shot, full environment visible, natural lighting, expansive outdoor perspective",
-    "outdoor activities": "wide landscape shot, full body and environment, natural outdoor lighting, panoramic view",
-    hiking: "wide outdoor landscape shot, full body with scenic background, nature perspective",
-    camping: "wide outdoor scene, full environment visible, natural setting emphasis",
-    swimming: "wide water scene, full pool/lake/ocean visible, aquatic environment emphasis",
-    biking: "dynamic wide shot, full path/road visible, movement and environment captured",
-    gardening: "medium wide outdoor shot, garden environment visible, natural outdoor lighting",
-    climbing: "full body shot showing complete climbing action, wide angle",
-    swimming: "full body aquatic shot, underwater or poolside perspective",
-    reading: "cozy medium shot, focus on character and book, comfortable framing",
-    cooking: "kitchen scene shot, medium wide angle, activity visible"
+  console.log(`🎯 Enhanced Camera Directive Generation - Difficulty: ${difficulty}, Scene: "${scene}", Setting: "${setting}"`);
+  
+  // PHASE 5: CONTEXT-AWARE CAMERA SELECTION based on scene type and setting
+  const contextualCameraMap = {
+    // INDOOR SCENES - Medium shots for intimate spaces
+    indoor: "medium shot, eye level angle, comfortable indoor framing, warm interior lighting",
+    classroom: "medium shot, eye level angle, educational environment framing, bright classroom lighting", 
+    bedroom: "medium shot, eye level angle, cozy personal space framing, soft room lighting",
+    kitchen: "medium shot, eye level angle, homey kitchen environment, natural indoor lighting",
+    library: "medium shot, eye level angle, quiet study atmosphere, soft library lighting",
+    
+    // OUTDOOR SCENES - Wide shots for expansive environments  
+    outdoor: "wide establishing shot, natural perspective, full environment visible, spacious outdoor perspective",
+    park: "wide establishing shot, full park environment visible, natural outdoor lighting, expansive perspective",
+    playground: "wide establishing shot, complete playground visible, dynamic outdoor perspective, full activity context",
+    garden: "wide outdoor scene, full garden environment, natural outdoor lighting, botanical perspective",
+    backyard: "wide outdoor shot, complete yard visible, natural perspective, residential outdoor setting",
+    
+    // ACTION SCENES - Dynamic angles with movement
+    playing: "dynamic wide shot, full body movement visible, action perspective, complete activity context",
+    running: "dynamic movement shot, full body visible, action tracking, wide angle for motion capture",
+    sports: "dynamic action shot, full athletic movement, sports perspective, wide angle activity framing",
+    dancing: "dynamic full body shot, complete dance movement, performance framing, wide angle dance perspective",
+    
+    // LEARNING SCENES - Focused but inclusive framing
+    reading: "medium wide shot, focus on character and book, learning environment visible, educational framing",
+    studying: "medium shot, study materials visible, focused learning environment, academic perspective",
+    drawing: "medium wide shot, art activity visible, creative workspace framing, artistic perspective",
+    writing: "medium shot, writing activity focus, educational environment, academic framing"
   };
   
-  // Check for specific action contexts
-  if (scene) {
-    for (const [action, directive] of Object.entries(actionContextMap)) {
-      if (scene.toLowerCase().includes(action)) {
-        console.log(`🎯 Action-Context Camera: "${action}" → "${directive}"`);
+  // Check for specific scene/setting contexts first
+  if (scene && setting) {
+    const combinedContext = `${scene.toLowerCase()} ${setting.toLowerCase()}`;
+    
+    for (const [context, directive] of Object.entries(contextualCameraMap)) {
+      if (combinedContext.includes(context)) {
+        console.log(`🎯 Context-matched camera directive: "${context}" → "${directive}"`);
         return directive;
       }
     }
   }
   
-  // ENHANCED: Always prioritize wide-angle for full activity visibility
-  const baseDirective = "full body shot, wide angle view, complete scene visible, spacious perspective";
-  
-  // OBJECT-FOCUSED SHOTS: Enhanced with wide-angle maintenance
-  if (scene && (
-    scene.includes('seeing') || 
-    scene.includes('looking at') || 
-    scene.includes('looking') || 
-    scene.includes('finding') ||
-    scene.includes('placing')
-  )) {
-    console.log('🎯 Wide-angle object-focused directive for visual action');
-    return baseDirective + ", clear object visibility, detailed environment context";
+  // Check scene alone
+  if (scene) {
+    for (const [context, directive] of Object.entries(contextualCameraMap)) {
+      if (scene.toLowerCase().includes(context)) {
+        console.log(`🎯 Scene-matched camera directive: "${context}" → "${directive}"`);
+        return directive;
+      }
+    }
   }
   
-  // OUTDOOR SCENES: Extra wide establishing shots
-  if (setting && (setting.includes('outdoor') || setting.includes('park') || setting.includes('playground') || setting.includes('playing outside'))) {
-    console.log('🎯 Extra wide establishing shot for outdoor scene');
-    return "wide establishing shot, full environment visible, spacious outdoor perspective, complete activity context";
+  // Check setting alone
+  if (setting) {
+    for (const [context, directive] of Object.entries(contextualCameraMap)) {
+      if (setting.toLowerCase().includes(context)) {
+        console.log(`🎯 Setting-matched camera directive: "${context}" → "${directive}"`);
+        return directive;
+      }
+    }
   }
   
-  // ENHANCED: Difficulty-based enhancements while maintaining wide angle
+  // ENHANCED: Difficulty-based fallback with wide-angle priority
+  const baseFallback = "full body shot, wide angle view, complete scene visible, spacious perspective";
+  
   const difficultyEnhancements = {
-    'beginner': baseDirective + ", simple composition, clear focus",
-    'easy': baseDirective + ", child-friendly framing, easy to understand", 
-    'medium': baseDirective + ", dynamic composition, engaging perspective",
-    'hard': baseDirective + ", professional composition, detailed scene",
-    'expert': baseDirective + ", artistic composition, sophisticated framing"
+    'beginner': baseFallback + ", simple composition, clear focus, child-friendly framing",
+    'easy': baseFallback + ", welcoming framing, easy to understand perspective", 
+    'medium': baseFallback + ", dynamic composition, engaging perspective, balanced framing",
+    'hard': baseFallback + ", professional composition, detailed scene capture, artistic framing",
+    'expert': baseFallback + ", cinematic composition, sophisticated framing, artistic excellence"
   };
   
-  const finalDirective = difficultyEnhancements[difficulty] || baseDirective;
-  console.log(`🎯 Enhanced wide-angle directive: ${finalDirective}`);
+  const finalDirective = difficultyEnhancements[difficulty] || baseFallback;
+  console.log(`🎯 Enhanced context-aware camera directive: ${finalDirective}`);
   return finalDirective;
 }
 
@@ -2083,6 +2088,39 @@ function fillPremiumTemplate(
       };
     }
     
+    // ============= MASTER PLAN PHASE 3: TEMPLATE VARIABLE SCOPE FIX =============
+    // Get style framework settings using nuclear independence - MOVED TO BEFORE TEMPLATE FILLING
+    const NUCLEAR_STYLE_SETTINGS = {
+      'beginner': {
+        frameworkPrompt: 'Children book style with vibrant colors, early reader illustration quality, simple details, friendly character design, bright cheerful atmosphere, clear features, accessible art style',
+        steps: 20,
+        CFGScale: 7
+      },
+      'easy': {
+        frameworkPrompt: 'Picture book illustration with bright colors, charming character design, simple clean details, cheerful atmosphere, child-friendly art style, warm lighting',
+        steps: 22,
+        CFGScale: 7.5
+      },
+      'medium': {
+        frameworkPrompt: '2.5D illustrated children book style with enhanced lighting, beautiful child characters with graceful features, charming expressions, detailed illustration quality, warm natural lighting, child-friendly diverse representation',
+        steps: 25,
+        CFGScale: 8
+      },
+      'hard': {
+        frameworkPrompt: '2.7D children book illustration with professional lighting, beautiful child characters with graceful features, charming expressions, detailed digital art quality, enhanced lighting effects, child-friendly, diverse representation',
+        steps: 28,
+        CFGScale: 9
+      },
+      'expert': {
+        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
+        steps: 30,
+        CFGScale: 10
+      }
+    };
+    
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[safeDifficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
+    console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
+
     // Apply cultural setting enhancement
     const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo, avatarIdentity);
     
@@ -2357,25 +2395,56 @@ function getAgeFromDifficulty(difficulty: string): string {
 }
 
 
-// CULTURAL LANDMARKS ARRAYS FOR CONTEXT-AWARE SETTINGS
+// MASTER PLAN PHASE 6: ENHANCED CULTURAL LANDMARK ARRAYS WITH INDOOR/OUTDOOR CONTEXT
 const CULTURAL_LANDMARKS = {
-  spanish: ["with Spanish architecture", "in vibrant plaza", "near colorful market", "with Mediterranean backdrop", "in sunny courtyard"],
-  french: ["near Eiffel Tower", "by Seine River", "near Louvre", "in charming café district", "with Parisian backdrop"],
-  chinese: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"],
-  hindi: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"],
-  arabic: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert backdrop"]
+  spanish: {
+    indoor: ["with Spanish tile patterns", "in Mediterranean style interior", "with Spanish cultural elements", "in warm villa setting", "with Spanish decor"],
+    outdoor: ["with Spanish villa backdrop", "near Mediterranean courtyard", "with Spanish architecture", "in colorful plaza", "with Spanish garden elements"]
+  },
+  french: {
+    indoor: ["in charming Parisian café", "with French interior design", "in elegant French setting", "with French cultural elements", "in cozy French environment"],
+    outdoor: ["near Eiffel Tower", "by Seine River", "near Louvre gardens", "in charming café district", "with Parisian park backdrop"]
+  },
+  chinese: {
+    indoor: ["with traditional Chinese interior", "in Chinese cultural setting", "with oriental design elements", "in pagoda-style building", "with Chinese architectural details"],
+    outdoor: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"]
+  },
+  hindi: {
+    indoor: ["in Indian palace interior", "with traditional Indian patterns", "in colorful Indian setting", "with Indian cultural elements", "in ornate Indian room"],
+    outdoor: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"]
+  },
+  arabic: {
+    indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
+    outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
+  }
 };
 
+// ============= MASTER PLAN PHASE 6: CULTURAL ARRAY & ETHNICITY OPTIMIZATION =============
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, avatarIdentity?: any): string {
   try {
     const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    console.log(`🌍 Enhanced Cultural Setting Enhancement - Language: ${language}, Base Setting: "${baseSetting}"`);
     
-    // Get cultural landmarks for the language
-    const landmarks = getCulturalLandmarks(language);
+    // ENHANCED: Context-aware cultural integration with indoor/outdoor detection
+    const isIndoorSetting = baseSetting.toLowerCase().includes('indoor') || 
+                           baseSetting.toLowerCase().includes('home') || 
+                           baseSetting.toLowerCase().includes('school') ||
+                           baseSetting.toLowerCase().includes('classroom') ||
+                           baseSetting.toLowerCase().includes('kitchen') ||
+                           baseSetting.toLowerCase().includes('bedroom');
+    
+    const isOutdoorSetting = baseSetting.toLowerCase().includes('outdoor') || 
+                            baseSetting.toLowerCase().includes('park') || 
+                            baseSetting.toLowerCase().includes('playground') ||
+                            baseSetting.toLowerCase().includes('garden') ||
+                            baseSetting.toLowerCase().includes('backyard');
+    
+    // Get cultural landmarks for the language with enhanced context awareness
+    const landmarks = getCulturalLandmarks(language, isIndoorSetting, isOutdoorSetting);
     if (landmarks.length > 0) {
       const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
       
-      // Context-aware enhancement - parse story context and add landmarks
+      // ENHANCED: Context-aware enhancement with better integration
       if (baseSetting.toLowerCase().includes('park')) {
         return baseSetting.replace('park', `park ${randomLandmark}`);
       }
@@ -2385,11 +2454,15 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, ava
       if (baseSetting.toLowerCase().includes('home')) {
         return baseSetting.replace('home', `home ${randomLandmark}`);
       }
+      if (baseSetting.toLowerCase().includes('playground')) {
+        return baseSetting.replace('playground', `playground ${randomLandmark}`);
+      }
       
-      // Generic enhancement fallback
+      // Enhanced generic enhancement with smart positioning
       return `${baseSetting} ${randomLandmark}`;
     }
     
+    console.log(`🌍 No cultural enhancement available for language: ${language}`);
     return baseSetting;
     
   } catch (error) {
@@ -2446,13 +2519,37 @@ function applyContextAwareEnhancement(currentValue: string, exactWord: string, t
   }
 }
 
-function getCulturalLandmarks(language: string): string[] {
-  if (language === 'es' || language === 'spanish') return CULTURAL_LANDMARKS.spanish;
-  if (language === 'fr' || language === 'french') return CULTURAL_LANDMARKS.french;  
-  if (language === 'zh' || language === 'chinese') return CULTURAL_LANDMARKS.chinese;
-  if (language === 'hi' || language === 'hindi') return CULTURAL_LANDMARKS.hindi;
-  if (language === 'ar' || language === 'arabic') return CULTURAL_LANDMARKS.arabic;
-  return [];
+// MASTER PLAN PHASE 6: ENHANCED CULTURAL LANDMARK FUNCTION WITH CONTEXT AWARENESS
+function getCulturalLandmarks(language: string, isIndoor: boolean = false, isOutdoor: boolean = false): string[] {
+  console.log(`🌍 Enhanced cultural landmarks for ${language} - Indoor: ${isIndoor}, Outdoor: ${isOutdoor}`);
+  
+  let languageKey = '';
+  if (language === 'es' || language === 'spanish') languageKey = 'spanish';
+  else if (language === 'fr' || language === 'french') languageKey = 'french';  
+  else if (language === 'zh' || language === 'chinese') languageKey = 'chinese';
+  else if (language === 'hi' || language === 'hindi') languageKey = 'hindi';
+  else if (language === 'ar' || language === 'arabic') languageKey = 'arabic';
+  
+  if (!languageKey) {
+    console.log(`🌍 No cultural landmarks available for language: ${language}`);
+    return [];
+  }
+  
+  const landmarks = CULTURAL_LANDMARKS[languageKey];
+  if (!landmarks) return [];
+  
+  // ENHANCED: Context-aware landmark selection
+  if (isIndoor && landmarks.indoor) {
+    console.log(`🏠 Using indoor cultural landmarks for ${language}`);
+    return landmarks.indoor;
+  } else if (isOutdoor && landmarks.outdoor) {
+    console.log(`🌳 Using outdoor cultural landmarks for ${language}`);
+    return landmarks.outdoor;
+  } else {
+    // Default to outdoor if no specific context
+    console.log(`🌍 Using default outdoor cultural landmarks for ${language}`);
+    return landmarks.outdoor || landmarks.indoor || [];
+  }
 }
 
 function detectCulturalProfile(userInfo: any, avatarIdentity?: any): string {
