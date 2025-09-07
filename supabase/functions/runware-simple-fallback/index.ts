@@ -2,6 +2,7 @@
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
+import { ExactWordExtractor } from "../_shared/ExactWordExtractor.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -39,13 +40,13 @@ function createCorsOptionsResponse(): Response {
 // ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Fixed Architecture) =============
 const PREMIUM_PROMPT_TEMPLATES = {
   // Levels 0-1: Short content - pageText stays first for immediate context
-  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
   
   // Levels 2-4: Longer content - pageText moved to end for smart extraction
-  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
+  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -598,11 +599,12 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
 
     console.log(`🎯 Best sentence selected (score: ${bestScore}): "${bestSentence}"`);
 
-    // Extract components from best sentence with enhanced detection
+    // Extract components using ExactWordExtractor for formulaic precision
+    const exactWords = ExactWordExtractor.extractExactWords(pageText);
     const result = {
-      scene: extractActionFromSentence(bestSentence),
-      setting: extractSettingFromSentence(bestSentence, previousSetting),
-      objects: extractObjectsFromSentence(bestSentence, pageText, pageNumber, sessionId),
+      scene: exactWords.action,
+      setting: exactWords.setting,
+      objects: exactWords.objects.join(' '),
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
 
@@ -622,9 +624,50 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
 
 // ============= MASTER PLAN: SMART PLURAL/STEM DETECTION SYSTEM =============
 // Automatically handles verb conjugations without manual arrays
+
+// ============= RED X FIX 3: MISSING PLURAL/SINGULAR DETECTION =============
+function detectPlural(word: string): boolean {
+  const cleanWord = word.toLowerCase().trim();
+  
+  // Irregular plurals
+  const irregularPlurals = ['children', 'feet', 'teeth', 'mice', 'geese', 'deer', 'sheep', 'fish'];
+  if (irregularPlurals.includes(cleanWord)) return true;
+  
+  // Regular plurals (but exclude words that naturally end in 's')
+  const naturalSWords = ['was', 'is', 'has', 'this', 'yes', 'bus', 'class', 'glass', 'grass'];
+  if (naturalSWords.includes(cleanWord)) return false;
+  
+  return cleanWord.endsWith('s') || cleanWord.endsWith('es');
+}
+
+function preserveExactWordForm(detectedWord: string, originalText: string): string {
+  const lowerOriginal = originalText.toLowerCase();
+  const pluralForm = detectedWord + 's';
+  const esPlural = detectedWord + 'es';
+  
+  // Check for exact word preservation
+  if (lowerOriginal.includes(pluralForm)) return pluralForm;
+  if (lowerOriginal.includes(esPlural)) return esPlural;
+  if (lowerOriginal.includes(detectedWord)) return detectedWord;
+  
+  return detectedWord; // Fallback to base form
+}
+
+// ============= RED X FIX 4: ENHANCED STEM DETECTION WITH IRREGULAR VERBS =============
 function detectActionStem(word: string): string {
   // Convert to lowercase and trim
   const cleanWord = word.toLowerCase().trim();
+  
+  // Irregular verb mappings for exact preservation
+  const irregularVerbs = {
+    'ran': 'run', 'threw': 'throw', 'caught': 'catch', 'swam': 'swim',
+    'flew': 'fly', 'drove': 'drive', 'rode': 'ride', 'wrote': 'write',
+    'sang': 'sing', 'rang': 'ring', 'drank': 'drink', 'sank': 'sink'
+  };
+  
+  if (irregularVerbs[cleanWord]) {
+    return irregularVerbs[cleanWord];
+  }
   
   // Handle doubled consonants first (running → run, rolling → roll, sitting → sit)
   const doubledConsonants = /(.+)([bcdfghjklmnpqrstvwxyz])\2(ing|ed)$/;
@@ -1716,17 +1759,27 @@ function fillPremiumTemplate(
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
     
-    // ============= MASTER PLAN: OPTIMIZED TEMPLATE FILLING (New Structure) =============
-    // New order: Character → Action with objects → Setting → Camera → Emotion → Framework → Story context
+    // ============= RED X FIX 5 & 8: HYBRID ENHANCEMENT LOGIC + FORMULAIC TEMPLATE ASSEMBLY =============
+    // Separate formulaic content (exact story words) from visual enhancement
+    const exactWords = ExactWordExtractor.extractExactWords(processedPageText);
+    const formulaicContent = `${exactWords.action} ${exactWords.objects.join(' ')} in ${exactWords.setting}`;
+    const visualEnhancement = `${cameraDirective}, ${styleSettings.frameworkPrompt}`;
+    
+    // Apply context-aware enhancement rules (preserve exact words, enhance visuals)
+    const enhancedScene = applyContextAwareEnhancement(scene, exactWords.action, 'action');
+    const enhancedObjects = applyContextAwareEnhancement(objects, exactWords.objects.join(' '), 'objects');
+    
+    // ============= MASTER PLAN: OPTIMIZED TEMPLATE FILLING (Hybrid System) =============
+    // New order: Character → Formulaic content → Enhanced visuals → Story context
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
       .replace('{hair}', finalMapping.hair)
       .replace('{features}', finalMapping.features)
-      .replace('{scene}', scene)
+      .replace('{scene}', enhancedScene)
       .replace('{setting}', enhancedSetting)
-      .replace('{objects}', objects)
+      .replace('{objects}', enhancedObjects)
       .replace('{secondary_characters}', secondary_characters)
       .replace('{cameraDirective}', cameraDirective) // 🎯 NEW: Wider angle enhancement
       .replace('{emotion}', emotion)
@@ -2004,6 +2057,46 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, ava
   } catch (error) {
     console.warn('⚠️ Tier 2.5: Cultural setting enhancement error:', error);
     return baseSetting;
+  }
+}
+
+// ============= RED X FIX 6: CONTEXT-AWARE ENHANCEMENT RULES =============
+// Preserve exact story words while adding appropriate visual descriptors
+function applyContextAwareEnhancement(currentValue: string, exactWord: string, type: 'action' | 'objects' | 'setting'): string {
+  if (!exactWord || !currentValue) return currentValue;
+  
+  try {
+    // Preserve exact story content first, enhance visually second
+    if (type === 'action') {
+      // Keep exact verb form, add context-appropriate descriptors
+      if (exactWord.includes('roll')) return `${exactWord} smoothly`;
+      if (exactWord.includes('run')) return `${exactWord} energetically`;
+      if (exactWord.includes('jump')) return `${exactWord} joyfully`;
+      if (exactWord.includes('play')) return `${exactWord} happily`;
+      return exactWord; // Preserve exact word if no enhancement needed
+    }
+    
+    if (type === 'objects') {
+      // Keep exact object names, add visual quality descriptors
+      if (exactWord.includes('ball')) return exactWord.includes('red') ? exactWord : `colorful ${exactWord}`;
+      if (exactWord.includes('book')) return `${exactWord}`;
+      if (exactWord.includes('toy')) return `${exactWord}`;
+      return exactWord; // Preserve exact object
+    }
+    
+    if (type === 'setting') {
+      // Keep exact location, add atmospheric descriptors
+      if (exactWord.includes('hill')) return `scenic ${exactWord}`;
+      if (exactWord.includes('park')) return `beautiful ${exactWord}`;
+      if (exactWord.includes('playground')) return `fun ${exactWord}`;
+      return exactWord; // Preserve exact setting
+    }
+    
+    return currentValue; // Fallback to current value
+    
+  } catch (error) {
+    console.warn('⚠️ Context-aware enhancement error:', error);
+    return currentValue; // Return original on error
   }
 }
 

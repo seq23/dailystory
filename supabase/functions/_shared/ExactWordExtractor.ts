@@ -24,6 +24,18 @@ export class ExactWordExtractor {
   static extractExactWords(pageText: string): ExactWordMapping {
     const cleanText = pageText.toLowerCase().trim();
     
+    // RED X FIX 7: Check for compound phrases first
+    const compoundPhrase = this.detectCompoundPhrases(cleanText);
+    if (compoundPhrase) {
+      console.log('🎯 EXACT WORD EXTRACTION (Compound):', compoundPhrase);
+      return {
+        action: compoundPhrase.action,
+        objects: compoundPhrase.objects,
+        setting: compoundPhrase.setting,
+        originalForm: true
+      };
+    }
+    
     // Extract exact action (preserve verb form from text)
     const action = this.extractExactAction(cleanText);
     
@@ -44,9 +56,56 @@ export class ExactWordExtractor {
   }
   
   /**
-   * Extract exact action verb from story text
-   * Preserve exact conjugation: "runs" stays "runs", "running" stays "running"
+   * RED X FIX 7: COMPOUND PHRASE DETECTION
+   * Detect semantic units like "ball rolls down hill" as complete phrases
+   * Prevent fragmentation and preserve spatial relationships
    */
+  private static detectCompoundPhrases(text: string): { phrase: string; action: string; objects: string[]; setting: string } | null {
+    const cleanText = text.toLowerCase().trim();
+    
+    // Common compound action phrases with spatial relationships
+    const compoundPatterns = [
+      {
+        pattern: /(.+)\s+(rolls?|rolling)\s+down\s+(.+)/,
+        extractPhrase: (match: RegExpMatchArray) => ({
+          phrase: match[0],
+          action: match[2], // rolls/rolling
+          objects: [match[1].trim()], // ball/toy
+          setting: match[3].trim() // hill/slope
+        })
+      },
+      {
+        pattern: /(.+)\s+(climbs?|climbing)\s+up\s+(.+)/,
+        extractPhrase: (match: RegExpMatchArray) => ({
+          phrase: match[0],
+          action: match[2], // climbs/climbing
+          objects: [match[1].trim()], // child/person
+          setting: match[3].trim() // hill/tree
+        })
+      },
+      {
+        pattern: /(.+)\s+(runs?|running)\s+(across|through)\s+(.+)/,
+        extractPhrase: (match: RegExpMatchArray) => ({
+          phrase: match[0],
+          action: match[2], // runs/running
+          objects: [match[1].trim()], // child/person
+          setting: match[4].trim() // field/park
+        })
+      }
+    ];
+    
+    // Check each compound pattern
+    for (const { pattern, extractPhrase } of compoundPatterns) {
+      const match = cleanText.match(pattern);
+      if (match) {
+        const result = extractPhrase(match);
+        console.log('🎯 COMPOUND PHRASE DETECTED:', result);
+        return result;
+      }
+    }
+    
+    return null; // No compound phrase found
+  }
   private static extractExactAction(text: string): string {
     const actionWords = [
       'runs', 'run', 'running', 'ran',
