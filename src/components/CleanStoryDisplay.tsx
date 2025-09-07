@@ -108,6 +108,8 @@ import { ImageFallbackService } from "@/services/ImageFallbackService";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { ImageMixingLoading } from "@/components/ImageMixingLoading";
 import { AudioFallbackNotification } from "@/components/AudioFallbackNotification";
+import { ImageDebugPanel } from "@/components/ImageDebugPanel";
+import { BackendTierChecker } from "@/components/BackendTierChecker";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
@@ -1850,10 +1852,27 @@ const initializeStory = async () => {
       return;
     }
     
-    const storyText = displayedStory[currentPage];
-    if (!storyText) {
-      console.log('📸 Skipping image generation - no story text for page', currentPage);
+    const pageText = story[currentPage];
+    if (!pageText) {
+      console.log('🖼️ Cannot generate image - no page text available');
       return;
+    }
+    
+    // 🔍 ENHANCED DEBUGGING: Track image generation parameters
+    const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+    if (isDebug) {
+      console.log('🔍 IMAGE GENERATION DEBUG - Starting generation via generateImageForCurrentPage:', {
+        currentPage,
+        pageText: pageText.substring(0, 100) + '...',
+        fullPageText: pageText,
+        userInfo: {
+          name: userInfo.name,
+          avatar: userInfo.avatar,
+          difficultyLevel: userInfo.difficultyLevel
+        },
+        sessionId: characterSessionId,
+        timestamp: new Date().toISOString()
+      });
     }
     
     const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
@@ -1865,9 +1884,9 @@ const initializeStory = async () => {
     
     let storyMarkers, cachedImageUrl;
     try {
-      storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+      storyMarkers = EnhancedImageCache.extractStoryMarkers(pageText, userInfo);
       cachedImageUrl = EnhancedImageCache.getCachedImage(
-        storyText.slice(0, 120),
+        pageText.slice(0, 120),
         characterSessionId, 
         currentPage,
         storyId,
@@ -1890,7 +1909,7 @@ const initializeStory = async () => {
     
     try {
       const result = await SimpleImageService.generateStoryImage(
-        storyText, 
+        pageText, // Use pageText instead of storyText for consistency 
         { ...userInfo, difficultyLevel: currentDifficulty }, 
         currentDifficulty,
         storyId,
@@ -1898,6 +1917,35 @@ const initializeStory = async () => {
         characterSessionId,
         isPremium
       );
+      
+      // 🔍 ENHANCED RESULT TRACKING: Log which method succeeded
+      if (isDebug) {
+        console.log('🔍 IMAGE GENERATION DEBUG - SimpleImageService result received:', {
+          currentPage,
+          pageText: pageText.substring(0, 50) + '...',
+          result: {
+            success: result.success,
+            url: result.url,
+            error: result.error
+          },
+          timestamp: new Date().toISOString()
+        });
+        
+        // Analyze content match
+        if (result.success && result.url) {
+          console.log('🎯 IMAGE SUCCESS - Content Analysis:', {
+            pageContent: pageText,
+            imageUrl: result.url,
+            contentMatches: {
+              hasMultipleCharacters: pageText.toLowerCase().includes('friends') || pageText.toLowerCase().includes('together'),
+              mentionsPark: pageText.toLowerCase().includes('park') || pageText.toLowerCase().includes('playground'),
+              isPlayingScene: pageText.toLowerCase().includes('play') || pageText.toLowerCase().includes('playing'),
+              expectedScene: 'Multiple children playing in park',
+              actualImage: result.url.includes('anime') ? 'Anime portrait' : 'Unknown style'
+            }
+          });
+        }
+      }
       
       if (result.success && result.url) {
         setPageImages(prev => {
@@ -1918,9 +1966,9 @@ const initializeStory = async () => {
             console.warn('⚠️ Missing userInfo or avatar data for caching story markers');
           }
           
-          const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
+          const storyMarkers = EnhancedImageCache.extractStoryMarkers(pageText, userInfo);
           EnhancedImageCache.cacheImage(
-            storyText.slice(0, 120),
+            pageText.slice(0, 120),
             result.url,
             characterSessionId,
             currentPage,
@@ -3081,6 +3129,43 @@ const handleRestartTimer = () => {
   // Get difficulty-based text configuration optimized for each reading level
   const currentImage = pageImages[currentPage];
   const hasCurrentImage = !!currentImage;
+  
+  // 🔍 ENHANCED IMAGE DEBUGGING: Track what image is actually being displayed
+  useEffect(() => {
+    const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
+    if (isDebug) {
+      console.log('🔍 IMAGE DISPLAY DEBUG:', {
+        currentPage,
+        currentStoryText: (currentStoryText || '').substring(0, 100) + '...',
+        currentImage,
+        hasCurrentImage,
+        allPageImages: pageImages,
+        imageSource: currentImage ? 'Found in pageImages' : 'No image available',
+        storyStable: isStoryStable,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Check if displayed image matches story content
+      if (currentImage && currentStoryText) {
+        const storyWords = currentStoryText.toLowerCase().split(' ');
+        const hasMultipleCharacters = storyWords.some(word => 
+          ['friends', 'together', 'plays with', 'group', 'everyone'].includes(word)
+        );
+        const mentionsPark = storyWords.some(word => 
+          ['park', 'playground', 'outside', 'playing'].includes(word)
+        );
+        
+        console.log('🔍 CONTENT MATCH ANALYSIS:', {
+          storyText: currentStoryText,
+          hasMultipleCharacters,
+          mentionsPark,
+          imageUrl: currentImage,
+          possibleMismatch: (hasMultipleCharacters || mentionsPark) && currentImage.includes('anime') || currentImage.includes('portrait')
+        });
+      }
+    }
+  }, [currentPage, currentImage, currentStoryText, pageImages, isStoryStable]);
+  
   const difficultyBasedTextConfig = getDifficultyBasedTextConfig(currentDifficulty, isMobile);
   const wordCount = (currentStoryText || "").trim().split(/\s+/).filter(word => word.length > 0).length;
   const difficultyBasedContainerConfig = getDifficultyBasedContainer(currentDifficulty);
@@ -3800,6 +3885,40 @@ const handleRestartTimer = () => {
       )}
 
       {/* Timer shows yellow pulse when paused - no overlay needed since controls remain active */}
+
+      {/* Backend Tier Checker - Monitors for tier success messages */}
+      <BackendTierChecker
+        onTierFound={(tier, details) => {
+          const isDebug = typeof window !== 'undefined' && 
+            new URLSearchParams(window.location.search).get('debug') === '1';
+          if (isDebug) {
+            console.log('🎯 TIER SUCCESS DETECTED:', {
+              tier,
+              details,
+              currentPage,
+              currentStoryText: (currentStoryText || '').substring(0, 100)
+            });
+          }
+        }}
+      />
+
+      {/* Enhanced Image Debug Panel for debug mode */}
+      <ImageDebugPanel
+        currentPage={currentPage}
+        currentStoryText={currentStoryText || ''}
+        currentImage={currentImage}
+        pageImages={pageImages}
+        isGeneratingImage={isGeneratingImage}
+        onRegenerateImage={() => {
+          // Clear current image and regenerate
+          setPageImages(prev => {
+            const updated = { ...prev };
+            delete updated[currentPage];
+            return updated;
+          });
+          generateImageForCurrentPage();
+        }}
+      />
 
       {/* Unified Timer for All Users (guest always on) */}
       {(!isPremium || timerEnabled) && (
