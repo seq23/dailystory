@@ -1510,6 +1510,9 @@ Deno.serve(async (req: Request) => {
         }
       };
       
+      // Declare finalPrompt at function scope to fix scoping issue
+      let finalPrompt = prompt; // Default to original prompt
+      
       ws.onopen = () => {
         console.log('🛡️ Tier 2.5: WebSocket connected, authenticating...');
         
@@ -1540,7 +1543,7 @@ Deno.serve(async (req: Request) => {
                 console.log('🛡️ Tier 2.5: Authentication successful, generating image...');
                 
                 // Apply final prompt truncation (TIER 2.5 Enhancement)
-                const finalPrompt = truncateFinalPrompt(prompt, difficulty);
+                finalPrompt = truncateFinalPrompt(prompt, difficulty);
                 
                 // Send image generation request
                 const imageMessage = [{

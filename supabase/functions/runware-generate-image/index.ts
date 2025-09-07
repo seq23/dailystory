@@ -1326,9 +1326,27 @@ serve(async (req) => {
           });
         }
         
-        console.log('⚠️ Tier 2.5 failed, falling back to Tier 4');
+        // Check for specific parsing errors that should skip retries
+        const isParsinerError = tier25Result?.error?.includes('Failed to parse') || 
+                               tier25Result?.error?.includes('finalPrompt is not defined') ||
+                               tier25Result?.error?.includes('ReferenceError');
+        
+        if (isParsinerError) {
+          console.log('🚫 Tier 2.5 parsing error detected - skipping retries and falling directly to Tier 4:', tier25Result.error);
+        } else {
+          console.log('⚠️ Tier 2.5 failed, falling back to Tier 4');
+        }
       } catch (error) {
-        console.log('⚠️ Tier 2.5 error, falling back to Tier 4:', error.message);
+        // Check if it's a parsing/scoping error to provide better logging
+        const isParsinerError = error.message?.includes('Failed to parse') || 
+                               error.message?.includes('finalPrompt is not defined') ||
+                               error.message?.includes('ReferenceError');
+        
+        if (isParsinerError) {
+          console.log('🚫 Tier 2.5 parsing/scoping error caught - falling directly to Tier 4:', error.message);
+        } else {
+          console.log('⚠️ Tier 2.5 error, falling back to Tier 4:', error.message);
+        }
       }
     }
     // TIER 4: Kid-Friendly Placeholder (Ultimate Fallback)
