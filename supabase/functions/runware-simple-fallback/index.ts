@@ -37,16 +37,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Fixed Architecture) =============
+// ============= MASTER PLAN: BRACKET-STYLE FORMULAIC TEMPLATES (Fixed Architecture) =============
 const PREMIUM_PROMPT_TEMPLATES = {
   // Levels 0-1: Short content - pageText stays first for immediate context
-  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
   
   // Levels 2-4: Longer content - pageText moved to end for smart extraction
-  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
+  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -694,8 +694,12 @@ function detectActionStem(word: string): string {
   return cleanWord; // Return as-is if no suffix matches
 }
 
-function extractActionFromSentence(sentence: string): string {
+function extractActionFromSentence(sentence: string, pageText?: string): string {
   const lowerSentence = sentence.toLowerCase();
+  
+  // ============= ENHANCED STORY FLOW CONTEXT AWARENESS =============
+  // Consider both sentence and full pageText for better story flow understanding
+  const contextText = (pageText || sentence).toLowerCase();
   
   // ============= EMERGENCY RECOVERY: EXACT WORD PRESERVATION SYSTEM =============
   // FIXED: Preserve exact words from story text, no enhancement additions
@@ -772,17 +776,21 @@ function extractActionFromSentence(sentence: string): string {
     { stem: 'see', description: 'seeing' }
   ];
   
-  // Split sentence into words for analysis
+  // Split both sentence and context for comprehensive analysis
   const words = lowerSentence.split(/\s+/);
+  const contextWords = contextText.split(/\s+/);
+  const allWords = [...new Set([...words, ...contextWords])]; // Deduplicate
   
-  // Check each word against action stems using smart detection
-  for (const word of words) {
+  // Check each word against action stems using smart detection with story context
+  for (const word of allWords) {
     const baseStem = detectActionStem(word);
     
     // Find matching action mapping
     const actionMatch = actionMappings.find(action => action.stem === baseStem);
     if (actionMatch) {
-      console.log(`🎯 Smart Action Detection: "${word}" → stem:"${baseStem}" → "${actionMatch.description}"`);
+      // Prefer words from the main sentence, fall back to context
+      const sourceText = words.includes(word) ? 'sentence' : 'story context';
+      console.log(`🎯 Enhanced Story Flow Detection: "${word}" → stem:"${baseStem}" → "${actionMatch.description}" (from ${sourceText})`);
       return actionMatch.description;
     }
   }
@@ -1264,9 +1272,9 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     'pizza': ' pizza',
     'ice cream': ' ice cream',
     
-    // Birds - EXACT WORD PRESERVATION (indoor context maintained)
+    // Domestic birds only (indoor appropriate) - EXACT WORD PRESERVATION
     'parakeet': ' parakeet',
-    'budgie': ' budgie',
+    'budgie': ' budgie', 
     'parrot': ' parrot',
     'canary': ' canary',
     'cockatiel': ' cockatiel',
@@ -1326,6 +1334,10 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     'goose': ' goose',
     'swan': ' swan',
     
+    // ============= BIRDS CONTEXT CLASSIFICATION SYSTEM =============
+    // Wild birds (outdoor-only): robin, cardinal, sparrow, blue jay, hawk, eagle
+    // Domestic birds (indoor appropriate): parakeet, budgie, parrot, canary, cockatiel
+    
     // Wild animals - EXACT WORD PRESERVATION
     'butterfly': ' butterfly',
     'elephant': ' elephant',
@@ -1346,6 +1358,27 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     'police car': ' police car'
   };
 
+  // ============= BIRDS CONTEXT CLASSIFICATION FUNCTION =============
+  function filterBirdsByContext(sentence: string, originalPageText?: string): boolean {
+    const contextText = (originalPageText || sentence).toLowerCase();
+    
+    // Check for indoor keywords that would exclude wild birds
+    const indoorKeywords = ['room', 'house', 'kitchen', 'bedroom', 'classroom', 'library', 'inside', 'indoor'];
+    const isIndoorContext = indoorKeywords.some(keyword => contextText.includes(keyword));
+    
+    // Wild birds (outdoor-only)
+    const wildBirds = ['robin', 'cardinal', 'sparrow', 'blue jay', 'hawk', 'eagle', 'owl'];
+    const hasBird = wildBirds.some(bird => contextText.includes(bird));
+    
+    if (isIndoorContext && hasBird) {
+      console.log('🚫 Birds Context Filter: Wild bird detected in indoor scene - filtered out');
+      return false; // Exclude wild birds from indoor scenes
+    }
+    
+    console.log('✅ Birds Context Filter: Context appropriate for detected birds');
+    return true; // Allow birds in appropriate contexts
+  }
+
   // Universal objects - EXACT WORD PRESERVATION
   const universalObjects = {
     'car': ' car', 
@@ -1361,6 +1394,13 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
   
   for (const [object, description] of Object.entries(objectMappings)) {
     if (lowerSentence.includes(object)) {
+      // Apply birds context filtering
+      const wildBirds = ['robin', 'cardinal', 'sparrow', 'blue jay', 'hawk', 'eagle', 'owl'];
+      if (wildBirds.includes(object) && !filterBirdsByContext(sentence, originalPageText)) {
+        console.log(`🚫 Bird filtered out: "${object}" not appropriate for current context`);
+        continue; // Skip this bird
+      }
+      
       console.log(`🎯 Context-appropriate object detected: "${object}" → "${description}"`);
       return description;
     }
@@ -1584,8 +1624,29 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
   return detectedCharacters.length > 0 ? detectedCharacters[0] + ' nearby' : '';
 }
 
-// ============= EMERGENCY RECOVERY: ENHANCED WIDE-ANGLE CAMERA SYSTEM =============
+// ============= ENHANCED CAMERA DIRECTIVE WITH ACTION-CONTEXT MAPPING =============
 function generateCameraDirective(difficulty: string, scene?: string, setting?: string): string {
+  // ACTION-CONTEXT MAPPING for appropriate camera angles
+  const actionContextMap = {
+    rolling: "dynamic action shot, full body movement visible, wide angle capturing motion",
+    playing: "full body shot, wide angle view, complete activity visible",
+    running: "dynamic movement shot, full body visible, action perspective",
+    climbing: "full body shot showing complete climbing action, wide angle",
+    swimming: "full body aquatic shot, underwater or poolside perspective",
+    reading: "cozy medium shot, focus on character and book, comfortable framing",
+    cooking: "kitchen scene shot, medium wide angle, activity visible"
+  };
+  
+  // Check for specific action contexts
+  if (scene) {
+    for (const [action, directive] of Object.entries(actionContextMap)) {
+      if (scene.toLowerCase().includes(action)) {
+        console.log(`🎯 Action-Context Camera: "${action}" → "${directive}"`);
+        return directive;
+      }
+    }
+  }
+  
   // ENHANCED: Always prioritize wide-angle for full activity visibility
   const baseDirective = "full body shot, wide angle view, complete scene visible, spacious perspective";
   
@@ -1797,8 +1858,15 @@ function fillPremiumTemplate(
     const enhancedObjects = applyContextAwareEnhancement(objects, exactWords.objects.join(' '), 'objects');
     
     // ============= MASTER PLAN: OPTIMIZED TEMPLATE FILLING (Hybrid System) =============
-    // New order: Character → Formulaic content → Enhanced visuals → Story context
-    let filledTemplate = template
+    // PHASE 1: Bracket-style formulaic replacement BEFORE placeholder replacement
+    const exactWords = ExactWordExtractor.extractExactWords(pageText || '');
+    let bracketTemplate = template
+      .replace('[ACTION]', exactWords.action || enhancedScene)
+      .replace('[OBJECT]', exactWords.objects.join(' ') || enhancedObjects)
+      .replace('[SETTING]', exactWords.setting || enhancedSetting);
+    
+    // PHASE 2: Standard placeholder replacement
+    let filledTemplate = bracketTemplate
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
@@ -2356,17 +2424,17 @@ serve(async (req: Request) => {
     }
     
     // NUCLEAR STYLE SETTINGS - Zero external dependencies for bulletproof operation
-    // Beginner/Easy: Contemporary children's book style | Medium/Hard/Expert: Advanced 2.9D rendering
+    // Beginner/Easy: SIMPLIFIED for basic stories | Medium/Hard/Expert: Advanced 2.9D rendering
     const NUCLEAR_STYLE_SETTINGS = {
       'beginner': {
-        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-        steps: 30,
-        CFGScale: 10
+        frameworkPrompt: 'Simple children\'s book illustration, bright colors, friendly character, clear details, cheerful atmosphere',
+        steps: 25,
+        CFGScale: 8
       },
       'easy': {
-        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-        steps: 30,
-        CFGScale: 10
+        frameworkPrompt: 'Colorful children\'s book style, charming character, vibrant scene, child-friendly design',
+        steps: 25,
+        CFGScale: 8
       },
       'medium': {
         frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
