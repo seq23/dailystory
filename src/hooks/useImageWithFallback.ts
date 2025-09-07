@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ImageFallbackService } from '@/services/ImageFallbackService';
+import { ImageLoadingManager } from '@/services/ImageLoadingManager';
 
 interface UseImageWithFallbackOptions {
   fallbackText?: string;
@@ -11,73 +12,57 @@ export const useImageWithFallback = (
   src: string | undefined,
   options: UseImageWithFallbackOptions = {}
 ) => {
-  const { fallbackText = '📖 Story Illustration', retryAttempts = 2, retryDelay = 1000 } = options;
+  const { fallbackText = '📖 Story Illustration', retryAttempts = 1, retryDelay = 1000 } = options;
   
   const [imageSrc, setImageSrc] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [isManualRetry, setIsManualRetry] = useState(false);
+  
+  // Check if debug mode is enabled
+  const isDebugMode = typeof window !== 'undefined' && 
+    new URLSearchParams(window.location.search).get('debug') === '1';
 
   const debugLog = useCallback((message: string, data?: any) => {
-    console.log(`🖼️ useImageWithFallback: ${message}`, data || '');
-  }, []);
+    if (isDebugMode) {
+      console.log(`🖼️ useImageWithFallback: ${message}`, data || '');
+    }
+  }, [isDebugMode]);
 
-  const validateAndSetImage = useCallback((url: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (!url) {
-        resolve(false);
-        return;
-      }
+  const validateAndSetImage = useCallback(async (url: string): Promise<boolean> => {
+    if (!url) return false;
 
-      // Handle data URLs and blob URLs differently
-      if (url.startsWith('data:') || url.startsWith('blob:')) {
-        debugLog('Using data/blob URL directly', url.substring(0, 50) + '...');
-        setImageSrc(url);
-        setIsLoading(false);
-        setError(null);
-        resolve(true);
-        return;
-      }
-
-      // For external URLs, validate with Image object
-      const img = new Image();
-      
-      // Add timeout for slow loading images
-      const timeoutId = setTimeout(() => {
-        debugLog('Image load timeout', url);
-        img.onload = null;
-        img.onerror = null;
-        resolve(false);
-      }, 10000);
-      
-      img.onload = () => {
-        clearTimeout(timeoutId);
-        debugLog('Image loaded successfully', url);
-        setImageSrc(url);
-        setIsLoading(false);
-        setError(null);
-        resolve(true);
-      };
-      
-      img.onerror = (e) => {
-        clearTimeout(timeoutId);
-        debugLog('Image failed to load', { url, error: e });
-        resolve(false);
-      };
-      
-      // Preload image to check validity before setting
-      img.src = url;
+    // Use ImageLoadingManager for deduplication and circuit breaking
+    const success = await ImageLoadingManager.loadImage(url, {
+      timeout: isDebugMode ? 3000 : 8000, // Faster timeout in debug mode
+      isDebugMode,
+      onProgress: (stage) => debugLog(stage, { url: url.substring(0, 50) + '...' })
     });
-  }, [debugLog]);
+
+    if (success) {
+      debugLog('Image loaded successfully via manager', url);
+      setImageSrc(url);
+      setIsLoading(false);
+      setError(null);
+      return true;
+    } else {
+      debugLog('Image failed to load via manager', url);
+      return false;
+    }
+  }, [debugLog, isDebugMode]);
 
   const loadImageWithRetry = useCallback(async (url: string) => {
-    debugLog('Starting image load', { url, attempt: attempts + 1 });
+    if (isDebugMode) {
+      debugLog('Starting image load', { url, attempt: attempts + 1 });
+    }
     
     const success = await validateAndSetImage(url);
     
     if (!success && attempts < retryAttempts) {
-      debugLog('Retrying image load', { attempt: attempts + 1, retryDelay });
+      if (isDebugMode) {
+        debugLog('Retrying image load', { attempt: attempts + 1, retryDelay });
+      }
       setAttempts(prev => prev + 1);
       setTimeout(() => {
         loadImageWithRetry(url);
@@ -86,7 +71,9 @@ export const useImageWithFallback = (
     }
     
     if (!success) {
-      debugLog('All retry attempts failed, using fallback');
+      if (isDebugMode) {
+        debugLog('All retry attempts failed, using fallback');
+      }
       setError('Failed to load image after retries');
       const fallbackUrl = ImageFallbackService.getBestFallback({
         text: fallbackText
@@ -94,7 +81,7 @@ export const useImageWithFallback = (
       setImageSrc(fallbackUrl);
       setIsLoading(false);
     }
-  }, [attempts, retryAttempts, retryDelay, fallbackText, validateAndSetImage, debugLog]);
+  }, [attempts, retryAttempts, retryDelay, fallbackText, validateAndSetImage, debugLog, isDebugMode]);
 
   useEffect(() => {
     setIsLoading(true);

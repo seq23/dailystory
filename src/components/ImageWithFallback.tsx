@@ -42,6 +42,10 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
     onFallbackUsed?.(isUsingFallback);
   }, [isUsingFallback, onFallbackUsed]);
 
+  // Check if debug mode is active for console optimization
+  const isDebugMode = typeof window !== 'undefined' && 
+    new URLSearchParams(window.location.search).get('debug') === '1';
+
   if (isLoading) {
     return (
       <div className={`animate-pulse bg-muted rounded-lg ${className}`}>
@@ -63,10 +67,12 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
         className={className}
         style={{ display: 'block' }}
         onError={(e) => {
-          console.error('🖼️ ImageWithFallback: Image display error', {
-            src: imageSrc,
-            error: e
-          });
+          if (isDebugMode) {
+            console.error('🖼️ ImageWithFallback: Image display error', {
+              src: imageSrc,
+              error: e
+            });
+          }
         }}
       />
       {isUsingFallback && (
@@ -74,7 +80,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
           Generated
         </div>
       )}
-      {error && (
+      {error && !isDebugMode && (
         <div className="absolute bottom-2 left-2 bg-destructive/10 border border-destructive/20 rounded px-2 py-1 text-xs text-destructive">
           Image unavailable
         </div>
