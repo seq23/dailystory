@@ -37,16 +37,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= MASTER PLAN: BRACKET-STYLE FORMULAIC TEMPLATES (Fixed Architecture) =============
+// ============= PHASE 5: OPTIMIZED TEMPLATE STRUCTURE - Character-Setting Separation =============
 const PREMIUM_PROMPT_TEMPLATES = {
   // Levels 0-1: Short content - pageText stays first for immediate context
-  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  beginner: "Primary Scene: {pageText}. Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
   
-  // Levels 2-4: Longer content - pageText moved to end for smart extraction
-  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
-  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
+  // Levels 2-4: Longer content - pageText moved to end for smart extraction with clear separation
+  medium: "Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  hard: "Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  expert: "Character Portrait: {character} {age}, {hair}, {features}. SEPARATE SCENE: [ACTION] [OBJECT] in [SETTING]{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -1206,24 +1206,88 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string, 
     return null;
   }
 }
+// ============= STORY PROGRESSION MAP CLASS =============
+class StoryProgressionMap {
+  private objectIntroductions: Map<string, number> = new Map();
+  private storyContext: string;
+  
+  constructor(storyText: string, pageNumber: number) {
+    this.storyContext = storyText.toLowerCase();
+    this.analyzeStoryProgression(storyText, pageNumber);
+  }
+  
+  private analyzeStoryProgression(storyText: string, currentPage: number): void {
+    // Analyze story text to determine when objects are narratively introduced
+    const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const wordsPerSentence = Math.max(8, storyText.split(' ').length / sentences.length);
+    
+    // Calculate estimated pages based on story content
+    const estimatedTotalPages = Math.max(currentPage, Math.ceil(sentences.length / 2));
+    
+    // Define object introduction timeline based on story progression
+    const storyObjects = ['bird', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger', 'horse', 'deer'];
+    
+    for (const obj of storyObjects) {
+      if (this.storyContext.includes(obj)) {
+        // Object mentioned in story - calculate introduction page
+        const mentionIndex = this.storyContext.indexOf(obj);
+        const wordsBeforeMention = this.storyContext.substring(0, mentionIndex).split(' ').length;
+        const estimatedIntroPage = Math.max(1, Math.ceil(wordsBeforeMention / (wordsPerSentence * 2)));
+        this.objectIntroductions.set(obj, estimatedIntroPage);
+        console.log(`📚 Story progression: ${obj} introduced on page ${estimatedIntroPage}`);
+      } else {
+        // Object not in story - allow from middle pages
+        this.objectIntroductions.set(obj, Math.ceil(estimatedTotalPages / 2));
+      }
+    }
+  }
+  
+  allowsObject(object: string): boolean {
+    const introPage = this.objectIntroductions.get(object);
+    return introPage === undefined; // Allow objects not in the progression map
+  }
+  
+  getIntroductionPage(object: string): number {
+    return this.objectIntroductions.get(object) || 1;
+  }
+}
+
+// ============= ENHANCED STORY PROGRESSION ANALYSIS FUNCTION =============
+function analyzeStoryProgression(storyText: string, pageNumber: number): StoryProgressionMap {
+  return new StoryProgressionMap(storyText, pageNumber);
+}
+
 function extractObjectsFromSentence(sentence: string, originalPageText?: string, pageNumber?: number, sessionId?: string): string {
   const lowerSentence = sentence.toLowerCase();
   
-  // ENHANCED PAGE-AWARE OBJECT PREVENTION: Prevent premature object appearance
-  if (pageNumber && pageNumber <= 3) {
-    // Enhanced early pages prevention - expanded object list
+  // PHASE 1: STORY PROGRESSION INTELLIGENCE - Replace basic prevention with smart analysis
+  if (pageNumber && originalPageText) {
+    const storyProgressionMap = analyzeStoryProgression(originalPageText, pageNumber);
     const prematureObjects = ['bird', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger'];
     
     for (const obj of prematureObjects) {
-      const hasObjectInSentence = lowerSentence.includes(obj) || 
-                                 lowerSentence.includes('sing') || lowerSentence.includes('song') ||
-                                 lowerSentence.includes('fly') || lowerSentence.includes('hop');
+      if (lowerSentence.includes(obj) && !storyProgressionMap.allowsObject(obj)) {
+        console.log(`📚 Story progression: ${obj} not introduced until page ${storyProgressionMap.getIntroductionPage(obj)}, current page: ${pageNumber}`);
+        continue;
+      }
+    }
+  }
+  
+  // PHASE 3: VISUAL FOCUS ENHANCEMENT - Detect "sees/looks at" for object prioritization
+  const visualFocusKeywords = ['sees', 'looks at', 'watches', 'observes', 'notices', 'spots', 'finds', 'discovers'];
+  let visuallyFocusedObject = '';
+  
+  for (const keyword of visualFocusKeywords) {
+    if (lowerSentence.includes(keyword)) {
+      // Extract object after visual focus keyword
+      const keywordIndex = lowerSentence.indexOf(keyword);
+      const afterKeyword = lowerSentence.substring(keywordIndex + keyword.length);
+      const words = afterKeyword.split(' ').filter(w => w.length > 2);
       
-      if (!hasObjectInSentence && originalPageText) {
-        const hasObjectInPageText = originalPageText.toLowerCase().includes(obj);
-        if (!hasObjectInPageText) {
-          console.log(`🛡️ Enhanced page-aware prevention: Blocking premature ${obj} appearance on page ${pageNumber}`);
-        }
+      if (words.length > 0) {
+        visuallyFocusedObject = words[0];
+        console.log(`👁️ Visual focus detected: "${keyword}" → focusing on "${visuallyFocusedObject}"`);
+        break;
       }
     }
   }
@@ -1391,6 +1455,16 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     : { ...outdoorObjects, ...universalObjects };
   
   console.log(`🏠 Context detection: ${isIndoorScene ? 'Indoor' : 'Outdoor'} scene detected`);
+  
+  // PHASE 3: Visual Focus Priority - Check visually focused object first
+  if (visuallyFocusedObject) {
+    for (const [object, description] of Object.entries(objectMappings)) {
+      if (object.includes(visuallyFocusedObject) || visuallyFocusedObject.includes(object)) {
+        console.log(`👁️ Visual focus match found: "${visuallyFocusedObject}" → "${object}"`);
+        return description;
+      }
+    }
+  }
   
   for (const [object, description] of Object.entries(objectMappings)) {
     if (lowerSentence.includes(object)) {
@@ -1626,11 +1700,18 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
 
 // ============= ENHANCED CAMERA DIRECTIVE WITH ACTION-CONTEXT MAPPING =============
 function generateCameraDirective(difficulty: string, scene?: string, setting?: string): string {
-  // ACTION-CONTEXT MAPPING for appropriate camera angles
+  // PHASE 4: ENHANCED OUTDOOR CAMERA INTELLIGENCE - Improved action-context mapping
   const actionContextMap = {
     rolling: "dynamic action shot, full body movement visible, wide angle capturing motion",
-    playing: "full body shot, wide angle view, complete activity visible",
-    running: "dynamic movement shot, full body visible, action perspective",
+    playing: "full body shot, wide angle view, complete activity visible, extra wide for outdoor play",
+    running: "dynamic movement shot, full body visible, action perspective, wide angle for outdoor running",
+    "playing outside": "extra wide angle outdoor shot, full environment visible, natural lighting, expansive outdoor perspective",
+    "outdoor activities": "wide landscape shot, full body and environment, natural outdoor lighting, panoramic view",
+    hiking: "wide outdoor landscape shot, full body with scenic background, nature perspective",
+    camping: "wide outdoor scene, full environment visible, natural setting emphasis",
+    swimming: "wide water scene, full pool/lake/ocean visible, aquatic environment emphasis",
+    biking: "dynamic wide shot, full path/road visible, movement and environment captured",
+    gardening: "medium wide outdoor shot, garden environment visible, natural outdoor lighting",
     climbing: "full body shot showing complete climbing action, wide angle",
     swimming: "full body aquatic shot, underwater or poolside perspective",
     reading: "cozy medium shot, focus on character and book, comfortable framing",
