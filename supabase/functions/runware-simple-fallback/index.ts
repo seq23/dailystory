@@ -599,12 +599,31 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
 
     console.log(`🎯 Best sentence selected (score: ${bestScore}): "${bestSentence}"`);
 
-    // Extract components using ExactWordExtractor for formulaic precision
+    // PHASE 1 & 2 FIX: Use enhanced extractObjectsFromSentence with story progression intelligence
     const exactWords = ExactWordExtractor.extractExactWords(pageText);
+    
+    // Enhanced object extraction with story progression and visual focus intelligence
+    const sentences = bestSentence.split(/[.!?]+/).filter(s => s.trim());
+    let enhancedObjects = '';
+    
+    for (const sentence of sentences) {
+      if (sentence.trim()) {
+        const sentenceObjects = extractObjectsFromSentence(
+          sentence.trim(), 
+          pageText, 
+          metadata?.page_number || 1, 
+          metadata?.session_id
+        );
+        if (sentenceObjects) {
+          enhancedObjects += (enhancedObjects ? ' ' : '') + sentenceObjects;
+        }
+      }
+    }
+    
     const result = {
       scene: exactWords.action,
       setting: exactWords.setting,
-      objects: exactWords.objects.join(' '),
+      objects: enhancedObjects || exactWords.objects.join(' '), // Fallback to exact words if no enhanced objects
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
 
