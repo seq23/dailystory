@@ -728,20 +728,7 @@ serve(async (req) => {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
         console.log('🔍 TIER 1 DEBUG - Calling ai-visual-scene-creator directly (clean architecture)');
         
-        // Collect previous page text for context continuity
-        let previousPageText = '';
-        try {
-          if (pageNumber > 1) {
-            const sessionManager = new SessionStateManager(sessionId);
-            previousPageText = await sessionManager.getPreviousPageText(pageNumber - 1) || '';
-            console.log(`📖 Collected previous page context: ${previousPageText ? 'Yes' : 'No'}`);
-          }
-        } catch (error) {
-          // NOTE: This is genuinely non-critical - previous page context is optional for continuity
-          console.warn('⚠️ Failed to collect previous page context (non-critical):', error);
-        }
-        
-        // Call ai-visual-scene-creator directly with pre-processed avatar identity and previous context
+        // Call ai-visual-scene-creator directly with pre-processed avatar identity
         const aiEnhancerResult = await callTierFunction('ai-visual-scene-creator', {
           storyText: pageText,
           userInfo,
@@ -749,8 +736,7 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           avatarIdentity, // Pass pre-processed avatar identity directly
-          enhancedStoryData,
-          previousPageText // Pass previous page text for continuity
+          enhancedStoryData
         });
 
         console.log('🔍 TIER 1 DEBUG - AI enhancer returned pure schema, doing direct technical assembly in orchestrator');

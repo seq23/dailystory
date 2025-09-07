@@ -57,8 +57,10 @@ const EdgeErrorHandler = {
   }
 };
 
+// Import CharacterConsistencyService
+import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+
 // Inline service placeholders (not used in current implementation)
-const CharacterConsistencyService = { enabled: false };
 const SecondaryElementDetector = { enabled: false };
 const VisualDetailTracker = { enabled: false };
 
@@ -852,7 +854,7 @@ serve(async (req) => {
           };
         }
         
-        ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText = '' } = requestBody);
+        ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = requestBody);
         console.log('📋 Parameter Validation:', {
           storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
           sessionId: sessionId ? `✅ Present (${sessionId})` : '❌ Missing',
@@ -874,11 +876,16 @@ serve(async (req) => {
         pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
         console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
 
-        // Get previous page context from request (passed by orchestrator)
-        let previousContext = '';
-        if (previousPageText) {
-          previousContext = `\n\nPREVIOUS STORY CONTEXT:\nPrevious page text: "${previousPageText}"\n`;
-          console.log('📖 Previous page context provided for story continuity');
+        // Get previous AI scene for visual consistency (new approach)
+        let previousScene = null;
+        try {
+          if (pageNumber > 1) {
+            const sessionManager = new SessionStateManager(sessionId);
+            previousScene = await sessionManager.getPreviousAIScene(sessionId);
+            console.log(`🎬 Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
+          }
+        } catch (error) {
+          console.warn('⚠️ Failed to get previous scene (non-critical):', error);
         }
 
         // Detect secondary characters for conditional schema
@@ -978,11 +985,15 @@ RULES:
 4. SPATIAL CLARITY: Include positions (left, right, center, background)
 5. Always return valid JSON with all 5 keys
 6. Use "null" (no quotes) for unclear components
-7. primaryScene must be 30+ characters and visually descriptive`
+7. primaryScene must be 30+ characters and visually descriptive
+8. Use previousScene to keep characters, objects, and animals visually consistent. Only update details if currentText introduces a clear change.`
           },
           {
             role: 'user', 
-            content: `Story text: "${storyText}"
+            content: `${previousScene ? `{
+  "previousScene": ${JSON.stringify(previousScene)},
+  "currentText": "${storyText}"
+}` : `Story text: "${storyText}"`}
 Primary Character: ${enhancedCharacterDescription}
 ${secondaryElements.length > 0 ? `Secondary Characters: ${secondaryElements.map(e => e.name).join(', ')}` : ''}
 ${visualDetails ? `Visual Details: ${visualDetails}` : ''}
@@ -1067,6 +1078,21 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         // PHASE 2.5: Character Consistency Database Storage (Enhanced Implementation)
         console.log('💾 PHASE 2.5: Character consistency stored in database via CharacterConsistencyService');
         console.log(`🎭 Character seed ${characterData.seed} persisted for session ${sessionId}`);
+        
+        // Store current AI scene for next page consistency
+        try {
+          const sessionManager = new SessionStateManager(sessionId);
+          await sessionManager.storePreviousAIScene(sessionId, {
+            primaryScene: primaryScene,
+            setting: setting,
+            action: action,
+            mood: mood,
+            pose: pose
+          });
+          console.log(`🎬 Current scene stored for next page consistency`);
+        } catch (error) {
+          console.warn('⚠️ Failed to store scene for next page (non-critical):', error);
+        }
         
         
         

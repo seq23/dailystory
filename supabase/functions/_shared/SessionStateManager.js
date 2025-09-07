@@ -490,6 +490,50 @@ export class SessionStateManager {
   }
 
   /**
+   * Store previous AI scene for visual consistency (NEW)
+   */
+  async storePreviousAIScene(sessionId, sceneData) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    if (!state.previousAIScenes) {
+      state.previousAIScenes = [];
+    }
+    
+    // Store the scene with timestamp
+    const sceneEntry = {
+      ...sceneData,
+      timestamp: Date.now(),
+      sessionId: sessionId
+    };
+    
+    state.previousAIScenes.push(sceneEntry);
+    
+    // Keep only the last 3 scenes for memory efficiency
+    if (state.previousAIScenes.length > 3) {
+      state.previousAIScenes = state.previousAIScenes.slice(-3);
+    }
+    
+    state.lastUpdated = Date.now();
+    console.log(`🎬 Stored AI scene for session ${sessionId}`);
+    return sceneEntry;
+  }
+
+  /**
+   * Get previous AI scene for visual consistency (NEW)
+   */
+  async getPreviousAIScene(sessionId) {
+    const state = this.getOrCreateSessionState(sessionId);
+    
+    if (!state.previousAIScenes || state.previousAIScenes.length === 0) {
+      return null;
+    }
+    
+    // Return the most recent scene
+    const mostRecentScene = state.previousAIScenes[state.previousAIScenes.length - 1];
+    return mostRecentScene;
+  }
+
+  /**
    * Get recent image prompts across all tiers
    */
   getRecentImagePrompts(sessionId, limit = 6, tierFilter = null) {
@@ -707,6 +751,7 @@ export class SessionStateManager {
 
   /**
    * Get previous page text for context continuity
+   * @deprecated Use getPreviousAIScene() instead for visual consistency
    */
   getPreviousPageText(sessionId, pageNumber) {
     const state = this.getOrCreateSessionState(sessionId);
