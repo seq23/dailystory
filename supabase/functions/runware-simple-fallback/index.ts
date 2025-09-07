@@ -909,6 +909,10 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
   
   // Ultimate fallback
   return ' indoor portrait style photo with main character focus';
+  } catch (error) {
+    console.warn('⚠️ Setting extraction error:', error);
+    return previousSetting || ' a welcoming colorful environment';
+  }
 }
 
 // ============= PRONOUN RESOLUTION SYSTEM =============
