@@ -102,23 +102,50 @@ export const NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES = [
 
 /**
  * Generate comprehensive nuclear negative prompt for both Tier 1 and Tier 2.5
+ * Enhanced with multi-character consistency support
  */
-export function generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber = 1) {
+export function generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber = 1, secondaryCharacters = []) {
   console.log(`🛡️ Nuclear Negative: Generating for ${avatarType} with cultural profile: ${culturalProfile}`);
+  console.log(`🛡️ Nuclear Negative: Secondary characters:`, secondaryCharacters);
   
   // Start with nuclear base negative prompt
   let negativeComponents = [...NUCLEAR_BASE_NEGATIVE_PROMPT];
   
-  // Add gender-specific negative prompts
+  // ============= PHASE 5 ENHANCEMENT: MULTI-CHARACTER GENDER CONSISTENCY =============
+  // Primary character gender filtering
   if (avatarType === 'boy') {
     negativeComponents.push(...NUCLEAR_OPPOSITE_GENDER_NEGATIVES.boy);
-    console.log('🛡️ Nuclear Negative: Added opposite gender negatives for boy (excluding feminine features)');
+    console.log('🛡️ Nuclear Negative: Added opposite gender negatives for primary boy character');
   } else if (avatarType === 'girl') {
     negativeComponents.push(...NUCLEAR_OPPOSITE_GENDER_NEGATIVES.girl);
-    console.log('🛡️ Nuclear Negative: Added opposite gender negatives for girl (excluding masculine features)');
+    console.log('🛡️ Nuclear Negative: Added opposite gender negatives for primary girl character');
   } else if (avatarType === 'prefer-not-to-answer' || avatarType === 'neutral' || avatarType === 'child') {
     negativeComponents.push(...NUCLEAR_GENDER_NEUTRAL_NEGATIVES);
-    console.log('🛡️ Nuclear Negative: Added gender-neutral negatives (excluding ALL gendered features)');
+    console.log('🛡️ Nuclear Negative: Added gender-neutral negatives for primary character');
+  }
+  
+  // ============= NEW: SECONDARY CHARACTER GENDER CONSISTENCY =============
+  if (secondaryCharacters && secondaryCharacters.length > 0) {
+    // Analyze secondary characters for gender-specific filtering
+    const secondaryCharacterText = secondaryCharacters.join(' ').toLowerCase();
+    
+    // If we have mixed gender characters, apply consistency filters
+    const hasMaleCharacters = /\b(dad|father|brother|boy|man|uncle|grandpa|boyfriend)\b/.test(secondaryCharacterText);
+    const hasFemaleCharacters = /\b(mom|mother|sister|girl|woman|aunt|grandma|girlfriend)\b/.test(secondaryCharacterText);
+    
+    if (hasMaleCharacters && hasFemaleCharacters) {
+      // Mixed gender scene - apply balanced filtering
+      negativeComponents.push('gender confusion', 'character inconsistency', 'mismatched gender features');
+      console.log('🛡️ Nuclear Negative: Added mixed-gender consistency filters');
+    } else if (hasMaleCharacters && avatarType === 'girl') {
+      // Girl with male characters - maintain character distinction
+      negativeComponents.push('masculine features on female characters', 'gender feature mixing');
+      console.log('🛡️ Nuclear Negative: Added girl-with-males consistency filters');
+    } else if (hasFemaleCharacters && avatarType === 'boy') {
+      // Boy with female characters - maintain character distinction
+      negativeComponents.push('feminine features on male characters', 'gender feature mixing');
+      console.log('🛡️ Nuclear Negative: Added boy-with-females consistency filters');
+    }
   }
   
   // Add African American protection for ALL dark-skinned users
@@ -149,11 +176,17 @@ export function generateNuclearNegativePrompt(culturalProfile, avatarType, diffi
   // Character Consistency Filters (Page > 1)
   if (pageNumber > 1) {
     negativeComponents.push('inconsistent character design', 'style variations', 'character appearance changes');
+    
+    // ============= NEW: MULTI-CHARACTER CONSISTENCY FOR STORY PROGRESSION =============
+    if (secondaryCharacters && secondaryCharacters.length > 0) {
+      negativeComponents.push('secondary character inconsistency', 'relationship confusion', 'character role mixing');
+      console.log('🛡️ Nuclear Negative: Added multi-character story consistency filters');
+    }
   }
   
   // Return complete nuclear negative prompt
   const finalNegativePrompt = negativeComponents.join(', ');
-  console.log(`🛡️ Nuclear Negative: Generated prompt with ${negativeComponents.length} components`);
+  console.log(`🛡️ Nuclear Negative: Generated prompt with ${negativeComponents.length} components for ${secondaryCharacters.length} secondary characters`);
   
   return finalNegativePrompt;
 }

@@ -37,16 +37,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= PHASE 3 COMPLETE: RESTRUCTURED TEMPLATE SYSTEM - Enhanced Natural Language =============
+// ============= PHASE 3 COMPLETE: STANDARDIZED TEMPLATE SYSTEM - Natural Language Integration =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // Levels 0-1: Full pageText first (short content)
-  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
-  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  // STANDARDIZED: All levels now use consistent pageText placement before Brand Suffix
+  beginner: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  easy: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
   
-  // Levels 2-4: Smart sentence extraction (2-3 sentences) placed before Brand Suffix
-  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
-  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
-  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting} with {objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}"
+  // Enhanced object-character integration with action-based descriptions
+  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -1723,23 +1723,49 @@ function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: st
     });
   }
   
-  // PHASE 4: SMART FORMATTING FOR UP TO 3 CHARACTERS
-  if (detectedCharacters.length === 0) {
-    console.log(`🔍 No secondary characters found in: "${sentence}"`);
-    return '';
-  }
-  
-  let formattedCharacters = '';
-  if (detectedCharacters.length === 1) {
-    formattedCharacters = ` with ${detectedCharacters[0]}`;
-  } else if (detectedCharacters.length === 2) {
-    formattedCharacters = ` with ${detectedCharacters[0]} and ${detectedCharacters[1]}`;
-  } else if (detectedCharacters.length === 3) {
-    formattedCharacters = ` with ${detectedCharacters[0]}, ${detectedCharacters[1]}, and ${detectedCharacters[2]}`;
-  }
-  
-  console.log(`✅ Final secondary characters: "${formattedCharacters}"`);
-  return formattedCharacters;
+    // PHASE 4: SMART FORMATTING FOR UP TO 3 CHARACTERS WITH SESSION STORAGE
+    if (detectedCharacters.length === 0) {
+      console.log(`🔍 No secondary characters found in: "${sentence}"`);
+      return '';
+    }
+    
+    // ============= PHASE 2 ENHANCEMENT: STORE DETECTED CHARACTERS FOR SESSION CONTINUITY =============
+    if (sessionId && detectedCharacters.length > 0) {
+      const charactersToStore = detectedCharacters.map((char, index) => ({
+        name: char,
+        description: char,
+        type: 'human', // Default type
+        page: pageNumber || 1
+      }));
+      storeSessionCharacters(sessionId, charactersToStore);
+    }
+    
+    // ============= ENHANCED GENERIC FALLBACK ELIMINATION =============
+    // Remove any remaining generic teacher references that might have slipped through
+    const filteredCharacters = detectedCharacters.filter(char => {
+      const lowerChar = char.toLowerCase();
+      // Remove generic fallbacks but keep specific detected relationships
+      return !lowerChar.includes('generic') && 
+             !lowerChar.includes('placeholder') &&
+             !(lowerChar === 'teacher' && !sentence.toLowerCase().includes('my teacher'));
+    });
+    
+    if (filteredCharacters.length === 0) {
+      console.log(`🔍 All characters filtered out as generic fallbacks`);
+      return '';
+    }
+    
+    let formattedCharacters = '';
+    if (filteredCharacters.length === 1) {
+      formattedCharacters = ` with ${filteredCharacters[0]}`;
+    } else if (filteredCharacters.length === 2) {
+      formattedCharacters = ` with ${filteredCharacters[0]} and ${filteredCharacters[1]}`;
+    } else if (filteredCharacters.length === 3) {
+      formattedCharacters = ` with ${filteredCharacters[0]}, ${filteredCharacters[1]}, and ${filteredCharacters[2]}`;
+    }
+    
+    console.log(`✅ Final secondary characters: "${formattedCharacters}"`);
+    return formattedCharacters;
 }
 
 // PHASE 1: Enhanced Name Extraction Function
@@ -1798,21 +1824,44 @@ function extractCharacterNamesFromPageText(pageText: string, sessionId?: string)
   return extractedNames;
 }
 
-// PHASE 2: Session Character Context Function
+// PHASE 2: Enhanced Session Character Context Function with Better Integration
 function getSessionCharacterContext(sessionId: string, pageNumber?: number): Array<{name: string, description: string, type: string}> {
-  // Import the UnifiedCharacterDescriptor class
   try {
-    // This would normally import from the shared module
-    // For now, return empty array as fallback
-    console.log(`🔍 Checking session ${sessionId} for character context`);
+    console.log(`🔍 Enhanced session ${sessionId} character context check - Page: ${pageNumber}`);
     
-    // TODO: Integrate with UnifiedCharacterDescriptor.getCharacterConsistencyData(sessionId)
-    // For now, return empty array until full integration
+    // Enhanced session storage for character continuity
+    if (typeof globalArcSessionManager !== 'undefined') {
+      const sessionData = globalArcSessionManager.getSession(sessionId);
+      if (sessionData?.characters) {
+        console.log(`✅ Found ${sessionData.characters.length} session characters`);
+        return sessionData.characters.slice(0, 3); // Up to 3 characters
+      }
+    }
+    
+    // Memory-based character tracking for this session
+    const sessionKey = `characters_${sessionId}`;
+    const storedCharacters = sessionCharacterMemory.get(sessionKey);
+    if (storedCharacters && storedCharacters.length > 0) {
+      console.log(`✅ Found ${storedCharacters.length} memory-cached characters`);
+      return storedCharacters.slice(0, 3);
+    }
+    
+    console.log(`🔍 No session characters found for ${sessionId}`);
     return [];
   } catch (error) {
-    console.warn('Session character context not available:', error);
+    console.warn('Session character context error:', error);
     return [];
   }
+}
+
+// Enhanced session memory for character continuity
+const sessionCharacterMemory = new Map();
+
+// Function to store characters in session memory
+function storeSessionCharacters(sessionId: string, characters: Array<{name: string, description: string, type: string}>) {
+  const sessionKey = `characters_${sessionId}`;
+  sessionCharacterMemory.set(sessionKey, characters);
+  console.log(`✅ Stored ${characters.length} characters for session ${sessionId}`);
 }
 
 // ============= MASTER PLAN PHASE 5: ENHANCED CAMERA DIRECTIVE WITH CONTEXT AWARENESS =============
@@ -2141,12 +2190,34 @@ function fillPremiumTemplate(
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
     
-    // ============= PHASE 1 & 2 COMPLETE: ENHANCED OBJECT INTEGRATION + VARIABLE SCOPE FIX =============
-    // Use enhanced objects from extractSceneWithPremiumTemplate() - no duplicate extraction
-    const enhancedScene = applyContextAwareEnhancement(scene, scene, 'action');
-    
-    // PHASE 2 FIX: Ensure enhancedSetting is properly scoped for template replacement
-    const scopedEnhancedSetting = enhancedSetting; // Ensure variable is in scope
+    // ============= PHASE 6 ENHANCED: ACTION-INTEGRATED OBJECT DESCRIPTIONS =============
+    // Convert objects into natural action-based descriptions
+    let actionObjects = '';
+    if (objects && objects.trim()) {
+      // Extract individual objects and integrate with actions
+      const objectList = objects.replace(/^,\s*/, '').split(',').map(obj => obj.trim()).filter(obj => obj);
+      if (objectList.length > 0) {
+        // Create natural action-object combinations
+        const actionIntegratedObjects = objectList.map(obj => {
+          // Remove leading articles and clean object name
+          const cleanObj = obj.replace(/^(with\s+|a\s+|an\s+|the\s+)/i, '');
+          
+          // Map objects to natural actions
+          if (cleanObj.match(/book|story|reading/i)) return ` reading with ${cleanObj}`;
+          if (cleanObj.match(/ball|toy|game/i)) return ` playing with ${cleanObj}`;
+          if (cleanObj.match(/art|paint|draw|crayon/i)) return ` creating art with ${cleanObj}`;
+          if (cleanObj.match(/music|instrument/i)) return ` making music with ${cleanObj}`;
+          if (cleanObj.match(/food|snack|lunch/i)) return ` enjoying ${cleanObj}`;
+          if (cleanObj.match(/bike|scooter|skateboard/i)) return ` riding ${cleanObj}`;
+          if (cleanObj.match(/puzzle|blocks|lego/i)) return ` building with ${cleanObj}`;
+          
+          // Default natural integration
+          return ` with ${cleanObj}`;
+        });
+        
+        actionObjects = actionIntegratedObjects.join('');
+      }
+    }
     
     // ============= PHASE 3: RESTRUCTURED TEMPLATE REPLACEMENT - Natural Language Scene =============
     let filledTemplate = template
@@ -2158,7 +2229,7 @@ function fillPremiumTemplate(
       .replace('{features}', finalMapping.features)
       .replace('{scene}', enhancedScene)
       .replace('{setting}', scopedEnhancedSetting)
-      .replace('{objects}', objects) // Use enhanced objects from extractSceneWithPremiumTemplate
+      .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', secondary_characters ? ` ${secondary_characters}` : '') // PHASE 4: Handle empty strings
       .replace('{emotion}', emotion)
       .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
@@ -2429,8 +2500,8 @@ const CULTURAL_LANDMARKS = {
     outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
   },
   portuguese: {
-    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room"],
-    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements"]
+    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room", "with azulejo tile patterns", "in traditional Portuguese library", "with Portuguese maritime decor", "in colorful Portuguese kitchen", "with fado music ambiance", "in Portuguese cathedral interior", "with cork and wood elements", "in Manueline architectural style", "with Portuguese royal court design"],
+    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements", "near Portuguese castles", "with cork oak trees", "in Portuguese vineyard setting", "with traditional Portuguese windmills", "near Douro River valley", "with Portuguese fishing village backdrop", "in Sintra palace gardens", "with Portuguese maritime port", "near Cliffs of Moher coastal views", "with Portuguese countryside hills"]
   }
 };
 
@@ -2770,8 +2841,20 @@ serve(async (req: Request) => {
     try {
       const pageNumber = userInfo?.pageNumber || 1;
       culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
-      negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
-      console.log('✅ Cultural profile and negative prompt generation successful');
+      
+      // ============= PHASE 5 ENHANCEMENT: MULTI-CHARACTER NEGATIVE PROMPT INTEGRATION =============
+      // Extract secondary character information for negative prompt consistency
+      const secondaryCharacterList = [];
+      if (secondary_characters && secondary_characters.trim()) {
+        // Parse secondary characters for gender consistency filtering
+        const cleanSecondaryText = secondary_characters.replace(/^with\s+/, '').trim();
+        if (cleanSecondaryText) {
+          secondaryCharacterList.push(cleanSecondaryText);
+        }
+      }
+      
+      negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber, secondaryCharacterList);
+      console.log('✅ Cultural profile and enhanced multi-character negative prompt generation successful');
     } catch (culturalError) {
       console.warn('⚠️ Cultural profile generation failed, using defaults:', culturalError);
       culturalProfile = { language: 'en', skinTone: 'medium' };
