@@ -1180,8 +1180,14 @@ function truncatePageText(text: string, difficulty: string): string {
 function truncateFinalPrompt(prompt: string, difficulty: string): string {
   if (!prompt) return prompt;
   
-  // Runware API has practical limits - apply intelligent truncation
-  // Expert/Hard levels can have longer prompts, beginners get shorter ones
+  // LEVEL-BASED TRUNCATION: No truncation for levels 0-1 (beginner/easy)
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    console.log(`🛡️ Tier 2.5: No truncation applied for ${difficulty} level (full page text preserved)`);
+    return prompt;
+  }
+  
+  // Runware API has practical limits - apply intelligent truncation for levels 2-4 only
+  // Expert/Hard levels can have longer prompts, medium gets moderate length
   const maxLength = difficulty === 'expert' ? 800 : 
                    difficulty === 'hard' ? 700 :
                    difficulty === 'medium' ? 600 : 500;
