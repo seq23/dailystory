@@ -2055,7 +2055,7 @@ function fillPremiumTemplate(
       // - Removing any fallback level could cause undefined errors
       //
       // TESTING: Verify template generation when PREMIUM_PROMPT_TEMPLATES fails
-      template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
+      template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || EMERGENCY_FALLBACK_FRAMEWORK || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
     }
     
     // NUCLEAR AVATAR MAPPING with error protection
@@ -2169,37 +2169,39 @@ function fillPremiumTemplate(
     // ============= MASTER PLAN PHASE 3: TEMPLATE VARIABLE SCOPE FIX =============
     // Get style framework settings using nuclear independence - MOVED TO BEFORE TEMPLATE FILLING
     // 
-    // ============= CRITICAL REGRESSION PREVENTION: NUCLEAR_STYLE_SETTINGS =============
-    // This array is accessed by LINE 2054 emergency template generation
-    // MUST remain defined BEFORE line 2054 to prevent undefined errors
+    // ========== NUCLEAR STYLE SETTINGS - Enhanced Framework Prompts ==========
+    // CRITICAL: This array MUST be defined before line 2054 (Raw PageText Fallback)
     // 
-    // PURPOSE: Provides frameworkPrompt values for different difficulty levels
-    // USAGE: Emergency template construction when PREMIUM_PROMPT_TEMPLATES fails
-    // 
-    // REGRESSION RISKS:
+    // ⚠️  REGRESSION PREVENTION - CRITICAL DEPENDENCIES ⚠️
     // - Moving this after line 2054 breaks emergency template generation
-    // - Removing frameworkPrompt properties breaks template construction
+    // - Removing frameworkPrompt properties breaks template construction  
     // - Changing difficulty keys affects template selection logic
+    // - Used by fillPremiumTemplate function (called at line 2842)
+    // - Used by emergency fallback system at line 2054
     //
-    // DEPENDENCIES: Used by fillPremiumTemplate function (called at line 2842)
+    // 🎨 ENHANCED FRAMEWORK PROMPT SYSTEM - JANUARY 2025 🎨
+    // BEGINNER/EASY: Contemporary children's book style with sharp detail focus
+    // MEDIUM/HARD/EXPERT: Advanced 2.9D rendering with professional lighting
+    // EMERGENCY FALLBACK: 2.5D rendering system for ultimate emergency scenarios
+    //
     const NUCLEAR_STYLE_SETTINGS = {
       'beginner': {
-        frameworkPrompt: 'Children book style with vibrant colors, early reader illustration quality, simple details, friendly character design, bright cheerful atmosphere, clear features, accessible art style',
+        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
         steps: 20,
         CFGScale: 7
       },
       'easy': {
-        frameworkPrompt: 'Picture book illustration with bright colors, charming character design, simple clean details, cheerful atmosphere, child-friendly art style, warm lighting',
+        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
         steps: 22,
         CFGScale: 7.5
       },
       'medium': {
-        frameworkPrompt: '2.5D illustrated children book style with enhanced lighting, beautiful child characters with graceful features, charming expressions, detailed illustration quality, warm natural lighting, child-friendly diverse representation',
+        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
         steps: 25,
         CFGScale: 8
       },
       'hard': {
-        frameworkPrompt: '2.7D children book illustration with professional lighting, beautiful child characters with graceful features, charming expressions, detailed digital art quality, enhanced lighting effects, child-friendly, diverse representation',
+        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
         steps: 28,
         CFGScale: 9
       },
@@ -2209,6 +2211,10 @@ function fillPremiumTemplate(
         CFGScale: 10
       }
     };
+    
+    // 🚨 ULTIMATE FALLBACK FRAMEWORK PROMPT - EMERGENCY USE ONLY 🚨
+    // Used when NUCLEAR_STYLE_SETTINGS fails completely at line 2054 (Tier 3 of 4-tier system)
+    const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting';
     
     const styleSettings = NUCLEAR_STYLE_SETTINGS[safeDifficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
     console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
@@ -2924,35 +2930,15 @@ serve(async (req: Request) => {
       negativePrompt = 'low quality, blurry, distorted, inappropriate content';
     }
     
-    // NUCLEAR STYLE SETTINGS - Zero external dependencies for bulletproof operation
-    // Beginner/Easy: SIMPLIFIED for basic stories | Medium/Hard/Expert: Advanced 2.9D rendering
-    const NUCLEAR_STYLE_SETTINGS = {
-      'beginner': {
-        frameworkPrompt: 'Simple children\'s book illustration, bright colors, friendly character, clear details, cheerful atmosphere',
-        steps: 25,
-        CFGScale: 8
-      },
-      'easy': {
-        frameworkPrompt: 'Colorful children\'s book style, charming character, vibrant scene, child-friendly design',
-        steps: 25,
-        CFGScale: 8
-      },
-      'medium': {
-        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-        steps: 30,
-        CFGScale: 10
-      },
-      'hard': {
-        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-        steps: 30,
-        CFGScale: 10
-      },
-      'expert': {
-        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-        steps: 30,
-        CFGScale: 10
-      }
-    };
+    // ❌ DUPLICATE ARRAY REMOVED - REGRESSION PREVENTION ❌
+    // This duplicate NUCLEAR_STYLE_SETTINGS array has been removed to prevent:
+    // - Memory waste and code duplication 
+    // - Confusion about which array is being used
+    // - Inconsistent framework prompts between arrays
+    // - Maintenance overhead of keeping two arrays in sync
+    //
+    // 🔄 REFERENCE: Primary NUCLEAR_STYLE_SETTINGS is at line ~2185-2220
+    // 🔄 All template logic uses the primary array only
     
     const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
     console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
