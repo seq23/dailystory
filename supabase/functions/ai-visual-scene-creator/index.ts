@@ -866,7 +866,7 @@ serve(async (req) => {
 
         if (!storyText) {
           throw {
-            type: EdgeErrorType.VALIDATION,
+            type: 'VALIDATION_ERROR',
             message: 'Missing required parameter: storyText'
           };
         }
@@ -879,7 +879,7 @@ serve(async (req) => {
         let previousScene = null;
         try {
           if (pageNumber > 1) {
-            const sessionManager = SessionStateManager.getInstance();
+            const sessionManager = new SessionStateManager();
             previousScene = await sessionManager.getPreviousAIScene(sessionId);
             console.log(`🎬 Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
           }
@@ -1087,7 +1087,7 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         
         // Store current AI scene for next page consistency
         try {
-          const sessionManager = SessionStateManager.getInstance();
+          const sessionManager = new SessionStateManager();
           await sessionManager.storePreviousAIScene(sessionId, {
             primaryScene: primaryScene,
             setting: setting,
