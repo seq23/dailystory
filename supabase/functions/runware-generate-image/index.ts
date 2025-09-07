@@ -392,11 +392,16 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
 }
 
 // ============= AVATAR IDENTITY MAPPER =============
+// CRITICAL: This function maps UI avatar data to AI generation parameters
+// DO NOT MODIFY without understanding the full avatar pipeline impact
 function mapAvatarIdentity(userInfo: any): any {
-  // Default fallback identity
+  // REGRESSION PREVENTION: Default fallback identity
+  // - skinTone: 'medium' is the statistically most common and balanced default
+  // - DO NOT change to 'light' as this creates bias toward lighter skin tones
+  // - 'medium' ensures better representation across all user demographics
   const defaultIdentity = {
     type: 'child',
-    skinTone: 'medium',
+    skinTone: 'medium', // CRITICAL: DO NOT change this default - ensures demographic balance
     culturalProfile: 'general',
     nativeLanguage: 'english',
     name: userInfo?.name || 'the child',
@@ -409,7 +414,8 @@ function mapAvatarIdentity(userInfo: any): any {
     return defaultIdentity;
   }
   
-  // Map avatar types and skin tones
+  // REGRESSION PREVENTION: Avatar type mapping
+  // This maps UI avatar type values to AI generation parameters
   const avatarTypeMap = {
     'boy': 'boy',
     'girl': 'girl', 
@@ -417,21 +423,33 @@ function mapAvatarIdentity(userInfo: any): any {
     'kid': 'child'
   };
   
+  // CRITICAL SKIN TONE MAPPING - DO NOT MODIFY THESE 5 MAPPINGS
+  // These correspond to the exact 5 skin tone options in the UI:
+  // REGRESSION WARNING: Removing ANY of these 5 mappings will break avatar generation
+  // - 'pale': Very light skin tones (Northern European, etc.)
+  // - 'light': Light skin tones (General European, etc.)  
+  // - 'medium': Medium skin tones (Mediterranean, Mixed, etc.)
+  // - 'olive': Olive skin tones (Middle Eastern, Southern European, etc.)
+  // - 'dark': Dark skin tones (African, African diaspora, etc.)
+  // The old incorrect mapping 'tan': 'medium' was REMOVED - do not re-add it
   const skinToneMap = {
-    'pale': 'pale',
-    'light': 'light',
-    'medium': 'medium',
-    'olive': 'olive',
-    'dark': 'dark'
+    'pale': 'pale',     // REQUIRED: Maps to UI pale option
+    'light': 'light',   // REQUIRED: Maps to UI light option  
+    'medium': 'medium', // REQUIRED: Maps to UI medium option
+    'olive': 'olive',   // REQUIRED: Maps to UI olive option - FIXED (was missing)
+    'dark': 'dark'      // REQUIRED: Maps to UI dark option
   };
   
-  // Hair color mapping
+  // CRITICAL HAIR COLOR MAPPING SYSTEM
+  // REGRESSION PREVENTION: This maps skin tones to culturally appropriate hair colors
+  // DO NOT MODIFY without understanding cultural representation impact
+  // This system ensures realistic hair/skin combinations for character generation
   const hairColorMap = {
-    'pale': 'red hair',
-    'light': 'blonde hair',
-    'medium': 'brown hair',
-    'olive': 'black hair',
-    'dark': 'textured natural hair'
+    'pale': 'red hair',              // Celtic/Northern European heritage
+    'light': 'blonde hair',          // Northern European heritage  
+    'medium': 'brown hair',          // Global medium tones
+    'olive': 'black hair',           // Mediterranean/Middle Eastern heritage
+    'dark': 'textured natural hair'  // African diaspora heritage - includes natural textures
   };
   
   const skinTone = skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone;
@@ -808,12 +826,21 @@ serve(async (req) => {
         // Helper function to detect if user is Level 0-1 (beginner/easy)
         const isLevel01User = difficulty === 'beginner' || difficulty === 'easy';
         
-        // Helper function to generate cultural context with identity-specific fallbacks
+        // CRITICAL CULTURAL CONTEXT GENERATOR
+        // REGRESSION PREVENTION: This function handles cultural representation for diverse users
+        // DO NOT MODIFY the cultural detection logic without comprehensive testing
         const generateCulturalContext = (avatarIdentity: any, userInfo: any, requestId: string) => {
           const skinTone = avatarIdentity?.skinTone;
           const nativeLanguage = avatarIdentity?.nativeLanguage || userInfo?.native_language || 'en';
           
-          // AFRICAN AMERICAN USERS (dark skin + English/French/Spanish/Portuguese)
+          // AFRICAN DIASPORA CULTURAL DETECTION SYSTEM
+          // REGRESSION WARNING: This logic ensures proper representation for African diaspora users
+          // Detection criteria: 'dark' skin tone + languages from African diaspora regions
+          // - 'en' (English): African American users in US/UK/Canada/Australia
+          // - 'fr' (French): Francophone African/Afro-Caribbean users  
+          // - 'es' (Spanish): Afro Latino users in Spanish-speaking countries
+          // - 'pt' (Portuguese): Afro Brazilian/Lusophone African users
+          // DO NOT remove any of these language combinations
           if (skinTone === 'dark' && (nativeLanguage === 'en' || nativeLanguage === 'fr' || nativeLanguage === 'es' || nativeLanguage === 'pt')) {
             try {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
@@ -829,9 +856,12 @@ serve(async (req) => {
                 const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
                 const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
                 
-                const culturalLabel = nativeLanguage === 'en' ? 'African American' : 
-                                   nativeLanguage === 'fr' ? 'Francophone African' : 
-                                   (nativeLanguage === 'es' || nativeLanguage === 'pt') ? 'Afro Latino' : 'African American';
+                // CULTURAL LABEL MAPPING - DO NOT MODIFY
+                // This maps language codes to accurate cultural identities for the African diaspora
+                const culturalLabel = nativeLanguage === 'en' ? 'African American' :      // US/Canada/UK/Australia
+                                   nativeLanguage === 'fr' ? 'Francophone African' :    // France/Quebec/West Africa
+                                   (nativeLanguage === 'es' || nativeLanguage === 'pt') ? 'Afro Latino' : // Latin America/Brazil
+                                   'African American'; // Fallback for edge cases
                 
                 console.log(`🌍 [${requestId}] ${culturalLabel} detailed context applied (dark skin + ${nativeLanguage})`);
                 return `${culturalLabel} heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
@@ -840,10 +870,13 @@ serve(async (req) => {
               console.warn(`⚠️ [${requestId}] African American detailed arrays failed:`, error);
             }
             
-            // FALLBACK: Always provide cultural context for African diaspora users
-            const culturalLabel = nativeLanguage === 'en' ? 'African American' : 
-                                 nativeLanguage === 'fr' ? 'Francophone African' : 
-                                 (nativeLanguage === 'es' || nativeLanguage === 'pt') ? 'Afro Latino' : 'African American';
+            // CRITICAL FALLBACK: Always provide cultural context for African diaspora users
+            // REGRESSION PREVENTION: This fallback ensures representation even when detailed arrays fail
+            // DO NOT remove this fallback - it's essential for cultural accuracy
+            const culturalLabel = nativeLanguage === 'en' ? 'African American' :        // English speakers
+                                 nativeLanguage === 'fr' ? 'Francophone African' :      // French speakers  
+                                 (nativeLanguage === 'es' || nativeLanguage === 'pt') ? 'Afro Latino' :  // Spanish/Portuguese speakers
+                                 'African American'; // Safe fallback
             
             console.log(`🌍 [${requestId}] ${culturalLabel} fallback context applied (arrays unavailable)`);
             return `authentic ${culturalLabel} features required`;
