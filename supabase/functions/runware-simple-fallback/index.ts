@@ -975,8 +975,8 @@ function fillPremiumTemplate(
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
     
-    // Process pageText based on difficulty
-    const processedPageText = truncatePageText(pageText || 'A story about learning and discovery', difficulty);
+    // Use FULL pageText for intelligent processing (truncation happens at final prompt assembly)
+    const processedPageText = pageText || 'A story about learning and discovery';
     
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
@@ -1174,6 +1174,72 @@ function truncatePageText(text: string, difficulty: string): string {
   }
   
   return truncated + '...';
+}
+
+// ============= FINAL PROMPT TRUNCATION (TIER 2.5 ENHANCEMENT) =============
+function truncateFinalPrompt(prompt: string, difficulty: string): string {
+  if (!prompt) return prompt;
+  
+  // Runware API has practical limits - apply intelligent truncation
+  // Expert/Hard levels can have longer prompts, beginners get shorter ones
+  const maxLength = difficulty === 'expert' ? 800 : 
+                   difficulty === 'hard' ? 700 :
+                   difficulty === 'medium' ? 600 : 500;
+  
+  if (prompt.length <= maxLength) {
+    return prompt;
+  }
+  
+  console.log(`🛡️ Tier 2.5: Final prompt truncation applied. Original: ${prompt.length} chars, Max: ${maxLength} chars`);
+  
+  // Smart truncation: preserve key elements, truncate narrative portion
+  // Split the prompt to identify the story text portion (usually after pageText)
+  const parts = prompt.split('. ');
+  let preservedParts = [];
+  let narrativeParts = [];
+  let totalLength = 0;
+  
+  // Identify parts to preserve (character descriptions, settings, etc.)
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const isCharacterDesc = part.includes('age ') || part.includes('hair') || part.includes('wearing') || part.includes('ethnicity');
+    const isSettingDesc = part.includes('in ') && (part.includes('room') || part.includes('park') || part.includes('school'));
+    const isStyleDesc = part.includes('illustration') || part.includes('art') || part.includes('painting');
+    
+    if (isCharacterDesc || isSettingDesc || isStyleDesc) {
+      preservedParts.push(part);
+      totalLength += part.length + 2; // +2 for '. '
+    } else {
+      narrativeParts.push(part);
+    }
+  }
+  
+  // Add narrative parts until we hit the limit
+  let remainingLength = maxLength - totalLength;
+  let finalNarrativeParts = [];
+  
+  for (const narrativePart of narrativeParts) {
+    if (narrativePart.length + 2 <= remainingLength) {
+      finalNarrativeParts.push(narrativePart);
+      remainingLength -= (narrativePart.length + 2);
+    } else {
+      // Truncate this part and stop
+      if (remainingLength > 50) { // Only add if we have reasonable space
+        const truncatedPart = narrativePart.substring(0, remainingLength - 10);
+        const lastSpaceIndex = truncatedPart.lastIndexOf(' ');
+        if (lastSpaceIndex > truncatedPart.length * 0.7) {
+          finalNarrativeParts.push(truncatedPart.substring(0, lastSpaceIndex) + '...');
+        }
+      }
+      break;
+    }
+  }
+  
+  // Reassemble the prompt: preserved parts + truncated narrative
+  const finalPrompt = [...preservedParts, ...finalNarrativeParts].join('. ');
+  
+  console.log(`🛡️ Tier 2.5: Smart truncation completed. Final: ${finalPrompt.length} chars`);
+  return finalPrompt;
 }
 
 function getRandomItem(array: string[]): string {
@@ -1467,11 +1533,14 @@ Deno.serve(async (req: Request) => {
               if (item.taskType === "authentication") {
                 console.log('🛡️ Tier 2.5: Authentication successful, generating image...');
                 
+                // Apply final prompt truncation (TIER 2.5 Enhancement)
+                const finalPrompt = truncateFinalPrompt(prompt, difficulty);
+                
                 // Send image generation request
                 const imageMessage = [{
                   taskType: "imageInference",
                   taskUUID: crypto.randomUUID(),
-                  positivePrompt: prompt,
+                  positivePrompt: finalPrompt,
                   negativePrompt: negativePrompt,
                   width: 1024,
                   height: 1024,
@@ -1490,7 +1559,7 @@ Deno.serve(async (req: Request) => {
                  resolveOnce(createCorsResponse({
                    success: true,
                    imageURL: item.imageURL,
-                   prompt: prompt,
+                   prompt: finalPrompt,
                    negativePrompt: negativePrompt,
                    difficulty: difficulty,
                    culturalProfile: culturalProfile,
