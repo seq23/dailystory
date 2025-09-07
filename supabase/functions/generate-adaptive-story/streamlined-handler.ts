@@ -12,6 +12,7 @@ import {
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
+import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 
@@ -27,7 +28,7 @@ import {
   setUserVocabularyCache
 } from './StaticDataCache.ts';
 import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTracker.ts';
-const { classifyError, getRetryEnhancement, ErrorCategory } = await import('./errorClassification.ts');
+
 
 // CORS headers - moved to top to fix ReferenceError
 const corsHeaders = {
