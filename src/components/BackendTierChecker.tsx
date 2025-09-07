@@ -11,40 +11,44 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
   useEffect(() => {
     const checkRecentImageCalls = async () => {
       try {
-        // Check recent edge function calls for image generation
-        const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts', {
-          body: { limit: 5 }
-        });
+        // Check recent edge function calls for image generation using URL parameters
+        const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts?global=true&limit=5');
 
         if (data && !error) {
           console.log('🔍 Recent image generation calls:', data);
-          setRecentCalls(data.recentCalls || []);
+          setRecentCalls(data.imagePrompts || []);
           
           // Look for tier success information
-          if (data.recentCalls) {
-            data.recentCalls.forEach((call: any, index: number) => {
-              if (call.tier || call.success_tier) {
-                const tier = call.tier || call.success_tier;
-                console.log(`🎯 TIER SUCCESS FOUND: Tier ${tier}`, {
+          if (data.imagePrompts) {
+            data.imagePrompts.forEach((call: any, index: number) => {
+              if (call.tier) {
+                console.log(`🎯 TIER SUCCESS FOUND: Tier ${call.tier}`, {
                   callIndex: index,
                   timestamp: call.timestamp,
-                  prompt: call.prompt?.substring(0, 100),
+                  prompt: call.promptText?.substring(0, 100),
                   success: call.success,
-                  imageUrl: call.imageUrl
+                  imageUrl: call.imageURL
                 });
                 
-                onTierFound?.(tier, {
-                  prompt: call.prompt,
+                onTierFound?.(call.tier, {
+                  prompt: call.promptText,
                   timestamp: call.timestamp,
-                  imageUrl: call.imageUrl,
+                  imageUrl: call.imageURL,
                   success: call.success
                 });
               }
             });
           }
+        } else if (error) {
+          console.warn('🚫 Failed to check recent image calls:', error?.message || 'Unknown error');
         }
       } catch (error) {
-        console.warn('Failed to check recent image calls:', error);
+        // Suppress 400 errors to reduce console spam
+        if (error?.message?.includes('400')) {
+          console.log('🔇 Debug function temporarily unavailable');
+        } else {
+          console.warn('⚠️ Image tier check error:', error?.message || 'Unknown error');
+        }
       }
     };
 
@@ -62,27 +66,31 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
 // Helper function to manually check tier success in console
 (window as any).checkImageTier = async () => {
   try {
-    const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts', {
-      body: { limit: 10 }
-    });
+    const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts?global=true&limit=10');
 
     if (data && !error) {
       console.log('🔍 MANUAL TIER CHECK - Recent image calls:', data);
       
-      if (data.recentCalls) {
-        data.recentCalls.forEach((call: any, index: number) => {
+      if (data.imagePrompts) {
+        data.imagePrompts.forEach((call: any, index: number) => {
           console.log(`Call ${index + 1}:`, {
             timestamp: new Date(call.timestamp).toLocaleTimeString(),
-            tier: call.tier || call.success_tier || 'Unknown',
-            prompt: call.prompt?.substring(0, 150) + '...',
+            tier: call.tier || 'Unknown',
+            prompt: call.promptText?.substring(0, 150) + '...',
             success: call.success,
-            imageUrl: call.imageUrl?.substring(0, 50) + '...'
+            imageUrl: call.imageURL?.substring(0, 50) + '...'
           });
         });
       }
+    } else if (error) {
+      console.warn('🚫 Manual tier check failed:', error?.message || 'Unknown error');
     }
   } catch (error) {
-    console.error('Manual tier check failed:', error);
+    if (error?.message?.includes('400')) {
+      console.log('🔇 Debug function temporarily unavailable');
+    } else {
+      console.error('⚠️ Manual tier check error:', error?.message || 'Unknown error');
+    }
   }
 };
 
