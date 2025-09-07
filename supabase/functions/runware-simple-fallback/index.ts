@@ -602,7 +602,7 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
     const result = {
       scene: extractActionFromSentence(bestSentence),
       setting: extractSettingFromSentence(bestSentence, previousSetting),
-      objects: extractObjectsFromSentence(bestSentence, pageText, pageNumber),
+      objects: extractObjectsFromSentence(bestSentence, pageText, pageNumber, sessionId),
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
 
@@ -921,16 +921,71 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
 
 // ============= COMPREHENSIVE ENHANCED PRONOUN RESOLUTION SYSTEM =============
 
-// Helper function to get resolved previous context from SessionStateManager
+// ============= TESTING & VALIDATION SUITE =============
+function testPronounResolutionSystem() {
+  console.log('🧪 Starting comprehensive pronoun resolution system test...');
+  
+  // Test 1: Object pronoun resolution
+  const test1 = resolvePronounsInSentence(
+    "She picks it up gently", 
+    "Emma sees a beautiful flower in the garden", 
+    [], 
+    "test-session", 
+    2
+  );
+  console.log(`Test 1 - Object resolution: "${test1}" (Expected: flower resolution)`);
+  
+  // Test 2: Character pronoun resolution  
+  const test2 = resolvePronounsInSentence(
+    "He helps with the cooking", 
+    "Dad is in the kitchen preparing dinner", 
+    ['dad'], 
+    "test-session", 
+    3
+  );
+  console.log(`Test 2 - Character resolution: "${test2}" (Expected: Dad resolution)`);
+  
+  // Test 3: Ambiguous case (should remain unchanged)
+  const test3 = resolvePronounsInSentence(
+    "She sees it near them", 
+    "Mom and dad watch the cat and dog playing with a ball", 
+    ['mom', 'dad'], 
+    "test-session", 
+    4
+  );
+  console.log(`Test 3 - Ambiguous case: "${test3}" (Expected: null - too ambiguous)`);
+  
+  // Test 4: Character name extraction
+  const test4 = extractCharacterNamesFromDescription("caring mother nearby");
+  console.log(`Test 4 - Character extraction: [${test4.join(', ')}] (Expected: ['mom'])`);
+  
+  // Test 5: Animal detection
+  const test5 = extractSecondaryCharactersFromSentence("She plays with her dog Max");
+  console.log(`Test 5 - Animal detection: "${test5}" (Expected: dog companion)`);
+  
+  console.log('🧪 Pronoun resolution system testing complete!');
+}
+
+// Enhanced SessionStateManager integration with error handling
 function getPreviousResolvedContext(sessionId: string, pageNumber: number) {
   try {
+    if (!sessionId || pageNumber <= 1) {
+      return { objects: [], characters: [] };
+    }
+    
     const session = globalArcSessionManager.getSession(sessionId);
-    if (!session) return { objects: [], characters: [] };
+    if (!session) {
+      console.log(`⚠️ No session found for ${sessionId}`);
+      return { objects: [], characters: [] };
+    }
     
     const imagePrompts = session.imagePrompts || [];
     const previousPage = imagePrompts.find(p => p.pageNumber === pageNumber - 1);
     
-    if (!previousPage?.metadata) return { objects: [], characters: [] };
+    if (!previousPage?.metadata) {
+      console.log(`⚠️ No metadata found for previous page ${pageNumber - 1}`);
+      return { objects: [], characters: [] };
+    }
     
     // Extract resolved objects and characters from metadata
     const objects = previousPage.metadata.objects ? 
@@ -938,23 +993,27 @@ function getPreviousResolvedContext(sessionId: string, pageNumber: number) {
     const characters = previousPage.metadata.secondaryCharacters ? 
       previousPage.metadata.secondaryCharacters.split(',').map(c => c.trim().toLowerCase()) : [];
     
+    console.log(`🎯 Retrieved previous context: ${objects.length} objects, ${characters.length} characters`);
     return { objects, characters };
   } catch (error) {
-    console.warn('Could not retrieve previous context:', error);
+    console.warn('⚠️ Could not retrieve previous context:', error);
     return { objects: [], characters: [] };
   }
 }
 
-// Safe ambiguity detection - counts potential antecedents
+// Enhanced safe ambiguity detection with comprehensive context checking
 function countPotentialAntecedents(sentence: string, originalPageText: string, previousContext: any): number {
   const lowerSentence = sentence.toLowerCase();
   const lowerPageText = originalPageText.toLowerCase();
   
+  // Comprehensive candidate list including common story objects and characters
   const allCandidates = [
-    // Current page objects
-    ...['tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
-      'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
-      'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'],
+    // Story objects - common in children's stories
+    'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
+    'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
+    'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana',
+    // Family members
+    'mom', 'dad', 'mother', 'father', 'sister', 'brother', 'friend',
     // Previous page resolved context
     ...previousContext.objects,
     ...previousContext.characters
@@ -967,84 +1026,100 @@ function countPotentialAntecedents(sentence: string, originalPageText: string, p
     }
   }
   
+  console.log(`🔍 Ambiguity check: Found ${count} potential antecedents for pronouns`);
   return count;
 }
 
+// Enhanced pronoun resolution with comprehensive safety checks and error handling
 function resolvePronounsInSentence(sentence: string, originalPageText?: string, detectedCharacters: string[] = [], sessionId?: string, pageNumber?: number): string | null {
-  if (!originalPageText) return null;
-  
-  const lowerSentence = sentence.toLowerCase();
-  const lowerPageText = originalPageText.toLowerCase();
-  
-  // COMPREHENSIVE: All pronouns with safety-first resolution
-  const pronouns = ['it', 'this', 'that', 'them', 'they', 'he', 'she', 'him', 'her', 'his', 'hers'];
-  
-  // EFFICIENCY OPTIMIZATION: Get resolved previous context
-  const previousContext = sessionId && pageNumber ? 
-    getPreviousResolvedContext(sessionId, pageNumber) : { objects: [], characters: [] };
-  
-  for (const pronoun of pronouns) {
-    if (lowerSentence.includes(pronoun)) {
-      // SAFETY CHECK: Count potential antecedents
-      const antecedentCount = countPotentialAntecedents(sentence, originalPageText, previousContext);
-      
-      // SMART FALLBACK: If ambiguous (multiple antecedents), leave as-is
-      if (antecedentCount > 1) {
-        console.log(`🛡️ Safe fallback: "${pronoun}" has ${antecedentCount} potential antecedents - leaving unchanged`);
-        continue;
-      }
-      
-      // Human pronoun resolution for clear family member references
-      if (['he', 'him', 'his'].includes(pronoun)) {
-        const maleCharacters = ['dad', 'father', 'papa', 'daddy', 'brother', 'bro'];
-        for (const character of maleCharacters) {
-          if (lowerPageText.includes(character) && antecedentCount === 1) {
-            console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context`);
-            return sentence.replace(new RegExp(pronoun, 'gi'), character);
+  try {
+    if (!originalPageText || !sentence) {
+      console.log('⚠️ Missing required parameters for pronoun resolution');
+      return null;
+    }
+    
+    const lowerSentence = sentence.toLowerCase();
+    const lowerPageText = originalPageText.toLowerCase();
+    
+    // COMPREHENSIVE: All pronouns with safety-first resolution
+    const pronouns = ['it', 'this', 'that', 'them', 'they', 'he', 'she', 'him', 'her', 'his', 'hers'];
+    
+    // EFFICIENCY OPTIMIZATION: Get resolved previous context with error handling
+    const previousContext = sessionId && pageNumber ? 
+      getPreviousResolvedContext(sessionId, pageNumber) : { objects: [], characters: [] };
+    
+    for (const pronoun of pronouns) {
+      if (lowerSentence.includes(pronoun)) {
+        // SAFETY CHECK: Count potential antecedents
+        const antecedentCount = countPotentialAntecedents(sentence, originalPageText, previousContext);
+        
+        // SMART FALLBACK: If ambiguous (multiple antecedents), leave as-is for safety
+        if (antecedentCount > 1) {
+          console.log(`🛡️ Safe fallback: "${pronoun}" has ${antecedentCount} potential antecedents - leaving unchanged for safety`);
+          continue;
+        }
+        
+        // Human pronoun resolution with enhanced character mapping
+        if (['he', 'him', 'his'].includes(pronoun)) {
+          const maleCharacters = ['dad', 'father', 'papa', 'daddy', 'brother', 'bro'];
+          // Also check detected characters for male family members
+          const detectedMales = detectedCharacters.filter(c => maleCharacters.includes(c));
+          
+          for (const character of [...maleCharacters, ...detectedMales]) {
+            if (lowerPageText.includes(character) && antecedentCount === 1) {
+              console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context (safe)`);
+              return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), character);
+            }
           }
         }
-      }
-      
-      if (['she', 'her', 'hers'].includes(pronoun)) {
-        const femaleCharacters = ['mom', 'mother', 'mama', 'mommy', 'sister', 'sis'];
-        for (const character of femaleCharacters) {
-          if (lowerPageText.includes(character) && antecedentCount === 1) {
-            console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context`);
-            return sentence.replace(new RegExp(pronoun, 'gi'), character);
+        
+        if (['she', 'her', 'hers'].includes(pronoun)) {
+          const femaleCharacters = ['mom', 'mother', 'mama', 'mommy', 'sister', 'sis'];
+          // Also check detected characters for female family members
+          const detectedFemales = detectedCharacters.filter(c => femaleCharacters.includes(c));
+          
+          for (const character of [...femaleCharacters, ...detectedFemales]) {
+            if (lowerPageText.includes(character) && antecedentCount === 1) {
+              console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context (safe)`);
+              return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), character);
+            }
           }
         }
-      }
-      
-      // Object/animal pronoun resolution (existing logic enhanced with safety)
-      const objects = [
-        // Animals
-        'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
-        // Objects
-        'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
-        // Nature
-        'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'
-      ];
-      
-      // Check current page first
-      for (const obj of objects) {
-        if (lowerPageText.includes(obj) && !lowerSentence.includes(obj) && antecedentCount === 1) {
-          console.log(`🎯 Safe object pronoun resolution: "${pronoun}" → "${obj}" from current context`);
-          return sentence.replace(new RegExp(pronoun, 'gi'), obj);
+        
+        // Object/animal pronoun resolution with enhanced safety and animal support
+        const objects = [
+          // Animals - treat with 'it' pronouns
+          'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
+          // Objects
+          'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
+          // Nature objects
+          'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'
+        ];
+        
+        // Check current page objects first with enhanced word boundary matching
+        for (const obj of objects) {
+          if (lowerPageText.includes(obj) && !lowerSentence.includes(obj) && antecedentCount === 1) {
+            console.log(`🎯 Safe object pronoun resolution: "${pronoun}" → "${obj}" from current context`);
+            return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), obj);
+          }
         }
-      }
-      
-      // EFFICIENCY OPTIMIZATION: Check previous page resolved context
-      if (previousContext.objects.length === 1 && antecedentCount === 1) {
-        const prevObject = previousContext.objects[0];
-        console.log(`🎯 Efficient previous context resolution: "${pronoun}" → "${prevObject}" from resolved data`);
-        return sentence.replace(new RegExp(pronoun, 'gi'), prevObject);
+        
+        // EFFICIENCY OPTIMIZATION: Check previous page resolved context with safety
+        if (previousContext.objects.length === 1 && antecedentCount === 1) {
+          const prevObject = previousContext.objects[0];
+          console.log(`🎯 Efficient previous context resolution: "${pronoun}" → "${prevObject}" from resolved data (safe)`);
+          return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), prevObject);
+        }
       }
     }
+    
+    return null;
+  } catch (error) {
+    console.warn('⚠️ Pronoun resolution error:', error);
+    return null;
   }
-  
-  return null;
 }
-function extractObjectsFromSentence(sentence: string, originalPageText?: string, pageNumber?: number): string {
+function extractObjectsFromSentence(sentence: string, originalPageText?: string, pageNumber?: number, sessionId?: string): string {
   const lowerSentence = sentence.toLowerCase();
   
   // ENHANCED PAGE-AWARE OBJECT PREVENTION: Prevent premature object appearance
@@ -1067,8 +1142,8 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
   }
   
   // COMPREHENSIVE PRONOUN RESOLUTION: Enhanced with character context and safety
-  const detectedCharacters = extractSecondaryCharactersFromSentence(sentence).split(' ').filter(w => w.length > 2);
-  const pronounResolved = resolvePronounsInSentence(sentence, originalPageText, detectedCharacters);
+  const detectedCharacters = extractCharacterNamesFromDescription(extractSecondaryCharactersFromSentence(sentence));
+  const pronounResolved = resolvePronounsInSentence(sentence, originalPageText, detectedCharacters, sessionId, pageNumber);
   const processedSentence = pronounResolved || sentence;
   
   // First try to detect and resolve object + color combinations with context awareness
@@ -1339,6 +1414,33 @@ function detectAndResolveObjectColor(sentence: string, originalPageText?: string
   }
   
   return '';
+}
+
+// Helper function to extract character names from descriptive string
+function extractCharacterNamesFromDescription(description: string): string[] {
+  if (!description) return [];
+  
+  const nameMap: { [key: string]: string } = {
+    'caring mother': 'mom',
+    'supportive father': 'dad', 
+    'playful sister': 'sister',
+    'energetic brother': 'brother',
+    'cheerful friend': 'friend',
+    'loyal dog companion': 'dog',
+    'curious cat companion': 'cat',
+    'singing bird companion': 'bird',
+    'gentle rabbit companion': 'rabbit',
+    'beloved pet companion': 'pet'
+  };
+  
+  // Extract the base character type from description
+  for (const [desc, name] of Object.entries(nameMap)) {
+    if (description.includes(desc)) {
+      return [name];
+    }
+  }
+  
+  return [];
 }
 
 function extractSecondaryCharactersFromSentence(sentence: string): string {
@@ -2027,13 +2129,19 @@ serve(async (req: Request) => {
     }
     
     console.log('🛡️ Tier 2.5: Processing request with nuclear independence');
-    console.log('🎭 Tier 2.5: Character consistency data received:', {
-      hasCharacterData: !!characterData,
-      sessionId: sessionId,
-      characterSeed: characterData?.seed || 'none'
-    });
-    
-    // Extract scene components with complete placeholder support - SILENT FAILURE PROTECTION
+      console.log('🎭 Tier 2.5: Character consistency data received:', {
+        hasCharacterData: !!characterData,
+        sessionId: sessionId,
+        characterSeed: characterData?.seed || 'none'
+      });
+      
+      // ============= TESTING & VALIDATION =============
+      // Run comprehensive test on development requests (when sessionId contains 'test')
+      if (sessionId && sessionId.includes('test')) {
+        testPronounResolutionSystem();
+      }
+      
+      // Extract scene components with complete placeholder support - SILENT FAILURE PROTECTION
     let scene, setting, objects, secondary_characters;
     try {
       const sceneData = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
