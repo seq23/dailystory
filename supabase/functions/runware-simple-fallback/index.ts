@@ -35,14 +35,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Reordered for Enhanced Output) =============
+// ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Fixed Architecture) =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // FIXED: Consistent template structure across all difficulty levels for better AI understanding
+  // Levels 0-1: Short content - pageText stays first for immediate context
   beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
   easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  medium: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  hard: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  expert: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}"
+  
+  // Levels 2-4: Longer content - pageText moved to end for smart extraction
+  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}",
+  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}. Primary Scene: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -1352,6 +1354,9 @@ function fillPremiumTemplate(
     const safeSecondaryCharacters = secondary_characters || '';
     const safeEmotion = emotion || 'Positive and uplifting atmosphere';
     
+    // Apply smart sentence extraction for pageText based on difficulty level
+    const processedPageText = extractFirstSentences(pageText || '', safeDifficulty);
+    
     console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${safeDifficulty}`);
     
     // Get template with fallback protection
@@ -1486,8 +1491,8 @@ function fillPremiumTemplate(
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
     
-    // Use FULL pageText for intelligent processing (truncation happens at final prompt assembly)
-    const processedPageText = pageText || 'A story about learning and discovery';
+    // Use smart sentence extraction instead of full pageText
+    const processedPageText = extractFirstSentences(pageText || '', safeDifficulty);
     
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
@@ -1689,76 +1694,32 @@ function truncatePageText(text: string, difficulty: string): string {
   return truncated + '...';
 }
 
-// ============= FINAL PROMPT TRUNCATION (TIER 2.5 ENHANCEMENT) =============
-function truncateFinalPrompt(prompt: string, difficulty: string): string {
+// ============= SMART SENTENCE EXTRACTION (Simplified Architecture) =============
+function extractFirstSentences(text: string, difficulty: string): string {
+  if (!text) return text;
+  
+  // Level-based sentence extraction
+  const sentenceCount = difficulty === 'beginner' || difficulty === 'easy' ? 1 :
+                       difficulty === 'medium' ? 2 :
+                       difficulty === 'hard' ? 3 : 4;
+  
+  // Split by sentence endings and extract first N sentences
+  const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
+  const extracted = sentences.slice(0, sentenceCount).join(' ').trim();
+  
+  console.log(`🛡️ Tier 2.5: Extracted ${sentences.slice(0, sentenceCount).length} sentences for ${difficulty} level`);
+  return extracted || text;
+}
+
+// ============= SIMPLIFIED PROMPT PROCESSING (No Complex Truncation) =============
+function processPromptForRunware(prompt: string, difficulty: string): string {
   if (!prompt) return prompt;
   
-  // LEVEL-BASED TRUNCATION: No truncation for levels 0-1 (beginner/easy)
-  if (difficulty === 'beginner' || difficulty === 'easy') {
-    console.log(`🛡️ Tier 2.5: No truncation applied for ${difficulty} level (full page text preserved)`);
-    return prompt;
-  }
+  console.log(`🛡️ Tier 2.5: Simplified processing - letting Runware handle final length (${prompt.length} chars for ${difficulty})`);
   
-  // Runware API has practical limits - apply intelligent truncation for levels 2-4 only
-  // Expert/Hard levels can have longer prompts, medium gets moderate length
-  const maxLength = difficulty === 'expert' ? 800 : 
-                   difficulty === 'hard' ? 700 :
-                   difficulty === 'medium' ? 600 : 500;
-  
-  if (prompt.length <= maxLength) {
-    return prompt;
-  }
-  
-  console.log(`🛡️ Tier 2.5: Final prompt truncation applied. Original: ${prompt.length} chars, Max: ${maxLength} chars`);
-  
-  // Smart truncation: preserve key elements, truncate narrative portion
-  // Split the prompt to identify the story text portion (usually after pageText)
-  const parts = prompt.split('. ');
-  let preservedParts = [];
-  let narrativeParts = [];
-  let totalLength = 0;
-  
-  // Identify parts to preserve (character descriptions, settings, etc.)
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    const isCharacterDesc = part.includes('age ') || part.includes('hair') || part.includes('wearing') || part.includes('ethnicity');
-    const isSettingDesc = part.includes('in ') && (part.includes('room') || part.includes('park') || part.includes('school'));
-    const isStyleDesc = part.includes('illustration') || part.includes('art') || part.includes('painting');
-    
-    if (isCharacterDesc || isSettingDesc || isStyleDesc) {
-      preservedParts.push(part);
-      totalLength += part.length + 2; // +2 for '. '
-    } else {
-      narrativeParts.push(part);
-    }
-  }
-  
-  // Add narrative parts until we hit the limit
-  let remainingLength = maxLength - totalLength;
-  let finalNarrativeParts = [];
-  
-  for (const narrativePart of narrativeParts) {
-    if (narrativePart.length + 2 <= remainingLength) {
-      finalNarrativeParts.push(narrativePart);
-      remainingLength -= (narrativePart.length + 2);
-    } else {
-      // Truncate this part and stop
-      if (remainingLength > 50) { // Only add if we have reasonable space
-        const truncatedPart = narrativePart.substring(0, remainingLength - 10);
-        const lastSpaceIndex = truncatedPart.lastIndexOf(' ');
-        if (lastSpaceIndex > truncatedPart.length * 0.7) {
-          finalNarrativeParts.push(truncatedPart.substring(0, lastSpaceIndex) + '...');
-        }
-      }
-      break;
-    }
-  }
-  
-  // Reassemble the prompt: preserved parts + truncated narrative
-  const finalPrompt = [...preservedParts, ...finalNarrativeParts].join('. ');
-  
-  console.log(`🛡️ Tier 2.5: Smart truncation completed. Final: ${finalPrompt.length} chars`);
-  return finalPrompt;
+  // No truncation needed - smart sentence extraction already handled in template filling
+  // Total prompts should be ~800-1200 chars well under Runware's limits  
+  return prompt;
 }
 
 function getRandomItem(array: string[]): string {
@@ -2157,8 +2118,8 @@ serve(async (req: Request) => {
               if (item.taskType === "authentication") {
                 console.log('🛡️ Tier 2.5: Authentication successful, generating image...');
                 
-                // Apply final prompt truncation (TIER 2.5 Enhancement)
-                finalPrompt = truncateFinalPrompt(prompt, difficulty);
+                // Apply simplified prompt processing (No complex truncation)
+                finalPrompt = processPromptForRunware(prompt, difficulty);
                 
                 // Send image generation request
                 const imageMessage = [{
