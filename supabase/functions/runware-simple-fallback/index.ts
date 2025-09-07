@@ -134,21 +134,6 @@ const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
 
 // STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
 
-const HARDCODED_STANDARD_AMERICAN_SKIN_TONES = [
-  'fair light complexion', 'warm light skin', 'peachy fair skin', 'light rosy complexion',
-  'pale golden skin', 'creamy light skin', 'fair pink-toned skin', 'light neutral complexion'
-];
-
-const HARDCODED_STANDARD_AMERICAN_EYE_COLORS = [
-  'bright blue eyes', 'warm green eyes', 'hazel eyes', 'light brown eyes',
-  'sparkling blue eyes', 'emerald green eyes', 'golden hazel eyes', 'deep blue eyes'
-];
-
-const HARDCODED_STANDARD_AMERICAN_FACIAL_FEATURES = [
-  'bright sparkling eyes', 'cheerful friendly smile', 'freckled nose and rosy cheeks',
-  'expressive animated eyes', 'warm genuine smile', 'lively enthusiastic expression',
-  'kind gentle demeanor', 'confident bright smile', 'playful mischievous grin'
-];
 
 const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
   'casual t-shirt and jeans', 'hoodie and sneakers', 'button-up shirt and khakis', 
