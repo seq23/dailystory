@@ -1480,8 +1480,8 @@ function fillPremiumTemplate(
     // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION (After scene extraction) =============
     const cameraDirective = generateCameraDirective(difficulty, scene, enhancedSetting);
     
-    // Get style framework settings
-    const styleSettings = getStyleFrameworkSettings(difficulty);
+    // Get style framework settings using nuclear independence
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
     
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
