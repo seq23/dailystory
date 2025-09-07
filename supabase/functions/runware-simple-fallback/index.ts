@@ -2844,7 +2844,7 @@ serve(async (req: Request) => {
     } catch (templateError) {
       console.warn('⚠️ Template filling failed, using ULTIMATE EMERGENCY template:', templateError);
       // ULTIMATE EMERGENCY - Zero dependencies, completely hardcoded, always works
-      prompt = "EMERGENCY_TEMPLATE_USED: A friendly child reading a magical story in a cozy bedroom, warm lighting, children's book illustration style";
+      prompt = "EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
     }
     
     // Generate avatar mapping with character consistency enhancement - SILENT FAILURE PROTECTION
