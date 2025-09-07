@@ -2064,7 +2064,7 @@ serve(async (req: Request) => {
       console.log('✅ Style settings generation successful');
     } catch (styleError) {
       console.warn('⚠️ Style settings failed, using defaults:', styleError);
-      styleSettings = { steps: 30, CFGScale: 10, seed: Math.floor(Math.random() * 1000000) }; // FIXED: Enhanced fallback parameters
+      styleSettings = { steps: 30, CFGScale: 10 }; // FIXED: Consistent fallback parameters (no random seed)
     }
     
     console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket with comprehensive error protection...');
