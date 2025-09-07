@@ -2,13 +2,18 @@
 // Shared module for both Tier 1 (Orchestrator) and Tier 2.5 (Nuclear Fallback)
 // Nuclear Independence: 90%+ hardcoded arrays for comprehensive safety filtering
 
-// NUCLEAR BASE NEGATIVE PROMPT (Quality & Safety)
+// NUCLEAR BASE NEGATIVE PROMPT (Quality & Safety + MASTER PLAN: Wider Angle Enhancement)
 export const NUCLEAR_BASE_NEGATIVE_PROMPT = [
   // Quality Filters
   'low quality', 'blurry', 'distorted', 'deformed', 'bad anatomy', 'weird proportions', 
   'extra limbs', 'missing limbs', 'bad hands', 'malformed hands', 'extra fingers', 
   'missing fingers', 'crossed eyes', 'bad facial features', 'unrealistic skin', 
   'plastic appearance', 'oversaturated', 'undersaturated', 'overexposed', 'underexposed',
+  
+  // MASTER PLAN: Composition Filters (Prevent Close-ups for Full Activity Visibility)
+  'close-up shot', 'cropped image', 'partial view', 'zoomed in', 'tight framing', 
+  'head shot only', 'face only', 'portrait crop', 'cut off limbs', 'incomplete scene',
+  'narrow view', 'limited view', 'close framing', 'macro shot', 'detail shot',
   
   // Safety Filters  
   'no text', 'no words', 'no letters', 'no writing', 'no signatures', 'watermarks',

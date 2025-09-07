@@ -34,13 +34,13 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Style Framework Integration)
+// ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Reordered for Enhanced Output) =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}. {pageText}",
-  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}. {pageText}",
-  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}. {pageText}"
+  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  medium: "{character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Story context: {pageText}",
+  hard: "{character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Story context: {pageText}",
+  expert: "{character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Story context: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -615,39 +615,108 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
   }
 }
 
+// ============= MASTER PLAN: SMART PLURAL/STEM DETECTION SYSTEM =============
+// Automatically handles verb conjugations without manual arrays
+function detectActionStem(word: string): string {
+  // Convert to lowercase and trim
+  const cleanWord = word.toLowerCase().trim();
+  
+  // Handle doubled consonants first (running → run, rolling → roll, sitting → sit)
+  const doubledConsonants = /(.+)([bcdfghjklmnpqrstvwxyz])\2(ing|ed)$/;
+  const doubledMatch = cleanWord.match(doubledConsonants);
+  if (doubledMatch) {
+    return doubledMatch[1] + doubledMatch[2]; // Extract base with single consonant
+  }
+  
+  // Handle common suffixes
+  if (cleanWord.endsWith('ies')) return cleanWord.slice(0, -3) + 'y'; // flies → fly
+  if (cleanWord.endsWith('ied')) return cleanWord.slice(0, -3) + 'y'; // tried → try
+  if (cleanWord.endsWith('ing')) return cleanWord.slice(0, -3); // running → run (after doubled check)
+  if (cleanWord.endsWith('ed')) return cleanWord.slice(0, -2); // played → play
+  if (cleanWord.endsWith('es')) return cleanWord.slice(0, -2); // goes → go
+  if (cleanWord.endsWith('s')) return cleanWord.slice(0, -1); // runs → run
+  
+  return cleanWord; // Return as-is if no suffix matches
+}
+
 function extractActionFromSentence(sentence: string): string {
   const lowerSentence = sentence.toLowerCase();
   
-  // Enhanced action mappings with stem word detection
+  // ============= MASTER PLAN: BASE STEM MAPPINGS (Level 0-2 Template Analysis) =============
+  // Each action uses only the base stem - smart detection handles all conjugations
   const actionMappings = [
-    { stems: ['run', 'runs', 'ran', 'running'], description: 'running joyfully' },
-    { stems: ['jump', 'jumps', 'jumped', 'jumping'], description: 'jumping energetically' },
-    { stems: ['play', 'plays', 'played', 'playing'], description: 'playing happily' },
-    { stems: ['read', 'reads', 'reading'], description: 'reading attentively' },
-    { stems: ['write', 'writes', 'wrote', 'writing'], description: 'writing carefully' },
-    { stems: ['draw', 'draws', 'drew', 'drawing'], description: 'drawing creatively' },
-    { stems: ['build', 'builds', 'built', 'building'], description: 'building imaginatively' },
-    { stems: ['explore', 'explores', 'explored', 'exploring'], description: 'exploring curiously' },
-    { stems: ['discover', 'discovers', 'discovered', 'discovering'], description: 'discovering excitedly' },
-    { stems: ['learn', 'learns', 'learned', 'learning'], description: 'learning eagerly' },
-    { stems: ['create', 'creates', 'created', 'creating'], description: 'creating artistically' },
-    { stems: ['make', 'makes', 'made', 'making'], description: 'making thoughtfully' },
-    { stems: ['walk', 'walks', 'walked', 'walking'], description: 'walking confidently' },
-    { stems: ['sit', 'sits', 'sat', 'sitting'], description: 'sitting comfortably' },
-    { stems: ['stand', 'stands', 'stood', 'standing'], description: 'standing proudly' },
-    { stems: ['dance', 'dances', 'danced', 'dancing'], description: 'dancing gracefully' },
-    { stems: ['sing', 'sings', 'sang', 'singing'], description: 'singing joyfully' },
-    { stems: ['laugh', 'laughs', 'laughed', 'laughing'], description: 'laughing cheerfully' },
-    { stems: ['smile', 'smiles', 'smiled', 'smiling'], description: 'smiling warmly' }
+    // Level 0 Actions (Basic movements and activities)
+    { stem: 'run', description: 'running joyfully' },
+    { stem: 'jump', description: 'jumping energetically' },
+    { stem: 'play', description: 'playing happily' },
+    { stem: 'read', description: 'reading attentively' },
+    { stem: 'write', description: 'writing carefully' },
+    { stem: 'draw', description: 'drawing creatively' },
+    { stem: 'build', description: 'building imaginatively' },
+    { stem: 'walk', description: 'walking confidently' },
+    { stem: 'sit', description: 'sitting comfortably' },
+    { stem: 'stand', description: 'standing proudly' },
+    { stem: 'dance', description: 'dancing gracefully' },
+    { stem: 'sing', description: 'singing joyfully' },
+    { stem: 'laugh', description: 'laughing cheerfully' },
+    { stem: 'smile', description: 'smiling warmly' },
+    { stem: 'eat', description: 'eating happily' },
+    { stem: 'sleep', description: 'resting peacefully' },
+    { stem: 'help', description: 'helping kindly' },
+    { stem: 'love', description: 'showing love' },
+    { stem: 'call', description: 'calling out' },
+    { stem: 'talk', description: 'talking cheerfully' },
+    { stem: 'get', description: 'getting something' },
+    { stem: 'put', description: 'placing carefully' },
+    { stem: 'go', description: 'going somewhere' },
+    { stem: 'see', description: 'looking at' },
+    { stem: 'make', description: 'making thoughtfully' },
+    { stem: 'try', description: 'trying eagerly' },
+    { stem: 'throw', description: 'throwing skillfully' },
+    { stem: 'catch', description: 'catching expertly' },
+    { stem: 'swing', description: 'swinging joyfully' },
+    
+    // Level 1 Actions (Exploration and learning)
+    { stem: 'explore', description: 'exploring curiously' },
+    { stem: 'discover', description: 'discovering excitedly' },
+    { stem: 'learn', description: 'learning eagerly' },
+    { stem: 'create', description: 'creating artistically' },
+    { stem: 'plant', description: 'planting carefully' },
+    { stem: 'water', description: 'watering gently' },
+    { stem: 'grow', description: 'growing beautifully' },
+    { stem: 'investigate', description: 'investigating thoughtfully' },
+    
+    // Level 2 Actions (Advanced activities)
+    { stem: 'interview', description: 'interviewing professionally' },
+    { stem: 'explain', description: 'explaining clearly' },
+    { stem: 'share', description: 'sharing generously' },
+    { stem: 'return', description: 'returning safely' },
+    { stem: 'work', description: 'working diligently' },
+    
+    // MASTER PLAN FIX: Missing Actions from "Ball Rolls Down Hill"
+    { stem: 'roll', description: 'rolling smoothly' }, // 🎯 THE MISSING ACTION!
+    { stem: 'climb', description: 'climbing adventurously' },
+    { stem: 'swim', description: 'swimming gracefully' },
+    { stem: 'hide', description: 'hiding playfully' },
+    { stem: 'slide', description: 'sliding joyfully' },
+    { stem: 'dig', description: 'digging curiously' },
+    { stem: 'fly', description: 'flying freely' },
+    { stem: 'hop', description: 'hopping energetically' },
+    { stem: 'skip', description: 'skipping merrily' }
   ];
   
-  // Check all action stems for matches
-  for (const { stems, description } of actionMappings) {
-    for (const stem of stems) {
-      if (lowerSentence.includes(stem)) {
-        console.log(`🎯 Action detected: "${stem}" → "${description}"`);
-        return description;
-      }
+  // Split sentence into words for analysis
+  const words = lowerSentence.split(/\s+/);
+  
+  // Check each word against action stems using smart detection
+  for (const word of words) {
+    const baseStem = detectActionStem(word);
+    
+    // Find matching action mapping
+    const actionMatch = actionMappings.find(action => action.stem === baseStem);
+    if (actionMatch) {
+      console.log(`🎯 Smart Action Detection: "${word}" → stem:"${baseStem}" → "${actionMatch.description}"`);
+      return actionMatch.description;
     }
   }
   
@@ -655,29 +724,54 @@ function extractActionFromSentence(sentence: string): string {
   return 'engaging in activities';
 }
 
-// ENHANCED SETTING EXTRACTION WITH NUCLEAR-SAFE MEMORY AND EXPANDED KEYWORDS
+// ============= MASTER PLAN: ENHANCED SETTING EXTRACTION (Level 0-2 Template Analysis) =============
 function extractSettingFromSentence(sentence: string, previousSetting?: string): string {
   const lowerSentence = sentence.toLowerCase();
   
-  // Enhanced setting mappings
+  // ============= EXPANDED SETTING MAPPINGS FROM TEMPLATE ANALYSIS =============
   const settingMappings = {
-    'park': ' a vibrant community park with green spaces', 
-    'school': ' a bright modern school with learning areas', 
-    'home': ' a cozy comfortable home with warm atmosphere',
-    'garden': ' a beautiful blooming garden with colorful flowers', 
-    'playground': ' a fun colorful playground with exciting equipment', 
-    'library': ' a quiet peaceful library with rows of books',
-    'classroom': ' a bright engaging classroom with educational materials', 
-    'kitchen': ' a warm inviting kitchen with cooking areas', 
-    'bedroom': ' a comfortable personal bedroom with cozy furnishings',
-    'backyard': ' a spacious family backyard with outdoor fun', 
-    'forest': ' a magical green forest with tall trees', 
-    'beach': ' a sunny sandy beach with ocean waves',
-    'mountain': ' a majestic mountain landscape with scenic views', 
-    'city': ' a bustling vibrant city with urban energy', 
-    'street': ' a friendly neighborhood street with community feel',
+    // Level 0 Settings (Basic locations)
+    'room': ' a cozy indoor room with comfortable space',
     'house': ' a welcoming family house with homey atmosphere', 
-    'room': ' a cozy indoor room with comfortable space', 
+    'playground': ' a fun colorful playground with exciting equipment',
+    'school': ' a bright modern school with learning areas',
+    'library': ' a quiet peaceful library with rows of books',
+    'kitchen': ' a warm inviting kitchen with cooking areas',
+    'bedroom': ' a comfortable personal bedroom with cozy furnishings',
+    'garden': ' a beautiful blooming garden with colorful flowers',
+    'park': ' a vibrant community park with green spaces',
+    'store': ' a friendly neighborhood store with interesting items',
+    
+    // Level 1 Settings (Outdoor exploration)
+    'soil': ' rich garden soil with growing potential',
+    'flowers': ' a colorful flower garden with blooming beauty',
+    'outdoor': ' a beautiful outdoor setting with natural environment',
+    
+    // Level 2 Settings (Learning environments)  
+    'classroom': ' a bright engaging classroom with educational materials',
+    'stairs': ' a safe stairway with good lighting',
+    'reading': ' a cozy reading nook with comfortable seating',
+    
+    // MASTER PLAN FIX: Missing Settings from "Ball Rolls Down Hill" + Expanded
+    'hill': ' a scenic hill landscape with natural slopes', // 🎯 THE MISSING SETTING!
+    'valley': ' a peaceful valley with rolling meadows',
+    'pond': ' a tranquil pond with clear water',
+    'stream': ' a babbling stream with flowing water',
+    'farm': ' a working farm with animals and fields',
+    'barn': ' a rustic barn with farm atmosphere',
+    'hospital': ' a clean modern hospital with caring staff',
+    'restaurant': ' a friendly restaurant with delicious aromas',
+    'mall': ' a busy shopping mall with many stores',
+    'zoo': ' an exciting zoo with amazing animals',
+    'museum': ' an educational museum with fascinating exhibits',
+    'airport': ' a bustling airport with travel excitement',
+    'train station': ' a busy train station with transportation energy',
+    'beach': ' a sunny sandy beach with ocean waves',
+    'forest': ' a magical green forest with tall trees',
+    'mountain': ' a majestic mountain landscape with scenic views',
+    'city': ' a bustling vibrant city with urban energy',
+    'street': ' a friendly neighborhood street with community feel',
+    'backyard': ' a spacious family backyard with outdoor fun',
     'living room': ' a comfortable living room with family seating',
     'dining room': ' a welcoming dining room with eating space',
     'bathroom': ' a clean bright bathroom with modern fixtures',
@@ -749,8 +843,9 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string)
   // Detect setting context for filtering
   const isIndoorScene = isIndoorContext(sentence);
   
-  // Context-aware object mappings
+  // ============= MASTER PLAN: CONTEXT-AWARE OBJECT MAPPINGS (Enhanced Birds Classification) =============
   const indoorObjects = {
+    // Level 0 Objects (Basic items)
     'book': ', with colorful educational books nearby', 
     'toy': ', with fun educational toys around',
     'ball': ', with a bright colorful ball', 
@@ -764,15 +859,37 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string)
     'computer': ', with educational technology',
     'tablet': ', with learning apps and digital tools', 
     'phone': ', with communication devices',
+    'water': ', with fresh water nearby',
+    'food': ', with delicious food around',
+    'clothes': ', with comfortable clothing',
+    'bed': ', near a cozy bed',
+    
+    // Food items (indoor appropriate)
     'apple': ', with fresh red apples nearby',
     'banana': ', with yellow bananas around',
     'sandwich': ', with a delicious sandwich to enjoy',
     'cookie': ', with sweet cookies nearby',
+    'cake': ', with a special cake to celebrate',
+    'pizza': ', with delicious pizza slices',
+    'ice cream': ', with sweet ice cream treats',
+    
+    // MASTER PLAN: Birds Context Classification - Domestic birds (indoor appropriate)
+    'parakeet': ', with a colorful pet parakeet',
+    'budgie': ', with a friendly pet budgie',
+    'parrot': ', with a talking pet parrot',
+    'canary': ', with a singing pet canary',
+    'cockatiel': ', with a charming pet cockatiel',
+    
+    // Indoor pets only
     'dog': ', with a friendly dog companion',
     'cat': ', with a playful cat nearby',
     'rabbit': ', with a cute bunny friend',
+    'hamster': ', with a tiny hamster friend',
     'fish': ', with colorful fish swimming',
-    'bear': ', with a cuddly teddy bear',
+    'turtle': ', with a gentle pet turtle',
+    'guinea pig': ', with a cuddly guinea pig',
+    
+    // Indoor accessories
     'hat': ', wearing a stylish hat',
     'shoes': ', with comfortable shoes on',
     'glasses': ', wearing smart glasses',
@@ -781,24 +898,60 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string)
   };
 
   const outdoorObjects = {
+    // Level 0 Outdoor Objects
     'bike': ', with a shiny bicycle nearby',
     'swing': ', near playground swings', 
     'slide': ', by a colorful playground slide',
     'tree': ', under beautiful shade trees', 
     'flower': ', surrounded by blooming flowers',
+    'grass': ', on green grass',
+    'stick': ', with interesting sticks around',
+    'rock': ', near interesting rocks',
+    
+    // Level 1 Outdoor Objects (Garden/Nature)
+    'seeds': ', with garden seeds to plant',
+    'plants': ', surrounded by growing plants',
+    'soil': ', in rich garden soil',
+    'watering can': ', with a helpful watering can',
+    
+    // Recreation items
     'kite': ', with a colorful kite ready to fly',
+    'frisbee': ', with a flying frisbee',
+    'soccer ball': ', with a soccer ball to kick',
+    'baseball': ', with a baseball to throw',
+    'basketball': ', with a basketball to bounce',
+    
+    // MASTER PLAN: Birds Context Classification - Wild birds (outdoor-only)
+    'robin': ', with cheerful robins singing',
+    'cardinal': ', with bright red cardinals',
+    'crow': ', with clever crows nearby',
+    'sparrow': ', with small sparrows chirping',
+    'blue jay': ', with beautiful blue jays',
+    'hawk': ', with majestic hawks soaring',
+    'eagle': ', with powerful eagles flying',
+    'owl': ', with wise owls watching',
+    'duck': ', with friendly ducks swimming',
+    'goose': ', with graceful geese nearby',
+    'swan': ', with elegant swans gliding',
+    
+    // Wild animals (outdoor appropriate)
     'butterfly': ', with beautiful butterflies around',
-    'bird': ', with cheerful birds singing',
     'elephant': ', with a gentle elephant friend',
     'lion': ', with a brave lion character',
     'tiger': ', with a friendly tiger companion',
     'monkey': ', with a playful monkey friend',
     'horse': ', with a beautiful horse nearby',
+    'deer': ', with graceful deer nearby',
+    'squirrel': ', with busy squirrels playing',
+    
+    // Vehicles (outdoor)
     'airplane': ', with toy airplanes soaring',
     'helicopter': ', with a fun helicopter toy',
     'train': ', with an exciting toy train',
     'boat': ', with a colorful toy boat',
-    'rocket': ', with an amazing rocket ship'
+    'rocket': ', with an amazing rocket ship',
+    'fire truck': ', with a red fire truck',
+    'police car': ', with a helpful police car'
   };
 
   // Universal objects (appropriate for both contexts)
@@ -905,24 +1058,41 @@ function detectAndResolveObjectColor(sentence: string, originalPageText?: string
     }
   }
   
-  // Check for plural form in original page text if available
-  function getPluralForm(object: string, originalText?: string): string {
+  // ============= MASTER PLAN: EXACT KEYWORD PRESERVATION =============
+  // Preserve exact word forms from pageText - critical for "bird" vs "birds" differentiation
+  function getExactWordForm(object: string, originalText?: string): string {
     if (!originalText) return object;
     const lowerOriginal = originalText.toLowerCase();
-    const pluralForm = object + 's';
-    return lowerOriginal.includes(pluralForm) ? pluralForm : object;
+    const lowerObject = object.toLowerCase();
+    
+    // Check for exact matches first (preserve exact form from pageText)
+    const words = lowerOriginal.split(/\s+/);
+    for (const word of words) {
+      // Direct match
+      if (word === lowerObject) return object;
+      // Plural form exists in text
+      if (word === lowerObject + 's') return object + 's';
+      // Handle irregular plurals
+      if (lowerObject === 'child' && word === 'children') return 'children';
+      if (lowerObject === 'mouse' && word === 'mice') return 'mice';
+      if (lowerObject === 'goose' && word === 'geese') return 'geese';
+    }
+    
+    return object; // Return base form if no exact match found
   }
   
-  // If both object and color detected, combine them (compact format with plural support)
+  // If both object and color detected, combine them (exact word form preservation)
   if (detectedObject && detectedColor) {
-    const pluralForm = getPluralForm(detectedObject, originalPageText);
-    return `${detectedColor} ${pluralForm} nearby`;
+    const exactForm = getExactWordForm(detectedObject, originalPageText);
+    console.log(`🎯 MASTER PLAN: Preserved exact word form "${detectedObject}" → "${exactForm}" from pageText`);
+    return `, with ${detectedColor} ${exactForm}`;
   }
   
-  // If only object detected, let Runware decide the color (compact format with plural support)
+  // If only object detected, let Runware decide the color (exact word form preservation)
   if (detectedObject) {
-    const pluralForm = getPluralForm(detectedObject, originalPageText);
-    return `${pluralForm} nearby`;
+    const exactForm = getExactWordForm(detectedObject, originalPageText);
+    console.log(`🎯 MASTER PLAN: Preserved exact word form "${detectedObject}" → "${exactForm}" from pageText`);
+    return `, with ${exactForm}`;
   }
   
   // If only color detected, let Runware decide what object to color
@@ -980,6 +1150,24 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
   
   // Return compact format (no ", with a" prefix to match current token-efficient format)
   return detectedCharacters.length > 0 ? detectedCharacters[0] + ' nearby' : '';
+}
+
+// ============= MASTER PLAN: CAMERA DIRECTIVE GENERATOR (Wider Angle Enhancement) =============
+function generateCameraDirective(difficulty: string): string {
+  // Always include wider angle directives for full activity visibility
+  const baseDirective = "full body shot, wide angle view, complete scene visible";
+  
+  // Difficulty-based camera enhancement
+  const difficultyEnhancements = {
+    'beginner': "simple composition, clear focus",
+    'easy': "child-friendly framing, easy to understand",
+    'medium': "dynamic composition, engaging perspective", 
+    'hard': "professional composition, detailed scene",
+    'expert': "artistic composition, sophisticated framing"
+  };
+  
+  const enhancement = difficultyEnhancements[difficulty] || difficultyEnhancements.medium;
+  return `${baseDirective}, ${enhancement}`;
 }
 
 function fillPremiumTemplate(
@@ -1100,7 +1288,11 @@ function fillPremiumTemplate(
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
     
-    // Fill template with nuclear mappings and style framework integration
+    // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION =============
+    const cameraDirective = generateCameraDirective(difficulty);
+    
+    // ============= MASTER PLAN: OPTIMIZED TEMPLATE FILLING (New Structure) =============
+    // New order: Character → Action with objects → Setting → Camera → Emotion → Framework → Story context
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
@@ -1111,6 +1303,7 @@ function fillPremiumTemplate(
       .replace('{setting}', enhancedSetting)
       .replace('{objects}', objects)
       .replace('{secondary_characters}', secondary_characters)
+      .replace('{cameraDirective}', cameraDirective) // 🎯 NEW: Wider angle enhancement
       .replace('{emotion}', emotion)
       .replace('{ethnicity}', ethnicity)
       .replace('{frameworkPrompt}', styleSettings.frameworkPrompt);
