@@ -76,6 +76,45 @@ export class VoiceDebugger {
     const hasNavigationListener = !!(window as any).___reader_navigation_listener;
     console.log('Navigation event listener active:', hasNavigationListener);
   }
+
+  // Track AI outputs for debug access
+  logAiOutput(outputs: {
+    primaryScene?: string;
+    setting?: string;
+    action?: string;
+    mood?: string;
+    pose?: string;
+  }) {
+    this.log('openai', 'ai-output-generated', outputs);
+    
+    // Store in global variables for debug panel access
+    (window as any).__lastAiScene = outputs.primaryScene || null;
+    (window as any).__lastAiSetting = outputs.setting || null;
+    (window as any).__lastAiAction = outputs.action || null;
+    (window as any).__lastAiMood = outputs.mood || null;
+    (window as any).__lastAiPose = outputs.pose || null;
+    
+    console.log('🎨 AI OUTPUT LOGGED:', outputs);
+  }
+
+  // Track tier 2.5 success for debug access
+  logTier25Success(wouldSucceed: boolean) {
+    this.log('unified', 'tier-2.5-test', { wouldSucceed });
+    (window as any).__tier25Success = wouldSucceed ? 'Would succeed' : 'Would fail';
+    console.log('🧪 TIER 2.5 TEST LOGGED:', wouldSucceed);
+  }
+
+  // Get all AI outputs for console access
+  getLastAiOutputs() {
+    return {
+      primaryScene: (window as any).__lastAiScene,
+      setting: (window as any).__lastAiSetting,
+      action: (window as any).__lastAiAction,
+      mood: (window as any).__lastAiMood,
+      pose: (window as any).__lastAiPose,
+      tier25Success: (window as any).__tier25Success
+    };
+  }
 }
 
 // Global debug helper

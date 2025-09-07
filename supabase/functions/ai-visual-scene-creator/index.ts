@@ -1108,6 +1108,21 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         
         console.log(`✅ SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
         
+        // =================== DEBUG OUTPUT ===================
+        // Check if debug mode is enabled via any debug parameter
+        const debugMode = req.url.includes('debug=1') || req.url.includes('debug=true');
+        
+        if (debugMode) {
+          console.log(`🎨 AI DEBUG OUTPUT:`);
+          console.log(`🎯 Primary Scene: "${aiResult.primaryScene}"`);
+          console.log(`🏠 Setting: ${aiResult.setting || 'null'}`);
+          console.log(`🎭 Action: ${aiResult.action || 'null'}`);
+          console.log(`😊 Mood: ${aiResult.mood || 'null'}`);
+          console.log(`🧍 Pose: ${aiResult.pose || 'null'}`);
+          console.log(`👤 Character: ${characterData?.name || 'Unknown'} (seed: ${characterData?.seed || 'none'})`);
+          console.log(`📊 Processing: 3-phase enhanced with ${secondaryElements.length} secondary characters`);
+        }
+        
         // =================== VALIDATION & RETURN RESULTS ===================
         // No complex validation needed since we built the prompts ourselves
         const validationResult = {

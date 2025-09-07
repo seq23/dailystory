@@ -3821,14 +3821,36 @@ const handleRestartTimer = () => {
 
 
 
-      {/* Debug Display - Shows device detection (remove once confirmed working) */}
+      {/* Debug Display - Shows device detection and AI outputs */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1' && (
-        <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-2 rounded font-mono">
-          W:{typeof window !== 'undefined' ? window.innerWidth : '?'}px | 
-          M:{isMobile ? 'Y' : 'N'} | 
-          T:{isTablet ? 'Y' : 'N'} | 
-          MT:{isMobileOrTablet ? 'Y' : 'N'} |
-          Dock:{isMobileOrTablet ? 'SHOW' : 'HIDE'}
+        <div className="fixed top-2 right-2 z-50 bg-black/80 text-white text-xs p-3 rounded font-mono max-w-sm">
+          <div className="border-b border-gray-600 pb-2 mb-2">
+            <div className="text-yellow-400 font-bold">🔧 DEBUG INFO</div>
+          </div>
+          
+          <div className="space-y-1 mb-3">
+            <div>W:{typeof window !== 'undefined' ? window.innerWidth : '?'}px | 
+            M:{isMobile ? 'Y' : 'N'} | 
+            T:{isTablet ? 'Y' : 'N'} | 
+            MT:{isMobileOrTablet ? 'Y' : 'N'} |
+            Dock:{isMobileOrTablet ? 'SHOW' : 'HIDE'}</div>
+          </div>
+          
+          {/* AI Outputs Section */}
+          <div className="border-t border-gray-600 pt-2">
+            <div className="text-blue-400 font-bold mb-1">🎨 AI OUTPUTS</div>
+            <div className="text-xs space-y-1">
+              <div>Scene: {(window as any).__lastAiScene || 'Not available'}</div>
+              <div>Setting: {(window as any).__lastAiSetting || 'Not available'}</div>
+              <div>Action: {(window as any).__lastAiAction || 'Not available'}</div>
+              <div>Mood: {(window as any).__lastAiMood || 'Not available'}</div>
+              <div>Pose: {(window as any).__lastAiPose || 'Not available'}</div>
+            </div>
+            
+            <div className="mt-2 text-green-400">
+              <div>Tier 2.5 Test: {(window as any).__tier25Success || 'Not tested'}</div>
+            </div>
+          </div>
         </div>
       )}
 
