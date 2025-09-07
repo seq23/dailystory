@@ -1694,8 +1694,8 @@ function fillPremiumTemplate(
     // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION (After scene extraction) =============
     const cameraDirective = generateCameraDirective(difficulty, scene, enhancedSetting);
     
-    // Get style framework settings using nuclear independence
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
+    // Get style framework settings using nuclear independence (defined below)
+    // const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium']; // MOVED TO AFTER DEFINITION
     
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
@@ -2247,6 +2247,9 @@ serve(async (req: Request) => {
     
     const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
     console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
+
+    // Now apply style settings to template filling (moved from line 1698)
+    // This ensures NUCLEAR_STYLE_SETTINGS is defined before use
     
     console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket with comprehensive error protection...');
     

@@ -77,8 +77,11 @@ export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
     'child with'
   ];
   
+  // Ensure prompt is a string before processing
+  const promptString = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
+  
   const isGeneric = genericPatterns.some(pattern => 
-    prompt.toLowerCase().includes(pattern.toLowerCase())
+    promptString.toLowerCase().includes(pattern.toLowerCase())
   );
   
   if (isGeneric) {
@@ -117,8 +120,11 @@ export function validateAvatarQuality(prompt, avatarIdentity, userInfo) {
     'null'
   ];
   
+  // Ensure prompt is a string before processing
+  const promptString = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
+  
   const hasLowQuality = lowQualityPatterns.some(pattern => 
-    prompt.toLowerCase().includes(pattern.toLowerCase())
+    promptString.toLowerCase().includes(pattern.toLowerCase())
   );
   
   if (hasLowQuality) {
