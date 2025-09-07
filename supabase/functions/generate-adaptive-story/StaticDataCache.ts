@@ -140,11 +140,80 @@ export const getHairColorMapping = () => {
   let mapping = cache.get<Record<string, string[]>>(cacheKey);
   if (!mapping) {
     mapping = {
-      'pale': ['red hair', 'auburn hair', 'strawberry blonde hair'],
-      'light': ['blonde hair', 'light brown hair', 'golden hair'], 
-      'medium': ['brown hair', 'chestnut hair', 'dark blonde hair'],
-      'olive': ['black hair', 'dark brown hair', 'jet black hair'],
-      'dark': ['dark curly hair', 'black hair', 'coily hair', 'natural hair']
+      'pale': [
+        // Red/Auburn family only - true to pale skin
+        'long red hair',
+        'short red hair', 
+        'red hair in pigtails',
+        'red hair in ponytail',
+        'shoulder-length red hair',
+        'long auburn hair',
+        'short auburn hair',
+        'auburn hair in braids',
+        'shoulder-length auburn hair',
+        'long strawberry blonde hair',
+        'short strawberry blonde hair',
+        'strawberry blonde hair in pigtails',
+        'curly red hair',
+        'wavy auburn hair'
+      ],
+      'light': [
+        // Blonde types only - true to light skin
+        'long blonde hair',
+        'short blonde hair',
+        'blonde hair in pigtails', 
+        'blonde hair in ponytail',
+        'shoulder-length blonde hair',
+        'long platinum blonde hair',
+        'short platinum blonde hair',
+        'long golden blonde hair',
+        'short golden blonde hair',
+        'golden blonde hair in braids',
+        'long dirty blonde hair',
+        'short dirty blonde hair',
+        'curly blonde hair',
+        'wavy blonde hair',
+        'blonde hair in twin braids'
+      ],
+      'medium': [
+        // Brown family - true to medium skin
+        'long brown hair',
+        'short brown hair',
+        'brown hair in ponytail',
+        'brown hair in pigtails',
+        'shoulder-length brown hair',
+        'long chestnut hair',
+        'short chestnut hair',
+        'chestnut hair in braids',
+        'long dark brown hair',
+        'short dark brown hair',
+        'dark brown hair in ponytail',
+        'curly brown hair',
+        'wavy brown hair',
+        'brown hair in bun',
+        'shoulder-length chestnut hair'
+      ],
+      'olive': [
+        // Black/very dark brown - true to olive skin
+        'long black hair',
+        'short black hair',
+        'black hair in ponytail',
+        'black hair in braids',
+        'shoulder-length black hair',
+        'long jet black hair',
+        'short jet black hair',
+        'jet black hair in bun',
+        'long dark brown hair',
+        'short dark brown hair',
+        'dark brown hair in ponytail',
+        'straight black hair',
+        'wavy black hair',
+        'black hair in twin braids'
+      ],
+      'dark': [
+        // Natural textured styles - true to dark skin
+        'pretty hair', 'thick hair', 'shiny hair', 'great hair', 'amazing hair', 'awesome hair', 'voluminous thick hair'
+      ]
     };
     
     cache.set(cacheKey, mapping);
