@@ -2,7 +2,7 @@
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
-import { ExactWordExtractor } from "../_shared/ExactWordExtractor.js";
+import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
