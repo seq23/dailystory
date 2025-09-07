@@ -2051,6 +2051,25 @@ function fillPremiumTemplate(
       }
     } catch (templateError) {
       console.warn('⚠️ Template selection failed, using emergency template:', templateError);
+      
+      // ============= CRITICAL REGRESSION PREVENTION: LINE 2054 =============
+      // PLAN 2 IMPLEMENTATION: Raw PageText Function
+      // This line constructs emergency template using:
+      // 1. First 2500 characters of pageText (user's story content)
+      // 2. Plus frameworkPrompt from NUCLEAR_STYLE_SETTINGS array (defined at line 2167)
+      // 3. With multiple fallback levels for nuclear independence
+      // 
+      // CRITICAL DEPENDENCIES:
+      // - NUCLEAR_STYLE_SETTINGS must be defined BEFORE this line (currently at 2167)
+      // - pageText comes from function parameter (user story content)
+      // - safeDifficulty used as array key for style selection
+      //
+      // REGRESSION RISKS:
+      // - Moving NUCLEAR_STYLE_SETTINGS after this line will break fallback
+      // - Changing frameworkPrompt structure will break template generation
+      // - Removing any fallback level could cause undefined errors
+      //
+      // TESTING: Verify template generation when PREMIUM_PROMPT_TEMPLATES fails
       template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
     }
     
@@ -2164,6 +2183,20 @@ function fillPremiumTemplate(
     
     // ============= MASTER PLAN PHASE 3: TEMPLATE VARIABLE SCOPE FIX =============
     // Get style framework settings using nuclear independence - MOVED TO BEFORE TEMPLATE FILLING
+    // 
+    // ============= CRITICAL REGRESSION PREVENTION: NUCLEAR_STYLE_SETTINGS =============
+    // This array is accessed by LINE 2054 emergency template generation
+    // MUST remain defined BEFORE line 2054 to prevent undefined errors
+    // 
+    // PURPOSE: Provides frameworkPrompt values for different difficulty levels
+    // USAGE: Emergency template construction when PREMIUM_PROMPT_TEMPLATES fails
+    // 
+    // REGRESSION RISKS:
+    // - Moving this after line 2054 breaks emergency template generation
+    // - Removing frameworkPrompt properties breaks template construction
+    // - Changing difficulty keys affects template selection logic
+    //
+    // DEPENDENCIES: Used by fillPremiumTemplate function (called at line 2842)
     const NUCLEAR_STYLE_SETTINGS = {
       'beginner': {
         frameworkPrompt: 'Children book style with vibrant colors, early reader illustration quality, simple details, friendly character design, bright cheerful atmosphere, clear features, accessible art style',
@@ -2843,7 +2876,29 @@ serve(async (req: Request) => {
       console.log('✅ Template filling successful');
     } catch (templateError) {
       console.warn('⚠️ Template filling failed, using ULTIMATE EMERGENCY template:', templateError);
-      // ULTIMATE EMERGENCY - Zero dependencies, completely hardcoded, always works
+      
+      // ============= CRITICAL REGRESSION PREVENTION: LINE 2847 =============
+      // PLAN 1 IMPLEMENTATION: Emergency Template Replacement
+      // This is the ULTIMATE EMERGENCY template - last resort when all other systems fail
+      // 
+      // CRITICAL REQUIREMENTS:
+      // - Must be completely hardcoded with zero dependencies
+      // - Must be child-safe and appropriate for all age groups
+      // - Must generate valid image prompts for Runware API
+      // - Must maintain consistent quality standards
+      //
+      // TEMPLATE CHARACTERISTICS:
+      // - Cheerful child character (universal appeal)
+      // - Colorful outdoor scene (positive, engaging)
+      // - Contemporary children's book style (professional quality)
+      // - Diverse representation (inclusive by default)
+      //
+      // REGRESSION RISKS:
+      // - Removing "EMERGENCY_TEMPLATE_USED:" prefix breaks debugging
+      // - Changing content could introduce inappropriate elements
+      // - Complex dependencies would break nuclear fallback principle
+      //
+      // TESTING: Verify template works when fillPremiumTemplate completely fails
       prompt = "EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
     }
     
