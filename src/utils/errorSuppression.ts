@@ -1,4 +1,5 @@
 // Enhanced error suppression for better console hygiene
+// This is now deprecated in favor of the enhanced errorSuppressionManager
 
 class ErrorSuppressionManager {
   private originalConsoleError: typeof console.error;
@@ -13,8 +14,11 @@ class ErrorSuppressionManager {
   private shouldSuppress(message: string, ...args: any[]): boolean {
     const fullMessage = [message, ...args].join(' ').toLowerCase();
 
-    // Chrome extension errors
-    if (fullMessage.includes('extension context invalidated') ||
+    // Chrome extension runtime errors (enhanced patterns)
+    if (fullMessage.includes('unchecked runtime.lasterror') ||
+        fullMessage.includes('could not establish connection') ||
+        fullMessage.includes('receiving end does not exist') ||
+        fullMessage.includes('extension context invalidated') ||
         fullMessage.includes('chrome-extension://') ||
         fullMessage.includes('extensions::')) {
       return true;
