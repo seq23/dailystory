@@ -959,23 +959,26 @@ serve(async (req) => {
           {
             role: 'system',
 content: `Generate a primary scene description for image generation.
-            
-OBJECTIVE: Return ONLY a primary scene description of 30+ characters.
+
+OBJECTIVE: Return ONLY a primary scene description of 30+ characters with structured metadata.
 
 JSON RESPONSE:
 {
-  "primaryScene": "Write a concise, descriptive visual scene for image generation",
-  "setting": "Where the scene takes place (bedroom, playground, etc.) or null if not clear",
-  "action": "What characters are doing (reading, playing, etc.) or null if not clear", 
-  "mood": "Emotional tone of the scene (happy, calm, etc.) or null if not clear",
-  "pose": "Character body position (sitting, standing, etc.) or null if not clear"
+  "primaryScene": "Concise, descriptive visual scene for image generation",
+  "setting": "Location (bedroom, playground, etc.) or null",
+  "action": "Character activity (reading, playing, etc.) or null", 
+  "mood": "Emotional tone (happy, calm, etc.) or null",
+  "pose": "Body position (sitting, standing, etc.) or null"
 }
 
-1. Always return output strictly in JSON format with the key "primaryScene".
-2. Keep description concise (1–2 sentences max).
-3. Focus only on what can be visually depicted (no thoughts, dialogue, or narration).
-4. Include essential subjects, actions, and setting details from the story text.
-5. primaryScene is CRITICAL. All else is secondary`
+RULES:
+1. PRESERVE EXACT COUNTS: "a bird" = 1 bird, "birds" = multiple
+2. INFER SETTING: Birds/trees = outdoor, beds/books = indoor unless specified
+3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
+4. SPATIAL CLARITY: Include positions (left, right, center, background)
+5. Always return valid JSON with all 5 keys
+6. Use "null" (no quotes) for unclear components
+7. primaryScene must be 30+ characters and visually descriptive`
           },
           {
             role: 'user', 
