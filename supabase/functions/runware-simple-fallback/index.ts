@@ -1,6 +1,7 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -918,19 +919,103 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
   }
 }
 
-// ============= PRONOUN RESOLUTION SYSTEM =============
-function resolvePronounsInSentence(sentence: string, originalPageText?: string): string | null {
+// ============= COMPREHENSIVE ENHANCED PRONOUN RESOLUTION SYSTEM =============
+
+// Helper function to get resolved previous context from SessionStateManager
+function getPreviousResolvedContext(sessionId: string, pageNumber: number) {
+  try {
+    const session = globalArcSessionManager.getSession(sessionId);
+    if (!session) return { objects: [], characters: [] };
+    
+    const imagePrompts = session.imagePrompts || [];
+    const previousPage = imagePrompts.find(p => p.pageNumber === pageNumber - 1);
+    
+    if (!previousPage?.metadata) return { objects: [], characters: [] };
+    
+    // Extract resolved objects and characters from metadata
+    const objects = previousPage.metadata.objects ? 
+      previousPage.metadata.objects.split(',').map(o => o.trim().toLowerCase()) : [];
+    const characters = previousPage.metadata.secondaryCharacters ? 
+      previousPage.metadata.secondaryCharacters.split(',').map(c => c.trim().toLowerCase()) : [];
+    
+    return { objects, characters };
+  } catch (error) {
+    console.warn('Could not retrieve previous context:', error);
+    return { objects: [], characters: [] };
+  }
+}
+
+// Safe ambiguity detection - counts potential antecedents
+function countPotentialAntecedents(sentence: string, originalPageText: string, previousContext: any): number {
+  const lowerSentence = sentence.toLowerCase();
+  const lowerPageText = originalPageText.toLowerCase();
+  
+  const allCandidates = [
+    // Current page objects
+    ...['tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
+      'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
+      'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'],
+    // Previous page resolved context
+    ...previousContext.objects,
+    ...previousContext.characters
+  ];
+  
+  let count = 0;
+  for (const candidate of allCandidates) {
+    if (lowerPageText.includes(candidate) || lowerSentence.includes(candidate)) {
+      count++;
+    }
+  }
+  
+  return count;
+}
+
+function resolvePronounsInSentence(sentence: string, originalPageText?: string, detectedCharacters: string[] = [], sessionId?: string, pageNumber?: number): string | null {
   if (!originalPageText) return null;
   
   const lowerSentence = sentence.toLowerCase();
   const lowerPageText = originalPageText.toLowerCase();
   
-  // ENHANCED: Expanded pronoun resolution vocabulary
-  const pronouns = ['it', 'this', 'that', 'them', 'they'];
+  // COMPREHENSIVE: All pronouns with safety-first resolution
+  const pronouns = ['it', 'this', 'that', 'them', 'they', 'he', 'she', 'him', 'her', 'his', 'hers'];
+  
+  // EFFICIENCY OPTIMIZATION: Get resolved previous context
+  const previousContext = sessionId && pageNumber ? 
+    getPreviousResolvedContext(sessionId, pageNumber) : { objects: [], characters: [] };
   
   for (const pronoun of pronouns) {
     if (lowerSentence.includes(pronoun)) {
-      // ENHANCED: Expanded object detection vocabulary for better pronoun resolution
+      // SAFETY CHECK: Count potential antecedents
+      const antecedentCount = countPotentialAntecedents(sentence, originalPageText, previousContext);
+      
+      // SMART FALLBACK: If ambiguous (multiple antecedents), leave as-is
+      if (antecedentCount > 1) {
+        console.log(`🛡️ Safe fallback: "${pronoun}" has ${antecedentCount} potential antecedents - leaving unchanged`);
+        continue;
+      }
+      
+      // Human pronoun resolution for clear family member references
+      if (['he', 'him', 'his'].includes(pronoun)) {
+        const maleCharacters = ['dad', 'father', 'papa', 'daddy', 'brother', 'bro'];
+        for (const character of maleCharacters) {
+          if (lowerPageText.includes(character) && antecedentCount === 1) {
+            console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context`);
+            return sentence.replace(new RegExp(pronoun, 'gi'), character);
+          }
+        }
+      }
+      
+      if (['she', 'her', 'hers'].includes(pronoun)) {
+        const femaleCharacters = ['mom', 'mother', 'mama', 'mommy', 'sister', 'sis'];
+        for (const character of femaleCharacters) {
+          if (lowerPageText.includes(character) && antecedentCount === 1) {
+            console.log(`🎯 Character pronoun resolution: "${pronoun}" → "${character}" from context`);
+            return sentence.replace(new RegExp(pronoun, 'gi'), character);
+          }
+        }
+      }
+      
+      // Object/animal pronoun resolution (existing logic enhanced with safety)
       const objects = [
         // Animals
         'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
@@ -940,11 +1025,19 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string):
         'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'
       ];
       
+      // Check current page first
       for (const obj of objects) {
-        if (lowerPageText.includes(obj) && !lowerSentence.includes(obj)) {
-          console.log(`🎯 Pronoun resolution: "${pronoun}" → "${obj}" from context`);
+        if (lowerPageText.includes(obj) && !lowerSentence.includes(obj) && antecedentCount === 1) {
+          console.log(`🎯 Safe object pronoun resolution: "${pronoun}" → "${obj}" from current context`);
           return sentence.replace(new RegExp(pronoun, 'gi'), obj);
         }
+      }
+      
+      // EFFICIENCY OPTIMIZATION: Check previous page resolved context
+      if (previousContext.objects.length === 1 && antecedentCount === 1) {
+        const prevObject = previousContext.objects[0];
+        console.log(`🎯 Efficient previous context resolution: "${pronoun}" → "${prevObject}" from resolved data`);
+        return sentence.replace(new RegExp(pronoun, 'gi'), prevObject);
       }
     }
   }
@@ -973,8 +1066,9 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     }
   }
   
-  // PRONOUN RESOLUTION: Handle "it", "this", "that" references
-  const pronounResolved = resolvePronounsInSentence(sentence, originalPageText);
+  // COMPREHENSIVE PRONOUN RESOLUTION: Enhanced with character context and safety
+  const detectedCharacters = extractSecondaryCharactersFromSentence(sentence).split(' ').filter(w => w.length > 2);
+  const pronounResolved = resolvePronounsInSentence(sentence, originalPageText, detectedCharacters);
   const processedSentence = pronounResolved || sentence;
   
   // First try to detect and resolve object + color combinations with context awareness
@@ -1251,13 +1345,19 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
   const lowerSentence = sentence.toLowerCase();
   const detectedCharacters = [];
   
-  // Family relationship patterns with pronouns (from SecondaryElementDetector.js)
+  // EXPANDED: Family relationship patterns with pronouns + ANIMALS
   const familyPatterns = [
     { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother' },
     { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father' },
     { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister' },
     { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'energetic brother' },
-    { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend' }
+    { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend' },
+    // ANIMALS AS SECONDARY CHARACTERS
+    { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal dog companion' },
+    { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious cat companion' },
+    { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'singing bird companion' },
+    { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'gentle rabbit companion' },
+    { pattern: /(?:my|your|his|her|their)\s+(pet|animal)/gi, description: 'beloved pet companion' }
   ];
   
   // Process pronoun-based family patterns first (more specific)
@@ -1271,7 +1371,7 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
     });
   });
   
-  // If no pronoun-based matches, fall back to simple keyword detection
+  // If no pronoun-based matches, fall back to simple keyword detection (EXPANDED WITH ANIMALS)
   if (detectedCharacters.length === 0) {
     const simpleCharacterMappings = {
       'teacher': 'kind helpful teacher',
@@ -1281,7 +1381,14 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
       'student': 'fellow students learning together',
       'children': 'other joyful children',
       'kids': 'other excited kids playing',
-      'people': 'friendly community members'
+      'people': 'friendly community members',
+      // ANIMALS AS SECONDARY CHARACTERS
+      'dog': 'loyal dog companion',
+      'cat': 'curious cat companion', 
+      'bird': 'singing bird companion',
+      'rabbit': 'gentle rabbit companion',
+      'squirrel': 'playful squirrel companion',
+      'butterfly': 'colorful butterfly companion'
     };
     
     for (const [character, description] of Object.entries(simpleCharacterMappings)) {
@@ -1491,8 +1598,8 @@ function fillPremiumTemplate(
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
     
-    // Use smart sentence extraction instead of full pageText
-    const processedPageText = extractFirstSentences(pageText || '', safeDifficulty);
+    // Use smart sentence extraction instead of full pageText (reuse processed text from above)
+    // const processedPageText = extractFirstSentences(pageText || '', safeDifficulty); // REMOVED: Already declared above
     
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
