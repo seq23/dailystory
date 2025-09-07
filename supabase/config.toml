@@ -77,5 +77,8 @@ verify_jwt = true
 [functions.customer-portal]
 verify_jwt = true
 
+[functions.log-security-event]
+verify_jwt = true
+
 [functions.debug-recent-image-prompts]
 verify_jwt = false
