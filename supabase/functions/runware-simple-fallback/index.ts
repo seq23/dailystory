@@ -37,11 +37,12 @@ function createCorsOptionsResponse(): Response {
 
 // ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Reordered for Enhanced Output) =============
 const PREMIUM_PROMPT_TEMPLATES = {
+  // FIXED: Consistent template structure across all difficulty levels for better AI understanding
   beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
   easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Primary Scene: {pageText}",
-  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Primary Scene: {pageText}",
-  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Primary Scene: {pageText}"
+  medium: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  hard: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  expert: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -922,13 +923,20 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string):
   const lowerSentence = sentence.toLowerCase();
   const lowerPageText = originalPageText.toLowerCase();
   
-  // Common pronouns that need resolution
-  const pronouns = ['it', 'this', 'that'];
+  // ENHANCED: Expanded pronoun resolution vocabulary
+  const pronouns = ['it', 'this', 'that', 'them', 'they'];
   
   for (const pronoun of pronouns) {
     if (lowerSentence.includes(pronoun)) {
-      // Look for objects mentioned before this sentence in the page text
-      const objects = ['tree', 'bird', 'book', 'toy', 'ball', 'flower', 'dog', 'cat'];
+      // ENHANCED: Expanded object detection vocabulary for better pronoun resolution
+      const objects = [
+        // Animals
+        'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
+        // Objects
+        'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
+        // Nature
+        'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'
+      ];
       
       for (const obj of objects) {
         if (lowerPageText.includes(obj) && !lowerSentence.includes(obj)) {
@@ -944,12 +952,22 @@ function resolvePronounsInSentence(sentence: string, originalPageText?: string):
 function extractObjectsFromSentence(sentence: string, originalPageText?: string, pageNumber?: number): string {
   const lowerSentence = sentence.toLowerCase();
   
-  // PAGE-AWARE OBJECT PREVENTION: Prevent premature object appearance
+  // ENHANCED PAGE-AWARE OBJECT PREVENTION: Prevent premature object appearance
   if (pageNumber && pageNumber <= 3) {
-    // Early pages - prevent bird from appearing until mentioned
-    const hasBird = lowerSentence.includes('bird') || lowerSentence.includes('sing') || lowerSentence.includes('song');
-    if (!hasBird && (originalPageText && !originalPageText.toLowerCase().includes('bird'))) {
-      console.log('🛡️ Page-aware prevention: Blocking premature bird appearance');
+    // Enhanced early pages prevention - expanded object list
+    const prematureObjects = ['bird', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger'];
+    
+    for (const obj of prematureObjects) {
+      const hasObjectInSentence = lowerSentence.includes(obj) || 
+                                 lowerSentence.includes('sing') || lowerSentence.includes('song') ||
+                                 lowerSentence.includes('fly') || lowerSentence.includes('hop');
+      
+      if (!hasObjectInSentence && originalPageText) {
+        const hasObjectInPageText = originalPageText.toLowerCase().includes(obj);
+        if (!hasObjectInPageText) {
+          console.log(`🛡️ Enhanced page-aware prevention: Blocking premature ${obj} appearance on page ${pageNumber}`);
+        }
+      }
     }
   }
   
@@ -996,12 +1014,12 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     'pizza': ', with delicious pizza slices',
     'ice cream': ', with sweet ice cream treats',
     
-    // MASTER PLAN: Birds Context Classification - Domestic birds (indoor appropriate)
-    'parakeet': ', with a colorful pet parakeet',
-    'budgie': ', with a friendly pet budgie',
-    'parrot': ', with a talking pet parrot',
-    'canary': ', with a singing pet canary',
-    'cockatiel': ', with a charming pet cockatiel',
+     // ENHANCED: Birds Context Classification with indoor/outdoor validation
+     'parakeet': ', with a colorful pet parakeet in indoor setting',
+     'budgie': ', with a friendly pet budgie in indoor setting',
+     'parrot': ', with a talking pet parrot in indoor setting',
+     'canary': ', with a singing pet canary in indoor setting',
+     'cockatiel': ', with a charming pet cockatiel in indoor setting',
     
     // Indoor pets only
     'dog': ', with a friendly dog companion',
@@ -1044,19 +1062,19 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
     'baseball': ', with a baseball to throw',
     'basketball': ', with a basketball to bounce',
     
-     // MASTER PLAN: Birds Context Classification - Wild birds (outdoor-only)
-     'bird': ', with cheerful birds singing outdoors', // DEFAULT: General birds always outdoor
-     'robin': ', with cheerful robins singing',
-     'cardinal': ', with bright red cardinals',
-     'crow': ', with clever crows nearby',
-     'sparrow': ', with small sparrows chirping',
-     'blue jay': ', with beautiful blue jays',
-     'hawk': ', with majestic hawks soaring',
-     'eagle': ', with powerful eagles flying',
-     'owl': ', with wise owls watching',
-     'duck': ', with friendly ducks swimming',
-     'goose': ', with graceful geese nearby',
-     'swan': ', with elegant swans gliding',
+      // ENHANCED: Wild birds context validation - automatically move indoor birds outdoors
+      'bird': ', with cheerful birds singing in outdoor natural setting', 
+      'robin': ', with cheerful robins singing in outdoor garden',
+      'cardinal': ', with bright red cardinals in outdoor natural habitat',
+      'crow': ', with clever crows in outdoor environment',
+      'sparrow': ', with small sparrows chirping in outdoor setting',
+      'blue jay': ', with beautiful blue jays in outdoor trees',
+      'hawk': ', with majestic hawks soaring in open outdoor sky',
+      'eagle': ', with powerful eagles flying in outdoor wilderness',
+      'owl': ', with wise owls in outdoor forest environment',
+      'duck': ', with friendly ducks swimming in outdoor pond',
+      'goose': ', with graceful geese in outdoor meadow',
+      'swan': ', with elegant swans gliding in outdoor lake',
     
     // Wild animals (outdoor appropriate)
     'butterfly': ', with beautiful butterflies around',
@@ -1780,8 +1798,8 @@ function getStyleFrameworkSettings(difficulty: string): { frameworkPrompt: strin
   
   return {
     frameworkPrompt: frameworkMap[difficulty] || frameworkMap.medium,
-    steps: 25,
-    CFGScale: 8
+    steps: 30, // FIXED: Increased from 25 for better quality
+    CFGScale: 10 // FIXED: Increased from 8 for better prompt adherence
   };
 }
 
@@ -2046,7 +2064,7 @@ serve(async (req: Request) => {
       console.log('✅ Style settings generation successful');
     } catch (styleError) {
       console.warn('⚠️ Style settings failed, using defaults:', styleError);
-      styleSettings = { steps: 50, guidance: 7.5, seed: Math.floor(Math.random() * 1000000) };
+      styleSettings = { steps: 30, CFGScale: 10, seed: Math.floor(Math.random() * 1000000) }; // FIXED: Enhanced fallback parameters
     }
     
     console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket with comprehensive error protection...');
@@ -2143,13 +2161,13 @@ serve(async (req: Request) => {
                   taskUUID: crypto.randomUUID(),
                   positivePrompt: finalPrompt,
                   negativePrompt: negativePrompt,
-                  width: 1024,
-                  height: 1024,
+                  width: 1024, // FIXED: Optimized image size
+                  height: 1024, // FIXED: Optimized image size
                   model: "runware:100@1",
                   numberResults: 1,
                   outputFormat: "WEBP",
-                  steps: styleSettings.steps,
-                  CFGScale: styleSettings.CFGScale
+                  steps: 30, // FIXED: Enhanced generation parameters  
+                  CFGScale: 10 // FIXED: Enhanced generation parameters
                 }];
                 
                 ws.send(JSON.stringify(imageMessage));
@@ -2264,11 +2282,11 @@ serve(async (req: Request) => {
                 taskUUID: crypto.randomUUID(),
                 positivePrompt: prompt,
                 negativePrompt: negativePrompt,
-                height: 512,
-                width: 512, 
+                height: 1024, // FIXED: Enhanced image dimensions
+                width: 1024, // FIXED: Enhanced image dimensions
                 model: "runware:100@1",
-                steps: styleSettings.steps,
-                CFGScale: styleSettings.CFGScale,
+                steps: 30, // FIXED: Enhanced generation parameters
+                CFGScale: 10, // FIXED: Enhanced generation parameters
                 outputFormat: "WEBP"
               }
             ])

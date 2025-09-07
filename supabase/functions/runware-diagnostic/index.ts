@@ -98,8 +98,8 @@ serve(async (req) => {
                   height: 512,
                   numberResults: 1,
             outputFormat: "WEBP",
-            steps: 25,
-            CFGScale: 8,
+            steps: 30, // FIXED: Enhanced from 25 for better quality
+            CFGScale: 10, // FIXED: Enhanced from 8 for better adherence
             scheduler: "FlowMatchEulerDiscreteScheduler"
                 }]));
                 

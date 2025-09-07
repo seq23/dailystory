@@ -618,8 +618,8 @@ function getStyleFrameworkSettings(difficulty: string): { frameworkPrompt: strin
   
   return {
     frameworkPrompt: frameworkMap[difficulty] || frameworkMap.medium,
-    steps: 25,
-    CFGScale: 8
+    steps: 30, // FIXED: Enhanced from 25 for better quality
+    CFGScale: 10 // FIXED: Enhanced from 8 for better adherence
   };
 }
 

@@ -261,11 +261,11 @@ class RunwareWebSocketManager {
                   taskUUID: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                   positivePrompt,
                   negativePrompt,
-                  height: 512,
-                  width: 512,
+                  height: 1024, // FIXED: Optimized from 512x512 to 1024x1024
+                  width: 1024,
                   model: "runware:100@1",
-                  steps: 25,
-                  CFGScale: 8,
+                  steps: 30, // FIXED: Increased from 25 for better quality
+                  CFGScale: 10, // FIXED: Increased from 8 for better prompt adherence
                   clipSkip: 1,
                   scheduler: "FlowMatchEulerDiscreteScheduler",
                   onlyUpscale: false,
