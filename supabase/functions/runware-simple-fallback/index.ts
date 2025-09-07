@@ -919,23 +919,51 @@ function detectAndResolveObjectColor(sentence: string, originalPageText?: string
 
 function extractSecondaryCharactersFromSentence(sentence: string): string {
   const lowerSentence = sentence.toLowerCase();
-  const characterMappings = {
-    'friend': ', with friendly classmates nearby', 'friends': ', with cheerful friends playing together',
-    'teacher': ', with a kind helpful teacher', 'parent': ', with a loving supportive parent',
-    'mom': ', with a caring mother', 'dad': ', with a supportive father',
-    'sister': ', with a playful sister', 'brother': ', with an energetic brother',
-    'family': ', with loving family members', 'classmate': ', with happy classmates',
-    'student': ', with fellow students learning together', 'children': ', with other joyful children',
-    'kids': ', with other excited kids playing', 'people': ', with friendly community members'
-  };
+  const detectedCharacters = [];
   
-  for (const [character, description] of Object.entries(characterMappings)) {
-    if (lowerSentence.includes(character)) {
-      return description;
+  // Family relationship patterns with pronouns (from SecondaryElementDetector.js)
+  const familyPatterns = [
+    { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother' },
+    { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father' },
+    { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister' },
+    { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'energetic brother' },
+    { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend' }
+  ];
+  
+  // Process pronoun-based family patterns first (more specific)
+  familyPatterns.forEach(({ pattern, description }) => {
+    const matches = [...lowerSentence.matchAll(pattern)];
+    matches.forEach(match => {
+      const name = match[1].toLowerCase();
+      if (!detectedCharacters.find(c => c.includes(name))) {
+        detectedCharacters.push(description);
+      }
+    });
+  });
+  
+  // If no pronoun-based matches, fall back to simple keyword detection
+  if (detectedCharacters.length === 0) {
+    const simpleCharacterMappings = {
+      'teacher': 'kind helpful teacher',
+      'parent': 'loving supportive parent', 
+      'family': 'loving family members',
+      'classmate': 'happy classmates',
+      'student': 'fellow students learning together',
+      'children': 'other joyful children',
+      'kids': 'other excited kids playing',
+      'people': 'friendly community members'
+    };
+    
+    for (const [character, description] of Object.entries(simpleCharacterMappings)) {
+      if (lowerSentence.includes(character)) {
+        detectedCharacters.push(description);
+        break; // Only take first match to avoid overcrowding
+      }
     }
   }
   
-  return '';
+  // Return compact format (no ", with a" prefix to match current token-efficient format)
+  return detectedCharacters.length > 0 ? detectedCharacters[0] + ' nearby' : '';
 }
 
 function fillPremiumTemplate(
