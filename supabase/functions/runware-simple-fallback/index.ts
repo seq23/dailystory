@@ -502,6 +502,9 @@ function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): 
 
 function extractSceneWithPremiumTemplate(pageText: string): { scene: string, setting: string, objects: string, secondary_characters: string } {
   try {
+    console.log('🛡️ Tier 2.5: Starting enhanced scene extraction with context-aware filtering');
+    console.log(`📄 Input text: "${pageText}"`);
+    
     if (!pageText || typeof pageText !== 'string') {
       console.log('🛡️ Tier 2.5: No pageText provided, using fallback scene');
       return {
@@ -524,7 +527,9 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
       };
     }
 
-    // Score sentences for visual richness
+    console.log(`📝 Processing ${sentences.length} sentences for enhanced scene extraction`);
+
+    // Enhanced scoring with improved action detection
     let bestSentence = sentences[0];
     let bestScore = 0;
 
@@ -532,22 +537,52 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
       let score = 0;
       const lowerSentence = sentence.toLowerCase();
       
-      // Action words
-      const actionWords = ['running', 'jumping', 'playing', 'reading', 'writing', 'drawing', 'building', 'exploring', 'discovering', 'learning', 'creating', 'making', 'walking', 'sitting', 'standing', 'dancing', 'singing', 'laughing', 'smiling'];
+      // Enhanced action words with inflections (matching our fixed action extraction)
+      const actionWords = [
+        'run', 'runs', 'ran', 'running', 
+        'jump', 'jumps', 'jumped', 'jumping',
+        'play', 'plays', 'played', 'playing',
+        'read', 'reads', 'reading',
+        'write', 'writes', 'wrote', 'writing',
+        'draw', 'draws', 'drew', 'drawing',
+        'build', 'builds', 'built', 'building',
+        'explore', 'explores', 'explored', 'exploring',
+        'discover', 'discovers', 'discovered', 'discovering',
+        'learn', 'learns', 'learned', 'learning',
+        'create', 'creates', 'created', 'creating',
+        'make', 'makes', 'made', 'making',
+        'walk', 'walks', 'walked', 'walking',
+        'sit', 'sits', 'sat', 'sitting',
+        'stand', 'stands', 'stood', 'standing',
+        'dance', 'dances', 'danced', 'dancing',
+        'sing', 'sings', 'sang', 'singing',
+        'laugh', 'laughs', 'laughed', 'laughing',
+        'smile', 'smiles', 'smiled', 'smiling'
+      ];
+      
       actionWords.forEach(word => {
-        if (lowerSentence.includes(word)) score += 2;
+        if (lowerSentence.includes(word)) {
+          score += 3; // Increased weight for actions
+          console.log(`🎯 Action word detected: "${word}" in sentence`);
+        }
       });
       
-      // Setting words
-      const settingWords = ['park', 'school', 'home', 'garden', 'playground', 'library', 'classroom', 'kitchen', 'bedroom', 'backyard', 'forest', 'beach', 'mountain', 'city', 'street', 'house', 'room', 'outside', 'inside'];
+      // Setting words with context awareness
+      const settingWords = ['park', 'school', 'home', 'garden', 'playground', 'library', 'classroom', 'kitchen', 'bedroom', 'backyard', 'forest', 'beach', 'mountain', 'city', 'street', 'house', 'room', 'outside', 'inside', 'indoor', 'outdoor'];
       settingWords.forEach(word => {
-        if (lowerSentence.includes(word)) score += 3;
+        if (lowerSentence.includes(word)) {
+          score += 4; // Increased weight for setting context
+          console.log(`🏠 Setting word detected: "${word}" in sentence`);
+        }
       });
       
-      // Object words
-      const objectWords = ['book', 'toy', 'ball', 'bike', 'swing', 'slide', 'tree', 'flower', 'car', 'truck', 'doll', 'game', 'puzzle', 'blocks', 'crayon', 'paper', 'pencil', 'computer', 'tablet', 'phone'];
+      // Object words (will be context-filtered later)
+      const objectWords = ['book', 'toy', 'ball', 'bike', 'swing', 'slide', 'tree', 'flower', 'car', 'truck', 'doll', 'game', 'puzzle', 'blocks', 'crayon', 'paper', 'pencil', 'computer', 'tablet', 'phone', 'bird', 'dog', 'cat', 'animal'];
       objectWords.forEach(word => {
-        if (lowerSentence.includes(word)) score += 1;
+        if (lowerSentence.includes(word)) {
+          score += 2;
+          console.log(`🎯 Object word detected: "${word}" in sentence`);  
+        }
       });
       
       if (score > bestScore) {
@@ -556,19 +591,21 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
       }
     }
 
-    // Extract components from best sentence
+    console.log(`🎯 Best sentence selected (score: ${bestScore}): "${bestSentence}"`);
+
+    // Extract components from best sentence with enhanced detection
     const result = {
       scene: extractActionFromSentence(bestSentence),
-      setting: extractSettingFromSentence(bestSentence), // Note: No previousSetting in extraction phase
+      setting: extractSettingFromSentence(bestSentence),
       objects: extractObjectsFromSentence(bestSentence, pageText),
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
 
-    console.log('🛡️ Tier 2.5: Scene extraction complete:', result);
+    console.log('🛡️ Tier 2.5: Enhanced scene extraction complete with context filtering:', result);
     return result;
 
   } catch (error) {
-    console.warn('⚠️ Tier 2.5: Scene extraction error, using fallback:', error);
+    console.error('🚨 Tier 2.5: Scene extraction error, using fallback:', error);
     return {
       scene: 'reading and learning',
       setting: ' a peaceful study area',
@@ -580,22 +617,41 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
 
 function extractActionFromSentence(sentence: string): string {
   const lowerSentence = sentence.toLowerCase();
-  const actionMappings = {
-    'running': 'running joyfully', 'jumping': 'jumping energetically', 'playing': 'playing happily',
-    'reading': 'reading attentively', 'writing': 'writing carefully', 'drawing': 'drawing creatively',
-    'building': 'building imaginatively', 'exploring': 'exploring curiously', 'discovering': 'discovering excitedly',
-    'learning': 'learning eagerly', 'creating': 'creating artistically', 'making': 'making thoughtfully',
-    'walking': 'walking confidently', 'sitting': 'sitting comfortably', 'standing': 'standing proudly',
-    'dancing': 'dancing gracefully', 'singing': 'singing joyfully', 'laughing': 'laughing cheerfully',
-    'smiling': 'smiling warmly'
-  };
   
-  for (const [action, description] of Object.entries(actionMappings)) {
-    if (lowerSentence.includes(action)) {
-      return description;
+  // Enhanced action mappings with stem word detection
+  const actionMappings = [
+    { stems: ['run', 'runs', 'ran', 'running'], description: 'running joyfully' },
+    { stems: ['jump', 'jumps', 'jumped', 'jumping'], description: 'jumping energetically' },
+    { stems: ['play', 'plays', 'played', 'playing'], description: 'playing happily' },
+    { stems: ['read', 'reads', 'reading'], description: 'reading attentively' },
+    { stems: ['write', 'writes', 'wrote', 'writing'], description: 'writing carefully' },
+    { stems: ['draw', 'draws', 'drew', 'drawing'], description: 'drawing creatively' },
+    { stems: ['build', 'builds', 'built', 'building'], description: 'building imaginatively' },
+    { stems: ['explore', 'explores', 'explored', 'exploring'], description: 'exploring curiously' },
+    { stems: ['discover', 'discovers', 'discovered', 'discovering'], description: 'discovering excitedly' },
+    { stems: ['learn', 'learns', 'learned', 'learning'], description: 'learning eagerly' },
+    { stems: ['create', 'creates', 'created', 'creating'], description: 'creating artistically' },
+    { stems: ['make', 'makes', 'made', 'making'], description: 'making thoughtfully' },
+    { stems: ['walk', 'walks', 'walked', 'walking'], description: 'walking confidently' },
+    { stems: ['sit', 'sits', 'sat', 'sitting'], description: 'sitting comfortably' },
+    { stems: ['stand', 'stands', 'stood', 'standing'], description: 'standing proudly' },
+    { stems: ['dance', 'dances', 'danced', 'dancing'], description: 'dancing gracefully' },
+    { stems: ['sing', 'sings', 'sang', 'singing'], description: 'singing joyfully' },
+    { stems: ['laugh', 'laughs', 'laughed', 'laughing'], description: 'laughing cheerfully' },
+    { stems: ['smile', 'smiles', 'smiled', 'smiling'], description: 'smiling warmly' }
+  ];
+  
+  // Check all action stems for matches
+  for (const { stems, description } of actionMappings) {
+    for (const stem of stems) {
+      if (lowerSentence.includes(stem)) {
+        console.log(`🎯 Action detected: "${stem}" → "${description}"`);
+        return description;
+      }
     }
   }
   
+  console.log('⚠️ No specific action detected, using fallback');
   return 'engaging in activities';
 }
 
@@ -684,24 +740,20 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
 function extractObjectsFromSentence(sentence: string, originalPageText?: string): string {
   const lowerSentence = sentence.toLowerCase();
   
-  // First try to detect and resolve object + color combinations
+  // First try to detect and resolve object + color combinations with context awareness
   const dynamicObjectColor = detectAndResolveObjectColor(sentence, originalPageText);
   if (dynamicObjectColor) {
     return dynamicObjectColor;
   }
   
-  // Enhanced object mappings with more variety
-  const objectMappings = {
+  // Detect setting context for filtering
+  const isIndoorScene = isIndoorContext(sentence);
+  
+  // Context-aware object mappings
+  const indoorObjects = {
     'book': ', with colorful educational books nearby', 
     'toy': ', with fun educational toys around',
     'ball': ', with a bright colorful ball', 
-    'bike': ', with a shiny bicycle nearby',
-    'swing': ', near playground swings', 
-    'slide': ', by a colorful playground slide',
-    'tree': ', under beautiful shade trees', 
-    'flower': ', surrounded by blooming flowers',
-    'car': ', near toy cars and vehicles', 
-    'truck': ', with toy trucks and construction vehicles',
     'doll': ', with favorite dolls and stuffed animals', 
     'game': ', with educational games and activities',
     'puzzle': ', with colorful learning puzzles', 
@@ -712,43 +764,97 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string)
     'computer': ', with educational technology',
     'tablet': ', with learning apps and digital tools', 
     'phone': ', with communication devices',
-    // New expanded mappings
     'apple': ', with fresh red apples nearby',
     'banana': ', with yellow bananas around',
     'sandwich': ', with a delicious sandwich to enjoy',
     'cookie': ', with sweet cookies nearby',
-    'kite': ', with a colorful kite ready to fly',
-    'butterfly': ', with beautiful butterflies around',
     'dog': ', with a friendly dog companion',
     'cat': ', with a playful cat nearby',
     'rabbit': ', with a cute bunny friend',
-    'bird': ', with cheerful birds singing',
     'fish': ', with colorful fish swimming',
-    'elephant': ', with a gentle elephant friend',
-    'lion': ', with a brave lion character',
-    'tiger': ', with a friendly tiger companion',
     'bear': ', with a cuddly teddy bear',
-    'monkey': ', with a playful monkey friend',
-    'horse': ', with a beautiful horse nearby',
-    'airplane': ', with toy airplanes soaring',
-    'helicopter': ', with a fun helicopter toy',
-    'train': ', with an exciting toy train',
-    'boat': ', with a colorful toy boat',
-    'rocket': ', with an amazing rocket ship',
     'hat': ', wearing a stylish hat',
     'shoes': ', with comfortable shoes on',
     'glasses': ', wearing smart glasses',
     'watch': ', with a cool wristwatch',
     'backpack': ', with a colorful school backpack'
   };
+
+  const outdoorObjects = {
+    'bike': ', with a shiny bicycle nearby',
+    'swing': ', near playground swings', 
+    'slide': ', by a colorful playground slide',
+    'tree': ', under beautiful shade trees', 
+    'flower': ', surrounded by blooming flowers',
+    'kite': ', with a colorful kite ready to fly',
+    'butterfly': ', with beautiful butterflies around',
+    'bird': ', with cheerful birds singing',
+    'elephant': ', with a gentle elephant friend',
+    'lion': ', with a brave lion character',
+    'tiger': ', with a friendly tiger companion',
+    'monkey': ', with a playful monkey friend',
+    'horse': ', with a beautiful horse nearby',
+    'airplane': ', with toy airplanes soaring',
+    'helicopter': ', with a fun helicopter toy',
+    'train': ', with an exciting toy train',
+    'boat': ', with a colorful toy boat',
+    'rocket': ', with an amazing rocket ship'
+  };
+
+  // Universal objects (appropriate for both contexts)
+  const universalObjects = {
+    'car': ', near toy cars and vehicles', 
+    'truck': ', with toy trucks and construction vehicles'
+  };
+
+  // Choose appropriate object set based on context
+  const objectMappings = isIndoorScene 
+    ? { ...indoorObjects, ...universalObjects }
+    : { ...outdoorObjects, ...universalObjects };
+  
+  console.log(`🏠 Context detection: ${isIndoorScene ? 'Indoor' : 'Outdoor'} scene detected`);
   
   for (const [object, description] of Object.entries(objectMappings)) {
     if (lowerSentence.includes(object)) {
+      console.log(`🎯 Context-appropriate object detected: "${object}" → "${description}"`);
       return description;
     }
   }
   
   return '';
+}
+
+// Helper function to detect indoor context
+function isIndoorContext(sentence: string): boolean {
+  const lowerSentence = sentence.toLowerCase();
+  
+  const indoorKeywords = [
+    'house', 'home', 'room', 'kitchen', 'bedroom', 'living room', 'bathroom',
+    'classroom', 'school', 'library', 'inside', 'indoor', 'indoors',
+    'hallway', 'basement', 'attic', 'garage', 'office', 'dining room'
+  ];
+  
+  const outdoorKeywords = [
+    'park', 'garden', 'playground', 'forest', 'beach', 'outside', 'outdoor',
+    'outdoors', 'yard', 'backyard', 'street', 'field', 'meadow', 'mountain'
+  ];
+  
+  // Check for explicit indoor indicators first
+  for (const keyword of indoorKeywords) {
+    if (lowerSentence.includes(keyword)) {
+      return true;
+    }
+  }
+  
+  // Check for explicit outdoor indicators
+  for (const keyword of outdoorKeywords) {
+    if (lowerSentence.includes(keyword)) {
+      return false;
+    }
+  }
+  
+  // Default to indoor if ambiguous (safer for animal filtering)
+  return true;
 }
 
 // DYNAMIC OBJECT + COLOR DETECTION SYSTEM
@@ -757,10 +863,20 @@ function detectAndResolveObjectColor(sentence: string, originalPageText?: string
   let detectedObject = '';
   let detectedColor = '';
   
-  // Detect object from expanded array
-  const allObjects = [
+  // Detect setting context first
+  const isIndoorScene = isIndoorContext(sentence);
+  
+  // Filter animals based on context
+  const contextAppropriateAnimals = isIndoorScene 
+    ? EXPANDED_OBJECT_ARRAY.animals.filter(animal => 
+        ['dog', 'cat', 'rabbit', 'hamster', 'guinea pig', 'parakeet', 'goldfish', 'turtle', 'ferret', 'chinchilla', 'hedgehog', 'rat', 'mouse', 'canary', 'cockatiel', 'budgie', 'parrot', 'fish', 'bear'].includes(animal)
+      )
+    : EXPANDED_OBJECT_ARRAY.animals; // All animals allowed outdoors
+  
+  // Build context-appropriate object list
+  const contextAwareObjects = [
     ...EXPANDED_OBJECT_ARRAY.food,
-    ...EXPANDED_OBJECT_ARRAY.animals,
+    ...contextAppropriateAnimals,
     ...EXPANDED_OBJECT_ARRAY.vehicles,
     ...EXPANDED_OBJECT_ARRAY.toys,
     ...EXPANDED_OBJECT_ARRAY.tools,
@@ -771,9 +887,12 @@ function detectAndResolveObjectColor(sentence: string, originalPageText?: string
     ...EXPANDED_OBJECT_ARRAY.furniture
   ];
   
-  for (const object of allObjects) {
+  console.log(`🏠 Dynamic object detection: ${isIndoorScene ? 'Indoor' : 'Outdoor'} context, ${contextAwareObjects.length} objects available`);
+  
+  for (const object of contextAwareObjects) {
     if (lowerSentence.includes(object)) {
       detectedObject = object;
+      console.log(`🎯 Context-filtered object detected: "${object}"`);
       break;
     }
   }
