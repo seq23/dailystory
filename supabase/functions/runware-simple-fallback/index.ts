@@ -2187,8 +2187,9 @@ serve(async (req: Request) => {
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
       console.log('✅ Template filling successful');
     } catch (templateError) {
-      console.warn('⚠️ Template filling failed, using emergency prompt:', templateError);
-      prompt = `A beautiful ${avatarIdentity?.character || 'child'} ${scene} in ${setting} with ${objects}, ${emotion}`;
+      console.warn('⚠️ Template filling failed, using ULTIMATE EMERGENCY template:', templateError);
+      // ULTIMATE EMERGENCY - Zero dependencies, completely hardcoded, always works
+      prompt = "EMERGENCY_TEMPLATE_USED: A friendly child reading a magical story in a cozy bedroom, warm lighting, children's book illustration style";
     }
     
     // Generate avatar mapping with character consistency enhancement - SILENT FAILURE PROTECTION
@@ -2217,6 +2218,7 @@ serve(async (req: Request) => {
     }
     
     // NUCLEAR STYLE SETTINGS - Zero external dependencies for bulletproof operation
+    // Beginner/Easy: Contemporary children's book style | Medium/Hard/Expert: Advanced 2.9D rendering
     const NUCLEAR_STYLE_SETTINGS = {
       'beginner': {
         frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
@@ -2229,7 +2231,7 @@ serve(async (req: Request) => {
         CFGScale: 10
       },
       'medium': {
-        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
         steps: 30,
         CFGScale: 10
       },
