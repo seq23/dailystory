@@ -182,6 +182,19 @@ const EXPANDED_COLOR_ARRAY = [
   'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
 ];
 
+// UNIFIED CLOTHING DETECTION KEYWORDS - SINGLE SOURCE OF TRUTH
+// Comprehensive clothing array used by both detectClothingFromStory() and detectAndResolveClothingColor()
+// DO NOT CREATE DUPLICATE ARRAYS - This prevents clothing detection inconsistencies
+const CLOTHING_DETECTION_KEYWORDS = [
+  // Core clothing items (from both previous arrays, deduplicated)
+  'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
+  'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
+  'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves',
+  'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
+  'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
+  'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
+];
+
 const EXPANDED_OBJECT_ARRAY = {
   // Food Items
   food: ['apple', 'banana', 'sandwich', 'cookie', 'cake', 'pizza', 'ice cream', 'cupcake', 'donut', 'bread', 'cheese', 'crackers', 'fruit', 'vegetables', 'juice box', 'water bottle', 'milk', 'cereal', 'pancakes', 'toast'],
@@ -2369,15 +2382,7 @@ function generateEmergencyPrompt(userInfo: any): string {
 function detectClothingFromStory(text: string): string {
   if (!text) return '';
   
-  // Expanded clothing keywords
-  const clothingKeywords = [
-    'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
-    'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
-    'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves',
-    'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
-    'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
-    'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
-  ];
+  // Use unified clothing detection keywords (no local arrays)
   
   const lowerText = text.toLowerCase();
   
@@ -2388,7 +2393,7 @@ function detectClothingFromStory(text: string): string {
   }
   
   // Fallback to basic clothing detection
-  for (const keyword of clothingKeywords) {
+  for (const keyword of CLOTHING_DETECTION_KEYWORDS) {
     if (lowerText.includes(keyword)) {
       // Extract clothing context around the keyword
       const sentences = text.split(/[.!?]+/);
@@ -2411,10 +2416,8 @@ function detectAndResolveClothingColor(text: string): string {
   let detectedClothing = '';
   let detectedColor = '';
   
-  // Detect clothing type
-  const clothingTypes = ['dress', 'shirt', 'pants', 'jacket', 'sweater', 'shoes', 'hat', 'shorts', 'skirt', 'hoodie', 'jeans', 'boots', 'sneakers', 'coat', 'scarf', 'gloves'];
-  
-  for (const clothing of clothingTypes) {
+  // Detect clothing type using unified keywords
+  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
     if (lowerText.includes(clothing)) {
       detectedClothing = clothing;
       break;
