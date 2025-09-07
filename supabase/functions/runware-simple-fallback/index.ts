@@ -99,112 +99,9 @@ const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
   'trendy modern casual wear', 'vibrant youth streetwear', 'fashionable everyday outfit'
 ];
 
-// HISPANIC/LATINO ARRAYS
-const HARDCODED_HISPANIC_LATINO_HAIRSTYLES = {
-  boys: [
-    'dark brown wavy hair', 'straight black hair with side part', 'textured curly brown hair',
-    'medium length dark hair', 'classic short brown cut', 'layered dark hair', 'wavy textured cut',
-    'straight black hair with fringe', 'curly dark brown locks', 'smooth dark hair style',
-    'textured brown waves', 'neat dark hair cut', 'casual wavy style', 'classic Latino haircut'
-  ],
-  girls: [
-    'long straight black hair', 'dark brown wavy hair', 'curly black hair in ponytail',
-    'straight dark hair with bangs', 'wavy brown hair in braids', 'long black hair in loose curls',
-    'shoulder-length dark waves', 'straight black hair with layers', 'curly dark brown hair',
-    'braided dark hair style', 'long straight dark hair', 'wavy black hair', 'textured brown curls'
-  ]
-};
-
-const HARDCODED_HISPANIC_LATINO_SKIN_TONES = [
-  'warm olive complexion', 'medium brown skin', 'golden tan complexion', 'warm beige skin',
-  'caramel brown complexion', 'light olive skin', 'bronze complexion', 'honey-toned skin',
-  'warm medium skin', 'golden brown complexion', 'sun-kissed olive skin', 'rich tan complexion'
-];
-
-const HARDCODED_HISPANIC_LATINO_EYE_COLORS = [
-  'warm brown eyes', 'dark chocolate eyes', 'rich brown eyes', 'amber brown eyes',
-  'deep brown eyes', 'golden brown eyes', 'warm hazel eyes', 'coffee brown eyes'
-];
-
-const HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES = [
-  'expressive warm brown eyes', 'bright cheerful smile', 'strong defined features',
-  'warm welcoming expression', 'lively animated eyes', 'gentle kind smile',
-  'beautiful natural features', 'confident friendly demeanor', 'radiant warm smile'
-];
-
-const HARDCODED_HISPANIC_LATINO_CLOTHING = [
-  'colorful casual wear', 'bright patterned shirt', 'festive colorful clothing',
-  'traditional-inspired modern outfit', 'vibrant casual attire', 'warm-toned clothing'
-];
-
-// CHINESE/ASIAN ARRAYS
-const HARDCODED_CHINESE_ASIAN_HAIRSTYLES = {
-  boys: [
-    'straight black hair with neat cut', 'classic short black hair', 'straight dark hair with fringe',
-    'layered black hair', 'neat straight hair style', 'short black hair with side part',
-    'straight textured black hair', 'classic Asian boy haircut', 'neat dark hair cut'
-  ],
-  girls: [
-    'straight black hair in bob cut', 'long straight black hair', 'straight dark hair with bangs',
-    'neat black hair in ponytail', 'straight black hair with layers', 'classic straight black hair',
-    'long straight dark hair', 'neat black hair style', 'straight hair with side bangs'
-  ]
-};
-
-const HARDCODED_CHINESE_ASIAN_SKIN_TONES = [
-  'light golden complexion', 'warm pale skin', 'golden beige complexion', 'light Asian skin tone',
-  'warm ivory complexion', 'golden light skin', 'soft golden complexion', 'warm light skin'
-];
-
-const HARDCODED_CHINESE_ASIAN_EYE_COLORS = [
-  'dark brown eyes', 'deep black eyes', 'warm dark eyes', 'rich brown eyes'
-];
-
-const HARDCODED_CHINESE_ASIAN_FACIAL_FEATURES = [
-  'almond-shaped dark eyes', 'delicate refined features', 'bright intelligent eyes',
-  'gentle kind expression', 'graceful facial features', 'warm friendly smile',
-  'beautiful natural Asian features', 'expressive dark eyes', 'serene gentle expression'
-];
-
-const HARDCODED_CHINESE_ASIAN_CLOTHING = [
-  'modern casual wear', 'neat school attire', 'traditional-inspired modern clothing',
-  'clean simple outfit', 'contemporary casual style', 'comfortable modern wear'
-];
-
-// MIDDLE EASTERN ARRAYS
-const HARDCODED_MIDDLE_EASTERN_HAIRSTYLES = {
-  boys: [
-    'dark brown wavy hair', 'black curly hair', 'thick dark hair', 'wavy brown locks',
-    'curly black hair style', 'textured dark brown hair', 'wavy medium-length hair',
-    'thick wavy dark hair', 'curly brown hair cut', 'natural wavy black hair'
-  ],
-  girls: [
-    'long dark brown hair', 'thick black wavy hair', 'curly dark hair', 'long straight black hair',
-    'wavy brown hair in braids', 'thick dark hair in ponytail', 'curly black locks',
-    'long wavy dark hair', 'straight thick black hair', 'natural curly dark hair'
-  ]
-};
-
-const HARDCODED_MIDDLE_EASTERN_SKIN_TONES = [
-  'warm olive complexion', 'golden brown skin', 'medium olive skin', 'bronze complexion',
-  'warm tan complexion', 'rich olive skin', 'golden olive complexion', 'warm medium brown skin'
-];
-
-const HARDCODED_MIDDLE_EASTERN_EYE_COLORS = [
-  'dark brown eyes', 'warm hazel eyes', 'deep brown eyes', 'rich amber eyes',
-  'striking dark eyes', 'warm brown eyes', 'deep hazel eyes', 'beautiful dark eyes'
-];
-
-const HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES = [
-  'striking expressive eyes', 'strong defined features', 'warm welcoming expression',
-  'beautiful olive complexion', 'confident friendly demeanor', 'graceful facial structure',
-  'expressive dark eyes', 'noble dignified features', 'warm genuine smile'
-];
-
-const HARDCODED_MIDDLE_EASTERN_CLOTHING = [
-  'traditional-inspired modern wear', 'elegant casual clothing', 'cultural pattern accents',
-  'modest fashionable attire', 'contemporary cultural style', 'warm-toned clothing'
-];
+// REMOVED LIMITED CULTURAL ARRAYS - LET RUNWARE DECIDE THEIR LOOK
+// Hispanic/Latino, Chinese/Asian, and Middle Eastern arrays removed
+// Only African American arrays maintained for detailed representation
 
 // STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
 
@@ -1005,6 +902,11 @@ function fillPremiumTemplate(
                                skinTone.toLowerCase().includes('brown') ||
                                skinTone.toLowerCase().includes('black'));
     
+    const isPortugueseDarkSkin = (userLanguage === 'pt' || userLanguage === 'portuguese') && 
+                                 (skinTone.toLowerCase().includes('dark') || 
+                                  skinTone.toLowerCase().includes('brown') ||
+                                  skinTone.toLowerCase().includes('black'));
+    
     let finalMapping = avatarMapping;
     
     // English + Dark Skin: African American hairstyles + facial features
@@ -1035,9 +937,9 @@ function fillPremiumTemplate(
         features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
-    // Spanish + Dark Skin: Hispanic/Latino hairstyles + African American facial features
+    // Spanish + Dark Skin: African American hairstyles + facial features
     else if (isSpanishDarkSkin) {
-      console.log('🛡️ Tier 2.5: Using Hispanic/Latino hairstyles + African American facial features for Spanish + dark skin');
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for Spanish + dark skin');
       
       const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
       const extractedGender = extractGenderFromCharacter(character);
@@ -1045,8 +947,22 @@ function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(HARDCODED_HISPANIC_LATINO_HAIRSTYLES[genderKey]),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES) // African American facial features
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+      };
+    }
+    // Portuguese + Dark Skin: African American hairstyles + facial features
+    else if (isPortugueseDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for Portuguese + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
+      
+      finalMapping = {
+        ...avatarMapping,
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     
