@@ -2051,7 +2051,7 @@ function fillPremiumTemplate(
       }
     } catch (templateError) {
       console.warn('⚠️ Template selection failed, using emergency template:', templateError);
-      template = "A beautiful {character} {scene} in {setting} with {objects}, {emotion}";
+      template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
     }
     
     // NUCLEAR AVATAR MAPPING with error protection
