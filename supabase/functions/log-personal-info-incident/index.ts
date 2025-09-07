@@ -1,16 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+import { withSecurity, SecurityMiddleware, AuthenticatedUser } from "../_shared/security.ts";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
 
 interface IncidentLogRequest {
   userId: string;
@@ -22,22 +17,37 @@ interface IncidentLogRequest {
   userAgent?: string;
 }
 
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response> => {
+  const security = new SecurityMiddleware();
+  
   try {
     const { 
-      userId,
       childProfileId,
       violationType,
       detectedContent,
       contextField,
-      ipAddress,
       userAgent
-    }: IncidentLogRequest = await req.json();
+    }: Omit<IncidentLogRequest, 'userId'> = await req.json();
+
+    // Use authenticated user ID instead of accepting it from request
+    const userId = user?.id;
+    if (!userId) {
+      throw new Error('User authentication required');
+    }
+
+    // Validate that child profile belongs to authenticated user
+    if (childProfileId) {
+      const { data: childProfile, error: childError } = await supabase
+        .from('child_profiles')
+        .select('id')
+        .eq('id', childProfileId)
+        .eq('parent_user_id', userId)
+        .single();
+      
+      if (childError || !childProfile) {
+        throw new Error('Child profile access denied');
+      }
+    }
 
     console.log("Logging personal info incident:", {
       userId,
@@ -45,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
       contextField
     });
 
-    // Log the incident to the database
+    // Log the incident to the database with server-extracted data
     const { data: incident, error: insertError } = await supabase
       .from('personal_info_incidents')
       .insert({
@@ -54,8 +64,8 @@ const handler = async (req: Request): Promise<Response> => {
         violation_type: violationType,
         detected_content: detectedContent,
         context_field: contextField,
-        ip_address: ipAddress,
-        user_agent: userAgent,
+        ip_address: security.getClientIP(req),
+        user_agent: req.headers.get('User-Agent'),
         email_notification_sent: false
       })
       .select()
@@ -96,32 +106,25 @@ const handler = async (req: Request): Promise<Response> => {
       recentIncidentCount: incidentCount
     });
 
-    return new Response(JSON.stringify({
+    return security.createSecureResponse({
       success: true,
       incidentId: incident.id,
       shouldTriggerEmail,
       recentIncidentCount: incidentCount,
-      recentIncidents: recentIncidents?.slice(0, 5) // Return last 5 incidents
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      recentIncidents: recentIncidents?.slice(0, 5) // Return last 5 incidents for context
     });
   } catch (error: any) {
     console.error("Error in log-personal-info-incident function:", error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        success: false 
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return security.createErrorResponse(error.message, 500);
   }
 };
 
-serve(handler);
+// Apply security middleware with authentication required
+serve(await withSecurity(handler, {
+  requireAuth: true,
+  rateLimit: {
+    requests: 10, // Max 10 incident reports per hour per user
+    windowMs: 60 * 60 * 1000 // 1 hour
+  },
+  auditLog: true
+}));

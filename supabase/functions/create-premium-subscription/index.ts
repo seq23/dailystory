@@ -1,18 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@14.21.0"
+import { withSecurity, SecurityMiddleware, AuthenticatedUser } from "../_shared/security.ts"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
+const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response> => {
+  const security = new SecurityMiddleware();
+  
   try {
-    const { planId, email } = await req.json()
+    const { planId } = await req.json()
+    
+    // Use authenticated user's email instead of accepting it from request
+    const email = user?.email;
+    if (!email) {
+      throw new Error('User email not available');
+    }
     
     const stripeApiKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeApiKey) {
@@ -98,21 +98,23 @@ serve(async (req) => {
       }
     })
 
-    return new Response(JSON.stringify({ 
+    return security.createSecureResponse({ 
       url: session.url,
       sessionId: session.id 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
 
   } catch (error) {
     console.error('Stripe payment error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    return security.createErrorResponse(error.message, 500);
   }
-})
+}
+
+// Apply security middleware with authentication required
+serve(await withSecurity(handler, {
+  requireAuth: true,
+  rateLimit: {
+    requests: 5, // Max 5 subscription attempts per hour
+    windowMs: 60 * 60 * 1000 // 1 hour
+  },
+  auditLog: true
+}));

@@ -69,7 +69,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.log-personal-info-incident]
-verify_jwt = false
+verify_jwt = true
+
+[functions.create-premium-subscription]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
 
 [functions.debug-recent-image-prompts]
 verify_jwt = false
