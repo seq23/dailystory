@@ -60,8 +60,8 @@ const EdgeErrorHandler = {
 // Import CharacterConsistencyService
 import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 
-// Inline service placeholders (not used in current implementation)
-const SecondaryElementDetector = { enabled: false };
+// Import SecondaryElementDetector
+import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
 const VisualDetailTracker = { enabled: false };
 
 // Inline implementations for missing tierFailureMonitoring functions
@@ -936,17 +936,23 @@ serve(async (req) => {
         
         // PHASE 1.1b: Detect Secondary Characters  
         console.log('🔍 PHASE 1.1b: Detecting secondary characters using SecondaryElementDetector');
-        const secondaryElements = await SecondaryElementDetector.parseElements(
-          sessionId,
-          '', // primaryScene not available yet
-          storyText,
-          pageNumber
-        );
-        
-        console.log('👥 PHASE 1.1b: Secondary elements detected:', {
-          count: secondaryElements.length,
-          elements: secondaryElements.map(e => `${e.name} (${e.type})`)
-        });
+        let secondaryElements = [];
+        try {
+          secondaryElements = await SecondaryElementDetector.parseElements(
+            sessionId,
+            '', // primaryScene not available yet
+            storyText,
+            pageNumber
+          );
+          
+          console.log('👥 PHASE 1.1b: Secondary elements detected:', {
+            count: secondaryElements.length,
+            elements: secondaryElements.map(e => `${e.name} (${e.type})`)
+          });
+        } catch (error) {
+          console.warn('⚠️ SecondaryElementDetector failed (non-critical):', error.message);
+          secondaryElements = []; // Continue with empty array
+        }
         
         // PHASE 1.1c: Track Visual Details
         console.log('🎨 PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
