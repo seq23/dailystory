@@ -121,13 +121,15 @@ const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
   "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
 ];
 
-const HARDCODED_AFRICAN_AMERICAN_CLOTHING = [
-  'vibrant colorful casual wear', 'stylish modern youth clothing', 'trendy cultural fashion', 
-  'bright patterned shirt and comfortable pants', 'colorful hoodie and jeans', 'modern streetwear style', 
-  'fashionable casual outfit', 'contemporary youth fashion', 'stylish comfortable clothing', 
-  'trendy modern casual wear', 'vibrant youth streetwear', 'fashionable everyday outfit'
-];
-
+// CLOTHING DETECTION SYSTEM - REGRESSION PREVENTION COMMENTS
+// 
+// CRITICAL: The current system uses detectClothingFromStory() to extract clothing from story text
+// This provides more contextual and story-appropriate clothing than hardcoded arrays
+// ALL CHARACTERS (regardless of ethnicity) use story-based clothing detection for better narrative consistency
+// 
+// HARDCODED_STANDARD_AMERICAN_CLOTHING exists below but is currently UNUSED - kept for potential future standardization
+// DO NOT CHANGE WITHOUT TESTING: Any modifications to clothing detection affect all character generation
+//
 // REMOVED LIMITED CULTURAL ARRAYS - LET RUNWARE DECIDE THEIR LOOK
 // Hispanic/Latino, Chinese/Asian, and Middle Eastern arrays removed
 // Only African American arrays maintained for detailed representation
