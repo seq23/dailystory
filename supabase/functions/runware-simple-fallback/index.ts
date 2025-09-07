@@ -647,56 +647,65 @@ function detectActionStem(word: string): string {
 function extractActionFromSentence(sentence: string): string {
   const lowerSentence = sentence.toLowerCase();
   
-  // ============= MASTER PLAN: BASE STEM MAPPINGS (Level 0-2 Template Analysis) =============
-  // Each action uses only the base stem - smart detection handles all conjugations
+  // ============= EMERGENCY RECOVERY: EXACT WORD PRESERVATION SYSTEM =============
+  // FIXED: Preserve exact words from story text, no enhancement additions
   const actionMappings = [
-    // Level 0 Actions (Basic movements and activities)
-    { stem: 'run', description: 'running joyfully' },
-    { stem: 'jump', description: 'jumping energetically' },
-    { stem: 'play', description: 'playing happily' },
-    { stem: 'read', description: 'reading attentively' },
-    { stem: 'write', description: 'writing carefully' },
-    { stem: 'draw', description: 'drawing creatively' },
-    { stem: 'build', description: 'building imaginatively' },
-    { stem: 'walk', description: 'walking confidently' },
-    { stem: 'sit', description: 'sitting comfortably' },
-    { stem: 'stand', description: 'standing proudly' },
-    { stem: 'dance', description: 'dancing gracefully' },
-    { stem: 'sing', description: 'singing joyfully' },
-    { stem: 'laugh', description: 'laughing cheerfully' },
-    { stem: 'smile', description: 'smiling warmly' },
-    { stem: 'eat', description: 'eating happily' },
-    { stem: 'sleep', description: 'resting peacefully' },
-    { stem: 'help', description: 'helping kindly' },
-    { stem: 'love', description: 'showing love' },
-    { stem: 'call', description: 'calling out' },
-    { stem: 'talk', description: 'talking cheerfully' },
-    { stem: 'get', description: 'getting something' },
-    { stem: 'put', description: 'placing carefully' },
-    { stem: 'go', description: 'going somewhere' },
-    { stem: 'see', description: 'looking at' },
-    { stem: 'make', description: 'making thoughtfully' },
-    { stem: 'try', description: 'trying eagerly' },
-    { stem: 'throw', description: 'throwing skillfully' },
-    { stem: 'catch', description: 'catching expertly' },
-    { stem: 'swing', description: 'swinging joyfully' },
+    // Level 0 Actions (Basic movements and activities) - EXACT WORD PRESERVATION
+    { stem: 'run', description: 'running' },
+    { stem: 'jump', description: 'jumping' },
+    { stem: 'play', description: 'playing' },
+    { stem: 'read', description: 'reading' },
+    { stem: 'write', description: 'writing' },
+    { stem: 'draw', description: 'drawing' },
+    { stem: 'build', description: 'building' },
+    { stem: 'walk', description: 'walking' },
+    { stem: 'sit', description: 'sitting' },
+    { stem: 'stand', description: 'standing' },
+    { stem: 'dance', description: 'dancing' },
+    { stem: 'sing', description: 'singing' },
+    { stem: 'laugh', description: 'laughing' },
+    { stem: 'smile', description: 'smiling' },
+    { stem: 'eat', description: 'eating' },
+    { stem: 'sleep', description: 'resting' },
+    { stem: 'help', description: 'helping' },
+    { stem: 'love', description: 'loving' },
+    { stem: 'call', description: 'calling' },
+    { stem: 'talk', description: 'talking' },
+    { stem: 'get', description: 'getting' },
+    { stem: 'put', description: 'putting' },
+    { stem: 'go', description: 'going' },
+    { stem: 'see', description: 'seeing' },
+    { stem: 'make', description: 'making' },
+    { stem: 'try', description: 'trying' },
+    { stem: 'throw', description: 'throwing' },
+    { stem: 'catch', description: 'catching' },
+    { stem: 'swing', description: 'swinging' },
     
-    // Level 1 Actions (Exploration and learning)
-    { stem: 'explore', description: 'exploring curiously' },
-    { stem: 'discover', description: 'discovering excitedly' },
-    { stem: 'learn', description: 'learning eagerly' },
-    { stem: 'create', description: 'creating artistically' },
-    { stem: 'plant', description: 'planting carefully' },
-    { stem: 'water', description: 'watering gently' },
-    { stem: 'grow', description: 'growing beautifully' },
-    { stem: 'investigate', description: 'investigating thoughtfully' },
+    // Level 1 Actions (Exploration and learning) - EXACT WORD PRESERVATION
+    { stem: 'explore', description: 'exploring' },
+    { stem: 'discover', description: 'discovering' },
+    { stem: 'learn', description: 'learning' },
+    { stem: 'create', description: 'creating' },
+    { stem: 'plant', description: 'planting' },
+    { stem: 'water', description: 'watering' },
+    { stem: 'grow', description: 'growing' },
+    { stem: 'investigate', description: 'investigating' },
     
-    // Level 2 Actions (Advanced activities)
-    { stem: 'interview', description: 'interviewing professionally' },
-    { stem: 'explain', description: 'explaining clearly' },
-    { stem: 'share', description: 'sharing generously' },
-    { stem: 'return', description: 'returning safely' },
-    { stem: 'work', description: 'working diligently' },
+    // Level 2 Actions (Advanced activities) - EXACT WORD PRESERVATION
+    { stem: 'interview', description: 'interviewing' },
+    { stem: 'explain', description: 'explaining' },
+    { stem: 'share', description: 'sharing' },
+    { stem: 'return', description: 'returning' },
+    { stem: 'work', description: 'working' },
+    
+    // MISSING ACTIONS ADDED - EXACT WORD PRESERVATION  
+    { stem: 'roll', description: 'rolling' },
+    { stem: 'climb', description: 'climbing' },
+    { stem: 'swim', description: 'swimming' },
+    { stem: 'hide', description: 'hiding' },
+    { stem: 'slide', description: 'sliding' },
+    { stem: 'dig', description: 'digging' },
+    { stem: 'kick', description: 'kicking' }
     
     // MASTER PLAN FIX: Missing Actions from "Ball Rolls Down Hill"
     { stem: 'roll', description: 'rolling smoothly' }, // 🎯 THE MISSING ACTION!
@@ -1155,122 +1164,122 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
   // Detect setting context for filtering
   const isIndoorScene = isIndoorContext(sentence);
   
-  // ============= MASTER PLAN: CONTEXT-AWARE OBJECT MAPPINGS (Enhanced Birds Classification) =============
+  // ============= EMERGENCY RECOVERY: EXACT WORD PRESERVATION FOR OBJECTS =============
   const indoorObjects = {
-    // Level 0 Objects (Basic items)
-    'book': ', with colorful educational books nearby', 
-    'toy': ', with fun educational toys around',
-    'ball': ', with a bright colorful ball', 
-    'doll': ', with favorite dolls and stuffed animals', 
-    'game': ', with educational games and activities',
-    'puzzle': ', with colorful learning puzzles', 
-    'blocks': ', with building blocks and construction toys',
-    'crayon': ', with bright crayons and art supplies', 
-    'paper': ', with drawing paper and notebooks',
-    'pencil': ', with colorful pencils and writing tools', 
-    'computer': ', with educational technology',
-    'tablet': ', with learning apps and digital tools', 
-    'phone': ', with communication devices',
-    'water': ', with fresh water nearby',
-    'food': ', with delicious food around',
-    'clothes': ', with comfortable clothing',
-    'bed': ', near a cozy bed',
+    // FIXED: Preserve exact words from story - NO ENHANCEMENTS THAT CHANGE MEANING
+    'book': ' book', 
+    'toy': ' toy',
+    'ball': ' ball', 
+    'doll': ' doll', 
+    'game': ' game',
+    'puzzle': ' puzzle', 
+    'blocks': ' blocks',
+    'crayon': ' crayon', 
+    'paper': ' paper',
+    'pencil': ' pencil', 
+    'computer': ' computer',
+    'tablet': ' tablet', 
+    'phone': ' phone',
+    'water': ' water',
+    'food': ' food',
+    'clothes': ' clothes',
+    'bed': ' bed',
     
-    // Food items (indoor appropriate)
-    'apple': ', with fresh red apples nearby',
-    'banana': ', with yellow bananas around',
-    'sandwich': ', with a delicious sandwich to enjoy',
-    'cookie': ', with sweet cookies nearby',
-    'cake': ', with a special cake to celebrate',
-    'pizza': ', with delicious pizza slices',
-    'ice cream': ', with sweet ice cream treats',
+    // Food items - EXACT WORD PRESERVATION
+    'apple': ' apple',
+    'banana': ' banana',
+    'sandwich': ' sandwich',
+    'cookie': ' cookie',
+    'cake': ' cake',
+    'pizza': ' pizza',
+    'ice cream': ' ice cream',
     
-     // ENHANCED: Birds Context Classification with indoor/outdoor validation
-     'parakeet': ', with a colorful pet parakeet in indoor setting',
-     'budgie': ', with a friendly pet budgie in indoor setting',
-     'parrot': ', with a talking pet parrot in indoor setting',
-     'canary': ', with a singing pet canary in indoor setting',
-     'cockatiel': ', with a charming pet cockatiel in indoor setting',
+    // Birds - EXACT WORD PRESERVATION (indoor context maintained)
+    'parakeet': ' parakeet',
+    'budgie': ' budgie',
+    'parrot': ' parrot',
+    'canary': ' canary',
+    'cockatiel': ' cockatiel',
     
-    // Indoor pets only
-    'dog': ', with a friendly dog companion',
-    'cat': ', with a playful cat nearby',
-    'rabbit': ', with a cute bunny friend',
-    'hamster': ', with a tiny hamster friend',
-    'fish': ', with colorful fish swimming',
-    'turtle': ', with a gentle pet turtle',
-    'guinea pig': ', with a cuddly guinea pig',
+    // Indoor pets - EXACT WORD PRESERVATION
+    'dog': ' dog',
+    'cat': ' cat',
+    'rabbit': ' rabbit',
+    'hamster': ' hamster',
+    'fish': ' fish',
+    'turtle': ' turtle',
+    'guinea pig': ' guinea pig',
     
-    // Indoor accessories
-    'hat': ', wearing a stylish hat',
-    'shoes': ', with comfortable shoes on',
-    'glasses': ', wearing smart glasses',
-    'watch': ', with a cool wristwatch',
-    'backpack': ', with a colorful school backpack'
+    // Indoor accessories - EXACT WORD PRESERVATION
+    'hat': ' hat',
+    'shoes': ' shoes',
+    'glasses': ' glasses',
+    'watch': ' watch',
+    'backpack': ' backpack'
   };
 
   const outdoorObjects = {
-    // Level 0 Outdoor Objects
-    'bike': ', with a shiny bicycle nearby',
-    'swing': ', near playground swings', 
-    'slide': ', by a colorful playground slide',
-    'tree': ', under beautiful shade trees', 
-    'flower': ', surrounded by blooming flowers',
-    'grass': ', on green grass',
-    'stick': ', with interesting sticks around',
-    'rock': ', near interesting rocks',
+    // EMERGENCY RECOVERY: EXACT WORD PRESERVATION FOR OUTDOOR OBJECTS
+    'bike': ' bike',
+    'swing': ' swing', 
+    'slide': ' slide',
+    'tree': ' tree', 
+    'flower': ' flower',
+    'grass': ' grass',
+    'stick': ' stick',
+    'rock': ' rock',
     
-    // Level 1 Outdoor Objects (Garden/Nature)
-    'seeds': ', with garden seeds to plant',
-    'plants': ', surrounded by growing plants',
-    'soil': ', in rich garden soil',
-    'watering can': ', with a helpful watering can',
+    // Level 1 Outdoor Objects (Garden/Nature) - EXACT WORD PRESERVATION
+    'seeds': ' seeds',
+    'plants': ' plants',
+    'soil': ' soil',
+    'watering can': ' watering can',
     
-    // Recreation items
-    'kite': ', with a colorful kite ready to fly',
-    'frisbee': ', with a flying frisbee',
-    'soccer ball': ', with a soccer ball to kick',
-    'baseball': ', with a baseball to throw',
-    'basketball': ', with a basketball to bounce',
+    // Recreation items - EXACT WORD PRESERVATION
+    'kite': ' kite',
+    'frisbee': ' frisbee',
+    'soccer ball': ' soccer ball',
+    'baseball': ' baseball',
+    'basketball': ' basketball',
     
-      // ENHANCED: Wild birds context validation - automatically move indoor birds outdoors
-      'bird': ', with cheerful birds singing in outdoor natural setting', 
-      'robin': ', with cheerful robins singing in outdoor garden',
-      'cardinal': ', with bright red cardinals in outdoor natural habitat',
-      'crow': ', with clever crows in outdoor environment',
-      'sparrow': ', with small sparrows chirping in outdoor setting',
-      'blue jay': ', with beautiful blue jays in outdoor trees',
-      'hawk': ', with majestic hawks soaring in open outdoor sky',
-      'eagle': ', with powerful eagles flying in outdoor wilderness',
-      'owl': ', with wise owls in outdoor forest environment',
-      'duck': ', with friendly ducks swimming in outdoor pond',
-      'goose': ', with graceful geese in outdoor meadow',
-      'swan': ', with elegant swans gliding in outdoor lake',
+    // Wild birds - EXACT WORD PRESERVATION (outdoor context maintained)
+    'bird': ' bird', 
+    'robin': ' robin',
+    'cardinal': ' cardinal',
+    'crow': ' crow',
+    'sparrow': ' sparrow',
+    'blue jay': ' blue jay',
+    'hawk': ' hawk',
+    'eagle': ' eagle',
+    'owl': ' owl',
+    'duck': ' duck',
+    'goose': ' goose',
+    'swan': ' swan',
     
-    // Wild animals (outdoor appropriate)
-    'butterfly': ', with beautiful butterflies around',
-    'elephant': ', with a gentle elephant friend',
-    'lion': ', with a brave lion character',
-    'tiger': ', with a friendly tiger companion',
-    'monkey': ', with a playful monkey friend',
-    'horse': ', with a beautiful horse nearby',
-    'deer': ', with graceful deer nearby',
-    'squirrel': ', with busy squirrels playing',
+    // Wild animals - EXACT WORD PRESERVATION
+    'butterfly': ' butterfly',
+    'elephant': ' elephant',
+    'lion': ' lion',
+    'tiger': ' tiger',
+    'monkey': ' monkey',
+    'horse': ' horse',
+    'deer': ' deer',
+    'squirrel': ' squirrel',
     
-    // Vehicles (outdoor)
-    'airplane': ', with toy airplanes soaring',
-    'helicopter': ', with a fun helicopter toy',
-    'train': ', with an exciting toy train',
-    'boat': ', with a colorful toy boat',
-    'rocket': ', with an amazing rocket ship',
-    'fire truck': ', with a red fire truck',
-    'police car': ', with a helpful police car'
+    // Vehicles - EXACT WORD PRESERVATION
+    'airplane': ' airplane',
+    'helicopter': ' helicopter',
+    'train': ' train',
+    'boat': ' boat',
+    'rocket': ' rocket',
+    'fire truck': ' fire truck',
+    'police car': ' police car'
   };
 
-  // Universal objects (appropriate for both contexts)
+  // Universal objects - EXACT WORD PRESERVATION
   const universalObjects = {
-    'car': ', near toy cars and vehicles', 
-    'truck': ', with toy trucks and construction vehicles'
+    'car': ' car', 
+    'truck': ' truck'
   };
 
   // Choose appropriate object set based on context
@@ -1505,40 +1514,41 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
   return detectedCharacters.length > 0 ? detectedCharacters[0] + ' nearby' : '';
 }
 
-// ============= ENHANCED CAMERA DIRECTIVE GENERATOR (Context-Aware) =============
+// ============= EMERGENCY RECOVERY: ENHANCED WIDE-ANGLE CAMERA SYSTEM =============
 function generateCameraDirective(difficulty: string, scene?: string, setting?: string): string {
-  // OBJECT-FOCUSED SHOTS: When "sees", "looks at", "finds" are detected (checks both original verbs and mapped descriptions)
+  // ENHANCED: Always prioritize wide-angle for full activity visibility
+  const baseDirective = "full body shot, wide angle view, complete scene visible, spacious perspective";
+  
+  // OBJECT-FOCUSED SHOTS: Enhanced with wide-angle maintenance
   if (scene && (
     scene.includes('seeing') || 
     scene.includes('looking at') || 
     scene.includes('looking') || 
     scene.includes('finding') ||
-    scene.includes('placing') // for "put" → "placing carefully"
+    scene.includes('placing')
   )) {
-    console.log('🎯 Object-focused camera directive for visual action');
-    return "close-up focused shot, object prominently featured, detailed view";
+    console.log('🎯 Wide-angle object-focused directive for visual action');
+    return baseDirective + ", clear object visibility, detailed environment context";
   }
   
-  // WIDE SHOTS: For outdoor activities  
+  // OUTDOOR SCENES: Extra wide establishing shots
   if (setting && (setting.includes('outdoor') || setting.includes('park') || setting.includes('playground') || setting.includes('playing outside'))) {
-    console.log('🎯 Wide shot camera directive for outdoor scene');
-    return "wide establishing shot, full environment visible, spacious outdoor perspective";
+    console.log('🎯 Extra wide establishing shot for outdoor scene');
+    return "wide establishing shot, full environment visible, spacious outdoor perspective, complete activity context";
   }
   
-  // Default balanced approach with wider angle for full activity visibility
-  const baseDirective = "full body shot, wide angle view, complete scene visible";
-  
-  // Difficulty-based camera enhancement
+  // ENHANCED: Difficulty-based enhancements while maintaining wide angle
   const difficultyEnhancements = {
-    'beginner': "simple composition, clear focus",
-    'easy': "child-friendly framing, easy to understand", 
-    'medium': "dynamic composition, engaging perspective",
-    'hard': "professional composition, detailed scene",
-    'expert': "artistic composition, sophisticated framing"
+    'beginner': baseDirective + ", simple composition, clear focus",
+    'easy': baseDirective + ", child-friendly framing, easy to understand", 
+    'medium': baseDirective + ", dynamic composition, engaging perspective",
+    'hard': baseDirective + ", professional composition, detailed scene",
+    'expert': baseDirective + ", artistic composition, sophisticated framing"
   };
   
-  const enhancement = difficultyEnhancements[difficulty] || difficultyEnhancements['medium'];
-  return `${baseDirective}, ${enhancement}`;
+  const finalDirective = difficultyEnhancements[difficulty] || baseDirective;
+  console.log(`🎯 Enhanced wide-angle directive: ${finalDirective}`);
+  return finalDirective;
 }
 
 function fillPremiumTemplate(
