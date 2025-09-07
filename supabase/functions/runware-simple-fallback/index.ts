@@ -663,7 +663,7 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
     const result = {
       scene: extractActionFromSentence(bestSentence),
       setting: extractSettingFromSentence(bestSentence), // Note: No previousSetting in extraction phase
-      objects: extractObjectsFromSentence(bestSentence),
+      objects: extractObjectsFromSentence(bestSentence, pageText),
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
 
@@ -784,11 +784,11 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
 }
 
 // DYNAMIC COLOR-OBJECT RESOLUTION SYSTEM
-function extractObjectsFromSentence(sentence: string): string {
+function extractObjectsFromSentence(sentence: string, originalPageText?: string): string {
   const lowerSentence = sentence.toLowerCase();
   
   // First try to detect and resolve object + color combinations
-  const dynamicObjectColor = detectAndResolveObjectColor(sentence);
+  const dynamicObjectColor = detectAndResolveObjectColor(sentence, originalPageText);
   if (dynamicObjectColor) {
     return dynamicObjectColor;
   }
@@ -855,7 +855,7 @@ function extractObjectsFromSentence(sentence: string): string {
 }
 
 // DYNAMIC OBJECT + COLOR DETECTION SYSTEM
-function detectAndResolveObjectColor(sentence: string): string {
+function detectAndResolveObjectColor(sentence: string, originalPageText?: string): string {
   const lowerSentence = sentence.toLowerCase();
   let detectedObject = '';
   let detectedColor = '';
@@ -889,14 +889,24 @@ function detectAndResolveObjectColor(sentence: string): string {
     }
   }
   
-  // If both object and color detected, combine them (no restrictions - allow any color for any object)
-  if (detectedObject && detectedColor) {
-    return `, with a ${detectedColor} ${detectedObject} nearby`;
+  // Check for plural form in original page text if available
+  function getPluralForm(object: string, originalText?: string): string {
+    if (!originalText) return object;
+    const lowerOriginal = originalText.toLowerCase();
+    const pluralForm = object + 's';
+    return lowerOriginal.includes(pluralForm) ? pluralForm : object;
   }
   
-  // If only object detected, let Runware decide the color
+  // If both object and color detected, combine them (compact format with plural support)
+  if (detectedObject && detectedColor) {
+    const pluralForm = getPluralForm(detectedObject, originalPageText);
+    return `${detectedColor} ${pluralForm} nearby`;
+  }
+  
+  // If only object detected, let Runware decide the color (compact format with plural support)
   if (detectedObject) {
-    return `, with a ${detectedObject} nearby`;
+    const pluralForm = getPluralForm(detectedObject, originalPageText);
+    return `${pluralForm} nearby`;
   }
   
   // If only color detected, let Runware decide what object to color
