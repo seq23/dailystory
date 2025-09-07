@@ -1785,23 +1785,6 @@ function getAgeFromDifficulty(difficulty: string): string {
   return ageMap[difficulty] || 'age 9-10';
 }
 
-// Import style frameworks from shared location
-function getStyleFrameworkSettings(difficulty: string): { frameworkPrompt: string, steps: number, CFGScale: number } {
-  // Map difficulties to style frameworks - levels 0-2 use Contemporary, levels 3-4 use 2.9D
-  const frameworkMap = {
-    'beginner': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-    'easy': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-    'medium': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-    'hard': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-    'expert': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting'
-  };
-  
-  return {
-    frameworkPrompt: frameworkMap[difficulty] || frameworkMap.medium,
-    steps: 30, // FIXED: Increased from 25 for better quality
-    CFGScale: 10 // FIXED: Increased from 8 for better prompt adherence
-  };
-}
 
 // CULTURAL LANDMARKS ARRAYS FOR CONTEXT-AWARE SETTINGS
 const CULTURAL_LANDMARKS = {
@@ -2057,15 +2040,37 @@ serve(async (req: Request) => {
       negativePrompt = 'low quality, blurry, distorted, inappropriate content';
     }
     
-    // Get style framework settings - SILENT FAILURE PROTECTION
-    let styleSettings;
-    try {
-      styleSettings = getStyleFrameworkSettings(difficulty);
-      console.log('✅ Style settings generation successful');
-    } catch (styleError) {
-      console.warn('⚠️ Style settings failed, using defaults:', styleError);
-      styleSettings = { steps: 30, CFGScale: 10 }; // FIXED: Consistent fallback parameters (no random seed)
-    }
+    // NUCLEAR STYLE SETTINGS - Zero external dependencies for bulletproof operation
+    const NUCLEAR_STYLE_SETTINGS = {
+      'beginner': {
+        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+        steps: 30,
+        CFGScale: 10
+      },
+      'easy': {
+        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+        steps: 30,
+        CFGScale: 10
+      },
+      'medium': {
+        frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
+        steps: 30,
+        CFGScale: 10
+      },
+      'hard': {
+        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
+        steps: 30,
+        CFGScale: 10
+      },
+      'expert': {
+        frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
+        steps: 30,
+        CFGScale: 10
+      }
+    };
+    
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
+    console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
     
     console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket with comprehensive error protection...');
     
