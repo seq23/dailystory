@@ -556,8 +556,9 @@ function generateKidFriendlyPlaceholder(pageText: string): { url: string, succes
     </svg>
   `;
   
-  const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
+  // Convert to data URL instead of blob URL to avoid browser security issues
+  const base64 = btoa(unescape(encodeURIComponent(svgContent)));
+  const url = `data:image/svg+xml;base64,${base64}`;
   
   return { url, success: true };
 }

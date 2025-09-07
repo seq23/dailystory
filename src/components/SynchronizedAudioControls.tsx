@@ -67,11 +67,14 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
       }
       
       // Level-based highlighting: Only enable for beginner/easy (levels 0-1)
-      const shouldHighlight = difficulty === 'beginner' || difficulty === 'easy';
+      // Convert numeric difficulty to string if needed
+      const difficultyStr = String(difficulty).toLowerCase();
+      const shouldHighlight = difficultyStr === 'beginner' || difficultyStr === 'easy' || difficultyStr === '0' || difficultyStr === '1';
       const highlightCallback = shouldHighlight ? onWordHighlight : undefined;
       
+      console.log(`🎯 Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}" (converted: "${difficultyStr}")`);
       if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log(`🎯 Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: ${difficulty}`);
+        console.log(`🔍 Debug - difficulty value type: ${typeof difficulty}, value: "${difficulty}"`);
       }
       
       await audioEngine.playTextWithSynchronization({

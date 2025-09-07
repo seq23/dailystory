@@ -203,6 +203,47 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Clear all character consistency cache from database
+   */
+  async clearServerState() {
+    console.log('🗑️ Clearing all character consistency cache from database...');
+    
+    try {
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL'), 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      );
+
+      const { data, error } = await supabase
+        .from('character_consistency_cache')
+        .delete()
+        .neq('id', 0); // Delete all records
+
+      if (error) {
+        console.error('❌ Database clear error:', error);
+        throw new Error(`CharacterConsistencyService.clearServerState failed: ${safeErrorMessage(error)}`);
+      }
+      
+      const deletedCount = data?.length || 0;
+      console.log(`🗑️ Successfully cleared ${deletedCount} character consistency cache entries`);
+      
+      return {
+        cleared: deletedCount,
+        message: `Cleared ${deletedCount} character cache entries from database`,
+        success: true
+      };
+    } catch (error) {
+      console.error('❌ Error clearing character cache:', error);
+      return {
+        cleared: 0,
+        message: `Failed to clear character cache: ${safeErrorMessage(error)}`,
+        success: false
+      };
+    }
+  }
+
+  /**
    * Create seeded random number generator for consistency
    */
   createSeededRandom(seed) {
