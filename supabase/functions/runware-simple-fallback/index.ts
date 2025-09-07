@@ -36,11 +36,11 @@ function createCorsOptionsResponse(): Response {
 
 // PREMIUM PROMPT TEMPLATES BY DIFFICULTY (Enhanced with Page Text and Style Framework Integration)
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
-  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}",
-  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
-  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}",
-  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {frameworkPrompt}. {pageText}"
+  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  medium: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}. {pageText}",
+  hard: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}. {pageText}",
+  expert: "{character} {age}, {hair}, {features}, {scene} in {setting}{objects}{secondary_characters}. {emotion}. {ethnicity}. {frameworkPrompt}. {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -978,6 +978,9 @@ function fillPremiumTemplate(
     // Process pageText based on difficulty
     const processedPageText = truncatePageText(pageText || 'A story about learning and discovery', difficulty);
     
+    // Get character ethnicity note
+    const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
+    
     // Fill template with nuclear mappings and style framework integration
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
@@ -990,6 +993,7 @@ function fillPremiumTemplate(
       .replace('{objects}', objects)
       .replace('{secondary_characters}', secondary_characters)
       .replace('{emotion}', emotion)
+      .replace('{ethnicity}', ethnicity)
       .replace('{frameworkPrompt}', styleSettings.frameworkPrompt);
     
     // Add clothing if detected
@@ -1003,6 +1007,54 @@ function fillPremiumTemplate(
   } catch (error) {
     console.error('❌ Tier 2.5: Template filling error:', error);
     return generateEmergencyPrompt(userInfo);
+  }
+}
+
+function getCharacterEthnicity(userInfo: any, avatarIdentity?: any): string {
+  try {
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || '';
+    
+    // Check for dark skin first (African American representation)
+    if (skinTone.toLowerCase().includes('dark') || 
+        skinTone.toLowerCase().includes('brown') ||
+        skinTone.toLowerCase().includes('black') ||
+        skinTone.toLowerCase().includes('ebony') ||
+        skinTone.toLowerCase().includes('chocolate')) {
+      return "depict character from African American background";
+    }
+    
+    // Language-based ethnicity notes
+    if (language === 'es' || language === 'spanish') {
+      return "depict character from Spanish/Latino background";
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      return "depict character from European background";
+    }
+    
+    if (language === 'zh' || language === 'chinese') {
+      return "depict character from Asian background";
+    }
+    
+    if (language === 'hi' || language === 'hindi') {
+      return "child of Indian origin";
+    }
+    
+    if (language === 'ar' || language === 'arabic') {
+      return "depict character from Middle Eastern background";
+    }
+    
+    if (language === 'pt' || language === 'portuguese') {
+      return "depict character from Latin American background";
+    }
+    
+    // Default: no specific ethnicity note for English/Standard American
+    return "";
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Character ethnicity detection error:', error);
+    return "";
   }
 }
 
@@ -1166,24 +1218,37 @@ function getStyleFrameworkSettings(difficulty: string): { frameworkPrompt: strin
   };
 }
 
+// CULTURAL LANDMARKS ARRAYS FOR CONTEXT-AWARE SETTINGS
+const CULTURAL_LANDMARKS = {
+  spanish: ["with Spanish architecture", "in vibrant plaza", "near colorful market", "with Mediterranean backdrop", "in sunny courtyard"],
+  french: ["near Eiffel Tower", "by Seine River", "near Louvre", "in charming café district", "with Parisian backdrop"],
+  chinese: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"],
+  hindi: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"],
+  arabic: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert backdrop"]
+};
+
 function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, avatarIdentity?: any): string {
   try {
     const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
     
-    if (language === 'es' || language === 'spanish') {
-      return baseSetting.replace('a ', 'a culturally rich ').replace('an ', 'a vibrant ');
-    }
-    
-    if (language === 'fr' || language === 'french') {
-      return baseSetting.replace('a ', 'a charming ').replace('an ', 'an elegant ');
-    }
-    
-    if (language === 'zh' || language === 'chinese') {
-      return baseSetting.replace('a ', 'a harmonious ').replace('an ', 'a balanced ');
-    }
-    
-    if (language === 'ar' || language === 'arabic') {
-      return baseSetting.replace('a ', 'a welcoming ').replace('an ', 'a warm ');
+    // Get cultural landmarks for the language
+    const landmarks = getCulturalLandmarks(language);
+    if (landmarks.length > 0) {
+      const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
+      
+      // Context-aware enhancement - parse story context and add landmarks
+      if (baseSetting.toLowerCase().includes('park')) {
+        return baseSetting.replace('park', `park ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('school')) {
+        return baseSetting.replace('school', `school ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('home')) {
+        return baseSetting.replace('home', `home ${randomLandmark}`);
+      }
+      
+      // Generic enhancement fallback
+      return `${baseSetting} ${randomLandmark}`;
     }
     
     return baseSetting;
@@ -1192,6 +1257,15 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, ava
     console.warn('⚠️ Tier 2.5: Cultural setting enhancement error:', error);
     return baseSetting;
   }
+}
+
+function getCulturalLandmarks(language: string): string[] {
+  if (language === 'es' || language === 'spanish') return CULTURAL_LANDMARKS.spanish;
+  if (language === 'fr' || language === 'french') return CULTURAL_LANDMARKS.french;  
+  if (language === 'zh' || language === 'chinese') return CULTURAL_LANDMARKS.chinese;
+  if (language === 'hi' || language === 'hindi') return CULTURAL_LANDMARKS.hindi;
+  if (language === 'ar' || language === 'arabic') return CULTURAL_LANDMARKS.arabic;
+  return [];
 }
 
 function detectCulturalProfile(userInfo: any, avatarIdentity?: any): string {
@@ -1211,25 +1285,35 @@ function detectCulturalProfile(userInfo: any, avatarIdentity?: any): string {
       return 'African American';
     }
     
-    // Language-based detection
+    // Language-based detection with real ethnicities
     if (language === 'es' || language === 'spanish') {
-      console.log('🛡️ Tier 2.5: Hispanic/Latino profile detected via language');
-      return 'Hispanic/Latino';
+      console.log('🛡️ Tier 2.5: Spanish/Latino ethnicity detected via language');
+      return 'Spanish/Latino ethnicity';
     }
     
     if (language === 'fr' || language === 'french') {
-      console.log('🛡️ Tier 2.5: French profile detected via language');
-      return 'French';
+      console.log('🛡️ Tier 2.5: European ethnicity detected via language');
+      return 'European ethnicity';
     }
     
     if (language === 'zh' || language === 'chinese') {
-      console.log('🛡️ Tier 2.5: Chinese/Asian profile detected via language');
-      return 'Chinese/Asian';
+      console.log('🛡️ Tier 2.5: East Asian ethnicity detected via language');
+      return 'East Asian ethnicity';
+    }
+    
+    if (language === 'hi' || language === 'hindi') {
+      console.log('🛡️ Tier 2.5: South Asian ethnicity detected via language');
+      return 'South Asian ethnicity';
     }
     
     if (language === 'ar' || language === 'arabic') {
-      console.log('🛡️ Tier 2.5: Middle Eastern profile detected via language');
-      return 'Middle Eastern';
+      console.log('🛡️ Tier 2.5: Middle Eastern ethnicity detected via language');
+      return 'Middle Eastern ethnicity';
+    }
+    
+    if (language === 'pt' || language === 'portuguese') {
+      console.log('🛡️ Tier 2.5: Latin American ethnicity detected via language');
+      return 'Latin American ethnicity';
     }
     
     console.log('🛡️ Tier 2.5: Standard American profile (default)');
