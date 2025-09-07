@@ -40,6 +40,9 @@ export class SessionStateManager {
         // AI Debug tracking - stores full AI prompts (last 3 only)
         aiPrompts: [],
         
+        // Previous AI Scene tracking for visual consistency
+        previousAIScenes: [],
+        
         // Avatar tracking
         avatarType: null,
         skinTone: null,

@@ -801,7 +801,7 @@ serve(async (req) => {
         // PHASE 2: POST-AI PROMPT CONSTRUCTION  
         // PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1)
         
-      let storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData, previousPageText;
+      let storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData;
       let pageText = '';
       const importResults = {};
       
@@ -984,7 +984,7 @@ RULES:
 3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
 4. SPATIAL CLARITY: Include positions (left, right, center, background)
 5. Always return valid JSON with all 5 keys
-6. Use "null" (no quotes) for unclear components
+6. Use null (no quotes) for unclear components
 7. primaryScene must be 30+ characters and visually descriptive
 8. Use previousScene to keep characters, objects, and animals visually consistent. Only update details if currentText introduces a clear change.`
           },
