@@ -1686,6 +1686,8 @@ function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: st
       
       // COMMUNITY EXTENDED
       { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'friend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'girlfriend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'boyfriend', type: 'human' },
       { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'neighbor', type: 'human' },
       { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'classmate', type: 'human' },
       { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'teammate', type: 'human' },
@@ -2181,16 +2183,25 @@ function getCharacterEthnicity(userInfo: any, avatarIdentity?: any): string {
     const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || '';
     
-    // Check for dark skin first (African American representation)
-    if (skinTone.toLowerCase().includes('dark') || 
-        skinTone.toLowerCase().includes('brown') ||
-        skinTone.toLowerCase().includes('black') ||
-        skinTone.toLowerCase().includes('ebony') ||
-        skinTone.toLowerCase().includes('chocolate')) {
+    // Multi-Language + Dark Skin Ethnicity Enhancement
+    const hasDarkSkin = skinTone.toLowerCase().includes('dark') || 
+                       skinTone.toLowerCase().includes('brown') ||
+                       skinTone.toLowerCase().includes('black') ||
+                       skinTone.toLowerCase().includes('ebony') ||
+                       skinTone.toLowerCase().includes('chocolate');
+    
+    if (hasDarkSkin) {
+      if (language === 'es' || language === 'spanish') {
+        return "depict character from Afro-Latino background";
+      }
+      if (language === 'fr' || language === 'french') {
+        return "depict character from African Francophone background";
+      }
+      // Fallback for other languages with dark skin
       return "depict character from African American background";
     }
     
-    // Language-based ethnicity notes
+    // Language-based ethnicity notes (for non-dark skin)
     if (language === 'es' || language === 'spanish') {
       return "depict character from Spanish/Latino background";
     }
@@ -2416,6 +2427,10 @@ const CULTURAL_LANDMARKS = {
   arabic: {
     indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
     outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
+  },
+  portuguese: {
+    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room"],
+    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements"]
   }
 };
 
