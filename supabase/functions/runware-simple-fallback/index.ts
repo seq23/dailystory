@@ -1,6 +1,7 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
 const corsHeaders = {
@@ -1925,7 +1926,7 @@ function detectEmotionFromText(text: string): string {
 
 // ============= MAIN EDGE FUNCTION =============
 
-Deno.serve(async (req: Request) => {
+serve(async (req: Request) => {
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
   
   // Handle CORS preflight
