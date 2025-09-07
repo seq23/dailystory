@@ -39,6 +39,96 @@ export class SimpleImageService {
   private static readonly DAILY_COST_CEILING_USD = 50;
   private static readonly ESTIMATED_COST_PER_IMAGE_USD = 0.002;
 
+  // ============================================================================
+  // UNIVERSAL ANIMAL SYSTEM - Master Plan Implementation
+  // ============================================================================
+
+  // OUTDOOR_ONLY_ANIMALS Array (~50+ animals)
+  private static readonly OUTDOOR_ONLY_ANIMALS = [
+    // Farm Animals (15 animals)
+    'cow', 'pig', 'sheep', 'chicken', 'duck', 'goose', 'horse', 'goat', 'llama', 'alpaca', 'donkey', 'mule', 'turkey', 'rooster', 'hen',
+    
+    // Wild Animals (34 animals)
+    'lion', 'tiger', 'bear', 'elephant', 'wolf', 'fox', 'deer', 'squirrel', 'raccoon', 'skunk', 'porcupine', 'beaver', 'otter', 'mink', 'badger', 'leopard', 'cheetah', 'jaguar', 'panther', 'lynx', 'bobcat', 'coyote', 'hyena', 'rhino', 'hippo', 'giraffe', 'zebra', 'antelope', 'gazelle', 'buffalo', 'bison', 'moose', 'elk', 'caribou',
+    
+    // Large Birds (15 animals)
+    'eagle', 'owl', 'flamingo', 'penguin', 'pelican', 'heron', 'crane', 'stork', 'swan', 'hawk', 'falcon', 'vulture', 'peacock', 'ostrich', 'emu'
+  ];
+
+  // WATER_ONLY_ANIMALS Array (~25+ animals)
+  private static readonly WATER_ONLY_ANIMALS = [
+    // Ocean Mammals
+    'whale', 'shark', 'dolphin', 'orca', 'seal', 'sea lion', 'walrus',
+    
+    // Fish & Ocean Life
+    'fish', 'octopus', 'crab', 'lobster', 'seahorse', 'starfish', 'jellyfish', 'stingray',
+    'tuna', 'salmon', 'angelfish', 'clownfish', 'swordfish', 'marlin', 'bass', 'trout', 'cod', 'flounder', 'sole', 'manta ray',
+    
+    // Ocean Invertebrates
+    'squid', 'shrimp', 'sea urchin', 'sea anemone', 'coral', 'barnacle'
+  ];
+
+  // Enhanced outdoor keywords with water terms
+  private static readonly ENHANCED_OUTDOOR_KEYWORDS = [
+    'outside', 'outdoor', 'nature', 'forest', 'park', 'garden', 'yard', 'playground', 'beach', 'mountain', 'hill', 'field', 'meadow', 'woods', 'trail', 'path', 'river', 'lake', 'pond', 'stream', 'creek', 'waterfall', 'ocean', 'sea', 'shore', 'coast', 'island', 'desert', 'valley', 'canyon', 'cliff', 'cave', 'camping', 'hiking', 'picnic', 'safari', 'jungle', 'rainforest', 'farm', 'barn', 'stable', 'pasture', 'fence', 'gate', 'bridge', 'dock', 'pier', 'marina', 'harbor', 'bay', 'aquarium', 'pool', 'swimming pool', 'hot tub', 'fountain', 'wharf', 'diving', 'snorkeling', 'surfing', 'boating', 'sailing', 'kayaking', 'canoeing', 'water skiing', 'jet skiing', 'wet', 'splash', 'wave', 'tide', 'current', 'deep', 'shallow', 'underwater'
+  ];
+
+  // Enhanced indoor keywords
+  private static readonly ENHANCED_INDOOR_KEYWORDS = [
+    'inside', 'indoor', 'home', 'house', 'room', 'bedroom', 'living room', 'kitchen', 'bathroom', 'dining room', 'basement', 'attic', 'garage', 'office', 'study', 'library', 'classroom', 'school', 'hospital', 'restaurant', 'store', 'shop', 'mall', 'theater', 'cinema', 'museum', 'gym', 'studio', 'apartment', 'building', 'elevator', 'stairs', 'hallway', 'closet', 'pantry', 'laundry room', 'nursery', 'playroom', 'den', 'loft', 'cabin', 'cottage', 'mansion', 'palace', 'castle', 'tent', 'cabin', 'shelter'
+  ];
+
+  // Setting mappings with water-specific settings
+  private static readonly settingMappings = {
+    // Indoor settings
+    'kitchen': ' a cozy kitchen with warm lighting and cooking elements',
+    'bedroom': ' a comfortable bedroom with soft furnishings',
+    'living room': ' a welcoming living room with comfortable seating',
+    'bathroom': ' a clean bathroom with modern fixtures',
+    'dining room': ' an elegant dining room with table setting',
+    'office': ' a professional office environment',
+    'classroom': ' a bright classroom with learning materials',
+    'library': ' a quiet library with books and reading areas',
+    
+    // Outdoor settings
+    'forest': ' a lush green forest with tall trees and natural wildlife',
+    'park': ' a beautiful park with open spaces and nature',
+    'garden': ' a colorful garden with flowers and plants',
+    'beach': ' a sandy beach with ocean waves and coastal atmosphere',
+    'mountain': ' a majestic mountain landscape with scenic wilderness',
+    'farm': ' a peaceful farm with rolling green fields and barn structures',
+    'jungle': ' a dense tropical jungle with rich green vegetation',
+    'safari': ' an expansive safari landscape with golden grasslands',
+    
+    // Water-specific settings
+    'ocean': ' a vast blue ocean with rolling waves and marine life',
+    'underwater': ' a magical underwater world with colorful coral and sea creatures',
+    'aquarium': ' a fascinating aquarium with clear water and swimming fish',
+    'pool': ' a sparkling swimming pool with clear blue water',
+    'lake': ' a peaceful lake with calm reflective water',
+    'river': ' a flowing river with gentle current and natural beauty',
+    'pond': ' a quiet pond with still water and nature around',
+    'bay': ' a scenic bay with calm water and natural beauty',
+    'harbor': ' a bustling harbor with boats and water activities',
+    'marina': ' a modern marina with sailboats and water sports'
+  };
+
+  // Context-aware outdoor setting mappings
+  private static readonly OUTDOOR_SETTING_MAPPINGS = {
+    // Farm Animals → Farm settings
+    farm: ' a peaceful farm with rolling green fields and barn structures',
+    barnyard: ' a rustic barnyard with hay bales and wooden fences',
+    
+    // Wild Animals → Nature settings
+    forest: ' a lush green forest with tall trees and natural wildlife',
+    safari: ' an expansive safari landscape with golden grasslands',
+    jungle: ' a dense tropical jungle with rich green vegetation',
+    mountain: ' a majestic mountain landscape with scenic wilderness',
+    
+    // Large Birds & General → Open nature
+    nature: ' a beautiful natural outdoor environment with open skies and fresh air'
+  };
+
   // UNIVERSAL HAIR MAPPING - Single source of truth for all systems
   private static getHairColorFromAvatar(avatar: any): string {
     if (!avatar?.skinTone) return 'brown';
@@ -375,5 +465,141 @@ export class SimpleImageService {
 
   static getAvailableProviders(): string[] {
     return ['runware', 'openai'];
+  }
+
+  // ============================================================================
+  // ANIMAL DETECTION HELPER FUNCTIONS - Master Plan Implementation
+  // ============================================================================
+
+  private static checkForWaterOnlyAnimals(sentence: string): { hasWaterAnimal: boolean; animalType: string; suggestedSetting: string } {
+    const lowerSentence = sentence.toLowerCase();
+    
+    for (const animal of this.WATER_ONLY_ANIMALS) {
+      if (lowerSentence.includes(animal)) {
+        let suggestedSetting = '';
+        
+        // Context-aware water setting selection
+        if (['whale', 'dolphin', 'orca', 'shark'].includes(animal)) {
+          suggestedSetting = ' a vast blue ocean with rolling waves and marine life';
+        }
+        else if (['octopus', 'crab', 'lobster', 'seahorse', 'starfish', 'jellyfish'].includes(animal)) {
+          suggestedSetting = ' a magical underwater world with colorful coral and sea creatures';
+        }
+        else if (['tuna', 'salmon', 'bass', 'trout'].includes(animal)) {
+          suggestedSetting = ' a peaceful lake with calm reflective water';
+        }
+        else {
+          suggestedSetting = ' a vast blue ocean with rolling waves and marine life'; // Default to ocean
+        }
+        
+        console.log(`🌊 Water-only animal detected: ${animal} → forcing water setting`);
+        return { hasWaterAnimal: true, animalType: animal, suggestedSetting };
+      }
+    }
+    
+    return { hasWaterAnimal: false, animalType: '', suggestedSetting: '' };
+  }
+
+  private static checkForOutdoorOnlyAnimals(sentence: string): { hasOutdoorAnimal: boolean; animalType: string; suggestedSetting: string } {
+    const lowerSentence = sentence.toLowerCase();
+    
+    for (const animal of this.OUTDOOR_ONLY_ANIMALS) {
+      if (lowerSentence.includes(animal)) {
+        let suggestedSetting = '';
+        
+        // Context-aware setting selection based on animal habitat
+        if (['cow', 'pig', 'sheep', 'chicken', 'duck', 'goose', 'horse', 'goat', 'llama', 'alpaca', 'donkey', 'mule', 'turkey', 'rooster', 'hen'].includes(animal)) {
+          suggestedSetting = ' a peaceful farm with rolling green fields and barn structures';
+        }
+        else if (['lion', 'tiger', 'leopard', 'cheetah', 'jaguar', 'panther'].includes(animal)) {
+          suggestedSetting = ' an expansive safari landscape with golden grasslands';
+        }
+        else if (['bear', 'wolf', 'fox', 'deer', 'squirrel', 'raccoon', 'beaver', 'otter'].includes(animal)) {
+          suggestedSetting = ' a lush green forest with tall trees and natural wildlife';
+        }
+        else if (['elephant', 'rhino', 'hippo', 'giraffe', 'zebra', 'buffalo', 'bison'].includes(animal)) {
+          suggestedSetting = ' an expansive safari landscape with golden grasslands';
+        }
+        else if (['eagle', 'owl', 'hawk', 'falcon', 'vulture'].includes(animal)) {
+          suggestedSetting = ' a majestic mountain landscape with scenic wilderness';
+        }
+        else {
+          suggestedSetting = ' a beautiful natural outdoor environment with open skies and fresh air';
+        }
+        
+        console.log(`🦁 Outdoor-only animal detected: ${animal} → forcing outdoor setting`);
+        return { hasOutdoorAnimal: true, animalType: animal, suggestedSetting };
+      }
+    }
+    
+    return { hasOutdoorAnimal: false, animalType: '', suggestedSetting: '' };
+  }
+
+  // ============================================================================
+  // SETTING EXTRACTION WITH CORRECTED PRIORITY LOGIC - Master Plan Implementation
+  // ============================================================================
+
+  static extractSettingFromSentence(sentence: string, previousSetting?: string): string {
+    const lowerSentence = sentence.toLowerCase();
+    
+    // PRIORITY 1: Specific setting keywords in page text (HIGHEST PRIORITY)
+    for (const [setting, description] of Object.entries(this.settingMappings)) {
+      if (lowerSentence.includes(setting)) {
+        console.log(`🏠 Explicit setting found in text: ${setting} → using page text setting`);
+        return description; // PAGE TEXT ALWAYS WINS
+      }
+    }
+    
+    // PRIORITY 2: Indoor/outdoor keywords in page text
+    let isIndoor = false;
+    let isOutdoor = false;
+    
+    // Check for indoor keywords
+    for (const keyword of this.ENHANCED_INDOOR_KEYWORDS) {
+      if (lowerSentence.includes(keyword)) {
+        isIndoor = true;
+        console.log(`🏠 Indoor keyword detected: ${keyword} → indoor setting`);
+        break;
+      }
+    }
+    
+    // Check for outdoor keywords
+    if (!isIndoor) {
+      for (const keyword of this.ENHANCED_OUTDOOR_KEYWORDS) {
+        if (lowerSentence.includes(keyword)) {
+          isOutdoor = true;
+          console.log(`🌳 Outdoor keyword detected: ${keyword} → outdoor setting`);
+          break;
+        }
+      }
+    }
+    
+    // Apply indoor/outdoor classification if found
+    if (isIndoor) {
+      return ' a comfortable indoor space with cozy atmosphere';
+    } else if (isOutdoor) {
+      return ' a beautiful outdoor setting with natural environment';
+    }
+    
+    // PRIORITY 3: Water-only animals (only if no explicit setting found)
+    const waterAnimalCheck = this.checkForWaterOnlyAnimals(sentence);
+    if (waterAnimalCheck.hasWaterAnimal) {
+      return waterAnimalCheck.suggestedSetting;
+    }
+    
+    // PRIORITY 4: Outdoor-only animals (only if no explicit setting found)
+    const outdoorAnimalCheck = this.checkForOutdoorOnlyAnimals(sentence);
+    if (outdoorAnimalCheck.hasOutdoorAnimal) {
+      return outdoorAnimalCheck.suggestedSetting;
+    }
+    
+    // PRIORITY 5: Nuclear-safe setting memory
+    if (previousSetting && previousSetting.trim().length > 0) {
+      console.log('🛡️ Tier 2.5: Using previous setting memory:', previousSetting);
+      return previousSetting;
+    }
+    
+    // PRIORITY 6: Ultimate fallback
+    return ' indoor portrait style photo with main character focus';
   }
 }
