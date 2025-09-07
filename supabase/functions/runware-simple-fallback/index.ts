@@ -720,13 +720,93 @@ function extractActionFromSentence(sentence: string): string {
     }
   }
   
-  console.log('⚠️ No specific action detected, using fallback');
-  return 'engaging in activities';
+  console.log('⚠️ No specific action detected, using context-aware fallback');
+  return getContextAwareFallbackScene(sentence);
+}
+
+// ============= CONTEXT-AWARE FALLBACK SYSTEM =============
+function getContextAwareFallbackScene(sentence?: string): string {
+  try {
+    if (!sentence || typeof sentence !== 'string') {
+      return getEmergencyFallbackScene();
+    }
+    
+    const lowerSentence = sentence.toLowerCase();
+    
+    // Contextual fallbacks based on detected content
+    if (lowerSentence.includes('kitchen') || lowerSentence.includes('cook') || lowerSentence.includes('food')) {
+      return 'preparing something in the kitchen';
+    }
+    
+    if (lowerSentence.includes('book') || lowerSentence.includes('read') || lowerSentence.includes('library')) {
+      return 'reading quietly';
+    }
+    
+    if (lowerSentence.includes('outside') || lowerSentence.includes('park') || lowerSentence.includes('playground')) {
+      return 'playing outside in the fresh air';
+    }
+    
+    if (lowerSentence.includes('friend') || lowerSentence.includes('together') || lowerSentence.includes('family')) {
+      return 'spending time with others';
+    }
+    
+    if (lowerSentence.includes('room') || lowerSentence.includes('home') || lowerSentence.includes('house')) {
+      return 'enjoying time at home';
+    }
+    
+    if (lowerSentence.includes('school') || lowerSentence.includes('learn') || lowerSentence.includes('study')) {
+      return 'learning something new';
+    }
+    
+    // Age-appropriate activity fallbacks
+    if (lowerSentence.includes('baby') || lowerSentence.includes('toddler')) {
+      return 'playing with colorful toys';
+    }
+    
+    if (lowerSentence.includes('child') || lowerSentence.includes('kid')) {
+      return 'exploring with curiosity';
+    }
+    
+    // Default contextual activity
+    return 'enjoying a peaceful moment';
+    
+  } catch (error) {
+    console.warn('⚠️ Context-aware fallback error:', error);
+    return getEmergencyFallbackScene();
+  }
+}
+
+// ============= EMERGENCY FALLBACK SYSTEM =============
+function getEmergencyFallbackScene(): string {
+  const emergencyScenes = [
+    'enjoying a bright cheerful moment',
+    'playing in a colorful environment',
+    'exploring with wonder and curiosity',
+    'spending time in a welcoming space',
+    'discovering something interesting'
+  ];
+  
+  try {
+    // Use current timestamp to pseudo-randomly select
+    const index = Date.now() % emergencyScenes.length;
+    return emergencyScenes[index];
+  } catch (error) {
+    console.warn('⚠️ Emergency fallback error:', error);
+    return 'enjoying a bright cheerful moment'; // Ultimate fallback
+  }
 }
 
 // ============= MASTER PLAN: ENHANCED SETTING EXTRACTION (Level 0-2 Template Analysis) =============
 function extractSettingFromSentence(sentence: string, previousSetting?: string): string {
-  const lowerSentence = sentence.toLowerCase();
+  try {
+    console.log('🔍 Setting extraction with silent failure protection');
+    
+    if (!sentence || typeof sentence !== 'string') {
+      console.log('⚠️ Invalid sentence input, using previousSetting or fallback');
+      return previousSetting || ' a welcoming colorful environment';
+    }
+    
+    const lowerSentence = sentence.toLowerCase();
   
   // ============= EXPANDED SETTING MAPPINGS FROM TEMPLATE ANALYSIS =============
   const settingMappings = {
@@ -1238,23 +1318,64 @@ function fillPremiumTemplate(
   pageText: string,
   avatarIdentity?: any
 ): string {
+  console.log(`🛡️ Tier 2.5: Filling template with comprehensive silent failure protection`);
+  
   try {
-    console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${difficulty}`);
+    // Validate input parameters with fallbacks
+    const safeDifficulty = difficulty || 'medium';
+    const safeScene = scene || 'enjoying a bright cheerful moment';
+    const safeSetting = setting || 'a welcoming colorful environment';
+    const safeObjects = objects || 'interesting colorful items';
+    const safeSecondaryCharacters = secondary_characters || '';
+    const safeEmotion = emotion || 'Positive and uplifting atmosphere';
     
-    const template = PREMIUM_PROMPT_TEMPLATES[difficulty] || PREMIUM_PROMPT_TEMPLATES.medium;
+    console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${safeDifficulty}`);
     
-    // NUCLEAR AVATAR MAPPING - Replace complex cultural profile system
-    const avatarMapping = getNuclearAvatarMapping(userInfo, difficulty);
-    console.log(`🛡️ Tier 2.5: Nuclear avatar mapping applied: ${avatarMapping.character}`);
+    // Get template with fallback protection
+    let template;
+    try {
+      template = PREMIUM_PROMPT_TEMPLATES[safeDifficulty] || PREMIUM_PROMPT_TEMPLATES.medium || PREMIUM_PROMPT_TEMPLATES['medium'];
+      if (!template) {
+        throw new Error('No template found');
+      }
+    } catch (templateError) {
+      console.warn('⚠️ Template selection failed, using emergency template:', templateError);
+      template = "A beautiful {character} {scene} in {setting} with {objects}, {emotion}";
+    }
     
-    // Detect cultural contexts with standardized language detection
-    const userLanguage = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
-    const skinTone = userInfo?.avatar?.skinTone || '';
+    // NUCLEAR AVATAR MAPPING with error protection
+    let avatarMapping;
+    try {
+      avatarMapping = getNuclearAvatarMapping(userInfo, safeDifficulty);
+      console.log(`✅ Nuclear avatar mapping applied: ${avatarMapping.character}`);
+    } catch (avatarError) {
+      console.warn('⚠️ Avatar mapping failed, using fallback:', avatarError);
+      avatarMapping = { 
+        character: 'a friendly child',
+        age: 'young',
+        skin: 'medium skin tone',
+        hair: 'neat hair',
+        eyes: 'bright eyes',
+        face: 'cheerful expression',
+        clothing: 'comfortable clothes'
+      };
+    }
     
-    const isEnglishDarkSkin = (userLanguage === 'en' || userLanguage === 'english') && 
-                              (skinTone.toLowerCase().includes('dark') || 
-                               skinTone.toLowerCase().includes('brown') ||
-                               skinTone.toLowerCase().includes('black'));
+    // Detect cultural contexts with error protection
+    let userLanguage, skinTone, isEnglishDarkSkin;
+    try {
+      userLanguage = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+      skinTone = userInfo?.avatar?.skinTone || '';
+      isEnglishDarkSkin = (userLanguage === 'en' || userLanguage === 'english') && 
+                          (skinTone.toLowerCase().includes('dark') || 
+                           skinTone.toLowerCase().includes('brown') ||
+                           skinTone.toLowerCase().includes('black'));
+    } catch (culturalError) {
+      console.warn('⚠️ Cultural context detection failed, using defaults:', culturalError);
+      userLanguage = 'en';
+      skinTone = 'medium';
+      isEnglishDarkSkin = false;
+    }
     
     const isFrenchDarkSkin = (userLanguage === 'fr' || userLanguage === 'french') && 
                              (skinTone.toLowerCase().includes('dark') || 
@@ -1838,35 +1959,104 @@ Deno.serve(async (req: Request) => {
       characterSeed: characterData?.seed || 'none'
     });
     
-    // Extract scene components with complete placeholder support
-    const { scene, setting, objects, secondary_characters } = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
+    // Extract scene components with complete placeholder support - SILENT FAILURE PROTECTION
+    let scene, setting, objects, secondary_characters;
+    try {
+      const sceneData = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
+      scene = sceneData.scene;
+      setting = sceneData.setting;
+      objects = sceneData.objects;
+      secondary_characters = sceneData.secondary_characters;
+      console.log('✅ Scene extraction successful');
+    } catch (sceneError) {
+      console.warn('⚠️ Scene extraction failed, using emergency defaults:', sceneError);
+      scene = 'enjoying a bright cheerful moment';
+      setting = 'a welcoming colorful environment';
+      objects = 'interesting colorful items';
+      secondary_characters = '';
+    }
     
-    // Map difficulty level
-    const difficulty = mapDifficultyInline(userInfo);
+    // Map difficulty level with fallback protection
+    let difficulty;
+    try {
+      difficulty = mapDifficultyInline(userInfo);
+      console.log('✅ Difficulty mapping successful:', difficulty);
+    } catch (difficultyError) {
+      console.warn('⚠️ Difficulty mapping failed, using medium default:', difficultyError);
+      difficulty = 'medium';
+    }
     
-    // Detect emotion
-    const emotion = detectEmotionFromText(pageText);
+    // Detect emotion with silent failure protection
+    let emotion;
+    try {
+      emotion = detectEmotionFromText(pageText);
+      console.log('✅ Emotion detection successful:', emotion);
+    } catch (emotionError) {
+      console.warn('⚠️ Emotion detection failed, using positive default:', emotionError);
+      emotion = 'Positive and uplifting atmosphere';
+    }
     
     // Extract avatarIdentity for consistent parameter passing
     const avatarIdentity = userInfo?.avatarIdentity || null;
     
-    // Fill premium template with all placeholders including page text
-    const prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
+    // Fill premium template with all placeholders including page text - SILENT FAILURE PROTECTION
+    let prompt;
+    try {
+      prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
+      console.log('✅ Template filling successful');
+    } catch (templateError) {
+      console.warn('⚠️ Template filling failed, using emergency prompt:', templateError);
+      prompt = `A beautiful ${avatarIdentity?.character || 'child'} ${scene} in ${setting} with ${objects}, ${emotion}`;
+    }
     
-    // Generate avatar mapping with character consistency enhancement
-    const avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId);
-    const avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
-    const pageNumber = userInfo?.pageNumber || 1; // Default to page 1 for Tier 2.5
-    const culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
-    const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
+    // Generate avatar mapping with character consistency enhancement - SILENT FAILURE PROTECTION
+    let avatarMapping, avatarType;
+    try {
+      avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId);
+      avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+      console.log('✅ Avatar mapping successful');
+    } catch (avatarError) {
+      console.warn('⚠️ Avatar mapping failed, using defaults:', avatarError);
+      avatarMapping = { character: 'a friendly child' };
+      avatarType = 'prefer-not-to-answer';
+    }
     
-    // Get style framework settings  
-    const styleSettings = getStyleFrameworkSettings(difficulty);
+    // Generate cultural profile and negative prompt - SILENT FAILURE PROTECTION
+    let culturalProfile, negativePrompt;
+    try {
+      const pageNumber = userInfo?.pageNumber || 1;
+      culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
+      negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber);
+      console.log('✅ Cultural profile and negative prompt generation successful');
+    } catch (culturalError) {
+      console.warn('⚠️ Cultural profile generation failed, using defaults:', culturalError);
+      culturalProfile = { language: 'en', skinTone: 'medium' };
+      negativePrompt = 'low quality, blurry, distorted, inappropriate content';
+    }
     
-    console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket...');
+    // Get style framework settings - SILENT FAILURE PROTECTION
+    let styleSettings;
+    try {
+      styleSettings = getStyleFrameworkSettings(difficulty);
+      console.log('✅ Style settings generation successful');
+    } catch (styleError) {
+      console.warn('⚠️ Style settings failed, using defaults:', styleError);
+      styleSettings = { steps: 50, guidance: 7.5, seed: Math.floor(Math.random() * 1000000) };
+    }
     
-    // Connect to Runware WebSocket API
-    const ws = new WebSocket('wss://ws-api.runware.ai/v1');
+    console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket with comprehensive error protection...');
+    
+    // COMPREHENSIVE WEBSOCKET ERROR PROTECTION
+    let connectionTimeout, operationTimeout;
+    
+    // Connect to Runware WebSocket API with error boundaries
+    let ws;
+    try {
+      ws = new WebSocket('wss://ws-api.runware.ai/v1');
+    } catch (wsError) {
+      console.error('⚠️ WebSocket connection failed immediately:', wsError);
+      return createCorsErrorResponse('WebSocket connection failed', 500);
+    }
     
     return new Promise((resolve) => {
       let isResolved = false;
@@ -1874,30 +2064,58 @@ Deno.serve(async (req: Request) => {
       const resolveOnce = (response: Response) => {
         if (!isResolved) {
           isResolved = true;
-          ws.close();
+          // Clean up timeouts
+          if (connectionTimeout) clearTimeout(connectionTimeout);
+          if (operationTimeout) clearTimeout(operationTimeout);
+          try {
+            ws.close();
+          } catch (closeError) {
+            console.warn('⚠️ WebSocket close error (non-critical):', closeError);
+          }
           resolve(response);
         }
       };
+      
+      // Connection timeout protection (30 seconds)
+      connectionTimeout = setTimeout(() => {
+        console.warn('⚠️ WebSocket connection timeout');
+        resolveOnce(createCorsErrorResponse('Connection timeout - please try again', 504));
+      }, 30000);
+      
+      // Operation timeout protection (60 seconds total)
+      operationTimeout = setTimeout(() => {
+        console.warn('⚠️ WebSocket operation timeout');
+        resolveOnce(createCorsErrorResponse('Operation timeout - please try again', 504));
+      }, 60000);
       
       // Declare finalPrompt at function scope to fix scoping issue
       let finalPrompt = prompt; // Default to original prompt
       
       ws.onopen = () => {
-        console.log('🛡️ Tier 2.5: WebSocket connected, authenticating...');
-        
-        // Send authentication
-        const authMessage = [{
-          taskType: "authentication",
-          apiKey: Deno.env.get('RUNWARE_API_KEY')
-        }];
-        
-        ws.send(JSON.stringify(authMessage));
+        try {
+          console.log('🛡️ Tier 2.5: WebSocket connected, authenticating...');
+          
+          // Send authentication with error protection
+          const authMessage = [{
+            taskType: "authentication",
+            apiKey: Deno.env.get('RUNWARE_API_KEY') || 'missing-api-key'
+          }];
+          
+          ws.send(JSON.stringify(authMessage));
+        } catch (openError) {
+          console.error('⚠️ WebSocket onopen error:', openError);
+          resolveOnce(createCorsErrorResponse('Authentication failed', 500));
+        }
       };
       
       ws.onmessage = (event) => {
         try {
           const response = JSON.parse(event.data);
-          console.log('🛡️ Tier 2.5: Received WebSocket response:', response);
+          console.log('🛡️ Tier 2.5: Received WebSocket response with error protection');
+          
+          if (!response || typeof response !== 'object') {
+            throw new Error('Invalid response format');
+          }
           
           if (response.error || response.errors) {
             console.error('❌ Tier 2.5: API error:', response);
