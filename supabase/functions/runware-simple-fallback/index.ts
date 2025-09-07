@@ -1226,10 +1226,6 @@ function generateCameraDirective(difficulty: string, scene?: string, setting?: s
   const enhancement = difficultyEnhancements[difficulty] || difficultyEnhancements['medium'];
   return `${baseDirective}, ${enhancement}`;
 }
-  
-  const enhancement = difficultyEnhancements[difficulty] || difficultyEnhancements.medium;
-  return `${baseDirective}, ${enhancement}`;
-}
 
 function fillPremiumTemplate(
   difficulty: string,
