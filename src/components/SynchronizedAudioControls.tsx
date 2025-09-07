@@ -9,6 +9,7 @@ interface SynchronizedAudioControlsProps {
   contentHash?: string;
   onPlayingChange?: (playing: boolean) => void;
   onWordHighlight?: (wordIndex: number) => void;
+  difficulty?: string; // Backend difficulty level (beginner/easy/medium/hard/expert)
 }
 
 /**
@@ -19,7 +20,8 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
   text,
   contentHash,
   onPlayingChange,
-  onWordHighlight
+  onWordHighlight,
+  difficulty = 'beginner'
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,11 +66,19 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
         console.log('🎵 SynchronizedAudioControls: Starting playback');
       }
       
+      // Level-based highlighting: Only enable for beginner/easy (levels 0-1)
+      const shouldHighlight = difficulty === 'beginner' || difficulty === 'easy';
+      const highlightCallback = shouldHighlight ? onWordHighlight : undefined;
+      
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        console.log(`🎯 Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: ${difficulty}`);
+      }
+      
       await audioEngine.playTextWithSynchronization({
         text,
         contentHash,
         context: 'conversation', // Always use conversation for natural Charlotte voice
-        onWordHighlight
+        onWordHighlight: highlightCallback
       });
       
       setRetryCount(0);

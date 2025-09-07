@@ -3281,6 +3281,7 @@ const handleRestartTimer = () => {
                       contentHash={contentHash}
                       onWordHighlight={onWordHighlight}
                       onPlayingChange={handleAudioStateChange}
+                      difficulty={DifficultyLevelMapper.toBackend(currentDifficulty)}
                     />
                   {isPremium && (
                     <Button 
