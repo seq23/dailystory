@@ -396,10 +396,11 @@ function mapAvatarIdentity(userInfo: any): any {
   // Default fallback identity
   const defaultIdentity = {
     type: 'child',
-    skinTone: 'light',
+    skinTone: 'medium',
     culturalProfile: 'general',
     nativeLanguage: 'english',
-    name: userInfo?.name || 'the child'
+    name: userInfo?.name || 'the child',
+    hairColor: null
   };
   
   // If no avatar info provided, return default
@@ -417,19 +418,32 @@ function mapAvatarIdentity(userInfo: any): any {
   };
   
   const skinToneMap = {
+    'pale': 'pale',
     'light': 'light',
-    'medium': 'medium', 
-    'dark': 'dark',
-    'tan': 'medium'
+    'medium': 'medium',
+    'olive': 'olive',
+    'dark': 'dark'
   };
+  
+  // Hair color mapping
+  const hairColorMap = {
+    'pale': 'red hair',
+    'light': 'blonde hair',
+    'medium': 'brown hair',
+    'olive': 'black hair',
+    'dark': 'textured natural hair'
+  };
+  
+  const skinTone = skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone;
   
   // Build mapped identity
   const mappedIdentity = {
     type: avatarTypeMap[userInfo.avatar.type] || defaultIdentity.type,
-    skinTone: skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone,
+    skinTone: skinTone,
     culturalProfile: userInfo.avatar.culturalProfile || defaultIdentity.culturalProfile,
     nativeLanguage: userInfo.avatar.nativeLanguage || defaultIdentity.nativeLanguage,
-    name: userInfo.name || defaultIdentity.name
+    name: userInfo.name || defaultIdentity.name,
+    hairColor: hairColorMap[skinTone] || null
   };
   
   console.log('🔄 Avatar mapping completed:', {
@@ -799,8 +813,8 @@ serve(async (req) => {
           const skinTone = avatarIdentity?.skinTone;
           const nativeLanguage = avatarIdentity?.nativeLanguage || userInfo?.native_language || 'en';
           
-          // AFRICAN AMERICAN USERS (dark skin + English)
-          if (skinTone === 'dark' && nativeLanguage === 'en') {
+          // AFRICAN AMERICAN USERS (dark skin + English/French/Spanish/Portuguese)
+          if (skinTone === 'dark' && (nativeLanguage === 'en' || nativeLanguage === 'fr' || nativeLanguage === 'es' || nativeLanguage === 'pt')) {
             try {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
                            avatarIdentity?.type?.toLowerCase().includes('female');
@@ -815,72 +829,24 @@ serve(async (req) => {
                 const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
                 const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
                 
-                console.log(`🌍 [${requestId}] African American detailed context applied (dark skin + English)`);
-                return `African American heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
+                const culturalLabel = nativeLanguage === 'en' ? 'African American' : 
+                                   nativeLanguage === 'fr' ? 'Francophone African' : 
+                                   (nativeLanguage === 'es' || nativeLanguage === 'pt') ? 'Afro Latino' : 'African American';
+                
+                console.log(`🌍 [${requestId}] ${culturalLabel} detailed context applied (dark skin + ${nativeLanguage})`);
+                return `${culturalLabel} heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
               }
             } catch (error) {
               console.warn(`⚠️ [${requestId}] African American detailed arrays failed:`, error);
             }
             
-            // AFRICAN AMERICAN FALLBACK: Always provide cultural context for African American users
-            console.log(`🌍 [${requestId}] African American fallback context applied (arrays unavailable)`);
-            return "authentic African American features required";
-          }
-          
-          // AFRO-LATINA USERS (dark skin + Spanish)
-          if (skinTone === 'dark' && nativeLanguage === 'es') {
-            try {
-              const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
-                           avatarIdentity?.type?.toLowerCase().includes('female');
-              const hairstyles = isGirl ? HARDCODED_HISPANIC_LATINO_HAIRSTYLES.girls : HARDCODED_HISPANIC_LATINO_HAIRSTYLES.boys;
-              
-              // Attempt to access detailed arrays
-              if (hairstyles && hairstyles.length > 0 && 
-                  HARDCODED_HISPANIC_LATINO_SKIN_TONES && HARDCODED_HISPANIC_LATINO_SKIN_TONES.length > 0 &&
-                  HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES && HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length > 0) {
-                
-                const selectedSkinTone = HARDCODED_HISPANIC_LATINO_SKIN_TONES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_SKIN_TONES.length)];
-                const features = HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES.length)];
-                const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-                
-                console.log(`🌍 [${requestId}] Afro-Latina detailed context applied (dark skin + Spanish)`);
-                return `Afro-Latina heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
-              }
-            } catch (error) {
-              console.warn(`⚠️ [${requestId}] Afro-Latina detailed arrays failed:`, error);
-            }
+            // FALLBACK: Always provide cultural context for African diaspora users
+            const culturalLabel = nativeLanguage === 'en' ? 'African American' : 
+                                 nativeLanguage === 'fr' ? 'Francophone African' : 
+                                 (nativeLanguage === 'es' || nativeLanguage === 'pt') ? 'Afro Latino' : 'African American';
             
-            // AFRO-LATINA FALLBACK: Always provide cultural context for Afro-Latina users
-            console.log(`🌍 [${requestId}] Afro-Latina fallback context applied (arrays unavailable)`);
-            return "authentic Afro-Latina features required";
-          }
-          
-          // AFRICAN HERITAGE USERS (dark skin + French)
-          if (skinTone === 'dark' && nativeLanguage === 'fr') {
-            try {
-              const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || 
-                           avatarIdentity?.type?.toLowerCase().includes('female');
-              const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-              
-              // Attempt to access detailed arrays (reusing African American arrays for French speakers)
-              if (hairstyles && hairstyles.length > 0 && 
-                  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES && HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length > 0 &&
-                  HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
-                
-                const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
-                const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
-                const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
-                
-                console.log(`🌍 [${requestId}] African heritage detailed context applied (dark skin + French)`);
-                return `African heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
-              }
-            } catch (error) {
-              console.warn(`⚠️ [${requestId}] African heritage detailed arrays failed:`, error);
-            }
-            
-            // AFRICAN HERITAGE FALLBACK: Always provide cultural context for African heritage users
-            console.log(`🌍 [${requestId}] African heritage fallback context applied (arrays unavailable)`);
-            return "authentic African heritage features required";
+            console.log(`🌍 [${requestId}] ${culturalLabel} fallback context applied (arrays unavailable)`);
+            return `authentic ${culturalLabel} features required`;
           }
           
           // OTHER LANGUAGE USERS (any skin tone, non-English languages)
