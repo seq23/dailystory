@@ -658,11 +658,18 @@ function detectActionStem(word: string): string {
   // Convert to lowercase and trim
   const cleanWord = word.toLowerCase().trim();
   
-  // Irregular verb mappings for exact preservation
+  // Irregular verb mappings for exact preservation - COMPREHENSIVE RED X FIX
   const irregularVerbs = {
+    // Current ones (keep)
     'ran': 'run', 'threw': 'throw', 'caught': 'catch', 'swam': 'swim',
     'flew': 'fly', 'drove': 'drive', 'rode': 'ride', 'wrote': 'write',
-    'sang': 'sing', 'rang': 'ring', 'drank': 'drink', 'sank': 'sink'
+    'sang': 'sing', 'rang': 'ring', 'drank': 'drink', 'sank': 'sink',
+    
+    // MISSING STORY VERBS (RED X FIX 1)
+    'went': 'go', 'came': 'come', 'saw': 'see', 'ate': 'eat',
+    'gave': 'give', 'took': 'take', 'said': 'say', 'made': 'make',
+    'got': 'get', 'did': 'do', 'had': 'have', 'was': 'be', 'were': 'be',
+    'fell': 'fall', 'slept': 'sleep', 'woke': 'wake', 'found': 'find'
   };
   
   if (irregularVerbs[cleanWord]) {
@@ -741,25 +748,28 @@ function extractActionFromSentence(sentence: string): string {
     { stem: 'return', description: 'returning' },
     { stem: 'work', description: 'working' },
     
-    // MISSING ACTIONS ADDED - EXACT WORD PRESERVATION  
+    // RED X FIX 2: MISSING ACTION PATTERNS - EXACT WORD PRESERVATION
     { stem: 'roll', description: 'rolling' },
+    { stem: 'bounce', description: 'bouncing' },
+    { stem: 'fall', description: 'falling' },
+    { stem: 'kick', description: 'kicking' },
     { stem: 'climb', description: 'climbing' },
     { stem: 'swim', description: 'swimming' },
     { stem: 'hide', description: 'hiding' },
     { stem: 'slide', description: 'sliding' },
     { stem: 'dig', description: 'digging' },
-    { stem: 'kick', description: 'kicking' }
-    
-    // MASTER PLAN FIX: Missing Actions from "Ball Rolls Down Hill"
-    { stem: 'roll', description: 'rolling smoothly' }, // 🎯 THE MISSING ACTION!
-    { stem: 'climb', description: 'climbing adventurously' },
-    { stem: 'swim', description: 'swimming gracefully' },
-    { stem: 'hide', description: 'hiding playfully' },
-    { stem: 'slide', description: 'sliding joyfully' },
-    { stem: 'dig', description: 'digging curiously' },
-    { stem: 'fly', description: 'flying freely' },
-    { stem: 'hop', description: 'hopping energetically' },
-    { stem: 'skip', description: 'skipping merrily' }
+    { stem: 'fly', description: 'flying' },
+    { stem: 'hop', description: 'hopping' },
+    { stem: 'skip', description: 'skipping' },
+    { stem: 'sleep', description: 'sleeping' },
+    { stem: 'drink', description: 'drinking' },
+    { stem: 'wake', description: 'waking' },
+    { stem: 'find', description: 'finding' },
+    { stem: 'give', description: 'giving' },
+    { stem: 'take', description: 'taking' },
+    { stem: 'say', description: 'saying' },
+    { stem: 'come', description: 'coming' },
+    { stem: 'see', description: 'seeing' }
   ];
   
   // Split sentence into words for analysis
@@ -918,6 +928,23 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
     'hallway': ' a bright hallway connecting different rooms',
     'porch': ' a charming front porch with welcoming atmosphere',
     'patio': ' a lovely outdoor patio with relaxation space',
+    
+    // RED X FIX 3: MISSING SETTING KEYWORDS
+    'slope': ' a gentle slope with natural terrain',
+    'cliff': ' a dramatic cliff with steep edges',  
+    'creek': ' a babbling creek with flowing water',
+    'river': ' a flowing river with clear water',
+    'stable': ' a rustic stable with farm atmosphere',
+    'field': ' an open field with natural grass',
+    'meadow': ' a peaceful meadow with wildflowers',
+    'store': ' a friendly store with helpful staff',
+    'shop': ' a welcoming shop with interesting items',
+    'market': ' a bustling market with fresh goods',
+    'cafe': ' a cozy cafe with warm atmosphere',
+    'diner': ' a classic diner with comfort food',
+    'clinic': ' a clean clinic with caring staff',
+    'aquarium': ' an amazing aquarium with sea life',
+    'museum': ' an educational museum with exhibits'
     'deck': ' an elevated deck with outdoor entertainment area'
   };
   
@@ -2060,7 +2087,7 @@ function applyCulturalSettingEnhancement(baseSetting: string, userInfo: any, ava
   }
 }
 
-// ============= RED X FIX 6: CONTEXT-AWARE ENHANCEMENT RULES =============
+// ============= RED X FIX 4: ENHANCED CONTEXT-AWARE ENHANCEMENT RULES =============
 // Preserve exact story words while adding appropriate visual descriptors
 function applyContextAwareEnhancement(currentValue: string, exactWord: string, type: 'action' | 'objects' | 'setting'): string {
   if (!exactWord || !currentValue) return currentValue;
@@ -2068,27 +2095,35 @@ function applyContextAwareEnhancement(currentValue: string, exactWord: string, t
   try {
     // Preserve exact story content first, enhance visually second
     if (type === 'action') {
-      // Keep exact verb form, add context-appropriate descriptors
-      if (exactWord.includes('roll')) return `${exactWord} smoothly`;
-      if (exactWord.includes('run')) return `${exactWord} energetically`;
-      if (exactWord.includes('jump')) return `${exactWord} joyfully`;
-      if (exactWord.includes('play')) return `${exactWord} happily`;
-      return exactWord; // Preserve exact word if no enhancement needed
+      // Keep exact verb form, add minimal context-appropriate descriptors
+      if (exactWord.includes('roll')) return `${exactWord}`;
+      if (exactWord.includes('run')) return `${exactWord}`;
+      if (exactWord.includes('jump')) return `${exactWord}`;
+      if (exactWord.includes('play')) return `${exactWord}`;
+      if (exactWord.includes('bounce')) return `${exactWord}`;
+      if (exactWord.includes('fall')) return `${exactWord}`;
+      if (exactWord.includes('climb')) return `${exactWord}`;
+      if (exactWord.includes('swim')) return `${exactWord}`;
+      if (exactWord.includes('hide')) return `${exactWord}`;
+      if (exactWord.includes('slide')) return `${exactWord}`;
+      return exactWord; // Preserve exact word - no enhancement needed
     }
     
     if (type === 'objects') {
-      // Keep exact object names, add visual quality descriptors
-      if (exactWord.includes('ball')) return exactWord.includes('red') ? exactWord : `colorful ${exactWord}`;
-      if (exactWord.includes('book')) return `${exactWord}`;
-      if (exactWord.includes('toy')) return `${exactWord}`;
+      // Keep exact object names, add minimal color descriptors only when beneficial
+      if (exactWord.includes('ball') && !exactWord.includes('red') && !exactWord.includes('blue')) {
+        return `colorful ${exactWord}`;
+      }
       return exactWord; // Preserve exact object
     }
     
     if (type === 'setting') {
-      // Keep exact location, add atmospheric descriptors
-      if (exactWord.includes('hill')) return `scenic ${exactWord}`;
-      if (exactWord.includes('park')) return `beautiful ${exactWord}`;
-      if (exactWord.includes('playground')) return `fun ${exactWord}`;
+      // Keep exact location, add minimal atmospheric descriptors
+      if (exactWord.includes('hill')) return `${exactWord}`;
+      if (exactWord.includes('park')) return `${exactWord}`;
+      if (exactWord.includes('playground')) return `${exactWord}`;
+      if (exactWord.includes('slope')) return `${exactWord}`;
+      if (exactWord.includes('cliff')) return `${exactWord}`;
       return exactWord; // Preserve exact setting
     }
     
