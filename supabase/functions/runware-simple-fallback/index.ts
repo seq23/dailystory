@@ -36,11 +36,11 @@ function createCorsOptionsResponse(): Response {
 
 // ============= MASTER PLAN: OPTIMIZED PROMPT TEMPLATES (Reordered for Enhanced Output) =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  beginner: "{pageText}. {character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  easy: "{pageText}. {character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
-  medium: "{character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Story context: {pageText}",
-  hard: "{character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Story context: {pageText}",
-  expert: "{character} {age}, {hair}, {features}, {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Story context: {pageText}"
+  beginner: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {ethnicity}. {frameworkPrompt}",
+  medium: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Primary Scene: {pageText}",
+  hard: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Primary Scene: {pageText}",
+  expert: "Character Description: {character} {age}, {hair}, {features}. Scene Composition: {scene} with {objects} in {setting}{secondary_characters}. {cameraDirective}. {emotion}. {frameworkPrompt}. Primary Scene: {pageText}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -500,7 +500,7 @@ function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): 
   }
 }
 
-function extractSceneWithPremiumTemplate(pageText: string): { scene: string, setting: string, objects: string, secondary_characters: string } {
+function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: string, pageNumber?: number, sessionId?: string): { scene: string, setting: string, objects: string, secondary_characters: string } {
   try {
     console.log('🛡️ Tier 2.5: Starting enhanced scene extraction with context-aware filtering');
     console.log(`📄 Input text: "${pageText}"`);
@@ -596,8 +596,8 @@ function extractSceneWithPremiumTemplate(pageText: string): { scene: string, set
     // Extract components from best sentence with enhanced detection
     const result = {
       scene: extractActionFromSentence(bestSentence),
-      setting: extractSettingFromSentence(bestSentence),
-      objects: extractObjectsFromSentence(bestSentence, pageText),
+      setting: extractSettingFromSentence(bestSentence, previousSetting),
+      objects: extractObjectsFromSentence(bestSentence, pageText, pageNumber),
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence)
     };
 
@@ -830,12 +830,50 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
   return ' indoor portrait style photo with main character focus';
 }
 
-// DYNAMIC COLOR-OBJECT RESOLUTION SYSTEM
-function extractObjectsFromSentence(sentence: string, originalPageText?: string): string {
+// ============= PRONOUN RESOLUTION SYSTEM =============
+function resolvePronounsInSentence(sentence: string, originalPageText?: string): string | null {
+  if (!originalPageText) return null;
+  
+  const lowerSentence = sentence.toLowerCase();
+  const lowerPageText = originalPageText.toLowerCase();
+  
+  // Common pronouns that need resolution
+  const pronouns = ['it', 'this', 'that'];
+  
+  for (const pronoun of pronouns) {
+    if (lowerSentence.includes(pronoun)) {
+      // Look for objects mentioned before this sentence in the page text
+      const objects = ['tree', 'bird', 'book', 'toy', 'ball', 'flower', 'dog', 'cat'];
+      
+      for (const obj of objects) {
+        if (lowerPageText.includes(obj) && !lowerSentence.includes(obj)) {
+          console.log(`🎯 Pronoun resolution: "${pronoun}" → "${obj}" from context`);
+          return sentence.replace(new RegExp(pronoun, 'gi'), obj);
+        }
+      }
+    }
+  }
+  
+  return null;
+}
+function extractObjectsFromSentence(sentence: string, originalPageText?: string, pageNumber?: number): string {
   const lowerSentence = sentence.toLowerCase();
   
+  // PAGE-AWARE OBJECT PREVENTION: Prevent premature object appearance
+  if (pageNumber && pageNumber <= 3) {
+    // Early pages - prevent bird from appearing until mentioned
+    const hasBird = lowerSentence.includes('bird') || lowerSentence.includes('sing') || lowerSentence.includes('song');
+    if (!hasBird && (originalPageText && !originalPageText.toLowerCase().includes('bird'))) {
+      console.log('🛡️ Page-aware prevention: Blocking premature bird appearance');
+    }
+  }
+  
+  // PRONOUN RESOLUTION: Handle "it", "this", "that" references
+  const pronounResolved = resolvePronounsInSentence(sentence, originalPageText);
+  const processedSentence = pronounResolved || sentence;
+  
   // First try to detect and resolve object + color combinations with context awareness
-  const dynamicObjectColor = detectAndResolveObjectColor(sentence, originalPageText);
+  const dynamicObjectColor = detectAndResolveObjectColor(processedSentence, originalPageText);
   if (dynamicObjectColor) {
     return dynamicObjectColor;
   }
@@ -921,18 +959,19 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string)
     'baseball': ', with a baseball to throw',
     'basketball': ', with a basketball to bounce',
     
-    // MASTER PLAN: Birds Context Classification - Wild birds (outdoor-only)
-    'robin': ', with cheerful robins singing',
-    'cardinal': ', with bright red cardinals',
-    'crow': ', with clever crows nearby',
-    'sparrow': ', with small sparrows chirping',
-    'blue jay': ', with beautiful blue jays',
-    'hawk': ', with majestic hawks soaring',
-    'eagle': ', with powerful eagles flying',
-    'owl': ', with wise owls watching',
-    'duck': ', with friendly ducks swimming',
-    'goose': ', with graceful geese nearby',
-    'swan': ', with elegant swans gliding',
+     // MASTER PLAN: Birds Context Classification - Wild birds (outdoor-only)
+     'bird': ', with cheerful birds singing outdoors', // DEFAULT: General birds always outdoor
+     'robin': ', with cheerful robins singing',
+     'cardinal': ', with bright red cardinals',
+     'crow': ', with clever crows nearby',
+     'sparrow': ', with small sparrows chirping',
+     'blue jay': ', with beautiful blue jays',
+     'hawk': ', with majestic hawks soaring',
+     'eagle': ', with powerful eagles flying',
+     'owl': ', with wise owls watching',
+     'duck': ', with friendly ducks swimming',
+     'goose': ', with graceful geese nearby',
+     'swan': ', with elegant swans gliding',
     
     // Wild animals (outdoor appropriate)
     'butterfly': ', with beautiful butterflies around',
@@ -1152,19 +1191,35 @@ function extractSecondaryCharactersFromSentence(sentence: string): string {
   return detectedCharacters.length > 0 ? detectedCharacters[0] + ' nearby' : '';
 }
 
-// ============= MASTER PLAN: CAMERA DIRECTIVE GENERATOR (Wider Angle Enhancement) =============
-function generateCameraDirective(difficulty: string): string {
-  // Always include wider angle directives for full activity visibility
+// ============= ENHANCED CAMERA DIRECTIVE GENERATOR (Context-Aware) =============
+function generateCameraDirective(difficulty: string, scene?: string, setting?: string): string {
+  // OBJECT-FOCUSED SHOTS: When "sees", "looks at", "finds" are detected
+  if (scene && (scene.includes('seeing') || scene.includes('looking') || scene.includes('finding'))) {
+    console.log('🎯 Object-focused camera directive for "sees" action');
+    return "close-up focused shot, object prominently featured, detailed view";
+  }
+  
+  // WIDE SHOTS: For outdoor activities  
+  if (setting && (setting.includes('outdoor') || setting.includes('park') || setting.includes('playground') || setting.includes('playing outside'))) {
+    console.log('🎯 Wide shot camera directive for outdoor scene');
+    return "wide establishing shot, full environment visible, spacious outdoor perspective";
+  }
+  
+  // Default balanced approach with wider angle for full activity visibility
   const baseDirective = "full body shot, wide angle view, complete scene visible";
   
   // Difficulty-based camera enhancement
   const difficultyEnhancements = {
     'beginner': "simple composition, clear focus",
-    'easy': "child-friendly framing, easy to understand",
-    'medium': "dynamic composition, engaging perspective", 
+    'easy': "child-friendly framing, easy to understand", 
+    'medium': "dynamic composition, engaging perspective",
     'hard': "professional composition, detailed scene",
     'expert': "artistic composition, sophisticated framing"
   };
+  
+  const enhancement = difficultyEnhancements[difficulty] || difficultyEnhancements['medium'];
+  return `${baseDirective}, ${enhancement}`;
+}
   
   const enhancement = difficultyEnhancements[difficulty] || difficultyEnhancements.medium;
   return `${baseDirective}, ${enhancement}`;
@@ -1276,6 +1331,9 @@ function fillPremiumTemplate(
     // Apply cultural setting enhancement
     const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo, avatarIdentity);
     
+    // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION (After scene extraction) =============
+    const cameraDirective = generateCameraDirective(difficulty, scene, enhancedSetting);
+    
     // Get style framework settings
     const styleSettings = getStyleFrameworkSettings(difficulty);
     
@@ -1287,9 +1345,6 @@ function fillPremiumTemplate(
     
     // Get character ethnicity note
     const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
-    
-    // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION =============
-    const cameraDirective = generateCameraDirective(difficulty);
     
     // ============= MASTER PLAN: OPTIMIZED TEMPLATE FILLING (New Structure) =============
     // New order: Character → Action with objects → Setting → Camera → Emotion → Framework → Story context
@@ -1782,7 +1837,7 @@ Deno.serve(async (req: Request) => {
     });
     
     // Extract scene components with complete placeholder support
-    const { scene, setting, objects, secondary_characters } = extractSceneWithPremiumTemplate(pageText);
+    const { scene, setting, objects, secondary_characters } = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
     
     // Map difficulty level
     const difficulty = mapDifficultyInline(userInfo);
