@@ -944,7 +944,7 @@ function extractSettingFromSentence(sentence: string, previousSetting?: string):
     'diner': ' a classic diner with comfort food',
     'clinic': ' a clean clinic with caring staff',
     'aquarium': ' an amazing aquarium with sea life',
-    'museum': ' an educational museum with exhibits'
+    'museum': ' an educational museum with exhibits',
     'deck': ' an elevated deck with outdoor entertainment area'
   };
   
