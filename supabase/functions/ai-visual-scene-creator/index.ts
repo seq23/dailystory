@@ -1,4 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
+import { SessionStateManager } from '../_shared/SessionStateManager.js';
 
 // Inline CORS utilities to fix boot failure
 const corsHeaders = {
@@ -57,11 +60,7 @@ const EdgeErrorHandler = {
   }
 };
 
-// Import CharacterConsistencyService
-import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
-
-// Import SecondaryElementDetector
-import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
+// Inline service placeholders 
 const VisualDetailTracker = { enabled: false };
 
 // Inline implementations for missing tierFailureMonitoring functions
@@ -821,7 +820,7 @@ serve(async (req) => {
         // Validate OpenAI API key is present
         if (!openAIApiKey) {
           throw {
-            type: EdgeErrorType.VALIDATION,
+            type: 'VALIDATION_ERROR',
             message: 'OPENAI_API_KEY not configured'
           };
         }
@@ -830,7 +829,7 @@ serve(async (req) => {
         if (!requestBody || Object.keys(requestBody).length === 0) {
           console.error('❌ Request parsing failed: Body is empty or not parsed');
           throw {
-            type: EdgeErrorType.VALIDATION,
+            type: 'VALIDATION_ERROR',
             message: 'Request parsing failed: Body already consumed'
           };
         }
@@ -849,7 +848,7 @@ serve(async (req) => {
         // Extract parameters with comprehensive validation and logging
         if (!requestBody) {
           throw {
-            type: EdgeErrorType.VALIDATION,
+            type: 'VALIDATION_ERROR',
             message: 'Request body is null or undefined'
           };
         }
@@ -880,7 +879,7 @@ serve(async (req) => {
         let previousScene = null;
         try {
           if (pageNumber > 1) {
-            const sessionManager = new SessionStateManager(sessionId);
+            const sessionManager = SessionStateManager.getInstance();
             previousScene = await sessionManager.getPreviousAIScene(sessionId);
             console.log(`🎬 Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
           }
@@ -1019,6 +1018,7 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         
         // PHASE 1.3: AI Call for Primary Scene ONLY
         let primaryScene;
+        let setting, action, mood, pose; // Declare scope variables for later use
         try {
           console.log(`🧠 [${requestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
           const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, requestId, avatarIdentity);
@@ -1031,10 +1031,10 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
           const parsedResult = parseAIResponse(content.trim(), { requestId });
           primaryScene = parsedResult.primaryScene;
           
-          const setting = parsedResult.setting || null;
-          const action = parsedResult.action || null;
-          const mood = parsedResult.mood || null;
-          const pose = parsedResult.pose || null;
+          setting = parsedResult.setting || null;
+          action = parsedResult.action || null;
+          mood = parsedResult.mood || null;
+          pose = parsedResult.pose || null;
           
           if (!primaryScene || primaryScene.length < 30) {
             throw new Error(`Primary scene validation failed: length ${primaryScene?.length || 0} < 30`);
@@ -1087,7 +1087,7 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         
         // Store current AI scene for next page consistency
         try {
-          const sessionManager = new SessionStateManager(sessionId);
+          const sessionManager = SessionStateManager.getInstance();
           await sessionManager.storePreviousAIScene(sessionId, {
             primaryScene: primaryScene,
             setting: setting,
@@ -1146,11 +1146,11 @@ Generate a detailed primaryScene description (30+ characters minimum) that shows
         
         if (debugMode) {
           console.log(`🎨 AI DEBUG OUTPUT:`);
-          console.log(`🎯 Primary Scene: "${aiResult.primaryScene}"`);
-          console.log(`🏠 Setting: ${aiResult.setting || 'null'}`);
-          console.log(`🎭 Action: ${aiResult.action || 'null'}`);
-          console.log(`😊 Mood: ${aiResult.mood || 'null'}`);
-          console.log(`🧍 Pose: ${aiResult.pose || 'null'}`);
+          console.log(`🎯 Primary Scene: "${primaryScene}"`);
+          console.log(`🏠 Setting: ${setting || 'null'}`);
+          console.log(`🎭 Action: ${action || 'null'}`);
+          console.log(`😊 Mood: ${mood || 'null'}`);
+          console.log(`🧍 Pose: ${pose || 'null'}`);
           console.log(`👤 Character: ${characterData?.name || 'Unknown'} (seed: ${characterData?.seed || 'none'})`);
           console.log(`📊 Processing: 3-phase enhanced with ${secondaryElements.length} secondary characters`);
         }
