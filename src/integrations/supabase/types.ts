@@ -947,6 +947,10 @@ export type Database = {
       }
     }
     Functions: {
+      anonymize_old_user_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -956,6 +960,18 @@ export type Database = {
         Returns: undefined
       }
       cleanup_security_audit_log: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      comprehensive_security_cleanup: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      detect_suspicious_patterns: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      log_security_enhancement_completion: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
