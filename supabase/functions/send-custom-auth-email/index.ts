@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     let actualRedirectUrl = redirect_to || site_url;
     if (actualRedirectUrl.includes('preview--')) {
       // Replace preview URL with production domain
-      actualRedirectUrl = actualRedirectUrl.replace(/https:\/\/preview--[^.]+\.lovable\.app/, 'https://time2read.com');
+      actualRedirectUrl = actualRedirectUrl.replace(/https:\/\/preview--[^.]+\.lovable\.app/, 'https://time-2-read.com');
     }
 
     // Construct verification URL
@@ -103,7 +103,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="text-align: center; margin-top: 32px; color: #94a3b8; font-size: 12px;">
               <p style="margin: 0;">
                 © 2024 Time-2-Read. All rights reserved.<br>
-                <a href="https://time2read.com" style="color: #2563eb; text-decoration: none;">Visit our website</a>
+                <a href="https://time-2-read.com" style="color: #2563eb; text-decoration: none;">Visit our website</a>
               </p>
             </div>
           </body>
