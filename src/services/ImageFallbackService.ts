@@ -88,26 +88,15 @@ export class ImageFallbackService {
         <!-- Background -->
         <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
         
-        <!-- Broken Wand SVG - Centered and Properly Sized for Small Containers -->
-        <g transform="translate(200, 90) scale(1.2)">
-          <!-- Broken wand shaft - two pieces -->
-          <path d="M-20 20 L-5 5" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
-          <path d="M0 0 L15 -15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
-          
-          <!-- Crack/break indication -->
-          <path d="M-6 6 L-4 4 L-2 2" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-          
-          <!-- Dimmed refresh ring (broken) -->
-          <circle cx="15" cy="-15" r="8" fill="none" stroke="#d1d5db" stroke-width="1.5" opacity="0.4"/>
-          
-          <!-- Cross mark on the ring -->
-          <path d="M10 -20 L20 -10 M20 -20 L10 -10" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-          
-          <!-- Fading sparkles/stars -->
-          <circle cx="-15" cy="15" r="1.5" fill="#d1d5db" opacity="0.3"/>
-          <circle cx="5" cy="-5" r="1" fill="#d1d5db" opacity="0.2"/>
-          <circle cx="-10" cy="10" r="1" fill="#d1d5db" opacity="0.25"/>
-        </g>
+        <!-- User's Magic Wand Image -->
+        <image 
+          x="100" 
+          y="50" 
+          width="200" 
+          height="150" 
+          href="/lovable-uploads/30e11866-c281-4957-818d-724155f38846.png"
+          preserveAspectRatio="xMidYMid meet"
+        />
         
         <!-- Arrow marker definition -->
         <defs>

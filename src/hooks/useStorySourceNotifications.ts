@@ -54,8 +54,7 @@ export const useStorySourceNotifications = () => {
           } catch {}
           
         } else if (currentSource === 'ai' && (previousSource === 'fallback' || previousSource === 'emergency')) {
-          // AI recovered - show green success toast (one-time only)
-          const recoveryKey = 'ai_recovery_shown_' + Date.now();
+          // AI recovered - show green success toast (one-time only per session)
           const hasShownRecovery = sessionStorage.getItem('ai_recovery_shown');
           
           if (!hasShownRecovery && !hasShownRecoveryRef.current) {
