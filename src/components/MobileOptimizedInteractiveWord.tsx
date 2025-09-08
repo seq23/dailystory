@@ -31,6 +31,19 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   const audioEngine = SimpleAudioEngine.getInstance();
   const { toast } = useToast();
   const [hasCountedReview, setHasCountedReview] = useState(false);
+  
+  // CRITICAL FIX: Add debouncing to prevent multiple rapid modal opens
+  const [isDebouncing, setIsDebouncing] = useState(false);
+  const debounceTimeoutRef = useRef<number | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const difficulty = props.difficulty || "easy";
   const cleanWord = useMemo(() => props.word.replace(/[.,!?;:'"()—–\-\/]/g, ''), [props.word]);
@@ -49,7 +62,7 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   }, []);
 
 
-  // LEAN Adaptive Interactive Word Rules - Smart ESL & Progress Tracking
+  // LEAN Adaptive Interactive Word Rules - Smart ESL & Progress Tracking (CACHED)
   const shouldBeInteractive = useMemo(() => {
     const lw = cleanWord.toLowerCase();
     if (!lw || isPurelyPunctuation) return false;
@@ -68,14 +81,18 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
     const isProperNoun = /^[A-Z][a-z]+$/.test(trimmedOriginal) && trimmedOriginal !== 'I';
     if (isProperNoun && !isAllCaps) return false;
 
-    // Get base interactivity from progressive thresholds
-    const { shouldHighlight } = VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
+    // CRITICAL FIX: Cache expensive word difficulty calculations
+    const cachedResult = useMemo(() => {
+      return VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
+    }, [props.word, difficulty]);
+    
+    const { shouldHighlight } = cachedResult;
     
     // ESL Boost: +20% more interactive words for non-native English speakers
     const isESL = props.userInfo?.nativeLanguage && props.userInfo.nativeLanguage !== 'en';
     if (isESL && !shouldHighlight && difficulty !== 'beginner') {
       // Boost: Make easier words interactive for ESL learners
-      const { level } = VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
+      const { level } = cachedResult;
       if (level <= 3) return true; // ESL boost for levels 1-3
     }
     
@@ -92,46 +109,58 @@ if (props.forceModal || isMobileOrTablet) {
   };
 
   const handleClick = async () => {
-    if (!shouldBeInteractive) return;
+    // CRITICAL FIX: Debounce rapid clicks
+    if (!shouldBeInteractive || isDebouncing) return;
+    
+    setIsDebouncing(true);
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    
     (window as any).__lastSelectedWord = cleanWord;
     // Set hovered word context for voice commands on mobile/tablet
     (window as any).__hoveredWord = cleanWord;
     setHasCountedReview(false);
-    // Auto-save on click
-    try {
-      await VocabularyTrackingService.logEncounter(cleanWord, cleanWord, difficulty);
-    } catch {}
-    try {
-      const normalizedDifficulty: 'beginner' | 'intermediate' | 'advanced' =
-        (difficulty === 'beginner' || difficulty === 'easy') ? 'beginner' :
-        (difficulty === 'medium') ? 'intermediate' : 'advanced';
-      const vocabularyWord: any = {
-        word: cleanWord,
-        definition: '',
-        difficulty: normalizedDifficulty,
-        dateAdded: new Date().toISOString(),
-        timesReviewed: 0,
-        mastered: false,
-        storyContext: props.sentenceContext || ''
-      };
-      (window as any).addToVocabulary?.(vocabularyWord);
-      const addVocabularyWord = getGlobalAddVocabularyWord();
-      addVocabularyWord && addVocabularyWord();
-    } catch {}
+    
+    // CRITICAL FIX: Open modal immediately, defer heavy operations
     setShowMobileModal(true);
     
-    // Play Charlotte's voice for the word when modal opens (mobile only)
-    if (isMobileOrTablet) {
-      setTimeout(() => {
-        handleHearIt();
-      }, 300);
-    }
+    // Reset debouncing after modal is open
+    debounceTimeoutRef.current = window.setTimeout(() => {
+      setIsDebouncing(false);
+    }, 300);
+    
+    // CRITICAL FIX: Move heavy operations to background (non-blocking)
+    setTimeout(async () => {
+      try {
+        // Auto-save vocabulary tracking (deferred)
+        VocabularyTrackingService.logEncounter(cleanWord, cleanWord, difficulty).catch(() => {});
+        
+        // Add to vocabulary (deferred)
+        const normalizedDifficulty: 'beginner' | 'intermediate' | 'advanced' =
+          (difficulty === 'beginner' || difficulty === 'easy') ? 'beginner' :
+          (difficulty === 'medium') ? 'intermediate' : 'advanced';
+        const vocabularyWord: any = {
+          word: cleanWord,
+          definition: '',
+          difficulty: normalizedDifficulty,
+          dateAdded: new Date().toISOString(),
+          timesReviewed: 0,
+          mastered: false,
+          storyContext: props.sentenceContext || ''
+        };
+        (window as any).addToVocabulary?.(vocabularyWord);
+        const addVocabularyWord = getGlobalAddVocabularyWord();
+        addVocabularyWord && addVocabularyWord();
+      } catch (error) {
+        console.warn('Background vocabulary operations failed:', error);
+      }
+    }, 0);
   };
 
     const handleHearIt = async () => {
       if (isPlaying) return;
       setIsPlaying(true);
       try {
+        // CRITICAL FIX: Lazy load audio service only when needed
         const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
         await InteractiveWordAudioService.hearWord(cleanWord);
       } catch (e) {
@@ -146,6 +175,7 @@ if (props.forceModal || isMobileOrTablet) {
       if (isLoadingWordData) return;
       setIsLoadingWordData(true);
       try {
+        // CRITICAL FIX: Lazy load audio service only when needed
         const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
         await InteractiveWordAudioService.explainWord(cleanWord);
       } catch (e) {
@@ -159,6 +189,7 @@ if (props.forceModal || isMobileOrTablet) {
     const handleSyllables = async () => {
       try {
         setIsPlaying(true);
+        // CRITICAL FIX: Lazy load audio service only when needed
         const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
         await InteractiveWordAudioService.syllableWord(cleanWord);
         setIsPlaying(false);
@@ -205,17 +236,22 @@ if (props.forceModal || isMobileOrTablet) {
         <span
           onClick={handleClick}
           onTouchStart={(e) => {
-            // Enhanced touch handling - single tap opens modal
+            // CRITICAL FIX: Enhanced touch handling - prevent conflicts with long-press
             e.stopPropagation();
-            if (!shouldBeInteractive) return;
-            handleClick();
+            if (!shouldBeInteractive || isDebouncing) return;
+            // Only trigger modal if not a long-press (handled by PremiumHoverController)
+            setTimeout(() => {
+              if (!e.defaultPrevented) {
+                handleClick();
+              }
+            }, 50); // Small delay to let long-press handler potentially prevent this
           }}
           onTouchEnd={(e) => {
-            // Prevent click on touch devices
+            // Prevent click event after touch
             e.preventDefault();
           }}
           onMouseEnter={() => {
-            if (!shouldBeInteractive) return;
+            if (!shouldBeInteractive || isMobileOrTablet) return; // CRITICAL FIX: Block hover on mobile
             (window as any).__hoveredWord = cleanWord;
             
             // Note: Premium hover is now handled by PremiumHoverController

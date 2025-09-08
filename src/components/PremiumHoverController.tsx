@@ -32,9 +32,13 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
   }, [isPremium]);
 
   useEffect(() => {
-    // Desktop hover events for premium users
+    // CRITICAL FIX: Check device type to disable hover on mobile/tablet
+    const isMobileOrTablet = window.innerWidth < 900 || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Desktop hover events for premium users (DESKTOP ONLY)
     const handleMouseEnter = async (event: MouseEvent) => {
-      if (!isPremium || processingRef.current) return;
+      // CRITICAL FIX: Block hover TTS on mobile/tablet devices
+      if (!isPremium || processingRef.current || isMobileOrTablet) return;
       
       const target = event.target as HTMLElement;
       if (!target || !target.classList || !target.classList.contains('interactive-word-premium-hover')) return;
@@ -59,15 +63,17 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
       }
     };
 
-    // Mobile/Tablet long-press events for premium users
+    // Mobile/Tablet long-press events for premium users (LONG-PRESS ONLY)
     const handleTouchStart = (event: TouchEvent) => {
-      if (!isPremium) return;
+      // CRITICAL FIX: Only premium users get long-press TTS
+      if (!isPremium || !isMobileOrTablet) return;
       
       const target = event.target as HTMLElement;
       if (!target || !target.classList || !target.classList.contains('interactive-word-premium-hover')) return;
       
       longPressStartRef.current = Date.now();
       
+      // CRITICAL FIX: 500ms+ long-press required (prevents accidental triggers)
       longPressTimeoutRef.current = window.setTimeout(async () => {
         const word = target.textContent?.trim();
         if (word) {
@@ -75,6 +81,9 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
           if ('vibrate' in navigator) {
             navigator.vibrate(50);
           }
+          // Prevent modal from opening during TTS
+          event.preventDefault();
+          event.stopPropagation();
           await playWordPronunciation(word);
         }
       }, 500); // 500ms for long press

@@ -787,6 +787,15 @@ useEffect(() => {
     }
   }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
 
+  // CRITICAL: Show long-press instruction immediately when story is stable on mobile/tablet
+  useEffect(() => {
+    if (isStoryStable && story.length > 0 && (isMobileOrTablet || hasTouchCapability)) {
+      console.log('📱 Story stable - showing long-press instruction for mobile/tablet users');
+      // Immediate notification trigger for all mobile/tablet users
+      showLongPressInstruction();
+    }
+  }, [isStoryStable, story.length, isMobileOrTablet, hasTouchCapability, showLongPressInstruction]);
+
   useEffect(() => {
     const handler = (e: any) => {
       const enabled = !!e.detail;
