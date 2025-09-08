@@ -79,25 +79,32 @@ export class ImageFallbackService {
     
     const svg = `
       <svg width="${finalConfig.width}" height="${finalConfig.height}" viewBox="0 0 ${finalConfig.width} ${finalConfig.height}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="${finalConfig.backgroundColor}"/>
-        <circle cx="${finalConfig.width/2}" cy="${finalConfig.height/2 - 100}" r="80" fill="${finalConfig.textColor}" opacity="0.1"/>
-        <text x="${finalConfig.width/2}" y="${finalConfig.height/2}" 
-              text-anchor="middle" 
-              dominant-baseline="middle" 
-              fill="${finalConfig.textColor}" 
-              font-family="Arial, sans-serif" 
-              font-size="48" 
-              font-weight="500">
-          ${finalConfig.text}
+        <!-- Background -->
+        <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
+        
+        <!-- Broken Wand Image -->
+        <image 
+          x="${finalConfig.width/2 - 100}" 
+          y="${finalConfig.height/2 - 125}" 
+          width="200" 
+          height="150" 
+          href="/lovable-uploads/93432db4-84aa-4992-a216-9e542d03f7d3.png"
+          preserveAspectRatio="xMidYMid meet"
+        />
+        
+        <!-- Arrow marker definition -->
+        <defs>
+          <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+            <polygon points="0 0, 6 2, 0 4" fill="#9ca3af"/>
+          </marker>
+        </defs>
+        
+        <!-- Main message -->
+        <text x="50%" y="${finalConfig.height/2 + 60}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
+          Images not working right now
         </text>
-        <text x="${finalConfig.width/2}" y="${finalConfig.height/2 + 80}" 
-              text-anchor="middle" 
-              dominant-baseline="middle" 
-              fill="${finalConfig.textColor}" 
-              font-family="Arial, sans-serif" 
-              font-size="24" 
-              opacity="0.7">
-          Illustration will appear here
+        <text x="50%" y="${finalConfig.height/2 + 80}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
+          Please try again later
         </text>
       </svg>
     `;
