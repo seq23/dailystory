@@ -275,9 +275,9 @@ class RunwareWebSocketManager {
             if (data.data && data.data.length > 0) {
               const message = data.data[0];
               
-              // Handle authentication response
-              if (message.authenticationStatus === 'success') {
-                console.log(`🔑 ${logPrefix} Authentication successful, sending image generation request`);
+              // Handle authentication response - FIX: Correct Runware authentication format
+              if (message.taskType === "authentication" && message.connectionSessionUUID) {
+                console.log(`🔑 ${logPrefix} Authentication successful (UUID: ${message.connectionSessionUUID}), sending image generation request`);
                 
                 // Build generation request
                 const generationRequest = {
@@ -313,8 +313,8 @@ class RunwareWebSocketManager {
                 // FIX: Runware requires array format for image generation
                 ws.send(JSON.stringify([generationRequest]));
                 
-              } else if (message.authenticationStatus === 'failed') {
-                safeReject(new WebSocketError('Authentication failed', 'AUTH', false));
+              } else if (message.taskType === "authentication" && !message.connectionSessionUUID) {
+                safeReject(new WebSocketError('Authentication failed - no session UUID received', 'AUTH', false));
                 
               } else if (message.taskType === 'imageInference') {
                 // Handle generation response
