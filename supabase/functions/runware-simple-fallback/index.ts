@@ -235,6 +235,7 @@ const TIER_25_UNIFIED_VOCABULARY = {
       'nature', 'tree', 'grass', 'flower', 'sky', 'sun', 'moon', 'star', 'cloud', 'rain', 'snow', 'wind',
       // Outdoor activities & states
       'outdoor', 'outside', 'running', 'walking', 'hiking', 'climbing', 'swimming', 'fishing', 'camping', 'picnic', 'sports'
+    ]
   },
   // Keep existing object categories intact
   objectCategories: {
