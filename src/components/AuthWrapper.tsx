@@ -165,6 +165,7 @@ export const AuthWrapper = () => {
     return <SubscriptionGate />;
   }
 
-  // Logged in and premium
+  // Logged in and premium (verified or unverified)
+  // Allow immediate access for premium users regardless of email verification status
   return <AuthenticatedApp user={user} />;
 };

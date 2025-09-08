@@ -88,3 +88,6 @@ verify_jwt = true
 
 [functions.create-checkout]
 verify_jwt = true
+
+[functions.send-custom-auth-email]
+verify_jwt = false

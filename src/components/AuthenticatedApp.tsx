@@ -16,6 +16,7 @@ import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -386,6 +387,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             />
 
             <main className="flex-1 min-h-0 overflow-hidden p-2 sm:p-4 md:p-6">
+              {/* Email verification banner for unverified premium users */}
+              <EmailVerificationBanner user={user} />
+              
               {isEditingProfile ? (
                 <PremiumProfileEditor
                   userInfo={userInfo}
