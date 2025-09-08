@@ -356,21 +356,30 @@ export class SimpleImageService {
 
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
-    // Create AbortController for proper request cancellation
-    const controller = new AbortController();
+    // Create timeout promise that will reject if request takes too long
     let timeoutId: NodeJS.Timeout | undefined;
+    let requestAborted = false;
 
     try {
       console.log('🎯 Calling backend orchestrator for image generation');
+      console.log('📊 Request details:', {
+        sessionId: sessionId.substring(0, 10) + '...',
+        pageNumber,
+        cleanSceneLength: cleanScene.length,
+        timestamp: new Date().toISOString()
+      });
       
-      // Set up timeout that actually aborts the request
-      timeoutId = setTimeout(() => {
-        console.warn('⏰ Frontend timeout: Request aborted after 150 seconds');
-        controller.abort();
-      }, 150000); // 150 seconds
+      // Create timeout promise that rejects after 150 seconds
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          requestAborted = true;
+          console.warn('⏰ Frontend timeout: Request exceeded 150 seconds');
+          reject(new Error('Request timeout: Image generation took longer than 150 seconds'));
+        }, 150000);
+      });
 
-      // Make request (Note: Supabase client doesn't support AbortController yet)
-      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+      // Create the actual request promise
+      const requestPromise = supabase.functions.invoke('runware-generate-image', {
         body: {
           pageText: cleanScene,
           userInfo,
@@ -381,6 +390,9 @@ export class SimpleImageService {
           difficultyLevel: backendDifficulty
         }
       });
+
+      // Race between request and timeout
+      const { data, error } = await Promise.race([requestPromise, timeoutPromise]);
       
       clearTimeout(timeoutId); // Clear timeout on successful response
 
@@ -417,14 +429,14 @@ export class SimpleImageService {
 
     } catch (error) {
       // Clear timeout if error occurs
-      if (timeoutId) {
+      if (timeoutId && !requestAborted) {
         clearTimeout(timeoutId);
       }
       
       // Enhanced error logging to distinguish timeout vs other errors
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          console.error('❌ Network timeout: Request timed out');
+        if (error.message.includes('Request timeout')) {
+          console.error('❌ Frontend timeout: Request exceeded 150 seconds');
         } else if (error.message.includes('timeout')) {
           console.error('❌ Network timeout: Request timed out');
         } else if (error.message.includes('fetch')) {

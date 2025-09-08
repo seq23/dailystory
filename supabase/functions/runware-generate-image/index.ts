@@ -764,18 +764,10 @@ serve(async (req) => {
     requestMethod: req.method
   });
 
-  // Handle CORS preflight requests - Enhanced 2025-01-08
+  // Handle CORS preflight requests - Force redeploy with enhanced headers 2025-01-08-v2
   if (req.method === 'OPTIONS') {
-    console.log('🔄 CORS OPTIONS request handled - returning enhanced CORS headers');
-    return new Response(null, { 
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Max-Age': '86400'
-      }
-    });
+    console.log('🔄 CORS OPTIONS preflight - Enhanced headers v2');
+    return createCorsOptionsResponse();
   }
 
   // Handle GET requests with health check (FIX: Add debugging endpoint)
