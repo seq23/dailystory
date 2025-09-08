@@ -260,11 +260,11 @@ class RunwareWebSocketManager {
         ws.onopen = () => {
           console.log(`✅ ${logPrefix} WebSocket connected, authenticating...`);
           
-          // Send authentication
-          ws.send(JSON.stringify({
+          // Send authentication - FIX: Runware requires array format
+          ws.send(JSON.stringify([{
             taskType: "authentication",
             apiKey: apiKey
-          }));
+          }]));
         };
         
         ws.onmessage = (event) => {
@@ -310,7 +310,8 @@ class RunwareWebSocketManager {
                   seed: seed || 'random'
                 });
                 
-                ws.send(JSON.stringify(generationRequest));
+                // FIX: Runware requires array format for image generation
+                ws.send(JSON.stringify([generationRequest]));
                 
               } else if (message.authenticationStatus === 'failed') {
                 safeReject(new WebSocketError('Authentication failed', 'AUTH', false));

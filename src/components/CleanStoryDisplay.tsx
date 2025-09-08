@@ -464,6 +464,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Vocabulary pre-fetch state
   const [vocabularyData, setVocabularyData] = useState<VocabularyIntegration | null>(null);
 
+  // DEBUG: Add window objects for console debugging
+  useEffect(() => {
+    (window as any).currentStoryPage = currentPage;
+    (window as any).pageContent = story?.[currentPage];
+    (window as any).storyImages = pageImages;
+    (window as any).storyState = { story, currentPage, pageImages };
+  }, [currentPage, story, pageImages]);
+
 // Voice integration for desktop
 const { status: voiceStatus, isSpeaking, handleVoiceToggle, isConnected, isConnecting } = useVoiceIntegration();
 

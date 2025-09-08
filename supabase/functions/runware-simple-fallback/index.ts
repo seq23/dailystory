@@ -727,6 +727,9 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
     // PRIORITY 1: Use enhanced skin tone variation from orchestrator if available
     if (avatarIdentity?.skinToneVariation) {
       console.log('🎭 Tier 2.5: Using orchestrator enhanced skin tone variation');
+      // FIX: Move avatarIdentity declaration before usage
+      const avatarIdentity = userInfo?.avatarIdentity || null;
+      
       const ageMapping = {
         'beginner': '3-year-old',
         'easy': '5-year-old', 
@@ -736,7 +739,7 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
       };
       
       return {
-        character: avatarIdentity.skinToneVariation,
+        character: avatarIdentity?.skinToneVariation || 'default character',
         age: ageMapping[difficulty] || '7-year-old',
         hair: 'beautiful thick hair', // Fallback for template compatibility
         features: avatarIdentity.skinToneVariation,
@@ -4740,8 +4743,8 @@ serve(async (req: Request) => {
       emotion = 'Positive and uplifting atmosphere';
     }
     
-    // Extract avatarIdentity for consistent parameter passing
-    const avatarIdentity = userInfo?.avatarIdentity || null;
+    // FIX: avatarIdentity moved to top of function to fix scoping error
+    // (now declared at line ~732)
     
     // Validate and prepare contextual intelligence data with fallbacks
     const contextualData = {
