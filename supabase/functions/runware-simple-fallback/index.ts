@@ -213,7 +213,61 @@ const CLOTHING_DETECTION_KEYWORDS = [
 // - Zero external dependencies preserved
 //
 const TIER_25_UNIFIED_VOCABULARY = {
-  contextDetection: {
+  // ============= UNIFIED ACTION VOCABULARY =============
+  // Consolidated from ExactWordExtractor (23 items) + runware-simple-fallback (65+ items)
+  actions: {
+    // Basic physical actions (with all verb forms)
+    basic: [
+      'run', 'runs', 'ran', 'running', 'jump', 'jumps', 'jumped', 'jumping', 
+      'walk', 'walks', 'walked', 'walking', 'play', 'plays', 'played', 'playing',
+      'dance', 'dances', 'danced', 'dancing', 'climb', 'climbs', 'climbed', 'climbing',
+      'throw', 'throws', 'threw', 'throwing', 'catch', 'catches', 'caught', 'catching',
+      'swim', 'swims', 'swam', 'swimming', 'slide', 'slides', 'slid', 'sliding',
+      'roll', 'rolls', 'rolled', 'rolling', 'hide', 'hides', 'hid', 'hiding',
+      'dig', 'digs', 'dug', 'digging', 'kick', 'kicks', 'kicked', 'kicking'
+    ],
+    
+    // Creative & academic actions  
+    creative: [
+      'draw', 'draws', 'drew', 'drawing', 'write', 'writes', 'wrote', 'writing',
+      'build', 'builds', 'built', 'building', 'create', 'creates', 'created', 'creating',
+      'paint', 'paints', 'painted', 'painting', 'read', 'reads', 'reading',
+      'cook', 'cooks', 'cooked', 'cooking', 'study', 'studies', 'studied', 'studying'
+    ],
+    
+    // NEW: Sensory & state actions (missing from current system)
+    sensory: [
+      'see', 'sees', 'saw', 'seeing', 'hear', 'hears', 'heard', 'hearing',
+      'feel', 'feels', 'felt', 'feeling', 'smell', 'smells', 'smelled', 'smelling',
+      'taste', 'tastes', 'tasted', 'tasting', 'touch', 'touches', 'touched', 'touching'
+    ],
+    
+    // NEW: State & position actions  
+    states: [
+      'wake', 'wakes', 'woke', 'waking', 'sleep', 'sleeps', 'slept', 'sleeping',
+      'lay', 'lays', 'laid', 'laying', 'sit', 'sits', 'sat', 'sitting',
+      'stand', 'stands', 'stood', 'standing', 'lie', 'lies', 'lying'
+    ],
+    
+    // NEW: Fantasy & magical actions (for fantasy stories)
+    fantasy: [
+      'fly', 'flies', 'flew', 'flying', 'float', 'floats', 'floated', 'floating',
+      'magic', 'magical', 'transform', 'transforms', 'transformed', 'transforming',
+      'disappear', 'disappears', 'disappeared', 'disappearing', 'sparkle', 'sparkles', 'sparkling',
+      'glow', 'glows', 'glowed', 'glowing', 'enchant', 'enchants', 'enchanted', 'enchanting'
+    ],
+    
+    // Social & emotional actions
+    social: [
+      'help', 'helps', 'helped', 'helping', 'share', 'shares', 'shared', 'sharing',
+      'laugh', 'laughs', 'laughed', 'laughing', 'smile', 'smiles', 'smiled', 'smiling',
+      'hug', 'hugs', 'hugged', 'hugging', 'explore', 'explores', 'explored', 'exploring'
+    ]
+  },
+  
+  // ============= UNIFIED SETTING VOCABULARY =============
+  // Consolidated from contextDetection + ExactWordExtractor
+  settings: {
     indoor: [
       // Essential indoor locations
       'kitchen', 'bedroom', 'classroom', 'library', 'home', 'house', 'room', 'bathroom', 'office',
@@ -227,7 +281,7 @@ const TIER_25_UNIFIED_VOCABULARY = {
       'shower', 'bath', 'toilet', 'sink', 'refrigerator', 'oven', 'microwave'
     ],
     outdoor: [
-      // Natural locations
+      // Natural locations  
       'park', 'playground', 'garden', 'forest', 'beach', 'mountain', 'backyard', 'field', 'hill',
       // Enhanced environmental settings
       'coral reefs', 'tide pools', 'kelp forests', 'village', 'neighborhood', 'community center',
@@ -238,6 +292,34 @@ const TIER_25_UNIFIED_VOCABULARY = {
       // Nature elements
       'nature', 'tree', 'grass', 'flower', 'sky', 'sun', 'moon', 'star', 'cloud', 'rain', 'snow', 'wind',
       // Outdoor activities & states
+      'outdoor', 'outside', 'running', 'walking', 'hiking', 'climbing', 'swimming', 'fishing', 'camping', 'picnic', 'sports', 'exploring', 'advocating'
+    ],
+    // ExactWordExtractor settings consolidated here
+    specific: [
+      'hill', 'park', 'playground', 'garden', 'room', 'house', 'kitchen', 'bedroom', 
+      'classroom', 'library', 'forest', 'beach', 'field', 'yard', 'backyard', 
+      'school', 'store', 'hospital', 'restaurant'
+    ],
+    // Fantasy & magical locations
+    fantasy: [
+      'enchanted forest', 'magical castle', 'crystal cave', 'floating island', 
+      'wizard tower', 'fairy garden', 'rainbow bridge', 'starry sky', 'mystical grove'
+    ]
+  },
+  
+  contextDetection: {
+    indoor: [
+      'kitchen', 'bedroom', 'classroom', 'library', 'home', 'house', 'room', 'bathroom', 'office',
+      'laboratory', 'conference', 'summit', 'presentation', 'research', 'university', 'workshop', 'meeting hall',
+      'reading', 'cooking', 'studying', 'homework', 'indoor', 'inside', 'investigating', 'organizing', 'presenting',
+      'tv', 'computer', 'tablet', 'phone', 'television', 'radio', 'book', 'newspaper', 'magazine',
+      'shower', 'bath', 'toilet', 'sink', 'refrigerator', 'oven', 'microwave'
+    ],
+    outdoor: [
+      'park', 'playground', 'garden', 'forest', 'beach', 'mountain', 'backyard', 'field', 'hill',
+      'coral reefs', 'tide pools', 'kelp forests', 'village', 'neighborhood', 'community center',
+      'river', 'lake', 'ocean', 'sea', 'pond', 'stream', 'path', 'trail', 'road', 'street',
+      'nature', 'tree', 'grass', 'flower', 'sky', 'sun', 'moon', 'star', 'cloud', 'rain', 'snow', 'wind',
       'outdoor', 'outside', 'running', 'walking', 'hiking', 'climbing', 'swimming', 'fishing', 'camping', 'picnic', 'sports', 'exploring', 'advocating'
     ]
   },
@@ -590,7 +672,7 @@ function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): 
 
 function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: string, pageNumber?: number, sessionId?: string): { scene: string, setting: string, objects: string, secondary_characters: string } {
   try {
-    console.log('🛡️ Tier 2.5: Starting enhanced scene extraction with context-aware filtering');
+    console.log('🛡️ Tier 2.5: Starting unified semantic extraction with fantasy-friendly scoring');
     console.log(`📄 Input text: "${pageText}"`);
     
     if (!pageText || typeof pageText !== 'string') {
@@ -615,89 +697,55 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       };
     }
 
-    console.log(`📝 Processing ${sentences.length} sentences for enhanced scene extraction`);
+    console.log(`📝 Processing ${sentences.length} sentences for unified extraction`);
 
-    // Enhanced scoring with improved action detection
+    // ============= SINGLE-PASS EXTRACTION WITH FANTASY-FRIENDLY SCORING =============
     let bestSentence = sentences[0];
     let bestScore = 0;
+    let bestExtractedElements = { action: 'playing', setting: 'outdoor space', objects: [], characters: [] };
 
     for (const sentence of sentences) {
-      let score = 0;
       const lowerSentence = sentence.toLowerCase();
       
-      // Enhanced action words with inflections (matching our fixed action extraction)
-      const actionWords = [
-        'run', 'runs', 'ran', 'running', 
-        'jump', 'jumps', 'jumped', 'jumping',
-        'play', 'plays', 'played', 'playing',
-        'read', 'reads', 'reading',
-        'write', 'writes', 'wrote', 'writing',
-        'draw', 'draws', 'drew', 'drawing',
-        'build', 'builds', 'built', 'building',
-        'explore', 'explores', 'explored', 'exploring',
-        'discover', 'discovers', 'discovered', 'discovering',
-        'learn', 'learns', 'learned', 'learning',
-        'create', 'creates', 'created', 'creating',
-        'make', 'makes', 'made', 'making',
-        'walk', 'walks', 'walked', 'walking',
-        'sit', 'sits', 'sat', 'sitting',
-        'stand', 'stands', 'stood', 'standing',
-        'dance', 'dances', 'danced', 'dancing',
-        'sing', 'sings', 'sang', 'singing',
-        'laugh', 'laughs', 'laughed', 'laughing',
-        'smile', 'smiles', 'smiled', 'smiling'
-      ];
+      // ============= EXTRACT ELEMENTS DURING SCORING (Performance Optimization) =============
+      const extractedElements = extractElementsFromSentenceUnified(lowerSentence, pageText);
       
-      actionWords.forEach(word => {
-        if (lowerSentence.includes(word)) {
-          score += 3; // Increased weight for actions
-          console.log(`🎯 Action word detected: "${word}" in sentence`);
-        }
-      });
+      // ============= CALCULATE VISUAL & FANTASY PRIORITY SCORE =============
+      const visualScore = calculateVisualPriority(extractedElements);
+      const fantasyBonus = calculateFantasyBonus(extractedElements);
+      const semanticScore = calculateFantasyFriendlyCoherence(extractedElements);
       
-      // Setting words with context awareness
-      const settingWords = ['park', 'school', 'home', 'garden', 'playground', 'library', 'classroom', 'kitchen', 'bedroom', 'backyard', 'forest', 'beach', 'mountain', 'city', 'street', 'house', 'room', 'outside', 'inside', 'indoor', 'outdoor'];
-      settingWords.forEach(word => {
-        if (lowerSentence.includes(word)) {
-          score += 4; // Increased weight for setting context
-          console.log(`🏠 Setting word detected: "${word}" in sentence`);
-        }
-      });
+      const totalScore = visualScore + fantasyBonus + semanticScore;
       
-      // Object words (will be context-filtered later)
-      const objectWords = ['book', 'toy', 'ball', 'bike', 'swing', 'slide', 'tree', 'flower', 'car', 'truck', 'doll', 'game', 'puzzle', 'blocks', 'crayon', 'paper', 'pencil', 'computer', 'tablet', 'phone', 'bird', 'dog', 'cat', 'animal'];
-      objectWords.forEach(word => {
-        if (lowerSentence.includes(word)) {
-          score += 2;
-          console.log(`🎯 Object word detected: "${word}" in sentence`);  
-        }
-      });
+      console.log(`🎯 Sentence: "${sentence}" | Visual: ${visualScore} | Fantasy: ${fantasyBonus} | Semantic: ${semanticScore} | Total: ${totalScore}`);
       
-      if (score > bestScore) {
-        bestScore = score;
+      if (totalScore > bestScore) {
+        bestScore = totalScore;
         bestSentence = sentence;
+        bestExtractedElements = extractedElements;
       }
     }
 
     console.log(`🎯 Best sentence selected (score: ${bestScore}): "${bestSentence}"`);
+    console.log(`🎯 Extracted elements:`, bestExtractedElements);
 
-    // ============= MASTER PLAN PHASE 4: ENHANCED OBJECT INTEGRATION FIX =============
-    // Use ONLY enhanced object extraction, no fallback to ExactWordExtractor
+    // ============= ENHANCED OBJECT INTEGRATION (Use existing system for consistency) =============
     const enhancedObjects = extractObjectsFromSentence(
       bestSentence, 
       pageText, 
-      metadata?.page_number || 1, 
-      metadata?.session_id
+      pageNumber || 1, 
+      sessionId
     );
-    
+
+    // ============= FIX: Use extracted elements directly instead of undefined exactWords =============
     const result = {
-      scene: exactWords.action,
-      setting: exactWords.setting,
-      objects: enhancedObjects || '', // Use enhanced objects only, empty string if none found
+      scene: bestExtractedElements.action,
+      setting: bestExtractedElements.setting,
+      objects: enhancedObjects || '', // Use enhanced objects for consistency
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber)
     };
 
-    console.log('🛡️ Tier 2.5: Enhanced scene extraction complete with context filtering:', result);
+    console.log('✅ Unified semantic extraction complete:', result);
     return result;
 
   } catch (error) {
@@ -709,6 +757,161 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       secondary_characters: ''
     };
   }
+}
+
+// ============= UNIFIED ELEMENT EXTRACTION (Single-Pass Performance) =============
+function extractElementsFromSentenceUnified(sentence: string, fullText: string): { action: string, setting: string, objects: string[], characters: string[] } {
+  const result = { action: 'playing', setting: 'outdoor space', objects: [], characters: [] };
+  
+  // ============= Extract Actions from Unified Vocabulary =============
+  const allActions = [
+    ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.states,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.social
+  ];
+  
+  for (const action of allActions) {
+    if (sentence.includes(` ${action} `) || sentence.includes(`${action} `) || sentence.includes(` ${action}`)) {
+      result.action = action;
+      break; // Use first match for consistency
+    }
+  }
+  
+  // ============= Extract Settings from Unified Vocabulary =============
+  const allSettings = [
+    ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy
+  ];
+  
+  for (const setting of allSettings) {
+    if (sentence.includes(` ${setting} `) || sentence.includes(`${setting} `) || sentence.includes(` ${setting}`)) {
+      result.setting = setting;
+      break; // Use first match for consistency
+    }
+  }
+  
+  return result;
+}
+
+// ============= FANTASY-FRIENDLY VISUAL PRIORITY SCORING =============
+function calculateVisualPriority(elements: { action: string, setting: string, objects: string[], characters: string[] }): number {
+  let score = 0;
+  
+  const visualPriorityWeights = {
+    actions: { 
+      visual: 4,      // "running", "flying", "sparkling"
+      sensory: 3,     // "seeing", "hearing", "feeling"  
+      fantasy: 4,     // "floating", "magical", "transforming"
+      abstract: 1     // "thinking", "understanding"
+    },
+    settings: { 
+      specific: 4,    // "enchanted forest", "crystal cave"
+      fantasy: 4,     // "magical castle", "floating island"
+      generic: 2      // "place", "area"
+    }
+  };
+  
+  // Score action visual priority
+  const action = elements.action.toLowerCase();
+  if (TIER_25_UNIFIED_VOCABULARY.actions.fantasy.includes(action)) {
+    score += visualPriorityWeights.actions.fantasy;
+  } else if (TIER_25_UNIFIED_VOCABULARY.actions.sensory.includes(action)) {
+    score += visualPriorityWeights.actions.sensory;
+  } else if (TIER_25_UNIFIED_VOCABULARY.actions.basic.includes(action)) {
+    score += visualPriorityWeights.actions.visual;
+  } else {
+    score += visualPriorityWeights.actions.abstract;
+  }
+  
+  // Score setting specificity
+  const setting = elements.setting.toLowerCase();
+  if (TIER_25_UNIFIED_VOCABULARY.settings.fantasy.includes(setting)) {
+    score += visualPriorityWeights.settings.fantasy;
+  } else if (TIER_25_UNIFIED_VOCABULARY.settings.specific.includes(setting)) {
+    score += visualPriorityWeights.settings.specific;
+  } else {
+    score += visualPriorityWeights.settings.generic;
+  }
+  
+  return score;
+}
+
+// ============= FANTASY BONUS SCORING (Boost Imaginative Combinations) =============
+function calculateFantasyBonus(elements: { action: string, setting: string, objects: string[], characters: string[] }): number {
+  let bonus = 0;
+  
+  const action = elements.action.toLowerCase();
+  const setting = elements.setting.toLowerCase();
+  
+  // Magical action bonus
+  if (TIER_25_UNIFIED_VOCABULARY.actions.fantasy.includes(action)) {
+    bonus += 5; // "floating", "magical", "sparkling"
+  }
+  
+  // Fantasy setting bonus
+  if (TIER_25_UNIFIED_VOCABULARY.settings.fantasy.includes(setting)) {
+    bonus += 5; // "enchanted forest", "magical castle"
+  }
+  
+  // Sensory engagement bonus
+  if (TIER_25_UNIFIED_VOCABULARY.actions.sensory.includes(action)) {
+    bonus += 3; // "seeing", "hearing", "feeling"
+  }
+  
+  // Fantasy coherence combinations
+  if (action.includes('float') && (setting.includes('cloud') || setting.includes('sky'))) {
+    bonus += 5; // "floating" + "clouds" = imaginative & visual
+  }
+  
+  if (action.includes('magic') && setting.includes('castle')) {
+    bonus += 5; // "magical" + "castle" = fantasy coherent
+  }
+  
+  if (TIER_25_UNIFIED_VOCABULARY.actions.states.includes(action) && setting.includes('forest')) {
+    bonus += 3; // "wake" + "forest" = story moment
+  }
+  
+  return bonus;
+}
+
+// ============= FANTASY-FRIENDLY SEMANTIC COHERENCE (Visual Richness > Realism) =============
+function calculateFantasyFriendlyCoherence(elements: { action: string, setting: string, objects: string[], characters: string[] }): number {
+  let score = 0;
+  
+  const action = elements.action.toLowerCase();
+  const setting = elements.setting.toLowerCase();
+  
+  // ✅ Boost Visual & Concrete Elements
+  if (action.includes('run') || action.includes('fly') || action.includes('sparkle')) {
+    score += 2; // Visual impact actions
+  }
+  
+  if (setting.includes('forest') || setting.includes('cave') || setting.includes('castle')) {
+    score += 2; // Concrete, imageable settings
+  }
+  
+  // ✅ Fantasy Story Combinations (Visual Richness > Physics)
+  if ((action.includes('float') && setting.includes('cloud')) || 
+      (action.includes('magic') && setting.includes('sparkle')) ||
+      (action.includes('glow') && setting.includes('crystal'))) {
+    score += 5; // Imaginative & visual combinations
+  }
+  
+  // ❌ Only Penalize Truly Bland/Non-Visual Descriptions
+  if (action.includes('think') && setting.includes('area')) {
+    score -= 2; // Abstract + vague = not visual
+  }
+  
+  if (action.includes('understand') && setting.includes('general')) {
+    score -= 2; // Conceptual + generic = boring
+  }
+  
+  return score;
 }
 
 // ============= MASTER PLAN: SMART PLURAL/STEM DETECTION SYSTEM =============
