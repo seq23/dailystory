@@ -424,6 +424,19 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
         statusText: response.statusText,
         error: result.error || 'Unknown error'
       });
+      
+      // Enhanced debugging for specific function failures
+      if (functionName === 'runware-simple-fallback') {
+        console.error(`🔍 TIER 2.5 FAILURE DETAILS:`, {
+          payloadSessionId: payload.sessionId,
+          hasAvatarIdentity: !!payload.avatarIdentity,
+          hasUserInfo: !!payload.userInfo,
+          hasPageText: !!payload.pageText,
+          error: result.error,
+          errorType: 'HTTP_ERROR'
+        });
+      }
+      
       throw new Error(`${functionName} failed: ${result.error || 'Unknown error'}`);
     }
     
@@ -1379,6 +1392,16 @@ serve(async (req) => {
           message: error.message,
           stack: error.stack?.substring(0, 200) || 'no stack'
         });
+        
+        // Enhanced WebSocket debugging
+        if (error.message?.includes('timeout') || error.message?.includes('WebSocket')) {
+          console.error(`🔌 WEBSOCKET DEBUG - Connection details:`, {
+            hasApiKey: !!Deno.env.get('RUNWARE_API_KEY'),
+            timestamp: new Date().toISOString(),
+            sessionId: sessionId?.substring(0, 15) + '...' || 'none',
+            errorType: error.name || 'Unknown'
+          });
+        }
       }
     }
 

@@ -727,8 +727,7 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
     // PRIORITY 1: Use enhanced skin tone variation from orchestrator if available
     if (avatarIdentity?.skinToneVariation) {
       console.log('🎭 Tier 2.5: Using orchestrator enhanced skin tone variation');
-      // FIX: Move avatarIdentity declaration before usage
-      const avatarIdentity = userInfo?.avatarIdentity || null;
+      // FIX: Use parameter directly instead of redeclaring to fix scoping error
       
       const ageMapping = {
         'beginner': '3-year-old',
@@ -4685,11 +4684,20 @@ serve(async (req: Request) => {
       console.log('🛡️ Undefined avatarIdentity - using default skinTone: medium');
     }
     
-    console.log('🛡️ Tier 2.5: Processing request with nuclear independence');
+      console.log('🛡️ Tier 2.5: Processing request with nuclear independence');
       console.log('🎭 Tier 2.5: Character consistency data received:', {
         hasCharacterData: !!characterData,
         sessionId: sessionId,
         characterSeed: characterData?.seed || 'none'
+      });
+      
+      // ENHANCED DEBUGGING: Add avatarIdentity validation
+      console.log('🔍 TIER 2.5 AVATAR DEBUG:', {
+        hasAvatarIdentity: !!avatarIdentity,
+        avatarIdentityType: typeof avatarIdentity,
+        avatarIdentityKeys: avatarIdentity ? Object.keys(avatarIdentity) : [],
+        fromUserInfo: !!userInfo?.avatarIdentity,
+        timestamp: new Date().toISOString()
       });
       
       // BULLETPROOFING: Startup diagnostics

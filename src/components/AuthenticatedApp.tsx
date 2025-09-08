@@ -568,7 +568,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           </div>
         </div>
         
-        <DismissibleSystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" />
+        {/* System health badge removed for cleaner interface */}
+        {/* <DismissibleSystemStatus className="fixed bottom-4 left-4 w-80 max-h-96 overflow-auto z-40" /> */}
       </SidebarProvider>
     </MobileKeyboardHandler>
   );

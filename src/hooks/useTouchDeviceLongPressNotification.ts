@@ -25,8 +25,8 @@ export const useTouchDeviceLongPressNotification = () => {
 
       // Show the instruction toast
       toast({
-        title: "📱 LONG PRESS any word to hear definitions and pronunciations!",
-        description: "Tap and hold for 2+ seconds on any word to activate audio features.\nThis prevents accidental taps while reading.",
+        title: "📱 LONG PRESS for Touch Interactions!",
+        description: "On touch devices, tap and hold for 2+ seconds on buttons, navigation, and interactive elements.\nThis prevents accidental taps while reading.",
         variant: "instruction", 
         duration: 0, // Persist until manually dismissed
         className: "instruction-toast touch-longpress-notification z-[200]"
