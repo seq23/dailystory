@@ -37,16 +37,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= PHASE 2 UPDATED: OPTIMIZED TEMPLATE STRUCTURE FOR MAXIMUM VISUAL IMPACT =============
+// ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - EACH PLACEHOLDER USED EXACTLY ONCE =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // NEW STRUCTURE: Character Foundation → Character Details → Scene Context → Action & Objects → Supporting Elements → Story Integration → Technical
-  beginner: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
-  easy: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
+  // NEW STRUCTURE: Foundation → Appearance → Setting → Composition → Action → Objects → Story → Technical
+  beginner: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  easy: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
   
-  // Enhanced structure with new semantic placeholders for maximum visual impact
-  medium: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
-  hard: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
-  expert: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}"
+  // Enhanced Runware-aligned structure with semantic categories for maximum visual impact
+  medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
