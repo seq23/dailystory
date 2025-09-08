@@ -595,8 +595,8 @@ function generateKidFriendlyPlaceholder(pageText: string): { url: string, succes
       <!-- Background -->
       <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
       
-      <!-- Broken Wand SVG - Centered and Scaled (matching frontend) -->
-      <g transform="translate(200, 120) scale(1.5)">
+      <!-- Broken Wand SVG - Centered and Properly Sized for Small Containers -->
+      <g transform="translate(200, 90) scale(1.2)">
         <!-- Broken wand shaft - two pieces -->
         <path d="M-20 20 L-5 5" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
         <path d="M0 0 L15 -15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
@@ -616,11 +616,11 @@ function generateKidFriendlyPlaceholder(pageText: string): { url: string, succes
         <circle cx="-10" cy="10" r="1" fill="#d1d5db" opacity="0.25"/>
       </g>
       
-      <!-- Main message -->
-      <text x="200" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
+      <!-- Main message - Positioned higher to stay visible in small containers -->
+      <text x="200" y="170" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
         Images not working right now
       </text>
-      <text x="200" y="220" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
+      <text x="200" y="190" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
         Please try again later
       </text>
     </svg>
