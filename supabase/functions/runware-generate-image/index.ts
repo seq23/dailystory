@@ -760,6 +760,39 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Handle GET requests with health check (FIX: Add debugging endpoint)
+  if (req.method === 'GET') {
+    const apiKey = Deno.env.get('RUNWARE_API_KEY');
+    console.log('🔍 GET request received - returning health check');
+    
+    return createCorsResponse({
+      status: 'healthy',
+      function: 'runware-generate-image',
+      method: 'GET',
+      timestamp: new Date().toISOString(),
+      api_key_configured: !!apiKey,
+      api_key_length: apiKey?.length || 0,
+      supported_methods: ['POST'],
+      health_check: 'OK',
+      deployment_info: {
+        tier_system: '5-tier fallback (1->2->2.5->3->4)',
+        primary_provider: 'Runware AI',
+        fallback_providers: ['Template-based', 'Nuclear hardcoded', 'OpenAI DALL-E', 'SVG placeholder']
+      },
+      usage: {
+        method: 'POST',
+        required_fields: ['pageText', 'userInfo', 'sessionId', 'storyId'],
+        optional_fields: ['pageNumber', 'isGuestUser', 'enhancedStoryData', 'forceTier']
+      }
+    });
+  }
+
+  // Validate request method (FIX: Ensure only POST requests proceed)
+  if (req.method !== 'POST') {
+    console.error(`❌ Invalid request method: ${req.method}`);
+    return createCorsErrorResponse(`Method ${req.method} not allowed. Use POST for image generation or GET for health check.`, 405);
+  }
+
   // Validate API key
   const apiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!apiKey) {
@@ -779,37 +812,113 @@ serve(async (req) => {
   console.log('✅ RUNWARE_API_KEY validated - length:', apiKey.length, 'chars');
   console.log('🎯 TIER 1 (Runware) - Starting AI-Enhanced Premium Generation');
 
+  // Initialize variables at function scope (FIX: Prevent ReferenceError)
+  let isGuestUser = false;
+  let pageText = '';
+  let userInfo = null;
+  let sessionId = '';
+  let storyId = '';
+  let pageNumber = 1;
+  let enhancedStoryData = null;
+  let forceTier = null;
+
   try {
     // ============= REQUEST PARSING WITH DEBUG =============
     console.log('📨 Parsing request body...');
     
-    // Parse request
-    const requestBody = await req.json();
-    const { 
-      pageText, 
-      userInfo, 
-      storyId,
-      sessionId,
-      pageNumber = 1,
-      isGuestUser = false, // Default to false for analytics tracking
-      enhancedStoryData,
-      forceTier // Optional: force specific tier for testing
-    } = requestBody;
+    // Validate Content-Type for POST requests (FIX: Ensure proper JSON)
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error(`❌ Invalid Content-Type: ${contentType || 'missing'}`);
+      return createCorsErrorResponse('Content-Type must be application/json for POST requests', 400);
+    }
+    
+    // Parse request with enhanced error handling (FIX: Catch JSON parse errors)
+    let requestBody;
+    try {
+      const rawBody = await req.text();
+      if (!rawBody || rawBody.trim().length === 0) {
+        console.error('❌ Empty request body received');
+        return createCorsErrorResponse('Request body cannot be empty', 400);
+      }
+      
+      requestBody = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error('❌ JSON parsing failed:', parseError.message);
+      return createCorsErrorResponse(`Invalid JSON in request body: ${parseError.message}`, 400);
+    }
+    // Extract and validate parameters (FIX: Enhanced validation with defaults)
+    const extractedParams = requestBody || {};
+    
+    pageText = extractedParams.pageText || '';
+    userInfo = extractedParams.userInfo || null;
+    storyId = extractedParams.storyId || '';
+    sessionId = extractedParams.sessionId || '';
+    pageNumber = extractedParams.pageNumber || 1;
+    isGuestUser = extractedParams.isGuestUser || false; // Default to false for analytics tracking
+    enhancedStoryData = extractedParams.enhancedStoryData || null;
+    forceTier = extractedParams.forceTier || null;
     
     console.log('✅ Request body parsed successfully');
     console.log('📊 DEBUG: Request parameters:', {
       hasPageText: !!pageText,
       pageTextLength: pageText?.length || 0,
+      pageTextPreview: pageText?.substring(0, 50) + (pageText?.length > 50 ? '...' : ''),
       hasUserInfo: !!userInfo,
+      userInfoKeys: userInfo ? Object.keys(userInfo) : [],
       sessionId: sessionId?.substring(0, 15) + '...' || 'none',
+      storyId: storyId?.substring(0, 15) + '...' || 'none',
       pageNumber,
       isGuestUser,
       forceTier: forceTier || 'auto',
-      hasEnhancedStoryData: !!enhancedStoryData
+      hasEnhancedStoryData: !!enhancedStoryData,
+      requestSize: JSON.stringify(requestBody).length
+    });
+
+    // ============================================================================
+    // ENHANCED PARAMETER VALIDATION (FIX: More comprehensive validation)
+    // ============================================================================
+    
+    // Validate required parameters with detailed error messages
+    if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
+      console.error('❌ Invalid pageText:', { pageText: pageText?.substring(0, 100) });
+      return createCorsErrorResponse('Missing or invalid pageText parameter. Must be a non-empty string.', 400);
+    }
+    
+    if (!sessionId || typeof sessionId !== 'string' || sessionId.length < 10) {
+      console.error('❌ Invalid sessionId:', { sessionId: sessionId?.substring(0, 20) });
+      return createCorsErrorResponse('Missing or invalid sessionId parameter. Must be a string with at least 10 characters.', 400);
+    }
+    
+    if (!storyId || typeof storyId !== 'string' || storyId.length < 5) {
+      console.error('❌ Invalid storyId:', { storyId: storyId?.substring(0, 20) });
+      return createCorsErrorResponse('Missing or invalid storyId parameter. Must be a string with at least 5 characters.', 400);
+    }
+
+    // Validate pageNumber
+    if (pageNumber && (typeof pageNumber !== 'number' || pageNumber < 1 || pageNumber > 1000)) {
+      console.error('❌ Invalid pageNumber:', { pageNumber });
+      return createCorsErrorResponse('Invalid pageNumber. Must be a number between 1 and 1000.', 400);
+    }
+
+    // Validate userInfo structure
+    if (!userInfo || typeof userInfo !== 'object') {
+      console.error('❌ Invalid userInfo:', { userInfo: typeof userInfo });
+      return createCorsErrorResponse('Missing or invalid userInfo parameter. Must be an object.', 400);
+    }
+
+    // Log successful parameter validation
+    console.log('✅ Enhanced parameter validation passed:', {
+      pageTextLength: pageText.length,
+      sessionIdLength: sessionId.length,
+      storyIdLength: storyId.length,
+      pageNumber,
+      userType: isGuestUser ? 'GUEST' : 'PREMIUM'
     });
 
     // ============================================================================
     // PHASE 4: CRITICAL SECURITY VALIDATION
+    // ============================================================================
     // ============================================================================
     
     // Validate required parameters
@@ -1662,12 +1771,33 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     
+    // Enhanced error logging with request context (FIX: Variables now in scope)
+    console.error('🔍 ORCHESTRATION ERROR DEBUG:', {
+      errorMessage: error.message,
+      errorType: error.constructor.name,
+      userType: isGuestUser ? 'GUEST' : 'PREMIUM',
+      sessionId: sessionId?.substring(0, 15) + '...' || 'none',
+      pageNumber,
+      timestamp: new Date().toISOString(),
+      hasPageText: !!pageText,
+      pageTextLength: pageText?.length || 0
+    });
+    
     // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
     console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
     
-    return createCorsErrorResponse(
-      `Image generation orchestration failed: ${error.message}`,
-      500
-    );
+    // Enhanced error response with retry suggestions for 504 Gateway Timeout
+    const errorMessage = error.message || 'Unknown error';
+    const isTimeoutError = errorMessage.toLowerCase().includes('timeout') || 
+                          errorMessage.toLowerCase().includes('gateway') ||
+                          errorMessage.toLowerCase().includes('504');
+    
+    const responseMessage = isTimeoutError 
+      ? `Image generation temporarily unavailable due to high demand. Please try again in a few moments. (Error: ${errorMessage})`
+      : `Image generation orchestration failed: ${errorMessage}`;
+    
+    const statusCode = isTimeoutError ? 503 : 500; // Use 503 for temporary timeout issues
+    
+    return createCorsErrorResponse(responseMessage, statusCode);
   }
 });
