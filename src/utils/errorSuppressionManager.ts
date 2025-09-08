@@ -169,6 +169,43 @@ class ErrorSuppressionManager {
       return true;
     }
 
+    // Image generation and retry messages (CRITICAL NOISE REDUCTION)
+    if (fullMessage.includes('story image failed to load') ||
+        fullMessage.includes('recent image generation calls') ||
+        fullMessage.includes('🔍 recent image generation calls') ||
+        fullMessage.includes('using enhanced fallback') ||
+        fullMessage.includes('image generation retry') ||
+        fullMessage.includes('tier success found') ||
+        fullMessage.includes('tier success identified') ||
+        fullMessage.includes('fallback to classic') ||
+        fullMessage.includes('runware-generate-image') ||
+        fullMessage.includes('debug-recent-image-prompts')) {
+      this.incrementErrorCount('Image Generation Retries');
+      return true;
+    }
+
+    // Performance monitoring messages (CRITICAL NOISE REDUCTION)
+    if (fullMessage.includes('⚡ performance:') ||
+        fullMessage.includes('performance:') && fullMessage.includes('took') ||
+        fullMessage.includes('ms') && fullMessage.includes('performance') ||
+        fullMessage.includes('forced reflow') ||
+        fullMessage.includes('long running') ||
+        fullMessage.includes('handler took')) {
+      this.incrementErrorCount('Performance Monitoring');
+      return true;
+    }
+
+    // Backend tier checking and WebSocket messages
+    if (fullMessage.includes('tier success') ||
+        fullMessage.includes('websocket') ||
+        fullMessage.includes('edge function') ||
+        fullMessage.includes('supabase function') ||
+        fullMessage.includes('runware api') ||
+        fullMessage.includes('authentication') && fullMessage.includes('websocket')) {
+      this.incrementErrorCount('Backend Debugging');
+      return true;
+    }
+
     return false;
   }
 
@@ -264,8 +301,8 @@ class ErrorSuppressionManager {
         const observer = new PerformanceObserver((list) => {
           const entries = list.getEntries();
           entries.forEach((entry) => {
-            if (entry.duration > 50) { // Log slow operations
-              this.originalConsoleWarn(`⚡ Performance: ${entry.name} took ${entry.duration.toFixed(2)}ms`);
+            if (entry.duration > 50) { // Suppress instead of log
+              this.incrementErrorCount('Performance Monitoring');
             }
           });
         });

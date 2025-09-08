@@ -483,10 +483,15 @@ const handleImageLoadingChange = useCallback((isLoading: boolean) => {
 const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
   setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
   if (isUsingFallback) {
-    console.warn('Story image failed to load, using enhanced fallback:', pageImages[currentPage]);
+    // Rate-limited console warning to prevent spam (will be suppressed by errorSuppressionManager)
+    const now = Date.now();
+    const lastWarning = sessionStorage.getItem('lastImageWarning');
+    if (!lastWarning || (now - parseInt(lastWarning)) > 10000) { // 10 second rate limit
+      console.warn('Story image failed to load, using enhanced fallback:', pageImages[currentPage]);
+      sessionStorage.setItem('lastImageWarning', now.toString());
+    }
     
     // Rate-limited fallback to prevent spam
-    const now = Date.now();
     const lastFallback = sessionStorage.getItem('lastImageFallback');
     if (!lastFallback || (now - parseInt(lastFallback)) > 5000) { // 5 second rate limit
       fallbackToClassic('image-error');
