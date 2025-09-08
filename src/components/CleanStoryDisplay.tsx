@@ -939,19 +939,7 @@ const [highlightSave, setHighlightSave] = useState(false);
   const effectiveAudioText = currentStoryText; // Use full text for audio - no truncation
   const contentHash = hashText(effectiveAudioText);
 
-  // 🔍 PHASE 1: Debug hash generation
-  console.log('🧮 Hash Generation Debug:', {
-    currentPage,
-    fullTextLength: currentStoryText.length,
-    effectiveTextLength: effectiveAudioText.length,
-    isPremium,
-    textTruncated: false, // No longer truncating
-    truncatedChars: 0, // No longer truncating
-    generatedHash: contentHash?.slice(0, 12),
-    fullText: currentStoryText.slice(0, 100) + (currentStoryText.length > 100 ? '...' : ''),
-    effectiveText: effectiveAudioText.slice(0, 100) + (effectiveAudioText.length > 100 ? '...' : ''),
-    timestamp: Date.now()
-  });
+  // Hash generation debug (suppressed for clean console)
 
   // Event-based story stability - listen for actual completion
   useEffect(() => {

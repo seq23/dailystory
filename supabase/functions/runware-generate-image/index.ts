@@ -179,7 +179,7 @@ class RunwareWebSocketManager {
   private static readonly MAX_RETRIES = 3;
   private static readonly BASE_DELAY = 1000; // 1 second
   private static readonly MAX_DELAY = 8000; // 8 seconds
-  private static readonly CONNECTION_TIMEOUT = 30000; // 30 seconds
+  private static readonly CONNECTION_TIMEOUT = 45000; // 45 seconds - increased timeout
   
   static async connectWithRetry(
     apiKey: string, 
