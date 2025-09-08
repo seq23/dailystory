@@ -2978,135 +2978,573 @@ function extractFirstSentences(pageText: string, difficulty: string): string {
   }
 }
 
-// ============= PHASE 3: NEW SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
+// ============= ENHANCED TIER 2.5 SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
+
+// ============= ENHANCED ATMOSPHERIC ARRAYS FOR ROBUST FALLBACKS =============
+const ENHANCED_WEATHER_PATTERNS = [
+  // Stormy weather patterns
+  'dramatic stormy atmosphere', 'moody overcast skies', 'gentle rain ambiance', 'misty fog atmosphere',
+  'heavy storm clouds', 'light drizzle mood', 'thunderous dramatic skies', 'refreshing rain scene',
+  
+  // Time-specific patterns
+  'early morning mist', 'noon blazing sun', 'twilight purple hues', 'midnight starry atmosphere',
+  'dawn breaking light', 'midday bright warmth', 'evening golden hour', 'late night peaceful mood',
+  
+  // Seasonal contexts
+  'spring bloom atmosphere', 'summer heat waves', 'autumn leaf patterns', 'winter snow peace',
+  'spring fresh air', 'summer vibrant energy', 'autumn cozy warmth', 'winter crisp clarity',
+  
+  // Mood-based lighting
+  'dramatic cinematic lighting', 'cozy intimate glow', 'mysterious shadow play', 'cheerful bright ambiance',
+  'romantic soft lighting', 'energetic dynamic illumination', 'peaceful serene atmosphere', 'exciting vibrant glow'
+];
+
+const ENHANCED_TIME_DETECTION = [
+  // Morning patterns
+  'bright morning sunshine', 'early dawn light', 'fresh morning air', 'sunrise golden glow',
+  
+  // Midday patterns  
+  'brilliant noon light', 'blazing midday sun', 'peak daylight brightness', 'high sun illumination',
+  
+  // Evening patterns
+  'warm evening glow', 'sunset amber light', 'dusk purple atmosphere', 'twilight soft lighting',
+  
+  // Night patterns
+  'gentle moonlight', 'starry night sky', 'peaceful night atmosphere', 'midnight serene glow'
+];
 
 /**
- * Extract atmosphere details (lighting, weather, mood) from story content
+ * ENHANCED Extract atmosphere details with robust fallbacks for weather, time, seasons, and mood
  */
 function extractAtmosphere(pageText: string, scene: string, setting: string): string {
   try {
     const text = (pageText + ' ' + scene + ' ' + setting).toLowerCase();
     const seed = pageText + scene + setting; // Use combined text as seed for consistency
     
-    // ============= PURE LIGHTING DETECTION =============
-    if (text.match(/sunny|bright|sunshine|golden|warm light|morning|dawn/)) {
+    // ============= ENHANCED WEATHER PATTERN DETECTION =============
+    // Stormy weather with sub-patterns
+    if (text.match(/storm|thunder|lightning|heavy rain|downpour/)) {
+      return getSeededRandomItem(['dramatic stormy atmosphere', 'moody overcast skies', 'thunderous dramatic skies'], seed + '_storm');
+    }
+    if (text.match(/fog|mist|haze|humid/)) {
+      return getSeededRandomItem(['misty fog atmosphere', 'early morning mist', 'gentle misty air'], seed + '_fog');
+    }
+    if (text.match(/rain|drizzle|wet|precipitation/)) {
+      return getSeededRandomItem(['gentle rain ambiance', 'light drizzle mood', 'refreshing rain scene'], seed + '_rain');
+    }
+    
+    // ============= ENHANCED TIME-OF-DAY DETECTION =============
+    if (text.match(/dawn|sunrise|early morning|morning light/)) {
+      return getSeededRandomItem(ENHANCED_TIME_DETECTION.slice(0, 4), seed + '_morning');
+    }
+    if (text.match(/noon|midday|blazing sun|peak sun|high sun/)) {
+      return getSeededRandomItem(ENHANCED_TIME_DETECTION.slice(4, 8), seed + '_noon');
+    }
+    if (text.match(/evening|sunset|dusk|twilight|amber hour/)) {
+      return getSeededRandomItem(ENHANCED_TIME_DETECTION.slice(8, 12), seed + '_evening');
+    }
+    if (text.match(/night|midnight|stars|moon|nocturnal/)) {
+      return getSeededRandomItem(ENHANCED_TIME_DETECTION.slice(12, 16), seed + '_night');
+    }
+    
+    // ============= ENHANCED SEASONAL CONTEXT DETECTION =============
+    if (text.match(/spring|bloom|fresh|new growth|budding|awakening/)) {
+      return getSeededRandomItem(['spring bloom atmosphere', 'spring fresh air', 'renewed spring energy'], seed + '_spring');
+    }
+    if (text.match(/summer|hot|heat|blazing|sweltering|vibrant/)) {
+      return getSeededRandomItem(['summer heat waves', 'summer vibrant energy', 'intense summer warmth'], seed + '_summer');
+    }
+    if (text.match(/autumn|fall|leaves|harvest|cozy|orange|brown/)) {
+      return getSeededRandomItem(['autumn leaf patterns', 'autumn cozy warmth', 'harvest season glow'], seed + '_autumn');
+    }
+    if (text.match(/winter|snow|cold|frost|crisp|peaceful/)) {
+      return getSeededRandomItem(['winter snow peace', 'winter crisp clarity', 'serene winter atmosphere'], seed + '_winter');
+    }
+    
+    // ============= ENHANCED MOOD-BASED LIGHTING DETECTION =============
+    if (text.match(/dramatic|intense|powerful|bold/)) {
+      return getSeededRandomItem(['dramatic cinematic lighting', 'dramatic stormy atmosphere', 'intense atmospheric mood'], seed + '_dramatic');
+    }
+    if (text.match(/cozy|comfortable|warm|intimate|snug/)) {
+      return getSeededRandomItem(['cozy intimate glow', 'warm comfortable lighting', 'snug atmospheric warmth'], seed + '_cozy');
+    }
+    if (text.match(/mysterious|secret|hidden|shadow|dark/)) {
+      return getSeededRandomItem(['mysterious shadow play', 'enigmatic lighting mood', 'shadowy atmospheric mystery'], seed + '_mysterious');
+    }
+    if (text.match(/exciting|energetic|vibrant|dynamic|lively/)) {
+      return getSeededRandomItem(['exciting vibrant glow', 'energetic dynamic illumination', 'lively atmospheric energy'], seed + '_exciting');
+    }
+    
+    // ============= ENHANCED PURE LIGHTING DETECTION =============
+    if (text.match(/sunny|bright|sunshine|golden|warm light|brilliant/)) {
       return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(0, 30), seed + '_lighting');
     }
-    if (text.match(/cloudy|overcast|grey|dim|cool|soft/)) {
+    if (text.match(/cloudy|overcast|grey|dim|cool|soft|gentle/)) {
       return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(30, 51), seed + '_lighting');
     }
-    if (text.match(/evening|sunset|dusk|night|dark|stars|moon/)) {
-      return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(51, 66), seed + '_lighting');
+    
+    // ============= ROBUST FALLBACK SYSTEM =============
+    // Multiple fallback layers for maximum reliability
+    if (text.match(/outdoor|outside|nature|environment/)) {
+      return getSeededRandomItem(['bright natural lighting', 'cheerful outdoor atmosphere', 'pleasant environmental glow'], seed + '_outdoor');
+    }
+    if (text.match(/indoor|inside|room|home/)) {
+      return getSeededRandomItem(['warm indoor lighting', 'cozy interior glow', 'comfortable room atmosphere'], seed + '_indoor');
     }
     
-    // ============= PURE WEATHER DETECTION =============
-    if (text.match(/rain|storm|wet|snow|winter|cold|spring|fresh|summer|hot|breeze|wind|mist/)) {
-      if (text.match(/clear|sunny|perfect|beautiful|gorgeous/)) {
-        return getSeededRandomItem(UNIVERSAL_WEATHER_ARRAYS.slice(0, 20), seed + '_weather');
-      } else {
-        return getSeededRandomItem(UNIVERSAL_WEATHER_ARRAYS.slice(20, 35), seed + '_weather');
-      }
-    }
-    
-    // ============= DEFAULT: RANDOM LIGHTING =============
-    return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(0, 30), seed + '_default');
+    // ============= ULTIMATE FALLBACK: ENHANCED DEFAULT =============
+    const defaultOptions = ['bright golden lighting', 'cheerful warm atmosphere', 'pleasant natural glow', 'inviting soft lighting'];
+    return getSeededRandomItem(defaultOptions, seed + '_ultimate_default');
     
   } catch (error) {
-    console.warn('⚠️ Atmosphere extraction failed:', error);
+    console.warn('⚠️ Enhanced atmosphere extraction failed:', error);
     return ' with bright golden lighting'; // Emergency fallback
   }
 }
 
+// ============= ENHANCED COLOR DETECTION ARRAYS FOR VIVID OBJECT INTEGRATION =============
+const VIVID_COLOR_PATTERNS = [
+  // Primary colors with vibrancy
+  'vibrant red', 'brilliant blue', 'sunny yellow', 'forest green', 'royal purple', 'bright orange',
+  
+  // Material-based colors
+  'wooden brown', 'metallic silver', 'golden brass', 'copper shine', 'fabric patterns', 'ceramic white',
+  'leather tan', 'glass crystal', 'stone gray', 'marble veins', 'silk shimmer', 'velvet deep tones',
+  
+  // Seasonal colors
+  'autumn leaves orange', 'spring blossom pink', 'summer sky blue', 'winter snow white',
+  'harvest gold', 'spring grass green', 'ocean wave blue', 'sunset coral',
+  
+  // Cultural color significance
+  'festive celebration colors', 'traditional pattern colors', 'ceremonial bright hues', 'cultural textile colors',
+  'holiday decoration colors', 'community banner colors', 'artistic expression colors', 'heritage pattern colors'
+];
+
+const ENHANCED_OBJECT_COLORS = {
+  // Educational items with colors
+  books: ['colorful storybooks', 'rainbow-bound books', 'bright educational materials', 'vibrant reading collections'],
+  school: ['bright school supplies', 'colorful learning tools', 'rainbow educational kit', 'vivid study materials'],
+  technology: ['sleek modern devices', 'bright-screen technology', 'colorful digital tools', 'illuminated tech gadgets'],
+  
+  // Creative items with colors
+  art: ['rainbow art materials', 'vibrant painting supplies', 'colorful creative tools', 'bright artistic mediums'],
+  music: ['gleaming musical instruments', 'colorful sound makers', 'bright melodic tools', 'vibrant music gear'],
+  craft: ['rainbow craft supplies', 'colorful making materials', 'bright creative tools', 'vivid crafting kit'],
+  
+  // Play items with colors
+  toys: ['bright colorful toys', 'rainbow play items', 'vivid game pieces', 'cheerful toy collection'],
+  outdoor: ['colorful outdoor gear', 'bright sports equipment', 'vivid activity tools', 'rainbow recreation items'],
+  comfort: ['soft colorful companions', 'rainbow cuddly friends', 'bright comfort items', 'vivid beloved toys']
+};
+
 /**
- * Extract props (documents, tools, items) from story context
+ * ENHANCED Extract props with vivid color integration and material detection
  */
 function extractProps(pageText: string, scene: string): string {
   try {
     const text = (pageText + ' ' + scene).toLowerCase();
+    const seed = pageText + scene; // For consistent color selection
     
-    // Educational props
-    if (text.match(/book|reading|story|page/)) return ' with colorful storybooks';
-    if (text.match(/pencil|pen|writing|homework/)) return ' with school supplies';
-    if (text.match(/computer|tablet|laptop/)) return ' with modern technology';
+    // ============= ENHANCED COLOR DETECTION FROM STORY TEXT =============
+    let detectedColors = [];
     
-    // Creative props
-    if (text.match(/paint|brush|art|drawing/)) return ' with art materials';
-    if (text.match(/music|instrument|piano|guitar/)) return ' with musical instruments';
-    if (text.match(/craft|glue|scissors/)) return ' with craft supplies';
+    // Specific color detection with context
+    if (text.match(/red|crimson|scarlet|ruby|cherry/)) detectedColors.push('vibrant red');
+    if (text.match(/blue|azure|sapphire|navy|cobalt/)) detectedColors.push('brilliant blue');
+    if (text.match(/green|emerald|jade|forest|lime/)) detectedColors.push('forest green');
+    if (text.match(/yellow|golden|amber|sunshine|lemon/)) detectedColors.push('sunny yellow');
+    if (text.match(/purple|violet|lavender|amethyst|plum/)) detectedColors.push('royal purple');
+    if (text.match(/orange|coral|peach|tangerine|amber/)) detectedColors.push('bright orange');
+    if (text.match(/pink|rose|blush|magenta|fuchsia/)) detectedColors.push('spring blossom pink');
+    if (text.match(/brown|chocolate|coffee|wooden|mahogany/)) detectedColors.push('wooden brown');
+    if (text.match(/silver|metallic|chrome|steel|aluminum/)) detectedColors.push('metallic silver');
+    if (text.match(/gold|golden|brass|bronze|copper/)) detectedColors.push('golden brass');
     
-    // Play props
-    if (text.match(/ball|toy|game|puzzle/)) return ' with engaging toys';
-    if (text.match(/bike|scooter|skateboard/)) return ' with outdoor equipment';
-    if (text.match(/doll|stuffed animal|teddy/)) return ' with beloved toys';
+    // ============= ENHANCED EDUCATIONAL PROPS WITH COLOR INTEGRATION =============
+    if (text.match(/book|reading|story|page|library|novel/)) {
+      const colorContext = detectedColors.length > 0 ? detectedColors[0] : getSeededRandomItem(['colorful', 'rainbow', 'bright'], seed);
+      return ` with ${colorContext} storybooks and reading materials`;
+    }
+    if (text.match(/pencil|pen|writing|homework|notebook|journal/)) {
+      const colorContext = detectedColors.length > 0 ? detectedColors[0] : getSeededRandomItem(ENHANCED_OBJECT_COLORS.school, seed);
+      return ` with ${colorContext}`;
+    }
+    if (text.match(/computer|tablet|laptop|screen|digital|tech/)) {
+      const colorContext = detectedColors.length > 0 ? `${detectedColors[0]} accented` : getSeededRandomItem(['sleek modern', 'bright-screen', 'colorful digital'], seed);
+      return ` with ${colorContext} technology`;
+    }
+    
+    // ============= ENHANCED CREATIVE PROPS WITH MATERIAL COLORS =============
+    if (text.match(/paint|brush|art|drawing|canvas|palette/)) {
+      const materialColor = getSeededRandomItem(['rainbow', 'vibrant', 'colorful', 'bright'], seed);
+      const baseColor = detectedColors.length > 0 ? detectedColors[0] : materialColor;
+      return ` with ${baseColor} art materials and creative supplies`;
+    }
+    if (text.match(/music|instrument|piano|guitar|violin|drums/)) {
+      const materialFinish = getSeededRandomItem(['gleaming wooden', 'polished metallic', 'bright colorful', 'traditional crafted'], seed);
+      return ` with ${materialFinish} musical instruments`;
+    }
+    if (text.match(/craft|glue|scissors|fabric|thread|pattern/)) {
+      const craftColors = getSeededRandomItem(['rainbow', 'vibrant', 'traditional pattern', 'festive'], seed);
+      return ` with ${craftColors} craft supplies and materials`;
+    }
+    
+    // ============= ENHANCED PLAY PROPS WITH SEASONAL COLORS =============
+    if (text.match(/ball|toy|game|puzzle|blocks|lego/)) {
+      const playColors = detectedColors.length > 0 ? detectedColors[0] : getSeededRandomItem(['bright colorful', 'rainbow', 'cheerful', 'vivid'], seed);
+      return ` with ${playColors} toys and games`;
+    }
+    if (text.match(/bike|scooter|skateboard|roller|outdoor/)) {
+      const outdoorColors = getSeededRandomItem(['bright', 'colorful', 'vibrant', 'eye-catching'], seed);
+      return ` with ${outdoorColors} outdoor equipment`;
+    }
+    if (text.match(/doll|stuffed|teddy|plush|comfort|soft/)) {
+      const comfortColors = getSeededRandomItem(['soft colorful', 'cuddly', 'warm-toned', 'gentle'], seed);
+      return ` with ${comfortColors} comfort items`;
+    }
+    
+    // ============= SEASONAL AND CULTURAL COLOR INTEGRATION =============
+    if (text.match(/spring|bloom|flower|fresh/)) {
+      const springColors = getSeededRandomItem(['spring blossom', 'fresh green', 'blooming', 'renewal'], seed);
+      return ` with ${springColors} seasonal items`;
+    }
+    if (text.match(/summer|sun|beach|vacation|hot/)) {
+      const summerColors = getSeededRandomItem(['summer bright', 'sun-kissed', 'beach colorful', 'vacation vibrant'], seed);
+      return ` with ${summerColors} summer items`;
+    }
+    if (text.match(/autumn|fall|harvest|orange|brown/)) {
+      const autumnColors = getSeededRandomItem(['autumn leaves', 'harvest golden', 'warm earth tones', 'cozy'], seed);
+      return ` with ${autumnColors} seasonal items`;
+    }
+    if (text.match(/winter|snow|frost|cold|white/)) {
+      const winterColors = getSeededRandomItem(['winter white', 'frosted', 'crystal clear', 'snow bright'], seed);
+      return ` with ${winterColors} winter items`;
+    }
+    
+    // ============= CULTURAL COLOR SIGNIFICANCE =============
+    if (text.match(/festival|celebration|party|ceremony|cultural/)) {
+      const culturalColors = getSeededRandomItem(VIVID_COLOR_PATTERNS.slice(-8), seed); // Last 8 are cultural colors
+      return ` with ${culturalColors}`;
+    }
     
     return ''; // Optional placeholder - can be empty
   } catch (error) {
-    console.warn('⚠️ Props extraction failed:', error);
-    return ''; // PHASE 4: Optional placeholder returns empty string
+    console.warn('⚠️ Enhanced props extraction failed:', error);
+    return ''; // Optional placeholder returns empty string
   }
 }
 
+// ============= ENHANCED SPATIAL POSITIONING ARRAYS FOR SECONDARY CHARACTERS =============
+const SPATIAL_RELATIONSHIPS = [
+  // Close proximity positioning
+  'beside', 'next to', 'alongside', 'near', 'close to', 'adjacent to',
+  
+  // Directional positioning  
+  'behind', 'in front of', 'to the left of', 'to the right of', 'above', 'below',
+  
+  // Group formation positioning
+  'surrounding', 'gathered around', 'in a circle with', 'forming a line with', 'clustered with',
+  
+  // Interactive positioning
+  'facing', 'looking toward', 'reaching toward', 'walking with', 'sitting with', 'standing with',
+  
+  // Distance contexts
+  'close together with', 'spread out with', 'at a distance from', 'approaching', 'near but separate from'
+];
+
+const GROUP_FORMATION_PATTERNS = [
+  // Circle formations
+  'in a friendly circle', 'gathered in a circle', 'sitting in a circle', 'standing in a ring',
+  
+  // Line formations
+  'standing in a line', 'walking in a line', 'sitting in a row', 'arranged in sequence',
+  
+  // Cluster formations
+  'clustered together', 'grouped closely', 'huddled together', 'bunched up',
+  
+  // Interactive formations
+  'facing each other', 'looking together', 'working together', 'playing together',
+  
+  // Natural formations
+  'scattered naturally', 'positioned comfortably', 'arranged organically', 'flowing together'
+];
+
 /**
- * Extract community context (social events, community spaces) from setting
+ * ENHANCED Extract community context with secondary character spatial positioning
  */
 function extractCommunityContext(pageText: string, setting: string): string {
   try {
     const text = (pageText + ' ' + setting).toLowerCase();
+    const seed = pageText + setting; // For consistent spatial selection
     
-    // Community events
-    if (text.match(/festival|celebration|party|gathering/)) return ' during a community celebration';
-    if (text.match(/market|fair|bazaar/)) return ' at a vibrant community market';
-    if (text.match(/parade|march|ceremony/)) return ' during a community event';
+    // ============= ENHANCED SPATIAL RELATIONSHIP DETECTION =============
+    let spatialContext = '';
     
-    // Community spaces
-    if (text.match(/library|community center/)) return ' in a welcoming community space';
-    if (text.match(/park|playground|garden/)) return ' in a shared community area';
-    if (text.match(/school|classroom|cafeteria/)) return ' in an educational community setting';
+    // Detect specific spatial keywords and enhance them
+    if (text.match(/beside|next to|alongside|near|close/)) {
+      spatialContext = getSeededRandomItem(['positioned beside', 'standing close to', 'situated near'], seed + '_beside');
+    }
+    if (text.match(/behind|in front|ahead|forward|back/)) {
+      spatialContext = getSeededRandomItem(['positioned behind', 'standing in front of', 'arranged in front'], seed + '_directional');
+    }
+    if (text.match(/circle|around|surrounding|gathered/)) {
+      spatialContext = getSeededRandomItem(GROUP_FORMATION_PATTERNS.slice(0, 4), seed + '_circle');
+    }
+    if (text.match(/line|row|sequence|ordered/)) {
+      spatialContext = getSeededRandomItem(GROUP_FORMATION_PATTERNS.slice(4, 8), seed + '_line');
+    }
+    if (text.match(/together|group|cluster|bunch/)) {
+      spatialContext = getSeededRandomItem(GROUP_FORMATION_PATTERNS.slice(8, 12), seed + '_cluster');
+    }
+    if (text.match(/facing|looking|watching|observing/)) {
+      spatialContext = getSeededRandomItem(['facing each other', 'looking together', 'watching together'], seed + '_facing');
+    }
     
-    // Social contexts
-    if (text.match(/friend|classmate|neighbor/)) return ' with community connections';
-    if (text.match(/family|parent|sibling/)) return ' in a family community setting';
-    if (text.match(/teacher|coach|mentor/)) return ' with community mentors';
+    // ============= ENHANCED COMMUNITY EVENTS WITH SPATIAL CONTEXT =============
+    if (text.match(/festival|celebration|party|gathering/)) {
+      const spatialEnhancement = spatialContext || getSeededRandomItem(['gathered together for', 'celebrating together at', 'enjoying together during'], seed + '_celebration');
+      return ` ${spatialEnhancement} a vibrant community celebration`;
+    }
+    if (text.match(/market|fair|bazaar|vendor/)) {
+      const spatialEnhancement = spatialContext || getSeededRandomItem(['exploring together at', 'wandering through', 'discovering together at'], seed + '_market');
+      return ` ${spatialEnhancement} a colorful community market`;
+    }
+    if (text.match(/parade|march|ceremony|procession/)) {
+      const spatialEnhancement = spatialContext || getSeededRandomItem(['participating together in', 'watching together during', 'joining together for'], seed + '_parade');
+      return ` ${spatialEnhancement} a community event`;
+    }
+    
+    // ============= ENHANCED COMMUNITY SPACES WITH GROUP DYNAMICS =============
+    if (text.match(/library|community center|hall|building/)) {
+      const groupDynamic = spatialContext || getSeededRandomItem(['gathered together in', 'meeting together at', 'learning together in'], seed + '_space');
+      return ` ${groupDynamic} a welcoming community space`;
+    }
+    if (text.match(/park|playground|garden|outdoor/)) {
+      const outdoorDynamic = spatialContext || getSeededRandomItem(['playing together in', 'exploring together at', 'enjoying together in'], seed + '_outdoor');
+      return ` ${outdoorDynamic} a shared community area`;
+    }
+    if (text.match(/school|classroom|cafeteria|educational/)) {
+      const learningDynamic = spatialContext || getSeededRandomItem(['learning together in', 'studying together at', 'working together in'], seed + '_educational');
+      return ` ${learningDynamic} an educational community setting`;
+    }
+    
+    // ============= ENHANCED SOCIAL CONTEXTS WITH INTERACTION PATTERNS =============
+    if (text.match(/friend|classmate|neighbor|peer/)) {
+      const socialInteraction = spatialContext || getSeededRandomItem(['connecting with', 'interacting with', 'bonding with'], seed + '_social');
+      return ` ${socialInteraction} community friends`;
+    }
+    if (text.match(/family|parent|sibling|relative/)) {
+      const familyInteraction = spatialContext || getSeededRandomItem(['gathered with', 'spending time with', 'enjoying time with'], seed + '_family');
+      return ` ${familyInteraction} family in a community setting`;
+    }
+    if (text.match(/teacher|coach|mentor|guide/)) {
+      const mentorInteraction = spatialContext || getSeededRandomItem(['learning from', 'guided by', 'supported by'], seed + '_mentor');
+      return ` ${mentorInteraction} community mentors`;
+    }
+    
+    // ============= ENHANCED ACTIVITY-BASED SPATIAL CONTEXTS =============
+    if (text.match(/sport|game|play|activity|exercise/)) {
+      const activitySpatial = getSeededRandomItem(['playing together in', 'competing together during', 'exercising together at'], seed + '_activity');
+      return ` ${activitySpatial} community activities`;
+    }
+    if (text.match(/music|art|performance|creative/)) {
+      const creativeSpatial = getSeededRandomItem(['creating together in', 'performing together at', 'expressing together during'], seed + '_creative');
+      return ` ${creativeSpatial} community arts`;
+    }
     
     return ''; // Optional placeholder - can be empty
   } catch (error) {
-    console.warn('⚠️ Community context extraction failed:', error);
-    return ''; // PHASE 4: Optional placeholder returns empty string
+    console.warn('⚠️ Enhanced community context extraction failed:', error);
+    return ''; // Optional placeholder returns empty string
   }
 }
 
+// ============= ENHANCED SENSORY INTEGRATION ARRAYS =============
+const ENHANCED_SENSORY_LAYERS = {
+  sounds: {
+    joyful: ['melodious laughter', 'cheerful giggles', 'delighted squeals', 'happy chatter'],
+    musical: ['harmonious melodies', 'rhythmic beats', 'gentle singing', 'instrumental harmony'],
+    nature: ['chirping birds', 'rustling leaves', 'flowing water', 'gentle breeze sounds'],
+    ambient: ['peaceful atmosphere', 'serene background sounds', 'calming environmental audio', 'tranquil soundscape']
+  },
+  textures: {
+    comfort: ['silky smooth surfaces', 'plush soft materials', 'cozy warm textures', 'gentle tactile comfort'],
+    natural: ['organic surface textures', 'natural material feel', 'earth-connected textures', 'authentic surface quality'],
+    crafted: ['carefully finished surfaces', 'artisan texture work', 'handmade material quality', 'skilled craft textures']
+  },
+  scents: {
+    floral: ['garden bloom fragrances', 'sweet flower scents', 'natural botanical aromas', 'fresh petal essences'],
+    culinary: ['appetizing food aromas', 'homemade cooking scents', 'delicious kitchen fragrances', 'comforting meal smells'],
+    environmental: ['fresh outdoor air', 'clean natural scents', 'pure environmental fragrances', 'wholesome nature aromas']
+  }
+};
+
 /**
- * Extract sensory details (sounds, textures, scents) for immersion
+ * ENHANCED Extract sensory details with layered immersion and cultural sensitivity
  */
 function extractSensoryDetails(pageText: string, scene: string): string {
   try {
     const text = (pageText + ' ' + scene).toLowerCase();
+    const seed = pageText + scene; // For consistent sensory selection
     
-    // Sound details
-    if (text.match(/laugh|giggle|cheer/)) return ' with joyful laughter';
-    if (text.match(/music|song|singing/)) return ' with cheerful music';
-    if (text.match(/birds|chirp/)) return ' with gentle bird sounds';
-    if (text.match(/water|stream|splash/)) return ' with peaceful water sounds';
+    let sensoryLayers = [];
     
-    // Texture details
-    if (text.match(/soft|smooth|fluffy/)) return ' with soft comfortable textures';
-    if (text.match(/rough|bumpy|rocky/)) return ' with interesting textures';
-    if (text.match(/warm|cozy|comfortable/)) return ' with warm welcoming textures';
+    // ============= ENHANCED SOUND LAYER DETECTION =============
+    if (text.match(/laugh|giggle|cheer|happy|joy|delight/)) {
+      const joyfulSound = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.sounds.joyful, seed + '_joy');
+      sensoryLayers.push(`with ${joyfulSound}`);
+    }
+    if (text.match(/music|song|singing|melody|rhythm|harmony/)) {
+      const musicalSound = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.sounds.musical, seed + '_music');
+      sensoryLayers.push(`with ${musicalSound}`);
+    }
+    if (text.match(/birds|chirp|nature|outdoor|forest|garden/)) {
+      const natureSound = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.sounds.nature, seed + '_nature');
+      sensoryLayers.push(`with ${natureSound}`);
+    }
+    if (text.match(/water|stream|splash|ocean|rain|fountain/)) {
+      const waterSounds = ['gentle water sounds', 'peaceful flowing water', 'soothing water motion', 'calming aquatic ambiance'];
+      sensoryLayers.push(`with ${getSeededRandomItem(waterSounds, seed + '_water')}`);
+    }
     
-    // Scent details
-    if (text.match(/flower|garden|bloom/)) return ' with fresh floral scents';
-    if (text.match(/food|cooking|baking/)) return ' with delicious aromas';
-    if (text.match(/ocean|sea|beach/)) return ' with fresh ocean air';
-    if (text.match(/forest|tree|pine/)) return ' with natural woodland scents';
+    // ============= ENHANCED TEXTURE LAYER DETECTION =============
+    if (text.match(/soft|smooth|fluffy|silky|gentle|comfortable/)) {
+      const comfortTexture = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.textures.comfort, seed + '_comfort');
+      sensoryLayers.push(`featuring ${comfortTexture}`);
+    }
+    if (text.match(/rough|bumpy|rocky|textured|natural|organic/)) {
+      const naturalTexture = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.textures.natural, seed + '_natural');
+      sensoryLayers.push(`featuring ${naturalTexture}`);
+    }
+    if (text.match(/warm|cozy|welcoming|inviting|embracing/)) {
+      const warmthTextures = ['warming tactile comfort', 'cozy material embrace', 'welcoming surface warmth', 'inviting textural comfort'];
+      sensoryLayers.push(`featuring ${getSeededRandomItem(warmthTextures, seed + '_warmth')}`);
+    }
+    if (text.match(/craft|handmade|artisan|created|built/)) {
+      const craftedTexture = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.textures.crafted, seed + '_crafted');
+      sensoryLayers.push(`featuring ${craftedTexture}`);
+    }
+    
+    // ============= ENHANCED SCENT LAYER DETECTION =============
+    if (text.match(/flower|garden|bloom|botanical|floral|petal/)) {
+      const floralScent = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.scents.floral, seed + '_floral');
+      sensoryLayers.push(`enhanced by ${floralScent}`);
+    }
+    if (text.match(/food|cooking|baking|kitchen|meal|delicious/)) {
+      const culinaryScent = getSeededRandomItem(ENHANCED_SENSORY_LAYERS.scents.culinary, seed + '_culinary');
+      sensoryLayers.push(`enhanced by ${culinaryScent}`);
+    }
+    if (text.match(/ocean|sea|beach|coastal|marine/)) {
+      const oceanScents = ['fresh ocean air', 'salt-kissed sea breeze', 'coastal atmospheric freshness', 'marine environment clarity'];
+      sensoryLayers.push(`enhanced by ${getSeededRandomItem(oceanScents, seed + '_ocean')}`);
+    }
+    if (text.match(/forest|tree|pine|woodland|natural/)) {
+      const forestScents = ['natural woodland aromas', 'fresh forest air', 'pine-scented atmosphere', 'woodland environmental freshness'];
+      sensoryLayers.push(`enhanced by ${getSeededRandomItem(forestScents, seed + '_forest')}`);
+    }
+    
+    // ============= SEASONAL SENSORY ENHANCEMENT =============
+    if (text.match(/spring|fresh|new|growth|renewal/)) {
+      const springScents = ['fresh spring air', 'renewal atmospheric quality', 'new growth fragrances', 'spring awakening scents'];
+      sensoryLayers.push(`enhanced by ${getSeededRandomItem(springScents, seed + '_spring')}`);
+    }
+    if (text.match(/summer|warm|hot|sunny|vibrant/)) {
+      const summerScents = ['warm summer air', 'sun-warmed atmospheric quality', 'summer heat fragrances', 'vibrant season scents'];
+      sensoryLayers.push(`enhanced by ${getSeededRandomItem(summerScents, seed + '_summer')}`);
+    }
+    if (text.match(/autumn|fall|harvest|cozy|comfortable/)) {
+      const autumnScents = ['autumn harvest aromas', 'cozy seasonal air', 'fall comfort fragrances', 'harvest-time scents'];
+      sensoryLayers.push(`enhanced by ${getSeededRandomItem(autumnScents, seed + '_autumn')}`);
+    }
+    if (text.match(/winter|crisp|clean|clear|fresh/)) {
+      const winterScents = ['crisp winter air', 'clean seasonal atmosphere', 'winter clarity fragrances', 'fresh cold-weather scents'];
+      sensoryLayers.push(`enhanced by ${getSeededRandomItem(winterScents, seed + '_winter')}`);
+    }
+    
+    // ============= LAYERED SENSORY COMBINATION =============
+    if (sensoryLayers.length > 1) {
+      // Combine multiple sensory layers for rich experience
+      return ` ${sensoryLayers.slice(0, 2).join(' and ')}`; // Limit to 2 layers for clarity
+    } else if (sensoryLayers.length === 1) {
+      return ` ${sensoryLayers[0]}`;
+    }
     
     return ''; // Optional placeholder - can be empty
   } catch (error) {
-    console.warn('⚠️ Sensory details extraction failed:', error);
-    return ''; // PHASE 4: Optional placeholder returns empty string
+    console.warn('⚠️ Enhanced sensory details extraction failed:', error);
+    return ''; // Optional placeholder returns empty string
   }
 }
 
-// ============= END PHASE 3: NEW SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
+// ============= ENHANCED SECONDARY CHARACTER SPATIAL POSITIONING FUNCTION =============
+
+/**
+ * ENHANCED Process secondary characters with spatial positioning and group dynamics
+ */
+function enhanceSecondaryCharacterPositioning(secondaryCharacters: string, pageText: string, scene: string): string {
+  if (!secondaryCharacters || !secondaryCharacters.trim()) {
+    return '';
+  }
+  
+  try {
+    const text = (pageText + ' ' + scene).toLowerCase();
+    const seed = secondaryCharacters + pageText + scene;
+    
+    // Clean the secondary characters text
+    const cleanCharacters = secondaryCharacters.replace(/^with\s+/, '').trim();
+    if (!cleanCharacters) return '';
+    
+    // ============= SPATIAL RELATIONSHIP DETECTION =============
+    let spatialPositioning = '';
+    
+    if (text.match(/beside|next to|alongside|near|close/)) {
+      spatialPositioning = getSeededRandomItem(['positioned beside', 'standing close to', 'situated near'], seed + '_beside');
+    } else if (text.match(/behind|in front|ahead|forward|back/)) {
+      spatialPositioning = getSeededRandomItem(['positioned behind', 'standing in front of', 'arranged ahead of'], seed + '_directional');
+    } else if (text.match(/circle|around|surrounding|gathered/)) {
+      spatialPositioning = getSeededRandomItem(['gathered in a circle with', 'surrounding', 'arranged around'], seed + '_circle');
+    } else if (text.match(/line|row|sequence|ordered/)) {
+      spatialPositioning = getSeededRandomItem(['standing in line with', 'arranged in sequence with', 'positioned in a row with'], seed + '_line');
+    } else if (text.match(/together|group|cluster|bunch/)) {
+      spatialPositioning = getSeededRandomItem(['clustered together with', 'grouped closely with', 'bunched together with'], seed + '_cluster');
+    } else if (text.match(/facing|looking|watching|observing/)) {
+      spatialPositioning = getSeededRandomItem(['facing', 'looking toward', 'watching together with'], seed + '_facing');
+    } else if (text.match(/play|game|activity|sport/)) {
+      spatialPositioning = getSeededRandomItem(['playing together with', 'engaged in activities with', 'participating alongside'], seed + '_activity');
+    } else {
+      // Default spatial relationships for better integration
+      const defaultSpatials = ['alongside', 'together with', 'accompanied by', 'in the company of', 'joined by'];
+      spatialPositioning = getSeededRandomItem(defaultSpatials, seed + '_default');
+    }
+    
+    // ============= GROUP FORMATION ENHANCEMENT =============
+    let groupFormation = '';
+    
+    if (text.match(/conversation|talk|discuss|chat/)) {
+      groupFormation = 'in animated conversation';
+    } else if (text.match(/learn|study|read|discover/)) {
+      groupFormation = 'learning together';
+    } else if (text.match(/create|build|make|craft/)) {
+      groupFormation = 'creating together';
+    } else if (text.match(/explore|adventure|discover|journey/)) {
+      groupFormation = 'exploring together';
+    } else if (text.match(/celebrate|party|festival|joy/)) {
+      groupFormation = 'celebrating together';
+    } else {
+      const defaultFormations = ['interacting naturally', 'engaged together', 'sharing the moment', 'connecting warmly'];
+      groupFormation = getSeededRandomItem(defaultFormations, seed + '_formation');
+    }
+    
+    // ============= FINAL SPATIAL INTEGRATION =============
+    return ` ${spatialPositioning} ${cleanCharacters} ${groupFormation}`;
+    
+  } catch (error) {
+    console.warn('⚠️ Secondary character spatial positioning failed:', error);
+    return ` with ${secondaryCharacters}`;
+  }
+}
+
+// ============= END ENHANCED TIER 2.5 SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
 
 // ============= BASIC TEMPLATE EXTRACTION FUNCTIONS (TIER 1.5 / 2.5B) =============
 /**
@@ -3592,7 +4030,7 @@ function fillPremiumTemplate(
       .replace('{scene}', safeScene) // PHASE 1 FIX: Use safeScene instead of undefined enhancedScene
       .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
-      .replace('{secondary_characters}', secondary_characters ? ` ${secondary_characters}` : '') // PHASE 4: Handle empty strings
+      .replace('{secondary_characters}', enhanceSecondaryCharacterPositioning(secondary_characters, pageText, safeScene) || '') // ENHANCED: Spatial positioning integration
       .replace('{emotion}', emotion)
       .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
       .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
