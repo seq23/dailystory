@@ -356,8 +356,19 @@ export class SimpleImageService {
 
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
+    // Declare timeout variables outside try/catch for proper cleanup
+    let controller: AbortController | undefined;
+    let timeoutId: NodeJS.Timeout | undefined;
+
     try {
       console.log('🎯 Calling backend orchestrator for image generation');
+      
+      // Create AbortController for custom timeout handling
+      controller = new AbortController();
+      timeoutId = setTimeout(() => {
+        console.warn('⏰ Frontend timeout: Aborting request after 150 seconds');
+        controller?.abort();
+      }, 150000); // 150 seconds
       
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
@@ -370,6 +381,8 @@ export class SimpleImageService {
           difficultyLevel: backendDifficulty
         }
       });
+      
+      clearTimeout(timeoutId); // Clear timeout on successful response
 
       if (error) {
         throw new Error(`Backend orchestrator error: ${error.message}`);
@@ -403,7 +416,28 @@ export class SimpleImageService {
       return result;
 
     } catch (error) {
-      console.error('❌ Backend orchestration failed, falling back to local SVG placeholder:', error);
+      // Clear timeout if error occurs
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      // Enhanced error logging to distinguish timeout vs other errors
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error('❌ Frontend timeout (150s): Request was aborted due to timeout');
+        } else if (error.message.includes('timeout')) {
+          console.error('❌ Network timeout: Request timed out');
+        } else if (error.message.includes('fetch')) {
+          console.error('❌ Network error: Failed to reach backend');
+        } else {
+          console.error('❌ Backend orchestration failed:', error.message);
+        }
+        console.error('Full error details:', error);
+      } else {
+        console.error('❌ Backend orchestration failed with unknown error:', error);
+      }
+      
+      console.log('🎨 Falling back to local SVG placeholder');
       
       // Final fallback - generate SVG placeholder locally
       return this.generateSVGPlaceholder(cleanScene, userInfo);
