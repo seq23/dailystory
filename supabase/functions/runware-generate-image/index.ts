@@ -1068,8 +1068,11 @@ serve(async (req) => {
           pageNumber
         );
         
-        // Build comprehensive prompts with nuclear negative system
-        const enhancedPrompt = segments.filter(s => s && s.trim()).join(', ');
+        // Build comprehensive prompts with nuclear negative system - ensure all segments are strings
+        const enhancedPrompt = segments
+          .filter(s => s && String(s).trim())
+          .map(s => String(s).trim())
+          .join(', ');
         const negativePrompt = nuclearNegativePrompt;
         
         // PHASE 4: Comprehensive prompt assembly logging
