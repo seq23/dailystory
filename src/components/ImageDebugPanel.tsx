@@ -30,7 +30,7 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
 
   // Monitor backend logs for tier information
   useEffect(() => {
-    if (!isDebugMode) return;
+    if (!isDebugMode || !isVisible) return;
 
     const checkBackendLogs = () => {
       // Look for tier success messages in console logs
@@ -38,10 +38,10 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
       setLastBackendLogs(logs.slice(-5)); // Last 5 logs
     };
 
-    // Optimized: Reduced frequency from 1000ms to 3000ms to prevent performance violations
-    const interval = setInterval(checkBackendLogs, 3000);
+    // Further optimized: Only run when panel is visible and reduced to 10s interval
+    const interval = setInterval(checkBackendLogs, 10000);
     return () => clearInterval(interval);
-  }, [isDebugMode]);
+  }, [isDebugMode, isVisible]);
 
   if (!isDebugMode) return null;
 

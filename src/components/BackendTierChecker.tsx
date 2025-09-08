@@ -9,26 +9,32 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
   const [recentCalls, setRecentCalls] = useState<any[]>([]);
 
   useEffect(() => {
+    const isDebugMode = typeof window !== 'undefined' && window.location.search.includes('debug=1');
+    
     const checkRecentImageCalls = async () => {
       try {
         // Check recent edge function calls for image generation using URL parameters
         const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts?global=true&limit=5');
 
         if (data && !error) {
-          console.log('🔍 Recent image generation calls:', data);
+          if (isDebugMode) {
+            console.log('🔍 Recent image generation calls:', data);
+          }
           setRecentCalls(data.imagePrompts || []);
           
           // Look for tier success information
           if (data.imagePrompts) {
             data.imagePrompts.forEach((call: any, index: number) => {
               if (call.tier) {
-                console.log(`🎯 TIER SUCCESS FOUND: Tier ${call.tier}`, {
-                  callIndex: index,
-                  timestamp: call.timestamp,
-                  prompt: call.promptText?.substring(0, 100),
-                  success: call.success,
-                  imageUrl: call.imageURL
-                });
+                if (isDebugMode) {
+                  console.log(`🎯 TIER SUCCESS FOUND: Tier ${call.tier}`, {
+                    callIndex: index,
+                    timestamp: call.timestamp,
+                    prompt: call.promptText?.substring(0, 100),
+                    success: call.success,
+                    imageUrl: call.imageURL
+                  });
+                }
                 
                 onTierFound?.(call.tier, {
                   prompt: call.promptText,
@@ -39,22 +45,24 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
               }
             });
           }
-        } else if (error) {
+        } else if (error && isDebugMode) {
           console.warn('🚫 Failed to check recent image calls:', error?.message || 'Unknown error');
         }
       } catch (error) {
-        // Suppress 400 errors to reduce console spam
-        if (error?.message?.includes('400')) {
-          console.log('🔇 Debug function temporarily unavailable');
-        } else {
-          console.warn('⚠️ Image tier check error:', error?.message || 'Unknown error');
+        if (isDebugMode) {
+          // Suppress 400 errors to reduce console spam
+          if (error?.message?.includes('400')) {
+            console.log('🔇 Debug function temporarily unavailable');
+          } else {
+            console.warn('⚠️ Image tier check error:', error?.message || 'Unknown error');
+          }
         }
       }
     };
 
-    // Check immediately and then every 3 seconds
+    // Check immediately and then every 30 seconds (reduced from 3s)
     checkRecentImageCalls();
-    const interval = setInterval(checkRecentImageCalls, 3000);
+    const interval = setInterval(checkRecentImageCalls, 30000);
     
     return () => clearInterval(interval);
   }, [onTierFound]);

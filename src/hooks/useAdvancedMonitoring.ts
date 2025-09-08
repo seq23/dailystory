@@ -8,9 +8,10 @@ export interface MonitoringData {
   culturalMetrics: any;
 }
 
-export function useAdvancedMonitoring() {
+export function useAdvancedMonitoring(options?: { autoRefresh?: boolean; refreshInterval?: number }) {
   const [monitoringData, setMonitoringData] = useState<MonitoringData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { autoRefresh = true, refreshInterval = 60000 } = options || {};
 
   const loadMonitoringData = async () => {
     try {
@@ -32,10 +33,12 @@ export function useAdvancedMonitoring() {
   useEffect(() => {
     loadMonitoringData();
     
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(loadMonitoringData, 30000);
+    if (!autoRefresh) return;
+    
+    // Auto-refresh with configurable interval (default 60s, increased from 30s)
+    const interval = setInterval(loadMonitoringData, refreshInterval);
     return () => clearInterval(interval);
-  }, []);
+  }, [autoRefresh, refreshInterval]);
 
   return {
     monitoringData,
