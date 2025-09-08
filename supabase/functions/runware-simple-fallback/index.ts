@@ -2540,24 +2540,63 @@ function fillPremiumTemplate(
     }
     
     // ============= PHASE 3: RESTRUCTURED TEMPLATE REPLACEMENT - Natural Language Scene =============
+    // PHASE 1 FIX: Use proper variables (safeScene and enhancedSetting)
+    
+    // PHASE 4: Enhanced Null Safety System - Critical Placeholder Validation
+    // Check for critical placeholder failures that should trigger emergency template
+    const criticalPlaceholderFailure = (!finalMapping.character || finalMapping.character === 'undefined' || finalMapping.character === '') ||
+                                      (!safeScene || safeScene === 'undefined' || safeScene === '') ||
+                                      (!enhancedSetting || enhancedSetting === 'undefined' || enhancedSetting === '');
+    
+    if (criticalPlaceholderFailure) {
+      console.warn('🚨 Critical placeholder failure detected - triggering emergency template');
+      throw new Error('Critical placeholders failed: character, scene, or setting missing');
+    }
+    
+    // PHASE 4: Cultural Authentication Fallbacks for {hair} and {features}
+    let safeFinalHair = finalMapping.hair;
+    let safeFinalFeatures = finalMapping.features;
+    
+    // Apply cultural authentication fallbacks if hair/features are missing
+    if (!safeFinalHair || safeFinalHair === 'undefined' || safeFinalHair === '') {
+      if (isEnglishDarkSkin || isFrenchDarkSkin || isSpanishDarkSkin || isPortugueseDarkSkin) {
+        safeFinalHair = 'authentic African American hairstyle';
+      } else {
+        // For other cultures, use generic fallback
+        safeFinalHair = 'neat natural hairstyle';
+      }
+      console.log('🛡️ Applied cultural hair fallback:', safeFinalHair);
+    }
+    
+    if (!safeFinalFeatures || safeFinalFeatures === 'undefined' || safeFinalFeatures === '') {
+      if (isEnglishDarkSkin || isFrenchDarkSkin || isSpanishDarkSkin || isPortugueseDarkSkin) {
+        safeFinalFeatures = 'authentic African American features';
+      } else {
+        // For other cultures, use generic fallback
+        safeFinalFeatures = 'warm friendly features';
+      }
+      console.log('🛡️ Applied cultural features fallback:', safeFinalFeatures);
+    }
+    
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
       .replace('{ethnicity}', ethnicity) // PHASE 3: Moved ethnicity to character description
-      .replace('{hair}', finalMapping.hair)
-      .replace('{features}', finalMapping.features)
-      .replace('{scene}', enhancedScene)
-      .replace('{setting}', scopedEnhancedSetting)
+      .replace('{hair}', safeFinalHair)
+      .replace('{features}', safeFinalFeatures)
+      .replace('{scene}', safeScene) // PHASE 1 FIX: Use safeScene instead of undefined enhancedScene
+      .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', secondary_characters ? ` ${secondary_characters}` : '') // PHASE 4: Handle empty strings
       .replace('{emotion}', emotion)
       .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
       .replace('{cameraDirective}', cameraDirective); // PHASE 5: Camera directive moved to end
     
-    // Add clothing if detected
+    // PHASE 4: Safe clothing detection with null safety
+    // Add clothing if detected - use safe variables
     if (clothing) {
-      filledTemplate = filledTemplate.replace('{features}', `${finalMapping.features}, wearing ${clothing}`);
+      filledTemplate = filledTemplate.replace('{features}', `${safeFinalFeatures}, wearing ${clothing}`);
     }
     
     console.log(`🛡️ Tier 2.5: Template filled successfully with nuclear mapping`);
@@ -2732,23 +2771,6 @@ function truncatePageText(text: string, difficulty: string): string {
   }
   
   return truncated + '...';
-}
-
-// ============= SMART SENTENCE EXTRACTION (Simplified Architecture) =============
-function extractFirstSentences(text: string, difficulty: string): string {
-  if (!text) return text;
-  
-  // Level-based sentence extraction
-  const sentenceCount = difficulty === 'beginner' || difficulty === 'easy' ? 1 :
-                       difficulty === 'medium' ? 2 :
-                       difficulty === 'hard' ? 3 : 4;
-  
-  // Split by sentence endings and extract first N sentences
-  const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
-  const extracted = sentences.slice(0, sentenceCount).join(' ').trim();
-  
-  console.log(`🛡️ Tier 2.5: Extracted ${sentences.slice(0, sentenceCount).length} sentences for ${difficulty} level`);
-  return extracted || text;
 }
 
 // ============= SIMPLIFIED PROMPT PROCESSING (No Complex Truncation) =============
@@ -3156,15 +3178,26 @@ serve(async (req: Request) => {
       prompt = "EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
     }
     
-    // Generate avatar mapping with character consistency enhancement - SILENT FAILURE PROTECTION
+    // Generate avatar mapping with character consistency enhancement - PHASE 5: ENHANCED FAILURE PROTECTION
     let avatarMapping, avatarType;
     try {
       avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId);
       avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
       console.log('✅ Avatar mapping successful');
     } catch (avatarError) {
-      console.warn('⚠️ Avatar mapping failed, using defaults:', avatarError);
-      avatarMapping = { character: 'a friendly child' };
+      console.warn('🚨 PHASE 5: Character consistency service failed - triggering emergency template:', avatarError);
+      
+      // PHASE 5: Character Consistency failure triggers emergency template
+      // Use emergency template: pageText (2500 chars) + framework only
+      const emergencyPageText = (pageText || '').substring(0, 2500);
+      const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
+                                NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
+                                'Contemporary children\'s book illustration with vibrant colors, friendly character design, bright cheerful atmosphere';
+      
+      prompt = `EMERGENCY_TEMPLATE_USED: ${emergencyPageText} ${emergencyFramework}`;
+      
+      // Skip further processing and go directly to image generation
+      avatarMapping = { character: 'a friendly child', source: 'emergency-fallback' };
       avatarType = 'prefer-not-to-answer';
     }
     
