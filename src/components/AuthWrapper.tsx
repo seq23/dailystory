@@ -131,7 +131,7 @@ export const AuthWrapper = () => {
       if (subscriber?.discount_code_pending && !subscriber.discount_activated) {
         console.log('Found pending discount code, activating...');
         
-        const { data, error } = await supabase.functions.invoke('apply-discount-code');
+        const { data, error } = await supabase.functions.invoke('activate-discount-code');
         
         if (!error && data?.activated) {
           console.log('Discount code activated:', data.message);
