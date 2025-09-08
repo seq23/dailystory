@@ -955,12 +955,41 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       sessionId
     );
 
-    // ============= UNIVERSAL ACTION EXPANSION WITH OBJECT CONTEXT =============
-    const expandedAction = expandActionToPhrase(
-      bestExtractedElements.action, 
-      enhancedObjects, 
+    // ============= CONTEXTUAL INTELLIGENCE SYSTEM =============
+    
+    // 1. CONTEXTUAL SETTING ENHANCEMENT (Object-driven setting selection)
+    const contextualSetting = inferContextualSetting(
+      bestExtractedElements.setting,
+      enhancedObjects,
+      pageText,
+      sessionId
+    );
+    
+    // 2. CONTEXTUAL ACTION ENHANCEMENT (Emotional + object context)
+    const contextualAction = expandActionWithContext(
+      bestExtractedElements.action,
+      enhancedObjects,
+      pageText,
+      contextualSetting
+    );
+    
+    // 3. SPATIAL COMPOSITION GENERATION (Character-object positioning)
+    const spatialComposition = generateSpatialComposition(
+      contextualAction,
+      enhancedObjects,
+      contextualSetting,
       pageText
     );
+    
+    // 4. ATMOSPHERE CONTEXT MAPPING (Time/weather inference)
+    const atmosphereContext = inferAtmosphereFromContext(
+      pageText,
+      contextualSetting,
+      contextualAction
+    );
+    
+    // ============= COMBINE CONTEXTUAL INTELLIGENCE =============
+    const expandedAction = contextualAction;
 
     // ============= TEMPLATE VALIDATION + INTELLIGENCE =============
     const isTemplateComplete = validateTemplateCompleteness(
@@ -972,9 +1001,11 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
 
     const result = {
       scene: expandedAction,
-      setting: bestExtractedElements.setting,
+      setting: contextualSetting,
       objects: enhancedObjects || '', // Use enhanced objects for consistency
-      secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber)
+      secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber),
+      spatial_composition: spatialComposition,
+      atmosphere: atmosphereContext
     };
 
     console.log('✅ Unified semantic extraction complete:', result);
@@ -1057,6 +1088,267 @@ function validateTemplateCompleteness(character: string, setting: string, scene:
   console.log(`🔍 Template validation - Issues: ${issues.length > 0 ? issues.join(', ') : 'none'}`);
   
   return issues.length === 0;
+}
+
+// ============= CONTEXTUAL INTELLIGENCE FUNCTIONS =============
+
+// 1. INFER CONTEXTUAL SETTING - Object-driven setting enhancement
+function inferContextualSetting(baseSetting: string, objects: string, pageText: string, sessionId?: string): string {
+  try {
+    console.log(`🧠 Contextual Setting Inference - Objects: "${objects}", Base: "${baseSetting}"`);
+    
+    if (!objects || !pageText) return baseSetting;
+    
+    const objectsLower = objects.toLowerCase();
+    const pageTextLower = pageText.toLowerCase();
+    const seed = pageText + objects + baseSetting;
+    
+    // Object-to-setting mappings with contextual weighting
+    const objectSettingMap: { [key: string]: { indoor: string[], outdoor: string[], weight: number } } = {
+      'bird': { 
+        outdoor: ['garden with blooming flowers', 'park with tall trees', 'forest clearing', 'backyard with bird feeder'], 
+        indoor: ['sunroom with windows', 'room with large window'], 
+        weight: 0.7 
+      },
+      'fish': { 
+        outdoor: ['pond with lily pads', 'lake shore', 'stream with rocks', 'aquarium display'], 
+        indoor: ['aquarium room', 'pet store', 'home aquarium corner'], 
+        weight: 0.8 
+      },
+      'book': { 
+        indoor: ['cozy library', 'reading nook', 'bedroom with soft lighting', 'study room'], 
+        outdoor: ['park bench', 'garden reading spot'], 
+        weight: 0.8 
+      },
+      'flower': { 
+        outdoor: ['flower garden', 'meadow full of wildflowers', 'greenhouse', 'park with flower beds'], 
+        indoor: ['sunroom with plants', 'room with flower arrangements'], 
+        weight: 0.8 
+      },
+      'food': {
+        indoor: ['kitchen with warm lighting', 'dining room', 'restaurant', 'picnic area'], 
+        outdoor: ['outdoor picnic', 'garden party', 'backyard barbecue'], 
+        weight: 0.6 
+      }
+    };
+    
+    // Find matching object and select contextually appropriate setting
+    for (const [objectKey, settingOptions] of Object.entries(objectSettingMap)) {
+      if (objectsLower.includes(objectKey)) {
+        const isIndoorContext = pageTextLower.includes('inside') || pageTextLower.includes('room') || pageTextLower.includes('house');
+        const settingsArray = isIndoorContext ? settingOptions.indoor : settingOptions.outdoor;
+        
+        if (Math.random() < settingOptions.weight) {
+          const selectedSetting = getSeededRandomItem(settingsArray, seed + objectKey);
+          console.log(`🎯 Object-driven setting: "${objectKey}" → "${selectedSetting}" (${isIndoorContext ? 'indoor' : 'outdoor'} context)`);
+          return selectedSetting;
+        }
+      }
+    }
+    
+    return baseSetting;
+    
+  } catch (error) {
+    console.warn('⚠️ Contextual setting inference error:', error);
+    return baseSetting;
+  }
+}
+
+// 2. EXPAND ACTION WITH CONTEXT - Emotional action enhancement
+function expandActionWithContext(baseAction: string, objects: string, pageText: string, setting: string): string {
+  try {
+    console.log(`🧠 Contextual Action Enhancement - Action: "${baseAction}", Objects: "${objects}"`);
+    
+    const objectsLower = objects.toLowerCase();
+    const pageTextLower = pageText.toLowerCase();
+    const seed = pageText + objects + baseAction;
+    
+    // Object-action contextual templates with emotional enhancement
+    const contextualActionTemplates: { [key: string]: string[] } = {
+      'bird': [
+        'points excitedly at the magnificent {object}',
+        'gazes in wonder at the beautiful {object}',
+        'watches with delighted curiosity as the {object} moves',
+        'smiles joyfully while observing the graceful {object}',
+        'discovers and admires the colorful {object}'
+      ],
+      'book': [
+        'carefully examines and explores the interesting {object}',
+        'discovers and opens the fascinating {object}',
+        'reads with focused concentration from the {object}',
+        'holds gently and studies the {object}',
+        'finds inspiration while reading the {object}'
+      ],
+      'fish': [
+        'watches with amazement as the {object} swims',
+        'observes carefully the graceful movements of the {object}',
+        'points with excitement at the shimmering {object}',
+        'gazes peacefully at the beautiful {object}',
+        'discovers and watches the colorful {object}'
+      ],
+      'flower': [
+        'stops to admire the beautiful {object}',
+        'gently touches and smells the fragrant {object}',
+        'discovers and examines the colorful {object}',
+        'picks carefully and holds the delicate {object}',
+        'smiles while looking at the pretty {object}'
+      ]
+    };
+    
+    // Find matching object and select contextual action template
+    for (const [objectKey, templates] of Object.entries(contextualActionTemplates)) {
+      if (objectsLower.includes(objectKey)) {
+        const selectedTemplate = getSeededRandomItem(templates, seed + objectKey);
+        const filledTemplate = selectedTemplate.replace('{object}', objectKey);
+        console.log(`🎯 Context-enhanced action: "${baseAction}" + "${objectKey}" → "${filledTemplate}"`);
+        return filledTemplate;
+      }
+    }
+    
+    // Fallback to original expansion system
+    return expandActionToPhrase(baseAction, objects, pageText);
+    
+  } catch (error) {
+    console.warn('⚠️ Contextual action enhancement error:', error);
+    return expandActionToPhrase(baseAction, objects, pageText);
+  }
+}
+
+// 3. GENERATE SPATIAL COMPOSITION - Character-object positioning
+function generateSpatialComposition(action: string, objects: string, setting: string, pageText: string): string {
+  try {
+    console.log(`🧠 Spatial Composition Generation - Action: "${action}", Objects: "${objects}"`);
+    
+    if (!objects || !action) return '';
+    
+    const objectsLower = objects.toLowerCase();
+    const actionLower = action.toLowerCase();
+    const seed = pageText + objects + action;
+    
+    // Spatial composition templates based on interaction type and object size
+    const spatialTemplates = {
+      observation: [
+        'main character in foreground, {object} prominently featured in mid-frame',
+        '{object} in center focus, character positioned to the side observing',
+        'character and {object} sharing the frame with balanced composition',
+        'close-up perspective with character and {object} in intimate framing'
+      ],
+      interaction: [
+        'character in close proximity to {object}, showing direct interaction',
+        'hands-on composition with character and {object} in detailed focus',
+        'character positioned for natural interaction with {object}',
+        'intimate scene composition highlighting character-{object} connection'
+      ],
+      discovery: [
+        'character in moment of discovery, {object} as the focal point',
+        'composition showing character\'s surprised expression with {object} revealed',
+        'dynamic framing capturing the discovery of {object}',
+        'character\'s gaze leading viewer\'s eye to {object}'
+      ]
+    };
+    
+    // Determine interaction type from action
+    let interactionType = 'observation'; // default
+    if (actionLower.includes('touch') || actionLower.includes('hold') || actionLower.includes('pick')) {
+      interactionType = 'interaction';
+    } else if (actionLower.includes('discover') || actionLower.includes('find') || actionLower.includes('see')) {
+      interactionType = 'discovery';
+    }
+    
+    // Extract main object for template filling
+    const mainObject = objects.split(' ').find(obj => obj.length > 2) || 'object';
+    const templates = spatialTemplates[interactionType as keyof typeof spatialTemplates];
+    const selectedTemplate = getSeededRandomItem(templates, seed + interactionType);
+    const filledComposition = selectedTemplate.replace('{object}', mainObject);
+    
+    console.log(`🎯 Spatial composition: ${interactionType} → "${filledComposition}"`);
+    return filledComposition;
+    
+  } catch (error) {
+    console.warn('⚠️ Spatial composition generation error:', error);
+    return '';
+  }
+}
+
+// 4. INFER ATMOSPHERE FROM CONTEXT - Time/weather inference from story context
+function inferAtmosphereFromContext(pageText: string, setting: string, action: string): string {
+  try {
+    console.log(`🧠 Atmosphere Context Mapping - Setting: "${setting}", Action: "${action}"`);
+    
+    const pageTextLower = pageText.toLowerCase();
+    const settingLower = setting.toLowerCase();
+    const seed = pageText + setting + action;
+    
+    // Context clues for time of day
+    const timeContextMap = {
+      morning: ['wake', 'breakfast', 'sunrise', 'early', 'dawn', 'morning'],
+      afternoon: ['lunch', 'school', 'play', 'sunny', 'bright', 'noon'],
+      evening: ['dinner', 'sunset', 'dusk', 'twilight', 'evening'],
+      night: ['sleep', 'bed', 'stars', 'moon', 'dark', 'night']
+    };
+    
+    // Context clues for weather/mood
+    const weatherContextMap = {
+      sunny: ['bright', 'happy', 'warm', 'cheerful', 'golden', 'sunny'],
+      cloudy: ['grey', 'overcast', 'soft', 'gentle', 'cloudy'],
+      rainy: ['rain', 'wet', 'puddle', 'umbrella', 'storm'],
+      magical: ['sparkle', 'glow', 'magic', 'enchant', 'mystical', 'wonder']
+    };
+    
+    // Detect time context
+    let timeOfDay = '';
+    for (const [time, keywords] of Object.entries(timeContextMap)) {
+      if (keywords.some(keyword => pageTextLower.includes(keyword))) {
+        timeOfDay = time;
+        break;
+      }
+    }
+    
+    // Detect weather/mood context
+    let weatherMood = '';
+    for (const [weather, keywords] of Object.entries(weatherContextMap)) {
+      if (keywords.some(keyword => pageTextLower.includes(keyword))) {
+        weatherMood = weather;
+        break;
+      }
+    }
+    
+    // Combine context clues with universal lighting arrays
+    const atmosphereOptions = [];
+    
+    if (timeOfDay) {
+      const lightingOptions = timeOfDay === 'morning' ? 
+        ['soft dawn light', 'golden morning glow', 'gentle sunrise lighting'] :
+        timeOfDay === 'evening' ? 
+        ['warm sunset light', 'golden hour glow', 'soft twilight atmosphere'] :
+        ['bright natural lighting', 'soft ambient light'];
+      
+      atmosphereOptions.push(...lightingOptions);
+    }
+    
+    if (weatherMood) {
+      const weatherOptions = weatherMood === 'sunny' ? 
+        ['bright cheerful atmosphere', 'warm golden lighting'] :
+        weatherMood === 'magical' ? 
+        ['mystical glowing atmosphere', 'enchanted sparkling light'] :
+        ['soft atmospheric lighting'];
+      
+      atmosphereOptions.push(...weatherOptions);
+    }
+    
+    if (atmosphereOptions.length === 0) {
+      // Use universal lighting as fallback
+      atmosphereOptions.push(...getSeededRandomItem([UNIVERSAL_LIGHTING_ATMOSPHERE], seed).split(','));
+    }
+    
+    const selectedAtmosphere = getSeededRandomItem(atmosphereOptions, seed);
+    console.log(`🎯 Context-inferred atmosphere: Time "${timeOfDay}", Weather "${weatherMood}" → "${selectedAtmosphere}"`);
+    return selectedAtmosphere;
+    
+  } catch (error) {
+    console.warn('⚠️ Atmosphere context inference error:', error);
+    return getSeededRandomItem(UNIVERSAL_LIGHTING_ATMOSPHERE, pageText + setting);
+  }
 }
 
 // ============= UNIVERSAL ACTION EXPANSION SYSTEM =============
