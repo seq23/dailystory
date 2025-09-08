@@ -741,7 +741,7 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
     
     // FALLBACK: Use traditional nuclear mapping
     // Get avatar type - fix the critical bug here
-    let avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+    let avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
     const avatarSkinTone = userInfo?.avatar?.skinTone || 'light';
     
     console.log(`🛡️ Tier 2.5: Avatar data - Type: ${avatarType}, SkinTone: ${avatarSkinTone}`);
