@@ -990,7 +990,7 @@ serve(async (req) => {
             role: 'system',
 content: `Generate a primary scene description for image generation.
 
-OBJECTIVE: Return ONLY a primary scene description of 30+ characters with structured metadata.
+OBJECTIVE: Return a primary scene description of 30+ characters with structured metadata.
 
 JSON RESPONSE:
 {
@@ -1016,12 +1016,8 @@ RULES:
             content: `${previousScene ? `{
   "previousScene": ${JSON.stringify(previousScene)},
   "currentText": "${storyText}"
-}` : `Story text: "${storyText}"`}
-Primary Character: ${enhancedCharacterDescription}
-${secondaryElements.length > 0 ? `Secondary Characters: ${secondaryElements.map(e => e.name).join(', ')}` : ''}
-${visualDetails ? `Visual Details: ${visualDetails}` : ''}
-
-Generate a detailed primaryScene description (30+ characters minimum) that shows what's happening visually in this story moment.`
+}` : `Story text: "${storyText}"`}${secondaryElements.length > 0 ? `
+Additional elements: ${secondaryElements.map(e => e.name).join(', ')}` : ''}
           }
         ];
         
