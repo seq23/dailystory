@@ -899,17 +899,8 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
     };
   }
 }
-    return {
-      character: 'happy child',
-      age: '10-year-old', 
-      hair: 'beautiful thick hair',
-      features: 'attractive child character',
-      source: 'emergency-fallback'
-    };
-  }
-}
 
-// CHARACTER CONSISTENCY ENHANCEMENT FUNCTION  
+// CHARACTER CONSISTENCY ENHANCEMENT FUNCTION
 // Enhances nuclear mapping with consistent character data while preserving nuclear independence
 function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string, characterData: any, sessionId: string, avatarIdentity?: any): any {
   try {
