@@ -40,21 +40,21 @@ function createCorsOptionsResponse(): Response {
 const EdgeErrorHandler = {
   handleError(error, functionName, context = {}) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`❌ ${functionName} Error:`, errorMessage, context);
+    console.error(`ERROR ${functionName} Error:`, errorMessage, context);
     return createCorsErrorResponse(errorMessage, 500);
   },
   
   withPerformanceTracking(functionName, model, operation) {
     const startTime = Date.now();
-    console.log(`🚀 ${functionName} starting with model: ${model}`);
+    console.log(`START ${functionName} starting with model: ${model}`);
     
     return operation().then(result => {
       const duration = Date.now() - startTime;
-      console.log(`✅ ${functionName} completed in ${duration}ms`);
+      console.log(`SUCCESS ${functionName} completed in ${duration}ms`);
       return result;
     }).catch(error => {
       const duration = Date.now() - startTime;
-      console.error(`❌ ${functionName} failed after ${duration}ms:`, error);
+      console.error(`ERROR ${functionName} failed after ${duration}ms:`, error);
       throw error;
     });
   }
@@ -64,19 +64,19 @@ const EdgeErrorHandler = {
 const VisualDetailTracker = {
   enabled: true,
   analyzeTextForDetails(sessionId: string, text: string, pageNumber: number): void {
-    console.log(`🎨 Visual details analyzed for session ${sessionId}, page ${pageNumber}`);
+    console.log(`VISUAL Visual details analyzed for session ${sessionId}, page ${pageNumber}`);
     // Functional placeholder - stores nothing but doesn't break
   },
   getVisualDetailsForPrompt(sessionId: string): string {
-    console.log(`📝 Getting visual details for session ${sessionId}`);
+    console.log(`GET Getting visual details for session ${sessionId}`);
     return ''; // Return empty string for consistent prompts
   },
   injectConsistentDetails(sessionId: string, text: string, pageNumber: number): string {
-    console.log(`🔄 Injecting consistent details for session ${sessionId}, page ${pageNumber}`);
+    console.log(`INJECT Injecting consistent details for session ${sessionId}, page ${pageNumber}`);
     return text; // Return original text unchanged
   },
   clearSessionDetails(sessionId: string): void {
-    console.log(`🧹 Clearing details for session ${sessionId}`);
+    console.log(`CLEAR Clearing details for session ${sessionId}`);
     // Functional placeholder - clears nothing but doesn't break
   }
 };
@@ -84,25 +84,25 @@ const VisualDetailTracker = {
 // Inline implementations for missing tierFailureMonitoring functions
 const TierFailureLogger = {
   logTier1OpenAIFailure(error, details) {
-    console.error('🚨 Tier 1 OpenAI Failure:', error, details);
+    console.error('ALERT Tier 1 OpenAI Failure:', error, details);
   },
   logTier1ValidationFailure(error, details) {
-    console.error('🚨 Tier 1 Validation Failure:', error, details);
+    console.error('ALERT Tier 1 Validation Failure:', error, details);
   }
 };
 
 const CircuitBreakerMonitor = {
   trackCircuitBreakerState(serviceName, state, details) {
-    console.log(`🔄 Circuit Breaker [${serviceName}]: ${state}`, details);
+    console.log(`CIRCUIT Circuit Breaker [${serviceName}]: ${state}`, details);
   },
   trackServiceHealth(serviceName, status, details) {
-    console.log(`💚 Service Health [${serviceName}]: ${status}`, details);
+    console.log(`HEALTH Service Health [${serviceName}]: ${status}`, details);
   }
 };
 
 const QualityGateMonitor = {
   trackQualityGate(gate, status, details) {
-    console.log(`✅ Quality Gate [${gate}]: ${status}`, details);
+    console.log(`QUALITY Quality Gate [${gate}]: ${status}`, details);
   }
 };
 
@@ -114,7 +114,7 @@ const QualityGateMonitor = {
 function checkPrimarySceneCriteria(data) {
   const scene = data.primaryScene;
   if (!scene || typeof scene !== 'string') {
-    console.log('🔍 VALIDATION DEBUG: Missing or invalid primaryScene', { 
+    console.log('DEBUG VALIDATION DEBUG: Missing or invalid primaryScene', { 
       hasScene: !!scene, 
       sceneType: typeof scene,
       sceneValue: scene 
@@ -143,7 +143,7 @@ function checkPrimarySceneCriteria(data) {
   const isPrimarySceneValid = qualityScore >= 1; // RELAXED: Reduced from 2 to 1 criteria (more lenient)
 
   // PHASE 3: Enhanced validation logging with relaxed thresholds
-  console.log('🔍 TIER 1 VALIDATION DEBUG: Primary Scene Criteria Analysis (RELAXED):', {
+  console.log('DEBUG TIER 1 VALIDATION DEBUG: Primary Scene Criteria Analysis (RELAXED):', {
     sceneLength: scene.length,
     lengthTest: `${lengthTest} (>= 15 chars - RELAXED)`,
     characterTest: `${hasCharacter} ${characterMatch ? `(matched: "${characterMatch[0]}")` : '(no match)'}`,
@@ -188,7 +188,7 @@ function checkPrimarySceneCriteria(data) {
 function validateAndEnhanceContent(enhancedStoryData, storyText) {
   // Check if we have ANY form of primaryScene (even from fallback extraction)
   if (!enhancedStoryData || !enhancedStoryData.primaryScene) {
-    console.log(`❌ TIER 2 TRIGGER: No primaryScene found in data`, {
+    console.log(`ERROR TIER 2 TRIGGER: No primaryScene found in data`, {
       hasData: !!enhancedStoryData,
       dataKeys: enhancedStoryData ? Object.keys(enhancedStoryData) : [],
       tier2Reasoning: 'Missing primaryScene content'
@@ -206,7 +206,7 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
   const shouldAccept = isFallbackExtraction || fieldCheck.primaryScene;
   
   // PHASE 3: Enhanced validation logging with detailed pass/fail reasoning
-  console.log('🔍 VALIDATION SUMMARY:', {
+  console.log('DEBUG VALIDATION SUMMARY:', {
     result: shouldAccept ? 'PASS' : 'TIER 2 TRIGGER',
     qualityScore: fieldCheck.details?.qualityScore || '0/5',
     sceneLength: enhancedStoryData.primaryScene?.length || 0,
@@ -218,7 +218,7 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
   });
   
   if (!shouldAccept) {
-    console.log(`❌ TIER 2 TRIGGER: Visual scene validation failed`, {
+    console.log(`ERROR TIER 2 TRIGGER: Visual scene validation failed`, {
       qualityScore: fieldCheck.details?.qualityScore || '0/5',
       sceneLength: enhancedStoryData.primaryScene?.length || 0,
       extractionMethod: enhancedStoryData.extractionMethod || 'standard_json',
@@ -230,7 +230,7 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
     return { useTier2: true, fieldCheck };
   }
   
-  console.log(`✅ TIER 1 APPROVED: Visual scene validation passed`, {
+  console.log(`SUCCESS TIER 1 APPROVED: Visual scene validation passed`, {
     qualityScore: fieldCheck.details?.qualityScore || 'fallback',
     sceneLength: enhancedStoryData.primaryScene.length,
     extractionMethod: enhancedStoryData.extractionMethod || 'standard_json',
@@ -347,7 +347,7 @@ class UnifiedCircuitBreaker {
       timestamp: Date.now()
     });
     
-    console.log('🔧 Circuit breaker manually reset', {
+    console.log('RESET Circuit breaker manually reset', {
       wasOpen,
       resetTimestamp: new Date().toISOString()
     });
@@ -368,7 +368,7 @@ class UnifiedCircuitBreaker {
 }
 
 const circuitBreaker = new UnifiedCircuitBreaker();
-console.log('🔧 Enhanced circuit breaker with monitoring initialized');
+console.log('INIT Enhanced circuit breaker with monitoring initialized');
 
 // Orchestration functions removed - all cultural processing handled by runware-generate-image orchestrator
 
@@ -390,7 +390,7 @@ function detectModelFamily() {
                      primaryModel.includes('o3') || 
                      primaryModel.includes('o4');
                      
-  console.log('🤖 Model Family Detection:', {
+  console.log('MODEL Model Family Detection:', {
     primaryModel,
     isNewModel,
     useSimplifiedPrompt: isNewModel
@@ -406,7 +406,7 @@ function detectModelFamily() {
 
 function parseAIResponse(content, options = {}) {
   // PHASE 2: Enhanced parsing debug with detailed analysis
-  console.log('🔍 PARSING DEBUG: Robust JSON Analysis:', {
+  console.log('DEBUG PARSING DEBUG: Robust JSON Analysis:', {
     contentLength: content.length,
     modelFamily: options.modelFamily,
     contentType: typeof content,
@@ -421,14 +421,14 @@ function parseAIResponse(content, options = {}) {
   // Strategy 1: Try direct JSON parsing (most common)
   try {
     const parsed = JSON.parse(content);
-    console.log('✅ PARSING SUCCESS: Direct JSON parsing successful', {
+    console.log('SUCCESS PARSING SUCCESS: Direct JSON parsing successful', {
       parsedKeys: Object.keys(parsed || {}),
       primarySceneLength: parsed.primaryScene?.length || 0,
       hasPrimaryScene: !!parsed.primaryScene
     });
     return parsed;
   } catch (directError) {
-    console.log('⚠️ PARSING ATTEMPT 1 FAILED: Direct parsing failed, trying extraction methods:', {
+    console.log('WARNING PARSING ATTEMPT 1 FAILED: Direct parsing failed, trying extraction methods:', {
       errorMessage: directError instanceof Error ? directError.message : String(directError),
       contentStructure: {
         hasCodeBlocks: content.includes('```'),
@@ -452,7 +452,7 @@ function parseAIResponse(content, options = {}) {
     for (let i = 0; i < jsonPatterns.length; i++) {
       const pattern = jsonPatterns[i];
       const match = content.match(pattern);
-      console.log(`🔍 PARSING ATTEMPT ${i + 2}: Pattern ${i + 1}`, {
+      console.log(`DEBUG PARSING ATTEMPT ${i + 2}: Pattern ${i + 1}`, {
         patternMatched: !!match,
         matchedContent: match ? match[1]?.substring(0, 100) + '...' : 'none'
       });
@@ -460,7 +460,7 @@ function parseAIResponse(content, options = {}) {
       if (match && match[1]) {
         try {
           const extracted = JSON.parse(match[1].trim());
-          console.log(`✅ PARSING SUCCESS: JSON extraction successful with pattern ${i + 1}`, {
+          console.log(`SUCCESS PARSING SUCCESS: JSON extraction successful with pattern ${i + 1}`, {
             extractedKeys: Object.keys(extracted || {}),
             primarySceneLength: extracted.primaryScene?.length || 0,
             extractedFrom: `Pattern ${i + 1}`,
@@ -469,7 +469,7 @@ function parseAIResponse(content, options = {}) {
           });
           return extracted;
         } catch (e) {
-          console.log(`⚠️ Pattern ${i + 1} matched but parse failed:`, e.message);
+          console.log(`WARNING Pattern ${i + 1} matched but parse failed:`, e.message);
           continue;
         }
       }
@@ -478,7 +478,7 @@ function parseAIResponse(content, options = {}) {
     throw new Error('No valid JSON found, attempting fallback extraction');
   } catch (extractionError) {
     // Strategy 3: FALLBACK - Extract just primaryScene if possible
-    console.log('🔄 FALLBACK STRATEGY: Attempting primaryScene extraction from text');
+    console.log('FALLBACK FALLBACK STRATEGY: Attempting primaryScene extraction from text');
     try {
       // Look for primaryScene content in various patterns
       const primaryScenePatterns = [
@@ -493,7 +493,7 @@ function parseAIResponse(content, options = {}) {
         const match = content.match(pattern);
         if (match && match[1] && match[1].length >= 30) {
           const primaryScene = match[1].trim();
-          console.log('✅ FALLBACK SUCCESS: Extracted primaryScene from text', {
+          console.log('SUCCESS FALLBACK SUCCESS: Extracted primaryScene from text', {
             primarySceneLength: primaryScene.length,
             extractedContent: primaryScene.substring(0, 100) + '...'
           });
@@ -510,7 +510,7 @@ function parseAIResponse(content, options = {}) {
       
       // Strategy 4: LAST RESORT - Use the entire content as primaryScene if it's descriptive enough
       if (content.length >= 30 && /\b(child|character|room|playing|sitting|standing|holding|looking)\b/i.test(content)) {
-        console.log('✅ LAST RESORT SUCCESS: Using entire content as primaryScene', {
+        console.log('SUCCESS LAST RESORT SUCCESS: Using entire content as primaryScene', {
           contentLength: content.length,
           extractionMethod: 'full_content_fallback'
         });
@@ -526,7 +526,7 @@ function parseAIResponse(content, options = {}) {
       
       throw new Error('No extractable primaryScene content found');
     } catch (fallbackError) {
-      console.error('❌ PARSING COMPLETE FAILURE: All strategies exhausted including fallbacks:', {
+      console.error('ERROR PARSING COMPLETE FAILURE: All strategies exhausted including fallbacks:', {
         directParseError: 'Invalid JSON syntax',
         extractionError: extractionError.message,
         fallbackError: fallbackError.message,
@@ -568,7 +568,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
   for (let modelIndex = 0; modelIndex < AI_MODELS.length; modelIndex++) {
     const model = AI_MODELS[modelIndex];
     const logPrefix = requestId ? `[${requestId}]` : '';
-    console.log(`🤖 ${logPrefix} Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
+    console.log(`MODEL ${logPrefix} Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
     
     for (let attempt = 1; attempt <= 1; attempt++) {
       try {
@@ -587,7 +587,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
         }
         
         // PHASE 1: Detailed OpenAI request logging
-        console.log(`🤖 ${logPrefix} OpenAI Request Configuration:`, {
+        console.log(`MODEL ${logPrefix} OpenAI Request Configuration:`, {
           model: model.name,
           maxTokensParam: model.maxTokens,
           maxTokensValue: 600,
@@ -619,7 +619,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
           // Enhanced content validation
           const content = result?.choices?.[0]?.message?.content;
           if (!content || content.trim() === '') {
-            console.error(`❌ Model ${model.name} returned empty content on attempt ${attempt}:`, {
+            console.error(`ERROR Model ${model.name} returned empty content on attempt ${attempt}:`, {
               hasChoices: !!result?.choices,
               choicesLength: result?.choices?.length,
               hasMessage: !!result?.choices?.[0]?.message,
@@ -646,7 +646,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
             }
           }
           
-          console.log(`✅ Model ${model.name} succeeded on attempt ${attempt} with valid content`);
+          console.log(`SUCCESS Model ${model.name} succeeded on attempt ${attempt} with valid content`);
           circuitBreaker.recordSuccess();
           return result;
         } else if (response.status === 503 || response.status === 429 || response.status === 502) {
@@ -924,7 +924,7 @@ serve(async (req) => {
         const { modelFamily, useSimplifiedPrompt } = detectModelFamily();
         
         // =================== PHASE 1: MINIMAL AI REQUEST (Scene Generation Only) ===================
-        console.log('🚀 PHASE 1: Minimal AI Request (Scene Generation Only)');
+        console.log('START PHASE 1: Minimal AI Request (Scene Generation Only)');
         
         // PHASE 1.1: Enhanced Character Description using CharacterConsistencyService
         console.log('🎭 PHASE 1.1: Using CharacterConsistencyService for database-backed character consistency');
@@ -1021,7 +1021,7 @@ Additional elements: ${secondaryElements.map(e => e.name).join(', ')}` : ''}
           }
         ];
         
-        console.log(`🧠 [${requestId}] PHASE 1.2: Enhanced prompt constructed:`, {
+        console.log(`AI [${requestId}] PHASE 1.2: Enhanced prompt constructed:`, {
           systemPromptLength: minimalMessages[0].content.length,
           userPromptLength: minimalMessages[1].content.length,
           enhancedCharacterDescription: enhancedCharacterDescription,
