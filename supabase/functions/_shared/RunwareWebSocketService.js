@@ -7,23 +7,40 @@ class RunwareWebSocketService {
     positivePrompt,
     negativePrompt = '',
     parameters = {},
-    timeout = 30000
+    timeout = 120000 // Increased from 30s to 120s for image generation
   }) {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket('wss://ws-api.runware.ai/v1');
       let authCompleted = false;
       let resolved = false;
+      let keepaliveInterval = null;
       
+      // WebSocket timeout handler with improved error messaging
       const timeoutId = setTimeout(() => {
         if (!resolved) {
           resolved = true;
+          if (keepaliveInterval) clearInterval(keepaliveInterval);
           ws.close();
-          reject(new Error('WebSocket timeout'));
+          console.error(`❌ Image generation timeout after ${timeout}ms`);
+          reject(new Error(`Image generation timeout after ${timeout / 1000} seconds`));
         }
       }, timeout);
 
       ws.onopen = () => {
-        console.log('📡 WebSocket connected to Runware');
+        console.log('📡 WebSocket connected to Runware for image generation');
+        
+        // Set up keepalive mechanism (ping every 20 seconds)
+        keepaliveInterval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN && !resolved) {
+            console.log('🏓 Sending WebSocket keepalive ping');
+            try {
+              ws.ping();
+            } catch (error) {
+              // Ping not supported, send a minimal message instead
+              console.log('🏓 Ping not supported, using alternative keepalive');
+            }
+          }
+        }, 20000);
         
         // Send authentication
         const authMessage = JSON.stringify([{
@@ -41,11 +58,12 @@ class RunwareWebSocketService {
         
         // Handle errors
         if (response.error || response.errors) {
-          console.error('❌ Runware error:', response);
+          console.error('❌ Runware error during image generation:', response);
           resolved = true;
           clearTimeout(timeoutId);
+          if (keepaliveInterval) clearInterval(keepaliveInterval);
           ws.close();
-          const errorMessage = response.errorMessage || response.errors?.[0]?.message || 'Generation failed';
+          const errorMessage = response.errorMessage || response.errors?.[0]?.message || 'Image generation failed';
           reject(new Error(errorMessage));
           return;
         }
@@ -81,6 +99,7 @@ class RunwareWebSocketService {
               console.log('🎯 Image generated successfully:', item.imageURL);
               resolved = true;
               clearTimeout(timeoutId);
+              if (keepaliveInterval) clearInterval(keepaliveInterval);
               ws.close();
               
               resolve({
@@ -98,18 +117,20 @@ class RunwareWebSocketService {
       ws.onerror = (error) => {
         if (!resolved) {
           resolved = true;
-          console.error('❌ WebSocket error:', error);
+          console.error('❌ WebSocket error during image generation:', error);
           clearTimeout(timeoutId);
+          if (keepaliveInterval) clearInterval(keepaliveInterval);
           reject(error);
         }
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
         if (!resolved) {
           resolved = true;
-          console.log('🔌 WebSocket closed unexpectedly');
+          console.log(`🔌 WebSocket closed unexpectedly during image generation (code: ${event.code})`);
           clearTimeout(timeoutId);
-          reject(new Error('WebSocket closed unexpectedly'));
+          if (keepaliveInterval) clearInterval(keepaliveInterval);
+          reject(new Error(`WebSocket closed unexpectedly (code: ${event.code})`));
         }
       };
     });

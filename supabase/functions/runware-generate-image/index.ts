@@ -179,7 +179,8 @@ class RunwareWebSocketManager {
   private static readonly MAX_RETRIES = 3;
   private static readonly BASE_DELAY = 1000; // 1 second
   private static readonly MAX_DELAY = 8000; // 8 seconds
-  private static readonly CONNECTION_TIMEOUT = 60000; // 60 seconds - increased timeout for complex generation
+  private static readonly CONNECTION_TIMEOUT = 90000; // 90 seconds - increased timeout for longer image generation
+  private static readonly IMAGE_GENERATION_TIMEOUT = 120000; // 120 seconds - separate timeout for image generation phase
   
   static async connectWithRetry(
     apiKey: string, 
@@ -223,10 +224,12 @@ class RunwareWebSocketManager {
     return new Promise((resolve, reject) => {
       let ws: WebSocket;
       let connectionTimeout: number;
+      let generationTimeout: number;
       let isResolved = false;
       
       const cleanup = () => {
         if (connectionTimeout) clearTimeout(connectionTimeout);
+        if (generationTimeout) clearTimeout(generationTimeout);
         if (ws && ws.readyState === WebSocket.OPEN) ws.close();
       };
       
@@ -250,9 +253,9 @@ class RunwareWebSocketManager {
         const logPrefix = requestId ? `[${requestId}]` : '';
         console.log(`🔌 ${logPrefix} Attempting WebSocket connection to Runware`);
         
-        // Set connection timeout
+        // Set connection timeout (for WebSocket connection + authentication)
         connectionTimeout = setTimeout(() => {
-          safeReject(new WebSocketError('Connection timeout', 'TIMEOUT', true));
+          safeReject(new WebSocketError('Connection and authentication timeout', 'TIMEOUT', true));
         }, this.CONNECTION_TIMEOUT);
         
         ws = new WebSocket('wss://ws-api.runware.ai/v1');
@@ -278,6 +281,12 @@ class RunwareWebSocketManager {
               // Handle authentication response - FIX: Correct Runware authentication format
               if (message.taskType === "authentication" && message.connectionSessionUUID) {
                 console.log(`🔑 ${logPrefix} Authentication successful (UUID: ${message.connectionSessionUUID}), sending image generation request`);
+                
+                // Clear connection timeout and set image generation timeout
+                clearTimeout(connectionTimeout);
+                generationTimeout = setTimeout(() => {
+                  safeReject(new WebSocketError('Image generation timeout after authentication', 'GENERATION_TIMEOUT', true));
+                }, this.IMAGE_GENERATION_TIMEOUT);
                 
                 // Build generation request
                 const generationRequest = {
