@@ -651,7 +651,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
           return result;
         } else if (response.status === 503 || response.status === 429 || response.status === 502) {
           const errorText = await response.text();
-          console.warn(`⚠️ Model ${model.name} returned ${response.status} on attempt ${attempt}: ${errorText}`);
+          console.warn(`WARNING Model ${model.name} returned ${response.status} on attempt ${attempt}: ${errorText}`);
           
           // Log service-specific failures
           const error = new Error(`${response.status}: ${errorText}`);
@@ -666,7 +666,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
           break;
         } else {
           const errorText = await response.text();
-          console.error(`❌ Model ${model.name} failed with status ${response.status}: ${errorText}`);
+          console.error(`ERROR Model ${model.name} failed with status ${response.status}: ${errorText}`);
           
           // Log non-retryable failures
           const error = new Error(`${response.status}: ${errorText}`);
@@ -689,7 +689,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
             errorType: 'timeout'
           });
         } else {
-          console.error(`❌ Model ${model.name} error on attempt ${attempt}:`, error instanceof Error ? error.message : String(error));
+          console.error(`ERROR Model ${model.name} error on attempt ${attempt}:`, error instanceof Error ? error.message : String(error));
           TierFailureLogger.logTier1OpenAIFailure(error, {
             model: model.name,
             attempt,
@@ -702,7 +702,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
       }
     }
     
-    console.warn(`❌ Model ${model.name} failed after 3 attempts, trying next model...`);
+    console.warn(`ERROR Model ${model.name} failed after 3 attempts, trying next model...`);
     circuitBreaker.recordFailure(isExpertContent);
     
     // Log model exhaustion
@@ -748,7 +748,7 @@ serve(async (req) => {
 
       // DIAGNOSTIC MODE - Handle diagnostic requests
       if (diagnostic || test) {
-        console.log('🔍 AI Story Enhancer DIAGNOSTIC MODE:', diagnostic || 'basic_test');
+        console.log('DEBUG AI Story Enhancer DIAGNOSTIC MODE:', diagnostic || 'basic_test');
         
         if (diagnostic === 'circuit_breaker_status') {
           const status = circuitBreaker.getStatus();
@@ -822,16 +822,16 @@ serve(async (req) => {
       let pageText = '';
       const importResults = {};
       
-      console.log('🔧 REORGANIZED TIER 1: Starting 3-Phase System');
+      console.log('REORG REORGANIZED TIER 1: Starting 3-Phase System');
       
       // Static imports are already loaded at module level
-      importResults.cors = '✅ SUCCESS (static)';
-      importResults.errorHandling = '✅ SUCCESS (static)';
-      importResults.characterConsistency = '✅ SUCCESS (static)';
+      importResults.cors = 'SUCCESS SUCCESS (static)';
+      importResults.errorHandling = 'SUCCESS SUCCESS (static)';
+      importResults.characterConsistency = 'SUCCESS SUCCESS (static)';
       
       console.log('📊 Dependency Verification Results:', importResults);
       
-      console.log('🔍 REORGANIZED TIER 1: Starting Request Analysis');
+      console.log('DEBUG REORGANIZED TIER 1: Starting Request Analysis');
       
       try {
         const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -845,7 +845,7 @@ serve(async (req) => {
 
         // Use already parsed requestBody (avoid double consumption)
         if (!requestBody || Object.keys(requestBody).length === 0) {
-          console.error('❌ Request parsing failed: Body is empty or not parsed');
+          console.error('ERROR Request parsing failed: Body is empty or not parsed');
           throw {
             type: 'VALIDATION_ERROR',
             message: 'Request parsing failed: Body already consumed'
@@ -872,14 +872,14 @@ serve(async (req) => {
         }
         
         ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = requestBody);
-        console.log('📋 Parameter Validation:', {
-          storyText: storyText ? `✅ Present (${storyText.length} chars)` : '❌ Missing',
-          sessionId: sessionId ? `✅ Present (${sessionId})` : '❌ Missing',
-          pageNumber: pageNumber ? `✅ Present (${pageNumber})` : '❌ Missing',
-          totalPages: totalPages ? `✅ Present (${totalPages})` : '⚠️ Undefined (infinite story)',
-          avatarIdentity: avatarIdentity ? `✅ Present (${Object.keys(avatarIdentity).length} properties)` : '❌ Missing avatar identity (REQUIRED)',
-          storyId: storyId ? `✅ Present (${storyId})` : '⚠️ Missing story ID',
-          enhancedStoryData: enhancedStoryData ? '✅ Present (pre-enhanced)' : '⚠️ Will process with OpenAI'
+        console.log('PARAMS Parameter Validation:', {
+          storyText: storyText ? `SUCCESS Present (${storyText.length} chars)` : 'ERROR Missing',
+          sessionId: sessionId ? `SUCCESS Present (${sessionId})` : 'ERROR Missing',
+          pageNumber: pageNumber ? `SUCCESS Present (${pageNumber})` : 'ERROR Missing',
+          totalPages: totalPages ? `SUCCESS Present (${totalPages})` : 'WARNING Undefined (infinite story)',
+          avatarIdentity: avatarIdentity ? `SUCCESS Present (${Object.keys(avatarIdentity).length} properties)` : 'ERROR Missing avatar identity (REQUIRED)',
+          storyId: storyId ? `SUCCESS Present (${storyId})` : 'WARNING Missing story ID',
+          enhancedStoryData: enhancedStoryData ? 'SUCCESS Present (pre-enhanced)' : 'WARNING Will process with OpenAI'
         });
 
         if (!storyText) {
@@ -891,7 +891,7 @@ serve(async (req) => {
 
         // Set up pageText for consistent usage throughout the function
         pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
-        console.log(`🧠 AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
+        console.log(`AI AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
 
         // Get previous AI scene for visual consistency (new approach)
         let previousScene = null;
@@ -899,10 +899,10 @@ serve(async (req) => {
           if (pageNumber > 1) {
             const sessionManager = new SessionStateManager();
             previousScene = await sessionManager.getPreviousAIScene(sessionId);
-            console.log(`🎬 Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
+            console.log(`SCENE Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
           }
         } catch (error) {
-          console.warn('⚠️ Failed to get previous scene (non-critical):', error);
+          console.warn('WARNING Failed to get previous scene (non-critical):', error);
         }
 
         // Detect secondary characters for conditional schema
@@ -952,7 +952,7 @@ serve(async (req) => {
         });
         
         // PHASE 1.1b: Detect Secondary Characters  
-        console.log('🔍 PHASE 1.1b: Detecting secondary characters using SecondaryElementDetector');
+        console.log('DEBUG PHASE 1.1b: Detecting secondary characters using SecondaryElementDetector');
         let secondaryElements = [];
         try {
           secondaryElements = await SecondaryElementDetector.parseElements(
@@ -967,23 +967,23 @@ serve(async (req) => {
             elements: secondaryElements.map(e => `${e.name} (${e.type})`)
           });
         } catch (error) {
-          console.warn('⚠️ SecondaryElementDetector failed (non-critical):', error.message);
+          console.warn('WARNING SecondaryElementDetector failed (non-critical):', error.message);
           secondaryElements = []; // Continue with empty array
         }
         
         // PHASE 1.1c: Track Visual Details
-        console.log('🎨 PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
+        console.log('ART PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
         VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
         const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
         
-        console.log('🖼️ PHASE 1.1c: Visual details tracked:', {
+        console.log('IMAGE PHASE 1.1c: Visual details tracked:', {
           visualDetailsCount: visualDetails.length,
           details: visualDetails
         });
         
         // PHASE 1.2: Minimal AI Prompt (NO cultural features, NO complex prompts)
         const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
-        console.log(`🧠 [${requestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
+        console.log(`AI [${requestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
         
         const minimalMessages = [
           {
@@ -1051,7 +1051,7 @@ RULES:
         let primaryScene;
         let setting, action, mood, pose; // Declare scope variables for later use
         try {
-          console.log(`🧠 [${requestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
+          console.log(`AI [${requestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
           const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, requestId, avatarIdentity);
           
           const content = aiResult.choices?.[0]?.message?.content;
@@ -1071,24 +1071,24 @@ RULES:
             throw new Error(`Primary scene validation failed: length ${primaryScene?.length || 0} < 30`);
           }
           
-          console.log(`✅ [${requestId}] PHASE 1.3: Primary scene generated successfully:`, {
+          console.log(`SUCCESS [${requestId}] PHASE 1.3: Primary scene generated successfully:`, {
             primarySceneLength: primaryScene.length,
             primaryScenePreview: primaryScene.substring(0, 100) + '...'
           });
           
           // PHASE 1.3b: Update Visual Details with Generated Scene
-          console.log('🔄 PHASE 1.3b: Updating visual details with generated primary scene');
+          console.log('UPDATE PHASE 1.3b: Updating visual details with generated primary scene');
           VisualDetailTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
           
           // PHASE 1.3c: Inject Consistent Visual Details into Scene
           const updatedPrimaryScene = VisualDetailTracker.injectConsistentDetails(sessionId, primaryScene, pageNumber);
           if (updatedPrimaryScene !== primaryScene) {
-            console.log('🔄 PHASE 1.3c: Primary scene updated with consistent visual details');
+            console.log('UPDATE PHASE 1.3c: Primary scene updated with consistent visual details');
             primaryScene = updatedPrimaryScene;
           }
           
         } catch (error) {
-          console.error(`❌ [${requestId}] PHASE 1.3: AI call failed:`, error.message);
+          console.error(`ERROR [${requestId}] PHASE 1.3: AI call failed:`, error.message);
           // Return error to trigger Tier 2
           TierFailureLogger.logTier1OpenAIFailure(error, {
             sessionId,
@@ -1100,15 +1100,15 @@ RULES:
         }
         
         // =================== PHASE 2: POST-AI PROMPT CONSTRUCTION ===================
-        console.log('🎨 PHASE 2: Post-AI Prompt Construction');
+        console.log('ART PHASE 2: Post-AI Prompt Construction');
         
         // PHASE 2.1: Enhanced Character Description (sentence 1) with Database Consistency
         const baseCharacterDescription = enhancedCharacterDescription;
-        console.log(`📝 PHASE 2.1: Enhanced character: ${baseCharacterDescription}`);
+        console.log(`TEXT PHASE 2.1: Enhanced character: ${baseCharacterDescription}`);
         
         // PHASE 2.2: Primary Scene Integration (sentence 2+)
         const sceneIntegration = primaryScene;
-        console.log(`🎬 PHASE 2.2: Scene integrated: ${sceneIntegration.substring(0, 50)}...`);
+        console.log(`SCENE PHASE 2.2: Scene integrated: ${sceneIntegration.substring(0, 50)}...`);
         
         console.log('🎭 PHASE 2.3: Scene data prepared for orchestrator');
         
@@ -1126,14 +1126,14 @@ RULES:
             mood: mood,
             pose: pose
           });
-          console.log(`🎬 Current scene stored for next page consistency`);
+          console.log(`SCENE Current scene stored for next page consistency`);
         } catch (error) {
-          console.warn('⚠️ Failed to store scene for next page (non-critical):', error);
+          console.warn('WARNING Failed to store scene for next page (non-critical):', error);
         }
         
         
         
-        console.log('🏗️ SCENE DATA ASSEMBLY: Character Consistency + Scene Data Ready', {
+        console.log('BUILD SCENE DATA ASSEMBLY: Character Consistency + Scene Data Ready', {
           hasSecondaryCharacters: secondaryElements.length > 0,
           hasVisualDetails: !!visualDetails,
           characterSeed: characterData.seed,
@@ -1169,16 +1169,16 @@ RULES:
           }
         };
         
-        console.log(`✅ SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
+        console.log(`SUCCESS SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
         
         // =================== DEBUG OUTPUT ===================
         // Check if debug mode is enabled via any debug parameter
         const debugMode = req.url.includes('debug=1') || req.url.includes('debug=true');
         
         if (debugMode) {
-          console.log(`🎨 AI DEBUG OUTPUT:`);
-          console.log(`🎯 Primary Scene: "${primaryScene}"`);
-          console.log(`🏠 Setting: ${setting || 'null'}`);
+          console.log(`ART AI DEBUG OUTPUT:`);
+          console.log(`TARGET Primary Scene: "${primaryScene}"`);
+          console.log(`HOUSE Setting: ${setting || 'null'}`);
           console.log(`🎭 Action: ${action || 'null'}`);
           console.log(`😊 Mood: ${mood || 'null'}`);
           console.log(`🧍 Pose: ${pose || 'null'}`);
@@ -1197,7 +1197,7 @@ RULES:
           }
         };
         
-        console.log(`✅ ENHANCED TIER 1: Validation passed - all phases complete with character consistency`);
+        console.log(`SUCCESS ENHANCED TIER 1: Validation passed - all phases complete with character consistency`);
         
         // Return enhanced data with assembled prompts for Runware
         const result = {
@@ -1245,13 +1245,13 @@ RULES:
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`✅ SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(✅) → Secondary Characters(✅) - Scene data ready for orchestrator`);
+        console.log(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) → Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
 
         return createCorsResponse(result);
 
       } catch (error) {
         // OpenAI FAILURE → Return error to Orchestrator (no internal fallback)
-        console.error('❌ AI Story Enhancer failed - returning error to Orchestrator:', {
+        console.error('ERROR AI Story Enhancer failed - returning error to Orchestrator:', {
           errorMessage: error.message,
           errorStack: error.stack,
           requestData: requestBody ? Object.keys(requestBody) : 'no-request-body',
