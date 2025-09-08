@@ -995,6 +995,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      verify_subscription_view_security: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
