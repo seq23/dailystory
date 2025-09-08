@@ -998,23 +998,19 @@ serve(async (req) => {
           }
         });
         
-        // 1. CHARACTER DESCRIPTION (First - establishes visual identity)
-        if (characterData.characterDescription) {
-          segments.push(characterData.characterDescription);
-          console.log(`✅ [${requestId}] Segment 1 - Character Description Added:`, {
-            length: characterData.characterDescription.length,
-            preview: characterData.characterDescription.substring(0, 100) + '...',
-            seed: characterData.seed,
-            source: 'CharacterConsistencyService'
-          });
-        } else {
-          console.warn(`⚠️ [${requestId}] Missing character description`);
-        }
+        // RESTRUCTURED 5-SECTION ARCHITECTURE
+        const promptSections = {
+          primaryScene: '',
+          character: '',
+          sceneDetails: '',
+          storyContext: '',
+          brandSuffix: ''
+        };
         
-        // 2. PRIMARY SCENE (Second - main story context)
+        // 1. PRIMARY SCENE (First - establishes main visual context)
         if (aiSchema.primaryScene) {
-          segments.push(aiSchema.primaryScene);
-          console.log(`🎯 [${requestId}] Segment 2 - Primary Scene Added:`, {
+          promptSections.primaryScene = aiSchema.primaryScene;
+          console.log(`🎯 [${requestId}] Section 1 - Primary Scene Added:`, {
             length: aiSchema.primaryScene.length,
             preview: aiSchema.primaryScene.substring(0, 150) + '...',
             source: 'AI-enhanced primaryScene'
@@ -1024,41 +1020,46 @@ serve(async (req) => {
           throw new Error('PRIMARY_SCENE_MISSING - Triggering Tier 2.5 fallback');
         }
         
-        // 2.1. STORY CONTEXT (Level 0-1 only)
-        const storyContext = generateStoryContext(pageText, difficulty, requestId);
-        if (storyContext) {
-          segments.push(storyContext);
-          console.log(`📖 [${requestId}] Segment 2.1 - Story Context Added:`, {
-            content: storyContext,
-            level: `${difficulty} (Level 0-1)`,
-            source: 'pageText visual extraction'
+        // 2. CHARACTER (Character + Cultural Context unified)
+        let characterSection = '';
+        if (characterData.characterDescription) {
+          characterSection = characterData.characterDescription;
+          console.log(`✅ [${requestId}] Section 2 - Character Description Added:`, {
+            length: characterData.characterDescription.length,
+            preview: characterData.characterDescription.substring(0, 100) + '...',
+            seed: characterData.seed,
+            source: 'CharacterConsistencyService'
           });
-        } else if (isLevel01User) {
-          console.log(`📖 [${requestId}] Segment 2.1 - Story Context Skipped (no visual keywords found)`);
         } else {
-          console.log(`📖 [${requestId}] Segment 2.1 - Story Context Skipped (Level 2+ user)`);
+          console.warn(`⚠️ [${requestId}] Missing character description`);
         }
         
-        // 2.3. CULTURAL CONTEXT (Conditional based on ethnicity/language)
         const culturalContext = generateCulturalContext(avatarIdentity, userInfo, requestId);
         if (culturalContext) {
-          segments.push(culturalContext);
-          console.log(`🌍 [${requestId}] Segment 2.3 - Cultural Context Added:`, {
+          characterSection += characterSection ? `, ${culturalContext}` : culturalContext;
+          console.log(`🌍 [${requestId}] Section 2 - Cultural Context Unified:`, {
             content: culturalContext.substring(0, 100) + '...',
             skinTone: avatarIdentity?.skinTone,
             language: avatarIdentity?.nativeLanguage || userInfo?.native_language,
             source: 'cultural description arrays'
           });
         } else {
-          console.log(`🌍 [${requestId}] Segment 2.3 - Cultural Context Skipped (English speaker with non-dark skin)`);
+          console.log(`🌍 [${requestId}] Section 2 - Cultural Context Skipped (English speaker with non-dark skin)`);
         }
         
-        // 2.5. SECONDARY ELEMENTS DETECTION (After Primary Scene)
+        if (characterSection) {
+          promptSections.character = characterSection;
+        }
+        
+        // 3. SCENE DETAILS (Secondary Elements + Visual Details unified)
+        let sceneDetailsSection = '';
+        
+        // 3.1. Secondary Elements
         try {
           const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
           const secondaryElements = await SecondaryElementDetector.parseElements(
             sessionId,
-            segments[1], // Primary scene
+            promptSections.primaryScene, // Use primary scene
             pageText,
             pageNumber || 1
           );
@@ -1067,8 +1068,8 @@ serve(async (req) => {
             const secondaryDescription = secondaryElements
               .map(el => `${el.name} (${el.type})`)
               .join(', ');
-            segments.push(`Secondary characters and elements: ${secondaryDescription}`);
-            console.log(`👥 [${requestId}] Segment 2.5 - Secondary Elements Added:`, {
+            sceneDetailsSection = `Secondary characters and elements: ${secondaryDescription}`;
+            console.log(`👥 [${requestId}] Section 3 - Secondary Elements Added:`, {
               content: secondaryDescription,
               count: secondaryElements.length,
               source: 'SecondaryElementDetector'
@@ -1078,15 +1079,16 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Secondary elements detection failed:`, error.message);
         }
         
-        // 2.7. VISUAL DETAIL TRACKING (Before Framework Prompt)  
+        // 3.2. Visual Details
         try {
           const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1);
           const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
           
           if (visualDetails) {
-            segments.push(`Visual consistency details: ${visualDetails}`);
-            console.log(`🎯 [${requestId}] Segment 2.7 - Visual Details Added:`, {
+            const visualDetailsText = `Visual consistency details: ${visualDetails}`;
+            sceneDetailsSection += sceneDetailsSection ? `, ${visualDetailsText}` : visualDetailsText;
+            console.log(`🎯 [${requestId}] Section 3 - Visual Details Unified:`, {
               content: visualDetails,
               source: 'VisualDetailTracker'
             });
@@ -1095,10 +1097,29 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Visual detail tracking failed:`, error.message);
         }
         
-        // 3. FRAMEWORK PROMPT (Final - complete framework prompt)
+        if (sceneDetailsSection) {
+          promptSections.sceneDetails = sceneDetailsSection;
+        }
+        
+        // 4. STORY CONTEXT (Level 0-1 only)
+        const storyContext = generateStoryContext(pageText, difficulty, requestId);
+        if (storyContext) {
+          promptSections.storyContext = storyContext;
+          console.log(`📖 [${requestId}] Section 4 - Story Context Added:`, {
+            content: storyContext,
+            level: `${difficulty} (Level 0-1)`,
+            source: 'pageText visual extraction'
+          });
+        } else if (isLevel01User) {
+          console.log(`📖 [${requestId}] Section 4 - Story Context Skipped (no visual keywords found)`);
+        } else {
+          console.log(`📖 [${requestId}] Section 4 - Story Context Skipped (Level 2+ user)`);
+        }
+        
+        // 5. BRAND SUFFIX (Framework Prompt)
         if (storyFramework.frameworkPrompt) {
-          segments.push(storyFramework.frameworkPrompt);
-          console.log(`🎨 [${requestId}] Segment 3 - Framework Prompt Added:`, {
+          promptSections.brandSuffix = storyFramework.frameworkPrompt;
+          console.log(`🎨 [${requestId}] Section 5 - Brand Suffix Added:`, {
             content: storyFramework.frameworkPrompt,
             source: 'styleFramework.frameworkPrompt'
           });
@@ -1114,47 +1135,61 @@ serve(async (req) => {
           pageNumber
         );
         
-        // Build comprehensive prompts with nuclear negative system - ensure all segments are strings
-        const enhancedPrompt = segments
-          .filter(s => s && String(s).trim())
-          .map(s => String(s).trim())
-          .join(', ');
+        // Build comprehensive prompts with header structure
+        const promptParts = [];
+        if (promptSections.primaryScene) {
+          promptParts.push(`Primary Scene: ${promptSections.primaryScene}`);
+        }
+        if (promptSections.character) {
+          promptParts.push(`Character: ${promptSections.character}`);
+        }
+        if (promptSections.sceneDetails) {
+          promptParts.push(`Scene Details: ${promptSections.sceneDetails}`);
+        }
+        if (promptSections.storyContext) {
+          promptParts.push(`Story Context: ${promptSections.storyContext}`);
+        }
+        if (promptSections.brandSuffix) {
+          promptParts.push(`Brand Suffix: ${promptSections.brandSuffix}`);
+        }
+        
+        const enhancedPrompt = promptParts.join('\n');
         const negativePrompt = nuclearNegativePrompt;
         
         // PHASE 4: Comprehensive prompt assembly logging
         console.log(`🔧 [${requestId}] Runware Prompt Assembly Complete:`, {
-          totalSegments: segments.length,
+          totalSections: promptParts.length,
           finalPromptLength: enhancedPrompt.length,
           difficulty,
           frameworkName: storyFramework.name,
-          segmentBreakdown: segments.map((seg, i) => ({
-            segment: i + 1,
-            length: seg.length,
-            preview: seg.substring(0, 50) + '...'
-          })),
+          sectionBreakdown: {
+            primaryScene: promptSections.primaryScene ? `${promptSections.primaryScene.length} chars` : 'missing',
+            character: promptSections.character ? `${promptSections.character.length} chars` : 'missing',
+            sceneDetails: promptSections.sceneDetails ? `${promptSections.sceneDetails.length} chars` : 'missing',
+            storyContext: promptSections.storyContext ? `${promptSections.storyContext.length} chars` : 'missing',
+            brandSuffix: promptSections.brandSuffix ? `${promptSections.brandSuffix.length} chars` : 'missing'
+          },
           componentStatus: {
-            hasCharacterData: !!characterData.characterDescription,
-            hasAiSchema: !!aiSchema.primaryScene,
-            hasSecondaryElements: segments.some(s => s.includes('Secondary characters')),
-            hasVisualDetails: segments.some(s => s.includes('Visual consistency')),
-            hasFrameworkPrompt: !!storyFramework.frameworkPrompt
+            hasCharacterData: !!promptSections.character,
+            hasPrimaryScene: !!promptSections.primaryScene,
+            hasSceneDetails: !!promptSections.sceneDetails,
+            hasStoryContext: !!promptSections.storyContext,
+            hasBrandSuffix: !!promptSections.brandSuffix
           },
           negativePromptLength: negativePrompt.length,
-          assemblyMethod: 'comma-separated concatenation with 7-segment architecture'
+          assemblyMethod: 'header-structured 5-section architecture'
         });
 
         // COMPREHENSIVE DEBUGGING: Full prompt logging (no truncation for debugging)
         console.log(`🎯 [${requestId}] FULL Runware Prompt (${enhancedPrompt.length} chars):`);
         console.log(`📝 [${requestId}] COMPLETE POSITIVE PROMPT:`, enhancedPrompt);
         console.log(`🚫 [${requestId}] COMPLETE NEGATIVE PROMPT:`, negativePrompt);
-        console.log(`🏗️ [${requestId}] 7-SEGMENT ARCHITECTURE SUMMARY:`, {
-          'Segment 1': 'Character Description',
-          'Segment 2': 'Primary Scene',
-          'Segment 2.1': 'Story Context (Level 0-1 only)',
-          'Segment 2.3': 'Cultural Context (conditional)',
-          'Segment 2.5': 'Secondary Elements (if detected)',
-          'Segment 2.7': 'Visual Details (if tracked)',
-          'Segment 3': 'Framework Prompt'
+        console.log(`🏗️ [${requestId}] 5-SECTION ARCHITECTURE SUMMARY:`, {
+          'Section 1': 'Primary Scene: AI-enhanced scene description',
+          'Section 2': 'Character: Character + cultural context unified',
+          'Section 3': 'Scene Details: Secondary elements + visual details',
+          'Section 4': 'Story Context: Page text context (Level 0-1 only)',
+          'Section 5': 'Brand Suffix: Style framework prompt'
         });
         
         // Avatar mapping debug logging
