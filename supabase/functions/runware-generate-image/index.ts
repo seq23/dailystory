@@ -288,8 +288,8 @@ class RunwareWebSocketManager {
                   height: 1024, // FIXED: Optimized from 512x512 to 1024x1024
                   width: 1024,
                   model: "runware:100@1",
-                   steps: 30, // Original: Higher quality steps
-                   CFGScale: 10, // Original: Higher prompt adherence
+                  steps: 25, // Optimized: Balanced quality/speed to prevent timeouts
+                  CFGScale: 8, // Optimized: Balanced prompt adherence for reliability
                   clipSkip: 1,
                   scheduler: "FlowMatchEulerDiscreteScheduler",
                   onlyUpscale: false,
@@ -755,8 +755,9 @@ serve(async (req) => {
     requestMethod: req.method
   });
 
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests - Force redeploy 2025-01-08
   if (req.method === 'OPTIONS') {
+    console.log('🔄 CORS OPTIONS request handled');
     return createCorsOptionsResponse();
   }
 
