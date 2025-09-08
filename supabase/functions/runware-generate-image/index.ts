@@ -288,8 +288,8 @@ class RunwareWebSocketManager {
                   height: 1024, // FIXED: Optimized from 512x512 to 1024x1024
                   width: 1024,
                   model: "runware:100@1",
-                  steps: 30, // FIXED: Increased from 25 for better quality
-                  CFGScale: 10, // FIXED: Increased from 8 for better prompt adherence
+                  steps: 25, // Reverted: Balanced quality/speed for ~30-60s generation
+                  CFGScale: 8, // Reverted: Balanced prompt adherence for faster generation
                   clipSkip: 1,
                   scheduler: "FlowMatchEulerDiscreteScheduler",
                   onlyUpscale: false,
