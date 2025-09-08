@@ -272,7 +272,6 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
   const hairColor = filteredHairOptions[Math.floor(Math.random() * filteredHairOptions.length)];
   
   // Gender/pronoun processing  
-  const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
   console.log('Processing avatar identity - avatarType:', avatarType, 'userInfo structure:', { avatarType: userInfo?.avatarType, avatarNestedType: userInfo?.avatar?.type });
   const pronoun = genderMapping.pronouns[avatarType];
   const completeGenderInfo = genderMapping.completeInfo[avatarType];
