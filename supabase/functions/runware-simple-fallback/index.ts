@@ -2563,6 +2563,7 @@ function fillBasicTemplate(
     }
     
     // 🎨 NUCLEAR STYLE SETTINGS - MOVED TO TOP FOR EARLY ACCESS 🎨
+    console.log('🔧 Tier 2.5: Defining NUCLEAR_STYLE_SETTINGS...');
     const NUCLEAR_STYLE_SETTINGS = {
       'beginner': {
         frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
@@ -2590,6 +2591,7 @@ function fillBasicTemplate(
         CFGScale: 10
       }
     };
+    console.log('✅ Tier 2.5: NUCLEAR_STYLE_SETTINGS defined successfully');
     
     // 🚨 ULTIMATE FALLBACK FRAMEWORK PROMPT - EMERGENCY USE ONLY 🚨
     const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting';
@@ -3407,8 +3409,18 @@ serve(async (req: Request) => {
     return createCorsOptionsResponse();
   }
   
+  // 🔑 DEBUG: API Key Validation
+  const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+  if (!runwareApiKey) {
+    console.error('❌ CRITICAL: RUNWARE_API_KEY not found in Tier 2.5');
+    return createCorsErrorResponse('Tier 2.5: Missing Runware API key', 500);
+  }
+  console.log('✅ Tier 2.5: RUNWARE_API_KEY validated:', runwareApiKey.substring(0, 10) + '...');
+  
   try {
+    console.log('📨 Tier 2.5: Parsing request body...');
     let { pageText, userInfo, characterData, sessionId } = await req.json();
+    console.log('✅ Tier 2.5: Request parsed, keys:', Object.keys({ pageText, userInfo, characterData, sessionId }));
     
     // COMPREHENSIVE PARAMETER VALIDATION - Add missing defaults
     if (!pageText) {

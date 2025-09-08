@@ -389,6 +389,12 @@ class RunwareWebSocketManager {
 async function callTierFunction(functionName: string, payload: any): Promise<any> {
   try {
     console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
+    console.log(`🔍 DEBUG: ${functionName} request details:`, {
+      functionName,
+      payloadSize: JSON.stringify(payload).length,
+      timestamp: new Date().toISOString(),
+      sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
+    });
     
     // Use Deno's fetch for edge function calls
     const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${functionName}`, {
@@ -402,7 +408,21 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
     
     const result = await response.json();
     
+    console.log(`🔍 DEBUG: ${functionName} response:`, {
+      ok: response.ok,
+      status: response.status,
+      resultKeys: Object.keys(result || {}),
+      success: result?.success,
+      hasImageURL: !!result?.imageURL,
+      tier: result?.tier || 'unknown'
+    });
+    
     if (!response.ok) {
+      console.error(`❌ ${functionName} HTTP error:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: result.error || 'Unknown error'
+      });
       throw new Error(`${functionName} failed: ${result.error || 'Unknown error'}`);
     }
     
@@ -681,12 +701,16 @@ serve(async (req) => {
   // Validate API key
   const apiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!apiKey) {
-    console.error('❌ RUNWARE_API_KEY not found in environment');
-    return createCorsErrorResponse('Server configuration error', 500);
+    console.error('❌ CRITICAL: RUNWARE_API_KEY not found in environment');
+    console.error('📋 Available env vars:', Object.keys(Deno.env.toObject()).filter(key => key.includes('API')));
+    return createCorsErrorResponse('Server configuration error: Missing Runware API key', 500);
   }
+  
+  console.log('✅ RUNWARE_API_KEY validated:', apiKey.substring(0, 10) + '...');
 
   try {
-    // Orchestrator services are now statically imported
+    // ============= REQUEST PARSING WITH DEBUG =============
+    console.log('📨 Parsing request body...');
     
     // Parse request
     const { 
@@ -699,6 +723,18 @@ serve(async (req) => {
       enhancedStoryData,
       forceTier // Optional: force specific tier for testing
     } = await req.json();
+    
+    console.log('✅ Request body parsed successfully');
+    console.log('📊 DEBUG: Request parameters:', {
+      hasPageText: !!pageText,
+      pageTextLength: pageText?.length || 0,
+      hasUserInfo: !!userInfo,
+      sessionId: sessionId?.substring(0, 15) + '...' || 'none',
+      pageNumber,
+      isGuestUser,
+      forceTier: forceTier || 'auto',
+      hasEnhancedStoryData: !!enhancedStoryData
+    });
 
     // ============================================================================
     // PHASE 4: CRITICAL SECURITY VALIDATION
@@ -1208,34 +1244,41 @@ serve(async (req) => {
             }
           }
 
-          // PHASE 1: Store successful Tier 1 image prompt  
+          // PHASE 1: Store successful Tier 1 image prompt with DEBUG  
+          console.log('📸 DEBUG: Storing Tier 1 image prompt...');
           const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-          globalSessionManager.storeImagePrompt(sessionId, {
-            tier: '1',
-            promptText: validatedPrompt,
-            negativePrompt: enhancementResult.negativePrompt || '',
-            originalPageText: pageText,
-            enhancedPrompt: validatedPrompt,
-            pageNumber: pageNumber,
-            success: true,
-            imageURL: tier1Result.imageURL,
-            seed: tier1Result.seed,
-            provider: 'runware-premium',
-            model: 'runware:100@1',
-            cost: 0.01,
-            generationTime: 0,
-            culturalProfile: enhancementResult.culturalProfile || {},
-            styleFramework: enhancementResult.framework || {},
-            metadata: {
-              aiEnhanced: true,
-              characterConsistency: true,
-              avatarValidated: true,
-              orchestrated: true,
-              validationApplied: validatedPrompt !== enhancedPrompt,
-              segmentCount: segments.length,
-              qualityScore: enhancementResult.qualityScore || 95
-            }
-          });
+          
+          try {
+            globalSessionManager.storeImagePrompt(sessionId, {
+              tier: '1',
+              promptText: validatedPrompt,
+              negativePrompt: enhancementResult.negativePrompt || '',
+              originalPageText: pageText,
+              enhancedPrompt: validatedPrompt,
+              pageNumber: pageNumber,
+              success: true,
+              imageURL: tier1Result.imageURL,
+              seed: tier1Result.seed,
+              provider: 'runware-premium',
+              model: 'runware:100@1',
+              cost: 0.01,
+              generationTime: 0,
+              culturalProfile: enhancementResult.culturalProfile || {},
+              styleFramework: enhancementResult.framework || {},
+              metadata: {
+                aiEnhanced: true,
+                characterConsistency: true,
+                avatarValidated: true,
+                orchestrated: true,
+                validationApplied: validatedPrompt !== enhancedPrompt,
+                segmentCount: segments.length,
+                qualityScore: enhancementResult.qualityScore || 95
+              }
+            });
+            console.log('✅ [TIER-1] Stored image prompt for page', pageNumber, 'of session', sessionId);
+          } catch (storeError) {
+            console.error('❌ Failed to store Tier 1 image prompt:', storeError);
+          }
 
           return createCorsResponse({
             success: true,
@@ -1391,29 +1434,35 @@ serve(async (req) => {
     console.log('📝 Generating Tier 4: Kid-Friendly Placeholder');
     const placeholderResult = generateKidFriendlyPlaceholder(pageText);
     
-    // PHASE 1: Store Tier 4 placeholder prompt
-    const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-    globalSessionManager.storeImagePrompt(sessionId, {
-      tier: '4',
-      promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,
-      negativePrompt: '',
-      originalPageText: pageText,
-      enhancedPrompt: `Generated kid-friendly placeholder for ${avatarIdentity.name}`,
-      pageNumber: pageNumber,
-      success: true,
-      imageURL: placeholderResult.url,
-      seed: 0,
-      provider: 'kid-friendly-placeholder',
-      model: 'internal-rotating-scenes',
-      cost: 0,
-      generationTime: 0,
-      fallbackReason: 'All image generation tiers failed',
-      metadata: {
-        avatarIdentity,
-        guaranteedFallback: true,
-        placeholderType: 'rotating-illustrated-scenes'
-      }
-    });
+    // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
+    console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
+    try {
+      const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+      globalSessionManager.storeImagePrompt(sessionId, {
+        tier: '4',
+        promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,
+        negativePrompt: '',
+        originalPageText: pageText,
+        enhancedPrompt: `Generated kid-friendly placeholder for ${avatarIdentity.name}`,
+        pageNumber: pageNumber,
+        success: true,
+        imageURL: placeholderResult.url,
+        seed: 0,
+        provider: 'kid-friendly-placeholder',
+        model: 'internal-rotating-scenes',
+        cost: 0,
+        generationTime: 0,
+        fallbackReason: 'All image generation tiers failed',
+        metadata: {
+          avatarIdentity,
+          guaranteedFallback: true,
+          placeholderType: 'rotating-illustrated-scenes'
+        }
+      });
+      console.log('✅ [TIER-4] Stored image prompt for page', pageNumber, 'of session', sessionId);
+    } catch (storeError) {
+      console.error('❌ Failed to store Tier 4 image prompt:', storeError);
+    }
     
     return createCorsResponse({
       success: true,
