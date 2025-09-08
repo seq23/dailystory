@@ -206,6 +206,176 @@ const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
 
 // ============= NUCLEAR INDEPENDENT CORE FUNCTIONS =============
 
+// ============= SEEDED RANDOM FOR CONSISTENT VARIETY =============
+function getSeededRandomItem(array: string[], seed: string): string {
+  if (!array || array.length === 0) return '';
+  if (array.length === 1) return array[0];
+  
+  // Create consistent hash from seed
+  let hash = 0;
+  const seedStr = String(seed || '');
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = ((hash << 5) - hash + seedStr.charCodeAt(i)) & 0xffffffff;
+  }
+  
+  const index = Math.abs(hash) % array.length;
+  return array[index];
+}
+
+// ============= UNIVERSAL ATMOSPHERE ARRAYS (PURE LIGHTING/WEATHER) =============
+const UNIVERSAL_LIGHTING_ARRAYS = [
+  // Golden Hour & Warm Light (30+ options)
+  'with bright golden lighting', 'with warm afternoon sunlight', 'with cheerful morning rays',
+  'with dazzling sunshine', 'with golden hour glow', 'with brilliant daylight',
+  'with soft warm illumination', 'with gentle golden beams', 'with radiant natural light',
+  'with luminous golden atmosphere', 'with warm glowing ambiance', 'with sunny radiance',
+  'with honeyed lighting tones', 'with amber-tinted illumination', 'with sunset-golden glow',
+  'with buttery warm light', 'with caramel-toned brightness', 'with bronze lighting effects',
+  'with copper-hued illumination', 'with harvest-gold radiance', 'with champagne lighting',
+  'with peachy warm glow', 'with apricot-tinted light', 'with coral lighting tones',
+  'with rose-gold illumination', 'with blush-pink warm light', 'with dusty-rose glow',
+  'with salmon-colored brightness', 'with terracotta lighting', 'with russet warm tones',
+
+  // Cool & Soft Light (20+ options)  
+  'with soft diffused lighting', 'with gentle morning light', 'with cool blue illumination',
+  'with silver-toned brightness', 'with pearl-white glow', 'with icy-blue radiance',
+  'with moonbeam lighting', 'with starlight illumination', 'with crystalline brightness',
+  'with opal-tinted light', 'with platinum glow', 'with diamond-bright radiance',
+  'with arctic-blue lighting', 'with glacier-white illumination', 'with snow-bright glow',
+  'with mint-green lighting', 'with seafoam illumination', 'with aqua-tinted brightness',
+  'with turquoise lighting effects', 'with teal-colored glow', 'with sage-green radiance',
+
+  // Evening & Atmospheric (15+ options)
+  'with warm evening glow', 'with gentle moonlight', 'with dusky purple lighting',
+  'with twilight illumination', 'with candlelit ambiance', 'with firelight glow',
+  'with lantern lighting', 'with fairy-light sparkle', 'with string-light ambiance',
+  'with campfire radiance', 'with hearth-warm glow', 'with ember lighting',
+  'with torch-light illumination', 'with lighthouse beaming', 'with aurora lighting'
+];
+
+const UNIVERSAL_WEATHER_ARRAYS = [
+  // Clear & Pleasant (20+ options)
+  'in cheerful clear weather', 'in peaceful sunny atmosphere', 'in bright pleasant conditions',
+  'in crystal-clear skies', 'in perfect weather conditions', 'in delightful sunshine',
+  'in gorgeous clear atmosphere', 'in beautiful sunny weather', 'in ideal outdoor conditions',
+  'in magnificent clear skies', 'in spectacular weather', 'in wonderful sunny atmosphere',
+  'in glorious clear conditions', 'in perfect blue-sky weather', 'in heavenly sunshine',
+  'in pristine clear atmosphere', 'in radiant sunny conditions', 'in blissful weather',
+  'in serene clear skies', 'in tranquil sunny atmosphere',
+
+  // Gentle Weather (15+ options)  
+  'in gentle rain atmosphere', 'in peaceful snowy atmosphere', 'in fresh spring atmosphere',
+  'in cheerful summer atmosphere', 'in soft misty conditions', 'in light drizzle weather',
+  'in floating cloud atmosphere', 'in gentle breeze conditions', 'in mild weather patterns',
+  'in comfortable atmospheric conditions', 'in pleasant seasonal weather', 'in gentle wind atmosphere',
+  'in soft atmospheric conditions', 'in calm weather patterns', 'in soothing atmospheric environment'
+];
+
+// ============= UNIVERSAL SETTING ARRAYS (50+ INDOOR, 50+ OUTDOOR) =============
+const UNIVERSAL_INDOOR_SETTINGS = [
+  // Educational & Learning Spaces (15)
+  'cozy library with warm lighting', 'bright classroom with colorful displays', 'quiet study area with soft chairs',
+  'cheerful reading corner with pillows', 'modern computer lab with screens', 'creative art studio with supplies',
+  'music room with instruments', 'science lab with experiments', 'workshop area with tools',
+  'maker space with projects', 'tutoring room with whiteboards', 'quiet study hall with desks',
+  'language learning center', 'STEM laboratory space', 'creative writing room',
+
+  // Home & Family Spaces (15)
+  'warm family kitchen with island', 'cozy living room with fireplace', 'comfortable bedroom with toys',
+  'playful kids bedroom with decorations', 'sunny dining room with table', 'welcoming home office',
+  'cheerful bathroom with colorful tiles', 'basement playroom with games', 'attic hideaway with treasures',
+  'garage workshop with projects', 'mudroom with storage', 'pantry with organized shelves',
+  'laundry room with folding space', 'sunroom with plants', 'guest room with books',
+
+  // Community & Public Spaces (15)
+  'bustling community center with activities', 'quiet museum gallery with displays', 'lively children\'s theater',
+  'welcoming doctor\'s office with toys', 'colorful dentist office with games', 'cheerful hair salon with mirrors',
+  'busy grocery store with aisles', 'cozy bookstore with reading nooks', 'fun toy store with displays',
+  'modern mall with bright lights', 'comfortable waiting room with magazines', 'busy restaurant kitchen',
+  'quiet hospital room with flowers', 'lively gym with equipment', 'peaceful yoga studio',
+
+  // Creative & Activity Spaces (5)
+  'art gallery with colorful paintings', 'dance studio with mirrors', 'pottery studio with clay',
+  'photography studio with lights', 'recording studio with equipment'
+];
+
+const UNIVERSAL_OUTDOOR_SETTINGS = [
+  // Natural Environments (20)
+  'sunny backyard garden with flowering bushes', 'peaceful neighborhood park with tall trees', 'quiet forest clearing with dappled sunlight',
+  'open meadow field with wildflowers', 'sparkling pond with lily pads', 'babbling creek with smooth stones',
+  'rolling hills with green grass', 'sandy beach with gentle waves', 'mountain trail with scenic views',
+  'desert landscape with cacti', 'tropical jungle with exotic plants', 'alpine meadow with snow-capped peaks',
+  'rocky cliff overlooking ocean', 'peaceful lake with clear water', 'rushing waterfall with mist',
+  'wildflower field with butterflies', 'autumn forest with colorful leaves', 'spring orchard with blossoms',
+  'summer meadow with tall grass', 'winter wonderland with snow',
+
+  // Urban & Community Spaces (15)
+  'school playground with swings', 'residential street with leafy branches', 'busy city park with pathways',
+  'quiet suburban neighborhood', 'bustling town square with fountain', 'peaceful cemetery with old trees',
+  'lively farmers market with vendors', 'outdoor concert venue with stage', 'community garden with vegetables',
+  'local playground with colorful equipment', 'neighborhood basketball court', 'public swimming pool area',
+  'outdoor café with umbrellas', 'street festival with decorations', 'parking lot with painted lines',
+
+  // Activity & Sports Areas (10)
+  'soccer field with goal posts', 'baseball diamond with bases', 'tennis court with nets',
+  'skate park with ramps', 'bike path through woods', 'hiking trail with markers',
+  'campground with fire pits', 'picnic area with tables', 'outdoor gym with equipment',
+  'adventure playground with obstacles',
+
+  // Transportation & Travel (5)
+  'train station platform with benches', 'airport terminal with windows', 'bus stop with shelter',
+  'car parking garage with levels', 'boat dock with wooden planks'
+];
+
+// ============= UNIVERSAL ACTION TEMPLATE ARRAYS (100+ FLEXIBLE TEMPLATES) =============
+const UNIVERSAL_ACTION_TEMPLATES = [
+  // Observation & Discovery Actions (15)
+  'points excitedly at the {object}', 'gazes in wonder at the colorful {object}', 'discovers and watches the magnificent {object}',
+  'spots and admires the graceful {object}', 'notices and smiles at the lovely {object}', 'observes the {object} with curious eyes',
+  'finds and examines the interesting {object}', 'looks closely at the detailed {object}', 'studies the fascinating {object}',
+  'peers at the mysterious {object}', 'investigates the unusual {object}', 'explores around the hidden {object}',
+  'searches for the special {object}', 'hunts for the elusive {object}', 'seeks out the rare {object}',
+
+  // Interaction & Play Actions (20)
+  'plays happily with the delightful {object}', 'gently touches the soft {object}', 'carefully holds the precious {object}',
+  'lovingly pets the friendly {object}', 'feeds treats to the hungry {object}', 'shares toys with the playful {object}',
+  'chases after the quick {object}', 'follows behind the leading {object}', 'dances around the musical {object}',
+  'sings songs to the listening {object}', 'reads stories about the magical {object}', 'draws pictures of the beautiful {object}',
+  'builds castles near the patient {object}', 'creates art inspired by the {object}', 'makes friends with the kind {object}',
+  'helps care for the needy {object}', 'protects the vulnerable {object}', 'rescues the trapped {object}',
+  'guides the lost {object}', 'teaches tricks to the clever {object}',
+
+  // Movement & Energy Actions (15)
+  'runs toward the exciting {object}', 'jumps over the small {object}', 'climbs up to reach the high {object}',
+  'slides down beside the smooth {object}', 'swings near the hanging {object}', 'bounces around the bouncy {object}',
+  'rolls with the round {object}', 'spins around the central {object}', 'marches behind the leading {object}',
+  'skips alongside the cheerful {object}', 'hops toward the inviting {object}', 'gallops with the fast {object}',
+  'crawls under the low {object}', 'stretches to touch the tall {object}', 'bends down to see the tiny {object}',
+
+  // Creative & Learning Actions (20)
+  'learns new things from the wise {object}', 'practices skills with the helpful {object}', 'experiments safely with the scientific {object}',
+  'builds towers using the sturdy {object}', 'paints portraits of the colorful {object}', 'writes stories about the adventurous {object}',
+  'composes songs about the musical {object}', 'crafts decorations inspired by the {object}', 'designs patterns like the geometric {object}',
+  'solves puzzles featuring the challenging {object}', 'measures dimensions of the large {object}', 'counts quantities of the numerous {object}',
+  'sorts collections of the varied {object}', 'organizes groups of the similar {object}', 'compares features of the different {object}',
+  'studies behaviors of the active {object}', 'researches facts about the mysterious {object}', 'documents findings about the rare {object}',
+  'records observations of the changing {object}', 'analyzes patterns in the complex {object}',
+
+  // Care & Nurturing Actions (15)
+  'gently cares for the delicate {object}', 'lovingly tends to the growing {object}', 'carefully waters the thirsty {object}',
+  'warmly hugs the cuddly {object}', 'softly brushes the fluffy {object}', 'kindly feeds the hungry {object}',
+  'patiently trains the learning {object}', 'quietly comforts the scared {object}', 'gently heals the injured {object}',
+  'thoughtfully prepares food for the {object}', 'carefully cleans the dirty {object}', 'lovingly decorates the plain {object}',
+  'tenderly wraps the cold {object}', 'gently fixes the broken {object}', 'carefully transports the fragile {object}',
+
+  // Adventure & Exploration Actions (15)
+  'bravely approaches the mysterious {object}', 'courageously explores around the unknown {object}', 'adventurously investigates the hidden {object}',
+  'boldly discovers the secret {object}', 'fearlessly examines the strange {object}', 'confidently handles the challenging {object}',
+  'enthusiastically searches for the lost {object}', 'excitedly hunts for the treasure {object}', 'eagerly pursues the fleeing {object}',
+  'determinedly tracks the elusive {object}', 'persistently follows the trail of the {object}', 'carefully navigates around the dangerous {object}',
+  'skillfully avoids the tricky {object}', 'cleverly outsmarts the cunning {object}', 'successfully captures the quick {object}'
+];
+
 // DRAMATICALLY EXPANDED COLOR AND SIZE ARRAY FOR TIER 2.5
 const EXPANDED_COLOR_ARRAY = [
   // Basic Colors
@@ -785,9 +955,23 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       sessionId
     );
 
-    // ============= FIX: Use extracted elements directly instead of undefined exactWords =============
+    // ============= UNIVERSAL ACTION EXPANSION WITH OBJECT CONTEXT =============
+    const expandedAction = expandActionToPhrase(
+      bestExtractedElements.action, 
+      enhancedObjects, 
+      pageText
+    );
+
+    // ============= TEMPLATE VALIDATION + INTELLIGENCE =============
+    const isTemplateComplete = validateTemplateCompleteness(
+      'character', // placeholder - will be filled later
+      bestExtractedElements.setting,
+      expandedAction,
+      enhancedObjects
+    );
+
     const result = {
-      scene: bestExtractedElements.action,
+      scene: expandedAction,
       setting: bestExtractedElements.setting,
       objects: enhancedObjects || '', // Use enhanced objects for consistency
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber)
@@ -823,16 +1007,30 @@ function extractElementsFromSentenceUnified(sentence: string, fullText: string):
   
   for (const action of allActions) {
     if (sentence.includes(` ${action} `) || sentence.includes(`${action} `) || sentence.includes(` ${action}`)) {
-      // EXPAND SINGLE-WORD ACTIONS TO 5+ WORDS
-      result.action = expandActionToPhrase(action);
+      // EXPAND SINGLE-WORD ACTIONS TO 5+ WORDS WITH UNIVERSAL TEMPLATES
+      result.action = expandActionToPhrase(action, '', fullText);
       break; // Use first match for consistency
     }
   }
   
-  // ============= Extract Settings from Unified Vocabulary =============
+  // ============= UNIVERSAL SETTING INFERENCE =============
+  const seed = sentence + fullText;
+  
+  // Check for indoor/outdoor context
+  const isIndoorScene = isIndoorContext(sentence);
+  
+  if (isIndoorScene) {
+    result.setting = getSeededRandomItem(UNIVERSAL_INDOOR_SETTINGS, seed + '_indoor');
+    console.log(`🏠 Universal indoor setting selected: ${result.setting}`);
+  } else {
+    result.setting = getSeededRandomItem(UNIVERSAL_OUTDOOR_SETTINGS, seed + '_outdoor');
+    console.log(`🌳 Universal outdoor setting selected: ${result.setting}`);
+  }
+  
+  // Fallback: Check for specific settings from vocabulary
   const allSettings = [
     ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor, 
     ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
     ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy
   ];
@@ -840,6 +1038,7 @@ function extractElementsFromSentenceUnified(sentence: string, fullText: string):
   for (const setting of allSettings) {
     if (sentence.includes(` ${setting} `) || sentence.includes(`${setting} `) || sentence.includes(` ${setting}`)) {
       result.setting = setting;
+      console.log(`🎯 Specific setting match found: ${setting}`);
       break; // Use first match for consistency
     }
   }
@@ -847,12 +1046,43 @@ function extractElementsFromSentenceUnified(sentence: string, fullText: string):
   return result;
 }
 
-// ACTION EXPANSION SYSTEM - Convert single words to 5+ word phrases
-function expandActionToPhrase(action: string): string {
+// ============= TEMPLATE VALIDATION + TIER 2.5B FALLBACK =============
+function validateTemplateCompleteness(character: string, setting: string, scene: string, objects: string): boolean {
+  const issues = [];
+  
+  if (!character || character.length < 3) issues.push('character missing/too short');
+  if (!setting || setting.length < 5) issues.push('setting missing/too short');  
+  if (!scene || scene.split(' ').length < 5) issues.push('action under 5 words');
+  
+  console.log(`🔍 Template validation - Issues: ${issues.length > 0 ? issues.join(', ') : 'none'}`);
+  
+  return issues.length === 0;
+}
+
+// ============= UNIVERSAL ACTION EXPANSION SYSTEM =============
+function expandActionToPhrase(action: string, detectedObjects?: string, pageText?: string): string {
+  const actionWord = action.toLowerCase().trim();
+  const objectContext = (detectedObjects || '').toLowerCase();
+  const seed = pageText + action + objectContext;
+  
+  // ============= OBJECT-DRIVEN UNIVERSAL ACTION TEMPLATES =============
+  if (objectContext) {
+    // Extract the main object for template filling
+    const objects = objectContext.split(' ');
+    const mainObject = objects.find(obj => obj.length > 2) || 'thing';
+    
+    // Use universal action templates with object replacement
+    const selectedTemplate = getSeededRandomItem(UNIVERSAL_ACTION_TEMPLATES, seed);
+    const filledTemplate = selectedTemplate.replace('{object}', mainObject);
+    
+    console.log(`🎯 Universal action template: "${action}" + "${mainObject}" → "${filledTemplate}"`);
+    return filledTemplate;
+  }
+  
+  // ============= FALLBACK: LEGACY EXPANSION MAP =============
   const expansionMap: { [key: string]: string } = {
-    // Basic actions
     'see': 'looks around and sees with curiosity',
-    'look': 'looks around with bright curious eyes',
+    'look': 'looks around with bright curious eyes', 
     'watch': 'watches carefully with focused attention',
     'sit': 'sits comfortably in a relaxed position',
     'stand': 'stands tall with confident posture',
@@ -880,13 +1110,13 @@ function expandActionToPhrase(action: string): string {
     'listen': 'listens attentively with focused concentrated attention'
   };
   
-  const expanded = expansionMap[action.toLowerCase()];
+  const expanded = expansionMap[actionWord];
   if (expanded) {
-    console.log(`🔄 Action expanded: "${action}" → "${expanded}"`);
+    console.log(`🔄 Legacy action expanded: "${action}" → "${expanded}"`);
     return expanded;
   }
   
-  // If no specific expansion, create a generic 5+ word phrase
+  // If no match, create a generic 5+ word phrase
   const genericExpansion = `engages in ${action} with focused attention`;
   console.log(`🔄 Generic action expansion: "${action}" → "${genericExpansion}"`);
   return genericExpansion;
@@ -2429,29 +2659,34 @@ function extractFirstSentences(pageText: string, difficulty: string): string {
 function extractAtmosphere(pageText: string, scene: string, setting: string): string {
   try {
     const text = (pageText + ' ' + scene + ' ' + setting).toLowerCase();
+    const seed = pageText + scene + setting; // Use combined text as seed for consistency
     
-    // Lighting patterns
-    if (text.match(/sunny|bright|sunshine|golden|warm light/)) return ' with bright golden lighting';
-    if (text.match(/cloudy|overcast|grey|dim/)) return ' with soft diffused lighting';
-    if (text.match(/morning|dawn/)) return ' with gentle morning light';
-    if (text.match(/evening|sunset|dusk/)) return ' with warm evening glow';
-    if (text.match(/night|dark|stars/)) return ' with gentle moonlight';
+    // ============= PURE LIGHTING DETECTION =============
+    if (text.match(/sunny|bright|sunshine|golden|warm light|morning|dawn/)) {
+      return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(0, 30), seed + '_lighting');
+    }
+    if (text.match(/cloudy|overcast|grey|dim|cool|soft/)) {
+      return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(30, 51), seed + '_lighting');
+    }
+    if (text.match(/evening|sunset|dusk|night|dark|stars|moon/)) {
+      return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(51, 66), seed + '_lighting');
+    }
     
-    // Weather patterns
-    if (text.match(/rain|storm|wet/)) return ' in gentle rain atmosphere';
-    if (text.match(/snow|winter|cold/)) return ' in peaceful snowy atmosphere';
-    if (text.match(/spring|fresh/)) return ' in fresh spring atmosphere';
-    if (text.match(/summer|hot/)) return ' in cheerful summer atmosphere';
+    // ============= PURE WEATHER DETECTION =============
+    if (text.match(/rain|storm|wet|snow|winter|cold|spring|fresh|summer|hot|breeze|wind|mist/)) {
+      if (text.match(/clear|sunny|perfect|beautiful|gorgeous/)) {
+        return getSeededRandomItem(UNIVERSAL_WEATHER_ARRAYS.slice(0, 20), seed + '_weather');
+      } else {
+        return getSeededRandomItem(UNIVERSAL_WEATHER_ARRAYS.slice(20, 35), seed + '_weather');
+      }
+    }
     
-    // Mood patterns
-    if (text.match(/happy|joyful|celebration/)) return ' with cheerful uplifting atmosphere';
-    if (text.match(/peaceful|calm|quiet/)) return ' with serene peaceful atmosphere';
-    if (text.match(/exciting|adventure|fun/)) return ' with dynamic energetic atmosphere';
+    // ============= DEFAULT: RANDOM LIGHTING =============
+    return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS.slice(0, 30), seed + '_default');
     
-    return ''; // Optional placeholder - can be empty
   } catch (error) {
     console.warn('⚠️ Atmosphere extraction failed:', error);
-    return ''; // PHASE 4: Optional placeholder returns empty string
+    return ' with bright golden lighting'; // Emergency fallback
   }
 }
 
