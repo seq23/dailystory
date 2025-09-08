@@ -62,6 +62,11 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   }, []);
 
 
+  // CRITICAL FIX: Cache expensive word difficulty calculations OUTSIDE of other useMemo
+  const cachedWordDifficulty = useMemo(() => {
+    return VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
+  }, [props.word, difficulty]);
+
   // LEAN Adaptive Interactive Word Rules - Smart ESL & Progress Tracking (CACHED)
   const shouldBeInteractive = useMemo(() => {
     const lw = cleanWord.toLowerCase();
@@ -81,23 +86,17 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
     const isProperNoun = /^[A-Z][a-z]+$/.test(trimmedOriginal) && trimmedOriginal !== 'I';
     if (isProperNoun && !isAllCaps) return false;
 
-    // CRITICAL FIX: Cache expensive word difficulty calculations
-    const cachedResult = useMemo(() => {
-      return VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
-    }, [props.word, difficulty]);
-    
-    const { shouldHighlight } = cachedResult;
+    const { shouldHighlight, level } = cachedWordDifficulty;
     
     // ESL Boost: +20% more interactive words for non-native English speakers
     const isESL = props.userInfo?.nativeLanguage && props.userInfo.nativeLanguage !== 'en';
     if (isESL && !shouldHighlight && difficulty !== 'beginner') {
       // Boost: Make easier words interactive for ESL learners
-      const { level } = cachedResult;
       if (level <= 3) return true; // ESL boost for levels 1-3
     }
     
     return shouldHighlight;
-  }, [cleanWord, props.userInfo?.name, props.userInfo?.nativeLanguage, difficulty, props.word]);
+  }, [cleanWord, props.userInfo?.name, props.userInfo?.nativeLanguage, difficulty, cachedWordDifficulty]);
 
 // For mobile devices, use click-to-open modal instead of hover
 if (props.forceModal || isMobileOrTablet) {
@@ -258,7 +257,9 @@ if (props.forceModal || isMobileOrTablet) {
             // This keeps the word context for voice commands only
           }}
           onMouseLeave={() => {
-            if ((window as any).__hoveredWord === cleanWord) (window as any).__hoveredWord = '';
+            if ((window as any).__hoveredWord === cleanWord) {
+              (window as any).__hoveredWord = '';
+            }
             cancelRef.current = true;
           }}
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''} ${props.isPremium && shouldBeInteractive ? 'interactive-word-premium-hover' : ''}`}
