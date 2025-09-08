@@ -45,7 +45,7 @@ export class EnhancedSubscriptionManager {
 
       const subscriptionPromise = supabase
         .from('subscribers')
-        .select('subscribed, subscription_end, subscription_tier')
+        .select('subscribed, subscription_end, subscription_tier, override_premium, override_end')
         .eq('user_id', user.id)
         .single();
 
@@ -60,12 +60,16 @@ export class EnhancedSubscriptionManager {
         return false;
       }
 
-      // Check if subscription is active and not expired
-      const isActive = subscription.subscribed;
+      // Check if subscription is active and not expired OR if override premium is active
+      const isSubscribed = subscription.subscribed;
       const isNotExpired = !subscription.subscription_end || 
-                          new Date(subscription.subscription_end) > new Date();
+                           new Date(subscription.subscription_end) > new Date();
+      
+      const hasOverridePremium = subscription.override_premium;
+      const overrideNotExpired = !subscription.override_end || 
+                                new Date(subscription.override_end) > new Date();
 
-      const isPremium = isActive && isNotExpired;
+      const isPremium = (isSubscribed && isNotExpired) || (hasOverridePremium && overrideNotExpired);
       
       this.updateCache(
         isPremium, 

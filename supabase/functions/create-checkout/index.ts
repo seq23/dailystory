@@ -33,6 +33,13 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    // Also create service role client for checking subscription status
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
     logStep("Authorization header found");
@@ -43,6 +50,30 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Check if user already has premium access before creating checkout session
+    const { data: existingSubscriber } = await supabaseService
+      .from('subscribers')
+      .select('subscribed, subscription_end, override_premium, override_end, subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    if (existingSubscriber) {
+      const now = new Date();
+      const hasActiveSubscription = existingSubscriber.subscribed && 
+        (!existingSubscriber.subscription_end || new Date(existingSubscriber.subscription_end) > now);
+      const hasActiveOverride = existingSubscriber.override_premium && 
+        (!existingSubscriber.override_end || new Date(existingSubscriber.override_end) > now);
+      
+      if (hasActiveSubscription || hasActiveOverride) {
+        logStep("User already has premium access", { 
+          subscribed: existingSubscriber.subscribed,
+          overridePremium: existingSubscriber.override_premium,
+          tier: existingSubscriber.subscription_tier
+        });
+        throw new Error("You already have an active premium subscription. No payment needed!");
+      }
+    }
 
     // Parse the request body to get the selected plan
     const { plan } = await req.json();

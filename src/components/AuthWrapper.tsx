@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthenticatedApp } from "@/components/AuthenticatedApp";
 import { GuestExperience } from "@/components/GuestExperience";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
-import SubscriptionManager from "@/services/subscriptionManager";
+import { EnhancedSubscriptionManager } from "@/services/enhancedSubscriptionManager";
 import { SubscriptionGate } from "@/components/SubscriptionGate";
 import { useLocation } from "react-router-dom";
+import { activateSequoiaDiscount } from "@/utils/discountActivation";
 
 export const AuthWrapper = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,6 +44,10 @@ export const AuthWrapper = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      
+      // Clear caches when auth state changes
+      EnhancedSubscriptionManager.clearCache();
+      
       // Defer async work to avoid deadlocks
       if (session?.user) {
         setTimeout(() => {
@@ -50,6 +55,9 @@ export const AuthWrapper = () => {
         }, 0);
       } else {
         setIsPremium(null);
+        // Clear all caches and session data when signing out
+        localStorage.removeItem('story-session-data');
+        sessionStorage.clear();
       }
     });
 
@@ -88,7 +96,7 @@ export const AuthWrapper = () => {
       // ignore and fallback
     }
     try {
-      const premium = await SubscriptionManager.isPremiumUser();
+      const premium = await EnhancedSubscriptionManager.isPremiumUser();
       setIsPremium(premium);
     } catch (e) {
       setIsPremium(false);
@@ -100,12 +108,25 @@ export const AuthWrapper = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
 
-      // Check if user has pending discount code
+      // Check if user has pending discount code OR try to activate SEQUOIA90 directly
       const { data: subscriber } = await supabase
         .from('subscribers')
-        .select('discount_code_pending, discount_activated')
+        .select('discount_code_pending, discount_activated, override_premium')
         .eq('user_id', session.user.id)
         .maybeSingle();
+
+      // If user doesn't have discount activated, try to activate SEQUOIA90
+      if (!subscriber?.discount_activated && !subscriber?.override_premium) {
+        console.log('🎯 Attempting to activate SEQUOIA90 discount code for user...');
+        const result = await activateSequoiaDiscount();
+        
+        if (result.success && result.activated) {
+          console.log('✅ SEQUOIA90 discount activated:', result.message);
+          // Force refresh subscription status
+          await EnhancedSubscriptionManager.forceRefresh();
+          return;
+        }
+      }
 
       if (subscriber?.discount_code_pending && !subscriber.discount_activated) {
         console.log('Found pending discount code, activating...');
