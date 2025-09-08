@@ -88,12 +88,12 @@ const PREMIUM_PROMPT_TEMPLATES = {
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 const BASIC_PROMPT_TEMPLATES = {
-  // SIMPLIFIED STRUCTURE: pageText (first 3 sentences) + basic semantic components 
-  beginner: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  medium: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  hard: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  expert: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
+  // 3-SECTION STRUCTURE: PRIMARY SCENE → VISUAL COMPONENTS → BRAND SUFFIX
+  beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  medium: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  hard: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -814,10 +814,10 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
     // Generate consistent seed for variations
     const characterSeed = `${userInfo?.name || 'user'}_${avatarSkinTone}_${Date.now()}`;
     
-    // ENHANCED AVATAR MAPPING: Use rich skin tone variations for non-dark skin
+    // ENHANCED AVATAR MAPPING: Combine orchestrator + African American arrays for dark skin
     if (avatarSkinTone === 'dark') {
-      // Use existing African American arrays for dark skin users
-      console.log('🛡️ Tier 2.5: Using existing African American arrays for dark skin');
+      // PHASE 2: Enhanced Dark Skin Processing - Combine orchestrator + African American arrays
+      console.log('🛡️ Tier 2.5: Combining orchestrator data with African American arrays for dark skin');
       
       // Map avatar type to character prefix
       let characterPrefix;
@@ -827,7 +827,7 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
         characterPrefix = avatarType; // 'boy' or 'girl'  
       }
       
-      // Create mapping key for existing system
+      // Get base orchestrator mapping
       const mappingKey = `${characterPrefix}-dark`;
       const avatarMapping = NUCLEAR_AVATAR_MAPPINGS[mappingKey];
       
@@ -850,13 +850,37 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
         'hard': '9-year-old',
         'expert': '11-year-old'
       };
+
+      // PHASE 4: Seeded Selection for Consistency
+      // Generate consistent seed for character selection
+      const characterSeedValue = generateSeededRandom(characterSeed);
+      
+      // Select African American hair from arrays using seeded random
+      let enhancedHair = avatarMapping.hair; // Start with orchestrator base: 'textured hair'
+      if (avatarType === 'girl') {
+        const selectedHairIndex = Math.floor(characterSeedValue * HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls.length);
+        const selectedAfricanAmericanHair = HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls[selectedHairIndex];
+        enhancedHair = `${avatarMapping.hair}, ${selectedAfricanAmericanHair}`;
+      } else if (avatarType === 'boy' || avatarType === 'prefer-not-to-answer') {
+        const selectedHairIndex = Math.floor(characterSeedValue * HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys.length);
+        const selectedAfricanAmericanHair = HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys[selectedHairIndex];
+        enhancedHair = `${avatarMapping.hair}, ${selectedAfricanAmericanHair}`;
+      }
+      
+      // Select African American features from arrays using seeded random  
+      const selectedFeatureIndex = Math.floor(characterSeedValue * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length);
+      const selectedAfricanAmericanFeatures = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[selectedFeatureIndex];
+      const enhancedFeatures = `${avatarMapping.features}, ${selectedAfricanAmericanFeatures}`;
+      
+      console.log(`✅ Tier 2.5: Enhanced dark skin mapping - Hair: ${enhancedHair.substring(0, 50)}...`);
+      console.log(`✅ Tier 2.5: Enhanced dark skin mapping - Features: ${enhancedFeatures.substring(0, 50)}...`);
       
       return {
         character: avatarMapping.character,
         age: ageMapping[difficulty] || '7-year-old',
-        hair: avatarMapping.hair,
-        features: avatarMapping.features,
-        source: 'nuclear-mapping-dark'
+        hair: enhancedHair,
+        features: enhancedFeatures,
+        source: 'nuclear-mapping-dark-enhanced'
       };
       
     } else {
@@ -2844,6 +2868,20 @@ function extractEmotion(pageText: string): string {
   return 'happy'; // Safe fallback
 }
 
+// ============= PHASE 4: SEEDED SELECTION FOR CONSISTENCY =============
+// Generate consistent seeded random for character selection across story pages
+function generateSeededRandom(seed: string): number {
+  // Simple seeded random using string hash
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  // Convert to 0-1 range
+  return Math.abs(hash) / 2147483647;
+}
+
 function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: string, pageNumber?: number): string {
   console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
   
@@ -3915,9 +3953,13 @@ function fillBasicTemplate(
       frameworkPrompt = 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
     }
     
-    // Fill basic template using simplified semantic structure
+    // PHASE 3: Template Processing Function Updates - Include nuclear avatar placeholders
     let filledTemplate = template
       .replace(/{pageText}/g, limitedPageText)
+      .replace(/{character}/g, avatarMapping.character || 'child')
+      .replace(/{age}/g, avatarMapping.age || '7-year-old')
+      .replace(/{hair}/g, avatarMapping.hair || 'neat hair')
+      .replace(/{features}/g, avatarMapping.features || 'friendly features')
       .replace(/{subject}/g, subject)
       .replace(/{action}/g, action)
       .replace(/{setting}/g, setting)
