@@ -153,8 +153,10 @@ export const AvatarPicker = React.forwardRef<
                     type: value.type,
                     skinTone: value.skinTone
                   });
-                  // Set fallback image
-                  (e.target as HTMLImageElement).src = '/avatar-prefer-not-to-answer-medium.jpg';
+                  // Use existing fallback image from avatar mapping
+                  const fallbackImage = avatarImages.boy[value.skinTone] || avatarImages.boy.medium;
+                  (e.target as HTMLImageElement).src = fallbackImage;
+                  console.log('🔄 [DEBUG] Using fallback image:', fallbackImage);
                 }}
                 onLoad={() => {
                   console.log('✅ [DEBUG] Avatar image loaded successfully:', currentAvatar);
