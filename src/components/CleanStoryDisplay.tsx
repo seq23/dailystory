@@ -508,10 +508,6 @@ const handleImageRegeneration = useCallback(async () => {
   }
 }, [currentPage, story, pageImages, isStoryStable, isGeneratingImage, isPremium, userInfo, storyTitle, stableSessionId]);
 
-const handleImageRetry = useCallback(() => {
-  console.log(`🔄 Image retry requested for page ${currentPage}`);
-  handleImageRegeneration();
-}, [currentPage, handleImageRegeneration]);
 
 // Audio engine instance for direct control
 const audioEngineRef = useRef(SimplifiedAudioEngine.getInstance());
@@ -3463,7 +3459,6 @@ const handleRestartTimer = () => {
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
           onFallbackUsed={handleImageFallbackUsed}
-          onRetry={handleImageRetry}
         />
                       </>
                     ) : (
@@ -3548,7 +3543,7 @@ const handleRestartTimer = () => {
             fallbackText={`📖 Page ${currentPage + 1}`}
             onLoadingChange={handleImageLoadingChange}
             onFallbackUsed={handleImageFallbackUsed}
-            onRetry={handleImageRetry}
+            
           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">

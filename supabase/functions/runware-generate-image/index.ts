@@ -589,116 +589,35 @@ function mapAvatarIdentity(userInfo: any, sessionId?: string): any {
 
 // ============= KID-FRIENDLY PLACEHOLDER GENERATOR =============
 function generateKidFriendlyPlaceholder(pageText: string): { url: string, success: boolean } {
-  // Rotating set of 8 kid-friendly illustrated story scene templates
-  const kidFriendlyScenes = [
-    {
-      name: "Forest Adventure",
-      background: "#8fbc8f",
-      accent: "#228B22", 
-      elements: "🌳🦋🌸",
-      description: "Magical forest adventure"
-    },
-    {
-      name: "Beach Fun", 
-      background: "#87ceeb",
-      accent: "#ff6347",
-      elements: "🏖️🐚⭐",
-      description: "Sunny beach adventure"
-    },
-    {
-      name: "Garden Discovery",
-      background: "#98fb98",
-      accent: "#ff69b4", 
-      elements: "🌻🦋🐛",
-      description: "Beautiful garden exploration"
-    },
-    {
-      name: "Space Journey",
-      background: "#191970", 
-      accent: "#ffd700",
-      elements: "🚀⭐🌙",
-      description: "Amazing space adventure"
-    },
-    {
-      name: "Castle Quest",
-      background: "#dda0dd",
-      accent: "#8a2be2",
-      elements: "🏰✨🗡️", 
-      description: "Magical castle adventure"
-    },
-    {
-      name: "Ocean World",
-      background: "#00ced1",
-      accent: "#ff4500",
-      elements: "🐟🦈🏊",
-      description: "Underwater ocean exploration"
-    },
-    {
-      name: "Mountain Climb",
-      background: "#cd853f",
-      accent: "#2e8b57",
-      elements: "⛰️🦅🏔️",
-      description: "Exciting mountain adventure" 
-    },
-    {
-      name: "Magic Library",
-      background: "#f0e68c", 
-      accent: "#8b4513",
-      elements: "📚✨🔮",
-      description: "Enchanted library discovery"
-    }
-  ];
-  
-  // Select scene based on page text hash to ensure consistency
-  const sceneIndex = Math.abs(pageText.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % kidFriendlyScenes.length;
-  const scene = kidFriendlyScenes[sceneIndex] || kidFriendlyScenes[2]; // Garden Discovery fallback
-  
+  // Consistent broken wand fallback design matching frontend
   const svgContent = `
-    <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+    <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background -->
+      <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
+      
+      <!-- Broken Wand Image -->
+      <image 
+        x="100" 
+        y="137.5" 
+        width="200" 
+        height="150" 
+        href="/lovable-uploads/93432db4-84aa-4992-a216-9e542d03f7d3.png"
+        preserveAspectRatio="xMidYMid meet"
+      />
+      
+      <!-- Arrow marker definition -->
       <defs>
-        <radialGradient id="bg" cx="50%" cy="30%" r="70%">
-          <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3" />
-          <stop offset="100%" style="stop-color:${scene.background};stop-opacity:1" />
-        </radialGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-          <feMerge> 
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
+        <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+          <polygon points="0 0, 6 2, 0 4" fill="#9ca3af"/>
+        </marker>
       </defs>
       
-      <!-- Background -->
-      <rect width="400" height="400" fill="url(#bg)" rx="20"/>
-      
-      <!-- Decorative elements -->
-      <circle cx="80" cy="100" r="25" fill="${scene.accent}" opacity="0.6" rx="10"/>
-      <circle cx="320" cy="120" r="30" fill="#ffffff" opacity="0.4"/>
-      <circle cx="100" cy="320" r="20" fill="${scene.accent}" opacity="0.5"/>
-      <circle cx="300" cy="300" r="35" fill="#ffffff" opacity="0.3"/>
-      
-      <!-- Central illustration area -->
-      <rect x="120" y="140" width="160" height="120" rx="25" fill="#ffffff" opacity="0.8" stroke="${scene.accent}" stroke-width="3"/>
-      
-      <!-- Title -->
-      <text x="200" y="60" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="24" fill="${scene.accent}" font-weight="bold" filter="url(#glow)">
-        ${scene.name}
+      <!-- Main message -->
+      <text x="50%" y="310" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
+        Images not working right now
       </text>
-      
-      <!-- Fun elements -->
-      <text x="200" y="200" text-anchor="middle" font-size="40">
-        ${scene.elements}
-      </text>
-      
-      <!-- Description -->
-      <text x="200" y="290" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="14" fill="#2c3e50" font-weight="bold">
-        ${scene.description}
-      </text>
-      
-      <!-- Loading message -->
-      <text x="200" y="360" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="12" fill="#7f8c8d">
-        Creating your magical story image...
+      <text x="50%" y="330" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
+        Please try again later
       </text>
     </svg>
   `;

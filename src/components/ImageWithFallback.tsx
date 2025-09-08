@@ -1,7 +1,6 @@
 import React from 'react';
-import { RefreshCw } from 'lucide-react';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
-import { MobileOptimizedButton } from '@/components/MobileOptimizedButton';
+import { toast } from '@/hooks/use-toast';
 
 interface ImageWithFallbackProps {
   src?: string;
@@ -10,7 +9,7 @@ interface ImageWithFallbackProps {
   fallbackText?: string;
   onLoadingChange?: (isLoading: boolean) => void;
   onFallbackUsed?: (isUsingFallback: boolean) => void;
-  onRetry?: () => void;
+  
 }
 
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
@@ -20,19 +19,10 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   fallbackText,
   onLoadingChange,
   onFallbackUsed,
-  onRetry
 }) => {
-  const { imageSrc, isLoading, error, isUsingFallback, manualRetry, isManualRetry } = useImageWithFallback(src, {
+  const { imageSrc, isLoading, error, isUsingFallback } = useImageWithFallback(src, {
     fallbackText
   });
-
-  const handleRetry = () => {
-    if (onRetry) {
-      onRetry();
-    } else {
-      manualRetry();
-    }
-  };
 
   React.useEffect(() => {
     onLoadingChange?.(isLoading);
@@ -40,7 +30,16 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
 
   React.useEffect(() => {
     onFallbackUsed?.(isUsingFallback);
-  }, [isUsingFallback, onFallbackUsed]);
+    
+    // Show red toast notification when fallback is used
+    if (isUsingFallback && (error || src)) {
+      toast({
+        variant: "destructive",
+        title: "Images are down",
+        description: "Try refreshing the page, or if that doesn't work, regenerate a new story.",
+      });
+    }
+  }, [isUsingFallback, onFallbackUsed, error, src]);
 
   // Check if debug mode is active for console optimization
   const isDebugMode = typeof window !== 'undefined' && 
@@ -83,21 +82,6 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
       {error && !isDebugMode && (
         <div className="absolute bottom-2 left-2 bg-destructive/10 border border-destructive/20 rounded px-2 py-1 text-xs text-destructive">
           Image unavailable
-        </div>
-      )}
-      {(error || (isUsingFallback && src)) && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <MobileOptimizedButton
-            onClick={handleRetry}
-            disabled={isManualRetry}
-            variant="outline"
-            size="sm"
-            className="bg-background/90 hover:bg-background border border-border shadow-lg"
-            aria-label="Retry loading image"
-          >
-            <RefreshCw className={`h-4 w-4 ${isManualRetry ? 'animate-spin' : ''}`} />
-            {isManualRetry ? 'Retrying...' : 'Retry'}
-          </MobileOptimizedButton>
         </div>
       )}
     </div>
