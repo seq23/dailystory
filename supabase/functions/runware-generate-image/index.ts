@@ -784,6 +784,7 @@ serve(async (req) => {
     console.log('📨 Parsing request body...');
     
     // Parse request
+    const requestBody = await req.json();
     const { 
       pageText, 
       userInfo, 
@@ -793,7 +794,7 @@ serve(async (req) => {
       isGuestUser = false, // Default to false for analytics tracking
       enhancedStoryData,
       forceTier // Optional: force specific tier for testing
-    } = await req.json();
+    } = requestBody;
     
     console.log('✅ Request body parsed successfully');
     console.log('📊 DEBUG: Request parameters:', {
@@ -1296,7 +1297,7 @@ serve(async (req) => {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
           
           // TIER POLICY COMPLIANCE LOG - Critical for regression prevention
-          console.log(`🔒 TIER POLICY COMPLIANCE: User type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" received TIER 1 image - Policy maintained`);
+          console.log(`🔒 TIER POLICY COMPLIANCE: User type "${requestBody.isGuestUser ? 'GUEST' : 'PREMIUM'}" received TIER 1 image - Policy maintained`);
           
           // Store visual state for consistency
           if (sessionId && characterData?.seed) {
@@ -1364,7 +1365,7 @@ serve(async (req) => {
               promptLength: validatedPrompt.length,
               sessionId: sessionId || 'unknown',
               pageNumber,
-              isGuestUser,
+              isGuestUser: requestBody.isGuestUser,
               orchestrated: true,
               validationApplied: validatedPrompt !== enhancedPrompt,
               segmentCount: segments.length,
@@ -1547,7 +1548,7 @@ serve(async (req) => {
     console.error('❌ Image orchestration failed:', error);
     
     // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
-    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
+    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${requestBody?.isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
     
     return createCorsErrorResponse(
       `Image generation orchestration failed: ${error.message}`,

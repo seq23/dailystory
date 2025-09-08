@@ -418,32 +418,46 @@ export class SimpleImageService {
     return {
       url: 'data:image/svg+xml;base64,' + btoa(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
-          <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
-          <!-- Broken magic wand icon -->
-          <g transform="translate(180, 90)">
-            <!-- Broken wand shaft - two pieces -->
-            <path d="M-20 20 L-5 5" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
-            <path d="M0 0 L15 -15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+          <!-- Background -->
+          <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
+          
+          <!-- Flowchart-style broken process diagram -->
+          <g transform="translate(200, 150)">
+            <!-- Process boxes -->
+            <rect x="-80" y="-60" width="60" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
+            <text x="-50" y="-42" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#6b7280">Start</text>
             
-            <!-- Crack/break indication -->
-            <path d="M-6 6 L-4 4 L-2 2" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+            <rect x="-80" y="-10" width="60" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
+            <text x="-50" y="8" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#6b7280">Process</text>
             
-            <!-- Dimmed refresh ring (broken) -->
-            <circle cx="15" cy="-15" r="8" fill="none" stroke="#d1d5db" stroke-width="1.5" opacity="0.4"/>
+            <rect x="20" y="-10" width="60" height="30" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+            <text x="50" y="8" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#dc2626">Error</text>
             
-            <!-- Cross mark on the ring -->
-            <path d="M10 -20 L20 -10 M20 -20 L10 -10" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <!-- Connecting arrows -->
+            <path d="M-50 -30 L-50 -20" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+            <path d="M-20 5 L10 5" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
             
-            <!-- Fading sparkles -->
-            <circle cx="-15" cy="15" r="1.5" fill="#d1d5db" opacity="0.3"/>
-            <circle cx="5" cy="-5" r="1" fill="#d1d5db" opacity="0.2"/>
-            <circle cx="-10" cy="10" r="1" fill="#d1d5db" opacity="0.25"/>
+            <!-- X mark on error box -->
+            <path d="M40 -5 L60 5 M60 -5 L40 5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+            
+            <!-- Disconnected elements -->
+            <circle cx="-120" cy="40" r="3" fill="#d1d5db"/>
+            <circle cx="100" cy="-40" r="2" fill="#d1d5db"/>
+            <circle cx="-30" cy="50" r="2.5" fill="#d1d5db"/>
           </g>
+          
+          <!-- Arrow marker definition -->
+          <defs>
+            <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+              <polygon points="0 0, 6 2, 0 4" fill="#9ca3af"/>
+            </marker>
+          </defs>
+          
           <!-- Main message -->
-          <text x="50%" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#495057">
+          <text x="50%" y="220" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
             Images not working right now
           </text>
-          <text x="50%" y="220" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6c757d">
+          <text x="50%" y="240" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
             Please try again later
           </text>
         </svg>
