@@ -596,7 +596,7 @@ function generateKidFriendlyPlaceholder(pageText: string): { url: string, succes
       <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
       
       <!-- Broken Wand SVG - Embedded inline (matching frontend design) -->
-      <g transform="translate(170, 125)">
+      <g transform="translate(170, 140)">
         <!-- Broken wand shaft - two pieces -->
         <path d="M10 50 L25 35" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
         <path d="M30 30 L45 15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
