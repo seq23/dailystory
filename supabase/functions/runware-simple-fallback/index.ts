@@ -714,10 +714,32 @@ const NUCLEAR_AVATAR_MAPPINGS = {
 };
 
 // NUCLEAR AVATAR MAPPING FUNCTION
-function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
+function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdentity?: any): any {
   try {
     console.log('🛡️ Tier 2.5: Nuclear avatar mapping started');
     
+    // PRIORITY 1: Use enhanced skin tone variation from orchestrator if available
+    if (avatarIdentity?.skinToneVariation) {
+      console.log('🎭 Tier 2.5: Using orchestrator enhanced skin tone variation');
+      const ageMapping = {
+        'beginner': '3-year-old',
+        'easy': '5-year-old', 
+        'medium': '7-year-old',
+        'hard': '9-year-old',
+        'expert': '11-year-old'
+      };
+      
+      return {
+        character: avatarIdentity.skinToneVariation,
+        age: ageMapping[difficulty] || '7-year-old',
+        hair: 'beautiful thick hair', // Fallback for template compatibility
+        features: avatarIdentity.skinToneVariation,
+        source: 'orchestrator-enhanced',
+        seed: avatarIdentity.seed
+      };
+    }
+    
+    // FALLBACK: Use traditional nuclear mapping
     // Get avatar type - fix the critical bug here
     let avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
     const avatarSkinTone = userInfo?.avatar?.skinTone || 'light';
@@ -789,12 +811,12 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
 
 // CHARACTER CONSISTENCY ENHANCEMENT FUNCTION  
 // Enhances nuclear mapping with consistent character data while preserving nuclear independence
-function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string, characterData: any, sessionId: string): any {
+function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string, characterData: any, sessionId: string, avatarIdentity?: any): any {
   try {
     console.log('🎭 Tier 2.5: Starting character consistency enhancement');
     
-    // STEP 1: Get the nuclear mapping (always safe)
-    const nuclearMapping = getNuclearAvatarMapping(userInfo, difficulty);
+    // STEP 1: Get the nuclear mapping (always safe) - pass avatarIdentity
+    const nuclearMapping = getNuclearAvatarMapping(userInfo, difficulty, avatarIdentity);
     console.log('🛡️ Tier 2.5: Nuclear mapping obtained successfully');
     
     // STEP 2: If no character data, return nuclear mapping (existing behavior)
@@ -815,7 +837,7 @@ function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string,
       ...(characterData.consistentHairDescription && { hair: characterData.consistentHairDescription }),
       
       // Preserve nuclear safety features
-      seed: characterData.seed, // Use consistent seed
+      seed: characterData.seed || avatarIdentity?.seed, // Use consistent seed
       source: 'enhanced-nuclear-mapping'
     };
     
@@ -823,7 +845,8 @@ function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string,
       hasConsistentEyeColor: !!characterData.consistentEyeColor,
       hasConsistentClothing: !!characterData.consistentClothingStyle,
       hasConsistentHair: !!characterData.consistentHairDescription,
-      seed: characterData.seed,
+      hasOrchestratorVariation: !!avatarIdentity?.skinToneVariation,
+      seed: characterData.seed || avatarIdentity?.seed,
       sessionId: sessionId
     });
     
@@ -832,7 +855,7 @@ function enhanceNuclearMappingWithConsistency(userInfo: any, difficulty: string,
   } catch (error) {
     console.warn('⚠️ Tier 2.5: Character consistency enhancement failed - falling back to nuclear mapping:', error);
     // BULLETPROOF FALLBACK: Return nuclear mapping on any error
-    return getNuclearAvatarMapping(userInfo, difficulty);
+    return getNuclearAvatarMapping(userInfo, difficulty, avatarIdentity);
   }
 }
 
@@ -4277,7 +4300,7 @@ serve(async (req: Request) => {
     // Generate avatar mapping with character consistency enhancement - PHASE 5: ENHANCED FAILURE PROTECTION
     let avatarMapping, avatarType;
     try {
-      avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId);
+      avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId, avatarIdentity);
       avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
       console.log('✅ Avatar mapping successful');
     } catch (avatarError) {

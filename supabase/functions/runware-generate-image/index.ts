@@ -485,10 +485,58 @@ function mapAvatarIdentity(userInfo: any): any {
     'dark': 'dark'      // REQUIRED: Maps to UI dark option
   };
   
-  // CRITICAL HAIR COLOR MAPPING SYSTEM
-  // REGRESSION PREVENTION: This maps skin tones to culturally appropriate hair colors
+  // ENHANCED SKIN TONE VARIATION ARRAYS - FOR IMAGE GENERATION ONLY
+  // REGRESSION PREVENTION: This provides detailed skin tone variations for character generation
   // DO NOT MODIFY without understanding cultural representation impact
-  // This system ensures realistic hair/skin combinations for character generation
+  // This system ensures rich, varied character descriptions for image generation
+  const SKIN_TONE_VARIATIONS = {
+    'pale': [
+      "attractive child character with porcelain white skin with cool undertones",
+      "attractive child character with alabaster complexion with subtle pink flush",
+      "attractive child character with fair ivory skin with delicate translucency",
+      "attractive child character with cream-colored skin with soft warmth",
+      "attractive child character with light peachy-pink complexion",
+      "attractive child character with fair skin with gentle rosy undertones",
+      "attractive child character with soft beige-pink skin with natural glow",
+      "attractive child character with warm ivory complexion with subtle golden hints"
+    ],
+    'light': [
+      "attractive child character with light ivory skin with golden undertones",
+      "attractive child character with soft vanilla complexion with warm highlights",
+      "attractive child character with honey-beige skin with natural radiance",
+      "attractive child character with light golden skin with peachy undertones",
+      "attractive child character with warm sand-colored complexion",
+      "attractive child character with light tan skin with golden glow",
+      "attractive child character with sun-kissed beige with bronze hints",
+      "attractive child character with golden-light skin with warm depth"
+    ],
+    'medium': [
+      "attractive child character with light caramel skin with golden undertones",
+      "attractive child character with warm wheat-colored complexion",
+      "attractive child character with honey-gold skin with amber highlights",
+      "attractive child character with medium tan with bronze undertones",
+      "attractive child character with rich caramel complexion with golden depth",
+      "attractive child character with warm amber-toned skin with natural shine",
+      "attractive child character with golden brown skin with copper highlights",
+      "attractive child character with rich tan with deep bronze undertones"
+    ],
+    'olive': [
+      "attractive child character with light olive skin with golden undertones",
+      "attractive child character with soft olive-beige complexion",
+      "attractive child character with warm olive-gold skin with neutral depth",
+      "attractive child character with medium olive complexion with bronze hints",
+      "attractive child character with rich olive skin with golden-green undertones",
+      "attractive child character with deep olive complexion with warm bronze",
+      "attractive child character with Mediterranean olive skin with copper highlights",
+      "attractive child character with rich olive-tan with natural golden depth"
+    ],
+    'dark': [
+      "attractive child character with textured natural hair" // Keep existing approach for cultural sensitivity
+    ]
+  };
+
+  // CRITICAL HAIR COLOR MAPPING FOR STORY GENERATION ONLY
+  // This provides simple hair descriptions for story text (NOT image generation)
   const hairColorMap = {
     'pale': 'red hair',              // Celtic/Northern European heritage
     'light': 'blonde hair',          // Northern European heritage  
@@ -496,17 +544,39 @@ function mapAvatarIdentity(userInfo: any): any {
     'olive': 'black hair',           // Mediterranean/Middle Eastern heritage
     'dark': 'textured natural hair'  // African diaspora heritage - includes natural textures
   };
+
+  // Seeded random selection for consistent skin tone variations
+  function getSeededSkinToneVariation(skinTone: string, seed: string): string {
+    const variations = SKIN_TONE_VARIATIONS[skinTone];
+    if (!variations || variations.length === 0) return '';
+    if (variations.length === 1) return variations[0];
+    
+    // Create consistent hash from seed
+    let hash = 0;
+    const seedStr = String(seed || '');
+    for (let i = 0; i < seedStr.length; i++) {
+      hash = ((hash << 5) - hash + seedStr.charCodeAt(i)) & 0xffffffff;
+    }
+    
+    const index = Math.abs(hash) % variations.length;
+    return variations[index];
+  }
   
   const skinTone = skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone;
   
-  // Build mapped identity
+  // Generate consistent seed for character variations
+  const characterSeed = `${userInfo.name || 'user'}_${skinTone}_${sessionId || 'session'}`;
+  
+  // Build enhanced mapped identity
   const mappedIdentity = {
     type: avatarTypeMap[userInfo.avatar.type] || defaultIdentity.type,
     skinTone: skinTone,
     culturalProfile: userInfo.avatar.culturalProfile || defaultIdentity.culturalProfile,
     nativeLanguage: userInfo.avatar.nativeLanguage || defaultIdentity.nativeLanguage,
     name: userInfo.name || defaultIdentity.name,
-    hairColor: hairColorMap[skinTone] || null
+    hairColor: hairColorMap[skinTone] || null, // For story generation only
+    skinToneVariation: getSeededSkinToneVariation(skinTone, characterSeed), // For image generation only
+    seed: characterSeed // For tier consistency
   };
   
   console.log('🔄 Avatar mapping completed:', {
