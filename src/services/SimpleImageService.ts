@@ -356,14 +356,21 @@ export class SimpleImageService {
 
     const cleanScene = pageText.replace(/[^\w\s\-.,!?]/g, '').trim();
 
-    // Declare timeout variable outside try/catch for proper cleanup
+    // Create AbortController for proper request cancellation
+    const controller = new AbortController();
     let timeoutId: NodeJS.Timeout | undefined;
 
     try {
       console.log('🎯 Calling backend orchestrator for image generation');
       
-      // Create promise that resolves when request completes or rejects on timeout
-      const requestPromise = supabase.functions.invoke('runware-generate-image', {
+      // Set up timeout that actually aborts the request
+      timeoutId = setTimeout(() => {
+        console.warn('⏰ Frontend timeout: Request aborted after 150 seconds');
+        controller.abort();
+      }, 150000); // 150 seconds
+
+      // Make request (Note: Supabase client doesn't support AbortController yet)
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
           pageText: cleanScene,
           userInfo,
@@ -374,17 +381,6 @@ export class SimpleImageService {
           difficultyLevel: backendDifficulty
         }
       });
-
-      // Create timeout promise that cancels the request
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          console.warn('⏰ Frontend timeout: Request aborted after 150 seconds');
-          reject(new Error('Frontend timeout: Request took longer than 150 seconds'));
-        }, 150000); // 150 seconds
-      });
-
-      // Race between request completion and timeout
-      const { data, error } = await Promise.race([requestPromise, timeoutPromise]);
       
       clearTimeout(timeoutId); // Clear timeout on successful response
 
@@ -428,7 +424,7 @@ export class SimpleImageService {
       // Enhanced error logging to distinguish timeout vs other errors
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          console.error('❌ Frontend timeout (150s): Request was aborted due to timeout');
+          console.error('❌ Network timeout: Request timed out');
         } else if (error.message.includes('timeout')) {
           console.error('❌ Network timeout: Request timed out');
         } else if (error.message.includes('fetch')) {
