@@ -718,40 +718,90 @@ const NUCLEAR_AVATAR_MAPPINGS = {
   }
 };
 
-// NUCLEAR AVATAR MAPPING FUNCTION
-function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdentity?: any): any {
+// ============= ENHANCED SKIN TONE VARIATION ARRAYS - COPIED FROM ORCHESTRATOR =============
+// REGRESSION PREVENTION: This provides detailed skin tone variations for character generation
+// Rich variations for pale, light, medium, olive - preserving African American arrays for dark skin
+const ENHANCED_SKIN_TONE_VARIATIONS = {
+  'pale': [
+    "attractive child character with porcelain white skin with cool undertones",
+    "attractive child character with alabaster complexion with subtle pink flush",
+    "attractive child character with fair ivory skin with delicate translucency",
+    "attractive child character with cream-colored skin with soft warmth",
+    "attractive child character with light peachy-pink complexion",
+    "attractive child character with fair skin with gentle rosy undertones",
+    "attractive child character with soft beige-pink skin with natural glow",
+    "attractive child character with warm ivory complexion with subtle golden hints"
+  ],
+  'light': [
+    "attractive child character with light ivory skin with golden undertones",
+    "attractive child character with soft vanilla complexion with warm highlights",
+    "attractive child character with honey-beige skin with natural radiance",
+    "attractive child character with light golden skin with peachy undertones",
+    "attractive child character with warm sand-colored complexion",
+    "attractive child character with light tan skin with golden glow",
+    "attractive child character with sun-kissed beige with bronze hints",
+    "attractive child character with golden-light skin with warm depth"
+  ],
+  'medium': [
+    "attractive child character with light caramel skin with golden undertones",
+    "attractive child character with warm wheat-colored complexion",
+    "attractive child character with honey-gold skin with amber highlights",
+    "attractive child character with medium tan with bronze undertones",
+    "attractive child character with rich caramel complexion with golden depth",
+    "attractive child character with warm amber-toned skin with natural shine",
+    "attractive child character with golden brown skin with copper highlights",
+    "attractive child character with rich tan with deep bronze undertones"
+  ],
+  'olive': [
+    "attractive child character with light olive skin with golden undertones",
+    "attractive child character with soft olive-beige complexion",
+    "attractive child character with warm olive-gold skin with neutral depth",
+    "attractive child character with medium olive complexion with bronze hints",
+    "attractive child character with rich olive skin with golden-green undertones",
+    "attractive child character with deep olive complexion with warm bronze",
+    "attractive child character with Mediterranean olive skin with copper highlights",
+    "attractive child character with rich olive-tan with natural golden depth"
+  ],
+  'dark': [
+    // Keep existing African American approach for cultural sensitivity
+    "attractive child character with textured natural hair"
+  ]
+};
+
+// ORCHESTRATOR HAIR COLOR MAPPING - COPIED FROM ORCHESTRATOR  
+const ORCHESTRATOR_HAIR_COLOR_MAP = {
+  'pale': 'red hair',              // Celtic/Northern European heritage
+  'light': 'blonde hair',          // Northern European heritage  
+  'medium': 'brown hair',          // Global medium tones
+  'olive': 'black hair',           // Mediterranean/Middle Eastern heritage
+  'dark': 'textured natural hair'  // African diaspora heritage - includes natural textures
+};
+
+// SEEDED RANDOM SELECTION - COPIED FROM ORCHESTRATOR
+function getSeededSkinToneVariation(skinTone: string, seed: string): string {
+  const variations = ENHANCED_SKIN_TONE_VARIATIONS[skinTone];
+  if (!variations || variations.length === 0) return '';
+  if (variations.length === 1) return variations[0];
+  
+  // Create consistent hash from seed
+  let hash = 0;
+  const seedStr = String(seed || '');
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = ((hash << 5) - hash + seedStr.charCodeAt(i)) & 0xffffffff;
+  }
+  
+  const index = Math.abs(hash) % variations.length;
+  return variations[index];
+}
+
+// ENHANCED NUCLEAR AVATAR MAPPING FUNCTION
+function getNuclearAvatarMapping(userInfo: any, difficulty: string): any {
   try {
-    console.log('🛡️ Tier 2.5: Nuclear avatar mapping started');
+    console.log('🛡️ Tier 2.5: Enhanced nuclear avatar mapping started');
     
-    // 🚨 REGRESSION PREVENTION: Orchestrator Priority System - DO NOT MODIFY ORDER
-    // PRIORITY 1: Use enhanced skin tone variation from orchestrator if available
-    if (avatarIdentity?.skinToneVariation) {
-      console.log('🎭 Tier 2.5: Using orchestrator enhanced skin tone variation');
-      // FIX: Use parameter directly instead of redeclaring to fix scoping error
-      
-      const ageMapping = {
-        'beginner': '3-year-old',
-        'easy': '5-year-old', 
-        'medium': '7-year-old',
-        'hard': '9-year-old',
-        'expert': '11-year-old'
-      };
-      
-      return {
-        character: avatarIdentity?.skinToneVariation || 'default character',
-        age: ageMapping[difficulty] || '7-year-old',
-        hair: 'beautiful thick hair', // Fallback for template compatibility
-        features: avatarIdentity.skinToneVariation,
-        source: 'orchestrator-enhanced',
-        seed: avatarIdentity.seed
-      };
-    }
-    
-    // FALLBACK: Use traditional nuclear mapping
-    // 🚨 REGRESSION PREVENTION: Avatar Type Priority - Must check avatarIdentity first
-    // Get avatar type - fix the critical bug here
-    let avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
-    const avatarSkinTone = userInfo?.avatar?.skinTone || 'light';
+    // Get avatar type and skin tone safely
+    let avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+    const avatarSkinTone = userInfo?.avatar?.skinTone || 'medium';
     
     console.log(`🛡️ Tier 2.5: Avatar data - Type: ${avatarType}, SkinTone: ${avatarSkinTone}`);
     
@@ -761,53 +811,94 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
       avatarType = 'prefer-not-to-answer';
     }
     
-    // Map avatar type to character prefix
-    let characterPrefix;
-    if (avatarType === 'prefer-not-to-answer') {
-      characterPrefix = 'neutral';
-    } else {
-      characterPrefix = avatarType; // 'boy' or 'girl'  
-    }
+    // Generate consistent seed for variations
+    const characterSeed = `${userInfo?.name || 'user'}_${avatarSkinTone}_${Date.now()}`;
     
-    // Create mapping key
-    const mappingKey = `${characterPrefix}-${avatarSkinTone}`;
-    console.log(`🛡️ Tier 2.5: Nuclear mapping key: ${mappingKey}`);
-    
-    // Get the nuclear mapping
-    const avatarMapping = NUCLEAR_AVATAR_MAPPINGS[mappingKey];
-    
-    if (!avatarMapping) {
-      console.warn(`⚠️ Tier 2.5: No mapping found for ${mappingKey}, using emergency fallback`);
-      // Enhanced emergency fallback with user's specifications
+    // ENHANCED AVATAR MAPPING: Use rich skin tone variations for non-dark skin
+    if (avatarSkinTone === 'dark') {
+      // Use existing African American arrays for dark skin users
+      console.log('🛡️ Tier 2.5: Using existing African American arrays for dark skin');
+      
+      // Map avatar type to character prefix
+      let characterPrefix;
+      if (avatarType === 'prefer-not-to-answer') {
+        characterPrefix = 'neutral';
+      } else {
+        characterPrefix = avatarType; // 'boy' or 'girl'  
+      }
+      
+      // Create mapping key for existing system
+      const mappingKey = `${characterPrefix}-dark`;
+      const avatarMapping = NUCLEAR_AVATAR_MAPPINGS[mappingKey];
+      
+      if (!avatarMapping) {
+        console.warn(`⚠️ Tier 2.5: No mapping found for ${mappingKey}, using emergency fallback`);
+        return {
+          character: 'happy child with authentic features',
+          age: '7-year-old',
+          hair: 'textured natural hair',
+          features: 'attractive child character',
+          source: 'emergency-fallback'
+        };
+      }
+      
+      // Adjust age based on difficulty
+      const ageMapping = {
+        'beginner': '3-year-old',
+        'easy': '5-year-old', 
+        'medium': '7-year-old',
+        'hard': '9-year-old',
+        'expert': '11-year-old'
+      };
+      
       return {
-        character: 'happy child',
-        age: '10-year-old',
-        hair: 'beautiful thick hair',
-        features: 'attractive child character',
-        source: 'emergency-fallback'
+        character: avatarMapping.character,
+        age: ageMapping[difficulty] || '7-year-old',
+        hair: avatarMapping.hair,
+        features: avatarMapping.features,
+        source: 'nuclear-mapping-dark'
+      };
+      
+    } else {
+      // ENHANCED: Use rich orchestrator variations for pale, light, medium, olive
+      console.log('🛡️ Tier 2.5: Using enhanced orchestrator variations for non-dark skin');
+      
+      const skinToneVariation = getSeededSkinToneVariation(avatarSkinTone, characterSeed);
+      const hairColor = ORCHESTRATOR_HAIR_COLOR_MAP[avatarSkinTone] || 'brown hair';
+      
+      // Age mapping based on difficulty
+      const ageMapping = {
+        'beginner': '3-year-old',
+        'easy': '5-year-old', 
+        'medium': '7-year-old',
+        'hard': '9-year-old',
+        'expert': '11-year-old'
+      };
+      
+      return {
+        character: skinToneVariation || `attractive child character with ${avatarSkinTone} skin tone`,
+        age: ageMapping[difficulty] || '7-year-old',
+        hair: hairColor,
+        features: skinToneVariation || `attractive child character features`,
+        source: 'orchestrator-enhanced',
+        seed: characterSeed,
+        type: avatarType,
+        skinTone: avatarSkinTone
       };
     }
     
-    // Adjust age based on difficulty
-    const ageMapping = {
-      'beginner': '3-year-old',
-      'easy': '5-year-old', 
-      'medium': '7-year-old',
-      'hard': '9-year-old',
-      'expert': '11-year-old'
-    };
-    
-    const finalMapping = {
-      ...avatarMapping,
-      age: ageMapping[difficulty] || avatarMapping.age
-    };
-    
-    console.log(`✅ Tier 2.5: Nuclear mapping successful for ${mappingKey}`);
-    return finalMapping;
-    
   } catch (error) {
-    console.error('❌ Tier 2.5: Nuclear avatar mapping error:', error);
+    console.error('❌ Tier 2.5: Enhanced nuclear avatar mapping error:', error);
     // Enhanced ultimate failsafe with user's specifications
+    return {
+      character: 'happy child',
+      age: '7-year-old',
+      hair: 'neat hair',
+      features: 'cheerful expression',
+      source: 'ultimate-fallback'
+    };
+  }
+}
     return {
       character: 'happy child',
       age: '10-year-old', 
@@ -3657,7 +3748,7 @@ function fillBasicTemplate(
   difficulty: string,
   userInfo: any,
   pageText: string,
-  avatarIdentity?: any
+  localAvatarIdentity?: any
 ): string {
   console.log(`🛡️ Tier 1.5 (2.5B): Filling BASIC template with 3-section structure`);
   
@@ -4691,24 +4782,32 @@ serve(async (req: Request) => {
         characterSeed: characterData?.seed || 'none'
       });
       
-      // ENHANCED DEBUGGING: Add avatarIdentity validation
-      console.log('🔍 TIER 2.5 AVATAR DEBUG:', {
-        hasAvatarIdentity: !!avatarIdentity,
-        avatarIdentityType: typeof avatarIdentity,
-        avatarIdentityKeys: avatarIdentity ? Object.keys(avatarIdentity) : [],
-        fromUserInfo: !!userInfo?.avatarIdentity,
+      // PARAMETER VALIDATION: Check Tier 2.5A vs 2.5B requirements
+      const hasTier25ARequirements = !!(pageText && userInfo && sessionId && characterData);
+      const hasTier25BRequirements = !!(pageText && userInfo);
+      
+      console.log('🔍 TIER 2.5 PARAMETER VALIDATION:', {
+        tier25A_Requirements: { pageText: !!pageText, userInfo: !!userInfo, sessionId: !!sessionId, characterData: !!characterData },
+        tier25A_Ready: hasTier25ARequirements,
+        tier25B_Ready: hasTier25BRequirements,
+        willUseTier: hasTier25ARequirements ? '2.5A (Premium)' : '2.5B (Basic)',
         timestamp: new Date().toISOString()
       });
       
-      // BULLETPROOFING: Startup diagnostics
-      console.log('🔍 Tier 2.5 System Status Check:', {
-        hasGlobalArcSessionManager: typeof globalArcSessionManager !== 'undefined',
-        hasPageText: !!pageText && pageText.length > 0,
-        hasUserInfo: !!userInfo,
-        hasAvatarIdentity: !!avatarIdentity,
-        sessionIdValid: !!sessionId && sessionId.length > 0,
-        timestamp: new Date().toISOString()
-      });
+      // BUILD LOCAL AVATAR IDENTITY: Create enhanced avatar identity from user data
+      let localAvatarIdentity;
+      try {
+        localAvatarIdentity = getNuclearAvatarMapping(userInfo, mapDifficultyInline(userInfo) || 'medium');
+        console.log('✅ Local avatar identity built successfully:', localAvatarIdentity.character);
+      } catch (avatarError) {
+        console.warn('⚠️ Avatar identity building failed, using fallback:', avatarError);
+        localAvatarIdentity = {
+          character: 'friendly child character',
+          age: '7-year-old',
+          hair: 'neat hair',
+          features: 'cheerful expression'
+        };
+      }
       
       // ============= TESTING & VALIDATION =============
       // Run comprehensive test on development requests (when sessionId contains 'test')
@@ -4727,8 +4826,8 @@ serve(async (req: Request) => {
       console.log('✅ Scene extraction successful');
     } catch (sceneError) {
       console.warn('⚠️ Scene extraction failed - triggering 2.5B basic template:', sceneError);
-      // CRITICAL: Scene extraction failure triggers 2.5B basic template
-      return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+      // CRITICAL: Scene extraction failure triggers 2.5B basic template  
+      return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
     }
     
     // Map difficulty level with fallback protection
@@ -4767,20 +4866,28 @@ serve(async (req: Request) => {
       hasContextualAction: !!sceneData?.contextualAction
     });
     
-    // Fill premium template with all placeholders including page text - SILENT FAILURE PROTECTION
+    // TIER 2.5A vs 2.5B LOGIC: Check requirements and route accordingly
     let prompt;
     try {
-      prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
-      console.log('✅ Premium Template (Tier 1 / 2.5A) filling successful with contextual intelligence');
+      // TIER 2.5A: Premium Template (requires pageText + userInfo + sessionId + characterData)
+      if (hasTier25ARequirements) {
+        console.log('🛡️ Using Tier 2.5A: Premium Template with Character Consistency');
+        prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, localAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
+        console.log('✅ Premium Template (Tier 2.5A) filling successful with contextual intelligence');
+      } else {
+        console.log('🛡️ Missing requirements for Tier 2.5A, using Tier 2.5B: Basic Template');
+        throw new Error('Tier 2.5A requirements not met - auto-fallback to 2.5B');
+      }
     } catch (templateError) {
       console.warn('⚠️ Premium Template failed, trying BASIC template (Tier 1.5 / 2.5B):', templateError);
       
       // ============= UPDATED 4-TIER FALLBACK CHAIN =============
       // TIER 1: Premium Template (2.5A) → TIER 1.5: Basic Template (2.5B) → TIER 2: Emergency Template (2.5C) → TIER 3: Ultimate Emergency Template (2.5D)
       try {
-        // TIER 1.5: Basic Template (2.5B) - 3-section simplified structure
-        prompt = fillBasicTemplate(difficulty, userInfo, pageText, avatarIdentity);
-        console.log('✅ Basic Template (Tier 1.5 / 2.5B) applied successfully');
+        // TIER 2.5B: Basic Template - 3-section simplified structure (pageText + userInfo ONLY)
+        console.log('🛡️ Using Tier 2.5B: Basic Template (pageText + userInfo ONLY)');
+        prompt = fillBasicTemplate(difficulty, userInfo, pageText, localAvatarIdentity);
+        console.log('✅ Basic Template (Tier 2.5B) applied successfully');
         
       } catch (basicError) {
         console.warn('⚠️ Basic Template failed, using EMERGENCY template (Tier 2 / 2.5C):', basicError);
@@ -4813,27 +4920,27 @@ serve(async (req: Request) => {
         throw new Error('Character consistency service unavailable');
       }
       
-      avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId, avatarIdentity);
-      avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
+      avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId, localAvatarIdentity);
+      avatarType = localAvatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
       console.log('✅ Avatar mapping successful');
       
       // BULLETPROOFING: Additional validation checks that trigger 2.5B fallback
       const characterValidation = validateCharacterConsistency(characterData, avatarMapping);
       if (!characterValidation.isValid) {
         console.warn('🔄 Character consistency validation failed - triggering 2.5B:', characterValidation.issues.join(', '));
-        return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+        return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       const visualValidation = validateVisualElements(sceneData, objects, setting);
       if (!visualValidation.isValid) {
         console.warn('🔄 Visual elements validation failed - triggering 2.5B:', visualValidation.issues.join(', '));
-        return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+        return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       const sceneValidation = validateSceneComplexity(sceneData, pageText);
       if (!sceneValidation.isValid) {
         console.warn('🔄 Scene complexity validation failed - triggering 2.5B:', sceneValidation.issues.join(', '));
-        return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+        return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       console.log('✅ All validation checks passed - proceeding with premium template');
@@ -4841,14 +4948,14 @@ serve(async (req: Request) => {
       console.warn('🔄 Character consistency service failed - triggering 2.5B basic template:', avatarError);
       
       // CRITICAL: Character consistency failure triggers 2.5B basic template (not emergency template)
-      return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+      return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
     }
     
     // Generate cultural profile and negative prompt - SILENT FAILURE PROTECTION
     let culturalProfile, negativePrompt;
     try {
       const pageNumber = userInfo?.pageNumber || 1;
-      culturalProfile = detectCulturalProfileForNegatives(userInfo, avatarIdentity);
+      culturalProfile = detectCulturalProfileForNegatives(userInfo, localAvatarIdentity);
       
       // ============= PHASE 5 ENHANCEMENT: MULTI-CHARACTER NEGATIVE PROMPT INTEGRATION =============
       // Extract secondary character information for negative prompt consistency
