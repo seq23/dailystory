@@ -967,6 +967,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      detect_subscription_access_anomalies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       detect_suspicious_patterns: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -986,6 +990,10 @@ export type Database = {
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
+      }
+      validate_subscription_view_security: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
     }
     Enums: {
