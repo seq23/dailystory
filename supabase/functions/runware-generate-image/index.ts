@@ -1092,7 +1092,7 @@ serve(async (req) => {
         const nuclearNegativePrompt = generateNuclearNegativePrompt(
           culturalProfile, 
           avatarType, 
-          difficultyLevel, 
+          mappedDifficulty, 
           pageNumber
         );
         

@@ -4667,15 +4667,15 @@ serve(async (req: Request) => {
     
     // Validate and prepare contextual intelligence data with fallbacks
     const contextualData = {
-      spatialComposition: extractedData?.spatialComposition || 'character prominently featured in foreground',
-      atmosphereContext: extractedData?.atmosphereContext || extractedData?.atmosphere || 'warm, inviting atmosphere'
+      spatialComposition: sceneData?.spatialComposition || 'character prominently featured in foreground',
+      atmosphereContext: sceneData?.atmosphereContext || sceneData?.atmosphere || 'warm, inviting atmosphere'
     };
     
     console.log('🧠 Contextual Intelligence Data:', {
       spatialComposition: contextualData.spatialComposition,
       atmosphereContext: contextualData.atmosphereContext,
-      hasContextualSetting: !!extractedData?.contextualSetting,
-      hasContextualAction: !!extractedData?.contextualAction
+      hasContextualSetting: !!sceneData?.contextualSetting,
+      hasContextualAction: !!sceneData?.contextualAction
     });
     
     // Fill premium template with all placeholders including page text - SILENT FAILURE PROTECTION

@@ -14,11 +14,13 @@ class ImageLoadingManagerClass {
   private activeLoads = new Map<string, LoadingRequest>();
   private recentFailures = new Map<string, number>();
   private globalFailureCount = 0;
+  private cascadeFailureCount = 0;
   
   // Circuit breaker: stop retrying after consecutive failures from same domain
   private readonly FAILURE_THRESHOLD = 5;
   private readonly FAILURE_WINDOW = 30000; // 30 seconds
   private readonly FAST_FAIL_TIMEOUT = 3000; // 3 seconds for debug mode
+  private readonly CASCADE_FAILURE_THRESHOLD = 10; // Stop after 10 cascade failures
   
   static getInstance(): ImageLoadingManagerClass {
     if (!ImageLoadingManagerClass.instance) {
@@ -42,6 +44,12 @@ class ImageLoadingManagerClass {
 
     const { timeout = 10000, isDebugMode = false } = options;
     const effectiveTimeout = isDebugMode ? this.FAST_FAIL_TIMEOUT : timeout;
+    
+    // Check cascade failure circuit breaker
+    if (this.cascadeFailureCount >= this.CASCADE_FAILURE_THRESHOLD) {
+      console.log(`🚫 Cascade failure circuit breaker: Stopping image loading (${this.cascadeFailureCount} failures)`);
+      return false;
+    }
     
     // Check circuit breaker
     if (this.shouldCircuitBreak(url)) {
@@ -70,6 +78,10 @@ class ImageLoadingManagerClass {
       const result = await promise;
       if (!result) {
         this.recordFailure(url);
+        this.cascadeFailureCount++;
+      } else {
+        // Reset cascade failure count on successful load
+        this.cascadeFailureCount = Math.max(0, this.cascadeFailureCount - 1);
       }
       return result;
     } finally {
@@ -173,6 +185,7 @@ class ImageLoadingManagerClass {
     this.activeLoads.clear();
     this.recentFailures.clear();
     this.globalFailureCount = 0;
+    this.cascadeFailureCount = 0;
     console.log('🧹 ImageLoadingManager: All caches cleared');
   }
 }
