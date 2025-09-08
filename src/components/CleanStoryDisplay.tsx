@@ -1925,19 +1925,50 @@ const initializeStory = async () => {
   };
 
   const generateImageForCurrentPage = async () => {
-    if (isGeneratingImage || pageImages[currentPage]) return;
+    // 🔍 COMPREHENSIVE DEBUG: Track function entry
+    console.log('🚀 DEBUG: generateImageForCurrentPage() called', {
+      currentPage,
+      isGeneratingImage,
+      hasExistingImage: !!pageImages[currentPage],
+      isStoryStable,
+      storyLength: story.length,
+      timestamp: new Date().toISOString()
+    });
+
+    if (isGeneratingImage || pageImages[currentPage]) {
+      console.log('🔍 DEBUG: Early return - already generating or image exists', {
+        isGeneratingImage,
+        hasExistingImage: !!pageImages[currentPage]
+      });
+      return;
+    }
     
     // CRITICAL: Only generate images AFTER story is stable
     if (!isStoryStable) {
-      console.log('🖼️ Cannot generate image - story not yet stable');
+      console.log('🖼️ DEBUG: Early return - story not yet stable', {
+        isStoryStable,
+        storyLength: story.length,
+        currentPage
+      });
       return;
     }
     
     const pageText = story[currentPage];
     if (!pageText) {
-      console.log('🖼️ Cannot generate image - no page text available');
+      console.log('🖼️ DEBUG: Early return - no page text available', {
+        currentPage,
+        pageText,
+        storyLength: story.length,
+        story: story.slice(0, 3) // Show first 3 pages for debugging
+      });
       return;
     }
+    
+    console.log('🔍 DEBUG: Passed all early return checks, proceeding with image generation', {
+      currentPage,
+      pageTextLength: pageText.length,
+      pageTextPreview: pageText.substring(0, 100) + '...'
+    });
     
     // 🔍 ENHANCED DEBUGGING: Track image generation parameters
     const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
@@ -1956,16 +1987,28 @@ const initializeStory = async () => {
       });
     }
     
+    console.log('🔍 DEBUG: About to import EnhancedImageCache and check cache');
+    
     const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+    
+    console.log('🔍 DEBUG: EnhancedImageCache imported successfully');
     
     // Validate userInfo structure before extracting markers
     if (!userInfo || !userInfo.avatar) {
-      console.warn('⚠️ Missing userInfo or avatar data for story markers');
+      console.warn('⚠️ Missing userInfo or avatar data for story markers', {
+        hasUserInfo: !!userInfo,
+        hasAvatar: !!userInfo?.avatar,
+        userInfo: userInfo
+      });
     }
     
     let storyMarkers, cachedImageUrl;
     try {
+      console.log('🔍 DEBUG: About to extract story markers and check cache');
+      
       storyMarkers = EnhancedImageCache.extractStoryMarkers(pageText, userInfo);
+      console.log('🔍 DEBUG: Story markers extracted:', storyMarkers);
+      
       cachedImageUrl = EnhancedImageCache.getCachedImage(
         pageText.slice(0, 120),
         characterSessionId, 
@@ -1973,22 +2016,44 @@ const initializeStory = async () => {
         storyId,
         storyMarkers
       );
+      console.log('🔍 DEBUG: Cache lookup result:', { cachedImageUrl });
+      
     } catch (error) {
-      console.error('❌ Image cache lookup failed:', error);
+      console.error('❌ DEBUG: Image cache lookup failed with detailed error:', {
+        error: error.message,
+        stack: error.stack,
+        pageText: pageText.substring(0, 100),
+        userInfo,
+        characterSessionId,
+        currentPage,
+        storyId
+      });
       return;
     }
     
     if (cachedImageUrl) {
-      console.log('📸 Using cached image for page', currentPage);
+      console.log('📸 DEBUG: Using cached image for page', currentPage, 'URL:', cachedImageUrl);
       setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
       return;
     }
     
+    console.log('🔍 DEBUG: No cached image found, proceeding with generation');
+    console.log('🔍 DEBUG: Setting generation states and calling SimpleImageService');
     
     setIsGeneratingImage(true);
     setIsPreparingImage(true);
     
     try {
+      console.log('🎯 DEBUG: Calling backend orchestrator for image generation', {
+        pageText: pageText.substring(0, 100),
+        userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
+        currentDifficulty,
+        storyId,
+        pageNumber: currentPage + 1,
+        characterSessionId,
+        isPremium
+      });
+      
       const result = await SimpleImageService.generateStoryImage(
         pageText, // Use pageText instead of storyText for consistency 
         { ...userInfo, difficultyLevel: currentDifficulty }, 
