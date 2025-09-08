@@ -464,7 +464,8 @@ function mapAvatarIdentity(userInfo: any): any {
     'boy': 'boy',
     'girl': 'girl', 
     'child': 'child',
-    'kid': 'child'
+    'kid': 'child',
+    'prefer-not-to-answer': 'prefer-not-to-answer'
   };
   
   // CRITICAL SKIN TONE MAPPING - DO NOT MODIFY THESE 5 MAPPINGS

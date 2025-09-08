@@ -4278,7 +4278,7 @@ serve(async (req: Request) => {
     let avatarMapping, avatarType;
     try {
       avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId);
-      avatarType = userInfo?.avatar?.type || 'prefer-not-to-answer';
+      avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
       console.log('✅ Avatar mapping successful');
     } catch (avatarError) {
       console.warn('🚨 PHASE 5: Character consistency service failed - triggering emergency template:', avatarError);
