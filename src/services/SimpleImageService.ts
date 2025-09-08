@@ -419,17 +419,32 @@ export class SimpleImageService {
       url: 'data:image/svg+xml;base64,' + btoa(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
           <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
-          <!-- Broken image icon -->
-          <rect x="150" y="80" width="100" height="80" rx="8" fill="none" stroke="#dee2e6" stroke-width="2"/>
-          <circle cx="165" cy="100" r="8" fill="#dee2e6"/>
-          <path d="m170 130 20 20 30-30" stroke="#dee2e6" stroke-width="2" fill="none"/>
-          <path d="m150 80 100 80 m0-80-100 80" stroke="#dc3545" stroke-width="3" opacity="0.7"/>
+          <!-- Broken magic wand icon -->
+          <g transform="translate(180, 90)">
+            <!-- Broken wand shaft - two pieces -->
+            <path d="M-20 20 L-5 5" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+            <path d="M0 0 L15 -15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+            
+            <!-- Crack/break indication -->
+            <path d="M-6 6 L-4 4 L-2 2" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+            
+            <!-- Dimmed refresh ring (broken) -->
+            <circle cx="15" cy="-15" r="8" fill="none" stroke="#d1d5db" stroke-width="1.5" opacity="0.4"/>
+            
+            <!-- Cross mark on the ring -->
+            <path d="M10 -20 L20 -10 M20 -20 L10 -10" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            
+            <!-- Fading sparkles -->
+            <circle cx="-15" cy="15" r="1.5" fill="#d1d5db" opacity="0.3"/>
+            <circle cx="5" cy="-5" r="1" fill="#d1d5db" opacity="0.2"/>
+            <circle cx="-10" cy="10" r="1" fill="#d1d5db" opacity="0.25"/>
+          </g>
           <!-- Main message -->
           <text x="50%" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#495057">
             Images not working right now
           </text>
           <text x="50%" y="220" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6c757d">
-            Please try the retry button below
+            Please try again later
           </text>
         </svg>
       `),
