@@ -940,6 +940,21 @@ const [highlightSave, setHighlightSave] = useState(false);
   const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
   const contentHash = hashText(effectiveAudioText);
 
+  // 🔍 PHASE 1: Debug hash generation
+  console.log('🧮 Hash Generation Debug:', {
+    currentPage,
+    fullTextLength: currentStoryText.length,
+    effectiveTextLength: effectiveAudioText.length,
+    effectiveLimit,
+    isPremium,
+    textTruncated: currentStoryText.length > effectiveAudioText.length,
+    truncatedChars: Math.max(0, currentStoryText.length - effectiveAudioText.length),
+    generatedHash: contentHash?.slice(0, 12),
+    fullText: currentStoryText.slice(0, 100) + (currentStoryText.length > 100 ? '...' : ''),
+    effectiveText: effectiveAudioText.slice(0, 100) + (effectiveAudioText.length > 100 ? '...' : ''),
+    timestamp: Date.now()
+  });
+
   // Event-based story stability - listen for actual completion
   useEffect(() => {
     const handleStoryComplete = () => {
@@ -976,6 +991,22 @@ const [highlightSave, setHighlightSave] = useState(false);
   useEffect(() => {
     try { 
       const previousHash = (window as any).__pageContentHash;
+      const previousText = (window as any).__pageContentString;
+      
+      // 🔍 PHASE 1 & 2: Debug hash setting and comparison
+      console.log('🔧 Hash Setting Debug:', {
+        previousHash: previousHash?.slice(0, 12),
+        newHash: contentHash?.slice(0, 12),
+        hashChanged: previousHash !== contentHash,
+        previousTextLength: previousText?.length || 0,
+        newTextLength: currentStoryText.length,
+        textChanged: previousText !== currentStoryText,
+        effectiveAudioTextLength: effectiveAudioText.length,
+        currentPage,
+        timestamp: Date.now(),
+        timingSince: previousHash ? 'N/A' : 'Initial'
+      });
+      
       (window as any).__pageContentHash = contentHash; 
       (window as any).__pageContentString = currentStoryText;
       (window as any).__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
@@ -983,11 +1014,20 @@ const [highlightSave, setHighlightSave] = useState(false);
       // Emit hash change event if hash actually changed
       if (previousHash !== contentHash && contentHash) {
         console.log(`🔄 Content hash changed: ${previousHash?.slice(0,10)} → ${contentHash?.slice(0,10)}`);
+        console.log('📊 Hash Change Analysis:', {
+          hashLengthChange: (contentHash?.length || 0) - (previousHash?.length || 0),
+          textSource: 'effectiveAudioText',
+          isTextConsistent: effectiveAudioText.length > 0,
+          potentialCause: currentStoryText.length !== effectiveAudioText.length ? 'text_truncation' : 'content_change'
+        });
+        
         window.dispatchEvent(new CustomEvent('content:hash:changed', { 
           detail: { 
             previousHash, 
             newHash: contentHash, 
-            timestamp: Date.now() 
+            timestamp: Date.now(),
+            textLengthChange: currentStoryText.length - (previousText?.length || 0),
+            effectiveTextLength: effectiveAudioText.length
           } 
         }));
       }

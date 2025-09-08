@@ -48,11 +48,35 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
     let attempt = 0;
     let delay = 50; // CRITICAL FIX: Reduced initial delay from 100ms to 50ms
     
-    console.log(`⏳ Starting hash sync wait: expected=${expectedHash?.slice(0,10)}, initial=${initialUIHash?.slice(0,10)}`);
+    // 🔍 PHASE 1: Enhanced sync debugging
+    console.log(`⏳ Starting hash sync wait - DETAILED:`, {
+      expectedHash: expectedHash?.slice(0,12),
+      expectedHashFull: expectedHash,
+      initialUIHash: initialUIHash?.slice(0,12), 
+      initialUIHashFull: initialUIHash,
+      hashLengthsMatch: expectedHash?.length === initialUIHash?.length,
+      textSource: (window as any).__pageContentString?.length || 0,
+      maxWaitTime: MAX_WAIT_TIME,
+      startTime
+    });
     
     while (Date.now() - startTime < MAX_WAIT_TIME) {
       // Check current hash
       const currentUIHash = (window as any).__pageContentHash;
+      const currentText = (window as any).__pageContentString;
+      
+      // 🔍 PHASE 2: Track hash source discrepancy
+      console.log(`🔍 Hash sync attempt ${attempt + 1}:`, {
+        currentUIHash: currentUIHash?.slice(0,12),
+        expectedHash: expectedHash?.slice(0,12),
+        initialUIHash: initialUIHash?.slice(0,12),
+        currentTextLength: currentText?.length || 0,
+        hashesMatch: currentUIHash === expectedHash,
+        hashChanged: currentUIHash !== initialUIHash,
+        timingElapsed: Date.now() - startTime,
+        potentialIssue: !currentUIHash ? 'no_ui_hash' : 
+                       currentUIHash === initialUIHash ? 'ui_hash_stale' : 'hash_mismatch'
+      });
       
       // If hashes now match, we're synchronized
       if (currentUIHash && currentUIHash === expectedHash) {
@@ -63,6 +87,12 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       // If UI hash changed to something else, update audio service
       if (currentUIHash && currentUIHash !== initialUIHash && currentUIHash !== expectedHash) {
         console.log(`🔄 UI hash changed during sync: ${currentUIHash?.slice(0,10)} - updating audio service`);
+        console.log('📊 Hash Change Analysis:', {
+          newUIHash: currentUIHash?.slice(0,12),
+          wasExpected: currentUIHash === expectedHash,
+          textLength: currentText?.length,
+          changeType: 'ui_hash_updated_during_sync'
+        });
         // Force sync the audio service's hash
         // TODO: Replace with SimplifiedAudioEngine.syncContentHash
         // if (typeof SimplifiedAudioEngine.syncContentHash === 'function') {
@@ -71,9 +101,7 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
         return true; // Consider this a successful sync to new content
       }
       
-      attempt++;
-      console.log(`⏳ Hash sync attempt ${attempt}: current=${currentUIHash?.slice(0,10)}, waiting ${delay}ms...`);
-      
+      attempt++;      
       // Wait with exponential backoff
       await new Promise(resolve => setTimeout(resolve, delay));
       
@@ -81,7 +109,13 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       delay = Math.min(500, delay * 2);
     }
     
-    console.error(`❌ Hash sync timeout after ${MAX_WAIT_TIME}ms`);
+    console.error(`❌ Hash sync timeout after ${MAX_WAIT_TIME}ms - DETAILED FAILURE:`, {
+      finalUIHash: (window as any).__pageContentHash?.slice(0,12),
+      expectedHash: expectedHash?.slice(0,12),
+      finalTextLength: (window as any).__pageContentString?.length,
+      totalAttempts: attempt,
+      failureReason: !(window as any).__pageContentHash ? 'no_ui_hash_set' : 'persistent_mismatch'
+    });
     return false;
   };
 
@@ -91,10 +125,41 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
   const validateHashSync = async (): Promise<boolean> => {
     // Get current hashes
     const currentUIHash = (window as any).__pageContentHash;
+    const currentText = (window as any).__pageContentString;
+    
+    // 🔍 PHASE 1 & 2: Comprehensive validation debugging
+    console.log('🎯 Hash Validation Debug:', {
+      audioServiceHash: contentHash?.slice(0,12),
+      uiWindowHash: currentUIHash?.slice(0,12), 
+      audioServiceHashFull: contentHash,
+      uiWindowHashFull: currentUIHash,
+      hashesMatch: contentHash === currentUIHash,
+      audioHashExists: !!contentHash,
+      uiHashExists: !!currentUIHash,
+      textLength: currentText?.length || 0,
+      mismatchType: !contentHash ? 'no_audio_hash' :
+                   !currentUIHash ? 'no_ui_hash' : 
+                   contentHash !== currentUIHash ? 'hash_values_different' : 'hashes_match',
+      timestamp: Date.now()
+    });
     
     // If there's a hash mismatch, wait for proper synchronization
     if (contentHash && currentUIHash && currentUIHash !== contentHash) {
       console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - waiting for sync...`);
+      
+      // 🔍 PHASE 2: Analyze mismatch source
+      console.log('🔬 Mismatch Analysis:', {
+        uiHashLength: currentUIHash.length,
+        audioHashLength: contentHash.length,
+        lengthDifference: Math.abs(currentUIHash.length - contentHash.length),
+        firstDiffIndex: (() => {
+          for (let i = 0; i < Math.min(currentUIHash.length, contentHash.length); i++) {
+            if (currentUIHash[i] !== contentHash[i]) return i;
+          }
+          return -1;
+        })(),
+        likelySource: currentText?.length ? 'text_processing_difference' : 'timing_issue'
+      });
       
       // Show sync progress to user
       toast({
@@ -108,6 +173,12 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       
       if (!syncSuccess) {
         console.error('❌ Hash sync timeout - unable to synchronize content');
+        console.error('🔍 Final State Analysis:', {
+          finalUIHash: (window as any).__pageContentHash?.slice(0,12),
+          targetAudioHash: contentHash?.slice(0,12),
+          finalTextLength: (window as any).__pageContentString?.length,
+          failureType: 'sync_timeout'
+        });
         toast({
           title: "Sync timeout",
           description: "Content synchronization took too long. Please try again.",
@@ -123,6 +194,14 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
         description: "Audio is now ready to play with synchronized content.",
         duration: 1500,
       });
+    } else if (!contentHash || !currentUIHash) {
+      console.log('⚠️ Missing hash data:', {
+        missingAudioHash: !contentHash,
+        missingUIHash: !currentUIHash,
+        actionTaken: 'proceeding_without_sync'
+      });
+    } else {
+      console.log('✅ Hashes already synchronized - no sync needed');
     }
 
     return true;
