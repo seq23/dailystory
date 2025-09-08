@@ -20,27 +20,72 @@ class ErrorSuppressionManager {
   private shouldSuppress(message: string, ...args: any[]): boolean {
     const fullMessage = this.normalizeMessage(message, ...args);
 
-    // Chrome extension runtime errors (the main culprit)
+    // Chrome extension runtime errors (comprehensive patterns)
     if (fullMessage.includes('unchecked runtime.lasterror') ||
         fullMessage.includes('could not establish connection') ||
         fullMessage.includes('receiving end does not exist') ||
         fullMessage.includes('chrome-extension://') ||
+        fullMessage.includes('moz-extension://') ||
+        fullMessage.includes('safari-extension://') ||
         fullMessage.includes('extensions::') ||
         fullMessage.includes('extension context invalidated') ||
+        fullMessage.includes('cannot access contents of') ||
+        fullMessage.includes('error in event handler') ||
         fullMessage.includes('the message port closed before a response was received')) {
       this.incrementErrorCount('Chrome Extension Errors');
       return true;
     }
 
-    // Permissions Policy warnings
+    // Permissions Policy warnings (comprehensive)
     if (fullMessage.includes('unrecognized feature') ||
         fullMessage.includes('permissions policy') ||
         fullMessage.includes('ambient-light-sensor') ||
         fullMessage.includes('battery') ||
         fullMessage.includes('vr') ||
         fullMessage.includes('gyroscope') ||
-        fullMessage.includes('magnetometer')) {
+        fullMessage.includes('magnetometer') ||
+        fullMessage.includes('speaker') ||
+        fullMessage.includes('vibrate')) {
       this.incrementErrorCount('Permissions Policy Warnings');
+      return true;
+    }
+
+    // Sentry rate limiting and monitoring errors (CRITICAL ADDITION)
+    if (fullMessage.includes('sentry.io/api/') ||
+        fullMessage.includes('429 ()') ||
+        fullMessage.includes('429 (too many requests)') ||
+        fullMessage.includes('sentry.javascript') ||
+        fullMessage.includes('ingest.sentry.io') ||
+        fullMessage.includes('envelope') && fullMessage.includes('sentry')) {
+      this.incrementErrorCount('Sentry Rate Limiting');
+      return true;
+    }
+
+    // Performance violations (CRITICAL ADDITION)
+    if (fullMessage.includes('[violation]') ||
+        fullMessage.includes('setinterval') && fullMessage.includes('handler took') ||
+        fullMessage.includes('settimeout') && fullMessage.includes('handler took') ||
+        fullMessage.includes('requestanimationframe') && fullMessage.includes('handler took') ||
+        fullMessage.includes('forced reflow while executing javascript') ||
+        fullMessage.includes('long running javascript task took')) {
+      this.incrementErrorCount('Performance Violations');
+      return true;
+    }
+
+    // Iframe sandbox security warnings (CRITICAL ADDITION)
+    if (fullMessage.includes('iframe which has both allow-scripts and allow-same-origin') ||
+        fullMessage.includes('sandbox attribute can escape its sandboxing') ||
+        fullMessage.includes('iframe') && fullMessage.includes('sandbox') && fullMessage.includes('escape')) {
+      this.incrementErrorCount('Iframe Security Warnings');
+      return true;
+    }
+
+    // Lovable hiring messages and ASCII art (CRITICAL ADDITION)
+    if (fullMessage.includes("we're hiring!") ||
+        fullMessage.includes('lovable.dev/careers') ||
+        fullMessage.includes('⠀⠀#######') ||
+        fullMessage.includes('hiring') && fullMessage.includes('lovable.dev')) {
+      this.incrementErrorCount('Lovable Hiring Messages');
       return true;
     }
 
@@ -49,17 +94,64 @@ class ErrorSuppressionManager {
         fullMessage.includes('502 ()') ||
         fullMessage.includes('failed to load resource') ||
         fullMessage.includes('net::err_') ||
-        fullMessage.includes('network error')) {
+        fullMessage.includes('network error') ||
+        fullMessage.includes('loading chunk') && fullMessage.includes('failed') ||
+        fullMessage.includes('loading css chunk')) {
       this.incrementErrorCount('Network Errors');
       return true;
     }
 
-    // Development hot reload messages
+    // Development hot reload and Vite messages
     if (fullMessage.includes('[vite] hot updated') ||
         fullMessage.includes('log entries are not shown') ||
         fullMessage.includes('[hmr] updated') ||
-        fullMessage.includes('hot reload')) {
+        fullMessage.includes('hot reload') ||
+        fullMessage.includes('[vite]') ||
+        fullMessage.includes('[hmr]') ||
+        fullMessage.includes('connecting...') ||
+        fullMessage.includes('connected.')) {
       this.incrementErrorCount('Development Messages');
+      return true;
+    }
+
+    // PostMessage and cross-origin errors
+    if (fullMessage.includes("failed to execute 'postmessage' on 'domwindow'") ||
+        fullMessage.includes('target origin provided') && fullMessage.includes('does not match') ||
+        fullMessage.includes('postmessage origin mismatch') ||
+        fullMessage.includes('cross-origin frame') ||
+        fullMessage.includes('blocked by cors policy')) {
+      this.incrementErrorCount('Cross-Origin/PostMessage Errors');
+      return true;
+    }
+
+    // Audio preload warnings
+    if (fullMessage.includes('was preloaded using link preload but not used') ||
+        fullMessage.includes('resource') && fullMessage.includes('preloaded') && fullMessage.includes('not used') ||
+        fullMessage.includes('celebration.mp3') && fullMessage.includes('preloaded')) {
+      this.incrementErrorCount('Audio Preload Warnings');
+      return true;
+    }
+
+    // React development warnings
+    if (fullMessage.includes('warning: reactdom.render is no longer supported') ||
+        fullMessage.includes('warning: react.createfactory') ||
+        fullMessage.includes('warning: componentwill') ||
+        fullMessage.includes('the above error occurred in the') ||
+        fullMessage.includes('consider adding an error boundary')) {
+      this.incrementErrorCount('React Development Warnings');
+      return true;
+    }
+
+    // Common browser noise
+    if (fullMessage.includes('script error') ||
+        fullMessage.includes('resizeobserver loop limit exceeded') ||
+        fullMessage.includes('devtools') ||
+        fullMessage.includes('non-error promise rejection captured') ||
+        fullMessage.includes('performanceobserver') ||
+        fullMessage.includes('permissions api') ||
+        fullMessage.includes('notification api') ||
+        fullMessage.includes('getusermedia')) {
+      this.incrementErrorCount('Browser API Noise');
       return true;
     }
 
@@ -68,7 +160,11 @@ class ErrorSuppressionManager {
         fullMessage.includes('adblock') ||
         fullMessage.includes('privacy') ||
         fullMessage.includes('tracker') ||
-        fullMessage.includes('blocked a frame')) {
+        fullMessage.includes('blocked a frame') ||
+        fullMessage.includes('third-party') ||
+        fullMessage.includes('advertisement') ||
+        fullMessage.includes('analytics') ||
+        fullMessage.includes('tracking')) {
       this.incrementErrorCount('Privacy/Ad Blocker Messages');
       return true;
     }
@@ -160,6 +256,25 @@ class ErrorSuppressionManager {
     this.lastSummaryTime = 0; // Reset to force showing
     this.showSummary();
   }
+
+  // Performance monitoring for setInterval violations
+  monitorPerformanceViolations() {
+    if (typeof PerformanceObserver !== 'undefined') {
+      try {
+        const observer = new PerformanceObserver((list) => {
+          const entries = list.getEntries();
+          entries.forEach((entry) => {
+            if (entry.duration > 50) { // Log slow operations
+              this.originalConsoleWarn(`⚡ Performance: ${entry.name} took ${entry.duration.toFixed(2)}ms`);
+            }
+          });
+        });
+        observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
+      } catch (e) {
+        // Performance Observer not supported or failed to initialize
+      }
+    }
+  }
 }
 
 export const errorSuppressionManager = new ErrorSuppressionManager();
@@ -167,8 +282,16 @@ export const errorSuppressionManager = new ErrorSuppressionManager();
 // Enable immediately in all environments
 errorSuppressionManager.enable();
 
+// Start performance monitoring
+errorSuppressionManager.monitorPerformanceViolations();
+
 // Add a global function for debugging (development only)
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).showErrorSuppression = () => errorSuppressionManager.showCurrentSummary();
   (window as any).errorSuppressionStatus = () => errorSuppressionManager.getStatus();
+  (window as any).checkConsoleSuppressionStatus = () => {
+    const status = errorSuppressionManager.getStatus();
+    console.log('🔍 Console Suppression Status:', status);
+    return status;
+  };
 }

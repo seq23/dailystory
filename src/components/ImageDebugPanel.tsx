@@ -38,7 +38,8 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
       setLastBackendLogs(logs.slice(-5)); // Last 5 logs
     };
 
-    const interval = setInterval(checkBackendLogs, 1000);
+    // Optimized: Reduced frequency from 1000ms to 3000ms to prevent performance violations
+    const interval = setInterval(checkBackendLogs, 3000);
     return () => clearInterval(interval);
   }, [isDebugMode]);
 
