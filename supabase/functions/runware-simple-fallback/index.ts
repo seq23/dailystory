@@ -37,16 +37,16 @@ function createCorsOptionsResponse(): Response {
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
-// ============= PHASE 3 COMPLETE: STANDARDIZED TEMPLATE SYSTEM - Natural Language Integration =============
+// ============= PHASE 2 UPDATED: OPTIMIZED TEMPLATE STRUCTURE FOR MAXIMUM VISUAL IMPACT =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // STANDARDIZED: All levels now use consistent pageText placement before Brand Suffix
-  beginner: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
-  easy: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
+  // NEW STRUCTURE: Character Foundation → Character Details → Scene Context → Action & Objects → Supporting Elements → Story Integration → Technical
+  beginner: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
+  easy: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
   
-  // Enhanced object-character integration with action-based descriptions
-  medium: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
-  hard: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}",
-  expert: "Character Description: {character} {age}, {ethnicity}, {hair}, {features}. Visual Scene: {character} {scene} in {setting}{action_objects}{secondary_characters}. {emotion}. Primary Scene: {pageText}. Brand Suffix: {frameworkPrompt}. {cameraDirective}"
+  // Enhanced structure with new semantic placeholders for maximum visual impact
+  medium: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
+  hard: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}",
+  expert: "Character Foundation: {character} {age}, {ethnicity}. Character Details: {hair}, {features}, {emotion}. Scene Context: {setting}, {atmosphere}, {community_context}. Action & Objects: {character} {scene}{action_objects}{props}. Supporting Elements: {secondary_characters}, {sensory_details}. Story Integration: {pageText}. Technical: {frameworkPrompt}. {cameraDirective}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -2273,6 +2273,131 @@ function extractFirstSentences(pageText: string, difficulty: string): string {
   }
 }
 
+// ============= PHASE 3: NEW SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
+
+/**
+ * Extract atmosphere details (lighting, weather, mood) from story content
+ */
+function extractAtmosphere(pageText: string, scene: string, setting: string): string {
+  try {
+    const text = (pageText + ' ' + scene + ' ' + setting).toLowerCase();
+    
+    // Lighting patterns
+    if (text.match(/sunny|bright|sunshine|golden|warm light/)) return ' with bright golden lighting';
+    if (text.match(/cloudy|overcast|grey|dim/)) return ' with soft diffused lighting';
+    if (text.match(/morning|dawn/)) return ' with gentle morning light';
+    if (text.match(/evening|sunset|dusk/)) return ' with warm evening glow';
+    if (text.match(/night|dark|stars/)) return ' with gentle moonlight';
+    
+    // Weather patterns
+    if (text.match(/rain|storm|wet/)) return ' in gentle rain atmosphere';
+    if (text.match(/snow|winter|cold/)) return ' in peaceful snowy atmosphere';
+    if (text.match(/spring|fresh/)) return ' in fresh spring atmosphere';
+    if (text.match(/summer|hot/)) return ' in cheerful summer atmosphere';
+    
+    // Mood patterns
+    if (text.match(/happy|joyful|celebration/)) return ' with cheerful uplifting atmosphere';
+    if (text.match(/peaceful|calm|quiet/)) return ' with serene peaceful atmosphere';
+    if (text.match(/exciting|adventure|fun/)) return ' with dynamic energetic atmosphere';
+    
+    return ''; // Optional placeholder - can be empty
+  } catch (error) {
+    console.warn('⚠️ Atmosphere extraction failed:', error);
+    return ''; // PHASE 4: Optional placeholder returns empty string
+  }
+}
+
+/**
+ * Extract props (documents, tools, items) from story context
+ */
+function extractProps(pageText: string, scene: string): string {
+  try {
+    const text = (pageText + ' ' + scene).toLowerCase();
+    
+    // Educational props
+    if (text.match(/book|reading|story|page/)) return ' with colorful storybooks';
+    if (text.match(/pencil|pen|writing|homework/)) return ' with school supplies';
+    if (text.match(/computer|tablet|laptop/)) return ' with modern technology';
+    
+    // Creative props
+    if (text.match(/paint|brush|art|drawing/)) return ' with art materials';
+    if (text.match(/music|instrument|piano|guitar/)) return ' with musical instruments';
+    if (text.match(/craft|glue|scissors/)) return ' with craft supplies';
+    
+    // Play props
+    if (text.match(/ball|toy|game|puzzle/)) return ' with engaging toys';
+    if (text.match(/bike|scooter|skateboard/)) return ' with outdoor equipment';
+    if (text.match(/doll|stuffed animal|teddy/)) return ' with beloved toys';
+    
+    return ''; // Optional placeholder - can be empty
+  } catch (error) {
+    console.warn('⚠️ Props extraction failed:', error);
+    return ''; // PHASE 4: Optional placeholder returns empty string
+  }
+}
+
+/**
+ * Extract community context (social events, community spaces) from setting
+ */
+function extractCommunityContext(pageText: string, setting: string): string {
+  try {
+    const text = (pageText + ' ' + setting).toLowerCase();
+    
+    // Community events
+    if (text.match(/festival|celebration|party|gathering/)) return ' during a community celebration';
+    if (text.match(/market|fair|bazaar/)) return ' at a vibrant community market';
+    if (text.match(/parade|march|ceremony/)) return ' during a community event';
+    
+    // Community spaces
+    if (text.match(/library|community center/)) return ' in a welcoming community space';
+    if (text.match(/park|playground|garden/)) return ' in a shared community area';
+    if (text.match(/school|classroom|cafeteria/)) return ' in an educational community setting';
+    
+    // Social contexts
+    if (text.match(/friend|classmate|neighbor/)) return ' with community connections';
+    if (text.match(/family|parent|sibling/)) return ' in a family community setting';
+    if (text.match(/teacher|coach|mentor/)) return ' with community mentors';
+    
+    return ''; // Optional placeholder - can be empty
+  } catch (error) {
+    console.warn('⚠️ Community context extraction failed:', error);
+    return ''; // PHASE 4: Optional placeholder returns empty string
+  }
+}
+
+/**
+ * Extract sensory details (sounds, textures, scents) for immersion
+ */
+function extractSensoryDetails(pageText: string, scene: string): string {
+  try {
+    const text = (pageText + ' ' + scene).toLowerCase();
+    
+    // Sound details
+    if (text.match(/laugh|giggle|cheer/)) return ' with joyful laughter';
+    if (text.match(/music|song|singing/)) return ' with cheerful music';
+    if (text.match(/birds|chirp/)) return ' with gentle bird sounds';
+    if (text.match(/water|stream|splash/)) return ' with peaceful water sounds';
+    
+    // Texture details
+    if (text.match(/soft|smooth|fluffy/)) return ' with soft comfortable textures';
+    if (text.match(/rough|bumpy|rocky/)) return ' with interesting textures';
+    if (text.match(/warm|cozy|comfortable/)) return ' with warm welcoming textures';
+    
+    // Scent details
+    if (text.match(/flower|garden|bloom/)) return ' with fresh floral scents';
+    if (text.match(/food|cooking|baking/)) return ' with delicious aromas';
+    if (text.match(/ocean|sea|beach/)) return ' with fresh ocean air';
+    if (text.match(/forest|tree|pine/)) return ' with natural woodland scents';
+    
+    return ''; // Optional placeholder - can be empty
+  } catch (error) {
+    console.warn('⚠️ Sensory details extraction failed:', error);
+    return ''; // PHASE 4: Optional placeholder returns empty string
+  }
+}
+
+// ============= END PHASE 3: NEW SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
+
 function fillPremiumTemplate(
   difficulty: string,
   userInfo: any,
@@ -2539,10 +2664,14 @@ function fillPremiumTemplate(
       }
     }
     
-    // ============= PHASE 3: RESTRUCTURED TEMPLATE REPLACEMENT - Natural Language Scene =============
-    // PHASE 1 FIX: Use proper variables (safeScene and enhancedSetting)
+    // ============= PHASE 3: ADD NEW SEMANTIC PLACEHOLDERS =============
+    // Extract new semantic placeholders from story content
+    const atmosphere = extractAtmosphere(pageText, safeScene, enhancedSetting);
+    const props = extractProps(pageText, safeScene);
+    const communityContext = extractCommunityContext(pageText, enhancedSetting);
+    const sensoryDetails = extractSensoryDetails(pageText, safeScene);
     
-    // PHASE 4: Enhanced Null Safety System - Critical Placeholder Validation
+    // ============= PHASE 4: Enhanced Null Safety System - Critical Placeholder Validation =============
     // Check for critical placeholder failures that should trigger emergency template
     const criticalPlaceholderFailure = (!finalMapping.character || finalMapping.character === 'undefined' || finalMapping.character === '') ||
                                       (!safeScene || safeScene === 'undefined' || safeScene === '') ||
@@ -2590,6 +2719,10 @@ function fillPremiumTemplate(
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', secondary_characters ? ` ${secondary_characters}` : '') // PHASE 4: Handle empty strings
       .replace('{emotion}', emotion)
+      .replace('{atmosphere}', atmosphere) // PHASE 3: New semantic placeholder
+      .replace('{props}', props) // PHASE 3: New semantic placeholder
+      .replace('{community_context}', communityContext) // PHASE 3: New semantic placeholder
+      .replace('{sensory_details}', sensoryDetails) // PHASE 3: New semantic placeholder
       .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
       .replace('{cameraDirective}', cameraDirective); // PHASE 5: Camera directive moved to end
     
@@ -3151,31 +3284,26 @@ serve(async (req: Request) => {
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
       console.log('✅ Template filling successful');
     } catch (templateError) {
-      console.warn('⚠️ Template filling failed, using ULTIMATE EMERGENCY template:', templateError);
+      console.warn('⚠️ Template filling failed, using EMERGENCY template (Tier 2):', templateError);
       
-      // ============= CRITICAL REGRESSION PREVENTION: LINE 2847 =============
-      // PLAN 1 IMPLEMENTATION: Emergency Template Replacement
-      // This is the ULTIMATE EMERGENCY template - last resort when all other systems fail
-      // 
-      // CRITICAL REQUIREMENTS:
-      // - Must be completely hardcoded with zero dependencies
-      // - Must be child-safe and appropriate for all age groups
-      // - Must generate valid image prompts for Runware API
-      // - Must maintain consistent quality standards
-      //
-      // TEMPLATE CHARACTERISTICS:
-      // - Cheerful child character (universal appeal)
-      // - Colorful outdoor scene (positive, engaging)
-      // - Contemporary children's book style (professional quality)
-      // - Diverse representation (inclusive by default)
-      //
-      // REGRESSION RISKS:
-      // - Removing "EMERGENCY_TEMPLATE_USED:" prefix breaks debugging
-      // - Changing content could introduce inappropriate elements
-      // - Complex dependencies would break nuclear fallback principle
-      //
-      // TESTING: Verify template works when fillPremiumTemplate completely fails
-      prompt = "EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
+      // ============= PHASE 5: CORRECTED FALLBACK CHAIN - PROPER 3-TIER SYSTEM =============
+      // TIER 1: Premium Template (failed) → TIER 2: Emergency Template (pageText + framework) → TIER 3: Ultimate Emergency Template
+      try {
+        // TIER 2: Emergency Template - pageText (2500 chars) + framework only
+        const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
+                                  NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
+                                  EMERGENCY_FALLBACK_FRAMEWORK || 
+                                  'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+        
+        prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
+        console.log('✅ Emergency Template (Tier 2) applied successfully');
+        
+      } catch (emergencyError) {
+        console.warn('⚠️ Emergency template failed, using ULTIMATE EMERGENCY template (Tier 3):', emergencyError);
+        
+        // TIER 3: Ultimate Emergency Template - hardcoded fallback (last resort)
+        prompt = "ULTIMATE_EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
+      }
     }
     
     // Generate avatar mapping with character consistency enhancement - PHASE 5: ENHANCED FAILURE PROTECTION
