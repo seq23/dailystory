@@ -86,14 +86,14 @@ const PREMIUM_PROMPT_TEMPLATES = {
   expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
 };
 
-// ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - NEW SIMPLIFIED 3-SECTION STRUCTURE =============
+// ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 const BASIC_PROMPT_TEMPLATES = {
-  // NEW STRUCTURE: Primary Scene + Visual Components + Brand Suffix (3 sections max)
-  beginner: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
-  medium: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
-  hard: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
-  expert: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}"
+  // SIMPLIFIED STRUCTURE: pageText (first 3 sentences) + basic semantic components 
+  beginner: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  medium: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  hard: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  expert: "Primary Scene: {pageText}. Character: {subject} {action} with {emotion}. Setting: {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -3024,24 +3024,17 @@ function generateCameraDirective(difficulty: string, scene?: string, setting?: s
   return finalDirective;
 }
 
-// PHASE 7: Primary Scene Smart Extraction for Levels 2-4
-function extractFirstSentences(pageText: string, difficulty: string): string {
-  console.log(`🔍 Smart sentence extraction for difficulty: ${difficulty}`);
+// UPDATED: Always Extract First 3 Sentences for All Levels 0-4
+function extractFirstSentences(pageText: string, difficulty?: string): string {
+  console.log(`🔍 Extracting first 3 sentences for all difficulty levels`);
   
   if (!pageText || pageText.trim() === '') {
     console.log('📝 Empty pageText, returning empty string');
     return '';
   }
   
-  // For levels 0-1 (beginner/easy), use full pageText
-  if (difficulty === 'beginner' || difficulty === 'easy') {
-    console.log('📝 Beginner/Easy level: Using full pageText');
-    return pageText.trim();
-  }
-  
-  // For levels 2-4, extract first 2-3 sentences
   try {
-    // Split by sentence boundaries (., !, ?)
+    // Split by sentence boundaries (., !, ?) and take first 3 sentences for ALL levels
     const sentences = pageText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
     
     if (sentences.length === 0) {
@@ -3049,20 +3042,11 @@ function extractFirstSentences(pageText: string, difficulty: string): string {
       return pageText.trim();
     }
     
-    let sentenceCount;
-    if (difficulty === 'medium') {
-      sentenceCount = 2;
-    } else if (difficulty === 'hard' || difficulty === 'expert') {
-      sentenceCount = 3;
-    } else {
-      sentenceCount = 2; // Default fallback
-    }
-    
-    // Take the first N sentences and rejoin them
-    const extractedSentences = sentences.slice(0, sentenceCount);
+    // ALWAYS use first 3 sentences for all levels 0-4
+    const extractedSentences = sentences.slice(0, 3);
     const result = extractedSentences.join('. ') + (extractedSentences.length > 0 ? '.' : '');
     
-    console.log(`📝 Extracted ${extractedSentences.length} sentences (${result.length} chars): "${result}"`);
+    console.log(`📝 Extracted ${extractedSentences.length} sentences for ${difficulty || 'all levels'}: "${result}"`);
     return result;
     
   } catch (error) {
@@ -3769,11 +3753,13 @@ function fillBasicTemplate(
       throw templateError; // Pass to next tier
     }
     
-    // Extract basic components using simple regex-based functions
+    // Extract semantic components using unified vocabulary
     const limitedPageText = limitPageTextToThreeSentences(safePageText);
-    const basicSetting = extractBasicSetting(safePageText);
-    const basicAction = extractBasicAction(safePageText);
-    const basicObjects = extractBasicObjects(safePageText);
+    const subject = extractSubject(safePageText);
+    const action = extractAction(safePageText);
+    const setting = extractSetting(safePageText);
+    const adjective = extractAdjective(safePageText);
+    const emotion = extractEmotion(safePageText);
     
     // Get nuclear avatar mapping with error protection
     let avatarMapping;
@@ -3808,13 +3794,14 @@ function fillBasicTemplate(
       frameworkPrompt = 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
     }
     
-    // Fill basic template using 3-section structure
+    // Fill basic template using simplified semantic structure
     let filledTemplate = template
       .replace(/{pageText}/g, limitedPageText)
-      .replace(/{character}/g, avatarMapping.character || 'a friendly child')
-      .replace(/{setting}/g, basicSetting)
-      .replace(/{action_objects}/g, basicAction)
-      .replace(/{objects}/g, basicObjects)
+      .replace(/{subject}/g, subject)
+      .replace(/{action}/g, action)
+      .replace(/{setting}/g, setting)
+      .replace(/{adjective}/g, adjective)
+      .replace(/{emotion}/g, emotion)
       .replace(/{frameworkPrompt}/g, frameworkPrompt);
     
     // Clean up any remaining placeholders
