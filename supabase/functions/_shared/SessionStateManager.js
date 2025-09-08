@@ -375,15 +375,31 @@ export class SessionStateManager {
       }
 
       // Clean up old entries (keep only last 10 per session)
-      const { error: cleanupError } = await supabase
-        .from('ai_prompt_debug_log')
-        .delete()
-        .not('id', 'in', 
-          `(SELECT id FROM ai_prompt_debug_log WHERE session_id = '${sessionId}' ORDER BY created_at DESC LIMIT 10)`
-        )
-        .eq('session_id', sessionId);
+      try {
+        // First, get the IDs of the 10 most recent entries for this session
+        const { data: keepEntries, error: fetchError } = await supabase
+          .from('ai_prompt_debug_log')
+          .select('id')
+          .eq('session_id', sessionId)
+          .order('created_at', { ascending: false })
+          .limit(10);
 
-      if (cleanupError) {
+        if (!fetchError && keepEntries && keepEntries.length > 0) {
+          // Delete entries not in the keep list
+          const keepIds = keepEntries.map(entry => entry.id);
+          const { error: cleanupError } = await supabase
+            .from('ai_prompt_debug_log')
+            .delete()
+            .eq('session_id', sessionId)
+            .not('id', 'in', keepIds);
+
+          if (cleanupError) {
+            console.warn('⚠️ Failed to cleanup old AI debug entries:', cleanupError);
+          } else {
+            console.log(`🧹 Cleaned up old AI debug entries for session ${sessionId}, keeping ${keepIds.length} recent entries`);
+          }
+        }
+      } catch (cleanupError) {
         console.warn('⚠️ Failed to cleanup old AI debug entries:', cleanupError);
       }
 
