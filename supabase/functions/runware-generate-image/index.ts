@@ -679,6 +679,13 @@ async function generateWithRunwarePremium(
 serve(async (req) => {
   console.log(`🎯 Image Generation Orchestrator: ${req.method} ${req.url}`);
 
+  // BULLETPROOFING: Startup diagnostics
+  console.log('🔍 Tier 1 System Status Check:', {
+    hasRunwareApiKey: !!Deno.env.get('RUNWARE_API_KEY'),
+    timestamp: new Date().toISOString(),
+    requestMethod: req.method
+  });
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
@@ -690,6 +697,17 @@ serve(async (req) => {
     console.error('❌ CRITICAL: RUNWARE_API_KEY not found in environment');
     console.error('📋 Available env vars:', Object.keys(Deno.env.toObject()).filter(key => key.includes('API')));
     return createCorsErrorResponse('Server configuration error: Missing Runware API key', 500);
+  }
+  
+  // Enhanced API key validation - bulletproofed
+  if (apiKey.length < 20) {
+    console.error('❌ CRITICAL: RUNWARE_API_KEY appears too short (less than 20 chars)');
+    return createCorsErrorResponse('Server configuration error: Invalid API key format', 500);
+  }
+  
+  if (!apiKey.startsWith('rw-')) {
+    console.error('❌ CRITICAL: RUNWARE_API_KEY does not start with expected prefix');
+    return createCorsErrorResponse('Server configuration error: Invalid API key format', 500);
   }
   
   console.log('✅ RUNWARE_API_KEY validated:', apiKey.substring(0, 10) + '...');

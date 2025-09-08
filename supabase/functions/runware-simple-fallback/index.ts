@@ -4101,6 +4101,76 @@ function validateTemplateCompletion(template: string, scene: string, setting: st
   };
 }
 
+// NEW: Character consistency validation - triggers 2.5B on failure
+function validateCharacterConsistency(characterData: any, avatarMapping: any): { isValid: boolean, issues: string[] } {
+  const issues: string[] = [];
+  
+  if (!characterData || !avatarMapping) {
+    issues.push('Missing character data or avatar mapping');
+  }
+  
+  if (avatarMapping?.source === 'emergency-fallback') {
+    issues.push('Character consistency service failed');
+  }
+  
+  if (!avatarMapping?.character || avatarMapping.character === 'a friendly child') {
+    issues.push('Generic character fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// NEW: Visual element validation - triggers 2.5B on failure  
+function validateVisualElements(sceneData: any, objects: string, setting: string): { isValid: boolean, issues: string[] } {
+  const issues: string[] = [];
+  
+  if (!sceneData?.spatialComposition || sceneData.spatialComposition === 'character prominently featured in foreground') {
+    issues.push('Generic spatial composition detected');
+  }
+  
+  if (!objects || objects === 'interesting colorful items') {
+    issues.push('Generic objects fallback detected');
+  }
+  
+  if (!sceneData?.atmosphereContext || sceneData.atmosphereContext === 'warm, inviting atmosphere') {
+    issues.push('Generic atmosphere fallback detected');
+  }
+  
+  if (!setting || setting === 'a welcoming colorful environment') {
+    issues.push('Generic setting fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// NEW: Scene complexity validation - triggers 2.5B on failure
+function validateSceneComplexity(sceneData: any, pageText: string): { isValid: boolean, issues: string[] } {
+  const issues: string[] = [];
+  
+  if (!sceneData?.contextualAction && pageText && pageText.length > 50) {
+    issues.push('No contextual action extracted from substantial text');
+  }
+  
+  if (!sceneData?.contextualSetting && pageText && pageText.length > 50) {
+    issues.push('No contextual setting extracted from substantial text');
+  }
+  
+  if (sceneData?.scene && sceneData.scene === 'enjoying a bright cheerful moment') {
+    issues.push('Generic scene fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
 // REMOVE EMPTY SECTIONS FROM TEMPLATE
 function removeEmptySections(template: string): string {
   // Remove sections that have no content after the colon
@@ -4619,6 +4689,16 @@ serve(async (req: Request) => {
         characterSeed: characterData?.seed || 'none'
       });
       
+      // BULLETPROOFING: Startup diagnostics
+      console.log('🔍 Tier 2.5 System Status Check:', {
+        hasGlobalArcSessionManager: typeof globalArcSessionManager !== 'undefined',
+        hasPageText: !!pageText && pageText.length > 0,
+        hasUserInfo: !!userInfo,
+        hasAvatarIdentity: !!avatarIdentity,
+        sessionIdValid: !!sessionId && sessionId.length > 0,
+        timestamp: new Date().toISOString()
+      });
+      
       // ============= TESTING & VALIDATION =============
       // Run comprehensive test on development requests (when sessionId contains 'test')
       if (sessionId && sessionId.includes('test')) {
@@ -4626,20 +4706,18 @@ serve(async (req: Request) => {
       }
       
       // Extract scene components with complete placeholder support - SILENT FAILURE PROTECTION
-    let scene, setting, objects, secondary_characters;
+    let scene, setting, objects, secondary_characters, sceneData;
     try {
-      const sceneData = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
+      sceneData = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
       scene = sceneData.scene;
       setting = sceneData.setting;
       objects = sceneData.objects;
       secondary_characters = sceneData.secondary_characters;
       console.log('✅ Scene extraction successful');
     } catch (sceneError) {
-      console.warn('⚠️ Scene extraction failed, using emergency defaults:', sceneError);
-      scene = 'enjoying a bright cheerful moment';
-      setting = 'a welcoming colorful environment';
-      objects = 'interesting colorful items';
-      secondary_characters = '';
+      console.warn('⚠️ Scene extraction failed - triggering 2.5B basic template:', sceneError);
+      // CRITICAL: Scene extraction failure triggers 2.5B basic template
+      return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
     }
     
     // Map difficulty level with fallback protection
@@ -4718,24 +4796,41 @@ serve(async (req: Request) => {
     // Generate avatar mapping with character consistency enhancement - PHASE 5: ENHANCED FAILURE PROTECTION
     let avatarMapping, avatarType;
     try {
+      // Check if globalArcSessionManager exists before calling
+      if (typeof globalArcSessionManager === 'undefined' || !globalArcSessionManager) {
+        console.warn('⚠️ globalArcSessionManager not available - using fallback character consistency');
+        throw new Error('Character consistency service unavailable');
+      }
+      
       avatarMapping = enhanceNuclearMappingWithConsistency(userInfo, difficulty, characterData, sessionId, avatarIdentity);
       avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
       console.log('✅ Avatar mapping successful');
+      
+      // BULLETPROOFING: Additional validation checks that trigger 2.5B fallback
+      const characterValidation = validateCharacterConsistency(characterData, avatarMapping);
+      if (!characterValidation.isValid) {
+        console.warn('🔄 Character consistency validation failed - triggering 2.5B:', characterValidation.issues.join(', '));
+        return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+      }
+      
+      const visualValidation = validateVisualElements(sceneData, objects, setting);
+      if (!visualValidation.isValid) {
+        console.warn('🔄 Visual elements validation failed - triggering 2.5B:', visualValidation.issues.join(', '));
+        return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+      }
+      
+      const sceneValidation = validateSceneComplexity(sceneData, pageText);
+      if (!sceneValidation.isValid) {
+        console.warn('🔄 Scene complexity validation failed - triggering 2.5B:', sceneValidation.issues.join(', '));
+        return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
+      }
+      
+      console.log('✅ All validation checks passed - proceeding with premium template');
     } catch (avatarError) {
-      console.warn('🚨 PHASE 5: Character consistency service failed - triggering emergency template:', avatarError);
+      console.warn('🔄 Character consistency service failed - triggering 2.5B basic template:', avatarError);
       
-      // PHASE 5: Character Consistency failure triggers emergency template
-      // Use emergency template: pageText (2500 chars) + framework only
-      const emergencyPageText = (pageText || '').substring(0, 2500);
-      const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
-                                NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
-                                'Contemporary children\'s book illustration with vibrant colors, friendly character design, bright cheerful atmosphere';
-      
-      prompt = `EMERGENCY_TEMPLATE_USED: ${emergencyPageText} ${emergencyFramework}`;
-      
-      // Skip further processing and go directly to image generation
-      avatarMapping = { character: 'a friendly child', source: 'emergency-fallback' };
-      avatarType = 'prefer-not-to-answer';
+      // CRITICAL: Character consistency failure triggers 2.5B basic template (not emergency template)
+      return fillBasicTemplate(difficulty || 'medium', pageText, userInfo, avatarIdentity);
     }
     
     // Generate cultural profile and negative prompt - SILENT FAILURE PROTECTION
