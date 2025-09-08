@@ -421,30 +421,15 @@ export class SimpleImageService {
           <!-- Background -->
           <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
           
-          <!-- Flowchart-style broken process diagram -->
-          <g transform="translate(200, 150)">
-            <!-- Process boxes -->
-            <rect x="-80" y="-60" width="60" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
-            <text x="-50" y="-42" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#6b7280">Start</text>
-            
-            <rect x="-80" y="-10" width="60" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
-            <text x="-50" y="8" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#6b7280">Process</text>
-            
-            <rect x="20" y="-10" width="60" height="30" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
-            <text x="50" y="8" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#dc2626">Error</text>
-            
-            <!-- Connecting arrows -->
-            <path d="M-50 -30 L-50 -20" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
-            <path d="M-20 5 L10 5" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
-            
-            <!-- X mark on error box -->
-            <path d="M40 -5 L60 5 M60 -5 L40 5" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
-            
-            <!-- Disconnected elements -->
-            <circle cx="-120" cy="40" r="3" fill="#d1d5db"/>
-            <circle cx="100" cy="-40" r="2" fill="#d1d5db"/>
-            <circle cx="-30" cy="50" r="2.5" fill="#d1d5db"/>
-          </g>
+          <!-- Broken Wand Image -->
+          <image 
+            x="100" 
+            y="30" 
+            width="200" 
+            height="150" 
+            href="/lovable-uploads/93432db4-84aa-4992-a216-9e542d03f7d3.png"
+            preserveAspectRatio="xMidYMid meet"
+          />
           
           <!-- Arrow marker definition -->
           <defs>
