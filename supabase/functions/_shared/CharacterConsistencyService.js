@@ -218,7 +218,7 @@ export class CharacterConsistencyService {
       const { data, error } = await supabase
         .from('character_consistency_cache')
         .delete()
-        .neq('id', 0); // Delete all records
+        .neq('session_id', ''); // Delete all records
 
       if (error) {
         console.error('❌ Database clear error:', error);
