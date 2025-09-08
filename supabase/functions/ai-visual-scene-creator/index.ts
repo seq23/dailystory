@@ -1013,13 +1013,30 @@ RULES:
           },
           {
             role: 'user', 
-            content: `${previousScene ? `{
-  "previousScene": ${JSON.stringify(previousScene)},
-  "currentText": "${storyText}"
-}` : `Story text: "${storyText}"`}${secondaryElements.length > 0 ? `
-Additional elements: ${secondaryElements.map(e => e.name).join(', ')}` : ''}
+            content: buildUserContent(previousScene, storyText, secondaryElements)
+
           }
         ];
+        
+        // Helper function to build user content safely
+        function buildUserContent(previousScene, storyText, secondaryElements) {
+          let content = '';
+          
+          if (previousScene) {
+            content = `{
+  "previousScene": ${JSON.stringify(previousScene)},
+  "currentText": "${storyText}"
+}`;
+          } else {
+            content = `Story text: "${storyText}"`;
+          }
+          
+          if (secondaryElements && secondaryElements.length > 0) {
+            content += `\nAdditional elements: ${secondaryElements.map(e => e.name).join(', ')}`;
+          }
+          
+          return content;
+        }
         
         console.log(`AI [${requestId}] PHASE 1.2: Enhanced prompt constructed:`, {
           systemPromptLength: minimalMessages[0].content.length,
