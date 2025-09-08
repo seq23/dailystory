@@ -71,10 +71,15 @@ const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hou
 
 // ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - EACH PLACEHOLDER USED EXACTLY ONCE =============
 const PREMIUM_PROMPT_TEMPLATES = {
+  // 🚨 REGRESSION PREVENTION: LEVELS 0-1 MUST KEEP "Story: {pageText}" AT BEGINNING
+  // This ensures original story text appears first for better AI processing
+  // DO NOT MODIFY the "Story: {pageText}. Foundation:" structure for beginner/easy
   // STORY-FIRST STRUCTURE FOR LEVEL 0-1 (beginner/easy): Better AI processing
   beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
   easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
   
+  // 🚨 REGRESSION PREVENTION: LEVELS 2+ USE "Foundation: {character}" FIRST
+  // This provides character-driven approach for advanced levels  
   // FOUNDATION-FIRST STRUCTURE FOR MEDIUM+ LEVELS: Traditional character-driven approach
   medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
   hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
@@ -718,6 +723,7 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
   try {
     console.log('🛡️ Tier 2.5: Nuclear avatar mapping started');
     
+    // 🚨 REGRESSION PREVENTION: Orchestrator Priority System - DO NOT MODIFY ORDER
     // PRIORITY 1: Use enhanced skin tone variation from orchestrator if available
     if (avatarIdentity?.skinToneVariation) {
       console.log('🎭 Tier 2.5: Using orchestrator enhanced skin tone variation');
@@ -740,6 +746,7 @@ function getNuclearAvatarMapping(userInfo: any, difficulty: string, avatarIdenti
     }
     
     // FALLBACK: Use traditional nuclear mapping
+    // 🚨 REGRESSION PREVENTION: Avatar Type Priority - Must check avatarIdentity first
     // Get avatar type - fix the critical bug here
     let avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'prefer-not-to-answer';
     const avatarSkinTone = userInfo?.avatar?.skinTone || 'light';
@@ -3532,6 +3539,7 @@ function fillPremiumTemplate(
     }
     
     // ============= PHASE 3: ADD NEW SEMANTIC PLACEHOLDERS =============
+    // 🚨 REGRESSION PREVENTION: All new placeholders must handle null/undefined gracefully
     // Extract new semantic placeholders from story content
     const atmosphere = extractAtmosphere(pageText, safeScene, enhancedSetting);
     const props = extractProps(pageText, safeScene);
