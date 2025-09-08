@@ -49,6 +49,16 @@ const PREMIUM_PROMPT_TEMPLATES = {
   expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
 };
 
+// ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - NEW SIMPLIFIED 3-SECTION STRUCTURE =============
+const BASIC_PROMPT_TEMPLATES = {
+  // NEW STRUCTURE: Primary Scene + Visual Components + Brand Suffix (3 sections max)
+  beginner: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
+  medium: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
+  hard: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}",
+  expert: "Primary Scene: {pageText}. Visual Components: {character}, {setting}, {action_objects}, {objects}. Brand Suffix: {frameworkPrompt}"
+};
+
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
 const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   boys: [
@@ -2398,6 +2408,197 @@ function extractSensoryDetails(pageText: string, scene: string): string {
 
 // ============= END PHASE 3: NEW SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
 
+// ============= BASIC TEMPLATE EXTRACTION FUNCTIONS (TIER 1.5 / 2.5B) =============
+/**
+ * Limit pageText to maximum 3 sentences for basic templates
+ */
+function limitPageTextToThreeSentences(pageText: string): string {
+  try {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    // Split by sentence terminators and take first 3 sentences
+    const sentences = pageText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    return sentences.slice(0, 3).join('. ').trim() + (sentences.length > 0 ? '.' : '');
+  } catch (error) {
+    console.warn('⚠️ Page text limitation failed:', error);
+    return pageText?.substring(0, 200) || ''; // Fallback to character limit
+  }
+}
+
+/**
+ * Extract basic setting using simple regex patterns
+ */
+function extractBasicSetting(pageText: string): string {
+  try {
+    if (!pageText || typeof pageText !== 'string') return 'a colorful place';
+    
+    // Simple regex to find "in/at [location]"
+    const settingMatch = pageText.match(/(?:in|at)\s+(?:the\s+)?([^,.!?]+)/i);
+    if (settingMatch && settingMatch[1]) {
+      return settingMatch[1].trim();
+    }
+    
+    // Fallback: check for common location words
+    const locationWords = ['home', 'school', 'park', 'garden', 'room', 'kitchen', 'playground', 'forest', 'beach'];
+    for (const word of locationWords) {
+      if (pageText.toLowerCase().includes(word)) {
+        return `a ${word}`;
+      }
+    }
+    
+    return 'a bright colorful environment';
+  } catch (error) {
+    console.warn('⚠️ Basic setting extraction failed:', error);
+    return 'a welcoming place';
+  }
+}
+
+/**
+ * Extract basic action using simple regex patterns
+ */
+function extractBasicAction(pageText: string): string {
+  try {
+    if (!pageText || typeof pageText !== 'string') return 'enjoying a happy moment';
+    
+    // Simple regex to find action verbs
+    const actionMatch = pageText.match(/(?:played|playing|runs|running|walked|walking|danced|dancing)\s+([^,.!?]*)/i);
+    if (actionMatch && actionMatch[0]) {
+      return actionMatch[0].trim();
+    }
+    
+    // Fallback: check for basic action words
+    const actionWords = ['play', 'run', 'jump', 'dance', 'laugh', 'smile', 'explore', 'discover'];
+    for (const word of actionWords) {
+      if (pageText.toLowerCase().includes(word)) {
+        return `${word}ing happily`;
+      }
+    }
+    
+    return 'having a wonderful time';
+  } catch (error) {
+    console.warn('⚠️ Basic action extraction failed:', error);
+    return 'enjoying the moment';
+  }
+}
+
+/**
+ * Extract basic objects using simple regex patterns  
+ */
+function extractBasicObjects(pageText: string): string {
+  try {
+    if (!pageText || typeof pageText !== 'string') return 'colorful items';
+    
+    // Simple regex to find "with [object]"
+    const objectMatch = pageText.match(/with\s+(?:his|her|their|a|an|the)?\s*([^,.!?]+)/i);
+    if (objectMatch && objectMatch[1]) {
+      return objectMatch[1].trim();
+    }
+    
+    // Fallback: check for common object words
+    const objectWords = ['toy', 'ball', 'book', 'friend', 'pet', 'bicycle', 'flowers', 'butterfly', 'treasure'];
+    for (const word of objectWords) {
+      if (pageText.toLowerCase().includes(word)) {
+        return word;
+      }
+    }
+    
+    return 'interesting things';
+  } catch (error) {
+    console.warn('⚠️ Basic objects extraction failed:', error);
+    return 'wonderful items';
+  }
+}
+
+/**
+ * Fill basic template with simplified 3-section structure (Tier 1.5 / 2.5B)
+ * Following the example: "Tommy played with his friend Sequoia" → "A child playing with friend Sequoia in a garden"
+ */
+function fillBasicTemplate(
+  difficulty: string,
+  userInfo: any,
+  pageText: string,
+  avatarIdentity?: any
+): string {
+  console.log(`🛡️ Tier 1.5 (2.5B): Filling BASIC template with 3-section structure`);
+  
+  try {
+    // Validate input parameters with fallbacks
+    const safeDifficulty = difficulty || 'medium';
+    const safePageText = pageText || 'A child having a wonderful adventure';
+    
+    // Get basic template with fallback protection
+    let template;
+    try {
+      template = BASIC_PROMPT_TEMPLATES[safeDifficulty] || BASIC_PROMPT_TEMPLATES.medium || BASIC_PROMPT_TEMPLATES['medium'];
+      if (!template) {
+        throw new Error('No basic template found');
+      }
+    } catch (templateError) {
+      console.warn('⚠️ Basic template selection failed, falling back to emergency template:', templateError);
+      throw templateError; // Pass to next tier
+    }
+    
+    // Extract basic components using simple regex-based functions
+    const limitedPageText = limitPageTextToThreeSentences(safePageText);
+    const basicSetting = extractBasicSetting(safePageText);
+    const basicAction = extractBasicAction(safePageText);
+    const basicObjects = extractBasicObjects(safePageText);
+    
+    // Get nuclear avatar mapping with error protection
+    let avatarMapping;
+    try {
+      avatarMapping = getNuclearAvatarMapping(userInfo, safeDifficulty);
+      console.log(`✅ Basic nuclear avatar mapping applied: ${avatarMapping.character}`);
+    } catch (avatarError) {
+      console.warn('⚠️ Basic avatar mapping failed, using fallback:', avatarError);
+      avatarMapping = { 
+        character: 'a friendly child',
+        age: 'young',
+        skin: 'medium skin tone',
+        hair: 'neat hair',
+        eyes: 'bright eyes',
+        face: 'cheerful expression',
+        clothing: 'comfortable clothes'
+      };
+    }
+    
+    // Get framework prompt with fallback protection  
+    let frameworkPrompt;
+    try {
+      frameworkPrompt = NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || 
+                       NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
+                       EMERGENCY_FALLBACK_FRAMEWORK ||
+                       'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+    } catch (frameworkError) {
+      console.warn('⚠️ Framework prompt failed, using hardcoded fallback:', frameworkError);
+      frameworkPrompt = 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+    }
+    
+    // Fill basic template using 3-section structure
+    let filledTemplate = template
+      .replace(/{pageText}/g, limitedPageText)
+      .replace(/{character}/g, avatarMapping.character || 'a friendly child')
+      .replace(/{setting}/g, basicSetting)
+      .replace(/{action_objects}/g, basicAction)
+      .replace(/{objects}/g, basicObjects)
+      .replace(/{frameworkPrompt}/g, frameworkPrompt);
+    
+    // Clean up any remaining placeholders
+    filledTemplate = filledTemplate.replace(/{[^}]*}/g, '').replace(/\s+/g, ' ').trim();
+    
+    console.log('✅ Basic Template (Tier 1.5 / 2.5B) filled successfully');
+    console.log(`📝 Basic template result preview: ${filledTemplate.substring(0, 100)}...`);
+    
+    return filledTemplate;
+    
+  } catch (error) {
+    console.warn('⚠️ Basic template filling failed:', error);
+    throw error; // Pass to next fallback tier
+  }
+}
+
+// ============= END BASIC TEMPLATE EXTRACTION FUNCTIONS =============
+
 function fillPremiumTemplate(
   difficulty: string,
   userInfo: any,
@@ -2436,7 +2637,7 @@ function fillPremiumTemplate(
       console.warn('⚠️ Template selection failed, using emergency template:', templateError);
       
       // ============= CRITICAL REGRESSION PREVENTION: LINE 2054 =============
-      // PLAN 2 IMPLEMENTATION: Raw PageText Function
+      // 4-TIER FALLBACK IMPLEMENTATION: Raw PageText Function (Emergency Tier 2.5C)
       // This line constructs emergency template using:
       // 1. First 2500 characters of pageText (user's story content)
       // 2. Plus frameworkPrompt from NUCLEAR_STYLE_SETTINGS array (defined at line 2167)
@@ -2453,6 +2654,8 @@ function fillPremiumTemplate(
       // - Removing any fallback level could cause undefined errors
       //
       // TESTING: Verify template generation when PREMIUM_PROMPT_TEMPLATES fails
+      // NOTE: This is now part of the 4-tier system as Emergency Template (Tier 2.5C)
+      // FALLBACK CHAIN: Premium (2.5A) → Basic (2.5B) → Emergency (2.5C) → Ultimate Emergency (2.5D)
       template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || EMERGENCY_FALLBACK_FRAMEWORK || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
     }
     
@@ -3282,27 +3485,36 @@ serve(async (req: Request) => {
     let prompt;
     try {
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
-      console.log('✅ Template filling successful');
+      console.log('✅ Premium Template (Tier 1 / 2.5A) filling successful');
     } catch (templateError) {
-      console.warn('⚠️ Template filling failed, using EMERGENCY template (Tier 2):', templateError);
+      console.warn('⚠️ Premium Template failed, trying BASIC template (Tier 1.5 / 2.5B):', templateError);
       
-      // ============= PHASE 5: CORRECTED FALLBACK CHAIN - PROPER 3-TIER SYSTEM =============
-      // TIER 1: Premium Template (failed) → TIER 2: Emergency Template (pageText + framework) → TIER 3: Ultimate Emergency Template
+      // ============= UPDATED 4-TIER FALLBACK CHAIN =============
+      // TIER 1: Premium Template (2.5A) → TIER 1.5: Basic Template (2.5B) → TIER 2: Emergency Template (2.5C) → TIER 3: Ultimate Emergency Template (2.5D)
       try {
-        // TIER 2: Emergency Template - pageText (2500 chars) + framework only
-        const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
-                                  NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
-                                  EMERGENCY_FALLBACK_FRAMEWORK || 
-                                  'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+        // TIER 1.5: Basic Template (2.5B) - 3-section simplified structure
+        prompt = fillBasicTemplate(difficulty, userInfo, pageText, avatarIdentity);
+        console.log('✅ Basic Template (Tier 1.5 / 2.5B) applied successfully');
         
-        prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
-        console.log('✅ Emergency Template (Tier 2) applied successfully');
+      } catch (basicError) {
+        console.warn('⚠️ Basic Template failed, using EMERGENCY template (Tier 2 / 2.5C):', basicError);
         
-      } catch (emergencyError) {
-        console.warn('⚠️ Emergency template failed, using ULTIMATE EMERGENCY template (Tier 3):', emergencyError);
-        
-        // TIER 3: Ultimate Emergency Template - hardcoded fallback (last resort)
-        prompt = "ULTIMATE_EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
+        try {
+          // TIER 2: Emergency Template (2.5C) - pageText (2500 chars) + framework only
+          const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
+                                    NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
+                                    EMERGENCY_FALLBACK_FRAMEWORK || 
+                                    'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+          
+          prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
+          console.log('✅ Emergency Template (Tier 2 / 2.5C) applied successfully');
+          
+        } catch (emergencyError) {
+          console.warn('⚠️ Emergency template failed, using ULTIMATE EMERGENCY template (Tier 3 / 2.5D):', emergencyError);
+          
+          // TIER 3: Ultimate Emergency Template (2.5D) - hardcoded fallback (last resort)
+          prompt = "ULTIMATE_EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
+        }
       }
     }
     
