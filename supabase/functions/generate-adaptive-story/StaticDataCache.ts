@@ -259,7 +259,17 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
   // Hair color processing - randomly select from available options
   const skinTone = userInfo?.avatar?.skinTone || 'medium';
   const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
-  const hairColor = hairOptions[Math.floor(Math.random() * hairOptions.length)];
+  
+  // Filter out gendered hairstyles for gender-neutral avatars
+  const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
+  const filteredHairOptions = avatarType === 'prefer-not-to-answer' 
+    ? hairOptions.filter(hair => !hair.toLowerCase().includes('pigtails') && 
+                                 !hair.toLowerCase().includes('ponytail') && 
+                                 !hair.toLowerCase().includes('braids') && 
+                                 !hair.toLowerCase().includes('bun'))
+    : hairOptions;
+  
+  const hairColor = filteredHairOptions[Math.floor(Math.random() * filteredHairOptions.length)];
   
   // Gender/pronoun processing  
   const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
