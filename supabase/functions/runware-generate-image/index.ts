@@ -635,36 +635,6 @@ function generateKidFriendlyPlaceholder(pageText: string): { url: string, succes
     success: true
   };
 }
-        y="137.5" 
-        width="200" 
-        height="150" 
-        href="/lovable-uploads/93432db4-84aa-4992-a216-9e542d03f7d3.png"
-        preserveAspectRatio="xMidYMid meet"
-      />
-      
-      <!-- Arrow marker definition -->
-      <defs>
-        <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
-          <polygon points="0 0, 6 2, 0 4" fill="#9ca3af"/>
-        </marker>
-      </defs>
-      
-      <!-- Main message -->
-      <text x="50%" y="310" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
-        Images not working right now
-      </text>
-      <text x="50%" y="330" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
-        Please try again later
-      </text>
-    </svg>
-  `;
-  
-  // Convert to data URL instead of blob URL to avoid browser security issues
-  const base64 = btoa(unescape(encodeURIComponent(svgContent)));
-  const url = `data:image/svg+xml;base64,${base64}`;
-  
-  return { url, success: true };
-}
 
 // ============= TIER 1 RUNWARE PREMIUM GENERATION =============
 async function generateWithRunwarePremium(
