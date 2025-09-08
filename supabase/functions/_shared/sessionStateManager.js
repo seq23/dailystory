@@ -67,6 +67,16 @@ export class ArcSessionState {
       expectedSceneLength: null,
       arcValidationResults: new Map()
     };
+    
+    // Tier failure tracking
+    this.tierFailures = [];
+    this.tierStats = {
+      tier1Attempts: 0,
+      tier1Failures: 0,
+      tier25Attempts: 0,
+      tier25Failures: 0,
+      tier4Activations: 0
+    };
   }
   
   /**
@@ -260,6 +270,65 @@ export class ArcSessionState {
   }
   
   /**
+   * Record tier failure for analytics
+   */
+  recordTierFailure(tier, errorType, details = {}) {
+    const failure = {
+      tier,
+      errorType,
+      timestamp: Date.now(),
+      details
+    };
+    
+    this.tierFailures.push(failure);
+    
+    // Update tier stats
+    if (tier === 'tier1') {
+      this.tierStats.tier1Failures++;
+    } else if (tier.startsWith('tier2')) {
+      this.tierStats.tier25Failures++;
+    } else if (tier === 'tier4') {
+      this.tierStats.tier4Activations++;
+    }
+    
+    // Keep only last 20 failures
+    if (this.tierFailures.length > 20) {
+      this.tierFailures = this.tierFailures.slice(-20);
+    }
+  }
+  
+  /**
+   * Record tier attempt for analytics
+   */
+  recordTierAttempt(tier) {
+    if (tier === 'tier1') {
+      this.tierStats.tier1Attempts++;
+    } else if (tier.startsWith('tier2')) {
+      this.tierStats.tier25Attempts++;
+    }
+  }
+  
+  /**
+   * Get tier failure analytics
+   */
+  getTierAnalytics() {
+    const recentFailures = this.tierFailures.filter(f => 
+      Date.now() - f.timestamp < 24 * 60 * 60 * 1000 // Last 24 hours
+    );
+    
+    return {
+      stats: this.tierStats,
+      recentFailures,
+      successRates: {
+        tier1: this.tierStats.tier1Attempts > 0 ? 
+          ((this.tierStats.tier1Attempts - this.tierStats.tier1Failures) / this.tierStats.tier1Attempts * 100).toFixed(2) + '%' : 'N/A',
+        tier25: this.tierStats.tier25Attempts > 0 ? 
+          ((this.tierStats.tier25Attempts - this.tierStats.tier25Failures) / this.tierStats.tier25Attempts * 100).toFixed(2) + '%' : 'N/A'
+      }
+    };
+  }
+
+  /**
    * Export state for storage/caching
    */
   toJSON() {
@@ -276,7 +345,9 @@ export class ArcSessionState {
       endingRotation: this.endingRotation,
       environmentalState: this.environmentalState,
       swappableState: this.swappableState,
-      cacheCompatibility: this.cacheCompatibility
+      cacheCompatibility: this.cacheCompatibility,
+      tierFailures: this.tierFailures,
+      tierStats: this.tierStats
       // Note: validationCache is transient and not serialized
     };
   }

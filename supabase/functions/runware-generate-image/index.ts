@@ -104,30 +104,9 @@ const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
   "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
 ];
 
-// Hispanic/Latino Arrays (for Afro-Latina when dark skin + Spanish)
-const HARDCODED_HISPANIC_LATINO_HAIRSTYLES = {
-  boys: [
-    'dark brown wavy hair', 'straight black hair with side part', 'textured curly brown hair',
-    'medium length dark hair', 'classic short brown cut', 'layered dark hair', 'wavy textured cut',
-    'straight black hair with fringe', 'curly dark brown locks', 'smooth dark hair style'
-  ],
-  girls: [
-    'long straight black hair', 'dark brown wavy hair', 'curly black hair in ponytail',
-    'straight dark hair with bangs', 'wavy brown hair in braids', 'long black hair in loose curls',
-    'shoulder-length dark waves', 'straight black hair with layers', 'curly dark brown hair'
-  ]
-};
-
-const HARDCODED_HISPANIC_LATINO_SKIN_TONES = [
-  'warm olive complexion', 'medium brown skin', 'golden tan complexion', 'warm beige skin',
-  'caramel brown complexion', 'light olive skin', 'bronze complexion', 'honey-toned skin'
-];
-
-const HARDCODED_HISPANIC_LATINO_FACIAL_FEATURES = [
-  'expressive warm brown eyes', 'bright cheerful smile', 'strong defined features',
-  'warm welcoming expression', 'lively animated eyes', 'gentle kind smile',
-  'beautiful natural features', 'confident friendly demeanor', 'radiant warm smile'
-];
+// Hispanic/Latino arrays removed for template unification
+// Only African American arrays remain for dark skin users
+// AI handles other ethnicities naturally
 
 // Regional Authenticity Strings for Non-English Speakers
 const REGIONAL_AUTHENTICITY_STRINGS = {
@@ -141,6 +120,51 @@ const REGIONAL_AUTHENTICITY_STRINGS = {
   'ru': 'authentic Eastern European features reflecting Russian heritage',
   'pt': 'authentic Latin American features reflecting Portuguese heritage'
 };
+
+// ============= TIER FAILURE TRACKING =============
+class TierFailureTracker {
+  static trackFailure(tier: string, errorType: string, sessionId?: string, details?: any) {
+    const failure = {
+      tier,
+      errorType,
+      timestamp: Date.now(),
+      sessionId,
+      details
+    };
+    
+    console.warn(`🔴 TIER FAILURE TRACKED:`, failure);
+    
+    // Store in session state if available
+    if (sessionId && globalThis.globalArcSessionManager) {
+      try {
+        const session = globalThis.globalArcSessionManager.sessions.get(sessionId);
+        if (session) {
+          if (!session.tierFailures) session.tierFailures = [];
+          session.tierFailures.push(failure);
+          
+          // Keep only last 10 failures per session
+          if (session.tierFailures.length > 10) {
+            session.tierFailures = session.tierFailures.slice(-10);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to store tier failure in session:', error);
+      }
+    }
+  }
+  
+  static getFailureStats(sessionId?: string) {
+    if (!sessionId || !globalThis.globalArcSessionManager) return null;
+    
+    try {
+      const session = globalThis.globalArcSessionManager.sessions.get(sessionId);
+      return session?.tierFailures || [];
+    } catch (error) {
+      console.warn('Failed to retrieve failure stats:', error);
+      return null;
+    }
+  }
+}
 
 // ============= WEBSOCKET ERROR CLASSIFICATION =============
 class WebSocketError extends Error {
