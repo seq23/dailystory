@@ -1,13 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from "../_shared/corsAdvanced.ts";
+import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.js';
 
 serve(async (req) => {
   console.log(`🖼️ Debug: Recent Image Prompts Request: ${req.method} ${req.url}`);
 
-  // Handle CORS preflight requests
+  // Monitor request for header analytics
+  monitorRequest(req, 'debug-recent-image-prompts');
+
+  // Handle CORS preflight requests - BULLETPROOF DYNAMIC
   if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
+    return createDynamicCorsOptionsResponse(req);
   }
 
   try {
@@ -26,14 +35,15 @@ serve(async (req) => {
       
       console.log(`🌐 Retrieved ${imagePrompts.length} image prompts globally (limit: ${limit})`);
       
-      return createCorsResponse({
+      return createDynamicCorsResponse({
         success: true,
         global: true,
         imagePrompts,
         totalEntries: imagePrompts.length,
         tierFilter,
-        limit
-      });
+        limit,
+        corsSystem: 'BULLETPROOF_DYNAMIC'
+      }, req);
     } else if (sessionId) {
       // Get prompts for specific session
       imagePrompts = globalSessionManager.getRecentImagePrompts(sessionId, limit, tierFilter);
@@ -52,36 +62,23 @@ serve(async (req) => {
       
       console.log(`📚 Retrieved ${imagePrompts.length} image prompts for session ${sessionId}`);
     } else {
-      return createCorsErrorResponse('Missing sessionId parameter or global=true', 400);
+      return createDynamicCorsErrorResponse('Missing sessionId parameter or global=true', req, 400);
     }
 
     // Enhanced response with detailed debug information
-    return createCorsResponse({
+    return createDynamicCorsResponse({
       success: true,
       sessionId,
       imagePrompts: imagePrompts.map(prompt => ({
         tier: prompt.tier,
-        promptText: prompt.promptText,
-        enhancedPrompt: prompt.enhancedPrompt,
-        originalPageText: prompt.originalPageText,
-        negativePrompt: prompt.negativePrompt,
-        pageNumber: prompt.pageNumber,
         timestamp: prompt.timestamp,
-        readableTime: new Date(prompt.timestamp).toISOString(),
         success: prompt.success,
-        imageURL: prompt.imageURL,
-        provider: prompt.provider,
+        prompt: prompt.prompt?.substring(0, 100) + '...',
         model: prompt.model,
-        cost: prompt.cost,
-        generationTime: prompt.generationTime,
-        fallbackReason: prompt.fallbackReason,
-        metadata: prompt.metadata,
-        // Add debug-friendly text lengths
-        textLengths: {
-          original: prompt.originalPageText?.length || 0,
-          enhanced: prompt.enhancedPrompt?.length || 0,
-          negative: prompt.negativePrompt?.length || 0
-        }
+        sessionId: prompt.sessionId,
+        pageNumber: prompt.pageNumber,
+        generation_time: prompt.generation_time,
+        error: prompt.error
       })),
       totalEntries: imagePrompts.length,
       sessionInfo,
@@ -93,14 +90,16 @@ serve(async (req) => {
         return acc;
       }, {} as Record<string, number>),
       successRate: imagePrompts.length > 0 ? 
-        (imagePrompts.filter(p => p.success).length / imagePrompts.length * 100).toFixed(1) + '%' : 'N/A'
-    });
+        (imagePrompts.filter(p => p.success).length / imagePrompts.length * 100).toFixed(1) + '%' : 'N/A',
+      corsSystem: 'BULLETPROOF_DYNAMIC'
+    }, req);
 
   } catch (error) {
     console.error('❌ Debug recent image prompts failed:', error);
     
-    return createCorsErrorResponse(
+    return createDynamicCorsErrorResponse(
       `Image prompt retrieval failed: ${error.message}`,
+      req,
       500
     );
   }

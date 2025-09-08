@@ -83,6 +83,9 @@ verify_jwt = true
 [functions.debug-recent-image-prompts]
 verify_jwt = false
 
+[functions.cors-testing]
+verify_jwt = false
+
 [functions.activate-discount-code]
 verify_jwt = true
 

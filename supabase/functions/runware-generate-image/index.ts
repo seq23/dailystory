@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from "../_shared/corsAdvanced.ts";
+import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
@@ -764,10 +770,13 @@ serve(async (req) => {
     requestMethod: req.method
   });
 
-  // Handle CORS preflight requests - Force redeploy with enhanced headers 2025-01-08-v2
+  // Monitor request for header analytics
+  monitorRequest(req, 'runware-generate-image');
+  
+  // Handle CORS preflight requests - BULLETPROOF DYNAMIC SYSTEM
   if (req.method === 'OPTIONS') {
-    console.log('🔄 CORS OPTIONS preflight - Enhanced headers v2');
-    return createCorsOptionsResponse();
+    console.log('🔄 BULLETPROOF Dynamic CORS preflight - Auto-detecting headers');
+    return createDynamicCorsOptionsResponse(req);
   }
 
   // Handle GET requests with health check (FIX: Add debugging endpoint)
@@ -775,7 +784,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get('RUNWARE_API_KEY');
     console.log('🔍 GET request received - returning health check');
     
-    return createCorsResponse({
+    return createDynamicCorsResponse({
       status: 'healthy',
       function: 'runware-generate-image',
       method: 'GET',
@@ -793,14 +802,15 @@ serve(async (req) => {
         method: 'POST',
         required_fields: ['pageText', 'userInfo', 'sessionId', 'storyId'],
         optional_fields: ['pageNumber', 'isGuestUser', 'enhancedStoryData', 'forceTier']
-      }
-    });
+      },
+      corsSystem: 'BULLETPROOF_DYNAMIC'
+    }, req);
   }
 
   // Validate request method (FIX: Ensure only POST requests proceed)
   if (req.method !== 'POST') {
     console.error(`❌ Invalid request method: ${req.method}`);
-    return createCorsErrorResponse(`Method ${req.method} not allowed. Use POST for image generation or GET for health check.`, 405);
+    return createDynamicCorsErrorResponse(`Method ${req.method} not allowed. Use POST for image generation or GET for health check.`, req, 405);
   }
 
   // Validate API key
@@ -808,13 +818,13 @@ serve(async (req) => {
   if (!apiKey) {
     console.error('❌ CRITICAL: RUNWARE_API_KEY not found in environment');
     console.error('📋 Available env vars:', Object.keys(Deno.env.toObject()).filter(key => key.includes('API')));
-    return createCorsErrorResponse('Server configuration error: Missing Runware API key', 500);
+    return createDynamicCorsErrorResponse('Server configuration error: Missing Runware API key', req, 500);
   }
   
   // Enhanced API key validation - fixed for all Runware API key formats
   if (apiKey.length < 10) {
     console.error('❌ CRITICAL: RUNWARE_API_KEY appears too short (less than 10 chars)');
-    return createCorsErrorResponse('Server configuration error: Invalid API key format', 500);
+    return createDynamicCorsErrorResponse('Server configuration error: Invalid API key format', req, 500);
   }
   
   // Let Runware API validate the actual key format - don't enforce prefix locally
@@ -840,7 +850,7 @@ serve(async (req) => {
     const contentType = req.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       console.error(`❌ Invalid Content-Type: ${contentType || 'missing'}`);
-      return createCorsErrorResponse('Content-Type must be application/json for POST requests', 400);
+      return createDynamicCorsErrorResponse('Content-Type must be application/json for POST requests', req, 400);
     }
     
     // Parse request with enhanced error handling (FIX: Catch JSON parse errors)
@@ -849,13 +859,13 @@ serve(async (req) => {
       const rawBody = await req.text();
       if (!rawBody || rawBody.trim().length === 0) {
         console.error('❌ Empty request body received');
-        return createCorsErrorResponse('Request body cannot be empty', 400);
+        return createDynamicCorsErrorResponse('Request body cannot be empty', req, 400);
       }
       
       requestBody = JSON.parse(rawBody);
     } catch (parseError) {
       console.error('❌ JSON parsing failed:', parseError.message);
-      return createCorsErrorResponse(`Invalid JSON in request body: ${parseError.message}`, 400);
+      return createDynamicCorsErrorResponse(`Invalid JSON in request body: ${parseError.message}`, req, 400);
     }
     // Extract and validate parameters (FIX: Enhanced validation with defaults)
     const extractedParams = requestBody || {};
@@ -892,29 +902,29 @@ serve(async (req) => {
     // Validate required parameters with detailed error messages
     if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
       console.error('❌ Invalid pageText:', { pageText: pageText?.substring(0, 100) });
-      return createCorsErrorResponse('Missing or invalid pageText parameter. Must be a non-empty string.', 400);
+      return createDynamicCorsErrorResponse('Missing or invalid pageText parameter. Must be a non-empty string.', req, 400);
     }
     
     if (!sessionId || typeof sessionId !== 'string' || sessionId.length < 10) {
       console.error('❌ Invalid sessionId:', { sessionId: sessionId?.substring(0, 20) });
-      return createCorsErrorResponse('Missing or invalid sessionId parameter. Must be a string with at least 10 characters.', 400);
+      return createDynamicCorsErrorResponse('Missing or invalid sessionId parameter. Must be a string with at least 10 characters.', req, 400);
     }
     
     if (!storyId || typeof storyId !== 'string' || storyId.length < 5) {
       console.error('❌ Invalid storyId:', { storyId: storyId?.substring(0, 20) });
-      return createCorsErrorResponse('Missing or invalid storyId parameter. Must be a string with at least 5 characters.', 400);
+      return createDynamicCorsErrorResponse('Missing or invalid storyId parameter. Must be a string with at least 5 characters.', req, 400);
     }
 
     // Validate pageNumber
     if (pageNumber && (typeof pageNumber !== 'number' || pageNumber < 1 || pageNumber > 1000)) {
       console.error('❌ Invalid pageNumber:', { pageNumber });
-      return createCorsErrorResponse('Invalid pageNumber. Must be a number between 1 and 1000.', 400);
+      return createDynamicCorsErrorResponse('Invalid pageNumber. Must be a number between 1 and 1000.', req, 400);
     }
 
     // Validate userInfo structure
     if (!userInfo || typeof userInfo !== 'object') {
       console.error('❌ Invalid userInfo:', { userInfo: typeof userInfo });
-      return createCorsErrorResponse('Missing or invalid userInfo parameter. Must be an object.', 400);
+      return createDynamicCorsErrorResponse('Missing or invalid userInfo parameter. Must be an object.', req, 400);
     }
 
     // Log successful parameter validation
@@ -933,15 +943,15 @@ serve(async (req) => {
     
     // Validate required parameters
     if (!pageText) {
-      return createCorsErrorResponse('Missing pageText parameter', 400);
+      return createDynamicCorsErrorResponse('Missing pageText parameter', req, 400);
     }
     
     if (!sessionId) {
-      return createCorsErrorResponse('Missing sessionId parameter', 400);
+      return createDynamicCorsErrorResponse('Missing sessionId parameter', req, 400);
     }
     
     if (!storyId) {
-      return createCorsErrorResponse('Missing storyId parameter', 400);
+      return createDynamicCorsErrorResponse('Missing storyId parameter', req, 400);
     }
 
     // Security validation
@@ -954,14 +964,14 @@ serve(async (req) => {
     
     if (!securityCheck.valid) {
       console.error('🚨 Security validation failed:', securityCheck.reason);
-      return createCorsErrorResponse(`Security validation failed: ${securityCheck.reason}`, securityCheck.status || 403);
+      return createDynamicCorsErrorResponse(`Security validation failed: ${securityCheck.reason}`, req, securityCheck.status || 403);
     }
 
     // Rate limiting check
     const rateLimitCheck = await SecurityValidator.checkRateLimit(sessionId, 'image_generation');
     if (!rateLimitCheck.allowed) {
       console.error('🚨 Rate limit exceeded for session:', sessionId);
-      return createCorsErrorResponse('Rate limit exceeded. Please try again later.', 429);
+      return createDynamicCorsErrorResponse('Rate limit exceeded. Please try again later.', req, 429);
     }
 
         console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser || false})`);
@@ -1675,7 +1685,7 @@ serve(async (req) => {
             timestamp: new Date().toISOString()
           });
           
-          return createCorsResponse({
+          return createDynamicCorsResponse({
             success: true,
             imageURL: tier25Result.imageURL,
             seed: tier25Result.seed,
@@ -1683,7 +1693,7 @@ serve(async (req) => {
             tier: 2.5,
             enhancementLevel: 'nuclear-hardcoded',
             metadata: { orchestrated: true, fallbackTier: 2.5 }
-          });
+          }, req);
         }
         
         // Enhanced error analysis for failed Tier 2.5
@@ -1770,14 +1780,14 @@ serve(async (req) => {
       console.error('❌ Failed to store Tier 4 image prompt:', storeError);
     }
     
-    return createCorsResponse({
+    return createDynamicCorsResponse({
       success: true,
       imageURL: placeholderResult.url,
       provider: 'runware-orchestrator',
       tier: 4,
       enhancementLevel: 'kid-friendly-placeholder',
       metadata: { orchestrated: true }
-    });
+    }, req);
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     
@@ -1808,6 +1818,6 @@ serve(async (req) => {
     
     const statusCode = isTimeoutError ? 503 : 500; // Use 503 for temporary timeout issues
     
-    return createCorsErrorResponse(responseMessage, statusCode);
+    return createDynamicCorsErrorResponse(responseMessage, req, statusCode);
   }
 });
