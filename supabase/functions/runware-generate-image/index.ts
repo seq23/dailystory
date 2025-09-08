@@ -179,7 +179,7 @@ class RunwareWebSocketManager {
   private static readonly MAX_RETRIES = 3;
   private static readonly BASE_DELAY = 1000; // 1 second
   private static readonly MAX_DELAY = 8000; // 8 seconds
-  private static readonly CONNECTION_TIMEOUT = 45000; // 45 seconds - increased timeout
+  private static readonly CONNECTION_TIMEOUT = 60000; // 60 seconds - increased timeout for complex generation
   
   static async connectWithRetry(
     apiKey: string, 
@@ -386,7 +386,7 @@ class RunwareWebSocketManager {
   }
 }
 
-// ============= TIER FUNCTION CALLER =============
+// ============= TIER FUNCTION CALLER - ENHANCED DEBUGGING & PROPER SUPABASE CLIENT =============
 async function callTierFunction(functionName: string, payload: any): Promise<any> {
   try {
     console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
@@ -397,54 +397,109 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
       sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
     });
     
-    // Use Deno's fetch for edge function calls
-    const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${functionName}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
-      },
-      body: JSON.stringify(payload)
-    });
-    
-    const result = await response.json();
-    
-    console.log(`🔍 DEBUG: ${functionName} response:`, {
-      ok: response.ok,
-      status: response.status,
-      resultKeys: Object.keys(result || {}),
-      success: result?.success,
-      hasImageURL: !!result?.imageURL,
-      tier: result?.tier || 'unknown'
-    });
-    
-    if (!response.ok) {
-      console.error(`❌ ${functionName} HTTP error:`, {
-        status: response.status,
-        statusText: response.statusText,
-        error: result.error || 'Unknown error'
+    // Enhanced Tier 2.5 debugging - log detailed payload for fallback function
+    if (functionName === 'runware-simple-fallback') {
+      console.log(`🔧 TIER 2.5 ENHANCED DEBUG - Detailed payload analysis:`, {
+        hasPageText: !!payload.pageText && payload.pageText.length > 0,
+        pageTextLength: payload.pageText?.length || 0,
+        pageTextPreview: payload.pageText?.substring(0, 100) || 'none',
+        hasUserInfo: !!payload.userInfo,
+        userInfoKeys: payload.userInfo ? Object.keys(payload.userInfo) : [],
+        hasDifficulty: !!payload.difficultyLevel,
+        difficulty: payload.difficultyLevel,
+        hasAvatarIdentity: !!payload.avatarIdentity,
+        avatarIdentityKeys: payload.avatarIdentity ? Object.keys(payload.avatarIdentity) : [],
+        avatarName: payload.avatarIdentity?.name || 'none',
+        hasCharacterData: !!payload.characterData,
+        characterDataType: typeof payload.characterData,
+        hasSessionId: !!payload.sessionId,
+        sessionIdLength: payload.sessionId?.length || 0,
+        callingTier: '2.5',
+        timestamp: new Date().toISOString()
       });
+    }
+    
+    // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+    );
+    
+    console.log(`🔌 Using Supabase client to invoke ${functionName}`);
+    
+    // Use Supabase client function invocation for proper authentication
+    const { data: result, error: invokeError } = await supabase.functions.invoke(functionName, {
+      body: payload
+    });
+    
+    if (invokeError) {
+      console.error(`❌ ${functionName} Supabase invoke error:`, invokeError);
       
-      // Enhanced debugging for specific function failures
+      // Enhanced debugging for Tier 2.5 failures
       if (functionName === 'runware-simple-fallback') {
-        console.error(`🔍 TIER 2.5 FAILURE DETAILS:`, {
+        console.error(`🔍 TIER 2.5 SUPABASE INVOKE FAILURE:`, {
+          error: invokeError,
+          errorMessage: invokeError.message,
+          errorCode: invokeError.code,
+          errorDetails: invokeError.details,
           payloadSessionId: payload.sessionId,
           hasAvatarIdentity: !!payload.avatarIdentity,
           hasUserInfo: !!payload.userInfo,
           hasPageText: !!payload.pageText,
-          error: result.error,
-          errorType: 'HTTP_ERROR'
+          errorType: 'SUPABASE_INVOKE_ERROR',
+          timestamp: new Date().toISOString()
         });
       }
       
-      throw new Error(`${functionName} failed: ${result.error || 'Unknown error'}`);
+      throw new Error(`${functionName} failed: ${invokeError.message}`);
     }
     
-    console.log(`✅ ${functionName} completed successfully`);
+    console.log(`🔍 DEBUG: ${functionName} response:`, {
+      resultKeys: Object.keys(result || {}),
+      success: result?.success,
+      hasImageURL: !!result?.imageURL,
+      tier: result?.tier || 'unknown',
+      provider: result?.provider || 'unknown'
+    });
+    
+    if (!result) {
+      throw new Error(`${functionName} returned no data`);
+    }
+    
+    // Enhanced Tier 2.5 success debugging
+    if (functionName === 'runware-simple-fallback') {
+      console.log(`🎯 TIER 2.5 SUCCESS ANALYSIS:`, {
+        success: result.success,
+        hasImageURL: !!result.imageURL,
+        imageURLPreview: result.imageURL?.substring(0, 50) + '...' || 'none',
+        provider: result.provider,
+        tier: result.tier,
+        seed: result.seed,
+        enhancementLevel: result.enhancementLevel,
+        metadata: result.metadata,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    console.log(`✅ ${functionName} completed successfully via Supabase client`);
     return result;
     
   } catch (error) {
     console.error(`❌ ${functionName} failed:`, error);
+    
+    // Enhanced error logging for Tier 2.5
+    if (functionName === 'runware-simple-fallback') {
+      console.error(`🚨 TIER 2.5 CRITICAL FAILURE:`, {
+        errorMessage: error.message,
+        errorName: error.name,
+        errorStack: error.stack?.substring(0, 500),
+        functionName,
+        timestamp: new Date().toISOString(),
+        fallbackStatus: 'FAILED - Proceeding to Tier 4'
+      });
+    }
+    
     throw error;
   }
 }
@@ -1409,7 +1464,8 @@ serve(async (req) => {
     if (!forceTier || forceTier === 2.5) {
       try {
         console.log('🔧 Starting Tier 2.5: Nuclear Hardcoded Fallback');
-        console.log('🔍 TIER 2.5 DEBUG - Calling runware-simple-fallback function (FIXED VERSION)');
+        console.log('🔍 TIER 2.5 DEBUG - Calling runware-simple-fallback function (ENHANCED VERSION)');
+        console.log('🛡️ TIER 2.5 PRE-CALL VALIDATION - Comprehensive parameter check');
         
         // ORCHESTRATOR PARAMETER RESOLUTION - Ensure all parameters are valid before tier calls
         console.log('🛡️ Orchestrator: Resolving parameters before Tier 2.5 call');
@@ -1433,15 +1489,35 @@ serve(async (req) => {
         const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
-        // Validate all parameters before tier call
-        console.log('🔍 Orchestrator: Parameter validation complete', {
+        // Enhanced parameter validation with detailed logging
+        console.log('🔍 TIER 2.5 ENHANCED VALIDATION - Complete parameter analysis:', {
           hasPageText: !!pageText,
+          pageTextLength: pageText?.length || 0,
+          pageTextValid: pageText && pageText.trim().length > 0,
           hasUserInfo: !!userInfo,
+          userInfoValid: userInfo && typeof userInfo === 'object',
           hasDifficulty: !!mappedDifficulty,
+          difficultyValue: mappedDifficulty,
           hasAvatarIdentity: !!avatarIdentity,
+          avatarIdentityValid: avatarIdentity && avatarIdentity.name,
+          avatarName: avatarIdentity?.name || 'none',
           characterDataStatus: resolvedCharacterData ? 'valid' : 'null (nuclear)',
-          hasSessionId: !!sessionId
+          hasSessionId: !!sessionId,
+          sessionIdValid: sessionId && sessionId.length > 0,
+          allParametersValid: !!(pageText && userInfo && mappedDifficulty && avatarIdentity && sessionId),
+          timestamp: new Date().toISOString()
         });
+        
+        // Additional validation - ensure critical parameters are not empty
+        if (!pageText || pageText.trim().length === 0) {
+          throw new Error('TIER 2.5 VALIDATION ERROR: pageText is empty or invalid');
+        }
+        
+        if (!sessionId || sessionId.trim().length === 0) {
+          throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
+        }
+        
+        console.log('🚀 TIER 2.5 CALLING - All validations passed, invoking function...');
         
         const tier25Result = await callTierFunction('runware-simple-fallback', {
           pageText,
@@ -1452,16 +1528,34 @@ serve(async (req) => {
           sessionId // Pass session ID for consistency tracking
         });
         
-         console.log('🔍 TIER 2.5 DEBUG - Function response:', {
-           success: tier25Result?.success || false,
-           hasImageURL: !!tier25Result?.imageURL,
-           error: tier25Result?.error || 'none',
-           tier: '2.5 (CHARACTER CONSISTENCY ENHANCED)',
-           characterConsistency: tier25Result?.characterConsistency || {}
-         });
+        console.log('🔍 TIER 2.5 RESULT ANALYSIS - Comprehensive response evaluation:', {
+          success: tier25Result?.success || false,
+          hasImageURL: !!tier25Result?.imageURL,
+          imageURLLength: tier25Result?.imageURL?.length || 0,
+          imageURLValid: tier25Result?.imageURL && tier25Result.imageURL.startsWith('http'),
+          error: tier25Result?.error || 'none',
+          errorType: typeof tier25Result?.error,
+          tier: '2.5 (CHARACTER CONSISTENCY ENHANCED)',
+          provider: tier25Result?.provider || 'unknown',
+          enhancementLevel: tier25Result?.enhancementLevel || 'unknown',
+          characterConsistency: tier25Result?.characterConsistency || {},
+          hasMetadata: !!tier25Result?.metadata,
+          responseSize: JSON.stringify(tier25Result || {}).length,
+          timestamp: new Date().toISOString()
+        });
 
-        if (tier25Result.success) {
-          console.log('✅ Tier 2.5 Nuclear Hardcoded succeeded');
+        if (tier25Result?.success && tier25Result?.imageURL) {
+          console.log('✅ TIER 2.5 SUCCESS - Nuclear Hardcoded fallback succeeded');
+          console.log('🎯 TIER 2.5 FINAL SUCCESS METRICS:', {
+            imageURL: tier25Result.imageURL.substring(0, 50) + '...',
+            provider: tier25Result.provider,
+            tier: 2.5,
+            enhancementLevel: tier25Result.enhancementLevel,
+            fallbackSuccess: true,
+            totalFallbackTime: Date.now() - (req.headers.get('x-request-start') || Date.now()),
+            timestamp: new Date().toISOString()
+          });
+          
           return createCorsResponse({
             success: true,
             imageURL: tier25Result.imageURL,
@@ -1469,9 +1563,22 @@ serve(async (req) => {
             provider: 'runware-orchestrator',
             tier: 2.5,
             enhancementLevel: 'nuclear-hardcoded',
-            metadata: { orchestrated: true }
+            metadata: { orchestrated: true, fallbackTier: 2.5 }
           });
         }
+        
+        // Enhanced error analysis for failed Tier 2.5
+        console.error('❌ TIER 2.5 FAILURE ANALYSIS - Detailed failure breakdown:', {
+          success: tier25Result?.success,
+          hasResult: !!tier25Result,
+          error: tier25Result?.error,
+          errorLength: tier25Result?.error?.length || 0,
+          responseKeys: tier25Result ? Object.keys(tier25Result) : [],
+          resultType: typeof tier25Result,
+          hasImageURL: !!tier25Result?.imageURL,
+          imageURLType: typeof tier25Result?.imageURL,
+          timestamp: new Date().toISOString()
+        });
         
         // Check for specific parsing errors that should skip retries
         const isParsinerError = tier25Result?.error?.includes('Failed to parse') || 
@@ -1481,9 +1588,23 @@ serve(async (req) => {
         if (isParsinerError) {
           console.log('🚫 Tier 2.5 parsing error detected - skipping retries and falling directly to Tier 4:', tier25Result.error);
         } else {
-          console.log('⚠️ Tier 2.5 failed, falling back to Tier 4');
+          console.log('⚠️ Tier 2.5 failed with non-parsing error - falling back to Tier 4:', tier25Result?.error || 'Unknown error');
         }
+        
       } catch (error) {
+        // Enhanced error handling with detailed logging
+        console.error('🚨 TIER 2.5 EXCEPTION CAUGHT - Critical failure analysis:', {
+          errorMessage: error.message,
+          errorName: error.name,
+          errorType: typeof error,
+          errorStack: error.stack?.substring(0, 300),
+          isParsingError: error.message?.includes('Failed to parse') || 
+                         error.message?.includes('finalPrompt is not defined') ||
+                         error.message?.includes('ReferenceError'),
+          timestamp: new Date().toISOString(),
+          fallbackPlan: 'Proceeding to Tier 4'
+        });
+        
         // Check if it's a parsing/scoping error to provide better logging
         const isParsinerError = error.message?.includes('Failed to parse') || 
                                error.message?.includes('finalPrompt is not defined') ||
