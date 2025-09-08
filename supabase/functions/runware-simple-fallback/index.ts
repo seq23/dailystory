@@ -72,13 +72,13 @@ const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hou
 // ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - EACH PLACEHOLDER USED EXACTLY ONCE =============
 const PREMIUM_PROMPT_TEMPLATES = {
   // STORY-FIRST STRUCTURE FOR LEVEL 0-1 (beginner/easy): Better AI processing
-  beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
-  easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
+  beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
+  easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
   
   // FOUNDATION-FIRST STRUCTURE FOR MEDIUM+ LEVELS: Traditional character-driven approach
-  medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
+  medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
 };
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - NEW SIMPLIFIED 3-SECTION STRUCTURE =============
@@ -1005,7 +1005,12 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       objects: enhancedObjects || '', // Use enhanced objects for consistency
       secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber),
       spatial_composition: spatialComposition,
-      atmosphere: atmosphereContext
+      atmosphere: atmosphereContext,
+      // Pass contextual intelligence data for template integration
+      contextualSetting,
+      contextualAction: expandedAction,
+      spatialComposition,
+      atmosphereContext
     };
 
     console.log('✅ Unified semantic extraction complete:', result);
@@ -1338,7 +1343,7 @@ function inferAtmosphereFromContext(pageText: string, setting: string, action: s
     
     if (atmosphereOptions.length === 0) {
       // Use universal lighting as fallback
-      atmosphereOptions.push(...getSeededRandomItem([UNIVERSAL_LIGHTING_ATMOSPHERE], seed).split(','));
+      atmosphereOptions.push(...getSeededRandomItem([UNIVERSAL_LIGHTING_ARRAYS], seed).split(','));
     }
     
     const selectedAtmosphere = getSeededRandomItem(atmosphereOptions, seed);
@@ -1347,7 +1352,7 @@ function inferAtmosphereFromContext(pageText: string, setting: string, action: s
     
   } catch (error) {
     console.warn('⚠️ Atmosphere context inference error:', error);
-    return getSeededRandomItem(UNIVERSAL_LIGHTING_ATMOSPHERE, pageText + setting);
+    return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS, pageText + setting);
   }
 }
 
@@ -3276,7 +3281,9 @@ function fillPremiumTemplate(
   secondary_characters: string,
   emotion: string,
   pageText: string,
-  avatarIdentity?: any
+  avatarIdentity?: any,
+  spatialComposition?: string,
+  atmosphereContext?: string
 ): string {
   console.log(`🛡️ Tier 2.5: Filling template with comprehensive silent failure protection`);
   
@@ -3556,7 +3563,8 @@ function fillPremiumTemplate(
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', secondary_characters ? ` ${secondary_characters}` : '') // PHASE 4: Handle empty strings
       .replace('{emotion}', emotion)
-      .replace('{atmosphere}', atmosphere) // PHASE 3: New semantic placeholder
+      .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
+      .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
       .replace('{props}', props) // PHASE 3: New semantic placeholder
       .replace('{community_context}', communityContext) // PHASE 3: New semantic placeholder
       .replace('{sensory_details}', sensoryDetails) // PHASE 3: New semantic placeholder
@@ -4216,11 +4224,24 @@ serve(async (req: Request) => {
     // Extract avatarIdentity for consistent parameter passing
     const avatarIdentity = userInfo?.avatarIdentity || null;
     
+    // Validate and prepare contextual intelligence data with fallbacks
+    const contextualData = {
+      spatialComposition: extractedData?.spatialComposition || 'character prominently featured in foreground',
+      atmosphereContext: extractedData?.atmosphereContext || extractedData?.atmosphere || 'warm, inviting atmosphere'
+    };
+    
+    console.log('🧠 Contextual Intelligence Data:', {
+      spatialComposition: contextualData.spatialComposition,
+      atmosphereContext: contextualData.atmosphereContext,
+      hasContextualSetting: !!extractedData?.contextualSetting,
+      hasContextualAction: !!extractedData?.contextualAction
+    });
+    
     // Fill premium template with all placeholders including page text - SILENT FAILURE PROTECTION
     let prompt;
     try {
-      prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity);
-      console.log('✅ Premium Template (Tier 1 / 2.5A) filling successful');
+      prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, avatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
+      console.log('✅ Premium Template (Tier 1 / 2.5A) filling successful with contextual intelligence');
     } catch (templateError) {
       console.warn('⚠️ Premium Template failed, trying BASIC template (Tier 1.5 / 2.5B):', templateError);
       
