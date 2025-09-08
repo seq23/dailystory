@@ -699,18 +699,16 @@ serve(async (req) => {
     return createCorsErrorResponse('Server configuration error: Missing Runware API key', 500);
   }
   
-  // Enhanced API key validation - bulletproofed
-  if (apiKey.length < 20) {
-    console.error('❌ CRITICAL: RUNWARE_API_KEY appears too short (less than 20 chars)');
+  // Enhanced API key validation - fixed for all Runware API key formats
+  if (apiKey.length < 10) {
+    console.error('❌ CRITICAL: RUNWARE_API_KEY appears too short (less than 10 chars)');
     return createCorsErrorResponse('Server configuration error: Invalid API key format', 500);
   }
   
-  if (!apiKey.startsWith('rw-')) {
-    console.error('❌ CRITICAL: RUNWARE_API_KEY does not start with expected prefix');
-    return createCorsErrorResponse('Server configuration error: Invalid API key format', 500);
-  }
+  // Let Runware API validate the actual key format - don't enforce prefix locally
   
-  console.log('✅ RUNWARE_API_KEY validated:', apiKey.substring(0, 10) + '...');
+  console.log('✅ RUNWARE_API_KEY validated - length:', apiKey.length, 'chars');
+  console.log('🎯 TIER 1 (Runware) - Starting AI-Enhanced Premium Generation');
 
   try {
     // ============= REQUEST PARSING WITH DEBUG =============

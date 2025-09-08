@@ -476,7 +476,14 @@ const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
   setFallbackStates(prev => ({ ...prev, [currentPage]: isUsingFallback }));
   if (isUsingFallback) {
     console.warn('Story image failed to load, using enhanced fallback:', pageImages[currentPage]);
-    fallbackToClassic('image-error');
+    
+    // Rate-limited fallback to prevent spam
+    const now = Date.now();
+    const lastFallback = sessionStorage.getItem('lastImageFallback');
+    if (!lastFallback || (now - parseInt(lastFallback)) > 5000) { // 5 second rate limit
+      fallbackToClassic('image-error');
+      sessionStorage.setItem('lastImageFallback', now.toString());
+    }
     
     // Consolidated toast logic with deduplication
     if (!fallbackToastShownRef.current) {
@@ -3502,9 +3509,9 @@ const handleRestartTimer = () => {
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
-                            console.warn('Story image failed to load, switching to classic fallback:', currentImage);
+                            console.warn('Background image failed to load:', currentImage);
                             (e.currentTarget as HTMLImageElement).style.display = 'none';
-                            fallbackToClassic('image-error');
+                            // Don't trigger layout fallback for background image failures
                           }}
                         />
                         {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
