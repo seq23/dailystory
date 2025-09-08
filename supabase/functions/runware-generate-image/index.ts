@@ -890,8 +890,7 @@ serve(async (req) => {
         const requestId = `IMG-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`🎯 [${requestId}] Starting Runware prompt assembly phase`);
 
-        // PHASE 4: Enhanced 7-Segment Architecture prompt construction
-        const segments = [];
+        // PHASE 4: Enhanced 5-Section Architecture prompt construction
         
         // Helper function to detect if user is Level 0-1 (beginner/easy)
         const isLevel01User = difficulty === 'beginner' || difficulty === 'easy';
@@ -1218,7 +1217,7 @@ serve(async (req) => {
             processingTier: 'tier-1-orchestrator-direct',
             aiEnhancement: true,
             characterSeed: characterData.seed,
-            segmentCount: segments.length,
+            segmentCount: promptParts.length,
             requestId: requestId, // PHASE 5: Cross-function correlation
             ...aiEnhancerResult.metadata
           }
@@ -1316,7 +1315,7 @@ serve(async (req) => {
                 avatarValidated: true,
                 orchestrated: true,
                 validationApplied: validatedPrompt !== enhancedPrompt,
-                segmentCount: segments.length,
+                segmentCount: promptParts.length,
                 qualityScore: enhancementResult.qualityScore || 95
               }
             });
@@ -1341,7 +1340,7 @@ serve(async (req) => {
               isGuestUser: isGuestUser,
               orchestrated: true,
               validationApplied: validatedPrompt !== enhancedPrompt,
-              segmentCount: segments.length,
+              segmentCount: promptParts.length,
               characterSeed: characterData?.seed || 'fallback-seed'
             }
           });
