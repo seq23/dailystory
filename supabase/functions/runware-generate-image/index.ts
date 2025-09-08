@@ -438,7 +438,7 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
 // ============= AVATAR IDENTITY MAPPER =============
 // CRITICAL: This function maps UI avatar data to AI generation parameters
 // DO NOT MODIFY without understanding the full avatar pipeline impact
-function mapAvatarIdentity(userInfo: any): any {
+function mapAvatarIdentity(userInfo: any, sessionId?: string): any {
   // REGRESSION PREVENTION: Default fallback identity
   // - skinTone: 'medium' is the statistically most common and balanced default
   // - DO NOT change to 'light' as this creates bias toward lighter skin tones
@@ -858,7 +858,7 @@ serve(async (req) => {
         });
 
     // PHASE 1: Avatar Identity Mapper - Process user avatar data once at orchestrator level
-    const avatarIdentity = mapAvatarIdentity(userInfo);
+    const avatarIdentity = mapAvatarIdentity(userInfo, sessionId);
     console.log(`👤 Avatar Identity Mapped: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
     
     // ORCHESTRATOR SCOPE: Initialize shared variables for nuclear independence
@@ -1297,7 +1297,7 @@ serve(async (req) => {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
           
           // TIER POLICY COMPLIANCE LOG - Critical for regression prevention
-          console.log(`🔒 TIER POLICY COMPLIANCE: User type "${requestBody.isGuestUser ? 'GUEST' : 'PREMIUM'}" received TIER 1 image - Policy maintained`);
+          console.log(`🔒 TIER POLICY COMPLIANCE: User type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" received TIER 1 image - Policy maintained`);
           
           // Store visual state for consistency
           if (sessionId && characterData?.seed) {
@@ -1365,7 +1365,7 @@ serve(async (req) => {
               promptLength: validatedPrompt.length,
               sessionId: sessionId || 'unknown',
               pageNumber,
-              isGuestUser: requestBody.isGuestUser,
+              isGuestUser: isGuestUser,
               orchestrated: true,
               validationApplied: validatedPrompt !== enhancedPrompt,
               segmentCount: segments.length,
@@ -1548,7 +1548,7 @@ serve(async (req) => {
     console.error('❌ Image orchestration failed:', error);
     
     // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
-    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${requestBody?.isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
+    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
     
     return createCorsErrorResponse(
       `Image generation orchestration failed: ${error.message}`,
