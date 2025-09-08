@@ -2714,6 +2714,136 @@ function extractCharacterNamesFromDescription(description: string): string[] {
   return [];
 }
 
+// ============= TIER 2.5B SEMANTIC EXTRACTION FUNCTIONS =============
+// Simple word matching functions for basic template semantic components
+
+function extractSubject(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for character names and descriptors
+  const characters = TIER_25_UNIFIED_VOCABULARY.objectCategories.characters.descriptors;
+  for (const character of characters) {
+    if (lowerText.includes(character)) {
+      return character;
+    }
+  }
+  
+  // Check for animals as subjects
+  const animals = TIER_25_UNIFIED_VOCABULARY.objectCategories.animals;
+  for (const animal of animals) {
+    if (lowerText.includes(animal)) {
+      return animal;
+    }
+  }
+  
+  // Check for common subject pronouns/nouns
+  if (lowerText.includes('sally')) return 'Sally';
+  if (lowerText.includes('child')) return 'child';
+  if (lowerText.includes('kid')) return 'kid';
+  if (lowerText.includes('boy')) return 'boy';
+  if (lowerText.includes('girl')) return 'girl';
+  
+  return 'character'; // Safe fallback
+}
+
+function extractAction(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check all action categories in priority order
+  const actionCategories = [
+    TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    TIER_25_UNIFIED_VOCABULARY.actions.states,
+    TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    TIER_25_UNIFIED_VOCABULARY.actions.social
+  ];
+  
+  for (const category of actionCategories) {
+    for (const action of category) {
+      if (lowerText.includes(action)) {
+        return action;
+      }
+    }
+  }
+  
+  return 'playing'; // Safe fallback
+}
+
+function extractSetting(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check setting categories in priority order
+  const settingCategories = [
+    TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    TIER_25_UNIFIED_VOCABULARY.settings.fantasy
+  ];
+  
+  for (const category of settingCategories) {
+    for (const setting of category) {
+      if (lowerText.includes(setting)) {
+        return setting;
+      }
+    }
+  }
+  
+  return 'outdoor space'; // Safe fallback
+}
+
+function extractAdjective(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for color words (common adjectives)
+  const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'black', 'white', 'brown', 'gray', 'silver', 'gold'];
+  for (const color of colors) {
+    if (lowerText.includes(color)) {
+      return color;
+    }
+  }
+  
+  // Check character descriptors for adjectives
+  const descriptors = TIER_25_UNIFIED_VOCABULARY.objectCategories.characters.descriptors;
+  for (const descriptor of descriptors) {
+    if (lowerText.includes(descriptor)) {
+      return descriptor;
+    }
+  }
+  
+  // Check for size/descriptive adjectives
+  const adjectives = ['big', 'small', 'tiny', 'huge', 'little', 'large', 'beautiful', 'pretty', 'nice', 'good', 'happy', 'bright', 'colorful'];
+  for (const adjective of adjectives) {
+    if (lowerText.includes(adjective)) {
+      return adjective;
+    }
+  }
+  
+  return 'beautiful'; // Safe fallback
+}
+
+function extractEmotion(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check character emotions from vocabulary
+  const emotions = TIER_25_UNIFIED_VOCABULARY.objectCategories.characters.emotions;
+  for (const emotion of emotions) {
+    if (lowerText.includes(emotion)) {
+      return emotion;
+    }
+  }
+  
+  // Check for additional common emotions
+  const additionalEmotions = ['joy', 'excited', 'cheerful', 'delighted', 'content', 'peaceful', 'calm', 'surprised'];
+  for (const emotion of additionalEmotions) {
+    if (lowerText.includes(emotion)) {
+      return emotion;
+    }
+  }
+  
+  return 'happy'; // Safe fallback
+}
+
 function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: string, pageNumber?: number): string {
   console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
   
