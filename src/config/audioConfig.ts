@@ -85,8 +85,8 @@ export const defaultAudioConfig: AudioSettings = {
   
   quality: {
     maxTextLength: {
-      free: 500,
-      premium: 1000,
+      free: 2000,
+      premium: 2000,
     },
     audioFormat: 'mp3',
     cacheAudio: true,

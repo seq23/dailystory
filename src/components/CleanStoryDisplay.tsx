@@ -936,8 +936,7 @@ const [highlightSave, setHighlightSave] = useState(false);
     return () => clearTimeout(timer);
   }, [highlightSave]);
   const currentStoryText = displayedStory[Math.min(currentPage, displayedStory.length - 1)] || "";
-  const effectiveLimit = isPremium ? defaultAudioConfig.quality.maxTextLength.premium : defaultAudioConfig.quality.maxTextLength.free;
-  const effectiveAudioText = (currentStoryText || "").slice(0, effectiveLimit);
+  const effectiveAudioText = currentStoryText; // Use full text for audio - no truncation
   const contentHash = hashText(effectiveAudioText);
 
   // 🔍 PHASE 1: Debug hash generation
@@ -945,10 +944,9 @@ const [highlightSave, setHighlightSave] = useState(false);
     currentPage,
     fullTextLength: currentStoryText.length,
     effectiveTextLength: effectiveAudioText.length,
-    effectiveLimit,
     isPremium,
-    textTruncated: currentStoryText.length > effectiveAudioText.length,
-    truncatedChars: Math.max(0, currentStoryText.length - effectiveAudioText.length),
+    textTruncated: false, // No longer truncating
+    truncatedChars: 0, // No longer truncating
     generatedHash: contentHash?.slice(0, 12),
     fullText: currentStoryText.slice(0, 100) + (currentStoryText.length > 100 ? '...' : ''),
     effectiveText: effectiveAudioText.slice(0, 100) + (effectiveAudioText.length > 100 ? '...' : ''),
