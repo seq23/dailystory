@@ -808,6 +808,10 @@ serve(async (req) => {
         console.log('🔍 TIER 1 DEBUG - Calling ai-visual-scene-creator directly (clean architecture)');
         
         // Call ai-visual-scene-creator directly with pre-processed avatar identity
+        // CRITICAL FIX: Add difficultyLevel mapping for Tier 1
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+        const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+        
         const aiEnhancerResult = await callTierFunction('ai-visual-scene-creator', {
           storyText: pageText,
           userInfo,
@@ -815,7 +819,8 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           avatarIdentity, // Pass pre-processed avatar identity directly
-          enhancedStoryData
+          enhancedStoryData,
+          difficultyLevel: mappedDifficulty // CRITICAL FIX: Add missing difficultyLevel parameter
         });
 
         console.log('🔍 TIER 1 DEBUG - AI enhancer returned pure schema, doing direct technical assembly in orchestrator');

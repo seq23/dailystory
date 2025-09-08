@@ -4114,17 +4114,9 @@ function removeEmptySections(template: string): string {
     .trim();
 }
 
-// TIER 2.5B BASIC TEMPLATE FALLBACK
-function fillBasicTemplate(difficulty: string, pageText: string, userInfo: any, avatarIdentity: any, scene: string, setting: string, objects: string, secondary_characters: string): string {
-  try {
-    console.log('🛡️ Tier 2.5B: Using simplified basic template fallback');
-    
-    const safeDifficulty = difficulty || 'medium';
-    const basicTemplate = BASIC_PROMPT_TEMPLATES[safeDifficulty] || BASIC_PROMPT_TEMPLATES.medium;
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[safeDifficulty] || NUCLEAR_STYLE_SETTINGS.medium;
-    const avatarMapping = getNuclearAvatarMapping(userInfo, safeDifficulty);
-    
-    // Simplified placeholder replacement
+// CRITICAL FIX: Removed duplicate fillBasicTemplate function declaration
+// The function is already declared above with different parameters at line 3654
+// This duplicate declaration was causing "Identifier 'fillBasicTemplate' has already been declared" error
     let filledBasicTemplate = basicTemplate
       .replace('{pageText}', pageText || scene || 'enjoying a peaceful moment')
       .replace('{character}', avatarMapping.character || 'a friendly child')

@@ -43,10 +43,10 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
    * Wait for hash synchronization with exponential backoff and extended timeout
    */
   const waitForHashSync = async (expectedHash: string, initialUIHash: string): Promise<boolean> => {
-    const MAX_WAIT_TIME = 30000; // 30 seconds timeout
+    const MAX_WAIT_TIME = 5000; // CRITICAL FIX: Reduced from 30 seconds to 5 seconds for faster audio sync
     const startTime = Date.now();
     let attempt = 0;
-    let delay = 100; // Start with 100ms
+    let delay = 50; // CRITICAL FIX: Reduced initial delay from 100ms to 50ms
     
     console.log(`⏳ Starting hash sync wait: expected=${expectedHash?.slice(0,10)}, initial=${initialUIHash?.slice(0,10)}`);
     
@@ -77,8 +77,8 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       // Wait with exponential backoff
       await new Promise(resolve => setTimeout(resolve, delay));
       
-      // Exponential backoff: 100ms → 200ms → 500ms → 1s → 2s → 5s (max)
-      delay = Math.min(5000, delay < 500 ? delay * 2 : delay + 1000);
+      // CRITICAL FIX: Faster backoff: 50ms → 100ms → 200ms → 500ms (max) for quicker audio sync
+      delay = Math.min(500, delay * 2);
     }
     
     console.error(`❌ Hash sync timeout after ${MAX_WAIT_TIME}ms`);
