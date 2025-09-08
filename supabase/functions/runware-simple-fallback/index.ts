@@ -4117,26 +4117,6 @@ function removeEmptySections(template: string): string {
 // CRITICAL FIX: Removed duplicate fillBasicTemplate function declaration
 // The function is already declared above with different parameters at line 3654
 // This duplicate declaration was causing "Identifier 'fillBasicTemplate' has already been declared" error
-    let filledBasicTemplate = basicTemplate
-      .replace('{pageText}', pageText || scene || 'enjoying a peaceful moment')
-      .replace('{character}', avatarMapping.character || 'a friendly child')
-      .replace('{setting}', setting || 'a welcoming environment')
-      .replace('{action_objects}', objects || '')
-      .replace('{objects}', objects || '')
-      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt);
-    
-    // Clean up empty placeholders
-    filledBasicTemplate = filledBasicTemplate.replace(/{[^}]*}/g, '').replace(/\s+/g, ' ').trim();
-    
-    console.log('✅ Tier 2.5B: Basic template fallback completed');
-    return filledBasicTemplate;
-    
-  } catch (error) {
-    console.warn('⚠️ Tier 2.5B: Basic template fallback failed:', error);
-    // Ultimate emergency fallback
-    return `${pageText || 'A child enjoying a peaceful moment'}. ${NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || EMERGENCY_FALLBACK_FRAMEWORK}`;
-  }
-}
 
 function getCharacterEthnicity(userInfo: any, avatarIdentity?: any): string {
   try {
