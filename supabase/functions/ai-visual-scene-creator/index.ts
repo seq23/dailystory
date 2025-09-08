@@ -555,7 +555,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
                          ['6th', '7th', '8th', '9th', '10th'].includes(avatarIdentity?.readingLevel);
   
   if (circuitBreaker.isOpen(isExpertContent)) {
-    console.warn(`🚫 Circuit breaker is open for ${isExpertContent ? 'expert' : 'regular'} content, skipping OpenAI - using Tier 2 immediately`);
+    console.warn(`BLOCKED Circuit breaker is open for ${isExpertContent ? 'expert' : 'regular'} content, skipping OpenAI - using Tier 2 immediately`);
     const error = new Error('Circuit breaker open - service degraded');
     TierFailureLogger.logTier1OpenAIFailure(error, { 
       reason: 'circuit_breaker_open',
@@ -599,7 +599,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
           totalPromptLength: messages.reduce((sum, msg) => sum + msg.content.length, 0)
         });
         
-        console.log(`⏳ ${logPrefix} Attempting ${model.name} (attempt ${attempt}/1, timeout: ${timeout}ms)`);
+        console.log(`ATTEMPT ${logPrefix} Attempting ${model.name} (attempt ${attempt}/1, timeout: ${timeout}ms)`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -638,7 +638,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
             // Continue to next attempt/model instead of returning empty result
             if (attempt < 3) {
               const backoffDelay = 500; // Reduced from exponential to 500ms for faster fallbacks
-              console.log(`⏳ Retrying after ${backoffDelay}ms due to empty content...`);
+              console.log(`ATTEMPT Retrying after ${backoffDelay}ms due to empty content...`);
               await new Promise(resolve => setTimeout(resolve, backoffDelay));
               continue;
             } else {
@@ -681,7 +681,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
         }
       } catch (error) {
         if (error.name === 'AbortError') {
-          console.warn(`⏰ Model ${model.name} timed out after ${timeout}ms on attempt ${attempt}`);
+          console.warn(`TIMEOUT Model ${model.name} timed out after ${timeout}ms on attempt ${attempt}`);
           TierFailureLogger.logTier1OpenAIFailure(error, {
             model: model.name,
             attempt,
@@ -713,7 +713,7 @@ async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId
     });
   }
   
-  console.error('🚫 All AI models exhausted - circuit breaker will activate if failures continue');
+  console.error('BLOCKED All AI models exhausted - circuit breaker will activate if failures continue');
   
   // Log complete model chain failure
   const error = new Error('All AI models failed after multiple attempts - service may be degraded');
@@ -829,7 +829,7 @@ serve(async (req) => {
       importResults.errorHandling = 'SUCCESS SUCCESS (static)';
       importResults.characterConsistency = 'SUCCESS SUCCESS (static)';
       
-      console.log('📊 Dependency Verification Results:', importResults);
+      console.log('STATS Dependency Verification Results:', importResults);
       
       console.log('DEBUG REORGANIZED TIER 1: Starting Request Analysis');
       
@@ -852,7 +852,7 @@ serve(async (req) => {
           };
         }
         
-        console.log('📥 Incoming Request Structure:', {
+        console.log('REQUEST Incoming Request Structure:', {
           method: req.method,
           headers: Object.fromEntries(req.headers.entries()),
           bodyKeys: Object.keys(requestBody || {}),
@@ -927,7 +927,7 @@ serve(async (req) => {
         console.log('START PHASE 1: Minimal AI Request (Scene Generation Only)');
         
         // PHASE 1.1: Enhanced Character Description using CharacterConsistencyService
-        console.log('🎭 PHASE 1.1: Using CharacterConsistencyService for database-backed character consistency');
+        console.log('CHARACTER PHASE 1.1: Using CharacterConsistencyService for database-backed character consistency');
         
         const characterConsistencyService = new CharacterConsistencyService();
         
@@ -943,7 +943,7 @@ serve(async (req) => {
         const enhancedCharacterDescription = characterData.characterDescription || 
           `${avatarIdentity.name} is a child age ${avatarIdentity?.age || '6-8'}`;
         
-        console.log('👤 PHASE 1.1: Enhanced Character Description:', {
+        console.log('CHAR PHASE 1.1: Enhanced Character Description:', {
           avatarIdentity: avatarIdentity,
           characterSeed: characterData.seed,
           enhancedDescription: enhancedCharacterDescription,
@@ -962,7 +962,7 @@ serve(async (req) => {
             pageNumber
           );
           
-          console.log('👥 PHASE 1.1b: Secondary elements detected:', {
+          console.log('SECONDARY PHASE 1.1b: Secondary elements detected:', {
             count: secondaryElements.length,
             elements: secondaryElements.map(e => `${e.name} (${e.type})`)
           });
@@ -1110,11 +1110,11 @@ RULES:
         const sceneIntegration = primaryScene;
         console.log(`SCENE PHASE 2.2: Scene integrated: ${sceneIntegration.substring(0, 50)}...`);
         
-        console.log('🎭 PHASE 2.3: Scene data prepared for orchestrator');
+        console.log('CHARACTER PHASE 2.3: Scene data prepared for orchestrator');
         
         // PHASE 2.5: Character Consistency Database Storage (Enhanced Implementation)
-        console.log('💾 PHASE 2.5: Character consistency stored in database via CharacterConsistencyService');
-        console.log(`🎭 Character seed ${characterData.seed} persisted for session ${sessionId}`);
+        console.log('STORAGE PHASE 2.5: Character consistency stored in database via CharacterConsistencyService');
+        console.log(`CHARACTER Character seed ${characterData.seed} persisted for session ${sessionId}`);
         
         // Store current AI scene for next page consistency
         try {
@@ -1179,11 +1179,11 @@ RULES:
           console.log(`ART AI DEBUG OUTPUT:`);
           console.log(`TARGET Primary Scene: "${primaryScene}"`);
           console.log(`HOUSE Setting: ${setting || 'null'}`);
-          console.log(`🎭 Action: ${action || 'null'}`);
-          console.log(`😊 Mood: ${mood || 'null'}`);
-          console.log(`🧍 Pose: ${pose || 'null'}`);
-          console.log(`👤 Character: ${characterData?.name || 'Unknown'} (seed: ${characterData?.seed || 'none'})`);
-          console.log(`📊 Processing: 3-phase enhanced with ${secondaryElements.length} secondary characters`);
+          console.log(`ACTION Action: ${action || 'null'}`);
+          console.log(`MOOD Mood: ${mood || 'null'}`);
+          console.log(`POSE Pose: ${pose || 'null'}`);
+          console.log(`CHAR Character: ${characterData?.name || 'Unknown'} (seed: ${characterData?.seed || 'none'})`);
+          console.log(`STATS Processing: 3-phase enhanced with ${secondaryElements.length} secondary characters`);
         }
         
         // =================== VALIDATION & RETURN RESULTS ===================
@@ -1245,12 +1245,12 @@ RULES:
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) → Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
+        console.log(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) -> Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
 
         return createCorsResponse(result);
 
       } catch (error) {
-        // OpenAI FAILURE → Return error to Orchestrator (no internal fallback)
+        // OpenAI FAILURE -> Return error to Orchestrator (no internal fallback)
         console.error('ERROR AI Story Enhancer failed - returning error to Orchestrator:', {
           errorMessage: error.message,
           errorStack: error.stack,
