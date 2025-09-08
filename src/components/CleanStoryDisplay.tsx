@@ -156,6 +156,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
   
+  // Toast deduplication state - track if fallback toast shown for current story session
+  const fallbackToastShownRef = useRef(false);
+  const currentToastRef = useRef<{ id: string; dismiss: () => void } | null>(null);
+  
   // Debug device detection
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
@@ -252,6 +256,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     
     return () => {
       document.body.classList.remove('reading-session');
+      // Reset toast flags on component unmount
+      fallbackToastShownRef.current = false;
+      if (currentToastRef.current) {
+        currentToastRef.current.dismiss();
+        currentToastRef.current = null;
+      }
     };
   }, []);
   
@@ -467,8 +477,28 @@ const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
   if (isUsingFallback) {
     console.warn('Story image failed to load, using enhanced fallback:', pageImages[currentPage]);
     fallbackToClassic('image-error');
+    
+    // Consolidated toast logic with deduplication
+    if (!fallbackToastShownRef.current) {
+      // Dismiss any existing toast first
+      if (currentToastRef.current) {
+        currentToastRef.current.dismiss();
+      }
+      
+      // Show new dismissible toast
+      const toastResult = toast({
+        variant: "destructive",
+        title: "Images are down",
+        description: "Try refreshing the page, or if that doesn't work, regenerate a new story.",
+      });
+      
+      // Track the toast for potential dismissal
+      currentToastRef.current = toastResult;
+      fallbackToastShownRef.current = true;
+      console.log('🍞 Fallback toast shown for story session');
+    }
   }
-}, [currentPage, pageImages, fallbackToClassic]);
+}, [currentPage, pageImages, fallbackToClassic, toast]);
 
 // PHASE 2 FIX: Image retry handler that actually regenerates images
 const handleImageRegeneration = useCallback(async () => {
@@ -2592,6 +2622,14 @@ const handleRestartTimer = () => {
       timestamp: new Date().toISOString()
     });
     
+    // Reset toast flags for new story generation
+    fallbackToastShownRef.current = false;
+    if (currentToastRef.current) {
+      currentToastRef.current.dismiss();
+      currentToastRef.current = null;
+    }
+    console.log('🍞 Toast flags reset for story generation');
+    
     if (isGeneratingNewStory || isGeneratingRewrite) {
       console.log(`⚠️ [STORY DEBUG ${callId}] BLOCKED - Already generating:`, { isGeneratingNewStory, isGeneratingRewrite });
       return;
@@ -2791,6 +2829,15 @@ const handleRestartTimer = () => {
   // Open special request dialog for premium users, or generate immediately for free
   const handleNewStoryClick = () => {
     console.log('🎯 [STORY DEBUG] handleNewStoryClick called:', { isPremium });
+    
+    // Reset toast flags for new story session
+    fallbackToastShownRef.current = false;
+    if (currentToastRef.current) {
+      currentToastRef.current.dismiss();
+      currentToastRef.current = null;
+    }
+    console.log('🍞 Toast flags reset for new story session');
+    
     if (isPremium) {
       setSpecialRequestDraft(userInfo?.specialRequest || "");
       setShowSpecialRequestDialog(true);

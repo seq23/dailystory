@@ -595,9 +595,46 @@ function generateKidFriendlyPlaceholder(pageText: string): { url: string, succes
       <!-- Background -->
       <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
       
-      <!-- Broken Wand Image -->
-      <image 
-        x="100" 
+      <!-- Broken Wand SVG - Embedded inline (matching frontend design) -->
+      <g transform="translate(170, 125)">
+        <!-- Broken wand shaft - two pieces -->
+        <path d="M10 50 L25 35" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+        <path d="M30 30 L45 15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+        
+        <!-- Crack/break indication -->
+        <path d="M24 36 L26 34 L28 32" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+        
+        <!-- Dimmed refresh ring (broken) -->
+        <circle cx="45" cy="15" r="8" fill="none" stroke="#d1d5db" stroke-width="1.5" opacity="0.4"/>
+        
+        <!-- Cross mark on the ring -->
+        <path d="M40 10 L50 20 M50 10 L40 20" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        
+        <!-- Fading sparkles/stars -->
+        <circle cx="15" cy="45" r="1.5" fill="#d1d5db" opacity="0.3"/>
+        <circle cx="35" cy="25" r="1" fill="#d1d5db" opacity="0.2"/>
+        <circle cx="20" cy="40" r="1" fill="#d1d5db" opacity="0.25"/>
+      </g>
+      
+      <!-- Main message -->
+      <text x="50%" y="270" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
+        Images not working right now
+      </text>
+      <text x="50%" y="290" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
+        Please try again later
+      </text>
+    </svg>
+  `;
+  
+  // Convert to data URL for consistent display
+  const dataUrl = `data:image/svg+xml;base64,${btoa(svgContent)}`;
+  console.log('📸 [TIER-4] Generated kid-friendly placeholder with broken wand design');
+  
+  return {
+    url: dataUrl,
+    success: true
+  };
+}
         y="137.5" 
         width="200" 
         height="150" 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
-import { toast } from '@/hooks/use-toast';
 
 interface ImageWithFallbackProps {
   src?: string;
@@ -30,16 +29,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
 
   React.useEffect(() => {
     onFallbackUsed?.(isUsingFallback);
-    
-    // Show red toast notification when fallback is used
-    if (isUsingFallback && (error || src)) {
-      toast({
-        variant: "destructive",
-        title: "Images are down",
-        description: "Try refreshing the page, or if that doesn't work, regenerate a new story.",
-      });
-    }
-  }, [isUsingFallback, onFallbackUsed, error, src]);
+  }, [isUsingFallback, onFallbackUsed]);
 
   // Check if debug mode is active for console optimization
   const isDebugMode = typeof window !== 'undefined' && 

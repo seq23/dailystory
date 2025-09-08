@@ -82,15 +82,26 @@ export class ImageFallbackService {
         <!-- Background -->
         <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
         
-        <!-- Broken Wand Image -->
-        <image 
-          x="${finalConfig.width/2 - 100}" 
-          y="${finalConfig.height/2 - 125}" 
-          width="200" 
-          height="150" 
-          href="/lovable-uploads/93432db4-84aa-4992-a216-9e542d03f7d3.png"
-          preserveAspectRatio="xMidYMid meet"
-        />
+        <!-- Broken Wand SVG - Embedded -->
+        <g transform="translate(${finalConfig.width/2 - 30}, ${finalConfig.height/2 - 125})">
+          <!-- Broken wand shaft - two pieces -->
+          <path d="M10 50 L25 35" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+          <path d="M30 30 L45 15" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+          
+          <!-- Crack/break indication -->
+          <path d="M24 36 L26 34 L28 32" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+          
+          <!-- Dimmed refresh ring (broken) -->
+          <circle cx="45" cy="15" r="8" fill="none" stroke="#d1d5db" stroke-width="1.5" opacity="0.4"/>
+          
+          <!-- Cross mark on the ring -->
+          <path d="M40 10 L50 20 M50 10 L40 20" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+          
+          <!-- Fading sparkles/stars -->
+          <circle cx="15" cy="45" r="1.5" fill="#d1d5db" opacity="0.3"/>
+          <circle cx="35" cy="25" r="1" fill="#d1d5db" opacity="0.2"/>
+          <circle cx="20" cy="40" r="1" fill="#d1d5db" opacity="0.25"/>
+        </g>
         
         <!-- Arrow marker definition -->
         <defs>
