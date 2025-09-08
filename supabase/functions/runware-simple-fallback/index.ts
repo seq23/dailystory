@@ -71,11 +71,11 @@ const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hou
 
 // ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - EACH PLACEHOLDER USED EXACTLY ONCE =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // NEW STRUCTURE: Foundation → Appearance → Setting → Composition → Action → Objects → Story → Technical
-  beginner: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  easy: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  // STORY-FIRST STRUCTURE FOR LEVEL 0-1 (beginner/easy): Better AI processing
+  beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
+  easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
   
-  // Enhanced Runware-aligned structure with semantic categories for maximum visual impact
+  // FOUNDATION-FIRST STRUCTURE FOR MEDIUM+ LEVELS: Traditional character-driven approach
   medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
   hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
   expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
@@ -206,7 +206,7 @@ const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
 
 // ============= NUCLEAR INDEPENDENT CORE FUNCTIONS =============
 
-// DRAMATICALLY EXPANDED COLOR AND OBJECT ARRAYS FOR TIER 2.5
+// DRAMATICALLY EXPANDED COLOR AND SIZE ARRAY FOR TIER 2.5
 const EXPANDED_COLOR_ARRAY = [
   // Basic Colors
   'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey',
@@ -222,6 +222,12 @@ const EXPANDED_COLOR_ARRAY = [
   'silver', 'gold', 'metallic blue', 'shiny red', 'sparkly pink', 'glittery purple', 'rainbow',
   // Natural Colors
   'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
+];
+
+// SIZE ADJECTIVES FOR OBJECT DETECTION
+const SIZE_ADJECTIVES = [
+  'big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous', 
+  'mini', 'massive', 'microscopic', 'colossal', 'petite', 'immense'
 ];
 
 // UNIFIED CLOTHING DETECTION KEYWORDS - SINGLE SOURCE OF TRUTH
@@ -805,7 +811,7 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
 function extractElementsFromSentenceUnified(sentence: string, fullText: string): { action: string, setting: string, objects: string[], characters: string[] } {
   const result = { action: 'playing', setting: 'outdoor space', objects: [], characters: [] };
   
-  // ============= Extract Actions from Unified Vocabulary =============
+  // ============= Extract Actions from Unified Vocabulary with Expansion =============
   const allActions = [
     ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
     ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
@@ -817,7 +823,8 @@ function extractElementsFromSentenceUnified(sentence: string, fullText: string):
   
   for (const action of allActions) {
     if (sentence.includes(` ${action} `) || sentence.includes(`${action} `) || sentence.includes(` ${action}`)) {
-      result.action = action;
+      // EXPAND SINGLE-WORD ACTIONS TO 5+ WORDS
+      result.action = expandActionToPhrase(action);
       break; // Use first match for consistency
     }
   }
@@ -838,6 +845,51 @@ function extractElementsFromSentenceUnified(sentence: string, fullText: string):
   }
   
   return result;
+}
+
+// ACTION EXPANSION SYSTEM - Convert single words to 5+ word phrases
+function expandActionToPhrase(action: string): string {
+  const expansionMap: { [key: string]: string } = {
+    // Basic actions
+    'see': 'looks around and sees with curiosity',
+    'look': 'looks around with bright curious eyes',
+    'watch': 'watches carefully with focused attention',
+    'sit': 'sits comfortably in a relaxed position',
+    'stand': 'stands tall with confident posture',
+    'walk': 'walks forward with steady confident steps',
+    'run': 'runs energetically with joyful enthusiasm',
+    'play': 'plays happily with creative imaginative energy',
+    'read': 'reads attentively with focused concentration',
+    'eat': 'eats carefully with mindful attention',
+    'sleep': 'sleeps peacefully in comfortable restful position',
+    'jump': 'jumps up high with athletic energy',
+    'dance': 'dances gracefully with rhythmic flowing movements',
+    'sing': 'sings melodiously with clear beautiful voice',
+    'laugh': 'laughs joyfully with genuine happy expression',
+    'smile': 'smiles warmly with genuine cheerful expression',
+    'cry': 'expresses emotions with natural heartfelt tears',
+    'think': 'thinks deeply with thoughtful contemplative expression',
+    'learn': 'learns eagerly with curious engaged attention',
+    'explore': 'explores surroundings with adventurous curious spirit',
+    'discover': 'discovers something new with excited wonder',
+    'find': 'finds something interesting with delighted surprise',
+    'create': 'creates something wonderful with artistic creativity',
+    'build': 'builds carefully with focused determined effort',
+    'draw': 'draws creatively with artistic skilled hands',
+    'write': 'writes thoughtfully with careful precise movements',
+    'listen': 'listens attentively with focused concentrated attention'
+  };
+  
+  const expanded = expansionMap[action.toLowerCase()];
+  if (expanded) {
+    console.log(`🔄 Action expanded: "${action}" → "${expanded}"`);
+    return expanded;
+  }
+  
+  // If no specific expansion, create a generic 5+ word phrase
+  const genericExpansion = `engages in ${action} with focused attention`;
+  console.log(`🔄 Generic action expansion: "${action}" → "${genericExpansion}"`);
+  return genericExpansion;
 }
 
 // ============= FANTASY-FRIENDLY VISUAL PRIORITY SCORING =============
@@ -1840,57 +1892,97 @@ function detectSceneContext(sentence: string): 'indoor' | 'outdoor' | 'neutral' 
   return 'neutral';
 }
 
-// Legacy compatibility wrapper - maintains existing functionality
+// FIXED: Proper context detection for "big blue bird" scenario
 function isIndoorContext(sentence: string): boolean {
   const context = detectSceneContext(sentence);
-  // Default to indoor if neutral (safer for animal filtering as per original logic)
-  return context === 'indoor' || context === 'neutral';
+  const lowerSentence = sentence.toLowerCase();
+  
+  // EXPLICIT OUTDOOR INDICATORS: Force outdoor context
+  const outdoorKeywords = ['outdoor', 'outside', 'park', 'garden', 'tree', 'sky', 'grass', 'nature'];
+  if (outdoorKeywords.some(keyword => lowerSentence.includes(keyword))) {
+    console.log(`🏠 Context override: Detected explicit outdoor keyword - treating as outdoor`);
+    return false; // Force outdoor
+  }
+  
+  // BIRD CONTEXT LOGIC: Wild birds suggest outdoor setting
+  const wildBirds = ['bird', 'robin', 'cardinal', 'sparrow', 'blue jay', 'hawk', 'eagle', 'owl'];
+  if (wildBirds.some(bird => lowerSentence.includes(bird))) {
+    console.log(`🏠 Context override: Wild bird detected - treating as outdoor`);
+    return false; // Force outdoor for wild birds
+  }
+  
+  // Original logic for explicit indoor contexts
+  return context === 'indoor';
 }
 
-// DYNAMIC OBJECT + COLOR DETECTION SYSTEM
+// ENHANCED OBJECT + COLOR + SIZE DETECTION SYSTEM
 function detectAndResolveObjectColor(sentence: string, originalPageText?: string): string {
   const lowerSentence = sentence.toLowerCase();
   let detectedObject = '';
   let detectedColor = '';
+  let detectedSize = '';
   
-  // Detect setting context first
+  // Detect setting context first (FIXED: Uses improved isIndoorContext)
   const isIndoorScene = isIndoorContext(sentence);
   
-  // Filter animals based on context
-  const contextAppropriateAnimals = isIndoorScene 
-    ? TIER_25_UNIFIED_VOCABULARY.objectCategories.animals.filter(animal => 
-        ['dog', 'cat', 'rabbit', 'hamster', 'guinea pig', 'parakeet', 'goldfish', 'turtle', 'ferret', 'chinchilla', 'hedgehog', 'rat', 'mouse', 'canary', 'cockatiel', 'budgie', 'parrot', 'fish', 'bear'].includes(animal)
-      )
-    : TIER_25_UNIFIED_VOCABULARY.objectCategories.animals; // All animals allowed outdoors
-  
-  // Build context-appropriate object list
-  const contextAwareObjects = [
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.food,
-    ...contextAppropriateAnimals,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.vehicles,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.toys,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.tools,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.nature,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.clothing,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.sports,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.electronics,
-    ...TIER_25_UNIFIED_VOCABULARY.objectCategories.furniture
-  ];
-  
-  console.log(`🏠 Dynamic object detection: ${isIndoorScene ? 'Indoor' : 'Outdoor'} context, ${contextAwareObjects.length} objects available`);
-  
-  for (const object of contextAwareObjects) {
-    if (lowerSentence.includes(object)) {
-      detectedObject = object;
-      console.log(`🎯 Context-filtered object detected: "${object}"`);
+  // PHASE 1: Detect size adjectives first
+  for (const size of SIZE_ADJECTIVES) {
+    if (lowerSentence.includes(size)) {
+      detectedSize = size;
+      console.log(`📏 Size adjective detected: "${size}"`);
       break;
     }
   }
   
-  // Detect color from expanded array
+  // PHASE 2: Enhanced object detection with "bird" priority
+  const priorityObjects = ['bird', 'blue bird']; // Priority for "big blue bird" scenarios
+  
+  for (const object of priorityObjects) {
+    if (lowerSentence.includes(object)) {
+      detectedObject = object;
+      console.log(`🎯 Priority object detected: "${object}"`);
+      break;
+    }
+  }
+  
+  // If no priority object, use context-filtered detection
+  if (!detectedObject) {
+    const contextAppropriateAnimals = isIndoorScene 
+      ? TIER_25_UNIFIED_VOCABULARY.objectCategories.animals.filter(animal => 
+          ['dog', 'cat', 'rabbit', 'hamster', 'guinea pig', 'parakeet', 'goldfish', 'turtle', 'ferret', 'chinchilla', 'hedgehog', 'rat', 'mouse', 'canary', 'cockatiel', 'budgie', 'parrot', 'fish', 'bear'].includes(animal)
+        )
+      : TIER_25_UNIFIED_VOCABULARY.objectCategories.animals; // All animals allowed outdoors
+    
+    // Build context-appropriate object list
+    const contextAwareObjects = [
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.food,
+      ...contextAppropriateAnimals,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.vehicles,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.toys,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.tools,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.nature,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.clothing,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.sports,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.electronics,
+      ...TIER_25_UNIFIED_VOCABULARY.objectCategories.furniture
+    ];
+    
+    console.log(`🏠 Dynamic object detection: ${isIndoorScene ? 'Indoor' : 'Outdoor'} context, ${contextAwareObjects.length} objects available`);
+    
+    for (const object of contextAwareObjects) {
+      if (lowerSentence.includes(object)) {
+        detectedObject = object;
+        console.log(`🎯 Context-filtered object detected: "${object}"`);
+        break;
+      }
+    }
+  }
+  
+  // PHASE 3: Detect color from expanded array
   for (const color of EXPANDED_COLOR_ARRAY) {
     if (lowerSentence.includes(color)) {
       detectedColor = color;
+      console.log(`🎨 Color detected: "${color}"`);
       break;
     }
   }
@@ -1918,11 +2010,25 @@ function detectAndResolveObjectColor(sentence: string, originalPageText?: string
     return object; // Return base form if no exact match found
   }
   
-  // If both object and color detected, combine them (exact word form preservation)
+  // PHASE 4: Combine detected elements (size + color + object)
+  if (detectedObject && detectedColor && detectedSize) {
+    const exactForm = getExactWordForm(detectedObject, originalPageText);
+    console.log(`🎯 ENHANCED: Full detection "${detectedSize} ${detectedColor} ${detectedObject}" → "${exactForm}"`);
+    return `, with ${detectedSize} ${detectedColor} ${exactForm}`;
+  }
+  
+  // If object and color detected (no size)
   if (detectedObject && detectedColor) {
     const exactForm = getExactWordForm(detectedObject, originalPageText);
     console.log(`🎯 MASTER PLAN: Preserved exact word form "${detectedObject}" → "${exactForm}" from pageText`);
     return `, with ${detectedColor} ${exactForm}`;
+  }
+  
+  // If object and size detected (no color)  
+  if (detectedObject && detectedSize) {
+    const exactForm = getExactWordForm(detectedObject, originalPageText);
+    console.log(`🎯 SIZE ENHANCED: "${detectedSize} ${detectedObject}" → "${exactForm}"`);
+    return `, with ${detectedSize} ${exactForm}`;
   }
   
   // If only object detected, let Runware decide the color (exact word form preservation)
@@ -2936,12 +3042,103 @@ function fillPremiumTemplate(
       filledTemplate = filledTemplate.replace('{features}', `${safeFinalFeatures}, wearing ${clothing}`);
     }
     
+    // PHASE 7: TEMPLATE VALIDATION AND TIER 2.5B FALLBACK
+    const templateValidation = validateTemplateCompletion(filledTemplate, safeScene, enhancedSetting, ethnicity);
+    if (!templateValidation.isValid) {
+      console.log(`🔄 Template validation failed: ${templateValidation.issues.join(', ')} - Falling back to Tier 2.5B`);
+      return fillBasicTemplate(safeDifficulty, pageText, userInfo, avatarIdentity, safeScene, enhancedSetting, safeObjects, secondary_characters);
+    }
+    
+    // PHASE 8: REMOVE EMPTY SECTIONS 
+    filledTemplate = removeEmptySections(filledTemplate);
+    
     console.log(`🛡️ Tier 2.5: Template filled successfully with nuclear mapping`);
     return filledTemplate;
     
   } catch (error) {
     console.error('❌ Tier 2.5: Template filling error:', error);
     return generateEmergencyPrompt(userInfo);
+  }
+}
+
+// TEMPLATE VALIDATION SYSTEM
+function validateTemplateCompletion(template: string, scene: string, setting: string, ethnicity: string): { isValid: boolean, issues: string[] } {
+  const issues: string[] = [];
+  
+  // Check if character description exists (ethnicity should be present for white children)
+  if (!ethnicity || ethnicity.trim() === '') {
+    issues.push('Missing ethnicity description');
+  }
+  
+  // Check if setting has content
+  if (!setting || setting.trim() === '' || setting === 'outdoor space' || setting === 'indoor space') {
+    issues.push('Generic/empty setting');
+  }
+  
+  // Check if action has 5+ words (enhanced from single word validation)
+  if (!scene || scene.trim() === '') {
+    issues.push('Missing action description');
+  } else {
+    const actionWordCount = scene.split(' ').length;
+    if (actionWordCount < 5) {
+      issues.push(`Action too short (${actionWordCount} words, need 5+)`);
+    }
+  }
+  
+  // Check for empty sections in template
+  const emptySectionPattern = /\w+:\s*[,.]|\w+:\s*\w+:\s*[,.]/g;
+  if (emptySectionPattern.test(template)) {
+    issues.push('Empty template sections detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues
+  };
+}
+
+// REMOVE EMPTY SECTIONS FROM TEMPLATE
+function removeEmptySections(template: string): string {
+  // Remove sections that have no content after the colon
+  return template
+    .replace(/\w+:\s*[,.](?=\s*\w+:)/g, '') // Remove empty sections in middle
+    .replace(/\w+:\s*[,.](?=\s*Technical:)/g, '') // Remove empty sections before Technical
+    .replace(/\w+:\s*[,.]$/g, '') // Remove empty sections at end
+    .replace(/,\s*,/g, ',') // Fix double commas
+    .replace(/\.\s*\./g, '.') // Fix double periods
+    .replace(/\s+/g, ' ') // Clean up extra spaces
+    .trim();
+}
+
+// TIER 2.5B BASIC TEMPLATE FALLBACK
+function fillBasicTemplate(difficulty: string, pageText: string, userInfo: any, avatarIdentity: any, scene: string, setting: string, objects: string, secondary_characters: string): string {
+  try {
+    console.log('🛡️ Tier 2.5B: Using simplified basic template fallback');
+    
+    const safeDifficulty = difficulty || 'medium';
+    const basicTemplate = BASIC_PROMPT_TEMPLATES[safeDifficulty] || BASIC_PROMPT_TEMPLATES.medium;
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[safeDifficulty] || NUCLEAR_STYLE_SETTINGS.medium;
+    const avatarMapping = getNuclearAvatarMapping(userInfo, safeDifficulty);
+    
+    // Simplified placeholder replacement
+    let filledBasicTemplate = basicTemplate
+      .replace('{pageText}', pageText || scene || 'enjoying a peaceful moment')
+      .replace('{character}', avatarMapping.character || 'a friendly child')
+      .replace('{setting}', setting || 'a welcoming environment')
+      .replace('{action_objects}', objects || '')
+      .replace('{objects}', objects || '')
+      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt);
+    
+    // Clean up empty placeholders
+    filledBasicTemplate = filledBasicTemplate.replace(/{[^}]*}/g, '').replace(/\s+/g, ' ').trim();
+    
+    console.log('✅ Tier 2.5B: Basic template fallback completed');
+    return filledBasicTemplate;
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5B: Basic template fallback failed:', error);
+    // Ultimate emergency fallback
+    return `${pageText || 'A child enjoying a peaceful moment'}. ${NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || EMERGENCY_FALLBACK_FRAMEWORK}`;
   }
 }
 
