@@ -873,8 +873,8 @@ serve(async (req) => {
         const difficulty = gradeLevelToDifficulty(userInfo.gradeLevel || 'K');
         const storyFramework = getStyleFramework(difficulty);
         
-        // 3. Avatar Validation
-        const validatedAvatar = validateAvatarConsistency(avatarIdentity, userInfo, sessionId);
+        // 3. Avatar Validation - Fix parameter order
+        const validatedAvatar = validateAvatarConsistency('', avatarIdentity, userInfo);
         
         // PHASE 5: Generate unique request ID for cross-function correlation
         const requestId = `IMG-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;

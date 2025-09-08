@@ -96,7 +96,10 @@ export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
   
   // Replace {name} placeholder if present and return original prompt
   console.log('🔍 AVATAR VALIDATION: Prompt passed validation, using provided description');
-  return prompt.replace('{name}', userName);
+  
+  // Ensure prompt is a string before calling replace
+  const promptStr = typeof prompt === 'string' ? prompt : String(prompt || '');
+  return promptStr.replace('{name}', userName);
 }
 
 // Quality-based avatar validation for fallback trigger
