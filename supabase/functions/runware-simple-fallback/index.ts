@@ -217,8 +217,10 @@ const TIER_25_UNIFIED_VOCABULARY = {
     indoor: [
       // Essential indoor locations
       'kitchen', 'bedroom', 'classroom', 'library', 'home', 'house', 'room', 'bathroom', 'office',
+      // Enhanced educational & professional spaces
+      'laboratory', 'conference', 'summit', 'presentation', 'research', 'university', 'workshop', 'meeting hall',
       // Indoor activities & states
-      'reading', 'cooking', 'studying', 'homework', 'indoor', 'inside',
+      'reading', 'cooking', 'studying', 'homework', 'indoor', 'inside', 'investigating', 'organizing', 'presenting',
       // Core indoor objects (non-furniture)
       'tv', 'computer', 'tablet', 'phone', 'television', 'radio', 'book', 'newspaper', 'magazine',
       // Essential indoor fixtures
@@ -227,6 +229,8 @@ const TIER_25_UNIFIED_VOCABULARY = {
     outdoor: [
       // Natural locations
       'park', 'playground', 'garden', 'forest', 'beach', 'mountain', 'backyard', 'field', 'hill',
+      // Enhanced environmental settings
+      'coral reefs', 'tide pools', 'kelp forests', 'village', 'neighborhood', 'community center',
       // Water features
       'river', 'lake', 'ocean', 'sea', 'pond', 'stream',
       // Paths & navigation
@@ -234,10 +238,10 @@ const TIER_25_UNIFIED_VOCABULARY = {
       // Nature elements
       'nature', 'tree', 'grass', 'flower', 'sky', 'sun', 'moon', 'star', 'cloud', 'rain', 'snow', 'wind',
       // Outdoor activities & states
-      'outdoor', 'outside', 'running', 'walking', 'hiking', 'climbing', 'swimming', 'fishing', 'camping', 'picnic', 'sports'
+      'outdoor', 'outside', 'running', 'walking', 'hiking', 'climbing', 'swimming', 'fishing', 'camping', 'picnic', 'sports', 'exploring', 'advocating'
     ]
   },
-  // Keep existing object categories intact
+  // Enhanced object categories with comprehensive story vocabulary
   objectCategories: {
     // Food Items
     food: ['apple', 'banana', 'sandwich', 'cookie', 'cake', 'pizza', 'ice cream', 'cupcake', 'donut', 'bread', 'cheese', 'crackers', 'fruit', 'vegetables', 'juice box', 'water bottle', 'milk', 'cereal', 'pancakes', 'toast'],
@@ -264,11 +268,11 @@ const TIER_25_UNIFIED_VOCABULARY = {
     // Toys & Games
     toys: ['ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'kite', 'yo-yo', 'top', 'marbles', 'action figure', 'stuffed animal', 'toy car', 'toy train', 'board game', 'cards', 'dice', 'jump rope', 'hula hoop', 'frisbee', 'bubbles'],
     
-    // Tools & Instruments
-    tools: ['hammer', 'screwdriver', 'wrench', 'paintbrush', 'scissors', 'ruler', 'magnifying glass', 'telescope', 'microscope', 'calculator', 'compass', 'flashlight', 'camera', 'telephone', 'computer', 'tablet', 'keyboard', 'mouse', 'headphones', 'microphone'],
+    // Tools & Instruments (Enhanced with story template objects)
+    tools: ['hammer', 'screwdriver', 'wrench', 'paintbrush', 'scissors', 'ruler', 'magnifying glass', 'telescope', 'microscope', 'calculator', 'compass', 'flashlight', 'camera', 'telephone', 'computer', 'tablet', 'keyboard', 'mouse', 'headphones', 'microphone', 'projector', 'recording equipment', 'solar panels'],
     
-    // Nature & Outdoor
-    nature: ['tree', 'flower', 'leaf', 'rock', 'shell', 'stick', 'acorn', 'pinecone', 'feather', 'pebble', 'sand', 'grass', 'moss', 'mushroom', 'berry', 'seed', 'branch', 'log', 'crystal', 'butterfly net'],
+    // Nature & Outdoor (Enhanced with environmental elements)
+    nature: ['tree', 'flower', 'leaf', 'rock', 'shell', 'stick', 'acorn', 'pinecone', 'feather', 'pebble', 'sand', 'grass', 'moss', 'mushroom', 'berry', 'seed', 'branch', 'log', 'crystal', 'butterfly net', 'seashell', 'fountain', 'sparkles', 'rainbow'],
     
     // Clothing & Accessories
     clothing: ['hat', 'cap', 'shirt', 'dress', 'pants', 'shoes', 'socks', 'jacket', 'sweater', 'scarf', 'gloves', 'belt', 'tie', 'bow tie', 'necklace', 'bracelet', 'earrings', 'ring', 'watch', 'sunglasses'],
@@ -276,11 +280,37 @@ const TIER_25_UNIFIED_VOCABULARY = {
     // Sports & Recreation
     sports: ['soccer ball', 'basketball', 'football', 'baseball', 'tennis ball', 'golf ball', 'ping pong ball', 'volleyball', 'hockey stick', 'baseball bat', 'tennis racket', 'golf club', 'skateboard', 'roller skates', 'ice skates', 'helmet', 'bicycle', 'swimming goggles', 'life jacket', 'surfboard'],
     
-    // Electronics & Technology
+    // Electronics & Technology (Enhanced with story elements)
     electronics: ['computer', 'laptop', 'tablet', 'phone', 'television', 'radio', 'speaker', 'headphones', 'camera', 'video game', 'remote control', 'calculator', 'digital clock', 'mp3 player', 'keyboard', 'mouse', 'printer', 'scanner', 'projector', 'smartwatch'],
     
     // Furniture & Household
-    furniture: ['chair', 'table', 'bed', 'desk', 'bookshelf', 'dresser', 'mirror', 'lamp', 'clock', 'picture frame', 'vase', 'pillow', 'blanket', 'curtains', 'rug', 'couch', 'sofa', 'cabinet', 'drawer', 'closet']
+    furniture: ['chair', 'table', 'bed', 'desk', 'bookshelf', 'dresser', 'mirror', 'lamp', 'clock', 'picture frame', 'vase', 'pillow', 'blanket', 'curtains', 'rug', 'couch', 'sofa', 'cabinet', 'drawer', 'closet'],
+    
+    // NEW CATEGORY: Character Descriptors & Actions (From story template analysis)
+    characters: {
+      descriptors: ['tiny', 'friendly', 'shy', 'confident', 'brilliant', 'determined', 'excited', 'worried', 'inspired', 'overwhelmed', 'grateful', 'nervous', 'radiant'],
+      actions: ['discovers', 'exploring', 'swimming', 'climbing', 'investigating', 'organizing', 'presenting', 'advocating', 'researching', 'lobbying', 'strategizing'],
+      emotions: ['happy', 'sad', 'excited', 'worried', 'inspired', 'overwhelmed', 'grateful', 'nervous', 'confident', 'shy', 'determined', 'brilliant', 'radiant']
+    },
+    
+    // NEW CATEGORY: Documents & Props (From story templates)
+    documents: ['notebook', 'charts', 'maps', 'slides', 'research papers', 'presentation slides', 'whiteboard', 'podium', 'screen'],
+    
+    // NEW CATEGORY: Scene Atmosphere & Lighting (For enhanced image generation)
+    atmosphere: {
+      lighting: ['sparkling', 'glowing', 'bright sunlight', 'moonlight', 'starlight', 'candlelight', 'golden light', 'soft light'],
+      weather: ['mist', 'fog', 'gentle rain', 'sunny morning', 'clear sky', 'cloudy', 'misty', 'foggy'],
+      mood: ['magical', 'mysterious', 'peaceful', 'bustling', 'quiet', 'triumphant', 'cozy', 'serene', 'enchanting']
+    },
+    
+    // NEW CATEGORY: Community & Social Elements (From story templates)
+    community: {
+      events: ['celebration', 'ceremony', 'festival', 'gathering', 'meeting', 'collaboration', 'conference', 'summit'],
+      spaces: ['community center', 'meeting hall', 'village square', 'neighborhood', 'town hall', 'plaza']
+    },
+    
+    // NEW CATEGORY: Technology & Science (Enhanced for all story types)
+    technology: ['laptop', 'projector', 'microphone', 'camera', 'recording equipment', 'microscope', 'telescope', 'solar panels', 'renewable energy', 'laboratory equipment', 'research tools']
   }
 };
 
