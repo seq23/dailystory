@@ -10,6 +10,7 @@ import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 /**
  * ============================================================================
@@ -1024,7 +1025,6 @@ serve(async (req) => {
         
         // Call ai-visual-scene-creator directly with pre-processed avatar identity
         // CRITICAL FIX: Add difficultyLevel mapping for Tier 1
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // CRITICAL: Log prompt flow debugging before calling AI scene creator
@@ -1032,7 +1032,7 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           promptPreview: pageText.substring(0, 100) + '...',
-          stage: 'ai-scene-creator',
+          stage: 'ai-visual-scene-creator',
           metadata: { 
             userInfo: userInfo?.name, 
             difficultyLevel: mappedDifficulty,
@@ -1058,7 +1058,7 @@ serve(async (req) => {
           success: aiEnhancerResult.success,
           hasAiSchema: !!aiEnhancerResult.aiSchema,
           aiSchemaKeys: aiEnhancerResult.aiSchema ? Object.keys(aiEnhancerResult.aiSchema) : [],
-          stage: 'ai-scene-creator-response',
+          stage: 'ai-visual-scene-creator-response',
           metadata: { responseSize: JSON.stringify(aiEnhancerResult).length }
         });
 
