@@ -474,6 +474,9 @@ export class SimpleImageService {
       // EMERGENCY FALLBACK: Try Tier 2.5 for ANY Tier 1 failure (most aggressive approach)  
       console.log('🚨 EMERGENCY FALLBACK: Tier 1 failed, attempting Tier 2.5 (runware-simple-fallback)');
       
+      // Add timing for Tier 2.5 attempt
+      const tier25StartTime = Date.now();
+      
       try {
         const tier25Response = await supabase.functions.invoke('runware-simple-fallback', {
           body: {
@@ -484,6 +487,9 @@ export class SimpleImageService {
             pageNumber
           }
         });
+        
+        const tier25ProcessingTime = Date.now() - tier25StartTime;
+        console.log(`⏱️ Tier 2.5 processing time: ${tier25ProcessingTime}ms`);
         
         if (tier25Response.data?.success) {
           const specificTier = tier25Response.data.specificTier || '2.5-unknown';
@@ -520,10 +526,56 @@ export class SimpleImageService {
           await this.recordUsage(result, userInfo?.name);
           return result;
         } else {
-          console.error('❌ EMERGENCY FALLBACK FAILED: Tier 2.5 returned error:', tier25Response.data?.error);
+          // Enhanced error message extraction from Tier 2.5 response
+          const tier25Error = tier25Response.data?.error || tier25Response.error || 'Unknown Tier 2.5 error';
+          const tier25Details = tier25Response.data ? JSON.stringify(tier25Response.data).substring(0, 200) : 'no-data';
+          
+          console.error('❌ TIER 2.5 RESPONSE FAILURE:', {
+            error: tier25Error,
+            responseData: tier25Details,
+            hasData: !!tier25Response.data,
+            dataKeys: tier25Response.data ? Object.keys(tier25Response.data) : [],
+            fullResponse: tier25Response
+          });
+          
+          console.error(`❌ EMERGENCY FALLBACK FAILED: Tier 2.5 returned error: ${tier25Error}`);
         }
       } catch (tier25Error) {
-        console.error('❌ EMERGENCY FALLBACK FAILED: Tier 2.5 threw error:', tier25Error);
+        // Enhanced error extraction from caught exception
+        let errorDetails = 'Unknown error';
+        let errorType = 'UnknownException';
+        
+        if (tier25Error instanceof Error) {
+          errorDetails = tier25Error.message;
+          errorType = tier25Error.name || 'Error';
+          
+          // Check for specific error patterns
+          if (tier25Error.message.includes('boot') || tier25Error.message.includes('worker boot error')) {
+            errorType = 'BOOT_FAILURE';
+            errorDetails = 'Edge function failed to boot - check syntax errors';
+          } else if (tier25Error.message.includes('503') || tier25Error.message.includes('Service Unavailable')) {
+            errorType = 'SERVICE_UNAVAILABLE';  
+            errorDetails = 'Edge function returned 503 - likely boot failure';
+          } else if (tier25Error.message.includes('timeout')) {
+            errorType = 'TIMEOUT';
+            errorDetails = 'Edge function timed out during execution';
+          } else if (tier25Error.message.includes('CORS') || tier25Error.message.includes('preflight')) {
+            errorType = 'CORS_ERROR';
+            errorDetails = 'CORS preflight or access control error';
+          }
+        } else if (typeof tier25Error === 'object' && tier25Error !== null) {
+          errorDetails = JSON.stringify(tier25Error).substring(0, 200);
+          errorType = 'ObjectError';
+        }
+        
+        console.error('❌ TIER 2.5 EXCEPTION CAUGHT:', {
+          errorType,
+          errorDetails,
+          originalError: tier25Error,
+          stack: tier25Error instanceof Error ? tier25Error.stack : undefined
+        });
+        
+        console.error(`❌ EMERGENCY FALLBACK FAILED: Tier 2.5 threw ${errorType}: ${errorDetails}`);
       }
       
       console.log('🎨 Falling back to local SVG placeholder');
