@@ -5,12 +5,12 @@ import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDyna
 import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager, globalSessionManager } from "../_shared/SessionStateManager.ts";
 import { SecurityValidator } from "../_shared/SecurityValidator.ts";
-import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.ts";
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
+import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
-import { getStyleFramework } from "../_shared/styleFrameworks.ts";
+import { getStyleFramework } from "../_shared/styleFrameworks.js";
 import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.ts";
 
 /**
