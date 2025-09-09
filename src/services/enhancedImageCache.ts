@@ -101,7 +101,9 @@ export class EnhancedImageCache {
     const contextKey = contextualMarkers ? `${storyKey}-ctx:${contextualMarkers}` : storyKey;
     
     // Add avatar awareness to prevent cross-avatar contamination
-    const avatarKey = (avatarType && skinTone) ? `${contextKey}-av:${avatarType}-${skinTone}` : contextKey;
+    // Use same normalization as StorySessionCache for consistency
+    const normalizedAvatarType = avatarType === 'prefer-not-to-answer' ? 'neutral' : avatarType;
+    const avatarKey = (normalizedAvatarType && skinTone) ? `${contextKey}-av:${normalizedAvatarType}-${skinTone}` : contextKey;
     
     return pageNumber !== undefined ? `${avatarKey}-p${pageNumber}` : avatarKey;
   }
