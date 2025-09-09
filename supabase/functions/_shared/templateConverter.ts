@@ -290,7 +290,7 @@ async function processEnding(endings: AttachableEnding[], userInfo: UserInfo, te
   let selectedEnding;
   if (arcConfig?.endingRotation) {
     // Use arc manager's ending rotation logic
-    const { selectRotatedEnding } = await import('./arcManager.js');
+    const { selectRotatedEnding } = await import('./arcManager.ts');
     selectedEnding = selectRotatedEnding(endings, { endingRotation: arcConfig.endingRotation });
   } else {
     selectedEnding = pick(endings);
@@ -368,7 +368,7 @@ export async function convertStoryTemplateToStringArray(
   // Arc-aware scene processing with modulo logic
   if (arcConfig?.pageIndex !== undefined) {
     // Arc-based generation using modulo logic
-    const { calculateArcPosition } = await import('./arcManager.js');
+    const { calculateArcPosition } = await import('./arcManager.ts');
     const arcPosition = calculateArcPosition(arcConfig.pageIndex, template.level);
     
     console.log(`🎪 Arc Processing: Page ${arcConfig.pageIndex} → Arc ${arcPosition.arcNumber}, Scene ${arcPosition.sceneIndex}, isEnding: ${arcPosition.isEndingPage}`);

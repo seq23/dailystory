@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AuthWrapper } from "@/components/AuthWrapper";
 
 import { Link, useLocation } from "react-router-dom";
+import { ImageDiagnostic } from '@/components/ImageDiagnostic';
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
@@ -25,6 +26,7 @@ const Index = () => {
 
   return (
     <div className="homepage">
+      <ImageDiagnostic />
       <AuthWrapper />
     </div>
   );

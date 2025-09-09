@@ -9,8 +9,8 @@ import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager
 // Import arc-aware template processing system
 import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.ts';
 import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
-import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
-import { getBValue } from '../_shared/templates/registry.js';
+import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.ts';
+import { getBValue } from '../_shared/templates/registry.ts';
 import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
 
 // Import sophisticated placeholder resolution  
@@ -304,7 +304,7 @@ serve(async (req) => {
         console.log('🧠 Attempting smart template selection...');
         
         // Import smart template selector
-        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.js');
+        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.ts');
         
         // Get template count for this level
         const templateCount = await getTemplateCount(templateLevel);
