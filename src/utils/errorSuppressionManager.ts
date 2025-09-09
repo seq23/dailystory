@@ -206,6 +206,17 @@ class ErrorSuppressionManager {
       return true;
     }
 
+    // Avatar utility debug messages (CRITICAL NOISE REDUCTION)
+    if (fullMessage.includes('🎭 [avatarutils]') ||
+        fullMessage.includes('generated avatar url') ||
+        fullMessage.includes('invalid avatar data') ||
+        fullMessage.includes('unknown avatar type') ||
+        fullMessage.includes('unknown skin tone') ||
+        fullMessage.includes('no valid avatar data found')) {
+      this.incrementErrorCount('Avatar Debug Messages');
+      return true;
+    }
+
     return false;
   }
 

@@ -42,24 +42,25 @@ export class AvatarUtils {
   static getAvatarUrl(avatarData: AvatarData | null | undefined): string | undefined {
     // Handle null/undefined input
     if (!avatarData || !avatarData.type || !avatarData.skinTone) {
-      console.log('🎭 [AvatarUtils] Invalid avatar data:', avatarData);
+      // Only log errors, not successful operations
+      console.warn('🎭 [AvatarUtils] Invalid avatar data:', avatarData);
       return undefined;
     }
 
     // Get the specific avatar path
     const typeMapping = this.AVATAR_BASE_PATHS[avatarData.type as keyof typeof this.AVATAR_BASE_PATHS];
     if (!typeMapping) {
-      console.log('🎭 [AvatarUtils] Unknown avatar type, using boy fallback:', avatarData.type);
+      console.warn('🎭 [AvatarUtils] Unknown avatar type, using boy fallback:', avatarData.type);
       return this.AVATAR_BASE_PATHS.boy[avatarData.skinTone] || this.DEFAULT_FALLBACK;
     }
 
     const avatarUrl = typeMapping[avatarData.skinTone];
     if (!avatarUrl) {
-      console.log('🎭 [AvatarUtils] Unknown skin tone, using medium fallback:', avatarData.skinTone);
+      console.warn('🎭 [AvatarUtils] Unknown skin tone, using medium fallback:', avatarData.skinTone);
       return typeMapping.medium || this.DEFAULT_FALLBACK;
     }
 
-    console.log('🎭 [AvatarUtils] Generated avatar URL:', avatarUrl, 'for:', avatarData);
+    // Success: No logging needed for normal operations
     return avatarUrl;
   }
 
@@ -92,7 +93,7 @@ export class AvatarUtils {
       return this.getAvatarUrl(userAvatar);
     }
 
-    console.log('🎭 [AvatarUtils] No valid avatar data found');
+    // Only log when debugging is needed, not for normal operations
     return undefined;
   }
 
