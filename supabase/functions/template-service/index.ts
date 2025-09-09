@@ -9,7 +9,7 @@ import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager
 // Import arc-aware template processing system
 import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.ts';
 import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
-import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.ts';
+import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
 import { getBValue } from '../_shared/templates/registry.ts';
 import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
 

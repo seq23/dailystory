@@ -46,7 +46,7 @@ interface TemplateModule {
 }
 
 // Import new dynamic template loader
-import { loadTemplate, getDynamicTemplateCount } from './dynamicTemplateLoader.ts';
+import { loadTemplate, getDynamicTemplateCount } from './dynamicTemplateLoader.js';
 
 /**
  * Get template count for a given level (for exploration mode)
