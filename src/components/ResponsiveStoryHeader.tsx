@@ -11,6 +11,7 @@ import type { DifficultyLevel, UserInfo } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import NewStoryCTA from "@/components/NewStoryCTA";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { AvatarUtils } from "@/utils/avatarUtils";
 interface ResponsiveStoryHeaderProps {
   storyTitle?: string;
   currentDifficulty?: string; // Frontend difficulty format ("beginner", "developing", etc.)
@@ -188,15 +189,12 @@ export const ResponsiveStoryHeader = ({
     : (isMobile ? 20 : isTablet ? 40 : 60);
   const displayTitle = storyTitle ? truncateTitle(storyTitle, maxTitleLength) : '';
 
-  // Avatar helper function
+  // Avatar helper functions
   const getAvatarUrl = () => {
-    if (userInfo?.avatar?.type && userInfo?.avatar?.skinTone) {
-      return `/avatar-${userInfo.avatar.type}-${userInfo.avatar.skinTone}.jpg`;
-    }
-    return undefined;
+    return AvatarUtils.getAvatarUrl(userInfo?.avatar);
   };
 
-  const hasSelectedAvatar = userInfo?.avatar?.type && userInfo?.avatar?.skinTone;
+  const hasSelectedAvatar = AvatarUtils.hasValidAvatarData(userInfo?.avatar);
 
   if (!isPremium && isMobile) {
     return (

@@ -32,13 +32,12 @@ const avatarImages = {
     olive: "/avatar-girl-olive.jpg",
     dark: "/avatar-girl-dark.jpg",
   },
-  // Add fallback for invalid avatar types (Fix #3)
   "prefer-not-to-answer": {
-    pale: "/avatar-boy-pale.jpg", // Fallback to boy images
-    light: "/avatar-boy-light.jpg",
-    medium: "/avatar-boy-medium.jpg", 
-    olive: "/avatar-boy-olive.jpg",
-    dark: "/avatar-boy-dark.jpg",
+    pale: "/avatar-prefer-not-to-answer-pale.jpg",
+    light: "/avatar-prefer-not-to-answer-light.jpg",
+    medium: "/avatar-prefer-not-to-answer-medium.jpg",
+    olive: "/avatar-prefer-not-to-answer-olive.jpg",
+    dark: "/avatar-prefer-not-to-answer-dark.jpg",
   }
 }
 
@@ -64,20 +63,18 @@ export const AvatarPicker = React.forwardRef<
     onChange({ ...value, skinTone })
   }
 
-  // For "prefer-not-to-answer", default to boy avatar for display but we'll handle pronouns separately
-  const displayType = value.type === "prefer-not-to-answer" ? "boy" : value.type
-  const currentAvatar = avatarImages[displayType as "boy" | "girl"]?.[value.skinTone]
+  // Get avatar directly from the avatar images mapping
+  const currentAvatar = avatarImages[value.type as keyof typeof avatarImages]?.[value.skinTone]
   
-  // Add debugging for avatar image selection (Fix #3)
+  // Add debugging for avatar image selection
   React.useEffect(() => {
     console.log('🔍 [DEBUG] AvatarPicker current selection:', {
       type: value.type,
       skinTone: value.skinTone,
-      displayType,
       currentAvatar,
       imageExists: !!currentAvatar
     });
-  }, [value.type, value.skinTone, displayType, currentAvatar]);
+  }, [value.type, value.skinTone, currentAvatar]);
 
   return (
     <div ref={ref} className={cn("space-y-4", className)}>

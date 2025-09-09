@@ -9,6 +9,7 @@ import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import type { AvatarType, SkinTone } from "@/types";
+import { AvatarUtils } from "@/utils/avatarUtils";
 
 const gradeOptions = ["Pre-K", "K", "1", "2", "3", "4", "5", "6", "7", "8"];
 const monthOptions = [
@@ -343,16 +344,14 @@ export function ChildManager() {
                     </div>
                    ) : (
                      <div className="grid md:grid-cols-4 items-center gap-3">
-                       <div className="flex items-center gap-3">
-                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border">
-                           {c.avatar && typeof c.avatar === 'object' && 'type' in c.avatar && 'skinTone' in c.avatar && (
-                             <img
-                               src={`/avatar-${c.avatar.type}-${c.avatar.skinTone}.jpg`}
-                               alt={`${c.display_name}'s avatar`}
-                               className="w-full h-full object-cover"
-                             />
-                           )}
-                         </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border">
+                            <img
+                              src={AvatarUtils.getAvatarUrl(c.avatar as any) || "/avatar-boy-medium.jpg"}
+                              alt={`${c.display_name}'s avatar`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                          <div>
                            <div className="font-medium">{c.display_name}</div>
                            <div className="text-xs text-muted-foreground">{calculateAge((c as any).birth_year)}</div>

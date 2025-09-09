@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
+import { AvatarUtils } from "@/utils/avatarUtils";
 interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;
@@ -82,16 +83,10 @@ export const PremiumHeader = ({
   }, []);
 
   const getAvatarUrl = () => {
-    // Use active child's avatar if one is selected
-    const avatarData = activeChild?.avatar || userInfo.avatar;
-    // Type guard for avatar data
-    if (typeof avatarData === 'object' && avatarData && 'type' in avatarData && 'skinTone' in avatarData) {
-      const url = `/avatar-${avatarData.type}-${avatarData.skinTone}.jpg`;
-      console.log('🎭 Avatar URL generated:', url, 'for:', activeChild ? `child ${activeChild.display_name}` : `user ${userInfo.name}`, 'avatar:', avatarData);
-      return url;
-    }
-    console.log('🎭 No avatar data found for:', activeChild ? `child ${activeChild.display_name}` : `user ${userInfo.name}`, 'avatar:', avatarData);
-    return undefined;
+    return AvatarUtils.getAvatarUrlWithFallback(
+      activeChild?.avatar,
+      userInfo.avatar
+    );
   };
 
   const getDisplayName = () => {
@@ -104,8 +99,8 @@ export const PremiumHeader = ({
   };
 
   const hasSelectedAvatar = () => {
-    const avatarData = activeChild?.avatar || userInfo.avatar;
-    return typeof avatarData === 'object' && avatarData && 'type' in avatarData && 'skinTone' in avatarData;
+    return AvatarUtils.hasValidAvatarData(activeChild?.avatar) || 
+           AvatarUtils.hasValidAvatarData(userInfo.avatar);
   };
 
   return (
