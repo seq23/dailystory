@@ -1391,11 +1391,27 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Secondary elements detection failed:`, error.message);
         }
         
-        // 3.2. Visual Details (automatically integrated from database)
+        // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
+        // Add visual detail analysis for consistent object tracking
         try {
           const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
-          const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+          await VisualDetailTracker.analyzeTextForDetails(
+            sessionId, 
+            pageText, 
+            pageNumber || 1, 
+            characterData?.characterName || 'child'
+          );
+          console.log(`🔍 [${requestId}] Page text analyzed for visual details`);
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Visual detail analysis failed:`, error.message);
+        }
+        
+        // 3.2. Visual Details & Colored Objects (automatically integrated from database)
+        try {
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           
+          // Get general visual consistency details
+          const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
           if (visualDetails) {
             const visualDetailsText = `Consistency details: ${visualDetails}`;
             sceneDetailsSection += sceneDetailsSection ? `, ${visualDetailsText}` : visualDetailsText;
@@ -1404,6 +1420,19 @@ serve(async (req) => {
               source: 'VisualDetailTracker (pre-processed)'
             });
           }
+          
+          // ============= NEW: GET COLORED OBJECTS FOR RICH DESCRIPTIONS =============
+          const coloredObjects = await VisualDetailTracker.buildObjectDescription(sessionId);
+          if (coloredObjects) {
+            const coloredObjectsText = `Colored objects: ${coloredObjects}`;
+            sceneDetailsSection += sceneDetailsSection ? `, ${coloredObjectsText}` : coloredObjectsText;
+            console.log(`🎨 [${requestId}] Section 3 - Colored Objects Added:`, {
+              content: coloredObjects,
+              count: coloredObjects.split(',').length,
+              source: 'VisualDetailTracker.buildObjectDescription (enhanced vocabulary)'
+            });
+          }
+          
         } catch (error) {
           console.log(`⚠️ [${requestId}] Visual detail retrieval failed:`, error.message);
         }

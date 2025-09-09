@@ -6,6 +6,56 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// ============= UNIFIED VOCABULARY IMPORT FOR ENHANCED OBJECT DETECTION =============
+// Import comprehensive vocabulary from Tier 2.5A for consistent color/size detection
+const EXPANDED_COLOR_ARRAY = [
+  // Basic Colors
+  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey',
+  // Vibrant Colors
+  'bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
+  'vibrant red', 'vibrant blue', 'vibrant green', 'electric blue', 'neon green', 'hot pink', 'lime green',
+  // Pastel Colors
+  'light blue', 'light pink', 'light green', 'light yellow', 'soft blue', 'soft pink', 'soft purple',
+  'pastel blue', 'pastel pink', 'pastel yellow', 'pale blue', 'pale green', 'pale yellow',
+  // Dark Colors
+  'dark blue', 'dark green', 'dark red', 'dark purple', 'navy blue', 'forest green', 'burgundy',
+  // Metallic & Special Colors
+  'silver', 'gold', 'metallic blue', 'shiny red', 'sparkly pink', 'glittery purple', 'rainbow',
+  // Natural Colors
+  'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
+];
+
+const SIZE_ADJECTIVES = [
+  'big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous', 
+  'mini', 'massive', 'microscopic', 'colossal', 'petite', 'immense'
+];
+
+const CLOTHING_DETECTION_KEYWORDS = [
+  'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
+  'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
+  'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves',
+  'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
+  'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
+  'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
+];
+
+const UNIFIED_OBJECT_CATEGORIES = [
+  // Food Items
+  'apple', 'banana', 'sandwich', 'cookie', 'cake', 'pizza', 'ice cream', 'cupcake', 'donut', 'bread',
+  // Animals & Pets
+  'dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'cow', 'pig', 'sheep', 'chicken',
+  // Vehicles & Transportation
+  'car', 'truck', 'bus', 'train', 'airplane', 'helicopter', 'boat', 'ship', 'bicycle', 'scooter',
+  // Toys & Games
+  'ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'kite', 'toy car', 'toy train', 'frisbee', 'bubbles',
+  // Tools & Instruments
+  'hammer', 'paintbrush', 'scissors', 'ruler', 'magnifying glass', 'telescope', 'camera', 'phone',
+  // Nature & Outdoor
+  'tree', 'flower', 'leaf', 'rock', 'shell', 'stick', 'feather', 'crystal', 'butterfly', 'rainbow',
+  // Sports & Recreation
+  'soccer ball', 'basketball', 'football', 'baseball', 'tennis ball', 'skateboard', 'helmet', 'bicycle'
+];
+
 export class VisualDetailTracker {
   // Initialize Supabase client for database operations
   static supabase = createClient(
@@ -44,9 +94,15 @@ export class VisualDetailTracker {
     // General secondary character colors
     const secondaryColorPattern = /(friend|sister|brother|grandma|grandmother|grandpa|grandfather|teacher|neighbor)\\s+(has|wearing|wears|with|in)\\s+(a|an|the)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey|colorful)\\s*(hair|dress|shirt|hat|jacket|coat|glasses)/gi;
     
-    // General color and size patterns (existing)
-    const colorPattern = /(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey)\s+(car|house|dress|shirt|hat|ball|toy|flower)/gi;
-    const sizePattern = /(big|small|large|tiny|huge|little)\s+(car|house|tree|dog|cat|ball|toy)/gi;
+    // ============= ENHANCED COLOR AND SIZE PATTERNS WITH UNIFIED VOCABULARY =============
+    // Use expanded color array for comprehensive color detection
+    const expandedColorWords = EXPANDED_COLOR_ARRAY.join('|').replace(/\s+/g, '\\s+');
+    const sizeWords = SIZE_ADJECTIVES.join('|');
+    const objectWords = UNIFIED_OBJECT_CATEGORIES.join('|').replace(/\s+/g, '\\s+');
+    
+    const colorPattern = new RegExp(`(${expandedColorWords})\\s+(${objectWords})`, 'gi');
+    const sizePattern = new RegExp(`(${sizeWords})\\s+(${objectWords})`, 'gi');
+    const colorSizePattern = new RegExp(`(${sizeWords})\\s+(${expandedColorWords})\\s+(${objectWords})`, 'gi');
     
     // Process character-specific clothing
     let match;
@@ -138,38 +194,36 @@ export class VisualDetailTracker {
       console.log(`👥 Secondary character detail: ${character} - ${fullDescription}`);
     }
     
-    // Process general color details
+    // ============= ENHANCED OBJECT DETECTION WITH UNIFIED VOCABULARY =============
+    // Process color + size + object combinations (most comprehensive)
+    while ((match = colorSizePattern.exec(text)) !== null) {
+      const size = match[1].toLowerCase();
+      const color = match[2].toLowerCase();
+      const object = match[3].toLowerCase();
+      const fullDescription = `${size} ${color} ${object}`;
+      
+      await this.saveDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
+      console.log(`🎯 Enhanced object detail: ${fullDescription}`);
+    }
+    
+    // Process color + object combinations  
     while ((match = colorPattern.exec(text)) !== null) {
       const color = match[1].toLowerCase();
       const object = match[2].toLowerCase();
+      const fullDescription = `${color} ${object}`;
       
-      await this.saveDetailToDatabase(
-        sessionId, 
-        'general', 
-        'color', 
-        object, 
-        color, 
-        pageNumber
-      );
-      
-      console.log(`🎨 New color detail: ${object} is ${color}`);
+      await this.saveDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
+      console.log(`🎨 Color object detail: ${fullDescription}`);
     }
     
-    // Process size details
+    // Process size + object combinations
     while ((match = sizePattern.exec(text)) !== null) {
       const size = match[1].toLowerCase();
       const object = match[2].toLowerCase();
+      const fullDescription = `${size} ${object}`;
       
-      await this.saveDetailToDatabase(
-        sessionId, 
-        'general', 
-        'size', 
-        object, 
-        size, 
-        pageNumber
-      );
-      
-      console.log(`📏 New size detail: ${object} is ${size}`);
+      await this.saveDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
+      console.log(`📏 Size object detail: ${fullDescription}`);
     }
   }
 
@@ -481,6 +535,36 @@ export class VisualDetailTracker {
     }
     const index = Math.abs(hash) % array.length;
     return array[index];
+  }
+
+  /**
+   * ============= NEW: BUILD OBJECT DESCRIPTION FOR TEMPLATES =============
+   * Gets all colored objects for a session and formats them for template integration
+   */
+  static async buildObjectDescription(sessionId) {
+    try {
+      const { data, error } = await this.supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('character_name', 'general')
+        .eq('detail_type', 'colored_object');
+
+      if (error || !data || data.length === 0) {
+        console.log(`📋 No colored objects found for session ${sessionId}`);
+        return '';
+      }
+
+      // Create rich object descriptions
+      const objectDescriptions = data.map(detail => detail.detail_value);
+      const result = objectDescriptions.join(', ');
+      
+      console.log(`🎨 Built object description for session ${sessionId}: ${result}`);
+      return result;
+    } catch (error) {
+      console.error('Database error in buildObjectDescription:', error);
+      return '';
+    }
   }
 
   /**

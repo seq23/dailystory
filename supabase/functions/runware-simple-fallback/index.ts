@@ -77,26 +77,26 @@ const PREMIUM_PROMPT_TEMPLATES = {
   // RUNWARE OPTIMAL: Technical first for better processing
   // STORY LENGTH OPTIMAL: Narrative early for simpler stories
   // DO NOT MODIFY this order for beginner/easy levels
-  beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
-  easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
+  beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
+  easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
   
   // 🚨 REGRESSION PREVENTION: NEVER CHANGE THIS ORDER FOR LEVELS 2-4
   // RUNWARE OPTIMAL: Technical first, narrative last for complex stories
   // STORY LENGTH OPTIMAL: Technical setup before complex narrative
   // DO NOT MODIFY this order for medium/hard/expert levels
-  medium: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
-  hard: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
-  expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}"
+  medium: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
+  hard: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
+  expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}"
 };
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 const BASIC_PROMPT_TEMPLATES = {
   // 3-SECTION STRUCTURE: PRIMARY SCENE → VISUAL COMPONENTS → BRAND SUFFIX
-  beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  medium: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  hard: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
+  beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  medium: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  hard: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -2643,7 +2643,30 @@ function isIndoorContext(sentence: string): boolean {
   return context === 'indoor';
 }
 
-// ENHANCED OBJECT + COLOR + SIZE DETECTION SYSTEM
+// ============= ENHANCED OBJECT DETECTION USING VISUALDETAILTRACKER INTEGRATION =============
+// REPLACES: detectAndResolveObjectColor() with VisualDetailTracker integration for session consistency
+async function detectAndResolveObjectColorWithTracking(sentence: string, sessionId: string, pageNumber: number = 1, originalPageText?: string): Promise<string> {
+  // First analyze the sentence for new visual details
+  try {
+    const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+    await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber);
+    
+    // Get all stored colored objects for this session
+    const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId);
+    
+    if (storedObjects) {
+      console.log(`🎨 Retrieved stored objects for session ${sessionId}: ${storedObjects}`);
+      return `, with ${storedObjects}`;
+    }
+  } catch (error) {
+    console.warn(`⚠️ VisualDetailTracker integration failed, falling back to basic detection:`, error.message);
+  }
+  
+  // Fallback to basic detection if VisualDetailTracker fails
+  return detectAndResolveObjectColor(sentence, originalPageText);
+}
+
+// LEGACY FUNCTION: Keep for fallback compatibility
 function detectAndResolveObjectColor(sentence: string, originalPageText?: string): string {
   const lowerSentence = sentence.toLowerCase();
   let detectedObject = '';
@@ -4569,6 +4592,21 @@ function fillPremiumTemplate(
     // Apply smart sentence extraction for pageText based on difficulty level
     const processedPageText = extractFirstSentences(pageText || '', safeDifficulty);
     
+    // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
+    // Add visual detail analysis for consistent object tracking across tiers
+    try {
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+      await VisualDetailTracker.analyzeTextForDetails(
+        sessionId || 'tier25-session', 
+        pageText || processedPageText, 
+        userInfo?.pageNumber || 1, 
+        finalMapping?.character || 'child'
+      );
+      console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
+    } catch (error) {
+      console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
+    }
+    
     console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${safeDifficulty}`);
     
     // Get template with fallback protection
@@ -4861,6 +4899,24 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
       .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', enhanceSeededSecondaryCharacterPositioning(secondary_characters, pageText, safeScene, sessionId) || '') // ENHANCED: Seed-based spatial positioning integration
+      
+      // ============= NEW: COLORED OBJECTS INTEGRATION =============
+      // Add persistent colored objects from VisualDetailTracker
+      let coloredObjects = '';
+      try {
+        const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+        const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session');
+        coloredObjects = storedObjects || '';
+        
+        if (coloredObjects) {
+          console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
+      }
+      
+      // Replace {colored_objects} placeholder in template
+      filledTemplate = filledTemplate.replace('{colored_objects}', coloredObjects);
       .replace('{emotion}', emotion)
       .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
       .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
