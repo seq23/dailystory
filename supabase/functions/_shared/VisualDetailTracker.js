@@ -15,7 +15,7 @@ export class VisualDetailTracker {
 
   /**
    * Analyze text for visual details and store them in database for consistency
-   * Enhanced with character-specific clothing detection
+   * Enhanced with character-specific clothing detection and secondary character visual details
    */
   static async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
     console.log(`🎨 VisualDetailTracker - Analyzing text for session ${sessionId}, page ${pageNumber}`);
@@ -27,6 +27,22 @@ export class VisualDetailTracker {
       `(${characterName || '[A-Z][a-z]+'}|[A-Z][a-z]+)\\s+(has|wears?|wearing|puts?\\s+on|dresses?\\s+in)\\s+(a|an|the)?\\s*(new|old)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey|colorful)?\\s*(shirt|dress|pants|hat|jacket|coat|shoes|boots|socks|gloves|scarf|belt|tie|sweater|blouse|skirt|shorts|vest|uniform)`,
       'gi'
     );
+    
+    // ============= NEW: SECONDARY CHARACTER VISUAL DETECTION PATTERNS =============
+    // Mom/Mother visual patterns
+    const momVisualPattern = /(mom|mother|mommy|mama)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(long|short|curly|straight|blonde|brown|black|red|gray|grey)?\\s*(hair|dress|shirt|blouse|jacket|coat|apron|glasses|smile)/gi;
+    const momColorPattern = /(mom|mother|mommy|mama)\\s+in\\s+(a|an|the)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey|colorful)\\s*(dress|shirt|blouse|jacket|coat|apron)/gi;
+    
+    // Dad/Father visual patterns  
+    const dadVisualPattern = /(dad|father|daddy|papa)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(beard|mustache|glasses|hat|cap|shirt|jacket|tie|suit)/gi;
+    const dadColorPattern = /(dad|father|daddy|papa)\\s+in\\s+(a|an|the)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey)\\s*(shirt|jacket|tie|suit|hat|cap)/gi;
+    
+    // Animal visual patterns
+    const dogVisualPattern = /(dog|puppy|pup)\\s+(is|has|with)?\\s*(a|an|the)?\\s*(golden|brown|black|white|spotted|fluffy|big|small|tiny|large|retriever|labrador|beagle|collie|shepherd)/gi;
+    const catVisualPattern = /(cat|kitten|kitty)\\s+(is|has|with)?\\s*(a|an|the)?\\s*(orange|black|white|gray|grey|tabby|fluffy|persian|siamese|calico|striped)/gi;
+    
+    // General secondary character colors
+    const secondaryColorPattern = /(friend|sister|brother|grandma|grandmother|grandpa|grandfather|teacher|neighbor)\\s+(has|wearing|wears|with|in)\\s+(a|an|the)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey|colorful)\\s*(hair|dress|shirt|hat|jacket|coat|glasses)/gi;
     
     // General color and size patterns (existing)
     const colorPattern = /(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey)\s+(car|house|dress|shirt|hat|ball|toy|flower)/gi;
@@ -52,6 +68,74 @@ export class VisualDetailTracker {
       );
       
       console.log(`👕 New character clothing: ${characterInText} - ${clothingDescription}`);
+    }
+    
+    // ============= NEW: PROCESS SECONDARY CHARACTER VISUAL DETAILS =============
+    // Process mom visual details
+    while ((match = momVisualPattern.exec(text)) !== null) {
+      const attribute = match[5]; // hair, dress, etc.
+      const descriptor = match[4] || 'default'; // blonde, long, etc.
+      const fullDescription = `${descriptor} ${attribute}`.trim();
+      
+      await this.saveDetailToDatabase(sessionId, 'mom', 'appearance', attribute, fullDescription, pageNumber);
+      console.log(`👩 Mom visual detail: ${fullDescription}`);
+    }
+    
+    // Process mom color details
+    while ((match = momColorPattern.exec(text)) !== null) {
+      const color = match[3];
+      const item = match[4];
+      const fullDescription = `${color} ${item}`;
+      
+      await this.saveDetailToDatabase(sessionId, 'mom', 'clothing', item, fullDescription, pageNumber);
+      console.log(`👩 Mom clothing: ${fullDescription}`);
+    }
+    
+    // Process dad visual details
+    while ((match = dadVisualPattern.exec(text)) !== null) {
+      const attribute = match[4]; // beard, hat, etc.
+      
+      await this.saveDetailToDatabase(sessionId, 'dad', 'appearance', attribute, attribute, pageNumber);
+      console.log(`👨 Dad visual detail: ${attribute}`);
+    }
+    
+    // Process dad color details  
+    while ((match = dadColorPattern.exec(text)) !== null) {
+      const color = match[3];
+      const item = match[4];
+      const fullDescription = `${color} ${item}`;
+      
+      await this.saveDetailToDatabase(sessionId, 'dad', 'clothing', item, fullDescription, pageNumber);
+      console.log(`👨 Dad clothing: ${fullDescription}`);
+    }
+    
+    // Process dog visual details
+    while ((match = dogVisualPattern.exec(text)) !== null) {
+      const descriptor = match[4]; // golden, brown, etc.
+      if (descriptor) {
+        await this.saveDetailToDatabase(sessionId, 'dog', 'appearance', 'breed_color', descriptor, pageNumber);
+        console.log(`🐕 Dog visual detail: ${descriptor}`);
+      }
+    }
+    
+    // Process cat visual details
+    while ((match = catVisualPattern.exec(text)) !== null) {
+      const descriptor = match[4]; // orange, tabby, etc.
+      if (descriptor) {
+        await this.saveDetailToDatabase(sessionId, 'cat', 'appearance', 'breed_color', descriptor, pageNumber);
+        console.log(`🐱 Cat visual detail: ${descriptor}`);
+      }
+    }
+    
+    // Process general secondary character colors
+    while ((match = secondaryColorPattern.exec(text)) !== null) {
+      const character = match[1].toLowerCase();
+      const color = match[4];
+      const item = match[5];
+      const fullDescription = `${color} ${item}`;
+      
+      await this.saveDetailToDatabase(sessionId, character, 'appearance', item, fullDescription, pageNumber);
+      console.log(`👥 Secondary character detail: ${character} - ${fullDescription}`);
     }
     
     // Process general color details
@@ -243,6 +327,147 @@ export class VisualDetailTracker {
       console.error('Database error in getVisualDetailsForPrompt:', error);
       return '';
     }
+  }
+
+  /**
+   * Get secondary character visual details for enriched descriptions
+   */
+  static async getSecondaryCharacterVisuals(sessionId, characterName) {
+    try {
+      const { data, error } = await this.supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('character_name', characterName.toLowerCase());
+
+      if (error || !data) {
+        return null;
+      }
+
+      const visuals = {};
+      data.forEach(detail => {
+        if (!visuals[detail.detail_type]) {
+          visuals[detail.detail_type] = {};
+        }
+        visuals[detail.detail_type][detail.detail_key] = detail.detail_value;
+      });
+
+      return visuals;
+    } catch (error) {
+      console.error('Database error in getSecondaryCharacterVisuals:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Build enriched secondary character description with visual details
+   */
+  static async buildEnrichedSecondaryCharacter(sessionId, characterType, baseDescription) {
+    const characterName = this.extractCharacterNameFromDescription(characterType);
+    const visuals = await this.getSecondaryCharacterVisuals(sessionId, characterName);
+    
+    if (!visuals || Object.keys(visuals).length === 0) {
+      // Return base description with seeded visual fallback
+      return this.addFallbackVisuals(characterType, baseDescription, sessionId);
+    }
+
+    // Build enriched description with actual visual details
+    let enrichedDescription = baseDescription;
+    
+    // Add appearance details
+    if (visuals.appearance) {
+      const appearanceDetails = Object.values(visuals.appearance).join(', ');
+      enrichedDescription = `${baseDescription} with ${appearanceDetails}`;
+    }
+    
+    // Add clothing details
+    if (visuals.clothing) {
+      const clothingDetails = Object.values(visuals.clothing).join(', ');
+      enrichedDescription = `${enrichedDescription} wearing ${clothingDetails}`;
+    }
+
+    console.log(`✨ Enriched secondary character: ${characterType} → ${enrichedDescription}`);
+    return enrichedDescription;
+  }
+
+  /**
+   * Extract character name from character type (e.g., "caring mother" → "mom")
+   */
+  static extractCharacterNameFromDescription(characterType) {
+    const lowerType = characterType.toLowerCase();
+    if (lowerType.includes('mother') || lowerType.includes('mom')) return 'mom';
+    if (lowerType.includes('father') || lowerType.includes('dad')) return 'dad';
+    if (lowerType.includes('dog') || lowerType.includes('puppy')) return 'dog';
+    if (lowerType.includes('cat') || lowerType.includes('kitten')) return 'cat';
+    if (lowerType.includes('friend')) return 'friend';
+    if (lowerType.includes('sister')) return 'sister';
+    if (lowerType.includes('brother')) return 'brother';
+    if (lowerType.includes('grandmother') || lowerType.includes('grandma')) return 'grandma';
+    if (lowerType.includes('grandfather') || lowerType.includes('grandpa')) return 'grandpa';
+    if (lowerType.includes('teacher')) return 'teacher';
+    return characterType.split(' ').pop(); // Last word as fallback
+  }
+
+  /**
+   * Add consistent fallback visuals using seeded randomization
+   */
+  static addFallbackVisuals(characterType, baseDescription, sessionId) {
+    const characterName = this.extractCharacterNameFromDescription(characterType);
+    const seed = `${sessionId}_${characterName}`;
+    
+    // Define fallback visual options for different character types
+    const fallbackVisuals = {
+      mom: [
+        'with long brown hair wearing a blue dress',
+        'with short blonde hair wearing a red blouse', 
+        'with curly black hair wearing a green jacket',
+        'with straight brown hair wearing a white shirt'
+      ],
+      dad: [
+        'with a beard wearing a plaid shirt',
+        'with glasses wearing a blue polo',
+        'with a mustache wearing a red jacket',
+        'wearing a gray suit and tie'
+      ],
+      dog: [
+        'golden retriever with fluffy fur',
+        'brown labrador with floppy ears',
+        'black and white border collie',
+        'small white terrier with bright eyes'
+      ],
+      cat: [
+        'orange tabby with green eyes',
+        'black cat with white paws', 
+        'gray striped cat with yellow eyes',
+        'fluffy white persian cat'
+      ],
+      friend: [
+        'with red hair wearing a yellow shirt',
+        'with brown hair wearing a purple hoodie',
+        'with blonde hair wearing a green dress',
+        'with black hair wearing a blue jacket'
+      ]
+    };
+
+    const options = fallbackVisuals[characterName] || [`wearing colorful clothes`];
+    const selectedVisual = this.getSeededRandomItem(options, seed);
+    
+    console.log(`🎨 Added fallback visual for ${characterType}: ${selectedVisual}`);
+    return `${baseDescription} ${selectedVisual}`;
+  }
+
+  /**
+   * Seeded random selection for consistent results
+   */
+  static getSeededRandomItem(array, seed) {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      const char = seed.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    const index = Math.abs(hash) % array.length;
+    return array[index];
   }
 
   /**

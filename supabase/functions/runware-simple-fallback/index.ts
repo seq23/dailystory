@@ -3,6 +3,7 @@
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
+import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -1141,7 +1142,7 @@ function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: str
       scene: expandedAction,
       setting: contextualSetting,
       objects: enhancedObjects || '', // Use enhanced objects for consistency
-      secondary_characters: extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber),
+      secondary_characters: await extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber),
       spatial_composition: spatialComposition,
       atmosphere: atmosphereContext,
       // Pass contextual intelligence data for template integration
@@ -2098,7 +2099,7 @@ function testPronounResolutionSystem() {
   console.log(`Test 4 - Character extraction: [${test4.join(', ')}] (Expected: ['mom'])`);
   
   // Test 5: Animal detection
-  const test5 = extractSecondaryCharactersFromSentence("She plays with her dog Max", "test-session", 1);
+  const test5 = await extractSecondaryCharactersFromSentence("She plays with her dog Max", "test-session", 1);
   console.log(`Test 5 - Animal detection: "${test5}" (Expected: dog companion)`);
   
   console.log('🧪 Pronoun resolution system testing complete!');
@@ -2345,7 +2346,8 @@ function extractObjectsFromSentence(sentence: string, originalPageText?: string,
   }
   
   // COMPREHENSIVE PRONOUN RESOLUTION: Enhanced with character context and safety
-  const detectedCharacters = extractCharacterNamesFromDescription(extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber));
+  const secondaryCharacters = await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
+  const detectedCharacters = extractCharacterNamesFromDescription(secondaryCharacters);
   const pronounResolved = resolvePronounsInSentence(sentence, originalPageText, detectedCharacters, sessionId, pageNumber);
   const processedSentence = pronounResolved || sentence;
   
@@ -2882,34 +2884,48 @@ function generateSeededRandom(seed: string): number {
   return Math.abs(hash) / 2147483647;
 }
 
-function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: string, pageNumber?: number): string {
+async function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: string, pageNumber?: number): Promise<string> {
   console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
   
   const lowerSentence = sentence.toLowerCase();
   const detectedCharacterElements = [];
   
+  // ============= PHASE 0: ANALYZE TEXT FOR VISUAL DETAILS FIRST =============
+  if (sessionId) {
+    await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber || 1);
+  }
+  
   // PHASE 1: PRIORITIZE PAGE TEXT NAME EXTRACTION WITH VISUAL ATTRIBUTES
   const extractedNames = extractCharacterNamesFromPageText(sentence, sessionId);
   if (extractedNames.length > 0) {
-    const enhancedNames = extractedNames.slice(0, 3).map(name => {
+    const enhancedNames = await Promise.all(extractedNames.slice(0, 3).map(async name => {
       // Add descriptive attributes to character names
       const lowerName = name.toLowerCase();
+      let baseDescription = '';
+      
       if (lowerName.includes('mom') || lowerName.includes('mother')) {
-        return 'caring mother';
+        baseDescription = 'caring mother';
       } else if (lowerName.includes('dad') || lowerName.includes('father')) {
-        return 'supportive father';
+        baseDescription = 'supportive father';
       } else if (lowerName.includes('friend')) {
-        return 'cheerful friend';
+        baseDescription = 'cheerful friend';
       } else if (lowerName.includes('grandma') || lowerName.includes('grandmother')) {
-        return 'wise grandmother';
+        baseDescription = 'wise grandmother';
       } else if (lowerName.includes('grandpa') || lowerName.includes('grandfather')) {
-        return 'kind grandfather';
+        baseDescription = 'kind grandfather';
       } else {
-        return `friendly ${name}`;
+        baseDescription = `friendly ${name}`;
       }
-    });
+      
+      // ============= NEW: ENRICH WITH VISUAL DETAILS =============
+      if (sessionId) {
+        return await VisualDetailTracker.buildEnrichedSecondaryCharacter(sessionId, baseDescription, baseDescription);
+      }
+      return baseDescription;
+    }));
+    
     detectedCharacterElements.push(...enhancedNames);
-    console.log(`✅ Extracted ${extractedNames.length} character names with attributes:`, enhancedNames);
+    console.log(`✅ Extracted ${extractedNames.length} character names with enhanced visuals:`, enhancedNames);
   }
   
   // PHASE 2: SESSION-BASED CHARACTER CONTINUITY (if we don't have enough characters)
@@ -2965,20 +2981,25 @@ function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: st
     ];
     
     // Process relationship patterns with enhanced descriptions
-    relationshipPatterns.forEach(({ pattern, description, type }) => {
-      if (detectedCharacterElements.length >= 3) return; // Stop if we have 3 characters
+    for (const { pattern, description, type } of relationshipPatterns) {
+      if (detectedCharacterElements.length >= 3) break; // Stop if we have 3 characters
       
       const matches = [...lowerSentence.matchAll(pattern)];
-      matches.forEach(match => {
-        if (detectedCharacterElements.length >= 3) return;
+      for (const match of matches) {
+        if (detectedCharacterElements.length >= 3) break;
         
-        const enhancedDescription = description;
-        if (!detectedCharacterElements.some(char => char.toLowerCase().includes(enhancedDescription.toLowerCase()))) {
+        // ============= NEW: ENRICH WITH VISUAL DETAILS =============
+        let enhancedDescription = description;
+        if (sessionId) {
+          enhancedDescription = await VisualDetailTracker.buildEnrichedSecondaryCharacter(sessionId, description, description);
+        }
+        
+        if (!detectedCharacterElements.some(char => char.toLowerCase().includes(description.toLowerCase()))) {
           detectedCharacterElements.push(enhancedDescription);
           console.log(`✅ Added enhanced relationship character: ${enhancedDescription} (${type})`);
         }
-      });
-    });
+      }
+    }
   }
   
     // PHASE 4: ENHANCED FORMATTING WITH VISUAL DESCRIPTIONS AND CONSISTENCY TRACKING
