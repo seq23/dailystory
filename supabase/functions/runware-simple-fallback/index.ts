@@ -75,15 +75,15 @@ const PREMIUM_PROMPT_TEMPLATES = {
   // This ensures original story text appears first for better AI processing
   // DO NOT MODIFY the "Story: {pageText}. Foundation:" structure for beginner/easy
   // STORY-FIRST STRUCTURE FOR LEVEL 0-1 (beginner/easy): Better AI processing
-  beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
-  easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
+  beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
+  easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
   
   // 🚨 REGRESSION PREVENTION: LEVELS 2+ USE "Foundation: {character}" FIRST
   // This provides character-driven approach for advanced levels  
   // FOUNDATION-FIRST STRUCTURE FOR MEDIUM+ LEVELS: Traditional character-driven approach
-  medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Composition: {spatial_composition}, {community_context}, {secondary_characters}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
+  medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
+  expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
 };
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
@@ -2886,101 +2886,137 @@ function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: st
   console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
   
   const lowerSentence = sentence.toLowerCase();
-  const detectedCharacters = [];
+  const detectedCharacterElements = [];
   
-  // PHASE 1: PRIORITIZE PAGE TEXT NAME EXTRACTION
+  // PHASE 1: PRIORITIZE PAGE TEXT NAME EXTRACTION WITH VISUAL ATTRIBUTES
   const extractedNames = extractCharacterNamesFromPageText(sentence, sessionId);
   if (extractedNames.length > 0) {
-    detectedCharacters.push(...extractedNames.slice(0, 3)); // Up to 3 names
-    console.log(`✅ Extracted ${extractedNames.length} character names:`, extractedNames);
+    const enhancedNames = extractedNames.slice(0, 3).map(name => {
+      // Add descriptive attributes to character names
+      const lowerName = name.toLowerCase();
+      if (lowerName.includes('mom') || lowerName.includes('mother')) {
+        return 'caring mother';
+      } else if (lowerName.includes('dad') || lowerName.includes('father')) {
+        return 'supportive father';
+      } else if (lowerName.includes('friend')) {
+        return 'cheerful friend';
+      } else if (lowerName.includes('grandma') || lowerName.includes('grandmother')) {
+        return 'wise grandmother';
+      } else if (lowerName.includes('grandpa') || lowerName.includes('grandfather')) {
+        return 'kind grandfather';
+      } else {
+        return `friendly ${name}`;
+      }
+    });
+    detectedCharacterElements.push(...enhancedNames);
+    console.log(`✅ Extracted ${extractedNames.length} character names with attributes:`, enhancedNames);
   }
   
   // PHASE 2: SESSION-BASED CHARACTER CONTINUITY (if we don't have enough characters)
-  if (detectedCharacters.length < 3 && sessionId) {
+  if (detectedCharacterElements.length < 3 && sessionId) {
     const sessionCharacters = getSessionCharacterContext(sessionId, pageNumber);
     const additionalCharacters = sessionCharacters.filter(char => 
-      !detectedCharacters.some(detected => detected.toLowerCase().includes(char.name.toLowerCase()))
-    ).slice(0, 3 - detectedCharacters.length);
+      !detectedCharacterElements.some(detected => detected.toLowerCase().includes(char.name.toLowerCase()))
+    ).slice(0, 3 - detectedCharacterElements.length);
     
     if (additionalCharacters.length > 0) {
-      detectedCharacters.push(...additionalCharacters.map(char => char.description));
-      console.log(`✅ Added ${additionalCharacters.length} session characters:`, additionalCharacters);
+      const enhancedSessionChars = additionalCharacters.map(char => 
+        char.description.includes('family') ? `loving ${char.description}` : `friendly ${char.description}`
+      );
+      detectedCharacterElements.push(...enhancedSessionChars);
+      console.log(`✅ Added ${additionalCharacters.length} session characters with attributes:`, enhancedSessionChars);
     }
   }
   
-  // PHASE 3: EXPANDED CHARACTER KEYWORD ARRAYS (if still need more)
-  if (detectedCharacters.length < 3) {
+  // PHASE 3: EXPANDED CHARACTER KEYWORD ARRAYS WITH VISUAL DESCRIPTORS (if still need more)
+  if (detectedCharacterElements.length < 3) {
     const relationshipPatterns = [
-      // FAMILY EXTENDED
-      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'mom', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'dad', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'sister', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'brother', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'grandma', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'grandpa', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'aunt', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'uncle', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'cousin', type: 'human' },
+      // FAMILY EXTENDED WITH DESCRIPTIVE ATTRIBUTES
+      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'adventurous brother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'wise grandmother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'kind grandfather', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'friendly aunt', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'jovial uncle', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'enthusiastic cousin', type: 'human' },
       
-      // COMMUNITY EXTENDED
-      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'friend', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'girlfriend', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'boyfriend', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'neighbor', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'classmate', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'teammate', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'coach', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'teacher', type: 'human' },
+      // COMMUNITY EXTENDED WITH DESCRIPTIVE ATTRIBUTES
+      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'smiling girlfriend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'happy boyfriend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'helpful neighbor', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'studious classmate', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'energetic teammate', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'encouraging coach', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'patient teacher', type: 'human' },
       
-      // ANIMALS EXTENDED
-      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'dog', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'cat', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'bird', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'rabbit', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'horse', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'fish', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'hamster', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'guinea pig', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'turtle', type: 'animal' }
+      // ANIMALS EXTENDED WITH DESCRIPTIVE ATTRIBUTES
+      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal family dog', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious pet cat', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'colorful pet bird', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'fluffy pet rabbit', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'gentle horse companion', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'swimming pet fish', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'tiny pet hamster', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'cute guinea pig', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'slow pet turtle', type: 'animal' }
     ];
     
-    // Process relationship patterns
+    // Process relationship patterns with enhanced descriptions
     relationshipPatterns.forEach(({ pattern, description, type }) => {
-      if (detectedCharacters.length >= 3) return; // Stop if we have 3 characters
+      if (detectedCharacterElements.length >= 3) return; // Stop if we have 3 characters
       
       const matches = [...lowerSentence.matchAll(pattern)];
       matches.forEach(match => {
-        if (detectedCharacters.length >= 3) return;
+        if (detectedCharacterElements.length >= 3) return;
         
-        const characterName = description;
-        if (!detectedCharacters.some(char => char.toLowerCase().includes(characterName.toLowerCase()))) {
-          detectedCharacters.push(characterName);
-          console.log(`✅ Added relationship character: ${characterName} (${type})`);
+        const enhancedDescription = description;
+        if (!detectedCharacterElements.some(char => char.toLowerCase().includes(enhancedDescription.toLowerCase()))) {
+          detectedCharacterElements.push(enhancedDescription);
+          console.log(`✅ Added enhanced relationship character: ${enhancedDescription} (${type})`);
         }
       });
     });
   }
   
-    // PHASE 4: SMART FORMATTING FOR UP TO 3 CHARACTERS WITH SESSION STORAGE
-    if (detectedCharacters.length === 0) {
+    // PHASE 4: ENHANCED FORMATTING WITH VISUAL DESCRIPTIONS AND CONSISTENCY TRACKING
+    if (detectedCharacterElements.length === 0) {
       console.log(`🔍 No secondary characters found in: "${sentence}"`);
       return '';
     }
     
     // ============= PHASE 2 ENHANCEMENT: STORE DETECTED CHARACTERS FOR SESSION CONTINUITY =============
-    if (sessionId && detectedCharacters.length > 0) {
-      const charactersToStore = detectedCharacters.map((char, index) => ({
-        name: char,
-        description: char,
-        type: 'human', // Default type
-        page: pageNumber || 1
-      }));
+    if (sessionId && detectedCharacterElements.length > 0) {
+      const charactersToStore = detectedCharacterElements.map((char, index) => {
+        const isAnimal = char.toLowerCase().includes('dog') || char.toLowerCase().includes('cat') || 
+                        char.toLowerCase().includes('bird') || char.toLowerCase().includes('rabbit') ||
+                        char.toLowerCase().includes('fish') || char.toLowerCase().includes('hamster');
+        return {
+          name: char.replace(/^(caring|supportive|cheerful|wise|kind|friendly|playful|adventurous|loyal|curious|fluffy|gentle)\s+/, ''),
+          description: char,
+          type: isAnimal ? 'animal' : 'human',
+          page: pageNumber || 1
+        };
+      });
       storeSessionCharacters(sessionId, charactersToStore);
+      
+      // Integrate with visual consistency system
+      try {
+        if (typeof getVisualDetailTracker === 'function') {
+          const tracker = getVisualDetailTracker(sessionId);
+          charactersToStore.forEach(char => {
+            tracker.trackSecondaryCharacter(char.name, char.description, char.type);
+          });
+        }
+      } catch (error) {
+        console.log('⚠️ Visual consistency tracking not available:', error.message);
+      }
     }
     
     // ============= ENHANCED GENERIC FALLBACK ELIMINATION =============
-    // Remove any remaining generic teacher references that might have slipped through
-    const filteredCharacters = detectedCharacters.filter(char => {
+    const filteredCharacters = detectedCharacterElements.filter(char => {
       const lowerChar = char.toLowerCase();
       // Remove generic fallbacks but keep specific detected relationships
       return !lowerChar.includes('generic') && 
@@ -2993,17 +3029,19 @@ function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: st
       return '';
     }
     
-    let formattedCharacters = '';
+    // ============= NEW ENHANCED OUTPUT FORMAT =============
+    // Instead of "with X and Y", use more descriptive format for better prompt integration
+    let formattedElements = '';
     if (filteredCharacters.length === 1) {
-      formattedCharacters = ` with ${filteredCharacters[0]}`;
+      formattedElements = filteredCharacters[0];
     } else if (filteredCharacters.length === 2) {
-      formattedCharacters = ` with ${filteredCharacters[0]} and ${filteredCharacters[1]}`;
+      formattedElements = `${filteredCharacters[0]}, ${filteredCharacters[1]}`;
     } else if (filteredCharacters.length === 3) {
-      formattedCharacters = ` with ${filteredCharacters[0]}, ${filteredCharacters[1]}, and ${filteredCharacters[2]}`;
+      formattedElements = `${filteredCharacters[0]}, ${filteredCharacters[1]}, ${filteredCharacters[2]}`;
     }
     
-    console.log(`✅ Final secondary characters: "${formattedCharacters}"`);
-    return formattedCharacters;
+    console.log(`✅ Final enhanced secondary elements: "${formattedElements}"`);
+    return formattedElements;
 }
 
 // PHASE 1: Enhanced Name Extraction Function
@@ -3715,7 +3753,8 @@ function extractSensoryDetails(pageText: string, scene: string): string {
 // ============= ENHANCED SECONDARY CHARACTER SPATIAL POSITIONING FUNCTION =============
 
 /**
- * ENHANCED Process secondary characters with spatial positioning and group dynamics
+ * ENHANCED Process secondary elements with spatial positioning and visual consistency
+ * Now integrates with the new descriptive secondary elements format
  */
 function enhanceSecondaryCharacterPositioning(secondaryCharacters: string, pageText: string, scene: string): string {
   if (!secondaryCharacters || !secondaryCharacters.trim()) {
@@ -3726,57 +3765,58 @@ function enhanceSecondaryCharacterPositioning(secondaryCharacters: string, pageT
     const text = (pageText + ' ' + scene).toLowerCase();
     const seed = secondaryCharacters + pageText + scene;
     
-    // Clean the secondary characters text
-    const cleanCharacters = secondaryCharacters.replace(/^with\s+/, '').trim();
+    // Handle the new descriptive format (no "with" prefix needed)
+    const cleanCharacters = secondaryCharacters.trim();
     if (!cleanCharacters) return '';
     
-    // ============= SPATIAL RELATIONSHIP DETECTION =============
+    // ============= ENHANCED SPATIAL RELATIONSHIP DETECTION =============
     let spatialPositioning = '';
     
     if (text.match(/beside|next to|alongside|near|close/)) {
-      spatialPositioning = getSeededRandomItem(['positioned beside', 'standing close to', 'situated near'], seed + '_beside');
+      spatialPositioning = getSeededRandomItem(['positioned beside the main character', 'standing close nearby', 'situated near'], seed + '_beside');
     } else if (text.match(/behind|in front|ahead|forward|back/)) {
-      spatialPositioning = getSeededRandomItem(['positioned behind', 'standing in front of', 'arranged ahead of'], seed + '_directional');
+      spatialPositioning = getSeededRandomItem(['positioned behind', 'standing in the foreground', 'arranged thoughtfully'], seed + '_directional');
     } else if (text.match(/circle|around|surrounding|gathered/)) {
-      spatialPositioning = getSeededRandomItem(['gathered in a circle with', 'surrounding', 'arranged around'], seed + '_circle');
+      spatialPositioning = getSeededRandomItem(['gathered around', 'surrounding naturally', 'arranged in a welcoming circle'], seed + '_circle');
     } else if (text.match(/line|row|sequence|ordered/)) {
-      spatialPositioning = getSeededRandomItem(['standing in line with', 'arranged in sequence with', 'positioned in a row with'], seed + '_line');
+      spatialPositioning = getSeededRandomItem(['standing in a line', 'arranged in sequence', 'positioned in an organized row'], seed + '_line');
     } else if (text.match(/together|group|cluster|bunch/)) {
-      spatialPositioning = getSeededRandomItem(['clustered together with', 'grouped closely with', 'bunched together with'], seed + '_cluster');
+      spatialPositioning = getSeededRandomItem(['clustered together naturally', 'grouped harmoniously', 'bunched together warmly'], seed + '_cluster');
     } else if (text.match(/facing|looking|watching|observing/)) {
-      spatialPositioning = getSeededRandomItem(['facing', 'looking toward', 'watching together with'], seed + '_facing');
+      spatialPositioning = getSeededRandomItem(['facing toward the action', 'looking on with interest', 'watching together'], seed + '_facing');
     } else if (text.match(/play|game|activity|sport/)) {
-      spatialPositioning = getSeededRandomItem(['playing together with', 'engaged in activities with', 'participating alongside'], seed + '_activity');
+      spatialPositioning = getSeededRandomItem(['actively engaged', 'participating together', 'involved in the activity'], seed + '_activity');
     } else {
-      // Default spatial relationships for better integration
-      const defaultSpatials = ['alongside', 'together with', 'accompanied by', 'in the company of', 'joined by'];
+      // Default spatial relationships optimized for descriptive elements
+      const defaultSpatials = ['positioned naturally with', 'harmoniously arranged with', 'thoughtfully placed with', 'warmly accompanied by'];
       spatialPositioning = getSeededRandomItem(defaultSpatials, seed + '_default');
     }
     
-    // ============= GROUP FORMATION ENHANCEMENT =============
+    // ============= ENHANCED GROUP FORMATION WITH VISUAL COHESION =============
     let groupFormation = '';
     
     if (text.match(/conversation|talk|discuss|chat/)) {
-      groupFormation = 'in animated conversation';
+      groupFormation = ', all engaged in animated conversation';
     } else if (text.match(/learn|study|read|discover/)) {
-      groupFormation = 'learning together';
+      groupFormation = ', sharing a learning moment together';
     } else if (text.match(/create|build|make|craft/)) {
-      groupFormation = 'creating together';
+      groupFormation = ', working creatively as a team';
     } else if (text.match(/explore|adventure|discover|journey/)) {
-      groupFormation = 'exploring together';
+      groupFormation = ', exploring with shared curiosity';
     } else if (text.match(/celebrate|party|festival|joy/)) {
-      groupFormation = 'celebrating together';
+      groupFormation = ', celebrating joyfully together';
     } else {
-      const defaultFormations = ['interacting naturally', 'engaged together', 'sharing the moment', 'connecting warmly'];
+      const defaultFormations = [', interacting with natural warmth', ', connected in the moment', ', sharing the experience', ', engaged harmoniously'];
       groupFormation = getSeededRandomItem(defaultFormations, seed + '_formation');
     }
     
-    // ============= FINAL SPATIAL INTEGRATION =============
-    return ` ${spatialPositioning} ${cleanCharacters} ${groupFormation}`;
+    // ============= FINAL ENHANCED INTEGRATION =============
+    // New format: "positioned naturally with caring mother, cheerful friend, all engaged harmoniously"
+    return `${spatialPositioning} ${cleanCharacters}${groupFormation}`;
     
   } catch (error) {
-    console.warn('⚠️ Secondary character spatial positioning failed:', error);
-    return ` with ${secondaryCharacters}`;
+    console.warn('⚠️ Secondary element spatial positioning failed:', error);
+    return `with ${secondaryCharacters}`;
   }
 }
 
