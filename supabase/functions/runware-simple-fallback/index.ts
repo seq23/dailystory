@@ -4707,10 +4707,10 @@ function fillPremiumTemplate(
       filledTemplate = filledTemplate.replace('{features}', `${safeFinalFeatures}, wearing ${clothing}`);
     }
     
-    // PHASE 7: TEMPLATE VALIDATION AND TIER 2.5B FALLBACK
-    const templateValidation = validateTemplateCompletion(filledTemplate, safeScene, enhancedSetting, ethnicity);
+    // PHASE 7: TEMPLATE VALIDATION (Only checks for empty sections now)
+    const templateValidation = validateTemplateCompletion(filledTemplate);
     if (!templateValidation.isValid) {
-      console.log(`🔄 Template validation failed: ${templateValidation.issues.join(', ')} - Falling back to Tier 2.5B`);
+      console.log(`🔄 Template has empty sections: ${templateValidation.issues.join(', ')} - Falling back to Tier 2.5B`);
       return fillBasicTemplate(safeDifficulty, pageText, userInfo, avatarIdentity, safeScene, enhancedSetting, safeObjects, secondary_characters);
     }
     
@@ -4727,30 +4727,10 @@ function fillPremiumTemplate(
 }
 
 // TEMPLATE VALIDATION SYSTEM
-function validateTemplateCompletion(template: string, scene: string, setting: string, ethnicity: string): { isValid: boolean, issues: string[] } {
+function validateTemplateCompletion(template: string): { isValid: boolean, issues: string[] } {
   const issues: string[] = [];
   
-  // Check if character description exists (ethnicity should be present for white children)
-  if (!ethnicity || ethnicity.trim() === '') {
-    issues.push('Missing ethnicity description');
-  }
-  
-  // Check if setting has content
-  if (!setting || setting.trim() === '' || setting === 'outdoor space' || setting === 'indoor space') {
-    issues.push('Generic/empty setting');
-  }
-  
-  // Check if action has 5+ words (enhanced from single word validation)
-  if (!scene || scene.trim() === '') {
-    issues.push('Missing action description');
-  } else {
-    const actionWordCount = scene.split(' ').length;
-    if (actionWordCount < 5) {
-      issues.push(`Action too short (${actionWordCount} words, need 5+)`);
-    }
-  }
-  
-  // Check for empty sections in template
+  // Only check for empty sections in template - ethnicity, generic settings, and action length don't matter anymore
   const emptySectionPattern = /\w+:\s*[,.]|\w+:\s*\w+:\s*[,.]/g;
   if (emptySectionPattern.test(template)) {
     issues.push('Empty template sections detected');
