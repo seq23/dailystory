@@ -2,7 +2,7 @@
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
-import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
+import { ExactWordExtractor } from "../_shared/ExactWordExtractor.js";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";

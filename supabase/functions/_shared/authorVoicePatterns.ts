@@ -484,4 +484,4 @@ export function resolveMicroPlaceholders(text: string, userInfo: any = {}): stri
 }
 
 // Use shared pronoun derivation from placeholderResolver
-import { derivePronoun } from './placeholderResolver.ts';
+import { derivePronoun } from './placeholderResolver.js';

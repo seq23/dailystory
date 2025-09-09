@@ -4,7 +4,7 @@
 // Auto-detects and handles ALL possible browser/client headers dynamically
 // Zero maintenance, future-proof, self-adapting CORS solution
 
-import { createCorsResponse, createCorsErrorResponse } from "./cors.ts";
+import { createCorsResponse, createCorsErrorResponse } from "./cors.js";
 
 // Comprehensive baseline of all known browser and Supabase client headers
 const COMPREHENSIVE_HEADER_BASELINE = [

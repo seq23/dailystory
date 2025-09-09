@@ -3,8 +3,8 @@
  * Handles dynamic imports from frontend template files
  */
 
-import { convertStoryTemplateToStringArray } from './templateConverter.ts';
-import { UserInfo } from './placeholderResolver.ts';
+import { convertStoryTemplateToStringArray } from './templateConverter.js';
+import { UserInfo } from './placeholderResolver.js';
 
 interface StoryTemplate {
   title: string;

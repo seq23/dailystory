@@ -1,7 +1,7 @@
 // Level 1 Vocabulary (Ages 5-7) - Cumulative through 1st Grade Dolch
 // Includes all Level 0 words plus 1st grade Dolch sight words
 
-import { ENHANCED_LEVEL_0_VOCABULARY } from './dolchPrePrimer.ts';
+import { ENHANCED_LEVEL_0_VOCABULARY } from './dolchPrePrimer.js';
 
 // Official Dolch 1st Grade Sight Words (41 words)
 export const DOLCH_1ST_GRADE_VOCABULARY = new Set([

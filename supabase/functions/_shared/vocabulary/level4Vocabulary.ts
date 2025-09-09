@@ -1,7 +1,7 @@
 // Level 4 Vocabulary (Ages 11+) - 7th-12th Grade
 // Includes all Level 3 words plus advanced vocabulary
 
-import { LEVEL_3_VOCABULARY } from './level3Vocabulary.ts';
+import { LEVEL_3_VOCABULARY } from './level3Vocabulary.js';
 
 export const LEVEL_4_VOCABULARY = new Set([
   // Include all Level 3 words

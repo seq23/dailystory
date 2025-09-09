@@ -2,17 +2,17 @@
 // Processes pre-processed bundles from frontend services  
 // Uses shared validation utilities for consistent page generation
 
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.js";
 import { 
   parseIntoPages as sharedParseIntoPages, 
   getTokensForGrade as sharedGetTokensForGrade,
   mapDifficultyToLevel,
   type ValidationLevel 
-} from "../_shared/validation-utils.ts";
-import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
-import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
-import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
-import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
+} from "../_shared/validation-utils.js";
+import { resolveAllPlaceholders } from '../_shared/placeholderResolver.js';
+import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.js';
+import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.js';
+import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.js';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 
@@ -26,8 +26,8 @@ import {
   getVocabularyCache,
   getUserVocabularyCache,
   setUserVocabularyCache
-} from './StaticDataCache.ts';
-import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTracker.ts';
+} from './StaticDataCache.js';
+import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTracker.js';
 
 
 // CORS headers - moved to top to fix ReferenceError

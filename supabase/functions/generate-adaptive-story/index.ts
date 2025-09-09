@@ -2,9 +2,9 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
-import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
-import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
-import { handleStreamlinedGeneration } from './streamlined-handler.ts';
+import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.js';
+import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.js';
+import { handleStreamlinedGeneration } from './streamlined-handler.js';
 
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(

@@ -9,8 +9,8 @@ import {
   createDynamicCorsResponse, 
   generateCorsTestingInfo,
   getCorsMonitoringStats 
-} from "../_shared/corsAdvanced.ts";
-import { monitorRequest, globalHeaderMonitor } from "../_shared/headerMonitor.ts";
+} from "../_shared/corsAdvanced.js";
+import { monitorRequest, globalHeaderMonitor } from "../_shared/headerMonitor.js";
 
 serve(async (req) => {
   console.log(`🧪 CORS Testing Endpoint: ${req.method} ${req.url}`);

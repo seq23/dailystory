@@ -4,8 +4,8 @@ import {
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
-} from "../_shared/corsAdvanced.ts";
-import { monitorRequest } from "../_shared/headerMonitor.ts";
+} from "../_shared/corsAdvanced.js";
+import { monitorRequest } from "../_shared/headerMonitor.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";

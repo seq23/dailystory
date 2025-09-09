@@ -4,11 +4,11 @@
  * Integrates with smart template selection, cache management, and character validation
  */
 
-import { convertStoryTemplateToStringArray } from './templateConverter.ts';
+import { convertStoryTemplateToStringArray } from './templateConverter.js';
 import { calculateArcPosition, generateArcTransition, needsArcTransition, getBValue } from './arcManager.js';
 import { globalArcSessionManager } from './sessionStateManager.js';
-import { getTemplate, getTemplateCount } from './templateImporter.ts';
-import type { UserInfo } from './placeholderResolver.ts';
+import { getTemplate, getTemplateCount } from './templateImporter.js';
+import type { UserInfo } from './placeholderResolver.js';
 
 export interface ArcProcessingResult {
   pages: string[];

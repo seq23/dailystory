@@ -1,10 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from '../_shared/cors.ts';
+import { corsHeaders } from '../_shared/cors.js';
 
 // Import nuclear template system for maximum reliability
-import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth, getNuclearEmergencyContent } from '../_shared/nuclearTemplateSystem.ts';
-import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager.ts';
+import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth, getNuclearEmergencyContent } from '../_shared/nuclearTemplateSystem.js';
+import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager.js';
 
 // Import arc-aware template processing system
 import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.js';
@@ -14,7 +14,7 @@ import { getBValue } from '../_shared/templates/registry.js';
 import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.js';
 
 // Import sophisticated placeholder resolution  
-import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
+import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.js';
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
@@ -358,7 +358,7 @@ serve(async (req) => {
           pages = rawTemplate.slice(0, Math.min(dynamicPageCount, rawTemplate.length));
         } else {
           // Structured templates - use template converter
-          const { getTemplate } = await import('../_shared/templateImporter.ts');
+          const { getTemplate } = await import('../_shared/templateImporter.js');
           pages = await getTemplate(templateLevel, finalTemplateIndex, userInfo || {}, dynamicPageCount, mode);
         }
       }

@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.js";
 import { 
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
-} from "../_shared/corsAdvanced.ts";
-import { monitorRequest } from "../_shared/headerMonitor.ts";
+} from "../_shared/corsAdvanced.js";
+import { monitorRequest } from "../_shared/headerMonitor.js";
 import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.js';
 
 serve(async (req) => {
