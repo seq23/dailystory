@@ -4,7 +4,7 @@ import {
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
-} from "../_shared/corsAdvanced.js";
+} from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.ts';
 

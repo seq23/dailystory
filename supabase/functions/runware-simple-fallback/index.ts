@@ -3269,7 +3269,7 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
   
   try {
     // PHASE 1: Use SecondaryElementDetector for consistent detection
-    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
+    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
     const secondaryElements = await SecondaryElementDetector.parseElements(
       sessionId,
       '', // primaryScene not available yet

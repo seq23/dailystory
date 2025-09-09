@@ -4,13 +4,13 @@ import {
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
-} from "../_shared/corsAdvanced.js";
-import { monitorRequest } from "../_shared/headerMonitor.js";
-import { SessionStateManager } from "../_shared/SessionStateManager.js";
-import { SecurityValidator } from "../_shared/SecurityValidator.js";
-import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+} from "../_shared/corsAdvanced.ts";
+import { monitorRequest } from "../_shared/headerMonitor.ts";
+import { SessionStateManager } from "../_shared/SessionStateManager.ts";
+import { SecurityValidator } from "../_shared/SecurityValidator.ts";
+import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.ts";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
 
 /**
  * ============================================================================
@@ -1086,8 +1086,8 @@ serve(async (req) => {
         
         // Import services for direct assembly
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
-        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.ts');
+        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.ts');
         
         // Initialize character consistency service
         const characterService = new CharacterConsistencyService();
@@ -1339,7 +1339,7 @@ serve(async (req) => {
         
         // 3.1. Secondary Elements
         try {
-          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
+          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
           const secondaryElements = await SecondaryElementDetector.parseElements(
             sessionId,
             promptSections.primaryScene, // Use primary scene
@@ -1645,7 +1645,7 @@ serve(async (req) => {
 
           // PHASE 1: Store successful Tier 1 image prompt with DEBUG  
           console.log('📸 DEBUG: Storing Tier 1 image prompt...');
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
           
           try {
             globalSessionManager.storeImagePrompt(sessionId, {
@@ -1748,7 +1748,7 @@ serve(async (req) => {
         }
         
         // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // Enhanced parameter validation with detailed logging
@@ -1886,7 +1886,7 @@ serve(async (req) => {
     // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
     console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
     try {
-      const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+      const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
       globalSessionManager.storeImagePrompt(sessionId, {
         tier: '4',
         promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,

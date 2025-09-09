@@ -3,18 +3,18 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Import nuclear template system for maximum reliability
-import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth, getNuclearEmergencyContent } from '../_shared/nuclearTemplateSystem.js';
-import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager.js';
+import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth, getNuclearEmergencyContent } from '../_shared/nuclearTemplateSystem.ts';
+import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager.ts';
 
 // Import arc-aware template processing system
-import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.js';
-import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.js';
-import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
-import { getBValue } from '../_shared/templates/registry.js';
-import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.js';
+import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.ts';
+import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
+import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.ts';
+import { getBValue } from '../_shared/templates/registry.ts';
+import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
 
 // Import sophisticated placeholder resolution  
-import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.js';
+import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
@@ -112,7 +112,7 @@ serve(async (req) => {
     } = await req.json();
     
     // Import difficulty mapper for frontend->backend conversion
-    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
     
     // Handle difficulty parameter with proper frontend->backend conversion
     const rawDifficulty = difficulty || userInfo?.difficultyLevel;
@@ -304,7 +304,7 @@ serve(async (req) => {
         console.log('🧠 Attempting smart template selection...');
         
         // Import smart template selector
-        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.js');
+        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.ts');
         
         // Get template count for this level
         const templateCount = await getTemplateCount(templateLevel);
@@ -358,7 +358,7 @@ serve(async (req) => {
           pages = rawTemplate.slice(0, Math.min(dynamicPageCount, rawTemplate.length));
         } else {
           // Structured templates - use template converter
-          const { getTemplate } = await import('../_shared/templateImporter.js');
+          const { getTemplate } = await import('../_shared/templateImporter.ts');
           pages = await getTemplate(templateLevel, finalTemplateIndex, userInfo || {}, dynamicPageCount, mode);
         }
       }

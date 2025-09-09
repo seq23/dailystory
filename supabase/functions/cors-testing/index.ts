@@ -9,7 +9,7 @@ import {
   createDynamicCorsResponse, 
   generateCorsTestingInfo,
   getCorsMonitoringStats 
-} from "../_shared/corsAdvanced.js";
+} from "../_shared/corsAdvanced.ts";
 import { monitorRequest, globalHeaderMonitor } from "../_shared/headerMonitor.ts";
 
 serve(async (req) => {
