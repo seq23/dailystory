@@ -4,7 +4,7 @@
  * Includes all cultural arrays and detection logic from FrontendIntelligence
  */
 
-import { safeErrorMessage } from './errorPatterns.js';
+import { safeErrorMessage } from './errorPatterns.ts';
 
 export class CharacterConsistencyService {
   constructor() {

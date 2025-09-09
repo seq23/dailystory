@@ -4,7 +4,7 @@
  */
 
 import { selectWithTimeout } from './smartTemplateSelector.js';
-import { getTemplateCount } from './templateImporter.js';
+import { getTemplateCount } from './templateImporter.ts';
 
 // B values for each level (scene count per arc)
 const ARC_B_VALUES = {
