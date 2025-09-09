@@ -43,18 +43,18 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 
 ### 3. Character Consistency Services
 
-#### Character Consistency (`_shared/CharacterConsistencyService.ts`)
+#### Character Consistency (`_shared/CharacterConsistencyService.js`)
 - **Database-backed avatar identity management** via `character_consistency_cache` table
 - Character appearance tracking with race condition elimination
 - Cultural representation with scalable architecture
 - Eliminates memory-based cache limitations
 
-#### Secondary Element Detection (`_shared/SecondaryElementDetector.ts`)
+#### Secondary Element Detection (`_shared/SecondaryElementDetector.js`)
 - Identifies and tracks secondary characters (family, friends, community)
 - Character animal detection and consistency management
 - Integrated into Tier 1 image generation pipeline
 
-#### Visual Detail Tracking (`_shared/VisualDetailTracker.ts`)
+#### Visual Detail Tracking (`_shared/VisualDetailTracker.js`)
 - Tracks visual elements (colors, objects, settings) across story pages
 - Maintains story world visual consistency
 - Provides consistent detail descriptions for image generation

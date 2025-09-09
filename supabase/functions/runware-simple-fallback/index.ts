@@ -1,13 +1,41 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
-import { globalArcSessionManager } from "../_shared/SessionStateManager.ts";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
-import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
-import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
-import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.ts";
-import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
+import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+// Nuclear Independent CORS Headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+// Nuclear Independent CORS Response Functions  
+function createCorsResponse(data: any, status = 200): Response {
+  const headers = { 
+    ...corsHeaders, 
+    'Content-Type': 'application/json' 
+  };
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+function createCorsErrorResponse(error: string | Error, status = 500): Response {
+  const errorMessage = error instanceof Error ? error.message : error;
+  console.error('Edge function error:', errorMessage);
+  return createCorsResponse({ 
+    success: false, 
+    error: errorMessage 
+  }, status);
+}
+
+function createCorsOptionsResponse(): Response {
+  return new Response(null, { headers: corsHeaders });
+}
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
@@ -2620,6 +2648,7 @@ function isIndoorContext(sentence: string): boolean {
 async function detectAndResolveObjectColorWithTracking(sentence: string, sessionId: string, pageNumber: number = 1, originalPageText?: string): Promise<string> {
   // First analyze the sentence for new visual details
   try {
+    const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
     await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber);
     
     // Get all stored colored objects for this session
@@ -3240,6 +3269,7 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
   
   try {
     // PHASE 1: Use SecondaryElementDetector for consistent detection
+    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
     const secondaryElements = await SecondaryElementDetector.parseElements(
       sessionId,
       '', // primaryScene not available yet
@@ -3253,6 +3283,7 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
     }
     
     // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
+    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
     const characterConsistencyService = new CharacterConsistencyService();
     
     const seededDescriptions = await Promise.all(
@@ -3363,40 +3394,40 @@ async function extractSecondaryCharactersFromSentence(sentence: string, sessionI
   if (detectedCharacterElements.length < 3) {
     const relationshipPatterns = [
       // FAMILY EXTENDED WITH DESCRIPTIVE ATTRIBUTES
-      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'adventurous brother', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'wise grandmother', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'kind grandfather', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'friendly aunt', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'jovial uncle', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'enthusiastic cousin', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'adventurous brother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'wise grandmother', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'kind grandfather', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'friendly aunt', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'jovial uncle', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'enthusiastic cousin', type: 'human' },
       
       // COMMUNITY EXTENDED WITH DESCRIPTIVE ATTRIBUTES
-      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'smiling girlfriend', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'happy boyfriend', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'helpful neighbor', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'studious classmate', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'energetic teammate', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'encouraging coach', entityType: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'patient teacher', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'smiling girlfriend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'happy boyfriend', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'helpful neighbor', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'studious classmate', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'energetic teammate', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'encouraging coach', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'patient teacher', type: 'human' },
       
       // ANIMALS EXTENDED WITH DESCRIPTIVE ATTRIBUTES
-      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal family dog', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious pet cat', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'colorful pet bird', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'fluffy pet rabbit', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'gentle horse companion', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'swimming pet fish', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'tiny pet hamster', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'cute guinea pig', entityType: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'slow pet turtle', entityType: 'animal' }
+      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal family dog', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious pet cat', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'colorful pet bird', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'fluffy pet rabbit', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'gentle horse companion', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'swimming pet fish', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'tiny pet hamster', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'cute guinea pig', type: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'slow pet turtle', type: 'animal' }
     ];
     
     // Process relationship patterns with enhanced descriptions
-    for (const { pattern, description, entityType } of relationshipPatterns) {
+    for (const { pattern, description, type } of relationshipPatterns) {
       if (detectedCharacterElements.length >= 3) break; // Stop if we have 3 characters
       
       const matches = [...lowerSentence.matchAll(pattern)];
@@ -4564,6 +4595,7 @@ function fillPremiumTemplate(
     // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
     // Add visual detail analysis for consistent object tracking across tiers
     try {
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
       await VisualDetailTracker.analyzeTextForDetails(
         sessionId || 'tier25-session', 
         pageText || processedPageText, 
@@ -4859,6 +4891,7 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
     // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
     // Analyze current page text for visual details before building colored objects
     try {
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
       await VisualDetailTracker.analyzeTextForDetails(
         sessionId || 'fallback-session', 
         pageText, 
@@ -4874,6 +4907,7 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
     // Add persistent colored objects from VisualDetailTracker BEFORE template processing
     let coloredObjects = '';
     try {
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
       const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session');
       coloredObjects = storedObjects || '';
       
@@ -5547,55 +5581,16 @@ function detectEmotionFromText(text: string): string {
 serve(async (req: Request) => {
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
   
-  // ============= TIER TRACKING VARIABLES =============
-  let attemptedTiers = [];
-  let successfulTier = null;
-  let tierPath = [];
-  let fallbackReason = null;
-  let enhancementLevel = null;
-  let startTime = Date.now();
-  
-  console.log('🎯 TIER 2.5 CASCADE: Initializing tier tracking system');
-  
-  // Handle CORS preflight - RESTORED DYNAMIC SYSTEM WITH DEBUGGING  
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    console.log('🔄 Dynamic CORS preflight handling with fallback protection');
-    
-    try {
-      // Try using your advanced dynamic CORS system
-      return createDynamicCorsOptionsResponse(req);
-    } catch (corsError) {
-      // Log the error but don't crash - fallback to static CORS
-      console.error('⚠️ Dynamic CORS failed, using static fallback:', corsError);
-      
-      return new Response(null, {
-        status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
-          'Access-Control-Max-Age': '86400'
-        }
-      });
-    }
+    return createCorsOptionsResponse();
   }
   
   // 🔑 DEBUG: API Key Validation
   const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!runwareApiKey) {
     console.error('❌ CRITICAL: RUNWARE_API_KEY not found in Tier 2.5');
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Tier 2.5: Missing Runware API key'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      }
-    });
+    return createCorsErrorResponse('Tier 2.5: Missing Runware API key', 500);
   }
   console.log('✅ Tier 2.5: RUNWARE_API_KEY validated:', runwareApiKey.substring(0, 10) + '...');
   
@@ -5672,11 +5667,6 @@ serve(async (req: Request) => {
     } catch (sceneError) {
       console.warn('⚠️ Scene extraction failed - triggering 2.5B basic template:', sceneError);
       // CRITICAL: Scene extraction failure triggers 2.5B basic template  
-      console.log('❌ Scene extraction failed - routing directly to Tier 2.5B');
-      tierPath.push('direct-2.5B-attempt');
-      successfulTier = '2.5B';
-      enhancementLevel = 'basic';
-      fallbackReason = 'Scene extraction failure';
       return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
     }
     
@@ -5718,23 +5708,20 @@ serve(async (req: Request) => {
     
     // TIER 2.5A vs 2.5B LOGIC: Check requirements and route accordingly
     let prompt;
-    let templateType = '';
     try {
     // ENHANCED: Character Consistency Integration with Nuclear Independence
     if (hasTier25ARequirements) {
-      console.log('🎯 Tier 2.5A: ATTEMPTING (Premium Template + Character Consistency + Cultural Intelligence)');
-      templateType = 'Premium Template with Character Consistency';
-      attemptedTiers.push('2.5A');
-      tierPath.push('2.5A-attempting');
+      console.log('🛡️ Using Tier 2.5A: Premium Template with Character Consistency');
       
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
       try {
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         const characterConsistencyService = new CharacterConsistencyService();
         const characterSeed = await characterConsistencyService.getCharacterSeed(
           sessionId, 
           'main_character', 
-          pageText,
+          pageText, 
           'premium', 
           sceneData?.clothing || ''
         );
@@ -5754,76 +5741,40 @@ serve(async (req: Request) => {
       }
       
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
-      console.log('✅ Tier 2.5A: SUCCESS (Premium Template + Character Consistency + Cultural Intelligence)');
-      successfulTier = '2.5A';
-      tierPath[tierPath.length - 1] = '2.5A-success';
-      enhancementLevel = 'premium';
+      console.log('✅ Premium Template (Tier 2.5A) filling successful with contextual intelligence');
     } else {
-      console.log('❌ Tier 2.5A: FAILED (Missing requirements - sessionId, characterData)');
-      fallbackReason = 'Missing Tier 2.5A requirements (sessionId or characterData)';
-      tierPath.push('2.5A-failed');
+      console.log('🛡️ Missing requirements for Tier 2.5A, using Tier 2.5B: Basic Template');
       throw new Error('Tier 2.5A requirements not met - auto-fallback to 2.5B');
     }
     } catch (templateError) {
-      console.log('❌ Tier 2.5A: FAILED (Template generation error)');
-      if (!fallbackReason) fallbackReason = `Premium template error: ${templateError.message}`;
-      if (tierPath[tierPath.length - 1] !== '2.5A-failed') {
-        tierPath[tierPath.length - 1] = '2.5A-failed';
-      }
+      console.warn('⚠️ Premium Template failed, trying BASIC template (Tier 1.5 / 2.5B):', templateError);
       
       // ============= UPDATED 4-TIER FALLBACK CHAIN =============
-      console.log('🔄 Tier 2.5A FAILED → Routing to Tier 2.5B');
+      // TIER 1: Premium Template (2.5A) → TIER 1.5: Basic Template (2.5B) → TIER 2: Emergency Template (2.5C) → TIER 3: Ultimate Emergency Template (2.5D)
       try {
-        console.log('🎯 Tier 2.5B: ATTEMPTING (Basic Personalized Template + Nuclear Independence)');
-        templateType = 'Basic Personalized Template';
-        attemptedTiers.push('2.5B');
-        tierPath.push('2.5B-attempting');
-        
+        // TIER 2.5B: Basic Template - 3-section simplified structure (pageText + userInfo ONLY)
+        console.log('🛡️ Using Tier 2.5B: Basic Template (pageText + userInfo ONLY)');
         prompt = fillBasicTemplate(difficulty, userInfo, pageText, localAvatarIdentity);
-        console.log('✅ Tier 2.5B: SUCCESS (Basic Personalized Template + Nuclear Independence)');
-        successfulTier = '2.5B';
-        tierPath[tierPath.length - 1] = '2.5B-success';
-        enhancementLevel = 'basic';
+        console.log('✅ Basic Template (Tier 2.5B) applied successfully');
         
       } catch (basicError) {
-        console.log('❌ Tier 2.5B: FAILED (Basic template error)');
-        tierPath[tierPath.length - 1] = '2.5B-failed';
-        if (!fallbackReason) fallbackReason = `Basic template error: ${basicError.message}`;
+        console.warn('⚠️ Basic Template failed, using EMERGENCY template (Tier 2 / 2.5C):', basicError);
         
-        console.log('🔄 Tier 2.5B FAILED → Routing to Tier 2.5C');
         try {
-          console.log('🎯 Tier 2.5C: ATTEMPTING (Emergency Framework Template + Guaranteed Success)');
-          templateType = 'Emergency Framework Template';
-          attemptedTiers.push('2.5C');
-          tierPath.push('2.5C-attempting');
-          
+          // TIER 2: Emergency Template (2.5C) - pageText (2500 chars) + framework only
           const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
                                     NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
                                     EMERGENCY_FALLBACK_FRAMEWORK || 
                                     'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
           
           prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
-          console.log('✅ Tier 2.5C: SUCCESS (Emergency Framework Template + Guaranteed Success)');
-          successfulTier = '2.5C';
-          tierPath[tierPath.length - 1] = '2.5C-success';
-          enhancementLevel = 'emergency';
+          console.log('✅ Emergency Template (Tier 2 / 2.5C) applied successfully');
           
         } catch (emergencyError) {
-          console.log('❌ Tier 2.5C: FAILED (Emergency template error)');
-          tierPath[tierPath.length - 1] = '2.5C-failed';
-          if (!fallbackReason) fallbackReason = `Emergency template error: ${emergencyError.message}`;
+          console.warn('⚠️ Emergency template failed, using ULTIMATE EMERGENCY template (Tier 3 / 2.5D):', emergencyError);
           
-          console.log('🔄 Tier 2.5C FAILED → Routing to Tier 2.5D (ULTIMATE EMERGENCY)');
-          console.log('🎯 Tier 2.5D: ATTEMPTING (Ultimate Emergency Fallback Template - NUCLEAR GUARANTEE)');
-          templateType = 'Ultimate Emergency Fallback Template';
-          attemptedTiers.push('2.5D');
-          tierPath.push('2.5D-attempting');
-          
+          // TIER 3: Ultimate Emergency Template (2.5D) - hardcoded fallback (last resort)
           prompt = "ULTIMATE_EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
-          console.log('✅ Tier 2.5D: SUCCESS (Ultimate Emergency Fallback Template - NUCLEAR GUARANTEE)');
-          successfulTier = '2.5D';
-          tierPath[tierPath.length - 1] = '2.5D-success';
-          enhancementLevel = 'ultimate-emergency';
         }
       }
     }
@@ -5844,41 +5795,25 @@ serve(async (req: Request) => {
       // BULLETPROOFING: Additional validation checks that trigger 2.5B fallback
       const characterValidation = validateCharacterConsistency(characterData, avatarMapping);
       if (!characterValidation.isValid) {
-        console.log('❌ Character consistency validation failed - routing directly to Tier 2.5B');
-        tierPath.push('direct-2.5B-attempt');
-        successfulTier = '2.5B';
-        enhancementLevel = 'basic';
-        fallbackReason = 'Character consistency validation failed';
+        console.warn('🔄 Character consistency validation failed - triggering 2.5B:', characterValidation.issues.join(', '));
         return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       const visualValidation = validateVisualElements(sceneData, objects, setting);
       if (!visualValidation.isValid) {
-        console.log('❌ Visual elements validation failed - routing directly to Tier 2.5B');
-        tierPath.push('direct-2.5B-attempt');
-        successfulTier = '2.5B';
-        enhancementLevel = 'basic';
-        fallbackReason = 'Visual elements validation failed';
+        console.warn('🔄 Visual elements validation failed - triggering 2.5B:', visualValidation.issues.join(', '));
         return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       const sceneValidation = validateSceneComplexity(sceneData, pageText);
       if (!sceneValidation.isValid) {
-        console.log('❌ Scene complexity validation failed - routing directly to Tier 2.5B');
-        tierPath.push('direct-2.5B-attempt');
-        successfulTier = '2.5B';
-        enhancementLevel = 'basic';
-        fallbackReason = 'Scene complexity validation failed';
+        console.warn('🔄 Scene complexity validation failed - triggering 2.5B:', sceneValidation.issues.join(', '));
         return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       console.log('✅ All validation checks passed - proceeding with premium template');
     } catch (avatarError) {
-      console.log('❌ Character consistency service failed - routing directly to Tier 2.5B');
-      tierPath.push('direct-2.5B-attempt');
-      successfulTier = '2.5B';
-      enhancementLevel = 'basic';
-      fallbackReason = 'Character consistency service failure';
+      console.warn('🔄 Character consistency service failed - triggering 2.5B basic template:', avatarError);
       
       // CRITICAL: Character consistency failure triggers 2.5B basic template (not emergency template)
       return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
@@ -5936,7 +5871,7 @@ serve(async (req: Request) => {
       ws = new WebSocket('wss://ws-api.runware.ai/v1');
     } catch (wsError) {
       console.error('⚠️ WebSocket connection failed immediately:', wsError);
-      return createDynamicCorsErrorResponse('WebSocket connection failed', req, 500);
+      return createCorsErrorResponse('WebSocket connection failed', 500);
     }
     
     return new Promise((resolve) => {
@@ -5960,13 +5895,13 @@ serve(async (req: Request) => {
       // Connection timeout protection (30 seconds)
       connectionTimeout = setTimeout(() => {
         console.warn('⚠️ WebSocket connection timeout');
-        resolveOnce(createDynamicCorsErrorResponse('Connection timeout - please try again', req, 504));
+        resolveOnce(createCorsErrorResponse('Connection timeout - please try again', 504));
       }, 30000);
       
       // Operation timeout protection (60 seconds total)
       operationTimeout = setTimeout(() => {
         console.warn('⚠️ WebSocket operation timeout');
-        resolveOnce(createDynamicCorsErrorResponse('Operation timeout - please try again', req, 504));
+        resolveOnce(createCorsErrorResponse('Operation timeout - please try again', 504));
       }, 60000);
       
       // Declare finalPrompt at function scope to fix scoping issue
@@ -5985,7 +5920,7 @@ serve(async (req: Request) => {
           ws.send(JSON.stringify(authMessage));
         } catch (openError) {
           console.error('⚠️ WebSocket onopen error:', openError);
-          resolveOnce(createDynamicCorsErrorResponse('Authentication failed', req, 500));
+          resolveOnce(createCorsErrorResponse('Authentication failed', 500));
         }
       };
       
@@ -6001,7 +5936,7 @@ serve(async (req: Request) => {
           if (response.error || response.errors) {
             console.error('❌ Tier 2.5: API error:', response);
             const errorMessage = response.errorMessage || response.errors?.[0]?.message || 'Unknown API error';
-            resolveOnce(createDynamicCorsErrorResponse(errorMessage, req, 500));
+            resolveOnce(createCorsErrorResponse(errorMessage, 500));
             return;
           }
           
@@ -6033,11 +5968,7 @@ serve(async (req: Request) => {
               } else if (item.taskType === "imageInference") {
                 console.log('🛡️ Tier 2.5: Image generation successful!');
                 
-                 const processingTime = Date.now() - startTime;
-                 console.log(`🎯 TIER CASCADE COMPLETE: ${successfulTier} succeeded in ${processingTime}ms`);
-                 console.log(`📊 Tier Path: [${tierPath.join(' → ')}]`);
-                 
-                 resolveOnce(createDynamicCorsResponse({
+                 resolveOnce(createCorsResponse({
                    success: true,
                    imageURL: item.imageURL,
                    prompt: finalPrompt,
@@ -6045,13 +5976,6 @@ serve(async (req: Request) => {
                    difficulty: difficulty,
                    culturalProfile: culturalProfile,
                    tier: '2.5 Nuclear Independence + Character Consistency',
-                   specificTier: successfulTier,
-                   templateType: templateType,
-                   tierPath: tierPath,
-                   enhancementLevel: enhancementLevel,
-                   fallbackReason: fallbackReason,
-                   processingTime: processingTime,
-                   attemptedTiers: attemptedTiers,
                    placeholders: {
                      objects: objects || 'none',
                      secondary_characters: secondary_characters || 'none'
@@ -6062,13 +5986,13 @@ serve(async (req: Request) => {
                      enhancementApplied: !!(characterData && characterData.seed),
                      source: avatarMapping?.source || 'nuclear-mapping'
                    }
-                 }, req));
+                 }));
               }
             }
           }
         } catch (parseError) {
           console.error('❌ Tier 2.5: Response parsing error:', parseError);
-          resolveOnce(createDynamicCorsErrorResponse('Failed to parse API response', req, 500));
+          resolveOnce(createCorsErrorResponse('Failed to parse API response', 500));
         }
       };
       
@@ -6077,16 +6001,16 @@ serve(async (req: Request) => {
         console.log('🔄 Tier 2.5: Attempting HTTP fallback...');
         
         // HTTP FALLBACK: Try Runware REST API
-        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req)
+        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
           .then(result => {
             if (result.success) {
               resolveOnce(result);
             } else {
-              resolveOnce(createDynamicCorsErrorResponse('WebSocket and HTTP fallback both failed', req, 500));
+              resolveOnce(createCorsErrorResponse('WebSocket and HTTP fallback both failed', 500));
             }
           })
           .catch(() => {
-            resolveOnce(createDynamicCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', req, 500));
+            resolveOnce(createCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', 500));
           });
       };
       
@@ -6096,16 +6020,16 @@ serve(async (req: Request) => {
           console.log('🔄 Tier 2.5: Attempting HTTP fallback due to unexpected close...');
           
           // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req)
+          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
             .then(result => {
               if (result.success) {
                 resolveOnce(result);
               } else {
-                resolveOnce(createDynamicCorsErrorResponse('WebSocket closed and HTTP fallback failed', req, 500));
+                resolveOnce(createCorsErrorResponse('WebSocket closed and HTTP fallback failed', 500));
               }
             })
             .catch(() => {
-              resolveOnce(createDynamicCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', req, 500));
+              resolveOnce(createCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', 500));
             });
         }
       };
@@ -6116,22 +6040,22 @@ serve(async (req: Request) => {
           console.error('❌ Tier 2.5: Request timeout, trying HTTP fallback...');
           
           // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req)
+          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
             .then(result => {
               if (result.success) {
                 resolveOnce(result);
               } else {
-                resolveOnce(createDynamicCorsErrorResponse('Request timeout and HTTP fallback failed', req, 408));
+                resolveOnce(createCorsErrorResponse('Request timeout and HTTP fallback failed', 408));
               }
             })
             .catch(() => {
-              resolveOnce(createDynamicCorsErrorResponse('Request timeout', req, 408));
+              resolveOnce(createCorsErrorResponse('Request timeout', 408));
             });
         }
       }, 30000);
       
       // HTTP FALLBACK FUNCTION
-      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req) {
+      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters) {
         try {
           console.log('🌐 Tier 2.5: Attempting HTTP API fallback...');
           
@@ -6169,11 +6093,8 @@ serve(async (req: Request) => {
           const imageData = httpResult.data?.find(item => item.taskType === 'imageInference');
           
           if (imageData?.imageURL) {
-            const processingTime = Date.now() - startTime;
-            console.log(`✅ Tier 2.5: HTTP fallback successful! Final tier: ${successfulTier}`);
-            console.log(`📊 HTTP Fallback - Tier Path: [${tierPath.join(' → ')}]`);
-            
-            return createDynamicCorsResponse({
+            console.log('✅ Tier 2.5: HTTP fallback successful!');
+            return createCorsResponse({
               success: true,
               imageURL: imageData.imageURL,
               prompt: prompt,
@@ -6181,13 +6102,6 @@ serve(async (req: Request) => {
               difficulty: difficulty,
               culturalProfile: culturalProfile,
               tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
-              specificTier: successfulTier,
-              templateType: templateType,
-              tierPath: tierPath,
-              enhancementLevel: enhancementLevel,
-              fallbackReason: fallbackReason,
-              processingTime: processingTime,
-              attemptedTiers: attemptedTiers,
               placeholders: {
                 objects: objects || 'none',
                 secondary_characters: secondary_characters || 'none'
@@ -6198,7 +6112,7 @@ serve(async (req: Request) => {
                 enhancementApplied: !!(characterData && characterData.seed),
                 source: avatarMapping?.source || 'nuclear-mapping'
               }
-            }, req);
+            });
           } else {
             throw new Error('No image URL in HTTP response');
           }
@@ -6212,17 +6126,6 @@ serve(async (req: Request) => {
     
   } catch (error) {
     console.error('❌ Tier 2.5: Main function error:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message || 'Internal server error'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      }
-    });
+    return createCorsErrorResponse(error.message || 'Internal server error', 500);
   }
 });

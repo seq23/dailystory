@@ -452,130 +452,20 @@ export class SimpleImageService {
         clearTimeout(timeoutId);
       }
       
-      // Enhanced error logging with 503 detection
-      let shouldTryTier25 = false;
-      
+      // Enhanced error logging to distinguish timeout vs other errors
       if (error instanceof Error) {
         if (error.message.includes('Request timeout')) {
           console.error('❌ Frontend timeout: Request exceeded 150 seconds');
         } else if (error.message.includes('timeout')) {
           console.error('❌ Network timeout: Request timed out');
-        } else if (error.message.includes('fetch') || error.message.includes('503') || error.message.includes('Function not found') || error.message.includes('boot') || error.message.includes('CORS') || error.message.includes('preflight') || error.message.includes('access control') || error.message.includes('Failed to load')) {
-          console.error('❌ Tier 1 Failure (Boot/CORS/Network): Edge function unavailable - routing to Tier 2.5');
-          shouldTryTier25 = true;
+        } else if (error.message.includes('fetch')) {
+          console.error('❌ Network error: Failed to reach backend');
         } else {
           console.error('❌ Backend orchestration failed:', error.message);
         }
         console.error('Full error details:', error);
       } else {
         console.error('❌ Backend orchestration failed with unknown error:', error);
-      }
-      
-      // EMERGENCY FALLBACK: Try Tier 2.5 for ANY Tier 1 failure (most aggressive approach)  
-      console.log('🚨 EMERGENCY FALLBACK: Tier 1 failed, attempting Tier 2.5 (runware-simple-fallback)');
-      
-      // Add timing for Tier 2.5 attempt
-      const tier25StartTime = Date.now();
-      
-      try {
-        const tier25Response = await supabase.functions.invoke('runware-simple-fallback', {
-          body: {
-            pageText: cleanScene,
-            userInfo,
-            difficultyLevel: backendDifficulty,
-            sessionId,
-            pageNumber
-          }
-        });
-        
-        const tier25ProcessingTime = Date.now() - tier25StartTime;
-        console.log(`⏱️ Tier 2.5 processing time: ${tier25ProcessingTime}ms`);
-        
-        if (tier25Response.data?.success) {
-          const specificTier = tier25Response.data.specificTier || '2.5-unknown';
-          const tierPath = tier25Response.data.tierPath || ['unknown'];
-          const enhancementLevel = tier25Response.data.enhancementLevel || 'nuclear-fallback';
-          
-          console.log(`✅ EMERGENCY FALLBACK SUCCESS: Tier ${specificTier} succeeded`);
-          console.log(`📊 Emergency Fallback - Tier Path: [${tierPath.join(' → ')}]`);
-          console.log(`🎨 Enhancement Level: ${enhancementLevel}`);
-          
-          const result: ImageResult = {
-            url: tier25Response.data.imageURL,
-            success: true,
-            provider: `tier-${specificTier}-emergency`,
-            model: tier25Response.data.metadata?.model || 'nuclear-template',
-            cost: tier25Response.data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
-            seed: tier25Response.data.seed,
-            metadata: {
-              tier: `${specificTier}-emergency`,
-              specificTier: specificTier,
-              templateType: tier25Response.data.templateType,
-              tierPath: tierPath,
-              enhancementLevel: enhancementLevel,
-              fallbackReason: tier25Response.data.fallbackReason,
-              processingTime: tier25Response.data.processingTime,
-              attemptedTiers: tier25Response.data.attemptedTiers,
-              qualityScore: tier25Response.data.qualityScore,
-              emergencyFallback: true,
-              originalTier1Error: error.message,
-              ...tier25Response.data.metadata
-            }
-          };
-
-          await this.recordUsage(result, userInfo?.name);
-          return result;
-        } else {
-          // Enhanced error message extraction from Tier 2.5 response
-          const tier25Error = tier25Response.data?.error || tier25Response.error || 'Unknown Tier 2.5 error';
-          const tier25Details = tier25Response.data ? JSON.stringify(tier25Response.data).substring(0, 200) : 'no-data';
-          
-          console.error('❌ TIER 2.5 RESPONSE FAILURE:', {
-            error: tier25Error,
-            responseData: tier25Details,
-            hasData: !!tier25Response.data,
-            dataKeys: tier25Response.data ? Object.keys(tier25Response.data) : [],
-            fullResponse: tier25Response
-          });
-          
-          console.error(`❌ EMERGENCY FALLBACK FAILED: Tier 2.5 returned error: ${tier25Error}`);
-        }
-      } catch (tier25Error) {
-        // Enhanced error extraction from caught exception
-        let errorDetails = 'Unknown error';
-        let errorType = 'UnknownException';
-        
-        if (tier25Error instanceof Error) {
-          errorDetails = tier25Error.message;
-          errorType = tier25Error.name || 'Error';
-          
-          // Check for specific error patterns
-          if (tier25Error.message.includes('boot') || tier25Error.message.includes('worker boot error')) {
-            errorType = 'BOOT_FAILURE';
-            errorDetails = 'Edge function failed to boot - check syntax errors';
-          } else if (tier25Error.message.includes('503') || tier25Error.message.includes('Service Unavailable')) {
-            errorType = 'SERVICE_UNAVAILABLE';  
-            errorDetails = 'Edge function returned 503 - likely boot failure';
-          } else if (tier25Error.message.includes('timeout')) {
-            errorType = 'TIMEOUT';
-            errorDetails = 'Edge function timed out during execution';
-          } else if (tier25Error.message.includes('CORS') || tier25Error.message.includes('preflight')) {
-            errorType = 'CORS_ERROR';
-            errorDetails = 'CORS preflight or access control error';
-          }
-        } else if (typeof tier25Error === 'object' && tier25Error !== null) {
-          errorDetails = JSON.stringify(tier25Error).substring(0, 200);
-          errorType = 'ObjectError';
-        }
-        
-        console.error('❌ TIER 2.5 EXCEPTION CAUGHT:', {
-          errorType,
-          errorDetails,
-          originalError: tier25Error,
-          stack: tier25Error instanceof Error ? tier25Error.stack : undefined
-        });
-        
-        console.error(`❌ EMERGENCY FALLBACK FAILED: Tier 2.5 threw ${errorType}: ${errorDetails}`);
       }
       
       console.log('🎨 Falling back to local SVG placeholder');

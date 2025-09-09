@@ -1,52 +1,19 @@
-// Unified Runware WebSocket Service (TypeScript)
+// Unified Runware WebSocket Service
 // Single source of truth for all Runware WebSocket operations across edge functions
 
-// TypeScript interfaces
-interface RunwareImageGenerationParams {
-  apiKey: string;
-  positivePrompt: string;
-  negativePrompt?: string;
-  parameters?: {
-    width?: number;
-    height?: number;
-    model?: string;
-    numberResults?: number;
-    outputFormat?: string;
-    CFGScale?: number;
-    scheduler?: string;
-    steps?: number;
-    seed?: number;
-  };
-  timeout?: number;
-}
-
-interface RunwareImageResult {
-  success: boolean;
-  imageURL: string;
-  seed: number;
-  cost?: number;
-  NSFWContent: boolean;
-}
-
-interface RunwareTestConnectionResult {
-  success: boolean;
-  error?: string;
-  connectionSessionUUID?: string;
-}
-
-export class RunwareWebSocketService {
+class RunwareWebSocketService {
   static async generateImage({
     apiKey,
     positivePrompt,
     negativePrompt = '',
     parameters = {},
     timeout = 120000 // Increased from 30s to 120s for image generation
-  }: RunwareImageGenerationParams): Promise<RunwareImageResult> {
+  }) {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket('wss://ws-api.runware.ai/v1');
       let authCompleted = false;
       let resolved = false;
-      let keepaliveInterval: number | null = null;
+      let keepaliveInterval = null;
       
       // WebSocket timeout handler with improved error messaging
       const timeoutId = setTimeout(() => {
@@ -67,7 +34,6 @@ export class RunwareWebSocketService {
           if (ws.readyState === WebSocket.OPEN && !resolved) {
             console.log('🏓 Sending WebSocket keepalive ping');
             try {
-              // @ts-ignore - ping method may not exist on WebSocket type
               ws.ping();
             } catch (error) {
               // Ping not supported, send a minimal message instead
@@ -171,7 +137,7 @@ export class RunwareWebSocketService {
   }
 
   // Helper for diagnostic operations
-  static async testConnection(apiKey: string, timeout: number = 15000): Promise<RunwareTestConnectionResult> {
+  static async testConnection(apiKey, timeout = 15000) {
     return new Promise((resolve) => {
       const ws = new WebSocket('wss://ws-api.runware.ai/v1');
       let resolved = false;
@@ -244,5 +210,10 @@ export class RunwareWebSocketService {
   }
 }
 
-// Make available as global for backward compatibility
+// Export for use in edge functions
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { RunwareWebSocketService };
+}
+
+// Make available as global
 globalThis.RunwareWebSocketService = RunwareWebSocketService;

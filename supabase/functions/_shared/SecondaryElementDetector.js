@@ -1,39 +1,12 @@
 /**
- * Enhanced Secondary Character Detection System with Name/Object Disambiguation (TypeScript)
+ * Enhanced Secondary Character Detection System with Name/Object Disambiguation
  * Detects 25+ relationship types with context-aware name validation for Tier 2.5 integration
  */
-
-// TypeScript interfaces
-interface DetectedElement {
-  name: string;
-  displayName?: string;
-  type: string;
-  category: string;
-  needsConsistency: boolean;
-  relationshipType?: string;
-  fullContext?: string;
-  patternType?: string;
-  relationship?: string;
-  disambiguation?: string | null;
-  species?: string;
-  key?: string;
-  hasDialogue?: boolean;
-}
-
-interface RelationshipPatterns {
-  [key: string]: string[];
-}
-
-interface AnimalPattern {
-  pattern: RegExp;
-  nameFirst: boolean;
-  isDialogue?: boolean;
-}
 
 export class SecondaryElementDetector {
   
   // Comprehensive relationship types (25+ categories)
-  static RELATIONSHIP_PATTERNS: RelationshipPatterns = {
+  static RELATIONSHIP_PATTERNS = {
     // Core Family (8 types)
     family_mother: ['mom', 'mother', 'mommy', 'mama', 'ma'],
     family_father: ['dad', 'father', 'daddy', 'papa', 'pa'],
@@ -83,10 +56,10 @@ export class SecondaryElementDetector {
   /**
    * Parse elements with enhanced detection patterns and disambiguation
    */
-  static async parseElements(sessionId: string, primaryScene: string, storyText: string, pageNumber: number): Promise<DetectedElement[]> {
+  static async parseElements(sessionId, primaryScene, storyText, pageNumber) {
     console.log(`🔍 Enhanced SecondaryElementDetector - Parsing for session ${sessionId}, page ${pageNumber}`);
     
-    const detectedElements: DetectedElement[] = [];
+    const detectedElements = [];
     
     // Input validation
     if (!sessionId) throw new Error('SecondaryElementDetector.parseElements: sessionId is required');
@@ -115,16 +88,11 @@ export class SecondaryElementDetector {
   /**
    * Enhanced detection of secondary characters with 5 pattern types and disambiguation
    */
-  static detectSecondaryCharacters(originalText: string, lowercaseText: string): DetectedElement[] {
-    const secondaryCharacters: DetectedElement[] = [];
+  static detectSecondaryCharacters(originalText, lowercaseText) {
+    const secondaryCharacters = [];
     
     // Generate all pattern combinations for comprehensive relationship detection
-    const allPatterns: Array<{
-      pattern: RegExp;
-      type: string;
-      patternType: string;
-      relationship: string;
-    }> = [];
+    const allPatterns = [];
     
     Object.entries(this.RELATIONSHIP_PATTERNS).forEach(([relationshipType, relationshipWords]) => {
       relationshipWords.forEach(relationship => {
@@ -174,7 +142,7 @@ export class SecondaryElementDetector {
     allPatterns.forEach(({ pattern, type, patternType, relationship }) => {
       const matches = [...originalText.matchAll(pattern)];
       matches.forEach(match => {
-        let names: string[] = [];
+        let names = [];
         let fullContext = '';
         
         // Extract names based on pattern type
@@ -203,7 +171,7 @@ export class SecondaryElementDetector {
           if (!this.isValidName(name, fullContext)) return;
           
           // Create character entry with disambiguation
-          const character: DetectedElement = {
+          const character = {
             name: nameLower,
             displayName: name, // Preserve original capitalization
             type: type,
@@ -227,11 +195,11 @@ export class SecondaryElementDetector {
   /**
    * Enhanced animal detection with species disambiguation using Tier 2.5 vocabulary
    */
-  static detectCharacterAnimals(originalText: string, lowercaseText: string): DetectedElement[] {
-    const characterAnimals: DetectedElement[] = [];
+  static detectCharacterAnimals(originalText, lowercaseText) {
+    const characterAnimals = [];
     
     // Define comprehensive animal patterns with species recognition
-    const animalPatterns: AnimalPattern[] = [
+    const animalPatterns = [
       // Pattern 1: Name + Species (e.g., "Buddy the dog", "Whiskers cat")
       { pattern: /\b([A-Z][a-z]{1,14})\s+(?:the\s+)?(\w+)/gi, nameFirst: true },
       
@@ -249,7 +217,7 @@ export class SecondaryElementDetector {
     animalPatterns.forEach(({ pattern, nameFirst, isDialogue }) => {
       const matches = [...originalText.matchAll(pattern)];
       matches.forEach(match => {
-        let animalName: string, potentialSpecies: string;
+        let animalName, potentialSpecies;
         
         if (nameFirst) {
           animalName = match[1];
@@ -271,7 +239,7 @@ export class SecondaryElementDetector {
         // Skip if already detected
         if (characterAnimals.find(a => a.key === key)) return;
         
-        const animal: DetectedElement = {
+        const animal = {
           name: animalName.toLowerCase(),
           displayName: animalName,
           species: animalSpecies,
@@ -294,7 +262,7 @@ export class SecondaryElementDetector {
   /**
    * Validate if a potential species matches the Tier 2.5 unified vocabulary
    */
-  static validateAnimalSpecies(species: string): string | null {
+  static validateAnimalSpecies(species) {
     // Common animal species that would be in the Tier 2.5 vocabulary
     const commonAnimals = [
       'dog', 'cat', 'puppy', 'kitten', 'rabbit', 'bunny', 'hamster', 'guinea pig',
@@ -311,7 +279,7 @@ export class SecondaryElementDetector {
   /**
    * Smart name validation with context awareness
    */
-  static isValidName(name: string, context: string): boolean {
+  static isValidName(name, context) {
     // Basic validation
     if (!name || name.length < 2 || name.length > 15) return false;
     if (!/^[A-Z][a-z]+$/.test(name)) return false;
@@ -332,7 +300,7 @@ export class SecondaryElementDetector {
   /**
    * Generate disambiguation context for names that could be objects
    */
-  static generateDisambiguation(name: string, relationship: string, type: string): string | null {
+  static generateDisambiguation(name, relationship, type) {
     const nameLower = name.toLowerCase();
     
     // Check if this name could be confused with a common object
@@ -347,7 +315,7 @@ export class SecondaryElementDetector {
   /**
    * Get relationship category for disambiguation
    */
-  static getRelationshipCategory(type: string): string {
+  static getRelationshipCategory(type) {
     if (type.startsWith('family_')) return 'family member';
     if (type.startsWith('community_')) return 'friend';
     if (type.startsWith('authority_')) return 'authority figure';

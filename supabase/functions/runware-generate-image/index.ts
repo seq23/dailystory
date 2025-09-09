@@ -1,17 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
-import { SessionStateManager, globalSessionManager } from "../_shared/SessionStateManager.ts";
-import { SecurityValidator } from "../_shared/SecurityValidator.ts";
-import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.ts";
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
-import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
-import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
-import { getStyleFramework } from "../_shared/styleFrameworks.ts";
-import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.ts";
+import { SessionStateManager } from "../_shared/SessionStateManager.js";
+import { SecurityValidator } from "../_shared/SecurityValidator.js";
+import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 
 /**
  * ============================================================================
@@ -434,6 +432,7 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
     }
     
     // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
@@ -775,27 +774,10 @@ serve(async (req) => {
   // Monitor request for header analytics
   monitorRequest(req, 'runware-generate-image');
   
-  // Handle CORS preflight requests - RESTORED DYNAMIC SYSTEM WITH DEBUGGING
+  // Handle CORS preflight requests - BULLETPROOF DYNAMIC SYSTEM
   if (req.method === 'OPTIONS') {
-    console.log('🔄 Dynamic CORS preflight handling with fallback protection');
-    
-    try {
-      // Try using your advanced dynamic CORS system
-      return createDynamicCorsOptionsResponse(req);
-    } catch (corsError) {
-      // Log the error but don't crash - fallback to static CORS
-      console.error('⚠️ Dynamic CORS failed, using static fallback:', corsError);
-      
-      return new Response(null, {
-        status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
-          'Access-Control-Max-Age': '86400'
-        }
-      });
-    }
+    console.log('🔄 BULLETPROOF Dynamic CORS preflight - Auto-detecting headers');
+    return createDynamicCorsOptionsResponse(req);
   }
 
   // Handle GET requests with health check (FIX: Add debugging endpoint)
@@ -803,7 +785,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get('RUNWARE_API_KEY');
     console.log('🔍 GET request received - returning health check');
     
-    return new Response(JSON.stringify({
+    return createDynamicCorsResponse({
       status: 'healthy',
       function: 'runware-generate-image',
       method: 'GET',
@@ -822,33 +804,14 @@ serve(async (req) => {
         required_fields: ['pageText', 'userInfo', 'sessionId', 'storyId'],
         optional_fields: ['pageNumber', 'isGuestUser', 'enhancedStoryData', 'forceTier']
       },
-      corsSystem: 'SIMPLE_BULLETPROOF'
-    }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      }
-    });
+      corsSystem: 'BULLETPROOF_DYNAMIC'
+    }, req);
   }
 
   // Validate request method (FIX: Ensure only POST requests proceed)
   if (req.method !== 'POST') {
     console.error(`❌ Invalid request method: ${req.method}`);
-    return new Response(JSON.stringify({
-      success: false,
-      error: `Method ${req.method} not allowed. Use POST for image generation or GET for health check.`
-    }), {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      }
-    });
+    return createDynamicCorsErrorResponse(`Method ${req.method} not allowed. Use POST for image generation or GET for health check.`, req, 405);
   }
 
   // Validate API key
@@ -1061,6 +1024,7 @@ serve(async (req) => {
         
         // Call ai-visual-scene-creator directly with pre-processed avatar identity
         // CRITICAL FIX: Add difficultyLevel mapping for Tier 1
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // CRITICAL: Log prompt flow debugging before calling AI scene creator
@@ -1068,7 +1032,7 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           promptPreview: pageText.substring(0, 100) + '...',
-          stage: 'ai-visual-scene-creator',
+          stage: 'ai-scene-creator',
           metadata: { 
             userInfo: userInfo?.name, 
             difficultyLevel: mappedDifficulty,
@@ -1094,7 +1058,7 @@ serve(async (req) => {
           success: aiEnhancerResult.success,
           hasAiSchema: !!aiEnhancerResult.aiSchema,
           aiSchemaKeys: aiEnhancerResult.aiSchema ? Object.keys(aiEnhancerResult.aiSchema) : [],
-          stage: 'ai-visual-scene-creator-response',
+          stage: 'ai-scene-creator-response',
           metadata: { responseSize: JSON.stringify(aiEnhancerResult).length }
         });
 
@@ -1112,6 +1076,7 @@ serve(async (req) => {
         
         // 0. VISUAL DETAIL ANALYSIS FIRST - Must run before character building
         try {
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           const characterName = avatarIdentity?.name || userInfo?.name || 'child';
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterName);
           console.log(`🎨 [${requestId}] Visual details analyzed before character building`);
@@ -1119,7 +1084,10 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Visual detail analysis failed:`, error.message);
         }
         
-        // Import services for direct assembly (statically imported at top)
+        // Import services for direct assembly
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
+        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
         
         // Initialize character consistency service
         const characterService = new CharacterConsistencyService();
@@ -1197,6 +1165,7 @@ serve(async (req) => {
                   // Store new cultural selections in character consistency
                   if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
                     try {
+                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
                       const characterService = new CharacterConsistencyService();
                       const characterName = avatarIdentity?.name || userInfo?.name || 'child';
                       const cacheKey = `${sessionId}_${characterName}`;
@@ -1370,6 +1339,7 @@ serve(async (req) => {
         
         // 3.1. Secondary Elements
         try {
+          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
           const secondaryElements = await SecondaryElementDetector.parseElements(
             sessionId,
             promptSections.primaryScene, // Use primary scene
@@ -1379,6 +1349,7 @@ serve(async (req) => {
           
           if (secondaryElements && secondaryElements.length > 0) {
             // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
+            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
             const characterConsistencyService = new CharacterConsistencyService();
             
             const seededSecondaryDescriptions = await Promise.all(
@@ -1423,8 +1394,9 @@ serve(async (req) => {
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
         // Add visual detail analysis for consistent object tracking
         try {
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           await VisualDetailTracker.analyzeTextForDetails(
-            sessionId,
+            sessionId, 
             pageText, 
             pageNumber || 1, 
             characterData?.characterName || 'child'
@@ -1436,7 +1408,7 @@ serve(async (req) => {
         
         // 3.2. Visual Details & Colored Objects (automatically integrated from database)
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           
           // Get general visual consistency details
           const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
@@ -1673,6 +1645,7 @@ serve(async (req) => {
 
           // PHASE 1: Store successful Tier 1 image prompt with DEBUG  
           console.log('📸 DEBUG: Storing Tier 1 image prompt...');
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
           
           try {
             globalSessionManager.storeImagePrompt(sessionId, {
@@ -1775,6 +1748,7 @@ serve(async (req) => {
         }
         
         // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // Enhanced parameter validation with detailed logging
@@ -1912,6 +1886,7 @@ serve(async (req) => {
     // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
     console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
     try {
+      const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
       globalSessionManager.storeImagePrompt(sessionId, {
         tier: '4',
         promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,
@@ -1938,22 +1913,14 @@ serve(async (req) => {
       console.error('❌ Failed to store Tier 4 image prompt:', storeError);
     }
     
-    return new Response(JSON.stringify({
+    return createDynamicCorsResponse({
       success: true,
       imageURL: placeholderResult.url,
       provider: 'runware-orchestrator',
       tier: 4,
       enhancementLevel: 'kid-friendly-placeholder',
       metadata: { orchestrated: true }
-    }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      }
-    });
+    }, req);
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     
@@ -1984,17 +1951,6 @@ serve(async (req) => {
     
     const statusCode = isTimeoutError ? 503 : 500; // Use 503 for temporary timeout issues
     
-    return new Response(JSON.stringify({
-      success: false,
-      error: responseMessage
-    }), {
-      status: statusCode,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      }
-    });
+    return createDynamicCorsErrorResponse(responseMessage, req, statusCode);
   }
 });

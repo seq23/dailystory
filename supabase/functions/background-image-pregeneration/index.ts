@@ -1,5 +1,6 @@
 // Phase 4: Background pre-generation cron job
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

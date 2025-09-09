@@ -10,7 +10,7 @@ import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager
 import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.ts';
 import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
 import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
-import { getBValue } from '../_shared/templates/registry.ts';
+import { getBValue } from '../_shared/templates/registry.js';
 import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
 
 // Import sophisticated placeholder resolution  
@@ -112,7 +112,7 @@ serve(async (req) => {
     } = await req.json();
     
     // Import difficulty mapper for frontend->backend conversion
-    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
+    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
     
     // Handle difficulty parameter with proper frontend->backend conversion
     const rawDifficulty = difficulty || userInfo?.difficultyLevel;
@@ -304,7 +304,7 @@ serve(async (req) => {
         console.log('🧠 Attempting smart template selection...');
         
         // Import smart template selector
-        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.ts');
+        const { selectWithTimeout } = await import('../_shared/smartTemplateSelector.js');
         
         // Get template count for this level
         const templateCount = await getTemplateCount(templateLevel);

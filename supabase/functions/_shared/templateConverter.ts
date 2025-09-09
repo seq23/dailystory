@@ -368,7 +368,7 @@ export async function convertStoryTemplateToStringArray(
   // Arc-aware scene processing with modulo logic
   if (arcConfig?.pageIndex !== undefined) {
     // Arc-based generation using modulo logic
-    const { calculateArcPosition } = await import('./arcManager.ts');
+    const { calculateArcPosition } = await import('./arcManager.js');
     const arcPosition = calculateArcPosition(arcConfig.pageIndex, template.level);
     
     console.log(`🎪 Arc Processing: Page ${arcConfig.pageIndex} → Arc ${arcPosition.arcNumber}, Scene ${arcPosition.sceneIndex}, isEnding: ${arcPosition.isEndingPage}`);

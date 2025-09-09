@@ -750,7 +750,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         // Store failed AI prompt for debugging (EVERYTHING sent to AI, even failures)
         try {
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
         globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
           systemPrompt: enhancedSystemPrompt,
           userPrompt: finalUserPrompt,
@@ -843,7 +843,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         // Store failure for debugging
         try {
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
           globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
             systemPrompt: enhancedSystemPrompt,
             userPrompt: finalUserPrompt,
@@ -880,7 +880,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       
       // Store complete AI prompt for debugging (EVERYTHING sent to AI)
       try {
-        const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
+        const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
         globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
           systemPrompt: enhancedSystemPrompt,
           userPrompt: finalUserPrompt,
