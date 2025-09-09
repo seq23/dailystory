@@ -55,6 +55,9 @@ i18n.on('languageChanged', (lng) => {
   // Apply language-specific font classes to body
   document.body.className = document.body.className.replace(/\blang-\w+\b/g, '');
   document.body.classList.add(`lang-${lng}`);
+  
+  // Note: Story content and navigation components can override RTL/LTR via CSS classes
+  // This ensures global UI changes while preserving story display consistency
 });
 
 export default i18n;

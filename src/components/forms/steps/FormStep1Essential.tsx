@@ -10,6 +10,7 @@ import { MobileTooltip } from "@/components/MobileTooltip";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
+import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode } from "@/types";
 
 interface FormStep1EssentialProps {
@@ -38,9 +39,20 @@ export const FormStep1Essential = ({
   const { t, i18n } = useTranslation();
   const [spellcheckSuggestion, setSpellcheckSuggestion] = useState<string>("");
   const [spellcheckLoading, setSpellcheckLoading] = useState(false);
+  const { getStoredLanguagePreference, syncLanguages, clearStoredLanguagePreference } = useLanguageSync();
 
   // Enhanced input handling with real-time COPPA validation
   const [validationWarnings, setValidationWarnings] = useState<Record<string, string[]>>({});
+
+  // Check for language preference from WelcomeHero on mount
+  useEffect(() => {
+    const storedLanguage = getStoredLanguagePreference();
+    if (storedLanguage && storedLanguage !== formData.nativeLanguage) {
+      // Auto-populate native language from WelcomeHero selection
+      onUpdate({ nativeLanguage: storedLanguage });
+      clearStoredLanguagePreference(); // Clean up after use
+    }
+  }, [getStoredLanguagePreference, clearStoredLanguagePreference, formData.nativeLanguage, onUpdate]);
   
   const handleInputChange = async (field: keyof UserInfo, value: string | number) => {
     if (typeof value === 'string') {
@@ -101,8 +113,9 @@ export const FormStep1Essential = ({
 
   // Handle language change and update UI language
   const handleLanguageChange = (newLanguage: LanguageCode) => {
-    onUpdate({ nativeLanguage: newLanguage });
-    i18n.changeLanguage(newLanguage);
+    syncLanguages(newLanguage, (language) => {
+      onUpdate({ nativeLanguage: language });
+    });
   };
 
   return (

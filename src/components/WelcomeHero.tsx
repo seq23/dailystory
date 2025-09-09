@@ -46,6 +46,8 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
 
   const handleLanguageChange = (newLanguage: string) => {
     console.log("Language changed to:", newLanguage);
+    // Store language preference for multi-step form to pick up
+    localStorage.setItem('selectedLanguagePreference', newLanguage);
     i18n.changeLanguage(newLanguage);
   };
 

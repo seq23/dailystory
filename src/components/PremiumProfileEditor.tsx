@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { User, Save, CheckCircle, BookOpen, Sparkles } from "lucide-react";
 import { ChildSwitcher } from "@/components/ChildSwitcher";
+import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
 import { DifficultyManager } from "@/services/difficultyManager";
 
@@ -25,6 +26,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const [formData, setFormData] = useState<UserInfo>(userInfo);
   const [isSaving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const { syncLanguagesForPremium } = useLanguageSync();
   
   // Get difficulty suggestions
   const difficultyProfile = DifficultyManager.suggestDifficulty(formData);
@@ -151,7 +153,12 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               <Label htmlFor="language">Native Language</Label>
               <Select
                 value={formData.nativeLanguage}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, nativeLanguage: value as LanguageCode }))}
+                onValueChange={(value) => {
+                  const newLanguage = value as LanguageCode;
+                  syncLanguagesForPremium(newLanguage, (language) => {
+                    setFormData(prev => ({ ...prev, nativeLanguage: language }));
+                  });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select language" />
@@ -166,6 +173,9 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
                   <SelectItem value="pt">Portuguese</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Changing your native language will update the interface language. Story content and navigation will remain in their original format.
+              </p>
             </div>
 
             <div className="pt-2 border-t">
