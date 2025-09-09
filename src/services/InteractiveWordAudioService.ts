@@ -1,9 +1,8 @@
 /**
- * Dedicated Interactive Word Audio Service
- * Handles "hear it", "explain", and "syllables" button actions with proper audio coordination
- * Bypasses VoiceHoverController interference and provides direct audio paths
+ * Interactive Word Audio Service
+ * Handles "hear it", "explain", and "syllables" button actions with direct TTS calls
+ * Uses SmartElevenLabsTTS directly for fast 2-3 second response times
  */
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
 import { supabase } from '@/integrations/supabase/client';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
@@ -40,14 +39,9 @@ export class InteractiveWordAudioService {
         setTimeout(() => reject(new Error('Interactive word timeout - using browser fallback')), 5000);
       });
 
-      // Use SimplifiedAudioEngine for synchronized playback with timeout
-      const audioEngine = SimplifiedAudioEngine.getInstance();
+      // Use direct TTS for fast response (2-3 seconds)
       await Promise.race([
-        audioEngine.playTextWithSynchronization({
-          text: cleanWord,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          onWordHighlight: () => {} // No highlighting needed for single words
-        }),
+        this.playDirectTTS(cleanWord, 'XB0fDUnXU5powFXDhCwa'),
         timeoutPromise
       ]);
       console.log(`✅ Successfully played word: ${cleanWord}`);
@@ -119,14 +113,9 @@ export class InteractiveWordAudioService {
         setTimeout(() => reject(new Error('Explain word timeout - using browser fallback')), 5000);
       });
 
-      // Use SimplifiedAudioEngine for synchronized playback with timeout
-      const audioEngine = SimplifiedAudioEngine.getInstance();
+      // Use direct TTS for fast response (3-4 seconds including dictionary lookup)
       await Promise.race([
-        audioEngine.playTextWithSynchronization({
-          text: definition.definition,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          onWordHighlight: () => {} // No highlighting needed for definitions
-        }),
+        this.playDirectTTS(definition.definition, 'XB0fDUnXU5powFXDhCwa'),
         timeoutPromise
       ]);
       console.log(`✅ Successfully explained word: ${cleanWord}`);
@@ -189,14 +178,9 @@ export class InteractiveWordAudioService {
         setTimeout(() => reject(new Error('Syllables timeout - using browser fallback')), 5000);
       });
 
-      // Use SimplifiedAudioEngine for synchronized playback with timeout
-      const audioEngine = SimplifiedAudioEngine.getInstance();
+      // Use direct TTS for fast response (2-3 seconds)
       await Promise.race([
-        audioEngine.playTextWithSynchronization({
-          text: syllableText,
-          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          onWordHighlight: () => {} // No highlighting needed for syllables
-        }),
+        this.playDirectTTS(syllableText, 'XB0fDUnXU5powFXDhCwa'),
         timeoutPromise
       ]);
       console.log(`✅ Successfully played syllables: ${syllableText}`);
@@ -219,6 +203,40 @@ export class InteractiveWordAudioService {
         detail: { system: 'interactive-word' } 
       }));
       this.processingRequests.delete(requestId);
+    }
+  }
+
+  /**
+   * Play audio directly using SmartElevenLabsTTS for fast response
+   */
+  private static async playDirectTTS(text: string, voiceId: string): Promise<void> {
+    console.log(`🎵 Playing direct TTS: "${text}"`);
+    
+    try {
+      // Generate audio buffer using conversation context (fast, no dictionary)
+      const audioBuffer = await SmartElevenLabsTTS.generateConversationSpeech(text, voiceId);
+      
+      // Create and play audio
+      const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      // Wait for audio to finish
+      await new Promise<void>((resolve, reject) => {
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('Audio playback failed'));
+        };
+        audio.play().catch(reject);
+      });
+      
+    } catch (error) {
+      console.error('Direct TTS failed, using browser fallback:', error);
+      this.fallbackToBrowserSpeech(text);
     }
   }
 
