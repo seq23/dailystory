@@ -71,11 +71,6 @@ const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
   ]
 };
 
-const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
-  'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
-  'warm caramel complexion', 'golden brown skin', 'mahogany complexion', 'dark chocolate skin',
-  'ebony complexion', 'honey-toned skin', 'bronze complexion', 'chestnut brown skin'
-];
 
 const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
   // Light Tones

@@ -33,26 +33,6 @@ export const NUCLEAR_OPPOSITE_GENDER_NEGATIVES = {
   ]
 };
 
-// NUCLEAR GENDER NEUTRAL NEGATIVE PROMPT 
-export const NUCLEAR_GENDER_NEUTRAL_NEGATIVES = [
-  // Exclude all gendered characteristics for prefer-not-to-answer users
-  'makeup', 'lipstick', 'mascara', 'nail polish', 'jewelry', 'earrings', 'necklace',
-  'facial hair', 'beard', 'mustache', 'dress', 'skirt', 'suit', 'tie',
-  'feminine clothing', 'masculine clothing', 'high heels', 'work boots',
-  'feminine hairstyles', 'masculine haircut', 'long flowing hair', 'buzz cut',
-  'feminine poses', 'masculine poses', 'feminine gestures', 'masculine gestures',
-  'delicate features', 'rugged features', 'soft feminine features', 'angular features'
-];
-
-// NUCLEAR AFRICAN AMERICAN PROTECTION NEGATIVES
-export const NUCLEAR_AFRICAN_AMERICAN_NEGATIVES = [
-  // Enhanced anti-whitewashing protection
-  'pale skin', 'light skin', 'white skin', 'fair complexion', 'light complexion',
-  'blonde hair', 'light hair', 'straight blonde hair', 'light colored hair',
-  'blue eyes', 'green eyes', 'light colored eyes', 'european features',
-  'caucasian features', 'whitewashed appearance', 'lightened skin tone',
-  'straightened hair texture', 'non-textured hair', 'fine straight hair'
-];
 
 // NUCLEAR GENDER NEUTRAL NEGATIVE PROMPT (Excludes ALL gendered characteristics)
 export const NUCLEAR_GENDER_NEUTRAL_NEGATIVES = [
