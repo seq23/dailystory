@@ -497,21 +497,55 @@ const TIER_25_UNIFIED_VOCABULARY = {
       'enthusiastically', 'calmly', 'playfully', 'determinedly', 'curiously', 'lovingly'
     ],
     
-    // NEW: Body language vocabulary for enhanced Action section
+    // NEW: Body language vocabulary for enhanced Action section (CONTEXT-AWARE EXPANSION)
     bodyLanguage: [
+      // Basic postures
       'arms outstretched', 'hands on hips', 'finger pointing', 'arms crossed',
       'waving hands', 'thumbs up', 'clapping hands', 'covering eyes', 'shrugging shoulders',
       'nodding head', 'tilting head', 'leaning forward', 'standing tall', 'crouching down',
-      'jumping with joy', 'sitting cross-legged', 'lying on stomach', 'reaching up high'
+      'jumping with joy', 'sitting cross-legged', 'lying on stomach', 'reaching up high',
+      
+      // Sleeping/Waking context
+      'stretching arms upward', 'rubbing eyes sleepily', 'yawning softly', 'arms reaching skyward',
+      'hands rubbing face gently', 'stretching and yawning', 'arms extended in morning stretch',
+      
+      // Walking/Moving context
+      'arms swinging naturally', 'hands in pockets', 'looking ahead confidently', 'arms at sides',
+      'hands clasped behind back', 'arms moving rhythmically', 'hands gesturing while walking',
+      
+      // Playing/Active context  
+      'arms spread wide with excitement', 'hands raised in celebration', 'jumping and cheering',
+      'arms pumping with energy', 'hands clapping enthusiastically', 'body bouncing with joy',
+      
+      // Emotional expressions
+      'smiling brightly', 'eyes sparkling with wonder', 'head tilted thoughtfully',
+      'hands clasped together', 'arms hugging self contentedly', 'chin resting on hands'
     ],
     
-    // NEW: Spatial positioning vocabulary (renamed from spatial_composition, moved to Action)
+    // NEW: Spatial positioning vocabulary (CONTEXT-AWARE EXPANSION)
     spatial: [
+      // Basic positioning
       'standing in the center', 'positioned in the foreground', 'placed to the left',
       'located on the right side', 'sitting in the background', 'crouched in the corner',
       'balanced on top of', 'nestled between', 'hovering above', 'resting beneath',
       'leaning against', 'walking towards', 'moving away from', 'circling around',
-      'climbing up', 'sliding down', 'jumping over', 'crawling under'
+      'climbing up', 'sliding down', 'jumping over', 'crawling under',
+      
+      // Sleeping/Waking context
+      'sitting up in bed', 'stretching in bed', 'lying peacefully', 'positioned on mattress',
+      'seated on edge of bed', 'resting comfortably', 'nestled in bedding',
+      
+      // Walking/Moving context
+      'moving forward confidently', 'stepping carefully', 'striding purposefully', 
+      'walking along the path', 'positioned mid-stride', 'advancing steadily',
+      
+      // Playing context
+      'positioned playfully', 'crouched down to play', 'kneeling on ground',
+      'seated for play', 'positioned for interaction', 'arranged for activity',
+      
+      // Learning/Reading context
+      'seated comfortably', 'positioned at desk', 'arranged for study', 
+      'sitting attentively', 'positioned for learning', 'placed for reading'
     ]
   },
   
@@ -2901,14 +2935,14 @@ function extractEmotion(pageText: string): string {
 function extractActionIntensity(pageText: string): string {
   const lowerText = pageText.toLowerCase();
   
-  // Check for intensity vocabulary
+  // Check for intensity vocabulary (exact matches only)
   for (const intensity of TIER_25_UNIFIED_VOCABULARY.actions.intensity) {
     if (lowerText.includes(intensity)) {
       return intensity;
     }
   }
   
-  // Check for intensity indicators in text
+  // Check for intensity indicators in text (only clear indicators)
   if (lowerText.includes('quick') || lowerText.includes('fast') || lowerText.includes('rush')) return 'energetically';
   if (lowerText.includes('slow') || lowerText.includes('soft') || lowerText.includes('quiet')) return 'gently';
   if (lowerText.includes('excited') || lowerText.includes('eager') || lowerText.includes('enthusiastic')) return 'excitedly';
@@ -2916,36 +2950,70 @@ function extractActionIntensity(pageText: string): string {
   if (lowerText.includes('careful') || lowerText.includes('cautious')) return 'carefully';
   if (lowerText.includes('bold') || lowerText.includes('brave') || lowerText.includes('confident')) return 'boldly';
   
-  return 'thoughtfully'; // Safe fallback
+  // NO FALLBACK - Return empty string when no intensity detected
+  return '';
 }
 
 function extractBodyLanguage(pageText: string): string {
   const lowerText = pageText.toLowerCase();
   
-  // Check for body language vocabulary
+  // Check for body language vocabulary (exact matches)
   for (const bodyLang of TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage) {
-    if (lowerText.includes(bodyLang.replace(' ', ''))) {
+    if (lowerText.includes(bodyLang.toLowerCase())) {
       return bodyLang;
     }
   }
   
-  // Check for body language indicators
-  if (lowerText.includes('wave') || lowerText.includes('waving')) return 'waving hands';
-  if (lowerText.includes('point') || lowerText.includes('pointing')) return 'finger pointing';
-  if (lowerText.includes('clap') || lowerText.includes('clapping')) return 'clapping hands';
-  if (lowerText.includes('stretch') || lowerText.includes('reach')) return 'arms outstretched';
-  if (lowerText.includes('nod') || lowerText.includes('nodding')) return 'nodding head';
-  if (lowerText.includes('jump') || lowerText.includes('jumping')) return 'jumping with joy';
-  if (lowerText.includes('sit') || lowerText.includes('sitting')) return 'sitting cross-legged';
-  if (lowerText.includes('stand') || lowerText.includes('standing')) return 'standing tall';
+  // CONTEXT-AWARE BODY LANGUAGE EXTRACTION
+  // Sleeping/Waking context
+  if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke')) {
+    if (lowerText.includes('stretch')) return 'stretching arms upward';
+    if (lowerText.includes('rub') || lowerText.includes('eyes')) return 'rubbing eyes sleepily';
+    if (lowerText.includes('yawn')) return 'yawning softly';
+    return 'stretching arms upward'; // Default for waking
+  }
   
-  return 'standing tall'; // Safe fallback
+  // Walking/Moving context  
+  if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move')) {
+    if (lowerText.includes('confident') || lowerText.includes('proud')) return 'looking ahead confidently';
+    if (lowerText.includes('pocket')) return 'hands in pockets';
+    return 'arms swinging naturally'; // Default for walking
+  }
+  
+  // Playing/Active context
+  if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('jump') || lowerText.includes('run')) {
+    if (lowerText.includes('excited') || lowerText.includes('happy')) return 'arms spread wide with excitement';
+    if (lowerText.includes('celebrate') || lowerText.includes('win')) return 'hands raised in celebration';
+    return 'body bouncing with joy'; // Default for playing
+  }
+  
+  // Sitting context
+  if (lowerText.includes('sit') || lowerText.includes('sitting') || lowerText.includes('seat')) {
+    if (lowerText.includes('cross') || lowerText.includes('legs')) return 'sitting cross-legged';
+    if (lowerText.includes('comfortable') || lowerText.includes('relax')) return 'hands resting on lap';
+    return 'sitting cross-legged'; // Default for sitting
+  }
+  
+  // Standing context
+  if (lowerText.includes('stand') || lowerText.includes('standing')) {
+    if (lowerText.includes('tall') || lowerText.includes('proud')) return 'standing tall';
+    if (lowerText.includes('confident')) return 'hands on hips';
+    return 'standing tall'; // Default for standing
+  }
+  
+  // Emotional context fallbacks
+  if (lowerText.includes('happy') || lowerText.includes('smile') || lowerText.includes('joy')) return 'smiling brightly';
+  if (lowerText.includes('think') || lowerText.includes('wonder') || lowerText.includes('curious')) return 'head tilted thoughtfully';
+  if (lowerText.includes('excited') || lowerText.includes('enthusiastic')) return 'eyes sparkling with wonder';
+  
+  // Universal fallback based on common actions - ALWAYS PRESENT
+  return 'standing tall';
 }
 
 function extractSpatialPositioning(pageText: string): string {
   const lowerText = pageText.toLowerCase();
   
-  // Check for spatial positioning vocabulary
+  // Check for spatial positioning vocabulary (exact matches)
   for (const spatial of TIER_25_UNIFIED_VOCABULARY.actions.spatial) {
     const spatialWords = spatial.toLowerCase().split(' ');
     if (spatialWords.every(word => lowerText.includes(word))) {
@@ -2953,7 +3021,44 @@ function extractSpatialPositioning(pageText: string): string {
     }
   }
   
-  // Check for positional indicators
+  // CONTEXT-AWARE SPATIAL POSITIONING EXTRACTION - ALWAYS PRESENT
+  // Sleeping/Waking context
+  if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke') || 
+      lowerText.includes('sleep') || lowerText.includes('bed')) {
+    if (lowerText.includes('sit') || lowerText.includes('up')) return 'sitting up in bed';
+    if (lowerText.includes('stretch')) return 'stretching in bed';
+    if (lowerText.includes('lying') || lowerText.includes('lay')) return 'lying peacefully';
+    return 'sitting up in bed'; // Default for waking/bed context
+  }
+  
+  // Walking/Moving context
+  if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move') || 
+      lowerText.includes('step') || lowerText.includes('stride')) {
+    if (lowerText.includes('confident') || lowerText.includes('bold')) return 'moving forward confidently';
+    if (lowerText.includes('careful') || lowerText.includes('slow')) return 'stepping carefully';
+    if (lowerText.includes('purpose') || lowerText.includes('determined')) return 'striding purposefully';
+    return 'moving forward confidently'; // Default for walking
+  }
+  
+  // Playing context
+  if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('game') ||
+      lowerText.includes('toy') || lowerText.includes('fun')) {
+    if (lowerText.includes('crouch') || lowerText.includes('down')) return 'crouched down to play';
+    if (lowerText.includes('kneel') || lowerText.includes('ground')) return 'kneeling on ground';
+    if (lowerText.includes('sit') || lowerText.includes('seated')) return 'seated for play';
+    return 'positioned playfully'; // Default for playing
+  }
+  
+  // Learning/Reading context
+  if (lowerText.includes('read') || lowerText.includes('book') || lowerText.includes('study') ||
+      lowerText.includes('learn') || lowerText.includes('desk') || lowerText.includes('school')) {
+    if (lowerText.includes('desk') || lowerText.includes('table')) return 'positioned at desk';
+    if (lowerText.includes('comfortable') || lowerText.includes('cozy')) return 'seated comfortably';
+    if (lowerText.includes('attentive') || lowerText.includes('focus')) return 'sitting attentively';
+    return 'seated comfortably'; // Default for learning
+  }
+  
+  // Check for explicit positional indicators
   if (lowerText.includes('center') || lowerText.includes('middle')) return 'standing in the center';
   if (lowerText.includes('front') || lowerText.includes('foreground')) return 'positioned in the foreground';
   if (lowerText.includes('left')) return 'placed to the left';
@@ -2965,15 +3070,16 @@ function extractSpatialPositioning(pageText: string): string {
   if (lowerText.includes('between')) return 'nestled between';
   if (lowerText.includes('on top') || lowerText.includes('upon')) return 'balanced on top of';
   
-  return 'positioned in the foreground'; // Safe fallback
+  // Universal fallback - ALWAYS PRESENT
+  return 'positioned in the foreground';
 }
 
 function extractObjectInteraction(pageText: string, actionObjects: string): string {
   const lowerText = pageText.toLowerCase();
   
-  // If we have action objects, enhance them with interaction details
-  if (actionObjects && actionObjects !== 'colorful items') {
-    // Check for interaction verbs
+  // If we have meaningful action objects, enhance them with interaction details
+  if (actionObjects && actionObjects !== 'colorful items' && actionObjects.trim() !== '') {
+    // Check for specific interaction verbs
     if (lowerText.includes('hold') || lowerText.includes('holding')) return `holding ${actionObjects}`;
     if (lowerText.includes('carry') || lowerText.includes('carrying')) return `carrying ${actionObjects}`;
     if (lowerText.includes('use') || lowerText.includes('using')) return `using ${actionObjects}`;
@@ -2983,16 +3089,18 @@ function extractObjectInteraction(pageText: string, actionObjects: string): stri
     if (lowerText.includes('grab') || lowerText.includes('grabbing')) return `grabbing ${actionObjects}`;
     if (lowerText.includes('pick') || lowerText.includes('picking')) return `picking up ${actionObjects}`;
     
+    // If objects exist but no specific interaction verb, describe general interaction
     return `interacting with ${actionObjects}`;
   }
   
-  // Fallback to basic interaction description
-  if (lowerText.includes('hold') || lowerText.includes('carry')) return 'holding colorful objects';
-  if (lowerText.includes('play') || lowerText.includes('toy')) return 'playing with toys';
-  if (lowerText.includes('book') || lowerText.includes('read')) return 'holding a book';
-  if (lowerText.includes('ball') || lowerText.includes('throw')) return 'playing with a ball';
+  // Check for specific objects mentioned in text (without actionObjects parameter)
+  if (lowerText.includes('book') && (lowerText.includes('hold') || lowerText.includes('read'))) return 'holding a book';
+  if (lowerText.includes('ball') && (lowerText.includes('play') || lowerText.includes('throw'))) return 'playing with a ball';
+  if (lowerText.includes('toy') && lowerText.includes('play')) return 'playing with toys';
+  if (lowerText.includes('food') && (lowerText.includes('eat') || lowerText.includes('hold'))) return 'holding food';
   
-  return 'exploring nearby objects'; // Safe fallback
+  // NO FALLBACK - Return empty string when no objects or interactions detected
+  return '';
 }
 
 // ============= PHASE 4: SEEDED SELECTION FOR CONSISTENCY =============
@@ -4606,17 +4714,65 @@ function validateSceneComplexity(sceneData: any, pageText: string): { isValid: b
   };
 }
 
-// REMOVE EMPTY SECTIONS FROM TEMPLATE
+// ENHANCED REMOVE EMPTY SECTIONS - HANDLES ACTION SECTION DYNAMICALLY
 function removeEmptySections(template: string): string {
-  // Remove sections that have no content after the colon
-  return template
+  console.log('🧹 Before cleaning:', template);
+  
+  let cleaned = template;
+  
+  // STEP 1: Handle Action section specifically
+  // Pattern: Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}
+  const actionRegex = /Action:\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,.]*)(?=[.]\s|\s*\w+:)/g;
+  
+  cleaned = cleaned.replace(actionRegex, (match, scene, intensity, spatial, interaction, bodyLang) => {
+    const components = [];
+    
+    // Always include scene if present
+    if (scene && scene.trim() && !scene.includes('{')) {
+      components.push(scene.trim());
+    }
+    
+    // Include intensity only if not empty
+    if (intensity && intensity.trim() && !intensity.includes('{')) {
+      components.push(intensity.trim());
+    }
+    
+    // Always include spatial_positioning (never empty due to context-aware extraction)
+    if (spatial && spatial.trim() && !spatial.includes('{')) {
+      components.push(spatial.trim());
+    }
+    
+    // Include object_interaction only if not empty
+    if (interaction && interaction.trim() && !interaction.includes('{')) {
+      components.push(interaction.trim());
+    }
+    
+    // Always include body_language (never empty due to context-aware extraction)
+    if (bodyLang && bodyLang.trim() && !bodyLang.includes('{')) {
+      components.push(bodyLang.trim());
+    }
+    
+    // Build Action section dynamically
+    if (components.length > 0) {
+      return `Action: ${components.join(', ')}`;
+    } else {
+      return ''; // Remove entire Action section if no components
+    }
+  });
+  
+  // STEP 2: Remove other empty sections (original logic)
+  cleaned = cleaned
     .replace(/\w+:\s*[,.](?=\s*\w+:)/g, '') // Remove empty sections in middle
     .replace(/\w+:\s*[,.](?=\s*Technical:)/g, '') // Remove empty sections before Technical
     .replace(/\w+:\s*[,.]$/g, '') // Remove empty sections at end
-    .replace(/,\s*,/g, ',') // Fix double commas
-    .replace(/\.\s*\./g, '.') // Fix double periods
+    .replace(/,\s*,+/g, ',') // Fix multiple commas
+    .replace(/\.\s*\.+/g, '.') // Fix multiple periods
     .replace(/\s+/g, ' ') // Clean up extra spaces
+    .replace(/\.\s*\w+:/g, '. ') // Fix periods before section labels
     .trim();
+  
+  console.log('🧹 After cleaning:', cleaned);
+  return cleaned;
 }
 
 // CRITICAL FIX: Removed duplicate fillBasicTemplate function declaration
