@@ -6,37 +6,8 @@ import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
 import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.ts";
+import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-// Nuclear Independent CORS Headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
-};
-
-// Nuclear Independent CORS Response Functions  
-function createCorsResponse(data: any, status = 200): Response {
-  const headers = { 
-    ...corsHeaders, 
-    'Content-Type': 'application/json' 
-  };
-  return new Response(JSON.stringify(data), { status, headers });
-}
-
-function createCorsErrorResponse(error: string | Error, status = 500): Response {
-  const errorMessage = error instanceof Error ? error.message : error;
-  console.error('Edge function error:', errorMessage);
-  return createCorsResponse({ 
-    success: false, 
-    error: errorMessage 
-  }, status);
-}
-
-function createCorsOptionsResponse(): Response {
-  return new Response(null, { headers: corsHeaders });
-}
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
@@ -5586,17 +5557,27 @@ serve(async (req: Request) => {
   
   console.log('🎯 TIER 2.5 CASCADE: Initializing tier tracking system');
   
-  // Handle CORS preflight  
+  // Handle CORS preflight - RESTORED DYNAMIC SYSTEM WITH DEBUGGING  
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
-        'Access-Control-Max-Age': '86400'
-      }
-    });
+    console.log('🔄 Dynamic CORS preflight handling with fallback protection');
+    
+    try {
+      // Try using your advanced dynamic CORS system
+      return createDynamicCorsOptionsResponse(req);
+    } catch (corsError) {
+      // Log the error but don't crash - fallback to static CORS
+      console.error('⚠️ Dynamic CORS failed, using static fallback:', corsError);
+      
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
+          'Access-Control-Max-Age': '86400'
+        }
+      });
+    }
   }
   
   // 🔑 DEBUG: API Key Validation
@@ -5955,7 +5936,7 @@ serve(async (req: Request) => {
       ws = new WebSocket('wss://ws-api.runware.ai/v1');
     } catch (wsError) {
       console.error('⚠️ WebSocket connection failed immediately:', wsError);
-      return createCorsErrorResponse('WebSocket connection failed', 500);
+      return createDynamicCorsErrorResponse('WebSocket connection failed', req, 500);
     }
     
     return new Promise((resolve) => {
@@ -5979,13 +5960,13 @@ serve(async (req: Request) => {
       // Connection timeout protection (30 seconds)
       connectionTimeout = setTimeout(() => {
         console.warn('⚠️ WebSocket connection timeout');
-        resolveOnce(createCorsErrorResponse('Connection timeout - please try again', 504));
+        resolveOnce(createDynamicCorsErrorResponse('Connection timeout - please try again', req, 504));
       }, 30000);
       
       // Operation timeout protection (60 seconds total)
       operationTimeout = setTimeout(() => {
         console.warn('⚠️ WebSocket operation timeout');
-        resolveOnce(createCorsErrorResponse('Operation timeout - please try again', 504));
+        resolveOnce(createDynamicCorsErrorResponse('Operation timeout - please try again', req, 504));
       }, 60000);
       
       // Declare finalPrompt at function scope to fix scoping issue
@@ -6004,7 +5985,7 @@ serve(async (req: Request) => {
           ws.send(JSON.stringify(authMessage));
         } catch (openError) {
           console.error('⚠️ WebSocket onopen error:', openError);
-          resolveOnce(createCorsErrorResponse('Authentication failed', 500));
+          resolveOnce(createDynamicCorsErrorResponse('Authentication failed', req, 500));
         }
       };
       
@@ -6020,7 +6001,7 @@ serve(async (req: Request) => {
           if (response.error || response.errors) {
             console.error('❌ Tier 2.5: API error:', response);
             const errorMessage = response.errorMessage || response.errors?.[0]?.message || 'Unknown API error';
-            resolveOnce(createCorsErrorResponse(errorMessage, 500));
+            resolveOnce(createDynamicCorsErrorResponse(errorMessage, req, 500));
             return;
           }
           
@@ -6056,7 +6037,7 @@ serve(async (req: Request) => {
                  console.log(`🎯 TIER CASCADE COMPLETE: ${successfulTier} succeeded in ${processingTime}ms`);
                  console.log(`📊 Tier Path: [${tierPath.join(' → ')}]`);
                  
-                 resolveOnce(createCorsResponse({
+                 resolveOnce(createDynamicCorsResponse({
                    success: true,
                    imageURL: item.imageURL,
                    prompt: finalPrompt,
@@ -6081,13 +6062,13 @@ serve(async (req: Request) => {
                      enhancementApplied: !!(characterData && characterData.seed),
                      source: avatarMapping?.source || 'nuclear-mapping'
                    }
-                 }));
+                 }, req));
               }
             }
           }
         } catch (parseError) {
           console.error('❌ Tier 2.5: Response parsing error:', parseError);
-          resolveOnce(createCorsErrorResponse('Failed to parse API response', 500));
+          resolveOnce(createDynamicCorsErrorResponse('Failed to parse API response', req, 500));
         }
       };
       
@@ -6096,16 +6077,16 @@ serve(async (req: Request) => {
         console.log('🔄 Tier 2.5: Attempting HTTP fallback...');
         
         // HTTP FALLBACK: Try Runware REST API
-        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
+        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req)
           .then(result => {
             if (result.success) {
               resolveOnce(result);
             } else {
-              resolveOnce(createCorsErrorResponse('WebSocket and HTTP fallback both failed', 500));
+              resolveOnce(createDynamicCorsErrorResponse('WebSocket and HTTP fallback both failed', req, 500));
             }
           })
           .catch(() => {
-            resolveOnce(createCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', 500));
+            resolveOnce(createDynamicCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', req, 500));
           });
       };
       
@@ -6115,16 +6096,16 @@ serve(async (req: Request) => {
           console.log('🔄 Tier 2.5: Attempting HTTP fallback due to unexpected close...');
           
           // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
+          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req)
             .then(result => {
               if (result.success) {
                 resolveOnce(result);
               } else {
-                resolveOnce(createCorsErrorResponse('WebSocket closed and HTTP fallback failed', 500));
+                resolveOnce(createDynamicCorsErrorResponse('WebSocket closed and HTTP fallback failed', req, 500));
               }
             })
             .catch(() => {
-              resolveOnce(createCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', 500));
+              resolveOnce(createDynamicCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', req, 500));
             });
         }
       };
@@ -6135,22 +6116,22 @@ serve(async (req: Request) => {
           console.error('❌ Tier 2.5: Request timeout, trying HTTP fallback...');
           
           // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
+          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req)
             .then(result => {
               if (result.success) {
                 resolveOnce(result);
               } else {
-                resolveOnce(createCorsErrorResponse('Request timeout and HTTP fallback failed', 408));
+                resolveOnce(createDynamicCorsErrorResponse('Request timeout and HTTP fallback failed', req, 408));
               }
             })
             .catch(() => {
-              resolveOnce(createCorsErrorResponse('Request timeout', 408));
+              resolveOnce(createDynamicCorsErrorResponse('Request timeout', req, 408));
             });
         }
       }, 30000);
       
       // HTTP FALLBACK FUNCTION
-      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters) {
+      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters, req) {
         try {
           console.log('🌐 Tier 2.5: Attempting HTTP API fallback...');
           
@@ -6192,7 +6173,7 @@ serve(async (req: Request) => {
             console.log(`✅ Tier 2.5: HTTP fallback successful! Final tier: ${successfulTier}`);
             console.log(`📊 HTTP Fallback - Tier Path: [${tierPath.join(' → ')}]`);
             
-            return createCorsResponse({
+            return createDynamicCorsResponse({
               success: true,
               imageURL: imageData.imageURL,
               prompt: prompt,
@@ -6217,7 +6198,7 @@ serve(async (req: Request) => {
                 enhancementApplied: !!(characterData && characterData.seed),
                 source: avatarMapping?.source || 'nuclear-mapping'
               }
-            });
+            }, req);
           } else {
             throw new Error('No image URL in HTTP response');
           }

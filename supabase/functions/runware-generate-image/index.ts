@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager, globalSessionManager } from "../_shared/SessionStateManager.ts";
 import { SecurityValidator } from "../_shared/SecurityValidator.ts";
@@ -774,18 +775,27 @@ serve(async (req) => {
   // Monitor request for header analytics
   monitorRequest(req, 'runware-generate-image');
   
-  // Handle CORS preflight requests - SIMPLE BULLETPROOF SYSTEM
+  // Handle CORS preflight requests - RESTORED DYNAMIC SYSTEM WITH DEBUGGING
   if (req.method === 'OPTIONS') {
-    console.log('🔄 Simple CORS preflight handling');
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
-        'Access-Control-Max-Age': '86400'
-      }
-    });
+    console.log('🔄 Dynamic CORS preflight handling with fallback protection');
+    
+    try {
+      // Try using your advanced dynamic CORS system
+      return createDynamicCorsOptionsResponse(req);
+    } catch (corsError) {
+      // Log the error but don't crash - fallback to static CORS
+      console.error('⚠️ Dynamic CORS failed, using static fallback:', corsError);
+      
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
+          'Access-Control-Max-Age': '86400'
+        }
+      });
+    }
   }
 
   // Handle GET requests with health check (FIX: Add debugging endpoint)
