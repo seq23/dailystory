@@ -617,7 +617,7 @@ function mapAvatarIdentity(userInfo: any, sessionId?: string): any {
       "attractive child character with rich olive-tan with natural golden depth"
     ],
     'dark': [
-      "attractive child character with textured natural hair" // Keep existing approach for cultural sensitivity
+      "attractive child authentic african american features with textured natural hair" // Enhanced cultural specificity
     ]
   };
 
@@ -1120,10 +1120,8 @@ serve(async (req) => {
               
               // Attempt to access detailed arrays
               if (hairstyles && hairstyles.length > 0 && 
-                  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES && HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length > 0 &&
                   HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
                 
-                const selectedSkinTone = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_SKIN_TONES.length)];
                 const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
                 const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
                 
@@ -1135,7 +1133,7 @@ serve(async (req) => {
                                    'African American'; // Fallback for edge cases
                 
                 console.log(`🌍 [${requestId}] ${culturalLabel} detailed context applied (dark skin + ${nativeLanguage})`);
-                return `${culturalLabel} heritage: ${selectedSkinTone}, ${hairstyle}, ${features}`;
+                return `${culturalLabel} heritage: ${hairstyle}, ${features}`;
               }
             } catch (error) {
               console.warn(`⚠️ [${requestId}] African American detailed arrays failed:`, error);
@@ -1180,13 +1178,17 @@ serve(async (req) => {
           
           if (!pageText || pageText.length < 10) return null;
           
-          // Return truncated page text (first 25 words or 125 characters, whichever is shorter)
-          const words = pageText.trim().split(/\s+/);
-          const first25Words = words.slice(0, 25).join(' ');
-          const truncatedText = first25Words.length > 125 ? first25Words.substring(0, 125) : first25Words;
-          
-          console.log(`📖 [${requestId}] Story context provided for Level 0-1 user: "${truncatedText.substring(0, 50)}${truncatedText.length > 50 ? '...' : ''}"`);
-          return truncatedText;
+          // Level-based story context: Full for Level 0-1, first 2 sentences for Level 2-4
+          if (mappedDifficulty === 0 || mappedDifficulty === 1) {
+            console.log(`📖 [${requestId}] Full story context provided for Level ${mappedDifficulty} user`);
+            return pageText.trim();
+          } else {
+            // Level 2-4: Return first 2 sentences only
+            const sentences = pageText.trim().split(/[.!?]+/).filter(s => s.trim().length > 0);
+            const firstTwoSentences = sentences.slice(0, 2).join('. ').trim() + (sentences.length > 2 ? '.' : '');
+            console.log(`📖 [${requestId}] First 2 sentences provided for Level ${mappedDifficulty} user: "${firstTwoSentences.substring(0, 50)}${firstTwoSentences.length > 50 ? '...' : ''}"`);
+            return firstTwoSentences;
+          }
         };
         
         console.log(`🎨 [${requestId}] Style Framework Retrieved:`, {
@@ -1336,7 +1338,7 @@ serve(async (req) => {
           pageNumber
         );
         
-        // Build comprehensive prompts with header structure
+        // Build comprehensive prompts with optimal ordering
         const promptParts = [];
         if (promptSections.primaryScene) {
           promptParts.push(`Primary Scene: ${promptSections.primaryScene}`);
@@ -1344,11 +1346,11 @@ serve(async (req) => {
         if (promptSections.character) {
           promptParts.push(`Character: ${promptSections.character}`);
         }
-        if (promptSections.sceneDetails) {
-          promptParts.push(`Scene Details: ${promptSections.sceneDetails}`);
-        }
         if (promptSections.storyContext) {
           promptParts.push(`Story Context: ${promptSections.storyContext}`);
+        }
+        if (promptSections.sceneDetails) {
+          promptParts.push(`Scene Details: ${promptSections.sceneDetails}`);
         }
         if (promptSections.brandSuffix) {
           promptParts.push(`Brand Suffix: ${promptSections.brandSuffix}`);

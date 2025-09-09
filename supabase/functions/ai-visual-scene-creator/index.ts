@@ -1018,7 +1018,7 @@ RULES:
           }
         ];
         
-        // Helper function to build user content safely
+        // Helper function to build user content safely with regional ethnicity enhancement
         function buildUserContent(previousScene, storyText, secondaryElements) {
           let content = '';
           
@@ -1033,6 +1033,26 @@ RULES:
           
           if (secondaryElements && secondaryElements.length > 0) {
             content += `\nAdditional elements: ${secondaryElements.map(e => e.name).join(', ')}`;
+          }
+          
+          // Add regional ethnicity data for cultural scene enhancement
+          const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
+          const regionalContext = {
+            'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
+            'fr': 'French cultural elements (Parisian architecture, gardens, cafes)',
+            'de': 'German cultural elements (castles, forests, traditional buildings)',
+            'it': 'Italian cultural elements (piazzas, fountains, Mediterranean settings)',
+            'pt': 'Portuguese/Brazilian cultural elements (colorful buildings, beaches, tropical)',
+            'ja': 'Japanese cultural elements (gardens, traditional architecture, cherry blossoms)',
+            'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
+            'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
+            'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
+            'hi': 'Indian cultural elements (temples, gardens, vibrant colors)',
+            'en': 'International/diverse cultural elements'
+          };
+          
+          if (regionalContext[userLanguage] && userLanguage !== 'en') {
+            content += `\nCultural context: ${regionalContext[userLanguage]}`;
           }
           
           return content;

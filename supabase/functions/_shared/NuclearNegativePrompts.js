@@ -2,30 +2,12 @@
 // Shared module for both Tier 1 (Orchestrator) and Tier 2.5 (Nuclear Fallback)
 // Nuclear Independence: 90%+ hardcoded arrays for comprehensive safety filtering
 
-// NUCLEAR BASE NEGATIVE PROMPT (Quality & Safety + MASTER PLAN: Wider Angle Enhancement)
+// NUCLEAR BASE NEGATIVE PROMPT (Consolidated for Efficiency)
 export const NUCLEAR_BASE_NEGATIVE_PROMPT = [
-  // Quality Filters
-  'low quality', 'blurry', 'distorted', 'deformed', 'bad anatomy', 'weird proportions', 
-  'extra limbs', 'missing limbs', 'bad hands', 'malformed hands', 'extra fingers', 
-  'missing fingers', 'crossed eyes', 'bad facial features', 'unrealistic skin', 
-  'plastic appearance', 'oversaturated', 'undersaturated', 'overexposed', 'underexposed',
-  
-  // MASTER PLAN: Composition Filters (Prevent Close-ups for Full Activity Visibility)
-  'close-up shot', 'cropped image', 'partial view', 'zoomed in', 'tight framing', 
-  'head shot only', 'face only', 'portrait crop', 'cut off limbs', 'incomplete scene',
-  'narrow view', 'limited view', 'close framing', 'macro shot', 'detail shot',
-  
-  // Safety Filters  
-  'no text', 'no words', 'no letters', 'no writing', 'no signatures', 'watermarks',
-  'adult content', 'inappropriate content', 'violence', 'weapons', 'scary imagery',
-  
-  // Technical Filters
-  'artifacts', 'noise', 'grain', 'pixelated', 'compression artifacts', 'jpeg artifacts',
-  'digital noise', 'color banding', 'posterization', 'aliasing',
-  
-  // Style Prevention
-  'cartoon style', 'anime style', 'manga style', 'comic book style', 'sketch style',
-  'abstract art', 'surreal art', 'horror style', 'gothic style'
+  // Core Quality & Safety
+  'low quality', 'blurry', 'distorted', 'bad anatomy', 'extra limbs', 'bad hands', 
+  'close-up shot', 'cropped image', 'partial view', 'no text', 'adult content', 
+  'artifacts', 'cartoon style', 'anime style'
 ];
 
 // NUCLEAR OPPOSITE GENDER NEGATIVE PROMPT 
@@ -50,6 +32,27 @@ export const NUCLEAR_OPPOSITE_GENDER_NEGATIVES = {
     'deep voice indicators', 'masculine stance'
   ]
 };
+
+// NUCLEAR GENDER NEUTRAL NEGATIVE PROMPT 
+export const NUCLEAR_GENDER_NEUTRAL_NEGATIVES = [
+  // Exclude all gendered characteristics for prefer-not-to-answer users
+  'makeup', 'lipstick', 'mascara', 'nail polish', 'jewelry', 'earrings', 'necklace',
+  'facial hair', 'beard', 'mustache', 'dress', 'skirt', 'suit', 'tie',
+  'feminine clothing', 'masculine clothing', 'high heels', 'work boots',
+  'feminine hairstyles', 'masculine haircut', 'long flowing hair', 'buzz cut',
+  'feminine poses', 'masculine poses', 'feminine gestures', 'masculine gestures',
+  'delicate features', 'rugged features', 'soft feminine features', 'angular features'
+];
+
+// NUCLEAR AFRICAN AMERICAN PROTECTION NEGATIVES
+export const NUCLEAR_AFRICAN_AMERICAN_NEGATIVES = [
+  // Enhanced anti-whitewashing protection
+  'pale skin', 'light skin', 'white skin', 'fair complexion', 'light complexion',
+  'blonde hair', 'light hair', 'straight blonde hair', 'light colored hair',
+  'blue eyes', 'green eyes', 'light colored eyes', 'european features',
+  'caucasian features', 'whitewashed appearance', 'lightened skin tone',
+  'straightened hair texture', 'non-textured hair', 'fine straight hair'
+];
 
 // NUCLEAR GENDER NEUTRAL NEGATIVE PROMPT (Excludes ALL gendered characteristics)
 export const NUCLEAR_GENDER_NEUTRAL_NEGATIVES = [
