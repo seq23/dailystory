@@ -1035,7 +1035,7 @@ RULES:
             content += `\nAdditional elements: ${secondaryElements.map(e => e.name).join(', ')}`;
           }
           
-          // Add regional ethnicity data for cultural scene enhancement
+          // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
           const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
           const regionalContext = {
             'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
@@ -1047,12 +1047,11 @@ RULES:
             'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
             'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
             'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
-            'hi': 'Indian cultural elements (temples, gardens, vibrant colors)',
-            'en': 'International/diverse cultural elements'
+            'hi': 'Indian cultural elements (temples, gardens, vibrant colors)'
           };
           
           if (regionalContext[userLanguage] && userLanguage !== 'en') {
-            content += `\nCultural context: ${regionalContext[userLanguage]}`;
+            content += `\nOptional cultural inspiration (enhance settings creatively with regional architecture/landmarks): ${regionalContext[userLanguage]}`;
           }
           
           return content;
