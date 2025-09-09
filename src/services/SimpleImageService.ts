@@ -505,6 +505,7 @@ export class SimpleImageService {
               metadata: {
                 tier: `${specificTier}-emergency`,
                 specificTier: specificTier,
+                templateType: tier25Response.data.templateType,
                 tierPath: tierPath,
                 enhancementLevel: enhancementLevel,
                 fallbackReason: tier25Response.data.fallbackReason,

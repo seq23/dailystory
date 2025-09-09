@@ -11,6 +11,16 @@ interface ImageDebugPanelProps {
   pageImages: Record<number, string>;
   isGeneratingImage: boolean;
   onRegenerateImage?: () => void;
+  imageMetadata?: {
+    specificTier?: string;
+    templateType?: string;
+    tierPath?: string[];
+    enhancementLevel?: string;
+    processingTime?: number;
+    emergencyFallback?: boolean;
+    attemptedTiers?: string[];
+    fallbackReason?: string;
+  };
 }
 
 export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
@@ -19,7 +29,8 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
   currentImage,
   pageImages,
   isGeneratingImage,
-  onRegenerateImage
+  onRegenerateImage,
+  imageMetadata
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [lastBackendLogs, setLastBackendLogs] = useState<any[]>([]);
@@ -165,9 +176,56 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
               </Button>
             )}
 
+            {/* Tier Information */}
+            {imageMetadata && (
+              <div>
+                <div className="font-medium mb-1">🎯 Tier Information</div>
+                <div className="space-y-1">
+                  {imageMetadata.specificTier && (
+                    <div className="flex justify-between">
+                      <span>Tier:</span>
+                      <Badge variant={imageMetadata.emergencyFallback ? "destructive" : "default"}>
+                        {imageMetadata.specificTier}
+                      </Badge>
+                    </div>
+                  )}
+                  {imageMetadata.templateType && (
+                    <div className="text-xs bg-muted p-1 rounded">
+                      📋 {imageMetadata.templateType}
+                    </div>
+                  )}
+                  {imageMetadata.tierPath && (
+                    <div className="text-xs">
+                      🛤️ Path: {imageMetadata.tierPath.join(' → ')}
+                    </div>
+                  )}
+                  {imageMetadata.processingTime && (
+                    <div className="text-xs">
+                      ⏱️ Time: {imageMetadata.processingTime}ms
+                    </div>
+                  )}
+                  {imageMetadata.enhancementLevel && (
+                    <div className="text-xs">
+                      ✨ Level: {imageMetadata.enhancementLevel}
+                    </div>
+                  )}
+                  {imageMetadata.emergencyFallback && (
+                    <Badge variant="destructive" className="text-xs">
+                      🚨 Emergency Fallback
+                    </Badge>
+                  )}
+                  {imageMetadata.fallbackReason && (
+                    <div className="text-xs text-yellow-600">
+                      ⚠️ Reason: {imageMetadata.fallbackReason}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Console Instructions */}
             <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
-              💡 Check browser console for tier success messages like "Backend orchestrator succeeded (Tier X)"
+              💡 Check browser console for detailed tier logs and processing information
             </div>
           </CardContent>
         )}

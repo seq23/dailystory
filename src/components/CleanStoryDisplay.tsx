@@ -433,6 +433,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // Image state
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
+  const [pageImageMetadata, setPageImageMetadata] = useState<Record<number, any>>({});
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isPreparingImage, setIsPreparingImage] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<number, boolean>>({});
@@ -2102,6 +2103,14 @@ const initializeStory = async () => {
           onPageImagesUpdate?.(updatedImages); // CRITICAL: Notify parent of new image
           return updatedImages;
         });
+        
+        // Store image metadata for debug panel
+        if (result.metadata) {
+          setPageImageMetadata(prev => ({
+            ...prev,
+            [currentPage]: result.metadata
+          }));
+        }
         
         // Cache with story continuity markers to prevent re-generation
         try {
@@ -4071,9 +4080,15 @@ const handleRestartTimer = () => {
         currentImage={currentImage}
         pageImages={pageImages}
         isGeneratingImage={isGeneratingImage}
+        imageMetadata={pageImageMetadata[currentPage]}
         onRegenerateImage={() => {
           // Clear current image and regenerate
           setPageImages(prev => {
+            const updated = { ...prev };
+            delete updated[currentPage];
+            return updated;
+          });
+          setPageImageMetadata(prev => {
             const updated = { ...prev };
             delete updated[currentPage];
             return updated;

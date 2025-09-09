@@ -5723,10 +5723,12 @@ serve(async (req: Request) => {
     
     // TIER 2.5A vs 2.5B LOGIC: Check requirements and route accordingly
     let prompt;
+    let templateType = '';
     try {
     // ENHANCED: Character Consistency Integration with Nuclear Independence
     if (hasTier25ARequirements) {
-      console.log('🎯 Tier 2.5A: ATTEMPTING (Premium Template + Character Consistency)');
+      console.log('🎯 Tier 2.5A: ATTEMPTING (Premium Template + Character Consistency + Cultural Intelligence)');
+      templateType = 'Premium Template with Character Consistency';
       attemptedTiers.push('2.5A');
       tierPath.push('2.5A-attempting');
       
@@ -5758,7 +5760,7 @@ serve(async (req: Request) => {
       }
       
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
-      console.log('✅ Tier 2.5A: SUCCESS (Premium Template + Character Consistency)');
+      console.log('✅ Tier 2.5A: SUCCESS (Premium Template + Character Consistency + Cultural Intelligence)');
       successfulTier = '2.5A';
       tierPath[tierPath.length - 1] = '2.5A-success';
       enhancementLevel = 'premium';
@@ -5778,12 +5780,13 @@ serve(async (req: Request) => {
       // ============= UPDATED 4-TIER FALLBACK CHAIN =============
       console.log('🔄 Tier 2.5A FAILED → Routing to Tier 2.5B');
       try {
-        console.log('🎯 Tier 2.5B: ATTEMPTING (Basic Template)');
+        console.log('🎯 Tier 2.5B: ATTEMPTING (Basic Personalized Template + Nuclear Independence)');
+        templateType = 'Basic Personalized Template';
         attemptedTiers.push('2.5B');
         tierPath.push('2.5B-attempting');
         
         prompt = fillBasicTemplate(difficulty, userInfo, pageText, localAvatarIdentity);
-        console.log('✅ Tier 2.5B: SUCCESS (Basic Template)');
+        console.log('✅ Tier 2.5B: SUCCESS (Basic Personalized Template + Nuclear Independence)');
         successfulTier = '2.5B';
         tierPath[tierPath.length - 1] = '2.5B-success';
         enhancementLevel = 'basic';
@@ -5795,7 +5798,8 @@ serve(async (req: Request) => {
         
         console.log('🔄 Tier 2.5B FAILED → Routing to Tier 2.5C');
         try {
-          console.log('🎯 Tier 2.5C: ATTEMPTING (Emergency Template)');
+          console.log('🎯 Tier 2.5C: ATTEMPTING (Emergency Framework Template + Guaranteed Success)');
+          templateType = 'Emergency Framework Template';
           attemptedTiers.push('2.5C');
           tierPath.push('2.5C-attempting');
           
@@ -5805,7 +5809,7 @@ serve(async (req: Request) => {
                                     'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
           
           prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
-          console.log('✅ Tier 2.5C: SUCCESS (Emergency Template)');
+          console.log('✅ Tier 2.5C: SUCCESS (Emergency Framework Template + Guaranteed Success)');
           successfulTier = '2.5C';
           tierPath[tierPath.length - 1] = '2.5C-success';
           enhancementLevel = 'emergency';
@@ -5816,12 +5820,13 @@ serve(async (req: Request) => {
           if (!fallbackReason) fallbackReason = `Emergency template error: ${emergencyError.message}`;
           
           console.log('🔄 Tier 2.5C FAILED → Routing to Tier 2.5D (ULTIMATE EMERGENCY)');
-          console.log('🎯 Tier 2.5D: ATTEMPTING (Ultimate Emergency Template)');
+          console.log('🎯 Tier 2.5D: ATTEMPTING (Ultimate Emergency Fallback Template - NUCLEAR GUARANTEE)');
+          templateType = 'Ultimate Emergency Fallback Template';
           attemptedTiers.push('2.5D');
           tierPath.push('2.5D-attempting');
           
           prompt = "ULTIMATE_EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
-          console.log('✅ Tier 2.5D: SUCCESS (Ultimate Emergency Template - GUARANTEED)');
+          console.log('✅ Tier 2.5D: SUCCESS (Ultimate Emergency Fallback Template - NUCLEAR GUARANTEE)');
           successfulTier = '2.5D';
           tierPath[tierPath.length - 1] = '2.5D-success';
           enhancementLevel = 'ultimate-emergency';
@@ -6047,6 +6052,7 @@ serve(async (req: Request) => {
                    culturalProfile: culturalProfile,
                    tier: '2.5 Nuclear Independence + Character Consistency',
                    specificTier: successfulTier,
+                   templateType: templateType,
                    tierPath: tierPath,
                    enhancementLevel: enhancementLevel,
                    fallbackReason: fallbackReason,
@@ -6182,6 +6188,7 @@ serve(async (req: Request) => {
               culturalProfile: culturalProfile,
               tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
               specificTier: successfulTier,
+              templateType: templateType,
               tierPath: tierPath,
               enhancementLevel: enhancementLevel,
               fallbackReason: fallbackReason,
