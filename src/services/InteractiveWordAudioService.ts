@@ -3,7 +3,7 @@
  * Handles "hear it", "explain", and "syllables" button actions with proper audio coordination
  * Bypasses VoiceHoverController interference and provides direct audio paths
  */
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
 import { supabase } from '@/integrations/supabase/client';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
@@ -40,15 +40,13 @@ export class InteractiveWordAudioService {
         setTimeout(() => reject(new Error('Interactive word timeout - using browser fallback')), 5000);
       });
 
-      // Use SimpleAudioEngine directly for reliable coordination with timeout
-      const audioEngine = SimpleAudioEngine.getInstance();
+      // Use SimplifiedAudioEngine for synchronized playback with timeout
+      const audioEngine = SimplifiedAudioEngine.getInstance();
       await Promise.race([
-        audioEngine.playText({
+        audioEngine.playTextWithSynchronization({
           text: cleanWord,
           voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: `hear-${cleanWord}-${Date.now()}`,
-          modelId: 'eleven_turbo_v2_5',
-          context: 'learning' // Use phonetic pronunciation for "Hear It"
+          onWordHighlight: () => {} // No highlighting needed for single words
         }),
         timeoutPromise
       ]);
@@ -121,15 +119,13 @@ export class InteractiveWordAudioService {
         setTimeout(() => reject(new Error('Explain word timeout - using browser fallback')), 5000);
       });
 
-      // Use SimpleAudioEngine directly for reliable coordination with timeout
-      const audioEngine = SimpleAudioEngine.getInstance();
+      // Use SimplifiedAudioEngine for synchronized playback with timeout
+      const audioEngine = SimplifiedAudioEngine.getInstance();
       await Promise.race([
-        audioEngine.playText({
+        audioEngine.playTextWithSynchronization({
           text: definition.definition,
           voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: definition.definition.substring(0, 20),
-          modelId: 'eleven_turbo_v2_5',
-          context: 'conversation' // Use natural voice for explanations
+          onWordHighlight: () => {} // No highlighting needed for definitions
         }),
         timeoutPromise
       ]);
@@ -193,15 +189,13 @@ export class InteractiveWordAudioService {
         setTimeout(() => reject(new Error('Syllables timeout - using browser fallback')), 5000);
       });
 
-      // Use SimpleAudioEngine directly for reliable coordination with timeout
-      const audioEngine = SimpleAudioEngine.getInstance();
+      // Use SimplifiedAudioEngine for synchronized playback with timeout
+      const audioEngine = SimplifiedAudioEngine.getInstance();
       await Promise.race([
-        audioEngine.playText({
+        audioEngine.playTextWithSynchronization({
           text: syllableText,
           voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: syllableText,
-          modelId: 'eleven_turbo_v2_5',
-          context: 'learning' // Use phonetic pronunciation for syllables
+          onWordHighlight: () => {} // No highlighting needed for syllables
         }),
         timeoutPromise
       ]);
