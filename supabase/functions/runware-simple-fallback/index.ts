@@ -5515,12 +5515,11 @@ serve(async (req: Request) => {
       }
       
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
+      console.log('✅ Premium Template (Tier 2.5A) filling successful with contextual intelligence');
     } else {
-        console.log('✅ Premium Template (Tier 2.5A) filling successful with contextual intelligence');
-      } else {
-        console.log('🛡️ Missing requirements for Tier 2.5A, using Tier 2.5B: Basic Template');
-        throw new Error('Tier 2.5A requirements not met - auto-fallback to 2.5B');
-      }
+      console.log('🛡️ Missing requirements for Tier 2.5A, using Tier 2.5B: Basic Template');
+      throw new Error('Tier 2.5A requirements not met - auto-fallback to 2.5B');
+    }
     } catch (templateError) {
       console.warn('⚠️ Premium Template failed, trying BASIC template (Tier 1.5 / 2.5B):', templateError);
       
