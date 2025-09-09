@@ -100,7 +100,7 @@ export class CharacterConsistencyService {
     // Generate new character
     const seedData = await this.createNewCharacterSeed(avatarIdentity);
     
-    const characterDescription = this.buildCharacterDescription(seedData, storyContext, pageTextClothing);
+    const characterDescription = await this.buildCharacterDescription(seedData, storyContext, pageTextClothing, sessionId);
     
     const characterData = {
       seed: seedData.baseSeed,
@@ -204,20 +204,45 @@ export class CharacterConsistencyService {
 
   /**
    * Build character description from seed data
+   * Now integrated with VisualDetailTracker for persistent clothing
    */
-  buildCharacterDescription(seedData, storyContext, pageTextClothing = null) {
+  async buildCharacterDescription(seedData, storyContext, pageTextClothing = null, sessionId = null) {
     const characterName = seedData.characterName || 'child';
     const age = seedData.age || '6-8';
-    // Check if story text has clothing descriptions, if so skip random clothing
-    const hasStoryClothing = pageTextClothing && (
-      pageTextClothing.includes('wearing') || 
-      pageTextClothing.includes('dressed') || 
-      pageTextClothing.includes('shirt') ||
-      pageTextClothing.includes('pants') ||
-      pageTextClothing.includes('dress') ||
-      pageTextClothing.includes('outfit')
-    );
-    const clothingStyle = hasStoryClothing ? '' : `wearing ${seedData.consistentClothingStyle} clothing`;
+    
+    // PRIORITY 1: Check VisualDetailTracker for detected clothing
+    let clothingStyle = '';
+    if (sessionId) {
+      try {
+        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
+        const detectedClothing = await VisualDetailTracker.buildClothingDescription(sessionId, characterName);
+        if (detectedClothing) {
+          clothingStyle = detectedClothing;
+          console.log(`👕 Using VisualDetailTracker clothing for ${characterName}: ${detectedClothing}`);
+        }
+      } catch (error) {
+        console.log(`⚠️ VisualDetailTracker clothing query failed:`, error.message);
+      }
+    }
+    
+    // PRIORITY 2: Check if story text has clothing descriptions (legacy check)
+    if (!clothingStyle) {
+      const hasStoryClothing = pageTextClothing && (
+        pageTextClothing.includes('wearing') || 
+        pageTextClothing.includes('dressed') || 
+        pageTextClothing.includes('shirt') ||
+        pageTextClothing.includes('pants') ||
+        pageTextClothing.includes('dress') ||
+        pageTextClothing.includes('hat') ||
+        pageTextClothing.includes('jacket') ||
+        pageTextClothing.includes('coat')
+      );
+      
+      // PRIORITY 3: Use random clothing if no specific clothing detected
+      if (!hasStoryClothing) {
+        clothingStyle = `wearing ${seedData.consistentClothingStyle} clothing`;
+      }
+    }
     
     return `${characterName} is a child age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
   }

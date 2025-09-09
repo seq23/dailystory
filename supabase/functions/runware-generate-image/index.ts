@@ -1074,6 +1074,16 @@ serve(async (req) => {
         // PHASE 2: DIRECT TECHNICAL ASSEMBLY IN ORCHESTRATOR
         console.log('🔧 Orchestrator: Starting direct technical assembly');
         
+        // 0. VISUAL DETAIL ANALYSIS FIRST - Must run before character building
+        try {
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const characterName = avatarIdentity?.name || userInfo?.name || 'child';
+          await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterName);
+          console.log(`🎨 [${requestId}] Visual details analyzed before character building`);
+        } catch (error) {
+          console.log(`⚠️ [${requestId}] Visual detail analysis failed:`, error.message);
+        }
+        
         // Import services for direct assembly
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
@@ -1352,22 +1362,21 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Secondary elements detection failed:`, error.message);
         }
         
-        // 3.2. Visual Details
+        // 3.2. Visual Details (already processed earlier, just get for prompt)
         try {
           const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
-          await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1);
-          const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+          const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
           
           if (visualDetails) {
             const visualDetailsText = `Visual consistency details: ${visualDetails}`;
             sceneDetailsSection += sceneDetailsSection ? `, ${visualDetailsText}` : visualDetailsText;
             console.log(`🎯 [${requestId}] Section 3 - Visual Details Unified:`, {
               content: visualDetails,
-              source: 'VisualDetailTracker'
+              source: 'VisualDetailTracker (pre-processed)'
             });
           }
         } catch (error) {
-          console.log(`⚠️ [${requestId}] Visual detail tracking failed:`, error.message);
+          console.log(`⚠️ [${requestId}] Visual detail retrieval failed:`, error.message);
         }
         
         if (sceneDetailsSection) {

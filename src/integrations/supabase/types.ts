@@ -883,6 +883,45 @@ export type Database = {
         }
         Relationships: []
       }
+      visual_details_cache: {
+        Row: {
+          character_name: string
+          created_at: string
+          detail_key: string
+          detail_type: string
+          detail_value: string
+          id: string
+          page_first_seen: number
+          page_last_seen: number
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          character_name: string
+          created_at?: string
+          detail_key: string
+          detail_type: string
+          detail_value: string
+          id?: string
+          page_first_seen: number
+          page_last_seen: number
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          character_name?: string
+          created_at?: string
+          detail_key?: string
+          detail_type?: string
+          detail_value?: string
+          id?: string
+          page_first_seen?: number
+          page_last_seen?: number
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       vocabulary_progress: {
         Row: {
           definition: string | null
