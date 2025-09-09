@@ -299,7 +299,7 @@ class RunwareWebSocketManager {
                 // Build generation request
                 const generationRequest = {
                   taskType: "imageInference",
-                  taskUUID: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  taskUUID: crypto.randomUUID(),
                   positivePrompt,
                   negativePrompt,
                   height: 1024, // FIXED: Optimized from 512x512 to 1024x1024
