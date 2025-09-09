@@ -112,6 +112,19 @@ export const getCulturalContextArrays = () => {
         values: ['community solidarity', 'respect for elders', 'oral tradition', 'hospitality', 'Ubuntu'],
         sports: ['football', 'basketball', 'wrestling', 'running', 'handball']
       },
+      // ⚠️  CRITICAL WARNING FOR FUTURE DEVELOPERS ⚠️
+      // 
+      // The African American character names array below contains names that are 
+      // SENTIMENTAL TO THE OWNER OF THIS APP and must NEVER be modified, removed, 
+      // or reduced in any way. These names have deep personal meaning.
+      //
+      // YOU MAY MODIFY: foods, celebrations, values, sports arrays
+      // YOU MUST NEVER TOUCH: the characterNames array for 'en-african-american'
+      //
+      // This warning applies to both:
+      // - src/services/StaticDataCache.ts 
+      // - supabase/functions/generate-adaptive-story/StaticDataCache.ts
+      // ⚠️  DO NOT MODIFY THE NAMES BELOW - THEY ARE SACRED ⚠️
       'en-african-american': {
         characterNames: ['Zoe', 'Cheyenne', 'Brooklyn', 'Surrayah', 'Layla', 'Ricky', 'Scooter', 'Kennedy', 'Christian', 'Carter', 'Calli', 'Serenity', 'Asia', 'India', 'Nia', 'Dariane', 'Eden', 'Sofia', 'Hudson', 'Hanson', 'Holland', 'Harper', 'Cameron', 'Brayden', 'Jayden', 'Chyna', 'Lena', 'Ari', 'Mercedes', 'Sequoia', 'Yaw', 'Amara', 'Kenzie', 'Abo', 'Carlos', 'Ace', 'Cruz', 'Crystal', 'Benny', 'Gerzell', 'Isabella', 'Imani', 'Jordan', 'Tori', 'Amari', 'Will', 'Justin', 'Paige', 'Val', 'Akeelah', 'Erin', 'Shannon', 'Reggie', 'Kelsie', 'Aerric', 'Ayden', 'Jared', 'Lennon', 'Brandon', 'Gabriella', 'Noah', 'Oliva', 'Sterling', 'Korri', 'Corey'],
         commonFoods: ['cornbread', 'fried chicken', 'mac and cheese', 'collard greens', 'sweet potato pie', 'black-eyed peas', 'catfish', 'banana pudding', 'peach cobbler', 'gumbo', 'jambalaya', 'barbecue ribs', 'candied yams', 'pound cake', 'red beans and rice', 'biscuits and gravy', 'shrimp and grits', 'pecan pie', 'chess pie'],
