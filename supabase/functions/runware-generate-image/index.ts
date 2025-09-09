@@ -1086,8 +1086,8 @@ serve(async (req) => {
         
         // Import services for direct assembly
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
-        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
-        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.ts');
+        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.ts');
         
         // Initialize character consistency service
         const characterService = new CharacterConsistencyService();
@@ -1748,7 +1748,7 @@ serve(async (req) => {
         }
         
         // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // Enhanced parameter validation with detailed logging
