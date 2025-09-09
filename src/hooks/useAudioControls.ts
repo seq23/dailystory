@@ -65,8 +65,8 @@ export const useAudioControls = ({
     SimplifiedAudioEngine.getInstance().stop();
     
     setIsStabilizing(true);
-    // Reduced stabilization timing: 500ms for optimal performance
-    const delay = 500;
+    // 800ms stabilization to ensure page stability before audio starts
+    const delay = 800;
     const to = window.setTimeout(() => setIsStabilizing(false), delay);
     return () => clearTimeout(to);
   }, [text, currentPage]);
@@ -113,7 +113,7 @@ export const useAudioControls = ({
    * Play audio with stabilization check
    */
   const playWithValidation = async (retryCount = 0): Promise<void> => {
-    // Enhanced stabilization with reduced timing (500ms instead of 3-4 seconds)
+    // 800ms stabilization to ensure page content is fully stable
     if (isStabilizing) {
       console.log('🕐 Audio playback waiting for stabilization...');
       if (retryCount === 0) {
@@ -137,7 +137,7 @@ export const useAudioControls = ({
     await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({
       text,
       voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
-      context: 'learning',
+      context: 'conversation',
       contentHash,
       onWordHighlight: (wordIndex: number) => {
         console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
