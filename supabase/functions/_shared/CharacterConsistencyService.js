@@ -248,7 +248,7 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate secondary character for relationship consistency
+   * Generate secondary character for relationship consistency with seed-based consistency
    */
   async generateSecondaryCharacter(type, details, userInfo, sessionId) {
     const secondaryName = details.name || `${type}_character`;
@@ -257,23 +257,125 @@ export class CharacterConsistencyService {
     // Check database first
     const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
     if (cached) {
+      console.log(`🎭 CACHED: Using existing secondary character ${secondaryName} (seed: ${cached.seed})`);
       return cached;
     }
     
-    // Generate new secondary character
-    const characterDescription = `${secondaryName} with ${type} relationship features`;
+    // Generate new secondary character with seed consistency
+    const characterSpecificSeed = `secondary_${secondaryName}_${sessionId}`;
+    const seed = this.generateStableSeed(characterSpecificSeed, secondaryName);
+    
+    // Generate basic description for secondary character
+    const characterDescription = this.generateSecondaryCharacterDescription(secondaryName, type, seed);
     
     const secondaryData = {
+      seed,
       characterDescription,
       relationshipType: type,
       name: secondaryName,
+      characterType: 'secondary',
       generatedAt: Date.now()
     };
     
     // Save to database
     await this.saveCharacterToDatabase(sessionId, cacheKey, secondaryData);
     
+    console.log(`🎭 FRESH: Generated new secondary character ${secondaryName} (seed: ${seed})`);
     return secondaryData;
+  }
+
+  /**
+   * Get or create secondary character seed for consistency across pages
+   */
+  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'person') {
+    const cacheKey = `${sessionId}_secondary_${characterName}`;
+    
+    // Check database first
+    const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
+    if (cached) {
+      console.log(`🎭 CACHED: Using existing secondary character ${characterName} (seed: ${cached.seed})`);
+      return cached;
+    }
+    
+    // Generate new secondary character with seed
+    const characterSpecificSeed = `secondary_${characterName}_${sessionId}`;
+    const seed = this.generateStableSeed(characterSpecificSeed, characterName);
+    
+    const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, seed);
+    
+    const secondaryData = {
+      seed,
+      characterDescription,
+      name: characterName,
+      characterType: 'secondary',
+      relationshipType: characterType,
+      generatedAt: Date.now()
+    };
+    
+    // Save to database
+    await this.saveCharacterToDatabase(sessionId, cacheKey, secondaryData);
+    
+    console.log(`🎭 FRESH: Generated new secondary character ${characterName} (seed: ${seed})`);
+    return secondaryData;
+  }
+
+  /**
+   * Generate description for secondary character using seeded randomization
+   */
+  generateSecondaryCharacterDescription(characterName, type, seed) {
+    const seededRandom = this.createSeededRandom(seed);
+    
+    // Define basic character templates with minimal descriptions to let Runware decide appearance
+    const characterTemplates = {
+      person: ['friendly person', 'kind individual', 'helpful neighbor', 'cheerful friend'],
+      adult: ['caring adult', 'gentle grown-up', 'wise elder', 'supportive figure'],
+      child: ['playful child', 'curious kid', 'friendly peer', 'energetic youth'],
+      elderly: ['wise grandparent', 'kind elder', 'experienced senior', 'gentle grandmother'],
+      parent: ['loving parent', 'caring mother', 'supportive father', 'protective guardian'],
+      animal: ['friendly animal', 'curious creature', 'loyal companion', 'playful pet']
+    };
+    
+    const templates = characterTemplates[type] || characterTemplates.person;
+    const selectedTemplate = templates[Math.floor(seededRandom() * templates.length)];
+    
+    return `${characterName}, ${selectedTemplate}`;
+  }
+
+  /**
+   * Detect secondary characters from story text
+   */
+  detectSecondaryCharacters(pageText) {
+    if (!pageText) return [];
+    
+    const detectedCharacters = [];
+    const text = pageText.toLowerCase();
+    
+    // Common secondary character patterns
+    const characterPatterns = [
+      // Named characters (proper nouns)
+      /\b([A-Z][a-z]+)\b/g,
+      // Family relationships
+      /\b(mom|mother|dad|father|grandma|grandpa|sister|brother|uncle|aunt)\b/g,
+      // Community roles
+      /\b(teacher|doctor|nurse|mailman|neighbor|friend|classmate)\b/g,
+      // Animals
+      /\b(dog|cat|bird|rabbit|horse|cow|pig|chicken|fish)\b/g
+    ];
+    
+    for (const pattern of characterPatterns) {
+      const matches = pageText.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.trim();
+          if (cleanMatch.length > 1 && !detectedCharacters.includes(cleanMatch)) {
+            detectedCharacters.push(cleanMatch);
+          }
+        });
+      }
+    }
+    
+    console.log(`🔍 Detected secondary characters in story text: ${detectedCharacters.join(', ')}`);
+    return detectedCharacters;
   }
 
   /**
