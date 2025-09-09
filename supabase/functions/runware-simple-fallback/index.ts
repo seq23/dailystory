@@ -4,6 +4,7 @@ import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -2930,6 +2931,122 @@ function extractEmotion(pageText: string): string {
   return 'happy'; // Safe fallback
 }
 
+// ============= SCENE CONTEXT ANALYZER - ENHANCED CONTEXT INTELLIGENCE =============
+
+/**
+ * Centralized Scene Context Analyzer for determining when to provide vs omit positioning details
+ * Maps detected contexts to appropriate vocabulary selections and intelligence decisions
+ */
+class SceneContextAnalyzer {
+  private pageText: string;
+  private lowerText: string;
+  
+  constructor(pageText: string) {
+    this.pageText = pageText;
+    this.lowerText = pageText.toLowerCase();
+  }
+  
+  /**
+   * Analyze if the scene provides sufficient context for meaningful body language
+   */
+  hasBodyLanguageContext(): boolean {
+    // Strong context indicators - actions that clearly suggest body language
+    const strongActionIndicators = [
+      'wake', 'waking', 'stretch', 'yawn', 'rub eyes',
+      'walk', 'walking', 'confident', 'proud',
+      'play', 'playing', 'excited', 'celebrate', 'jump', 'run',
+      'sit', 'sitting', 'cross', 'legs', 'comfortable', 'relax',
+      'stand', 'standing', 'tall', 'hands on hips',
+      'smile', 'bright', 'wide', 'think', 'wonder', 'curious'
+    ];
+    
+    return strongActionIndicators.some(indicator => this.lowerText.includes(indicator));
+  }
+  
+  /**
+   * Analyze if the scene provides sufficient context for meaningful spatial positioning
+   */
+  hasSpatialContext(): boolean {
+    // Strong spatial context indicators - scenes with clear spatial relationships
+    const strongSpatialIndicators = [
+      // Bed/sleep context provides clear positioning
+      'bed', 'sleep', 'wake', 'waking', 'lying', 'sit up',
+      // Movement with direction provides positioning
+      'walk to', 'move to', 'go to', 'toward', 'school', 'forward',
+      // Activities with specific positioning
+      'play with', 'crouch', 'kneel', 'ground', 'desk', 'table',
+      // Explicit positional words
+      'center', 'middle', 'front', 'foreground', 'left', 'right', 'background',
+      'corner', 'above', 'over', 'under', 'beneath', 'between', 'on top'
+    ];
+    
+    return strongSpatialIndicators.some(indicator => this.lowerText.includes(indicator));
+  }
+  
+  /**
+   * Determine the scene type for context-aware processing
+   */
+  getSceneType(): string {
+    if (this.lowerText.includes('wake') || this.lowerText.includes('bed') || this.lowerText.includes('sleep')) {
+      return 'sleep_wake';
+    }
+    if (this.lowerText.includes('walk') || this.lowerText.includes('move') || this.lowerText.includes('step')) {
+      return 'movement';
+    }
+    if (this.lowerText.includes('play') || this.lowerText.includes('toy') || this.lowerText.includes('game')) {
+      return 'play';
+    }
+    if (this.lowerText.includes('sit') || this.lowerText.includes('seat')) {
+      return 'sitting';
+    }
+    if (this.lowerText.includes('stand') || this.lowerText.includes('standing')) {
+      return 'standing';
+    }
+    if (this.lowerText.includes('read') || this.lowerText.includes('book') || this.lowerText.includes('study')) {
+      return 'learning';
+    }
+    return 'general';
+  }
+  
+  /**
+   * Get contextually appropriate vocabulary for body language
+   */
+  getContextualBodyLanguage(): string[] {
+    const sceneType = this.getSceneType();
+    
+    const contextualMappings = {
+      sleep_wake: ['stretching arms upward', 'rubbing eyes sleepily', 'yawning softly'],
+      movement: ['looking ahead confidently', 'hands in pockets', 'arms swinging naturally'],
+      play: ['arms spread wide with excitement', 'hands raised in celebration', 'body bouncing with joy'],
+      sitting: ['sitting cross-legged', 'hands resting on lap'],
+      standing: ['standing tall', 'hands on hips'],
+      learning: ['head tilted thoughtfully', 'eyes sparkling with wonder'],
+      general: ['smiling brightly', 'standing tall']
+    };
+    
+    return contextualMappings[sceneType] || contextualMappings.general;
+  }
+  
+  /**
+   * Get contextually appropriate vocabulary for spatial positioning
+   */
+  getContextualSpatialPositioning(): string[] {
+    const sceneType = this.getSceneType();
+    
+    const contextualMappings = {
+      sleep_wake: ['sitting up in bed', 'stretching in bed', 'lying peacefully'],
+      movement: ['moving forward confidently', 'stepping carefully', 'striding purposefully'],
+      play: ['crouched down to play', 'kneeling on ground', 'positioned playfully'],
+      sitting: ['seated comfortably', 'sitting cross-legged'],
+      standing: ['standing in the center', 'positioned in the foreground'],
+      learning: ['positioned at desk', 'seated comfortably', 'sitting attentively'],
+      general: ['positioned in the foreground', 'standing in the center']
+    };
+    
+    return contextualMappings[sceneType] || contextualMappings.general;
+  }
+}
+
 // ============= ENHANCED ACTION SECTION EXTRACTION FUNCTIONS =============
 
 function extractActionIntensity(pageText: string): string {
@@ -2964,50 +3081,51 @@ function extractBodyLanguage(pageText: string): string {
     }
   }
   
-  // CONTEXT-AWARE BODY LANGUAGE EXTRACTION
+  // CONTEXT-AWARE BODY LANGUAGE EXTRACTION - INTELLIGENT DETECTION
+  // Only provide body language when context is clear and meaningful
+  
   // Sleeping/Waking context
   if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke')) {
     if (lowerText.includes('stretch')) return 'stretching arms upward';
     if (lowerText.includes('rub') || lowerText.includes('eyes')) return 'rubbing eyes sleepily';
     if (lowerText.includes('yawn')) return 'yawning softly';
-    return 'stretching arms upward'; // Default for waking
+    if (lowerText.includes('bed') || lowerText.includes('sleep')) return 'stretching arms upward';
   }
   
-  // Walking/Moving context  
+  // Walking/Moving context with confidence indicators
   if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move')) {
     if (lowerText.includes('confident') || lowerText.includes('proud')) return 'looking ahead confidently';
     if (lowerText.includes('pocket')) return 'hands in pockets';
-    return 'arms swinging naturally'; // Default for walking
+    if (lowerText.includes('school') || lowerText.includes('purpose')) return 'arms swinging naturally';
   }
   
-  // Playing/Active context
+  // Playing/Active context with clear activity
   if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('jump') || lowerText.includes('run')) {
     if (lowerText.includes('excited') || lowerText.includes('happy')) return 'arms spread wide with excitement';
     if (lowerText.includes('celebrate') || lowerText.includes('win')) return 'hands raised in celebration';
-    return 'body bouncing with joy'; // Default for playing
+    if (lowerText.includes('ball') || lowerText.includes('toy')) return 'body bouncing with joy';
   }
   
-  // Sitting context
+  // Sitting context with specific details
   if (lowerText.includes('sit') || lowerText.includes('sitting') || lowerText.includes('seat')) {
     if (lowerText.includes('cross') || lowerText.includes('legs')) return 'sitting cross-legged';
     if (lowerText.includes('comfortable') || lowerText.includes('relax')) return 'hands resting on lap';
-    return 'sitting cross-legged'; // Default for sitting
+    if (lowerText.includes('quietly') || lowerText.includes('still')) return 'sitting cross-legged';
   }
   
-  // Standing context
+  // Standing context with purpose
   if (lowerText.includes('stand') || lowerText.includes('standing')) {
     if (lowerText.includes('tall') || lowerText.includes('proud')) return 'standing tall';
     if (lowerText.includes('confident')) return 'hands on hips';
-    return 'standing tall'; // Default for standing
   }
   
-  // Emotional context fallbacks
-  if (lowerText.includes('happy') || lowerText.includes('smile') || lowerText.includes('joy')) return 'smiling brightly';
+  // Strong emotional indicators only
+  if (lowerText.includes('smile') && (lowerText.includes('bright') || lowerText.includes('wide'))) return 'smiling brightly';
   if (lowerText.includes('think') || lowerText.includes('wonder') || lowerText.includes('curious')) return 'head tilted thoughtfully';
-  if (lowerText.includes('excited') || lowerText.includes('enthusiastic')) return 'eyes sparkling with wonder';
+  if (lowerText.includes('excited') && lowerText.includes('eyes')) return 'eyes sparkling with wonder';
   
-  // Universal fallback based on common actions - ALWAYS PRESENT
-  return 'standing tall';
+  // NO UNIVERSAL FALLBACK - Return empty string when context is insufficient
+  return '';
 }
 
 function extractSpatialPositioning(pageText: string): string {
@@ -3021,44 +3139,44 @@ function extractSpatialPositioning(pageText: string): string {
     }
   }
   
-  // CONTEXT-AWARE SPATIAL POSITIONING EXTRACTION - ALWAYS PRESENT
-  // Sleeping/Waking context
+  // CONTEXT-AWARE SPATIAL POSITIONING EXTRACTION - INTELLIGENT DETECTION
+  // Only provide positioning when context is clear and meaningful
+  
+  // Sleeping/Waking context - bed context provides clear positioning
   if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke') || 
       lowerText.includes('sleep') || lowerText.includes('bed')) {
     if (lowerText.includes('sit') || lowerText.includes('up')) return 'sitting up in bed';
     if (lowerText.includes('stretch')) return 'stretching in bed';
     if (lowerText.includes('lying') || lowerText.includes('lay')) return 'lying peacefully';
-    return 'sitting up in bed'; // Default for waking/bed context
+    return 'sitting up in bed'; // Clear bed context justifies positioning
   }
   
-  // Walking/Moving context
+  // Walking/Moving context with directional indicators
   if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move') || 
       lowerText.includes('step') || lowerText.includes('stride')) {
-    if (lowerText.includes('confident') || lowerText.includes('bold')) return 'moving forward confidently';
+    if (lowerText.includes('to') || lowerText.includes('toward') || lowerText.includes('school')) return 'moving forward confidently';
     if (lowerText.includes('careful') || lowerText.includes('slow')) return 'stepping carefully';
     if (lowerText.includes('purpose') || lowerText.includes('determined')) return 'striding purposefully';
-    return 'moving forward confidently'; // Default for walking
   }
   
-  // Playing context
+  // Playing context with specific activities  
   if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('game') ||
       lowerText.includes('toy') || lowerText.includes('fun')) {
     if (lowerText.includes('crouch') || lowerText.includes('down')) return 'crouched down to play';
     if (lowerText.includes('kneel') || lowerText.includes('ground')) return 'kneeling on ground';
     if (lowerText.includes('sit') || lowerText.includes('seated')) return 'seated for play';
-    return 'positioned playfully'; // Default for playing
+    if (lowerText.includes('ball') || lowerText.includes('toy')) return 'positioned playfully';
   }
   
-  // Learning/Reading context
+  // Learning/Reading context with furniture/location indicators
   if (lowerText.includes('read') || lowerText.includes('book') || lowerText.includes('study') ||
       lowerText.includes('learn') || lowerText.includes('desk') || lowerText.includes('school')) {
     if (lowerText.includes('desk') || lowerText.includes('table')) return 'positioned at desk';
     if (lowerText.includes('comfortable') || lowerText.includes('cozy')) return 'seated comfortably';
     if (lowerText.includes('attentive') || lowerText.includes('focus')) return 'sitting attentively';
-    return 'seated comfortably'; // Default for learning
   }
   
-  // Check for explicit positional indicators
+  // Strong spatial indicators only
   if (lowerText.includes('center') || lowerText.includes('middle')) return 'standing in the center';
   if (lowerText.includes('front') || lowerText.includes('foreground')) return 'positioned in the foreground';
   if (lowerText.includes('left')) return 'placed to the left';
@@ -3070,8 +3188,8 @@ function extractSpatialPositioning(pageText: string): string {
   if (lowerText.includes('between')) return 'nestled between';
   if (lowerText.includes('on top') || lowerText.includes('upon')) return 'balanced on top of';
   
-  // Universal fallback - ALWAYS PRESENT
-  return 'positioned in the foreground';
+  // NO UNIVERSAL FALLBACK - Return empty string when context is insufficient
+  return '';
 }
 
 function extractObjectInteraction(pageText: string, actionObjects: string): string {
@@ -4720,7 +4838,7 @@ function removeEmptySections(template: string): string {
   
   let cleaned = template;
   
-  // STEP 1: Handle Action section specifically
+  // STEP 1: Handle Action section specifically - DYNAMIC PROCESSING
   // Pattern: Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}
   const actionRegex = /Action:\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,.]*)(?=[.]\s|\s*\w+:)/g;
   
@@ -4737,7 +4855,7 @@ function removeEmptySections(template: string): string {
       components.push(intensity.trim());
     }
     
-    // Always include spatial_positioning (never empty due to context-aware extraction)
+    // DYNAMIC: Include spatial_positioning only if meaningful (not empty)
     if (spatial && spatial.trim() && !spatial.includes('{')) {
       components.push(spatial.trim());
     }
@@ -4747,18 +4865,33 @@ function removeEmptySections(template: string): string {
       components.push(interaction.trim());
     }
     
-    // Always include body_language (never empty due to context-aware extraction)
+    // DYNAMIC: Include body_language only if meaningful (not empty)
     if (bodyLang && bodyLang.trim() && !bodyLang.includes('{')) {
       components.push(bodyLang.trim());
     }
     
-    // Build Action section dynamically
+    // Build Action section dynamically - prioritize scene and action over positioning details
     if (components.length > 0) {
       return `Action: ${components.join(', ')}`;
     } else {
       return ''; // Remove entire Action section if no components
     }
   });
+  
+  // STEP 2: Remove other empty sections (original logic)
+  cleaned = cleaned
+    .replace(/\w+:\s*[,.](?=\s*\w+:)/g, '') // Remove empty sections in middle
+    .replace(/\w+:\s*[,.](?=\s*Technical:)/g, '') // Remove empty sections before Technical
+    .replace(/\w+:\s*[,.]$/g, '') // Remove empty sections at end
+    .replace(/,\s*,+/g, ',') // Fix multiple commas
+    .replace(/\.\s*\.+/g, '.') // Fix multiple periods
+    .replace(/\s+/g, ' ') // Clean up extra spaces
+    .replace(/\.\s*\w+:/g, '. ') // Fix periods before section labels
+    .trim();
+  
+  console.log('🧹 After cleaning:', cleaned);
+  return cleaned;
+}
   
   // STEP 2: Remove other empty sections (original logic)
   cleaned = cleaned
@@ -5367,10 +5500,37 @@ serve(async (req: Request) => {
     // TIER 2.5A vs 2.5B LOGIC: Check requirements and route accordingly
     let prompt;
     try {
-      // TIER 2.5A: Premium Template (requires pageText + userInfo + sessionId + characterData)
-      if (hasTier25ARequirements) {
-        console.log('🛡️ Using Tier 2.5A: Premium Template with Character Consistency');
-        prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, localAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
+    // ENHANCED: Character Consistency Integration with Nuclear Independence
+    if (hasTier25ARequirements) {
+      console.log('🛡️ Using Tier 2.5A: Premium Template with Character Consistency');
+      
+      // Integrate Character Consistency Service
+      let enhancedAvatarIdentity = localAvatarIdentity;
+      try {
+        const characterSeed = await CharacterConsistencyService.getCharacterSeed(
+          sessionId, 
+          'main_character', 
+          pageText, 
+          'premium', 
+          sceneData?.clothing || ''
+        );
+        
+        if (characterSeed) {
+          console.log('🎭 Enhanced character consistency integration successful');
+          enhancedAvatarIdentity = {
+            ...localAvatarIdentity,
+            character: characterSeed.description || localAvatarIdentity.character,
+            features: characterSeed.facialFeatures || localAvatarIdentity.features,
+            hair: characterSeed.hairstyle || localAvatarIdentity.hair,
+            consistency: true
+          };
+        }
+      } catch (characterError) {
+        console.warn('⚠️ Character consistency integration failed, using nuclear mapping:', characterError);
+      }
+      
+      prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
+    } else {
         console.log('✅ Premium Template (Tier 2.5A) filling successful with contextual intelligence');
       } else {
         console.log('🛡️ Missing requirements for Tier 2.5A, using Tier 2.5B: Basic Template');
