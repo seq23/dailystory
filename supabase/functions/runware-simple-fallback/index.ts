@@ -4888,6 +4888,21 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
       console.log('🛡️ Applied cultural features fallback:', safeFinalFeatures);
     }
     
+    // ============= NEW: COLORED OBJECTS INTEGRATION =============
+    // Add persistent colored objects from VisualDetailTracker BEFORE template processing
+    let coloredObjects = '';
+    try {
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+      const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session');
+      coloredObjects = storedObjects || '';
+      
+      if (coloredObjects) {
+        console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
+    }
+    
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
       .replace('{character}', finalMapping.character)
@@ -4899,24 +4914,7 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
       .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', enhanceSeededSecondaryCharacterPositioning(secondary_characters, pageText, safeScene, sessionId) || '') // ENHANCED: Seed-based spatial positioning integration
-      
-      // ============= NEW: COLORED OBJECTS INTEGRATION =============
-      // Add persistent colored objects from VisualDetailTracker
-      let coloredObjects = '';
-      try {
-        const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
-        const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session');
-        coloredObjects = storedObjects || '';
-        
-        if (coloredObjects) {
-          console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
-        }
-      } catch (error) {
-        console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
-      }
-      
-      // Replace {colored_objects} placeholder in template
-      filledTemplate = filledTemplate.replace('{colored_objects}', coloredObjects);
+      .replace('{colored_objects}', coloredObjects) // NEW: Colored objects from VisualDetailTracker
       .replace('{emotion}', emotion)
       .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
       .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
