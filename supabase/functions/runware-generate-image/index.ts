@@ -1167,22 +1167,51 @@ serve(async (req) => {
           return null;
         };
         
-        // Helper function to generate story context (Level 0-1 only)
+        // Helper function to generate story context with optimized Level 3-4 support
         const generateStoryContext = (pageText: string, difficulty: string, requestId: string) => {
           if (!isLevel01User) return null;
           
           if (!pageText || pageText.length < 10) return null;
           
-          // Level-based story context: Full for Level 0-1, first 2 sentences for Level 2-4
+          // Smart sentence detection for complex punctuation
+          const smartSentenceSplit = (text: string): string[] => {
+            // Enhanced regex to handle dialogue, complex punctuation, and multi-clause sentences
+            const sentenceRegex = /[.!?]+(?=\s+[A-Z]|$)/g;
+            const parts = text.trim().split(sentenceRegex);
+            return parts
+              .map(part => part.trim())
+              .filter(part => part.length > 0)
+              .map((part, index, array) => {
+                // Add back punctuation if not the last part
+                return index < array.length - 1 ? part + '.' : part;
+              });
+          };
+          
+          // Level-based story context: Full for Level 0-1, optimized for Level 2-4
           if (mappedDifficulty === 0 || mappedDifficulty === 1) {
             console.log(`📖 [${requestId}] Full story context provided for Level ${mappedDifficulty} user`);
             return pageText.trim();
-          } else {
-            // Level 2-4: Return first 2 sentences only
-            const sentences = pageText.trim().split(/[.!?]+/).filter(s => s.trim().length > 0);
-            const firstTwoSentences = sentences.slice(0, 2).join('. ').trim() + (sentences.length > 2 ? '.' : '');
+          } else if (mappedDifficulty === 2) {
+            // Level 2: Return first 2 sentences (existing logic maintained)
+            const sentences = smartSentenceSplit(pageText);
+            const firstTwoSentences = sentences.slice(0, 2).join(' ').trim();
             console.log(`📖 [${requestId}] First 2 sentences provided for Level ${mappedDifficulty} user: "${firstTwoSentences.substring(0, 50)}${firstTwoSentences.length > 50 ? '...' : ''}"`);
             return firstTwoSentences;
+          } else {
+            // Level 3-4: Return first 3 sentences with minimum character threshold
+            const sentences = smartSentenceSplit(pageText);
+            const firstThreeSentences = sentences.slice(0, 3).join(' ').trim();
+            
+            // Ensure minimum 150 character threshold for meaningful context
+            if (firstThreeSentences.length >= 150 || sentences.length <= 3) {
+              console.log(`📖 [${requestId}] First 3 sentences provided for Level ${mappedDifficulty} user (${firstThreeSentences.length} chars): "${firstThreeSentences.substring(0, 50)}${firstThreeSentences.length > 50 ? '...' : ''}"`);
+              return firstThreeSentences;
+            } else {
+              // If first 3 sentences are too short, extend to 4 sentences or full text
+              const extendedContext = sentences.slice(0, 4).join(' ').trim();
+              console.log(`📖 [${requestId}] Extended to 4 sentences for Level ${mappedDifficulty} user (${extendedContext.length} chars): "${extendedContext.substring(0, 50)}${extendedContext.length > 50 ? '...' : ''}"`);
+              return extendedContext;
+            }
           }
         };
         
