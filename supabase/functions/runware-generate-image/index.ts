@@ -1119,7 +1119,7 @@ serve(async (req) => {
         // CRITICAL CULTURAL CONTEXT GENERATOR
         // REGRESSION PREVENTION: This function handles cultural representation for diverse users
         // DO NOT MODIFY the cultural detection logic without comprehensive testing
-        const generateCulturalContext = (avatarIdentity: any, userInfo: any, requestId: string) => {
+        const generateCulturalContext = (avatarIdentity: any, userInfo: any, requestId: string, characterData?: any) => {
           const skinTone = avatarIdentity?.skinTone;
           const nativeLanguage = avatarIdentity?.nativeLanguage || userInfo?.native_language || 'en';
           
@@ -1141,8 +1141,30 @@ serve(async (req) => {
               if (hairstyles && hairstyles.length > 0 && 
                   HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
                 
-                const features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
-                const hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+                // Use stored selections if available, otherwise make random selection and store
+                let features, hairstyle;
+                if (characterData?.selectedCulturalFeatures && characterData?.selectedCulturalHair) {
+                  features = characterData.selectedCulturalFeatures;
+                  hairstyle = characterData.selectedCulturalHair;
+                  console.log(`🌍 [${requestId}] Using stored cultural selections - Hair: ${hairstyle.substring(0, 30)}..., Features: ${features.substring(0, 30)}...`);
+                } else {
+                  features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+                  hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+                  console.log(`🎲 [${requestId}] Generated new cultural selections - Hair: ${hairstyle.substring(0, 30)}..., Features: ${features.substring(0, 30)}...`);
+                }
+                  // Store new cultural selections in character consistency
+                  if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
+                    try {
+                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+                      const characterService = new CharacterConsistencyService();
+                      const characterName = avatarIdentity?.name || userInfo?.name || 'child';
+                      const cacheKey = `${sessionId}_${characterName}`;
+                      await characterService.updateCulturalSelections(sessionId, cacheKey, hairstyle, features);
+                      console.log(`💾 [${requestId}] Stored cultural selections for future consistency`);
+                    } catch (error) {
+                      console.warn(`⚠️ [${requestId}] Failed to store cultural selections:`, error);
+                    }
+                  }
                 
                 // CULTURAL LABEL MAPPING - DO NOT MODIFY
                 // This maps language codes to accurate cultural identities for the African diaspora
@@ -1285,7 +1307,7 @@ serve(async (req) => {
           console.warn(`⚠️ [${requestId}] Missing character description`);
         }
         
-        const culturalContext = generateCulturalContext(avatarIdentity, userInfo, requestId);
+        const culturalContext = generateCulturalContext(avatarIdentity, userInfo, requestId, characterData);
         if (culturalContext) {
           characterSection += characterSection ? `, ${culturalContext}` : culturalContext;
           console.log(`🌍 [${requestId}] Section 2 - Cultural Context Unified:`, {

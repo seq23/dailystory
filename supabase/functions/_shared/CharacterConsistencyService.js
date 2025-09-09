@@ -29,6 +29,8 @@ export class CharacterConsistencyService {
         session_id: sessionId,
         character_key: characterKey,
         character_data: characterData,
+        selected_cultural_hair: characterData.selectedCulturalHair || null,
+        selected_cultural_features: characterData.selectedCulturalFeatures || null,
         updated_at: new Date().toISOString()
       });
 
@@ -55,7 +57,7 @@ export class CharacterConsistencyService {
 
     const { data, error } = await supabase
       .from('character_consistency_cache')
-      .select('character_data')
+      .select('character_data, selected_cultural_hair, selected_cultural_features')
       .eq('session_id', sessionId)
       .eq('character_key', characterKey)
       .single();
@@ -67,7 +69,15 @@ export class CharacterConsistencyService {
     
     if (data?.character_data) {
       console.log(`📖 Retrieved character ${characterKey} from database for session ${sessionId}`);
-      return data.character_data;
+      // Merge cultural selections back into character data
+      const characterData = data.character_data;
+      if (data.selected_cultural_hair) {
+        characterData.selectedCulturalHair = data.selected_cultural_hair;
+      }
+      if (data.selected_cultural_features) {
+        characterData.selectedCulturalFeatures = data.selected_cultural_features;
+      }
+      return characterData;
     }
     
     return null;
@@ -100,8 +110,9 @@ export class CharacterConsistencyService {
         skinTone: seedData.skinTone || avatarIdentity?.skinTone
       },
       physicalTraits: seedData.physicalTraits,
-      consistentEyeColor: seedData.consistentEyeColor,
       consistentClothingStyle: seedData.consistentClothingStyle,
+      selectedCulturalHair: seedData.selectedCulturalHair,
+      selectedCulturalFeatures: seedData.selectedCulturalFeatures,
       characterName: seedData.characterName,
       generatedAt: Date.now()
     };
@@ -126,9 +137,7 @@ export class CharacterConsistencyService {
     // Generate consistent physical features using character-specific seed
     const seededRandom = this.createSeededRandom(baseSeed);
     
-    // Generate consistent eye color for this character
-    const eyeColors = ['brown eyes', 'dark brown eyes', 'hazel eyes', 'amber eyes', 'green eyes', 'blue eyes', 'gray eyes'];
-    const consistentEyeColor = eyeColors[Math.floor(seededRandom() * eyeColors.length)];
+    // Eye color handling removed - let avatar descriptions handle naturally
     
     // Generate consistent clothing style for this character
     const clothingStyles = ['casual', 'colorful', 'comfortable', 'neat', 'playful'];
@@ -139,8 +148,9 @@ export class CharacterConsistencyService {
       characterName,
       avatarType: avatarIdentity.type || 'child',
       skinTone: avatarIdentity.skinTone || 'medium',
-      consistentEyeColor,
       consistentClothingStyle,
+      selectedCulturalHair: null, // Will be populated when cultural context is generated
+      selectedCulturalFeatures: null, // Will be populated when cultural context is generated
       characterSpecificSeed
     };
   }
@@ -162,15 +172,54 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Update character data with cultural selections for persistence
+   */
+  async updateCulturalSelections(sessionId, characterKey, selectedCulturalHair, selectedCulturalFeatures) {
+    console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'), 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    );
+
+    const { error } = await supabase
+      .from('character_consistency_cache')
+      .update({
+        selected_cultural_hair: selectedCulturalHair,
+        selected_cultural_features: selectedCulturalFeatures,
+        updated_at: new Date().toISOString()
+      })
+      .eq('session_id', sessionId)
+      .eq('character_key', characterKey);
+
+    if (error) {
+      console.error('❌ Cultural selections update error:', error);
+      throw new Error(`CharacterConsistencyService.updateCulturalSelections failed: ${safeErrorMessage(error)}`);
+    }
+    
+    console.log(`🎨 Updated cultural selections for character ${characterKey}`);
+    return true;
+  }
+
+  /**
    * Build character description from seed data
    */
   buildCharacterDescription(seedData, storyContext, pageTextClothing = null) {
     const characterName = seedData.characterName || 'child';
     const age = seedData.age || '6-8';
-    const eyeColor = seedData.consistentEyeColor || 'brown eyes';
-    const clothingStyle = pageTextClothing || `${seedData.consistentClothingStyle} clothing`;
+    // Check if story text has clothing descriptions, if so skip random clothing
+    const hasStoryClothing = pageTextClothing && (
+      pageTextClothing.includes('wearing') || 
+      pageTextClothing.includes('dressed') || 
+      pageTextClothing.includes('shirt') ||
+      pageTextClothing.includes('pants') ||
+      pageTextClothing.includes('dress') ||
+      pageTextClothing.includes('outfit')
+    );
+    const clothingStyle = hasStoryClothing ? '' : `wearing ${seedData.consistentClothingStyle} clothing`;
     
-    return `${characterName} is a child age ${age} with ${eyeColor} wearing ${clothingStyle}`;
+    return `${characterName} is a child age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
   }
 
   /**
