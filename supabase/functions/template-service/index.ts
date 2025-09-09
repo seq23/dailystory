@@ -7,11 +7,11 @@ import { nuclearLoadTemplate, initializeNuclearSystem, getSystemHealth, getNucle
 import { initializeNuclearSessionSystem } from '../_shared/nuclearSessionManager.ts';
 
 // Import arc-aware template processing system
-import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.ts';
-import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.ts';
+import { processArcAwarePage, batchProcessArcAwarePages, clearArcSession } from '../_shared/arcAwareTemplateProcessor.js';
+import { getTemplateCount, getRawTemplate } from '../_shared/templateImporter.js';
 import { clearTemplateCache } from '../_shared/dynamicTemplateLoader.js';
 import { getBValue } from '../_shared/templates/registry.js';
-import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
+import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.js';
 
 // Import sophisticated placeholder resolution  
 import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
