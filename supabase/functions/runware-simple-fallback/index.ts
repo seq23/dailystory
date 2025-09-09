@@ -5581,6 +5581,16 @@ function detectEmotionFromText(text: string): string {
 serve(async (req: Request) => {
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
   
+  // ============= TIER TRACKING VARIABLES =============
+  let attemptedTiers = [];
+  let successfulTier = null;
+  let tierPath = [];
+  let fallbackReason = null;
+  let enhancementLevel = null;
+  let startTime = Date.now();
+  
+  console.log('🎯 TIER 2.5 CASCADE: Initializing tier tracking system');
+  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
@@ -5667,6 +5677,11 @@ serve(async (req: Request) => {
     } catch (sceneError) {
       console.warn('⚠️ Scene extraction failed - triggering 2.5B basic template:', sceneError);
       // CRITICAL: Scene extraction failure triggers 2.5B basic template  
+      console.log('❌ Scene extraction failed - routing directly to Tier 2.5B');
+      tierPath.push('direct-2.5B-attempt');
+      successfulTier = '2.5B';
+      enhancementLevel = 'basic';
+      fallbackReason = 'Scene extraction failure';
       return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
     }
     
@@ -5711,7 +5726,9 @@ serve(async (req: Request) => {
     try {
     // ENHANCED: Character Consistency Integration with Nuclear Independence
     if (hasTier25ARequirements) {
-      console.log('🛡️ Using Tier 2.5A: Premium Template with Character Consistency');
+      console.log('🎯 Tier 2.5A: ATTEMPTING (Premium Template + Character Consistency)');
+      attemptedTiers.push('2.5A');
+      tierPath.push('2.5A-attempting');
       
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
@@ -5741,40 +5758,73 @@ serve(async (req: Request) => {
       }
       
       prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
-      console.log('✅ Premium Template (Tier 2.5A) filling successful with contextual intelligence');
+      console.log('✅ Tier 2.5A: SUCCESS (Premium Template + Character Consistency)');
+      successfulTier = '2.5A';
+      tierPath[tierPath.length - 1] = '2.5A-success';
+      enhancementLevel = 'premium';
     } else {
-      console.log('🛡️ Missing requirements for Tier 2.5A, using Tier 2.5B: Basic Template');
+      console.log('❌ Tier 2.5A: FAILED (Missing requirements - sessionId, characterData)');
+      fallbackReason = 'Missing Tier 2.5A requirements (sessionId or characterData)';
+      tierPath.push('2.5A-failed');
       throw new Error('Tier 2.5A requirements not met - auto-fallback to 2.5B');
     }
     } catch (templateError) {
-      console.warn('⚠️ Premium Template failed, trying BASIC template (Tier 1.5 / 2.5B):', templateError);
+      console.log('❌ Tier 2.5A: FAILED (Template generation error)');
+      if (!fallbackReason) fallbackReason = `Premium template error: ${templateError.message}`;
+      if (tierPath[tierPath.length - 1] !== '2.5A-failed') {
+        tierPath[tierPath.length - 1] = '2.5A-failed';
+      }
       
       // ============= UPDATED 4-TIER FALLBACK CHAIN =============
-      // TIER 1: Premium Template (2.5A) → TIER 1.5: Basic Template (2.5B) → TIER 2: Emergency Template (2.5C) → TIER 3: Ultimate Emergency Template (2.5D)
+      console.log('🔄 Tier 2.5A FAILED → Routing to Tier 2.5B');
       try {
-        // TIER 2.5B: Basic Template - 3-section simplified structure (pageText + userInfo ONLY)
-        console.log('🛡️ Using Tier 2.5B: Basic Template (pageText + userInfo ONLY)');
+        console.log('🎯 Tier 2.5B: ATTEMPTING (Basic Template)');
+        attemptedTiers.push('2.5B');
+        tierPath.push('2.5B-attempting');
+        
         prompt = fillBasicTemplate(difficulty, userInfo, pageText, localAvatarIdentity);
-        console.log('✅ Basic Template (Tier 2.5B) applied successfully');
+        console.log('✅ Tier 2.5B: SUCCESS (Basic Template)');
+        successfulTier = '2.5B';
+        tierPath[tierPath.length - 1] = '2.5B-success';
+        enhancementLevel = 'basic';
         
       } catch (basicError) {
-        console.warn('⚠️ Basic Template failed, using EMERGENCY template (Tier 2 / 2.5C):', basicError);
+        console.log('❌ Tier 2.5B: FAILED (Basic template error)');
+        tierPath[tierPath.length - 1] = '2.5B-failed';
+        if (!fallbackReason) fallbackReason = `Basic template error: ${basicError.message}`;
         
+        console.log('🔄 Tier 2.5B FAILED → Routing to Tier 2.5C');
         try {
-          // TIER 2: Emergency Template (2.5C) - pageText (2500 chars) + framework only
+          console.log('🎯 Tier 2.5C: ATTEMPTING (Emergency Template)');
+          attemptedTiers.push('2.5C');
+          tierPath.push('2.5C-attempting');
+          
           const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
                                     NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
                                     EMERGENCY_FALLBACK_FRAMEWORK || 
                                     'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
           
           prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
-          console.log('✅ Emergency Template (Tier 2 / 2.5C) applied successfully');
+          console.log('✅ Tier 2.5C: SUCCESS (Emergency Template)');
+          successfulTier = '2.5C';
+          tierPath[tierPath.length - 1] = '2.5C-success';
+          enhancementLevel = 'emergency';
           
         } catch (emergencyError) {
-          console.warn('⚠️ Emergency template failed, using ULTIMATE EMERGENCY template (Tier 3 / 2.5D):', emergencyError);
+          console.log('❌ Tier 2.5C: FAILED (Emergency template error)');
+          tierPath[tierPath.length - 1] = '2.5C-failed';
+          if (!fallbackReason) fallbackReason = `Emergency template error: ${emergencyError.message}`;
           
-          // TIER 3: Ultimate Emergency Template (2.5D) - hardcoded fallback (last resort)
+          console.log('🔄 Tier 2.5C FAILED → Routing to Tier 2.5D (ULTIMATE EMERGENCY)');
+          console.log('🎯 Tier 2.5D: ATTEMPTING (Ultimate Emergency Template)');
+          attemptedTiers.push('2.5D');
+          tierPath.push('2.5D-attempting');
+          
           prompt = "ULTIMATE_EMERGENCY_TEMPLATE_USED: A cheerful child character in a colorful outdoor scene with bright, friendly lighting. Contemporary children's book illustration with soft painterly style, warm expressions, detailed facial features, vibrant colors, shallow depth of field, character-focused composition, child-friendly aesthetic, high rendering quality, artistic lighting, diverse representation";
+          console.log('✅ Tier 2.5D: SUCCESS (Ultimate Emergency Template - GUARANTEED)');
+          successfulTier = '2.5D';
+          tierPath[tierPath.length - 1] = '2.5D-success';
+          enhancementLevel = 'ultimate-emergency';
         }
       }
     }
@@ -5795,25 +5845,41 @@ serve(async (req: Request) => {
       // BULLETPROOFING: Additional validation checks that trigger 2.5B fallback
       const characterValidation = validateCharacterConsistency(characterData, avatarMapping);
       if (!characterValidation.isValid) {
-        console.warn('🔄 Character consistency validation failed - triggering 2.5B:', characterValidation.issues.join(', '));
+        console.log('❌ Character consistency validation failed - routing directly to Tier 2.5B');
+        tierPath.push('direct-2.5B-attempt');
+        successfulTier = '2.5B';
+        enhancementLevel = 'basic';
+        fallbackReason = 'Character consistency validation failed';
         return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       const visualValidation = validateVisualElements(sceneData, objects, setting);
       if (!visualValidation.isValid) {
-        console.warn('🔄 Visual elements validation failed - triggering 2.5B:', visualValidation.issues.join(', '));
+        console.log('❌ Visual elements validation failed - routing directly to Tier 2.5B');
+        tierPath.push('direct-2.5B-attempt');
+        successfulTier = '2.5B';
+        enhancementLevel = 'basic';
+        fallbackReason = 'Visual elements validation failed';
         return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       const sceneValidation = validateSceneComplexity(sceneData, pageText);
       if (!sceneValidation.isValid) {
-        console.warn('🔄 Scene complexity validation failed - triggering 2.5B:', sceneValidation.issues.join(', '));
+        console.log('❌ Scene complexity validation failed - routing directly to Tier 2.5B');
+        tierPath.push('direct-2.5B-attempt');
+        successfulTier = '2.5B';
+        enhancementLevel = 'basic';
+        fallbackReason = 'Scene complexity validation failed';
         return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
       }
       
       console.log('✅ All validation checks passed - proceeding with premium template');
     } catch (avatarError) {
-      console.warn('🔄 Character consistency service failed - triggering 2.5B basic template:', avatarError);
+      console.log('❌ Character consistency service failed - routing directly to Tier 2.5B');
+      tierPath.push('direct-2.5B-attempt');
+      successfulTier = '2.5B';
+      enhancementLevel = 'basic';
+      fallbackReason = 'Character consistency service failure';
       
       // CRITICAL: Character consistency failure triggers 2.5B basic template (not emergency template)
       return fillBasicTemplate(difficulty || 'medium', userInfo, pageText, localAvatarIdentity);
@@ -5968,6 +6034,10 @@ serve(async (req: Request) => {
               } else if (item.taskType === "imageInference") {
                 console.log('🛡️ Tier 2.5: Image generation successful!');
                 
+                 const processingTime = Date.now() - startTime;
+                 console.log(`🎯 TIER CASCADE COMPLETE: ${successfulTier} succeeded in ${processingTime}ms`);
+                 console.log(`📊 Tier Path: [${tierPath.join(' → ')}]`);
+                 
                  resolveOnce(createCorsResponse({
                    success: true,
                    imageURL: item.imageURL,
@@ -5976,6 +6046,12 @@ serve(async (req: Request) => {
                    difficulty: difficulty,
                    culturalProfile: culturalProfile,
                    tier: '2.5 Nuclear Independence + Character Consistency',
+                   specificTier: successfulTier,
+                   tierPath: tierPath,
+                   enhancementLevel: enhancementLevel,
+                   fallbackReason: fallbackReason,
+                   processingTime: processingTime,
+                   attemptedTiers: attemptedTiers,
                    placeholders: {
                      objects: objects || 'none',
                      secondary_characters: secondary_characters || 'none'
@@ -6093,7 +6169,10 @@ serve(async (req: Request) => {
           const imageData = httpResult.data?.find(item => item.taskType === 'imageInference');
           
           if (imageData?.imageURL) {
-            console.log('✅ Tier 2.5: HTTP fallback successful!');
+            const processingTime = Date.now() - startTime;
+            console.log(`✅ Tier 2.5: HTTP fallback successful! Final tier: ${successfulTier}`);
+            console.log(`📊 HTTP Fallback - Tier Path: [${tierPath.join(' → ')}]`);
+            
             return createCorsResponse({
               success: true,
               imageURL: imageData.imageURL,
@@ -6102,6 +6181,12 @@ serve(async (req: Request) => {
               difficulty: difficulty,
               culturalProfile: culturalProfile,
               tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
+              specificTier: successfulTier,
+              tierPath: tierPath,
+              enhancementLevel: enhancementLevel,
+              fallbackReason: fallbackReason,
+              processingTime: processingTime,
+              attemptedTiers: attemptedTiers,
               placeholders: {
                 objects: objects || 'none',
                 secondary_characters: secondary_characters || 'none'

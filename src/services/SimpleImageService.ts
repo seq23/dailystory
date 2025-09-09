@@ -487,18 +487,29 @@ export class SimpleImageService {
           });
           
           if (tier25Response.data?.success) {
-            console.log('✅ EMERGENCY FALLBACK SUCCESS: Tier 2.5 succeeded');
+            const specificTier = tier25Response.data.specificTier || '2.5-unknown';
+            const tierPath = tier25Response.data.tierPath || ['unknown'];
+            const enhancementLevel = tier25Response.data.enhancementLevel || 'nuclear-fallback';
+            
+            console.log(`✅ EMERGENCY FALLBACK SUCCESS: Tier ${specificTier} succeeded`);
+            console.log(`📊 Emergency Fallback - Tier Path: [${tierPath.join(' → ')}]`);
+            console.log(`🎨 Enhancement Level: ${enhancementLevel}`);
             
             const result: ImageResult = {
               url: tier25Response.data.imageURL,
               success: true,
-              provider: 'tier-2.5-emergency',
+              provider: `tier-${specificTier}-emergency`,
               model: tier25Response.data.metadata?.model || 'nuclear-template',
               cost: tier25Response.data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
               seed: tier25Response.data.seed,
               metadata: {
-                tier: '2.5-emergency',
-                enhancementLevel: tier25Response.data.enhancementLevel || 'nuclear-fallback',
+                tier: `${specificTier}-emergency`,
+                specificTier: specificTier,
+                tierPath: tierPath,
+                enhancementLevel: enhancementLevel,
+                fallbackReason: tier25Response.data.fallbackReason,
+                processingTime: tier25Response.data.processingTime,
+                attemptedTiers: tier25Response.data.attemptedTiers,
                 qualityScore: tier25Response.data.qualityScore,
                 emergencyFallback: true,
                 originalTier1Error: error.message,
