@@ -290,7 +290,7 @@ async function processEnding(endings: AttachableEnding[], userInfo: UserInfo, te
   let selectedEnding;
   if (arcConfig?.endingRotation) {
     // Use arc manager's ending rotation logic
-    const { selectRotatedEnding } = await import('./arcManager.ts');
+    const { selectRotatedEnding } = await import('./arcManager.js');
     selectedEnding = selectRotatedEnding(endings, { endingRotation: arcConfig.endingRotation });
   } else {
     selectedEnding = pick(endings);
