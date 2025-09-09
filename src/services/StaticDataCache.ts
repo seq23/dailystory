@@ -272,6 +272,13 @@ export const getCulturalContextArrays = () => {
         celebrations: ['Juneteenth', 'family reunions', 'church gatherings', 'block parties', 'graduation celebrations'],
         values: ['community strength', 'family pride', 'perseverance', 'educational achievement', 'cultural heritage', 'resilience'],
         sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field']
+      },
+      'pt-afro-brazilian': {
+        characterNames: ['Dandara', 'Zumbi', 'Conceição', 'Benedito', 'Aparecida', 'Joaquim', 'Francisca', 'Sebastião', 'Antônia', 'Manoel'],
+        commonFoods: ['acarajé', 'vatapá', 'caruru', 'dendê', 'moqueca', 'bobo de camarão', 'xinxim de galinha', 'abará', 'cocada', 'quindim'],
+        celebrations: ['Festa de Iemanjá', 'Lavagem do Bonfim', 'blocos afro', 'capoeira rodas', 'Festa de São João', 'Congadas', 'Maracatu', 'Festival de Inverno de Bonito', 'Festa do Divino', 'Bumba meu boi'],
+        values: ['resistência', 'ancestralidade', 'comunidade', 'axé', 'força espiritual', 'união', 'tradição oral', 'respeito aos mais velhos', 'solidariedade', 'orgulho cultural'],
+        sports: ['capoeira', 'football', 'samba', 'basketball', 'volleyball', 'swimming', 'martial arts', 'dancing', 'futsal', 'surfing']
       }
     };
     staticCache.set(cacheKey, contexts);
@@ -295,6 +302,12 @@ export const getCulturalGuidanceString = (userInfo: any) => {
   } else if (nativeLanguage === 'fr' && skinTone === 'dark') {
     culturalKey = 'fr-francophone-african';
     regionName = 'Francophone African';
+  } else if (nativeLanguage === 'es' && skinTone === 'dark') {
+    culturalKey = 'es-afro-latina';
+    regionName = 'Afro-Latino';
+  } else if (nativeLanguage === 'pt' && skinTone === 'dark') {
+    culturalKey = 'pt-afro-brazilian';
+    regionName = 'Afro-Brazilian';
   } else if (nativeLanguage === 'es') {
     regionName = 'Hispanic/Latino';
   } else if (nativeLanguage === 'zh') {

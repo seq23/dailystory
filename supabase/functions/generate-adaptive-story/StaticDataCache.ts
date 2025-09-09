@@ -125,6 +125,13 @@ export const getCulturalContextArrays = () => {
         celebrations: ['Juneteenth', 'family reunions', 'church gatherings', 'block parties', 'graduation celebrations'],
         values: ['community strength', 'family pride', 'perseverance', 'educational achievement', 'cultural heritage', 'resilience'],
         sports: ['American football', 'basketball', 'baseball', 'soccer', 'hockey', 'tennis', 'swimming', 'track and field']
+      },
+      'pt-afro-brazilian': {
+        characterNames: ['Dandara', 'Zumbi', 'Conceição', 'Benedito', 'Aparecida', 'Joaquim', 'Francisca', 'Sebastião', 'Antônia', 'Manoel'],
+        commonFoods: ['acarajé', 'vatapá', 'caruru', 'dendê', 'moqueca', 'bobo de camarão', 'xinxim de galinha', 'abará', 'cocada', 'quindim'],
+        celebrations: ['Festa de Iemanjá', 'Lavagem do Bonfim', 'blocos afro', 'capoeira rodas', 'Festa de São João', 'Congadas', 'Maracatu', 'Festival de Inverno de Bonito', 'Festa do Divino', 'Bumba meu boi'],
+        values: ['resistência', 'ancestralidade', 'comunidade', 'axé', 'força espiritual', 'união', 'tradição oral', 'respeito aos mais velhos', 'solidariedade', 'orgulho cultural'],
+        sports: ['capoeira', 'football', 'samba', 'basketball', 'volleyball', 'swimming', 'martial arts', 'dancing', 'futsal', 'surfing']
       }
     };
     cache.set(cacheKey, contexts);
@@ -496,3 +503,57 @@ export const getModelChainOptimized = (isExpertLevel: boolean = false, forceRefr
 
 // Backward compatibility - redirect to optimized version
 export { getModelChainOptimized as getModelChain };
+
+export const getCulturalGuidanceString = (userInfo: any) => {
+  const contexts = getCulturalContextArrays();
+  const nativeLanguage = userInfo?.nativeLanguage || 'en';
+  const skinTone = userInfo?.avatar?.skinTone;
+  
+  // Enhanced regional detection covering all 11 cultural contexts
+  let culturalKey = nativeLanguage;
+  let regionName = 'General English';
+  
+  if (nativeLanguage === 'en' && skinTone === 'dark') {
+    culturalKey = 'en-african-american';
+    regionName = 'African American';
+  } else if (nativeLanguage === 'fr' && skinTone === 'dark') {
+    culturalKey = 'fr-francophone-african';
+    regionName = 'Francophone African';
+  } else if (nativeLanguage === 'es' && skinTone === 'dark') {
+    culturalKey = 'es-afro-latina';
+    regionName = 'Afro-Latino';
+  } else if (nativeLanguage === 'pt' && skinTone === 'dark') {
+    culturalKey = 'pt-afro-brazilian';
+    regionName = 'Afro-Brazilian';
+  } else if (nativeLanguage === 'es') {
+    regionName = 'Hispanic/Latino';
+  } else if (nativeLanguage === 'zh') {
+    regionName = 'Chinese';
+  } else if (nativeLanguage === 'hi') {
+    regionName = 'Indian/Hindi';
+  } else if (nativeLanguage === 'ar') {
+    regionName = 'Arabic/Middle Eastern';
+  } else if (nativeLanguage === 'fr') {
+    regionName = 'French';
+  } else if (nativeLanguage === 'pt') {
+    regionName = 'Portuguese/Brazilian';
+  }
+  
+  const context = contexts[culturalKey];
+  if (!context || culturalKey === 'en') return '';
+  
+  // Comprehensive cultural easter egg instructions
+  const foods = context.commonFoods || [];
+  const celebrations = context.celebrations || [];
+  const names = context.characterNames || [];
+  const values = context.values || [];
+  const sports = context.sports || [];
+  
+  return `CULTURAL EASTER EGG INSTRUCTIONS for ${regionName} background:
+- You have access to getCulturalContext() function with comprehensive ${regionName} cultural data
+- Use cultural elements as subtle background details ONLY - never main focus or stereotypes
+- Rotate randomly between: foods (${foods.slice(0,3).join(', ')}...), celebrations (${celebrations.slice(0,2).join(', ')}...), names (${names.slice(0,3).join(', ')}...), values (${values.slice(0,2).join(', ')}...), sports (${sports.slice(0,2).join(', ')}...)
+- Frequency: 1-2 brief mentions maximum per story, varied placement
+- Style: Passing details, environmental elements, character names - authentic but respectful
+- NEVER: Make culture the plot center, use outdated stereotypes, or over-emphasize differences`;
+};
