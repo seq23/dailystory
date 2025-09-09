@@ -6,7 +6,7 @@ import {
   createDynamicCorsErrorResponse 
 } from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
-import { SessionStateManager } from "../_shared/SessionStateManager.js";
+import { SessionStateManager } from "../_shared/SessionStateManager.ts";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
@@ -1076,7 +1076,7 @@ serve(async (req) => {
         
         // 0. VISUAL DETAIL ANALYSIS FIRST - Must run before character building
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           const characterName = avatarIdentity?.name || userInfo?.name || 'child';
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterName);
           console.log(`🎨 [${requestId}] Visual details analyzed before character building`);
@@ -1339,7 +1339,7 @@ serve(async (req) => {
         
         // 3.1. Secondary Elements
         try {
-          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
+          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
           const secondaryElements = await SecondaryElementDetector.parseElements(
             sessionId,
             promptSections.primaryScene, // Use primary scene
@@ -1394,7 +1394,7 @@ serve(async (req) => {
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
         // Add visual detail analysis for consistent object tracking
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           await VisualDetailTracker.analyzeTextForDetails(
             sessionId, 
             pageText, 
@@ -1408,7 +1408,7 @@ serve(async (req) => {
         
         // 3.2. Visual Details & Colored Objects (automatically integrated from database)
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           
           // Get general visual consistency details
           const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
@@ -1645,7 +1645,7 @@ serve(async (req) => {
 
           // PHASE 1: Store successful Tier 1 image prompt with DEBUG  
           console.log('📸 DEBUG: Storing Tier 1 image prompt...');
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+      const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
           
           try {
             globalSessionManager.storeImagePrompt(sessionId, {
@@ -1886,7 +1886,7 @@ serve(async (req) => {
     // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
     console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
     try {
-      const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
+      const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
       globalSessionManager.storeImagePrompt(sessionId, {
         tier: '4',
         promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,

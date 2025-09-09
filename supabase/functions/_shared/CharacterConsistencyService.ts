@@ -250,7 +250,7 @@ export class CharacterConsistencyService {
     let clothingStyle = '';
     if (sessionId) {
       try {
-        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
+        const { VisualDetailTracker } = await import('./VisualDetailTracker.ts');
         const detectedClothing = await VisualDetailTracker.buildClothingDescription(sessionId, characterName);
         if (detectedClothing) {
           clothingStyle = detectedClothing;

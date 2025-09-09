@@ -6,7 +6,7 @@ import {
   createDynamicCorsErrorResponse 
 } from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
-import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.js';
+import { SessionStateManager, globalSessionManager } from '../_shared/SessionStateManager.ts';
 
 serve(async (req) => {
   console.log(`🖼️ Debug: Recent Image Prompts Request: ${req.method} ${req.url}`);
