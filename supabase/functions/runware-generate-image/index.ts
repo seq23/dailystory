@@ -1086,7 +1086,7 @@ serve(async (req) => {
         
         // Import services for direct assembly
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-        const { getStyleFramework } = await import('../_shared/styleFrameworks.ts');
+        const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
         const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.ts');
         
         // Initialize character consistency service
