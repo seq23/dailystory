@@ -247,16 +247,17 @@ class ErrorSuppressionManager {
     if (this.errorCounts.size > 0) {
       const totalSuppressed = Array.from(this.errorCounts.values()).reduce((sum, count) => sum + count, 0);
       
-      if (totalSuppressed > 0) {
+      // Only show summary if there are MANY errors (>100) or in debug mode
+      if (totalSuppressed > 100 || (typeof window !== 'undefined' && window.location.search.includes('debug=console'))) {
         this.originalConsoleWarn(
           `🔇 Console Hygiene: Suppressed ${totalSuppressed} noisy messages in the last ${this.summaryInterval / 1000}s`,
           '\n📊 Breakdown:',
           Object.fromEntries(this.errorCounts)
         );
-        
-        this.errorCounts.clear();
-        this.lastSummaryTime = now;
       }
+      
+      this.errorCounts.clear();
+      this.lastSummaryTime = now;
     }
   }
 
@@ -310,23 +311,11 @@ class ErrorSuppressionManager {
     this.showSummary();
   }
 
-  // Performance monitoring for setInterval violations
+  // Performance monitoring for setInterval violations - DISABLED
   monitorPerformanceViolations() {
-    if (typeof PerformanceObserver !== 'undefined') {
-      try {
-        const observer = new PerformanceObserver((list) => {
-          const entries = list.getEntries();
-          entries.forEach((entry) => {
-            if (entry.duration > 50) { // Suppress instead of log
-              this.incrementErrorCount('Performance Monitoring');
-            }
-          });
-        });
-        observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
-      } catch (e) {
-        // Performance Observer not supported or failed to initialize
-      }
-    }
+    // DISABLED: This was causing 400+ messages every 10 seconds
+    // Performance monitoring is now handled by usePerformanceMonitor hook with debug mode only
+    return;
   }
 }
 

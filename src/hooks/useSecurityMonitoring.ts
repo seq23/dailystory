@@ -117,17 +117,18 @@ export const useSecurityMonitoring = () => {
     UserActivityMonitor.trackPageView(location.pathname);
   }, [location.pathname]);
 
-  // Monitor performance
+  // Monitor performance - ONLY CRITICAL ISSUES
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.location.search.includes('debug=security')) {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          if (entry.duration > 3000) {
-            SecurityMonitor.logEvent('slow_operation', {
+          // Only log TRULY slow operations (>5000ms) 
+          if (entry.duration > 5000) {
+            SecurityMonitor.logEvent('critical_slow_operation', {
               name: entry.name,
               duration: entry.duration,
               type: entry.entryType
-            }, 'medium');
+            }, 'high');
           }
         });
       });

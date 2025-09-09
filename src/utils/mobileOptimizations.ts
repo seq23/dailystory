@@ -433,10 +433,11 @@ export const initializeMobileOptimizations = (config: Partial<MobileOptimization
   const finalConfig = { ...DEFAULT_MOBILE_CONFIG, ...config };
   const cleanupFunctions: (() => void)[] = [];
 
-  // Initialize performance monitoring with forced reflow detection
+  // Initialize performance monitoring with forced reflow detection - DISABLED
   try {
-    // Note: This should be called from a React component, but we'll add global detection
-    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
+    // DISABLED: This was contributing to 400+ performance messages every 10 seconds
+    // Performance monitoring is now handled by usePerformanceMonitor hook with debug mode only
+    if (false) { // Explicitly disabled
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'measure' && entry.duration > 16) {
