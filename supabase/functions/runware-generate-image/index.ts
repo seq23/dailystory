@@ -1542,30 +1542,6 @@ serve(async (req) => {
               characterSeed: characterData?.seed || 'fallback-seed'
             }
           }, req);
-          
-          // =================== TIER 2.5 SUCCESS TEST ===================
-          // Test if Tier 2.5 would succeed even when Tier 1 succeeded
-          console.log('🧪 TESTING: Checking if Tier 2.5 would have succeeded...');
-          try {
-            const tier25TestResult = await supabase.functions.invoke('runware-simple-fallback', {
-              body: {
-                prompt: "test simple prompt",
-                width: 1024,
-                height: 1024,
-                testMode: true // Add test mode flag
-              }
-            });
-            
-            if (tier25TestResult.data && !tier25TestResult.error) {
-              console.log('✅ TIER 2.5 SUCCESS TEST: Would have succeeded with nuclear fallback');
-            } else {
-              console.log('❌ TIER 2.5 SUCCESS TEST: Would have failed - good thing Tier 1 worked!');
-            }
-          } catch (testError) {
-            console.log('🔍 TIER 2.5 SUCCESS TEST: Error during test -', testError.message);
-          }
-          
-          return createDynamicCorsResponse(tier1Result, req);
         }
         
         console.log('⚠️ Tier 1 failed, falling back to Tier 2.5');
