@@ -1032,7 +1032,7 @@ serve(async (req) => {
           sessionId,
           pageNumber,
           promptPreview: pageText.substring(0, 100) + '...',
-          stage: 'ai-scene-creator',
+          stage: 'ai-visual-scene-creator',
           metadata: { 
             userInfo: userInfo?.name, 
             difficultyLevel: mappedDifficulty,
@@ -1058,7 +1058,7 @@ serve(async (req) => {
           success: aiEnhancerResult.success,
           hasAiSchema: !!aiEnhancerResult.aiSchema,
           aiSchemaKeys: aiEnhancerResult.aiSchema ? Object.keys(aiEnhancerResult.aiSchema) : [],
-          stage: 'ai-scene-creator-response',
+          stage: 'ai-visual-scene-creator-response',
           metadata: { responseSize: JSON.stringify(aiEnhancerResult).length }
         });
 
