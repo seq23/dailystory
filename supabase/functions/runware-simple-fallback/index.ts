@@ -1,10 +1,10 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
-import { globalArcSessionManager } from "../_shared/sessionStateManager.ts";
+import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
-import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -3269,7 +3269,7 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
   
   try {
     // PHASE 1: Use SecondaryElementDetector for consistent detection
-    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
+    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
     const secondaryElements = await SecondaryElementDetector.parseElements(
       sessionId,
       '', // primaryScene not available yet
@@ -3283,7 +3283,7 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
     }
     
     // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
-    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
+    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
     const characterConsistencyService = new CharacterConsistencyService();
     
     const seededDescriptions = await Promise.all(
@@ -5735,7 +5735,7 @@ serve(async (req: Request) => {
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
       try {
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         const characterConsistencyService = new CharacterConsistencyService();
         const characterSeed = await characterConsistencyService.getCharacterSeed(
           sessionId, 
