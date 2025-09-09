@@ -1203,7 +1203,7 @@ async function extractSceneWithPremiumTemplate(pageText: string, previousSetting
       scene: expandedAction,
       setting: contextualSetting,
       objects: enhancedObjects || '', // Use enhanced objects for consistency
-      secondary_characters: await extractSecondaryCharactersFromSentence(bestSentence, sessionId, pageNumber),
+      secondary_characters: await getSeededSecondaryCharacters(bestSentence, sessionId, pageNumber),
       spatial_composition: spatialComposition,
       atmosphere: atmosphereContext,
       // Pass contextual intelligence data for template integration
@@ -3235,6 +3235,78 @@ function generateSeededRandom(seed: string): number {
   return Math.abs(hash) / 2147483647;
 }
 
+// ============= SEEDED SECONDARY CHARACTER SYSTEM (REPLACES OLD extractSecondaryCharactersFromSentence) =============
+async function getSeededSecondaryCharacters(sentence: string, sessionId?: string, pageNumber?: number): Promise<string> {
+  console.log(`🔍 Seeded Secondary Character Detection - Processing: "${sentence}"`);
+  
+  if (!sessionId) {
+    console.log('⚠️ No sessionId provided, falling back to basic detection');
+    return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
+  }
+  
+  try {
+    // PHASE 1: Use SecondaryElementDetector for consistent detection
+    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
+    const secondaryElements = await SecondaryElementDetector.parseElements(
+      sessionId,
+      '', // primaryScene not available yet
+      sentence,
+      pageNumber || 1
+    );
+    
+    if (!secondaryElements || secondaryElements.length === 0) {
+      console.log('📝 No secondary elements detected by SecondaryElementDetector, using fallback');
+      return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
+    }
+    
+    // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
+    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+    const characterConsistencyService = new CharacterConsistencyService();
+    
+    const seededDescriptions = await Promise.all(
+      secondaryElements.slice(0, 4).map(async (el) => {
+        if (el.type === 'secondary_character') {
+          try {
+            const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(
+              sessionId, 
+              el.name, 
+              'secondary_character'
+            );
+            const seedDescription = characterConsistencyService.generateSecondaryCharacterDescription(
+              el.name, 
+              'secondary_character', 
+              secondaryCharacterSeed.seed
+            );
+            console.log(`👤 Tier 2.5A: Secondary character seed applied: ${el.name} -> ${seedDescription} (seed: ${secondaryCharacterSeed.seed})`);
+            return `${el.name}: ${seedDescription}`;
+          } catch (error) {
+            console.warn(`⚠️ Tier 2.5A: Secondary character seed failed for ${el.name}:`, error.message);
+            return `friendly ${el.name}`;
+          }
+        } else if (el.type === 'character_animal') {
+          return `${el.name} (${el.type})`;
+        }
+        return null;
+      })
+    );
+    
+    const validDescriptions = seededDescriptions.filter(desc => desc !== null);
+    
+    if (validDescriptions.length > 0) {
+      const result = validDescriptions.join(', ');
+      console.log(`✅ Tier 2.5A: Seeded secondary characters generated: ${result}`);
+      return result;
+    } else {
+      console.log('📝 No valid seeded descriptions, using fallback');
+      return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
+    }
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5A: Seeded secondary character detection failed, using fallback:', error.message);
+    return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
+  }
+}
+
 async function extractSecondaryCharactersFromSentence(sentence: string, sessionId?: string, pageNumber?: number): Promise<string> {
   console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
   
@@ -4192,6 +4264,34 @@ function enhanceSecondaryCharacterPositioning(secondaryCharacters: string, pageT
   }
 }
 
+// ============= SEEDED SECONDARY CHARACTER POSITIONING (REPLACES enhanceSecondaryCharacterPositioning) =============
+function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, pageText: string, scene: string, sessionId?: string): string {
+  if (!secondaryChars || secondaryChars.trim().length === 0) {
+    return '';
+  }
+  
+  console.log(`🎯 Tier 2.5A: Enhancing seeded secondary character positioning: "${secondaryChars}"`);
+  
+  // If already has seed descriptions (contains ':'), preserve them and add positioning
+  if (secondaryChars.includes(':')) {
+    const spatialPositions = [
+      'standing nearby', 'sitting close by', 'positioned to the left', 'positioned to the right',
+      'in the background', 'in the foreground', 'walking alongside', 'playing together',
+      'gathered around', 'sitting together', 'standing behind', 'positioned in front'
+    ];
+    
+    const seed = (sessionId || '') + secondaryChars + scene;
+    const randomPosition = getSeededRandomItem(spatialPositions, seed);
+    
+    const result = `${secondaryChars}, ${randomPosition}`;
+    console.log(`✅ Tier 2.5A: Seeded positioning applied: ${result}`);
+    return result;
+  }
+  
+  // Fallback: Use original enhanceSecondaryCharacterPositioning for backwards compatibility
+  return enhanceSecondaryCharacterPositioning(secondaryChars, pageText, scene);
+}
+
 // ============= END ENHANCED TIER 2.5 SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
 
 // ============= BASIC TEMPLATE EXTRACTION FUNCTIONS (TIER 1.5 / 2.5B) =============
@@ -4695,7 +4795,35 @@ function fillPremiumTemplate(
     if (criticalPlaceholderFailure) {
       console.warn('🚨 Critical placeholder failure detected - triggering emergency template');
       throw new Error('Critical placeholders failed: character, scene, or setting missing');
-    }
+}
+
+// ============= SEEDED SECONDARY CHARACTER POSITIONING (REPLACES enhanceSecondaryCharacterPositioning) =============
+function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, pageText: string, scene: string, sessionId?: string): string {
+  if (!secondaryChars || secondaryChars.trim().length === 0) {
+    return '';
+  }
+  
+  console.log(`🎯 Tier 2.5A: Enhancing seeded secondary character positioning: "${secondaryChars}"`);
+  
+  // If already has seed descriptions (contains ':'), preserve them and add positioning
+  if (secondaryChars.includes(':')) {
+    const spatialPositions = [
+      'standing nearby', 'sitting close by', 'positioned to the left', 'positioned to the right',
+      'in the background', 'in the foreground', 'walking alongside', 'playing together',
+      'gathered around', 'sitting together', 'standing behind', 'positioned in front'
+    ];
+    
+    const seed = (sessionId || '') + secondaryChars + scene;
+    const randomPosition = getSeededRandomItem(spatialPositions, seed);
+    
+    const result = `${secondaryChars}, ${randomPosition}`;
+    console.log(`✅ Tier 2.5A: Seeded positioning applied: ${result}`);
+    return result;
+  }
+  
+  // Fallback: Use original enhanceSecondaryCharacterPositioning for backwards compatibility
+  return enhanceSecondaryCharacterPositioning(secondaryChars, pageText, scene);
+}
     
     // PHASE 4: Cultural Authentication Fallbacks for {hair} and {features}
     let safeFinalHair = finalMapping.hair;
@@ -4732,7 +4860,7 @@ function fillPremiumTemplate(
       .replace('{scene}', safeScene) // PHASE 1 FIX: Use safeScene instead of undefined enhancedScene
       .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
-      .replace('{secondary_characters}', enhanceSecondaryCharacterPositioning(secondary_characters, pageText, safeScene) || '') // ENHANCED: Spatial positioning integration
+      .replace('{secondary_characters}', enhanceSeededSecondaryCharacterPositioning(secondary_characters, pageText, safeScene, sessionId) || '') // ENHANCED: Seed-based spatial positioning integration
       .replace('{emotion}', emotion)
       .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
       .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder

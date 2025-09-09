@@ -1348,14 +1348,43 @@ serve(async (req) => {
           );
           
           if (secondaryElements && secondaryElements.length > 0) {
-            const secondaryDescription = secondaryElements
-              .map(el => `${el.name} (${el.type})`)
-              .join(', ');
+            // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
+            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+            const characterConsistencyService = new CharacterConsistencyService();
+            
+            const seededSecondaryDescriptions = await Promise.all(
+              secondaryElements.slice(0, 4).map(async (el) => {
+                if (el.type === 'secondary_character') {
+                  try {
+                    const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(
+                      sessionId, 
+                      el.name, 
+                      'secondary_character'
+                    );
+                    const seedDescription = characterConsistencyService.generateSecondaryCharacterDescription(
+                      el.name, 
+                      'secondary_character', 
+                      secondaryCharacterSeed.seed
+                    );
+                    console.log(`👤 [${requestId}] Secondary character seed applied: ${el.name} -> ${seedDescription} (seed: ${secondaryCharacterSeed.seed})`);
+                    return `${el.name}: ${seedDescription}`;
+                  } catch (error) {
+                    console.warn(`⚠️ [${requestId}] Secondary character seed failed for ${el.name}:`, error.message);
+                    return `${el.name} (${el.type})`;
+                  }
+                } else {
+                  return `${el.name} (${el.type})`;
+                }
+              })
+            );
+            
+            const secondaryDescription = seededSecondaryDescriptions.join(', ');
             sceneDetailsSection = `Secondary characters and elements: ${secondaryDescription}`;
-            console.log(`👥 [${requestId}] Section 3 - Secondary Elements Added:`, {
+            console.log(`👥 [${requestId}] Section 3 - Seeded Secondary Elements Added:`, {
               content: secondaryDescription,
               count: secondaryElements.length,
-              source: 'SecondaryElementDetector'
+              seedsApplied: seededSecondaryDescriptions.filter(desc => desc.includes(':')).length,
+              source: 'SecondaryElementDetector + CharacterConsistencyService'
             });
           }
         } catch (error) {

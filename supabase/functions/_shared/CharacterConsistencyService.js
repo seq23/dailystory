@@ -287,36 +287,50 @@ export class CharacterConsistencyService {
   /**
    * Get or create secondary character seed for consistency across pages
    */
-  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'person') {
-    const cacheKey = `${sessionId}_secondary_${characterName}`;
+  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character') {
+    const characterKey = `secondary_${characterName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
     
-    // Check database first
-    const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
-    if (cached) {
-      console.log(`🎭 CACHED: Using existing secondary character ${characterName} (seed: ${cached.seed})`);
-      return cached;
+    try {
+      // Check database first
+      const existingSeed = await this.getCharacterFromDatabase(sessionId, characterKey);
+      if (existingSeed && existingSeed.seed) {
+        console.log(`🔄 Secondary character seed retrieved from database: ${characterName} (${existingSeed.seed})`);
+        return existingSeed;
+      }
+      
+      // Generate new seed if not found
+      const characterSpecificSeed = `secondary_${characterName}_${sessionId}_${characterType}`;
+      const newSeed = this.generateStableSeed(characterSpecificSeed, characterName);
+      
+      // Generate description for consistency
+      const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, newSeed);
+      
+      // Store in database for consistency
+      const secondaryData = {
+        seed: newSeed,
+        characterDescription,
+        name: characterName,
+        characterType: 'secondary',
+        relationshipType: characterType,
+        created_at: new Date().toISOString()
+      };
+      
+      await this.saveCharacterToDatabase(sessionId, characterKey, secondaryData);
+      
+      console.log(`✨ New secondary character seed generated and stored: ${characterName} (${newSeed})`);
+      return secondaryData;
+      
+    } catch (error) {
+      console.error(`❌ Secondary character seed error for ${characterName}:`, error);
+      // Fallback: generate deterministic seed without database
+      const fallbackSeed = this.generateStableSeed(sessionId + characterName + characterType, characterName);
+      return {
+        seed: fallbackSeed,
+        characterDescription: this.generateSecondaryCharacterDescription(characterName, characterType, fallbackSeed),
+        name: characterName,
+        characterType: 'secondary'
+      };
     }
-    
-    // Generate new secondary character with seed
-    const characterSpecificSeed = `secondary_${characterName}_${sessionId}`;
-    const seed = this.generateStableSeed(characterSpecificSeed, characterName);
-    
-    const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, seed);
-    
-    const secondaryData = {
-      seed,
-      characterDescription,
-      name: characterName,
-      characterType: 'secondary',
-      relationshipType: characterType,
-      generatedAt: Date.now()
-    };
-    
-    // Save to database
-    await this.saveCharacterToDatabase(sessionId, cacheKey, secondaryData);
-    
-    console.log(`🎭 FRESH: Generated new secondary character ${characterName} (seed: ${seed})`);
-    return secondaryData;
   }
 
   /**
