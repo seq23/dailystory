@@ -74,9 +74,14 @@ export class SessionCacheManager {
       preserveAvatarIdentity = false
     } = options;
 
+    // CRITICAL FIX: Ensure sessionId is always defined
+    const effectiveSessionId = sessionId || `fallback_session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    
     console.log('🧹 [CACHE DEBUG] clearAllSessionCaches ENTRY:', {
       userId,
-      sessionId,
+      sessionId: effectiveSessionId,
+      originalSessionId: sessionId,
+      sessionIdSource: sessionId ? 'provided' : 'generated',
       avatarType,
       skinTone,
       reason,
@@ -94,19 +99,13 @@ export class SessionCacheManager {
     try {
       // 1. Clear Enhanced Image Cache (now uses sessionStorage)
       console.log('🔄 [CACHE DEBUG] Step 1: Clearing Enhanced Image Cache...');
-      if (sessionId) {
-        // Use story transition clearing for new stories
-        if (reason === 'new-session') {
-          EnhancedImageCache.clearForStoryTransition(sessionId);
-        } else {
-          EnhancedImageCache.clearSession(sessionId);
-        }
-        console.log('✅ [CACHE DEBUG] Enhanced Image Cache cleared for session:', sessionId);
+      // Use story transition clearing for new stories
+      if (reason === 'new-session') {
+        EnhancedImageCache.clearForStoryTransition(effectiveSessionId);
       } else {
-        // Clear all avatar-specific cached images if no specific session
-        EnhancedImageCache.clearAll();
-        console.log('✅ [CACHE DEBUG] Enhanced Image Cache cleared (all sessions)');
+        EnhancedImageCache.clearSession(effectiveSessionId);
       }
+      console.log('✅ [CACHE DEBUG] Enhanced Image Cache cleared for session:', effectiveSessionId);
 
       // 2. Clear Story Session Cache
       console.log('🔄 [CACHE DEBUG] Step 2: Clearing Story Session Cache...');
@@ -120,14 +119,14 @@ export class SessionCacheManager {
       // 3. Clear Visual State (character/object tracking)
       if (clearVisualState) {
         console.log('🔄 [CACHE DEBUG] Step 3: Clearing Visual State Cache...');
-        this.clearVisualStateCache(sessionId, userId);
+        this.clearVisualStateCache(effectiveSessionId, userId);
       } else {
         console.log('⏭️ [CACHE DEBUG] Step 3: Skipping Visual State Cache (preserving for rewrite)');
       }
 
       // 4. Clear Character State (appearance consistency)
       console.log('🔄 [CACHE DEBUG] Step 4: Clearing Character State...');
-      this.clearCharacterState(userId, sessionId, avatarType);
+      this.clearCharacterState(userId, effectiveSessionId, avatarType);
 
       // 5. Clear Session Storage Caches
       console.log('🔄 [CACHE DEBUG] Step 5: Clearing Session Storage Caches...');
@@ -154,13 +153,19 @@ export class SessionCacheManager {
   private static clearForPremiumRewrite(options: ClearOptions): void {
     const { userId = 'guest', sessionId, avatarType } = options;
 
-    console.log('🎭 Premium rewrite: Selective clearing to preserve avatar identity');
+    // CRITICAL FIX: Ensure sessionId is always defined
+    const effectiveSessionId = sessionId || `fallback_session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+
+    console.log('🎭 Premium rewrite: Selective clearing to preserve avatar identity', {
+      userId,
+      sessionId: effectiveSessionId,
+      originalSessionId: sessionId,
+      avatarType
+    });
 
     try {
       // 1. Clear story images but keep character seeds
-      if (sessionId) {
-        EnhancedImageCache.clearStoryImagesKeepCharacterSeeds(sessionId, avatarType);
-      }
+      EnhancedImageCache.clearStoryImagesKeepCharacterSeeds(effectiveSessionId, avatarType);
 
       // 2. Clear story content but keep avatar metadata
       if (userId) {
@@ -168,7 +173,7 @@ export class SessionCacheManager {
       }
 
       // 3. Preserve character appearance seeds while clearing story details
-      this.clearStoryContentPreserveCharacter(userId, sessionId, avatarType);
+      this.clearStoryContentPreserveCharacter(userId, effectiveSessionId, avatarType);
 
       console.log('✅ Premium rewrite clearing completed - avatar identity preserved');
 

@@ -2824,7 +2824,7 @@ const handleRestartTimer = () => {
           
           SessionCacheManager.clearAllSessionCaches({
             userId,
-            sessionId: characterSessionId,
+            sessionId: characterSessionId || `session_${Date.now()}_${Math.random().toString(36).substring(2)}`,
             avatarType: userInfo.avatar?.type,
             skinTone: userInfo.avatar?.skinTone,
             reason: 'premium-rewrite',

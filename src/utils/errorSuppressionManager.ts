@@ -5,7 +5,7 @@ class ErrorSuppressionManager {
   private suppressionEnabled = false;
   private errorCounts: Map<string, number> = new Map();
   private lastSummaryTime = 0;
-  private summaryInterval = 10000; // 10 seconds
+  private summaryInterval = 30000; // 30 seconds (increased from 10)
   private batchTimeout: number | null = null;
 
   constructor() {

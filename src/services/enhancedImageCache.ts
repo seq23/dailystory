@@ -83,7 +83,7 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Generate session-isolated cache key with microsecond precision for unique story instances
+   * Generate session-isolated cache key with deterministic story-based identifiers
    */
   private static generateCacheKey(
     prompt: string, 
@@ -97,12 +97,12 @@ export class EnhancedImageCache {
     // Create a hash of prompt for consistent length
     const promptHash = this.createPromptHash(prompt);
     
-    // CRITICAL FIX: Use session-deterministic timestamp instead of dynamic timestamp
-    // Create a session-unique but story-specific identifier using microseconds + random seed
+    // CRITICAL FIX: Use deterministic story-based identifier instead of Date.now()
+    // Create a session-unique but story-specific identifier
     const sessionSeed = this.getSessionSeed(sessionId);
     const storyInstanceId = storyId ? 
       `${this.createPromptHash(storyId)}-${sessionSeed}` : 
-      `${sessionSeed}-${Date.now().toString(36).slice(-4)}`;
+      `${sessionSeed}`;
     
     const baseKey = `${promptHash}-${sessionId}-${storyInstanceId}`;
     
