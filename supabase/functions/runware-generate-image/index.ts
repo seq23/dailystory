@@ -7,10 +7,10 @@ import {
 } from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager } from "../_shared/SessionStateManager.ts";
-import { SecurityValidator } from "../_shared/SecurityValidator.js";
-import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { SecurityValidator } from "../_shared/SecurityValidator.ts";
+import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.ts";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
 
 /**
  * ============================================================================

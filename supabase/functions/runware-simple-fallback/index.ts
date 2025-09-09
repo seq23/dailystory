@@ -1,6 +1,6 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
 import { globalArcSessionManager } from "../_shared/SessionStateManager.ts";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
@@ -3394,40 +3394,40 @@ async function extractSecondaryCharactersFromSentence(sentence: string, sessionI
   if (detectedCharacterElements.length < 3) {
     const relationshipPatterns = [
       // FAMILY EXTENDED WITH DESCRIPTIVE ATTRIBUTES
-      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'adventurous brother', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'wise grandmother', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'kind grandfather', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'friendly aunt', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'jovial uncle', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'enthusiastic cousin', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(mom|mother|mommy|mama)/gi, description: 'caring mother', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(dad|father|daddy|papa)/gi, description: 'supportive father', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(sister|sis)/gi, description: 'playful sister', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(brother|bro)/gi, description: 'adventurous brother', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandma|grandmother)/gi, description: 'wise grandmother', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(grandpa|grandfather)/gi, description: 'kind grandfather', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(aunt)/gi, description: 'friendly aunt', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(uncle)/gi, description: 'jovial uncle', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(cousin)/gi, description: 'enthusiastic cousin', entityType: 'human' },
       
       // COMMUNITY EXTENDED WITH DESCRIPTIVE ATTRIBUTES
-      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'smiling girlfriend', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'happy boyfriend', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'helpful neighbor', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'studious classmate', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'energetic teammate', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'encouraging coach', type: 'human' },
-      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'patient teacher', type: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(friend|buddy|pal)/gi, description: 'cheerful friend', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(girlfriend)/gi, description: 'smiling girlfriend', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(boyfriend)/gi, description: 'happy boyfriend', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(neighbor)/gi, description: 'helpful neighbor', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(classmate)/gi, description: 'studious classmate', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teammate)/gi, description: 'energetic teammate', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(coach)/gi, description: 'encouraging coach', entityType: 'human' },
+      { pattern: /(?:my|your|his|her|their)\s+(teacher)/gi, description: 'patient teacher', entityType: 'human' },
       
       // ANIMALS EXTENDED WITH DESCRIPTIVE ATTRIBUTES
-      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal family dog', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious pet cat', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'colorful pet bird', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'fluffy pet rabbit', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'gentle horse companion', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'swimming pet fish', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'tiny pet hamster', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'cute guinea pig', type: 'animal' },
-      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'slow pet turtle', type: 'animal' }
+      { pattern: /(?:my|your|his|her|their)\s+(dog|puppy|pup)/gi, description: 'loyal family dog', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(cat|kitten|kitty)/gi, description: 'curious pet cat', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(bird|parrot)/gi, description: 'colorful pet bird', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(rabbit|bunny)/gi, description: 'fluffy pet rabbit', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(horse)/gi, description: 'gentle horse companion', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(fish)/gi, description: 'swimming pet fish', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(hamster)/gi, description: 'tiny pet hamster', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(guinea pig)/gi, description: 'cute guinea pig', entityType: 'animal' },
+      { pattern: /(?:my|your|his|her|their)\s+(turtle)/gi, description: 'slow pet turtle', entityType: 'animal' }
     ];
     
     // Process relationship patterns with enhanced descriptions
-    for (const { pattern, description, type } of relationshipPatterns) {
+    for (const { pattern, description, entityType } of relationshipPatterns) {
       if (detectedCharacterElements.length >= 3) break; // Stop if we have 3 characters
       
       const matches = [...lowerSentence.matchAll(pattern)];
