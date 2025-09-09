@@ -19,9 +19,9 @@ interface CacheMetrics {
 }
 
 export class EnhancedImageCache {
-  private static readonly CACHE_KEY = 'secure_image_cache';
+  private static readonly CACHE_KEY = 'session_image_cache';
   private static readonly MAX_CACHE_SIZE = 100; // Maximum cached images
-  private static readonly CACHE_EXPIRY_HOURS = 24; // 24 hours cache lifetime
+  private static readonly CACHE_EXPIRY_HOURS = 24; // 24 hours cache lifetime (now session-scoped)
   private static readonly MAX_SESSION_IMAGES = 20; // Per session limit
 
   /**
@@ -29,7 +29,7 @@ export class EnhancedImageCache {
    */
   private static getCacheMap(): Map<string, CachedImage> {
     try {
-      const cached = localStorage.getItem(this.CACHE_KEY);
+      const cached = sessionStorage.getItem(this.CACHE_KEY);
       if (!cached) return new Map();
       
       const data = JSON.parse(cached);
@@ -69,7 +69,7 @@ export class EnhancedImageCache {
 
       // Convert Map to object for storage
       const data = Object.fromEntries(map);
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify(data));
+      sessionStorage.setItem(this.CACHE_KEY, JSON.stringify(data));
       
       console.log('📸 Image cache saved:', {
         totalImages: map.size,
@@ -83,7 +83,7 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Generate cache key for image with story continuity context and avatar awareness
+   * Generate cache key for image with enhanced story isolation and timestamp boundaries
    */
   private static generateCacheKey(
     prompt: string, 
@@ -96,13 +96,18 @@ export class EnhancedImageCache {
   ): string {
     // Create a hash of prompt for consistent length
     const promptHash = this.createPromptHash(prompt);
-    const baseKey = `${promptHash}-${sessionId}`;
-    const storyKey = storyId ? `${baseKey}-${storyId}` : baseKey;
-    const contextKey = contextualMarkers ? `${storyKey}-ctx:${contextualMarkers}` : storyKey;
+    
+    // Add session timestamp for stronger story isolation
+    const sessionTimestamp = Date.now().toString(36).substring(0, 8);
+    const baseKey = `${promptHash}-${sessionId}-${sessionTimestamp}`;
+    
+    // Enhanced story hash for better cross-story isolation
+    const storyKey = storyId ? `${baseKey}-story:${storyId}` : baseKey;
+    const contextKey = contextualMarkers ? `${storyKey}-ctx:${this.createPromptHash(contextualMarkers)}` : storyKey;
     
     // Add avatar awareness to prevent cross-avatar contamination
     // Use same normalization as StorySessionCache for consistency
-    const normalizedAvatarType = avatarType === 'prefer-not-to-answer' ? 'neutral' : avatarType;
+    const normalizedAvatarType = avatarType === 'prefer-not-to-answer' ? 'neutral' : (avatarType || 'default');
     const avatarKey = (normalizedAvatarType && skinTone) ? `${contextKey}-av:${normalizedAvatarType}-${skinTone}` : contextKey;
     
     return pageNumber !== undefined ? `${avatarKey}-p${pageNumber}` : avatarKey;
@@ -318,12 +323,12 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Clear all cached images
+   * Clear all cached images (now clears sessionStorage)
    */
   static clearAll(): void {
     try {
-      localStorage.removeItem(this.CACHE_KEY);
-      console.log('📸 All image cache cleared');
+      sessionStorage.removeItem(this.CACHE_KEY);
+      console.log('📸 All session image cache cleared');
     } catch (error) {
       console.error('Failed to clear all cache:', error);
     }
@@ -501,17 +506,55 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Check if cache is approaching storage limits
+   * Check if cache is approaching storage limits (now checks sessionStorage)
    */
   static isStorageNearLimit(): boolean {
     try {
-      // Check localStorage usage (rough estimate)
-      const used = JSON.stringify(localStorage).length;
-      const limit = 5 * 1024 * 1024; // 5MB rough limit
+      // Check sessionStorage usage (rough estimate)
+      const used = JSON.stringify(sessionStorage).length;
+      const limit = 5 * 1024 * 1024; // 5MB rough limit for sessionStorage
       return used > limit * 0.8; // 80% threshold
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Clear images for story transition while preserving user session
+   * Used for guest "Next Story" and premium "New Story" actions
+   */
+  static clearForStoryTransition(sessionId: string): void {
+    try {
+      const map = this.getCacheMap();
+      const initialSize = map.size;
+      
+      // Remove all images for this session to start fresh story
+      for (const [key, value] of map.entries()) {
+        if (value.sessionId === sessionId) {
+          map.delete(key);
+        }
+      }
+      
+      this.saveCacheMap(map);
+      
+      console.log('📸 Story transition cache cleared:', {
+        sessionId,
+        removedImages: initialSize - map.size,
+        remainingImages: map.size
+      });
+    } catch (error) {
+      console.error('Failed to clear story transition cache:', error);
+    }
+  }
+
+  /**
+   * Clear images for premium story "Finish" while preserving for navigation
+   * Premium users can still navigate after finishing their story
+   */
+  static clearForPremiumFinish(sessionId: string): void {
+    // For premium users, "Finish Story" does NOT clear cache
+    // Images are preserved until they start a new story or end session
+    console.log('📸 Premium finish: Images preserved for navigation');
   }
 }
 

@@ -92,10 +92,15 @@ export class SessionCacheManager {
     }
 
     try {
-      // 1. Clear Enhanced Image Cache
+      // 1. Clear Enhanced Image Cache (now uses sessionStorage)
       console.log('🔄 [CACHE DEBUG] Step 1: Clearing Enhanced Image Cache...');
       if (sessionId) {
-        EnhancedImageCache.clearSession(sessionId);
+        // Use story transition clearing for new stories
+        if (reason === 'new-session') {
+          EnhancedImageCache.clearForStoryTransition(sessionId);
+        } else {
+          EnhancedImageCache.clearSession(sessionId);
+        }
         console.log('✅ [CACHE DEBUG] Enhanced Image Cache cleared for session:', sessionId);
       } else {
         // Clear all avatar-specific cached images if no specific session
@@ -182,7 +187,8 @@ export class SessionCacheManager {
       const storyKeys = storageKeys.filter(key => 
         key.includes('story_content') || 
         key.includes('story_pages') ||
-        key.includes('story_narrative')
+        key.includes('story_narrative') ||
+        key.includes('session_image_cache') // Clear sessionStorage image cache too
       );
 
       storyKeys.forEach(key => {
@@ -393,6 +399,7 @@ export class SessionCacheManager {
   static clearOnNextStory(userId?: string, avatarType?: string): void {
     console.log('✨ [NEXTSTORY DEBUG] clearOnNextStory ENTRY:', { userId, avatarType, timestamp: new Date().toISOString() });
     try {
+      // Use story transition clearing for next story
       this.clearAllSessionCaches({
         userId: userId || 'guest',
         avatarType,
@@ -406,6 +413,22 @@ export class SessionCacheManager {
   }
 
   /**
+   * Clear caches for premium finish story (preserve images for navigation)
+   */
+  static clearOnPremiumFinish(userId?: string, sessionId?: string): void {
+    console.log('🎯 [PREMIUM-FINISH DEBUG] clearOnPremiumFinish ENTRY:', { userId, sessionId, timestamp: new Date().toISOString() });
+    try {
+      // Premium finish preserves images until new story or session end
+      if (sessionId) {
+        EnhancedImageCache.clearForPremiumFinish(sessionId);
+      }
+      console.log('✅ [PREMIUM-FINISH DEBUG] Images preserved for navigation');
+    } catch (error) {
+      console.error('❌ [PREMIUM-FINISH DEBUG] clearOnPremiumFinish FAILED:', error);
+    }
+  }
+
+  /**
    * Get cache status and metrics
    */
   static getCacheStatus(): { 
@@ -415,8 +438,8 @@ export class SessionCacheManager {
     characterStateKeys: number; 
   } {
     try {
-      // Count image cache entries
-      const imageCache = localStorage.getItem(EnhancedImageCache['CACHE_KEY']);
+      // Count image cache entries (now in sessionStorage)
+      const imageCache = sessionStorage.getItem('session_image_cache');
       const imageCacheSize = imageCache ? Object.keys(JSON.parse(imageCache)).length : 0;
 
       // Check session cache existence

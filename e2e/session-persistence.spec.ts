@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 test('session persists across page refreshes', async ({ page }) => {
   await page.goto('/');
   
-  // Mock active session data
+  // Mock active session data (now uses sessionStorage for images)
   await page.evaluate(() => {
     const sessionData = {
       pages: ['Once upon a time...', 'The adventure begins...'],
@@ -24,7 +24,19 @@ test('session persists across page refreshes', async ({ page }) => {
       sessionTimer: 300,
       isActiveSession: true
     };
+    // Story data still in localStorage
     localStorage.setItem('story-session-data', JSON.stringify(sessionData));
+    
+    // Image cache now in sessionStorage 
+    const imageCache = {
+      'test-key-session-1': {
+        url: 'https://example.com/test-image.jpg',
+        timestamp: Date.now(),
+        sessionId: 'test-session-1',
+        pageNumber: 1
+      }
+    };
+    sessionStorage.setItem('session_image_cache', JSON.stringify(imageCache));
   });
   
   await page.reload();
@@ -55,9 +67,12 @@ test('session data persists story progress', async ({ page }) => {
 test('corrupted session data handled gracefully', async ({ page }) => {
   await page.goto('/');
   
-  // Mock corrupted session data
+  // Mock corrupted session data (both localStorage and sessionStorage)
   await page.evaluate(() => {
+    // Corrupted story data
     localStorage.setItem('story-session-data', 'invalid-json');
+    // Corrupted image cache  
+    sessionStorage.setItem('session_image_cache', 'invalid-json');
   });
   
   await page.reload();
