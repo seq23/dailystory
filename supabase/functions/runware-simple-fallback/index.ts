@@ -4892,21 +4892,6 @@ function removeEmptySections(template: string): string {
   console.log('🧹 After cleaning:', cleaned);
   return cleaned;
 }
-  
-  // STEP 2: Remove other empty sections (original logic)
-  cleaned = cleaned
-    .replace(/\w+:\s*[,.](?=\s*\w+:)/g, '') // Remove empty sections in middle
-    .replace(/\w+:\s*[,.](?=\s*Technical:)/g, '') // Remove empty sections before Technical
-    .replace(/\w+:\s*[,.]$/g, '') // Remove empty sections at end
-    .replace(/,\s*,+/g, ',') // Fix multiple commas
-    .replace(/\.\s*\.+/g, '.') // Fix multiple periods
-    .replace(/\s+/g, ' ') // Clean up extra spaces
-    .replace(/\.\s*\w+:/g, '. ') // Fix periods before section labels
-    .trim();
-  
-  console.log('🧹 After cleaning:', cleaned);
-  return cleaned;
-}
 
 // CRITICAL FIX: Removed duplicate fillBasicTemplate function declaration
 // The function is already declared above with different parameters at line 3654
