@@ -43,7 +43,7 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 
 ### 3. Character Consistency Services
 
-#### Character Consistency (`_shared/CharacterConsistencyService.js`)
+#### Character Consistency (`_shared/CharacterConsistencyService.ts`)
 - **Database-backed avatar identity management** via `character_consistency_cache` table
 - Character appearance tracking with race condition elimination
 - Cultural representation with scalable architecture

@@ -4,7 +4,7 @@ import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
-import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -3283,7 +3283,7 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
     }
     
     // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
-    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
     const characterConsistencyService = new CharacterConsistencyService();
     
     const seededDescriptions = await Promise.all(
@@ -5735,7 +5735,7 @@ serve(async (req: Request) => {
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
       try {
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
         const characterConsistencyService = new CharacterConsistencyService();
         const characterSeed = await characterConsistencyService.getCharacterSeed(
           sessionId, 

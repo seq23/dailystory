@@ -1085,7 +1085,7 @@ serve(async (req) => {
         }
         
         // Import services for direct assembly
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
         const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
         const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
         
@@ -1165,7 +1165,7 @@ serve(async (req) => {
                   // Store new cultural selections in character consistency
                   if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
                     try {
-                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
                       const characterService = new CharacterConsistencyService();
                       const characterName = avatarIdentity?.name || userInfo?.name || 'child';
                       const cacheKey = `${sessionId}_${characterName}`;
@@ -1349,7 +1349,7 @@ serve(async (req) => {
           
           if (secondaryElements && secondaryElements.length > 0) {
             // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
-            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
             const characterConsistencyService = new CharacterConsistencyService();
             
             const seededSecondaryDescriptions = await Promise.all(
