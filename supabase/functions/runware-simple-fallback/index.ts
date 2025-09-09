@@ -92,11 +92,11 @@ const PREMIUM_PROMPT_TEMPLATES = {
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 const BASIC_PROMPT_TEMPLATES = {
   // 3-SECTION STRUCTURE: PRIMARY SCENE → VISUAL COMPONENTS → BRAND SUFFIX
-  beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  medium: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  hard: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
-  expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
+  beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  medium: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  hard: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
+  expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
 
 // AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
@@ -4296,6 +4296,45 @@ function extractBasicObjects(pageText: string): string {
 }
 
 /**
+ * Simple extraction function for secondary characters (Tier 2.5B - Nuclear Independence)
+ * Uses basic regex patterns with hardcoded fallbacks - NO complex dependencies
+ */
+function extractSimpleSecondaryCharacters(pageText: string): string {
+  try {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    const text = pageText.toLowerCase();
+    const found: string[] = [];
+    
+    // Simple regex patterns for common relationships
+    const patterns = [
+      /with (?:his|her|their) (\w+)/gi,
+      /and (?:his|her|their) (\w+)/gi,
+      /friend (\w+)/gi,
+      /(?:mom|mother|dad|father|sister|brother) (\w+)/gi,
+      /(?:dog|cat|pet) (?:named )?(\w+)/gi
+    ];
+    
+    patterns.forEach(pattern => {
+      const matches = [...pageText.matchAll(pattern)];
+      matches.forEach(match => {
+        if (match[1] && match[1].length > 1 && match[1] !== 'the') {
+          found.push(match[1]);
+        }
+      });
+    });
+    
+    // Remove duplicates and limit
+    const unique = [...new Set(found)].slice(0, 2);
+    return unique.length > 0 ? `with ${unique.join(' and ')}` : '';
+    
+  } catch (error) {
+    console.warn('⚠️ Simple secondary characters extraction failed:', error);
+    return ''; // Silent failure - nuclear independence
+  }
+}
+
+/**
  * Fill basic template with simplified 3-section structure (Tier 1.5 / 2.5B)
  * Following the example: "Tommy played with his friend Sequoia" → "A child playing with friend Sequoia in a garden"
  */
@@ -4303,7 +4342,11 @@ function fillBasicTemplate(
   difficulty: string,
   userInfo: any,
   pageText: string,
-  localAvatarIdentity?: any
+  localAvatarIdentity?: any,
+  scene?: string,
+  setting?: string,
+  objects?: string,
+  secondary_characters?: string
 ): string {
   console.log(`🛡️ Tier 1.5 (2.5B): Filling BASIC template with 3-section structure`);
   
@@ -4331,6 +4374,9 @@ function fillBasicTemplate(
     const setting = extractSetting(safePageText);
     const adjective = extractAdjective(safePageText);
     const emotion = extractEmotion(safePageText);
+    
+    // Extract simple secondary characters using basic patterns only
+    const secondaryChars = secondary_characters || extractSimpleSecondaryCharacters(safePageText);
     
     // Get nuclear avatar mapping with error protection
     let avatarMapping;
@@ -4377,6 +4423,7 @@ function fillBasicTemplate(
       .replace(/{setting}/g, setting)
       .replace(/{adjective}/g, adjective)
       .replace(/{emotion}/g, emotion)
+      .replace(/{secondary_characters}/g, secondaryChars)
       .replace(/{frameworkPrompt}/g, frameworkPrompt);
     
     // Clean up any remaining placeholders
@@ -4711,7 +4758,7 @@ function fillPremiumTemplate(
     const templateValidation = validateTemplateCompletion(filledTemplate);
     if (!templateValidation.isValid) {
       console.log(`🔄 Template has empty sections: ${templateValidation.issues.join(', ')} - Falling back to Tier 2.5B`);
-      return fillBasicTemplate(safeDifficulty, pageText, userInfo, avatarIdentity, safeScene, enhancedSetting, safeObjects, secondary_characters);
+      return fillBasicTemplate(safeDifficulty, userInfo, pageText, avatarIdentity, safeScene, enhancedSetting, safeObjects, secondary_characters);
     }
     
     // PHASE 8: REMOVE EMPTY SECTIONS 
