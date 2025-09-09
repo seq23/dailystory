@@ -1088,7 +1088,7 @@ function mapDifficultyInline(userInfo?: any, fallbackLevel: string = 'medium'): 
   }
 }
 
-function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: string, pageNumber?: number, sessionId?: string): { scene: string, setting: string, objects: string, secondary_characters: string } {
+async function extractSceneWithPremiumTemplate(pageText: string, previousSetting?: string, pageNumber?: number, sessionId?: string): Promise<{ scene: string, setting: string, objects: string, secondary_characters: string }> {
   try {
     console.log('🛡️ Tier 2.5: Starting unified semantic extraction with fantasy-friendly scoring');
     console.log(`📄 Input text: "${pageText}"`);
@@ -5461,7 +5461,7 @@ serve(async (req: Request) => {
       // Extract scene components with complete placeholder support - SILENT FAILURE PROTECTION
     let scene, setting, objects, secondary_characters, sceneData;
     try {
-      sceneData = extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
+      sceneData = await extractSceneWithPremiumTemplate(pageText, undefined, userInfo?.pageNumber, sessionId);
       scene = sceneData.scene;
       setting = sceneData.setting;
       objects = sceneData.objects;
