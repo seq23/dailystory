@@ -157,8 +157,8 @@ export class SimplifiedAudioEngine {
 
       console.log('🎵 SimplifiedAudioEngine: Requesting Synchronized ElevenLabs TTS...');
       
-      // Use 'conversation' context for story reading (fast, no dictionary generation)
-      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, 'conversation', voiceId);
+      // Use the passed context parameter (conversation = fast, learning = with dictionary)
+      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, context, voiceId);
       
       if (signal.aborted) {
         console.log('🎵 SimplifiedAudioEngine: Request was aborted');
