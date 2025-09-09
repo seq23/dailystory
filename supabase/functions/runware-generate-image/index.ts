@@ -10,6 +10,7 @@ import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 
 /**
  * ============================================================================
@@ -1024,7 +1025,6 @@ serve(async (req) => {
         
         // Call ai-visual-scene-creator directly with pre-processed avatar identity
         // CRITICAL FIX: Add difficultyLevel mapping for Tier 1
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // CRITICAL: Log prompt flow debugging before calling AI scene creator
