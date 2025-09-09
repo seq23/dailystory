@@ -70,21 +70,22 @@ const NUCLEAR_STYLE_SETTINGS = {
 // 🚨 ULTIMATE FALLBACK FRAMEWORK PROMPT - EMERGENCY USE ONLY 🚨
 const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting';
 
-// ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - EACH PLACEHOLDER USED EXACTLY ONCE =============
+// ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - RUNWARE OPTIMAL + STORY LENGTH OPTIMAL =============
 const PREMIUM_PROMPT_TEMPLATES = {
-  // 🚨 REGRESSION PREVENTION: LEVELS 0-1 MUST KEEP "Story: {pageText}" AT BEGINNING
-  // This ensures original story text appears first for better AI processing
-  // DO NOT MODIFY the "Story: {pageText}. Foundation:" structure for beginner/easy
-  // STORY-FIRST STRUCTURE FOR LEVEL 0-1 (beginner/easy): Better AI processing
-  beginner: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
-  easy: "Story: {pageText}. Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Technical: {frameworkPrompt}, {cameraDirective}",
+  // 🚨 REGRESSION PREVENTION: NEVER CHANGE THIS ORDER FOR LEVELS 0-1
+  // RUNWARE OPTIMAL: Technical first for better processing
+  // STORY LENGTH OPTIMAL: Narrative early for simpler stories
+  // DO NOT MODIFY this order for beginner/easy levels
+  beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
+  easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
   
-  // 🚨 REGRESSION PREVENTION: LEVELS 2+ USE "Foundation: {character}" FIRST
-  // This provides character-driven approach for advanced levels  
-  // FOUNDATION-FIRST STRUCTURE FOR MEDIUM+ LEVELS: Traditional character-driven approach
-  medium: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  hard: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}",
-  expert: "Foundation: {character} {age}, {ethnicity}. Appearance: {hair}, {features}, {emotion}. Setting: {setting}, {atmosphere}. Secondary Elements: {secondary_characters}. Composition: {spatial_composition}, {community_context}. Action: {scene}, {action_objects}. Objects: {props}, {sensory_details}. Story: {pageText}. Technical: {frameworkPrompt}, {cameraDirective}"
+  // 🚨 REGRESSION PREVENTION: NEVER CHANGE THIS ORDER FOR LEVELS 2-4
+  // RUNWARE OPTIMAL: Technical first, narrative last for complex stories
+  // STORY LENGTH OPTIMAL: Technical setup before complex narrative
+  // DO NOT MODIFY this order for medium/hard/expert levels
+  medium: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Composition: {spatial_composition}, {scene}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
+  hard: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Composition: {spatial_composition}, {scene}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
+  expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Composition: {spatial_composition}, {scene}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}"
 };
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
@@ -486,6 +487,31 @@ const TIER_25_UNIFIED_VOCABULARY = {
       'help', 'helps', 'helped', 'helping', 'share', 'shares', 'shared', 'sharing',
       'laugh', 'laughs', 'laughed', 'laughing', 'smile', 'smiles', 'smiled', 'smiling',
       'hug', 'hugs', 'hugged', 'hugging', 'explore', 'explores', 'explored', 'exploring'
+    ],
+    
+    // ============= ENHANCED ACTION SECTION VOCABULARY =============
+    // NEW: Action intensity vocabulary for enhanced Action section
+    intensity: [
+      'energetically', 'gently', 'excitedly', 'peacefully', 'eagerly', 'carefully',
+      'boldly', 'quietly', 'joyfully', 'thoughtfully', 'confidently', 'gracefully',
+      'enthusiastically', 'calmly', 'playfully', 'determinedly', 'curiously', 'lovingly'
+    ],
+    
+    // NEW: Body language vocabulary for enhanced Action section
+    bodyLanguage: [
+      'arms outstretched', 'hands on hips', 'finger pointing', 'arms crossed',
+      'waving hands', 'thumbs up', 'clapping hands', 'covering eyes', 'shrugging shoulders',
+      'nodding head', 'tilting head', 'leaning forward', 'standing tall', 'crouching down',
+      'jumping with joy', 'sitting cross-legged', 'lying on stomach', 'reaching up high'
+    ],
+    
+    // NEW: Spatial positioning vocabulary (renamed from spatial_composition, moved to Action)
+    spatial: [
+      'standing in the center', 'positioned in the foreground', 'placed to the left',
+      'located on the right side', 'sitting in the background', 'crouched in the corner',
+      'balanced on top of', 'nestled between', 'hovering above', 'resting beneath',
+      'leaning against', 'walking towards', 'moving away from', 'circling around',
+      'climbing up', 'sliding down', 'jumping over', 'crawling under'
     ]
   },
   
@@ -2870,6 +2896,105 @@ function extractEmotion(pageText: string): string {
   return 'happy'; // Safe fallback
 }
 
+// ============= ENHANCED ACTION SECTION EXTRACTION FUNCTIONS =============
+
+function extractActionIntensity(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for intensity vocabulary
+  for (const intensity of TIER_25_UNIFIED_VOCABULARY.actions.intensity) {
+    if (lowerText.includes(intensity)) {
+      return intensity;
+    }
+  }
+  
+  // Check for intensity indicators in text
+  if (lowerText.includes('quick') || lowerText.includes('fast') || lowerText.includes('rush')) return 'energetically';
+  if (lowerText.includes('slow') || lowerText.includes('soft') || lowerText.includes('quiet')) return 'gently';
+  if (lowerText.includes('excited') || lowerText.includes('eager') || lowerText.includes('enthusiastic')) return 'excitedly';
+  if (lowerText.includes('calm') || lowerText.includes('peace') || lowerText.includes('relax')) return 'peacefully';
+  if (lowerText.includes('careful') || lowerText.includes('cautious')) return 'carefully';
+  if (lowerText.includes('bold') || lowerText.includes('brave') || lowerText.includes('confident')) return 'boldly';
+  
+  return 'thoughtfully'; // Safe fallback
+}
+
+function extractBodyLanguage(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for body language vocabulary
+  for (const bodyLang of TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage) {
+    if (lowerText.includes(bodyLang.replace(' ', ''))) {
+      return bodyLang;
+    }
+  }
+  
+  // Check for body language indicators
+  if (lowerText.includes('wave') || lowerText.includes('waving')) return 'waving hands';
+  if (lowerText.includes('point') || lowerText.includes('pointing')) return 'finger pointing';
+  if (lowerText.includes('clap') || lowerText.includes('clapping')) return 'clapping hands';
+  if (lowerText.includes('stretch') || lowerText.includes('reach')) return 'arms outstretched';
+  if (lowerText.includes('nod') || lowerText.includes('nodding')) return 'nodding head';
+  if (lowerText.includes('jump') || lowerText.includes('jumping')) return 'jumping with joy';
+  if (lowerText.includes('sit') || lowerText.includes('sitting')) return 'sitting cross-legged';
+  if (lowerText.includes('stand') || lowerText.includes('standing')) return 'standing tall';
+  
+  return 'standing tall'; // Safe fallback
+}
+
+function extractSpatialPositioning(pageText: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for spatial positioning vocabulary
+  for (const spatial of TIER_25_UNIFIED_VOCABULARY.actions.spatial) {
+    const spatialWords = spatial.toLowerCase().split(' ');
+    if (spatialWords.every(word => lowerText.includes(word))) {
+      return spatial;
+    }
+  }
+  
+  // Check for positional indicators
+  if (lowerText.includes('center') || lowerText.includes('middle')) return 'standing in the center';
+  if (lowerText.includes('front') || lowerText.includes('foreground')) return 'positioned in the foreground';
+  if (lowerText.includes('left')) return 'placed to the left';
+  if (lowerText.includes('right')) return 'located on the right side';
+  if (lowerText.includes('back') || lowerText.includes('background')) return 'sitting in the background';
+  if (lowerText.includes('corner')) return 'crouched in the corner';
+  if (lowerText.includes('above') || lowerText.includes('over')) return 'hovering above';
+  if (lowerText.includes('under') || lowerText.includes('beneath') || lowerText.includes('below')) return 'resting beneath';
+  if (lowerText.includes('between')) return 'nestled between';
+  if (lowerText.includes('on top') || lowerText.includes('upon')) return 'balanced on top of';
+  
+  return 'positioned in the foreground'; // Safe fallback
+}
+
+function extractObjectInteraction(pageText: string, actionObjects: string): string {
+  const lowerText = pageText.toLowerCase();
+  
+  // If we have action objects, enhance them with interaction details
+  if (actionObjects && actionObjects !== 'colorful items') {
+    // Check for interaction verbs
+    if (lowerText.includes('hold') || lowerText.includes('holding')) return `holding ${actionObjects}`;
+    if (lowerText.includes('carry') || lowerText.includes('carrying')) return `carrying ${actionObjects}`;
+    if (lowerText.includes('use') || lowerText.includes('using')) return `using ${actionObjects}`;
+    if (lowerText.includes('play') || lowerText.includes('playing')) return `playing with ${actionObjects}`;
+    if (lowerText.includes('touch') || lowerText.includes('touching')) return `touching ${actionObjects}`;
+    if (lowerText.includes('reach') || lowerText.includes('reaching')) return `reaching for ${actionObjects}`;
+    if (lowerText.includes('grab') || lowerText.includes('grabbing')) return `grabbing ${actionObjects}`;
+    if (lowerText.includes('pick') || lowerText.includes('picking')) return `picking up ${actionObjects}`;
+    
+    return `interacting with ${actionObjects}`;
+  }
+  
+  // Fallback to basic interaction description
+  if (lowerText.includes('hold') || lowerText.includes('carry')) return 'holding colorful objects';
+  if (lowerText.includes('play') || lowerText.includes('toy')) return 'playing with toys';
+  if (lowerText.includes('book') || lowerText.includes('read')) return 'holding a book';
+  if (lowerText.includes('ball') || lowerText.includes('throw')) return 'playing with a ball';
+  
+  return 'exploring nearby objects'; // Safe fallback
+}
+
 // ============= PHASE 4: SEEDED SELECTION FOR CONSISTENCY =============
 // Generate consistent seeded random for character selection across story pages
 function generateSeededRandom(seed: string): number {
@@ -4338,6 +4463,12 @@ function fillPremiumTemplate(
       .replace('{emotion}', emotion)
       .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
       .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
+      // ============= ENHANCED ACTION SECTION PLACEHOLDERS =============
+      .replace('{action_intensity}', extractActionIntensity(pageText))
+      .replace('{spatial_positioning}', extractSpatialPositioning(pageText))
+      .replace('{object_interaction}', extractObjectInteraction(pageText, actionObjects))
+      .replace('{body_language}', extractBodyLanguage(pageText))
+      // ============= END ENHANCED ACTION SECTION =============
       .replace('{props}', props) // PHASE 3: New semantic placeholder
       .replace('{community_context}', communityContext) // PHASE 3: New semantic placeholder
       .replace('{sensory_details}', sensoryDetails) // PHASE 3: New semantic placeholder
