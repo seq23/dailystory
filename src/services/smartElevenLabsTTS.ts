@@ -23,73 +23,106 @@ export class SmartElevenLabsTTS {
       window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
     }
 
-    // First attempt: with dictionary (for learning context)
-    const { data, error } = await supabase.functions.invoke('elevenlabs-tts-smart', {
-      body: {
-        text,
-        voiceId,
-        context
-      }
+    // Add timeout protection - 10 seconds for TTS requests
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('TTS request timeout - falling back to browser speech')), 10000);
     });
 
-    if (error) {
-      console.error('❌ Smart TTS Error:', error);
-      
-      // If dictionary-related error and learning context, retry without dictionary
-      if (context === 'learning' && (error.message.includes('dictionary') || error.message.includes('pronunciation'))) {
-        console.log('🔄 Retrying TTS without dictionary for learning context...');
-        
-        try {
-          const { data: retryData, error: retryError } = await supabase.functions.invoke('elevenlabs-tts-smart', {
-            body: {
-              text,
-              voiceId,
-              context: 'conversation' // Use conversation context to avoid dictionary
-            }
-          });
-          
-          if (!retryError && retryData?.audioContent) {
-            console.log('✅ Smart TTS Success (no dictionary fallback)');
-            
-            // Convert base64 to ArrayBuffer
-            const binaryString = atob(retryData.audioContent);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
-            }
-            
-            // Release audio coordinator lock for Charlotte speech (original context was conversation)
-            window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
-            
-            return bytes.buffer;
+    try {
+      // Race between TTS request and timeout
+      const { data, error } = await Promise.race([
+        supabase.functions.invoke('elevenlabs-tts-smart', {
+          body: {
+            text,
+            voiceId,
+            context
           }
-        } catch (retryErr) {
-          console.warn('Retry without dictionary also failed:', retryErr);
+        }),
+        timeoutPromise
+      ]);
+
+      if (error) {
+        console.error('❌ Smart TTS Error:', error);
+        
+        // If dictionary-related error and learning context, retry without dictionary
+        if (context === 'learning' && (error.message.includes('dictionary') || error.message.includes('pronunciation'))) {
+          console.log('🔄 Retrying TTS without dictionary for learning context...');
+          
+          try {
+            const { data: retryData, error: retryError } = await Promise.race([
+              supabase.functions.invoke('elevenlabs-tts-smart', {
+                body: {
+                  text,
+                  voiceId,
+                  context: 'conversation' // Use conversation context to avoid dictionary
+                }
+              }),
+              timeoutPromise
+            ]);
+            
+            if (!retryError && retryData?.audioContent) {
+              console.log('✅ Smart TTS Success (no dictionary fallback)');
+              
+              // Convert base64 to ArrayBuffer
+              const binaryString = atob(retryData.audioContent);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              
+              // Release audio coordinator lock for Charlotte speech (original context was conversation)
+              window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
+              
+              return bytes.buffer;
+            }
+          } catch (retryErr) {
+            console.warn('Retry without dictionary also failed:', retryErr);
+          }
         }
+        
+        throw new Error(`Smart TTS failed: ${error.message}`);
+      }
+
+      if (!data?.audioContent) {
+        throw new Error('No audio content received from Smart TTS');
+      }
+
+      // Convert base64 to ArrayBuffer
+      const binaryString = atob(data.audioContent);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      console.log(`✅ Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon || false}]`);
+      
+      // Release audio coordinator lock for Charlotte speech
+      if (context === 'conversation') {
+        window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
       }
       
-      throw new Error(`Smart TTS failed: ${error.message}`);
+      return bytes.buffer;
+      
+    } catch (timeoutError) {
+      console.error('❌ TTS request timed out, falling back to browser speech');
+      
+      // Fallback to browser speech synthesis
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.8;
+        utterance.pitch = 1.0;
+        utterance.volume = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+      
+      // Release audio coordinator lock
+      if (context === 'conversation') {
+        window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
+      }
+      
+      throw timeoutError;
     }
-
-    if (!data?.audioContent) {
-      throw new Error('No audio content received from Smart TTS');
-    }
-
-    // Convert base64 to ArrayBuffer
-    const binaryString = atob(data.audioContent);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    console.log(`✅ Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon || false}]`);
-    
-    // Release audio coordinator lock for Charlotte speech
-    if (context === 'conversation') {
-      window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
-    }
-    
-    return bytes.buffer;
   }
 
   /**

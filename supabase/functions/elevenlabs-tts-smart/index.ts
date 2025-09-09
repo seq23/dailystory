@@ -148,12 +148,24 @@ function generatePLSLexicon(vocabulary: string[], contextType: 'learning' | 'con
 }
 
 // Get or create comprehensive dictionary for context
-async function getComprehensiveDictionary(context: 'learning' | 'conversation'): Promise<string | null> {
+async function getComprehensiveDictionary(context: 'learning' | 'conversation', text?: string): Promise<string | null> {
   try {
     // SKIP DICTIONARY FOR CONVERSATION CONTEXT - let Charlotte speak naturally
     if (context === 'conversation') {
       console.log('🗣️ Conversation context - skipping dictionary for natural speech');
       return null;
+    }
+
+    // SKIP DICTIONARY FOR SIMPLE REQUESTS - immediate fix for performance
+    if (text) {
+      const wordCount = text.trim().split(/\s+/).length;
+      const isSingleWord = wordCount === 1;
+      const isShortText = wordCount < 10;
+      
+      if (isSingleWord || isShortText) {
+        console.log(`🚀 Skipping dictionary for simple request: ${wordCount} words - using natural pronunciation`);
+        return null;
+      }
     }
     
     const now = Date.now();

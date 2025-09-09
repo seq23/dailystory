@@ -35,15 +35,23 @@ export class InteractiveWordAudioService {
         detail: { system: 'interactive-word', priority: 5, source: 'direct-button' } 
       }));
 
-      // Use SimpleAudioEngine directly for reliable coordination
-      const audioEngine = SimpleAudioEngine.getInstance();
-      await audioEngine.playText({
-        text: cleanWord,
-        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-        contentHash: `hear-${cleanWord}-${Date.now()}`,
-        modelId: 'eleven_turbo_v2_5',
-        context: 'learning' // Use phonetic pronunciation for "Hear It"
+      // Add 5-second timeout for interactive word requests
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Interactive word timeout - using browser fallback')), 5000);
       });
+
+      // Use SimpleAudioEngine directly for reliable coordination with timeout
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await Promise.race([
+        audioEngine.playText({
+          text: cleanWord,
+          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+          contentHash: `hear-${cleanWord}-${Date.now()}`,
+          modelId: 'eleven_turbo_v2_5',
+          context: 'learning' // Use phonetic pronunciation for "Hear It"
+        }),
+        timeoutPromise
+      ]);
       console.log(`✅ Successfully played word: ${cleanWord}`);
 
     } catch (error) {
@@ -108,15 +116,23 @@ export class InteractiveWordAudioService {
 
       console.log(`📖 Got definition for "${cleanWord}": ${definition.definition}`);
 
-      // Use SimpleAudioEngine directly for reliable coordination
-      const audioEngine = SimpleAudioEngine.getInstance();
-      await audioEngine.playText({
-        text: definition.definition,
-        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-        contentHash: definition.definition.substring(0, 20),
-        modelId: 'eleven_turbo_v2_5',
-        context: 'conversation' // Use natural voice for explanations
+      // Add 5-second timeout for explanations
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Explain word timeout - using browser fallback')), 5000);
       });
+
+      // Use SimpleAudioEngine directly for reliable coordination with timeout
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await Promise.race([
+        audioEngine.playText({
+          text: definition.definition,
+          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+          contentHash: definition.definition.substring(0, 20),
+          modelId: 'eleven_turbo_v2_5',
+          context: 'conversation' // Use natural voice for explanations
+        }),
+        timeoutPromise
+      ]);
       console.log(`✅ Successfully explained word: ${cleanWord}`);
 
     } catch (error) {
@@ -172,15 +188,23 @@ export class InteractiveWordAudioService {
       const syllableText = syllables.join(' - ');
       console.log(`🔤 Syllables for "${cleanWord}": ${syllableText}`);
 
-      // Use SimpleAudioEngine directly for reliable coordination
-      const audioEngine = SimpleAudioEngine.getInstance();
-      await audioEngine.playText({
-        text: syllableText,
-        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-        contentHash: syllableText,
-        modelId: 'eleven_turbo_v2_5',
-        context: 'learning' // Use phonetic pronunciation for syllables
+      // Add 5-second timeout for syllables
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Syllables timeout - using browser fallback')), 5000);
       });
+
+      // Use SimpleAudioEngine directly for reliable coordination with timeout
+      const audioEngine = SimpleAudioEngine.getInstance();
+      await Promise.race([
+        audioEngine.playText({
+          text: syllableText,
+          voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
+          contentHash: syllableText,
+          modelId: 'eleven_turbo_v2_5',
+          context: 'learning' // Use phonetic pronunciation for syllables
+        }),
+        timeoutPromise
+      ]);
       console.log(`✅ Successfully played syllables: ${syllableText}`);
 
     } catch (error) {
