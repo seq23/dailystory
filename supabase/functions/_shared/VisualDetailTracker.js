@@ -410,49 +410,62 @@ export class VisualDetailTracker {
 
   /**
    * Add consistent fallback visuals using seeded randomization
+   * Simplified to use single, emotionally-contextual descriptors (50-60% token reduction)
    */
   static addFallbackVisuals(characterType, baseDescription, sessionId) {
     const characterName = this.extractCharacterNameFromDescription(characterType);
     const seed = `${sessionId}_${characterName}`;
     
-    // Define fallback visual options for different character types
+    // Define single, emotionally-contextual descriptors for token efficiency
     const fallbackVisuals = {
       mom: [
-        'with long brown hair wearing a blue dress',
-        'with short blonde hair wearing a red blouse', 
-        'with curly black hair wearing a green jacket',
-        'with straight brown hair wearing a white shirt'
+        'with warm smile',
+        'with caring expression',
+        'with gentle eyes',
+        'with kind face'
       ],
       dad: [
-        'with a beard wearing a plaid shirt',
-        'with glasses wearing a blue polo',
-        'with a mustache wearing a red jacket',
-        'wearing a gray suit and tie'
+        'with friendly smile',
+        'with warm demeanor',
+        'with gentle manner',
+        'with caring look'
       ],
       dog: [
-        'golden retriever with fluffy fur',
-        'brown labrador with floppy ears',
-        'black and white border collie',
-        'small white terrier with bright eyes'
+        'golden retriever',
+        'friendly labrador',
+        'playful companion',
+        'loyal pet'
       ],
       cat: [
-        'orange tabby with green eyes',
-        'black cat with white paws', 
-        'gray striped cat with yellow eyes',
-        'fluffy white persian cat'
+        'curious tabby',
+        'sleepy feline',
+        'gentle companion',
+        'playful kitten'
       ],
       friend: [
-        'with red hair wearing a yellow shirt',
-        'with brown hair wearing a purple hoodie',
-        'with blonde hair wearing a green dress',
-        'with black hair wearing a blue jacket'
+        'with bright smile',
+        'with cheerful expression',
+        'with friendly manner',
+        'with kind demeanor'
+      ],
+      grandma: [
+        'with gentle smile',
+        'with wise eyes',
+        'with warm expression',
+        'with loving look'
+      ],
+      grandpa: [
+        'with kind smile',
+        'with twinkling eyes',
+        'with warm demeanor',
+        'with gentle manner'
       ]
     };
 
-    const options = fallbackVisuals[characterName] || [`wearing colorful clothes`];
+    const options = fallbackVisuals[characterName] || ['with cheerful expression'];
     const selectedVisual = this.getSeededRandomItem(options, seed);
     
-    console.log(`🎨 Added fallback visual for ${characterType}: ${selectedVisual}`);
+    console.log(`🎨 Added simplified fallback visual for ${characterType}: ${selectedVisual}`);
     return `${baseDescription} ${selectedVisual}`;
   }
 
