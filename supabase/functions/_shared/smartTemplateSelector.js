@@ -3,7 +3,7 @@
  * Matches user special requests against template metadata with robust error handling
  */
 
-import { safeErrorMessage, safePropertyAccess, logSafeError } from './errorPatterns.ts';
+import { safeErrorMessage, safePropertyAccess, logSafeError } from './errorPatterns.js';
 import { getRegistryConfig } from './templates/registry.js';
 
 /**
