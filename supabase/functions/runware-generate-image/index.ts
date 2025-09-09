@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { 
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
@@ -41,6 +40,9 @@ import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from
  * - Fallbacks exist for reliability, not subscription enforcement
  * 
  * ============================================================================
+ * 
+ * EMERGENCY CORS FIX TIMESTAMP: 2025-01-09 00:00:00 UTC
+ * Fixed Tier 1 success responses to use createDynamicCorsResponse
  */
 
 // ============= CULTURAL DESCRIPTION ARRAYS =============
@@ -1520,7 +1522,7 @@ serve(async (req) => {
             console.error('❌ Failed to store Tier 1 image prompt:', storeError);
           }
 
-          return createCorsResponse({
+          return createDynamicCorsResponse({
             success: true,
             imageURL: tier1Result.imageURL,
             seed: tier1Result.seed,
@@ -1539,7 +1541,7 @@ serve(async (req) => {
               segmentCount: promptParts.length,
               characterSeed: characterData?.seed || 'fallback-seed'
             }
-          });
+          }, req);
           
           // =================== TIER 2.5 SUCCESS TEST ===================
           // Test if Tier 2.5 would succeed even when Tier 1 succeeded
@@ -1563,9 +1565,7 @@ serve(async (req) => {
             console.log('🔍 TIER 2.5 SUCCESS TEST: Error during test -', testError.message);
           }
           
-          return new Response(JSON.stringify(tier1Result), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
+          return createDynamicCorsResponse(tier1Result, req);
         }
         
         console.log('⚠️ Tier 1 failed, falling back to Tier 2.5');
