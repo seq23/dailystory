@@ -209,11 +209,48 @@ export class SessionStateManager {
   /**
    * Get recent image prompts for debugging
    */
-  getRecentImagePrompts(sessionId: string, count: number = 5): any[] {
+  getRecentImagePrompts(sessionId: string, count: number = 5, tierFilter?: string[]): any[] {
     const state = this.sessionStates.get(sessionId);
     if (!state) return [];
     
-    return state.promptHistory.slice(-count);
+    let prompts = state.promptHistory.slice(-count);
+    
+    // Apply tier filtering if specified
+    if (tierFilter && tierFilter.length > 0) {
+      prompts = prompts.filter(prompt => tierFilter.includes(prompt.tier));
+    }
+    
+    return prompts;
+  }
+
+  /**
+   * Get recent image prompts from all sessions for global debugging
+   */
+  getAllRecentImagePrompts(limit: number = 20, tierFilter?: string[]): any[] {
+    const allPrompts: any[] = [];
+    
+    // Collect prompts from all active sessions
+    for (const [sessionId, state] of this.sessionStates.entries()) {
+      const sessionPrompts = state.promptHistory.map(prompt => ({
+        ...prompt,
+        sessionId: sessionId // Ensure sessionId is included
+      }));
+      allPrompts.push(...sessionPrompts);
+    }
+    
+    // Sort by timestamp (newest first)
+    allPrompts.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Apply tier filtering if specified
+    let filteredPrompts = allPrompts;
+    if (tierFilter && tierFilter.length > 0) {
+      filteredPrompts = allPrompts.filter(prompt => 
+        tierFilter.includes(prompt.tier)
+      );
+    }
+    
+    // Apply limit
+    return filteredPrompts.slice(0, limit);
   }
 
   /**
