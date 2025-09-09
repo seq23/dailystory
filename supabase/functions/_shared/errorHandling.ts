@@ -1,5 +1,5 @@
 // Shared error handling utilities for all edge functions
-import { createCorsResponse, createCorsErrorResponse } from "./cors.js";
+import { createCorsResponse, createCorsErrorResponse } from "./cors.ts";
 
 export enum EdgeErrorType {
   VALIDATION = 'validation',
