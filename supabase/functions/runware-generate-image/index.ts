@@ -1027,6 +1027,19 @@ serve(async (req) => {
         const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
+        // CRITICAL: Log prompt flow debugging before calling AI scene creator
+        console.log('🔍 [PROMPT-FLOW] AI-SCENE-CREATOR: Calling ai-visual-scene-creator', {
+          sessionId,
+          pageNumber,
+          promptPreview: pageText.substring(0, 100) + '...',
+          stage: 'ai-scene-creator',
+          metadata: { 
+            userInfo: userInfo?.name, 
+            difficultyLevel: mappedDifficulty,
+            timestamp: Date.now()
+          }
+        });
+
         const aiEnhancerResult = await callTierFunction('ai-visual-scene-creator', {
           storyText: pageText,
           userInfo,
@@ -1036,6 +1049,17 @@ serve(async (req) => {
           avatarIdentity, // Pass pre-processed avatar identity directly
           enhancedStoryData,
           difficultyLevel: mappedDifficulty // CRITICAL FIX: Add missing difficultyLevel parameter
+        });
+
+        // CRITICAL: Log AI scene creator response for prompt flow debugging
+        console.log('🔍 [PROMPT-FLOW] AI-SCENE-CREATOR: Response received', {
+          sessionId,
+          pageNumber,
+          success: aiEnhancerResult.success,
+          hasAiSchema: !!aiEnhancerResult.aiSchema,
+          aiSchemaKeys: aiEnhancerResult.aiSchema ? Object.keys(aiEnhancerResult.aiSchema) : [],
+          stage: 'ai-scene-creator-response',
+          metadata: { responseSize: JSON.stringify(aiEnhancerResult).length }
         });
 
         console.log('🔍 TIER 1 DEBUG - AI enhancer returned pure schema, doing direct technical assembly in orchestrator');
@@ -1472,6 +1496,20 @@ serve(async (req) => {
 
         console.log(`🎨 [${requestId}] Final Tier 1 Prompt Ready for Runware (${validatedPrompt.length} chars):`, 
           validatedPrompt.substring(0, 200) + (validatedPrompt.length > 200 ? '...' : ''));
+
+        // CRITICAL: Log prompt flow for debugging 
+        console.log('🔍 [PROMPT-FLOW] RUNWARE: Final prompt being sent to Runware API', {
+          sessionId,
+          pageNumber,
+          promptPreview: validatedPrompt.substring(0, 100) + '...',
+          stage: 'runware',
+          metadata: { 
+            promptLength: validatedPrompt.length, 
+            negativePromptLength: negativePrompt.length,
+            characterSeed: characterData.seed,
+            tier: 1
+          }
+        });
 
         // PHASE 4: Generate with Runware Tier 1 (Premium) with enhanced logging
         console.log(`🚀 [${requestId}] Initiating Runware Premium Generation:`, {

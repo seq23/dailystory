@@ -190,7 +190,12 @@ class ErrorSuppressionManager {
         fullMessage.includes('ms') && fullMessage.includes('performance') ||
         fullMessage.includes('forced reflow') ||
         fullMessage.includes('long running') ||
-        fullMessage.includes('handler took')) {
+        fullMessage.includes('handler took') ||
+        fullMessage.includes('performance monitoring:') ||
+        fullMessage.includes('breakdown:') && fullMessage.includes('object') ||
+        fullMessage.includes('suppressionenabled') ||
+        fullMessage.includes('suppressed') && fullMessage.includes('messages') ||
+        fullMessage.includes('console hygiene:')) {
       this.incrementErrorCount('Performance Monitoring');
       return true;
     }

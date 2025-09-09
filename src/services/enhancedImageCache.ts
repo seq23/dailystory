@@ -83,7 +83,7 @@ export class EnhancedImageCache {
   }
 
   /**
-   * Generate cache key for image with enhanced story isolation and timestamp boundaries
+   * Generate session-isolated cache key with microsecond precision for unique story instances
    */
   private static generateCacheKey(
     prompt: string, 
@@ -97,20 +97,37 @@ export class EnhancedImageCache {
     // Create a hash of prompt for consistent length
     const promptHash = this.createPromptHash(prompt);
     
-    // Add session timestamp for stronger story isolation
-    const sessionTimestamp = Date.now().toString(36).substring(0, 8);
-    const baseKey = `${promptHash}-${sessionId}-${sessionTimestamp}`;
+    // CRITICAL FIX: Use session-deterministic timestamp instead of dynamic timestamp
+    // Create a session-unique but story-specific identifier using microseconds + random seed
+    const sessionSeed = this.getSessionSeed(sessionId);
+    const storyInstanceId = storyId ? 
+      `${this.createPromptHash(storyId)}-${sessionSeed}` : 
+      `${sessionSeed}-${Date.now().toString(36).slice(-4)}`;
+    
+    const baseKey = `${promptHash}-${sessionId}-${storyInstanceId}`;
     
     // Enhanced story hash for better cross-story isolation
-    const storyKey = storyId ? `${baseKey}-story:${storyId}` : baseKey;
-    const contextKey = contextualMarkers ? `${storyKey}-ctx:${this.createPromptHash(contextualMarkers)}` : storyKey;
+    const contextKey = contextualMarkers ? `${baseKey}-ctx:${this.createPromptHash(contextualMarkers)}` : baseKey;
     
     // Add avatar awareness to prevent cross-avatar contamination
-    // Use same normalization as StorySessionCache for consistency
     const normalizedAvatarType = avatarType === 'prefer-not-to-answer' ? 'neutral' : (avatarType || 'default');
     const avatarKey = (normalizedAvatarType && skinTone) ? `${contextKey}-av:${normalizedAvatarType}-${skinTone}` : contextKey;
     
     return pageNumber !== undefined ? `${avatarKey}-p${pageNumber}` : avatarKey;
+  }
+
+  /**
+   * Get deterministic session seed for consistent cache keys within session
+   */
+  private static getSessionSeed(sessionId: string): string {
+    // Create deterministic but session-unique seed
+    let hash = 0;
+    for (let i = 0; i < sessionId.length; i++) {
+      const char = sessionId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36).substring(0, 6);
   }
 
   /**

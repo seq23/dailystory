@@ -13,12 +13,15 @@ export const useImageWithFallback = (
   src: string | undefined,
   options: UseImageWithFallbackOptions = {}
 ) => {
-  const { fallbackText = '📖 Story Illustration', retryAttempts = 1, retryDelay = 1000 } = options;
+  const { fallbackText = '📖 Story Illustration', retryAttempts = 2, retryDelay = 1000 } = options;
   
   const [imageSrc, setImageSrc] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [attempts, setAttempts] = useState(0);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isManualRetry, setIsManualRetry] = useState(false);
+  const maxRetries = retryAttempts;
   
   
   // Check if debug mode is enabled
@@ -35,13 +38,14 @@ export const useImageWithFallback = (
     }
   }, [isDebugMode]);
 
-  const validateAndSetImage = useCallback(async (url: string): Promise<boolean> => {
+  const validateAndSetImage = useCallback(async (url: string, sessionId?: string): Promise<boolean> => {
     if (!url) return false;
 
-    // Use ImageLoadingManager for deduplication and circuit breaking
+    // Use ImageLoadingManager for deduplication and circuit breaking with session context
     const success = await ImageLoadingManager.loadImage(url, {
       timeout: isDebugMode ? 3000 : 8000, // Faster timeout in debug mode
       isDebugMode,
+      sessionId, // Pass session context for proper isolation
       onProgress: (stage) => debugLog(stage, { url: url.substring(0, 50) + '...' })
     });
 
@@ -57,20 +61,63 @@ export const useImageWithFallback = (
     }
   }, [debugLog, isDebugMode]);
 
-  const loadImageWithRetry = useCallback(async (url: string) => {
+  const setImageWithValidation = useCallback(async (url: string, sessionId?: string) => {
+    if (!url) {
+      debugLog('No URL provided to setImageWithValidation');
+      setIsUsingFallback(true);
+      return;
+    }
+
+    debugLog('Setting image with validation', url);
+    setIsLoading(true);
+    setError(null);
+    setIsUsingFallback(false);
+
+    const success = await validateAndSetImage(url, sessionId);
+    if (!success) {
+      debugLog('Image validation failed, attempting retry');
+      await handleRetry(url, sessionId);
+    }
+  }, [validateAndSetImage]);
+
+  const handleRetry = useCallback(async (originalUrl?: string, sessionId?: string) => {
+    debugLog('Manual retry triggered', { originalUrl, retryCount });
+    
+    if (retryCount >= maxRetries) {
+      debugLog('Max retries exceeded, using fallback');
+      setIsUsingFallback(true);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsManualRetry(true);
+    setRetryCount(prev => prev + 1);
+    setIsLoading(true);
+    setError(null);
+
+    if (originalUrl) {
+      await validateAndSetImage(originalUrl, sessionId);
+    } else if (imageSrc) {
+      await validateAndSetImage(imageSrc, sessionId);
+    }
+
+    setIsManualRetry(false);
+  }, [retryCount, maxRetries, validateAndSetImage, imageSrc, debugLog]);
+
+  const loadImageWithRetry = useCallback(async (url: string, sessionId?: string) => {
     if (isDebugMode) {
-      debugLog('Starting image load', { url, attempt: attempts + 1 });
+      debugLog('Starting image load', { url, attempt: retryCount + 1 });
     }
     
-    const success = await validateAndSetImage(url);
+    const success = await validateAndSetImage(url, sessionId);
     
-    if (!success && attempts < retryAttempts) {
+    if (!success && retryCount < retryAttempts) {
       if (isDebugMode) {
-        debugLog('Retrying image load', { attempt: attempts + 1, retryDelay });
+        debugLog('Retrying image load', { attempt: retryCount + 1, retryDelay });
       }
-      setAttempts(prev => prev + 1);
+      setRetryCount(prev => prev + 1);
       setTimeout(() => {
-        loadImageWithRetry(url);
+        loadImageWithRetry(url, sessionId);
       }, retryDelay);
       return;
     }
@@ -84,14 +131,15 @@ export const useImageWithFallback = (
         text: fallbackText
       });
       setImageSrc(fallbackUrl);
+      setIsUsingFallback(true);
       setIsLoading(false);
     }
-  }, [attempts, retryAttempts, retryDelay, fallbackText, validateAndSetImage, debugLog, isDebugMode]);
+  }, [retryCount, retryAttempts, retryDelay, fallbackText, validateAndSetImage, debugLog, isDebugMode]);
 
   useEffect(() => {
     setIsLoading(true);
     setError(null);
-    setAttempts(0);
+    setRetryCount(0);
     
     if (!src) {
       debugLog('No src provided, using immediate fallback');
@@ -99,6 +147,7 @@ export const useImageWithFallback = (
         text: fallbackText
       });
       setImageSrc(fallbackUrl);
+      setIsUsingFallback(true);
       setIsLoading(false);
       return;
     }
@@ -107,6 +156,7 @@ export const useImageWithFallback = (
     if (ImageFallbackService.isFallbackImage(src)) {
       debugLog('Source is already a fallback image');
       setImageSrc(src);
+      setIsUsingFallback(true);
       setIsLoading(false);
       return;
     }
@@ -119,6 +169,9 @@ export const useImageWithFallback = (
     imageSrc,
     isLoading,
     error,
-    isUsingFallback: ImageFallbackService.isFallbackImage(imageSrc) || error !== null
+    isUsingFallback,
+    isManualRetry,
+    setImageWithValidation,
+    manualRetry: () => handleRetry()
   };
 };

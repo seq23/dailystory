@@ -30,7 +30,7 @@ class ImageLoadingManagerClass {
   }
 
   /**
-   * Load an image with deduplication and circuit breaker logic
+   * Load an image with session-aware deduplication and circuit breaker logic
    */
   async loadImage(
     url: string, 
@@ -38,11 +38,12 @@ class ImageLoadingManagerClass {
       timeout?: number; 
       isDebugMode?: boolean;
       onProgress?: (stage: string) => void;
+      sessionId?: string; // NEW: Session context for proper isolation
     } = {}
   ): Promise<boolean> {
     if (!url) return false;
 
-    const { timeout = 10000, isDebugMode = false } = options;
+    const { timeout = 10000, isDebugMode = false, sessionId } = options;
     const effectiveTimeout = isDebugMode ? this.FAST_FAIL_TIMEOUT : timeout;
     
     // Check cascade failure circuit breaker
@@ -57,10 +58,17 @@ class ImageLoadingManagerClass {
       return false;
     }
 
-    // Check if already loading this URL
-    const existing = this.activeLoads.get(url);
+    // CRITICAL FIX: Create session-aware deduplication key
+    const deduplicationKey = sessionId ? `${url}#session:${sessionId}` : url;
+    
+    // Check if already loading this URL in this session
+    const existing = this.activeLoads.get(deduplicationKey);
     if (existing) {
-      console.log(`🔄 Deduplicating: Reusing existing load for ${url}`);
+      if (sessionId) {
+        console.log(`🔄 Session-aware deduplication: Reusing existing load for ${url} in session ${sessionId}`);
+      } else {
+        console.log(`🔄 Global deduplication: Reusing existing load for ${url}`);
+      }
       return existing.promise;
     }
 
@@ -72,7 +80,7 @@ class ImageLoadingManagerClass {
       startTime: Date.now()
     };
 
-    this.activeLoads.set(url, request);
+    this.activeLoads.set(deduplicationKey, request);
 
     try {
       const result = await promise;
@@ -85,7 +93,7 @@ class ImageLoadingManagerClass {
       }
       return result;
     } finally {
-      this.activeLoads.delete(url);
+      this.activeLoads.delete(deduplicationKey);
     }
   }
 

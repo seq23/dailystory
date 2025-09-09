@@ -342,6 +342,25 @@ export class SimpleImageService {
     sessionId?: string,
     isPremium?: boolean // For analytics only - does not affect image quality
   ): Promise<ImageResult> {
+    // CRITICAL: Add prompt flow debugging
+    try {
+      const { PromptFlowDebugger } = await import('@/services/PromptFlowDebugger');
+      PromptFlowDebugger.logPromptStage(
+        sessionId || `session_${Date.now()}`, 
+        pageNumber || 1, 
+        'frontend', 
+        pageText, 
+        {
+          userInfo: userInfo?.name,
+          difficulty,
+          isPremium,
+          timestamp: Date.now()
+        }
+      );
+    } catch (debugError) {
+      console.warn('Prompt flow debugging failed:', debugError);
+    }
+
     // Convert frontend difficulty to backend format
     const backendDifficulty = DifficultyLevelMapper.toBackend(difficulty) as DifficultyLevel;
     console.log(`🔄 SimpleImage: Difficulty mapping - Frontend: "${difficulty}" → Backend: "${backendDifficulty}"`);
