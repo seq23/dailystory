@@ -176,7 +176,7 @@ if (props.forceModal || isMobileOrTablet) {
       try {
         // CRITICAL FIX: Lazy load audio service only when needed
         const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-        await InteractiveWordAudioService.explainWord(cleanWord);
+        await InteractiveWordAudioService.explainWord(cleanWord, props.userInfo?.nativeLanguage || 'en');
       } catch (e) {
         console.error('Mobile Explain failed', e);
       } finally {

@@ -360,7 +360,7 @@ export const InteractiveWord = ({
         try {
           console.log('🎯 Interactive word DIRECT EXPLAIN clicked for:', cleanWord);
           const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-          await InteractiveWordAudioService.explainWord(cleanWord);
+          await InteractiveWordAudioService.explainWord(cleanWord, userInfo?.nativeLanguage || 'en');
           console.log('✅ Interactive word explain completed successfully');
         } catch (audioError) {
           console.error('❌ Interactive word explain audio failed:', audioError);

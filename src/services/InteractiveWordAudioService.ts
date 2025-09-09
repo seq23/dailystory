@@ -56,7 +56,7 @@ export class InteractiveWordAudioService {
       }
       
       // Final fallback to browser speech
-      this.fallbackToBrowserSpeech(word);
+      this.fallbackToBrowserSpeech(word, 'en');
       
     } finally {
       // Release audio control
@@ -70,7 +70,7 @@ export class InteractiveWordAudioService {
   /**
    * Explain word meaning with audio
    */
-  static async explainWord(word: string, retryCount = 0): Promise<void> {
+  static async explainWord(word: string, userLanguage: string = 'en', retryCount = 0): Promise<void> {
     const requestId = `explain-${word}-${++this.requestCounter}`;
     
     if (this.processingRequests.has(requestId)) {
@@ -93,7 +93,7 @@ export class InteractiveWordAudioService {
       const { data: definition, error } = await supabase.functions.invoke('word-dictionary', {
         body: { 
           word: cleanWord.toLowerCase(),
-          language: 'en',
+          userLanguage: userLanguage,
           userLevel: 'beginner'
         }
       });
@@ -124,12 +124,12 @@ export class InteractiveWordAudioService {
       
       if (retryCount < 2) {
         console.log(`🔄 Retrying explain word (attempt ${retryCount + 1})`);
-        setTimeout(() => this.explainWord(word, retryCount + 1), 500);
+        setTimeout(() => this.explainWord(word, userLanguage, retryCount + 1), 500);
         return;
       }
       
-      // Final fallback
-      this.fallbackToBrowserSpeech(`Sorry, I couldn't find the definition for ${word}`);
+      // Final fallback with correct language
+      this.fallbackToBrowserSpeech(`Sorry, I couldn't find the definition for ${word}`, userLanguage);
       
     } finally {
       // Release audio control
@@ -193,7 +193,7 @@ export class InteractiveWordAudioService {
       }
       
       // Final fallback
-      this.fallbackToBrowserSpeech(`Sorry, I couldn't break down ${word} into syllables`);
+      this.fallbackToBrowserSpeech(`Sorry, I couldn't break down ${word} into syllables`, 'en');
       
     } finally {
       // Release audio control
@@ -224,7 +224,7 @@ export class InteractiveWordAudioService {
   /**
    * Browser speech synthesis fallback
    */
-  private static fallbackToBrowserSpeech(text: string): void {
+  private static fallbackToBrowserSpeech(text: string, userLanguage: string = 'en'): void {
     console.log(`🗣️ Browser speech fallback: "${text}"`);
     
     if ('speechSynthesis' in window) {
@@ -235,12 +235,13 @@ export class InteractiveWordAudioService {
       utterance.pitch = 1.0;
       utterance.volume = 0.9;
       
-      // Try to find a good voice
+      // Try to find a good voice in the user's language
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(voice => 
-        voice.lang.startsWith('en') && 
+        voice.lang.startsWith(userLanguage) && 
         (voice.name.includes('Female') || voice.name.includes('Google'))
-      ) || voices.find(voice => voice.lang.startsWith('en'));
+      ) || voices.find(voice => voice.lang.startsWith(userLanguage)) || 
+      voices.find(voice => voice.lang.startsWith('en')); // Fallback to English
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
