@@ -1,16 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { 
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
 } from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
-import { SessionStateManager } from "../_shared/SessionStateManager.ts";
+import { SessionStateManager, globalSessionManager } from "../_shared/SessionStateManager.ts";
 import { SecurityValidator } from "../_shared/SecurityValidator.ts";
 import { AVATAR_FALLBACK_DESCRIPTIONS, validateAvatarConsistency, validateAvatarQuality } from "../_shared/avatarConsistency.ts";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
+import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
+import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
+import { getStyleFramework } from "../_shared/styleFrameworks.ts";
+import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.ts";
 
 /**
  * ============================================================================
@@ -433,7 +438,6 @@ async function callTierFunction(functionName: string, payload: any): Promise<any
     }
     
     // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
@@ -1076,7 +1080,6 @@ serve(async (req) => {
         
         // 0. VISUAL DETAIL ANALYSIS FIRST - Must run before character building
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           const characterName = avatarIdentity?.name || userInfo?.name || 'child';
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterName);
           console.log(`🎨 [${requestId}] Visual details analyzed before character building`);
@@ -1084,10 +1087,7 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Visual detail analysis failed:`, error.message);
         }
         
-        // Import services for direct assembly
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
-        const { getStyleFramework } = await import('../_shared/styleFrameworks.ts');
-        const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.ts');
+        // Import services for direct assembly (statically imported at top)
         
         // Initialize character consistency service
         const characterService = new CharacterConsistencyService();
@@ -1165,7 +1165,6 @@ serve(async (req) => {
                   // Store new cultural selections in character consistency
                   if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
                     try {
-                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
                       const characterService = new CharacterConsistencyService();
                       const characterName = avatarIdentity?.name || userInfo?.name || 'child';
                       const cacheKey = `${sessionId}_${characterName}`;
@@ -1339,7 +1338,6 @@ serve(async (req) => {
         
         // 3.1. Secondary Elements
         try {
-          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
           const secondaryElements = await SecondaryElementDetector.parseElements(
             sessionId,
             promptSections.primaryScene, // Use primary scene
@@ -1349,7 +1347,6 @@ serve(async (req) => {
           
           if (secondaryElements && secondaryElements.length > 0) {
             // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
-            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
             const characterConsistencyService = new CharacterConsistencyService();
             
             const seededSecondaryDescriptions = await Promise.all(
@@ -1394,9 +1391,8 @@ serve(async (req) => {
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
         // Add visual detail analysis for consistent object tracking
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           await VisualDetailTracker.analyzeTextForDetails(
-            sessionId, 
+            sessionId,
             pageText, 
             pageNumber || 1, 
             characterData?.characterName || 'child'
@@ -1645,7 +1641,6 @@ serve(async (req) => {
 
           // PHASE 1: Store successful Tier 1 image prompt with DEBUG  
           console.log('📸 DEBUG: Storing Tier 1 image prompt...');
-      const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
           
           try {
             globalSessionManager.storeImagePrompt(sessionId, {
@@ -1748,7 +1743,6 @@ serve(async (req) => {
         }
         
         // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         
         // Enhanced parameter validation with detailed logging
@@ -1886,7 +1880,6 @@ serve(async (req) => {
     // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
     console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
     try {
-      const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
       globalSessionManager.storeImagePrompt(sessionId, {
         tier: '4',
         promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,

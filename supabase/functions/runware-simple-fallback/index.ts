@@ -5,6 +5,7 @@ import { globalArcSessionManager } from "../_shared/SessionStateManager.ts";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
+import { SecondaryElementDetector } from "../_shared/SecondaryElementDetector.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Nuclear Independent CORS Headers
@@ -2648,7 +2649,6 @@ function isIndoorContext(sentence: string): boolean {
 async function detectAndResolveObjectColorWithTracking(sentence: string, sessionId: string, pageNumber: number = 1, originalPageText?: string): Promise<string> {
   // First analyze the sentence for new visual details
   try {
-    const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
     await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber);
     
     // Get all stored colored objects for this session
@@ -3269,7 +3269,6 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
   
   try {
     // PHASE 1: Use SecondaryElementDetector for consistent detection
-    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
     const secondaryElements = await SecondaryElementDetector.parseElements(
       sessionId,
       '', // primaryScene not available yet
@@ -3283,7 +3282,6 @@ async function getSeededSecondaryCharacters(sentence: string, sessionId?: string
     }
     
     // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
-    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
     const characterConsistencyService = new CharacterConsistencyService();
     
     const seededDescriptions = await Promise.all(
@@ -4595,7 +4593,6 @@ function fillPremiumTemplate(
     // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
     // Add visual detail analysis for consistent object tracking across tiers
     try {
-      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
       await VisualDetailTracker.analyzeTextForDetails(
         sessionId || 'tier25-session', 
         pageText || processedPageText, 
@@ -4891,7 +4888,6 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
     // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
     // Analyze current page text for visual details before building colored objects
     try {
-      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
       await VisualDetailTracker.analyzeTextForDetails(
         sessionId || 'fallback-session', 
         pageText, 
@@ -4907,7 +4903,6 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
     // Add persistent colored objects from VisualDetailTracker BEFORE template processing
     let coloredObjects = '';
     try {
-      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
       const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session');
       coloredObjects = storedObjects || '';
       
@@ -5735,12 +5730,11 @@ serve(async (req: Request) => {
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
       try {
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
         const characterConsistencyService = new CharacterConsistencyService();
         const characterSeed = await characterConsistencyService.getCharacterSeed(
           sessionId, 
           'main_character', 
-          pageText, 
+          pageText,
           'premium', 
           sceneData?.clothing || ''
         );
