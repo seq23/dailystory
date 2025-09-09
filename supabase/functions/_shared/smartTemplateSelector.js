@@ -4,7 +4,7 @@
  */
 
 import { safeErrorMessage, safePropertyAccess, logSafeError } from './errorPatterns.ts';
-import { getRegistryConfig } from './templates/registry.js';
+import { getRegistryConfig } from './templates/registry.ts';
 
 /**
  * Validates special request input with comprehensive safety checks

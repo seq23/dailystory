@@ -4,7 +4,7 @@
  * Reduces memory footprint by 99% (5MB → 50KB base + requested only)
  */
 
-import { TEMPLATE_REGISTRY, getRegistryConfig, getRegistryTemplateCount } from './templates/registry.js';
+import { TEMPLATE_REGISTRY, getRegistryConfig, getRegistryTemplateCount } from './templates/registry.ts';
 
 // Template cache to avoid re-importing
 const templateCache = new Map();

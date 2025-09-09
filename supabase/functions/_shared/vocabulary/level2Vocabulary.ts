@@ -1,7 +1,7 @@
 // Level 2 Vocabulary (Ages 7-9) - Cumulative through 2nd Grade Dolch
 // Includes all Level 1 words plus 2nd grade Dolch sight words
 
-import { LEVEL_1_VOCABULARY } from './level1Vocabulary.js';
+import { LEVEL_1_VOCABULARY } from './level1Vocabulary.ts';
 
 // Official Dolch 2nd Grade Sight Words (46 words)
 export const DOLCH_2ND_GRADE_VOCABULARY = new Set([

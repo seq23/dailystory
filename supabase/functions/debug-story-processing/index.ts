@@ -4,7 +4,7 @@ import {
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
 } from "../_shared/corsAdvanced.js";
-import { monitorRequest } from "../_shared/headerMonitor.js";
+import { monitorRequest } from "../_shared/headerMonitor.ts";
 
 // Story processing tracker for detecting text flicker
 const storyProcessingLog: Array<{

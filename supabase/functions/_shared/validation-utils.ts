@@ -2,9 +2,9 @@
 // Single source of truth for core validation logic
 
 // Import shared configuration for fallbacks only
-import { validationConfig } from './validation-config.js';
+import { validationConfig } from './validation-config.ts';
 // Import dynamic extraction functions - SINGLE SOURCE OF TRUTH
-import { extractTokenLimitFromPrompt, getStoryPrompt, getExpertStoryPrompt, type DifficultyLevel as PromptDifficultyLevel, type ExpertGradeLevel as PromptExpertGradeLevel } from './storyPrompts.js';
+import { extractTokenLimitFromPrompt, getStoryPrompt, getExpertStoryPrompt, type DifficultyLevel as PromptDifficultyLevel, type ExpertGradeLevel as PromptExpertGradeLevel } from './storyPrompts.ts';
 
 export type ValidationLevel = 'Level0' | 'Level1' | 'Level2' | 'Level3' | 'Level4' | 'Grade6' | 'Grade7' | 'Grade8' | 'Grade9' | 'Grade10';
 export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';

@@ -2,8 +2,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Import the sophisticated template system components
-import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.js";
-import { safeValidateAndEnhanceGrammar } from "../_shared/enhancedPlaceholderValidator.js";
+import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";
+import { safeValidateAndEnhanceGrammar } from "../_shared/enhancedPlaceholderValidator.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,7 +30,7 @@ interface ProcessResponse {
 }
 
 // Use shared pronoun derivation from placeholderResolver
-import { derivePronoun } from '../_shared/placeholderResolver.js';
+import { derivePronoun } from '../_shared/placeholderResolver.ts';
 
 serve(async (req) => {
   // Handle CORS preflight requests

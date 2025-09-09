@@ -1076,7 +1076,7 @@ serve(async (req) => {
         
         // 0. VISUAL DETAIL ANALYSIS FIRST - Must run before character building
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           const characterName = avatarIdentity?.name || userInfo?.name || 'child';
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterName);
           console.log(`🎨 [${requestId}] Visual details analyzed before character building`);
@@ -1085,7 +1085,7 @@ serve(async (req) => {
         }
         
         // Import services for direct assembly
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
         const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
         const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
         
@@ -1165,7 +1165,7 @@ serve(async (req) => {
                   // Store new cultural selections in character consistency
                   if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
                     try {
-                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+                      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
                       const characterService = new CharacterConsistencyService();
                       const characterName = avatarIdentity?.name || userInfo?.name || 'child';
                       const cacheKey = `${sessionId}_${characterName}`;
@@ -1349,7 +1349,7 @@ serve(async (req) => {
           
           if (secondaryElements && secondaryElements.length > 0) {
             // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
-            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
             const characterConsistencyService = new CharacterConsistencyService();
             
             const seededSecondaryDescriptions = await Promise.all(
@@ -1394,7 +1394,7 @@ serve(async (req) => {
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
         // Add visual detail analysis for consistent object tracking
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           await VisualDetailTracker.analyzeTextForDetails(
             sessionId, 
             pageText, 
@@ -1408,7 +1408,7 @@ serve(async (req) => {
         
         // 3.2. Visual Details & Colored Objects (automatically integrated from database)
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
           
           // Get general visual consistency details
           const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);

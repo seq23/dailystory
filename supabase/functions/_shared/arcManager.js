@@ -3,7 +3,7 @@
  * Handles never-ending story arc transitions with smart template selection integration
  */
 
-import { selectWithTimeout } from './smartTemplateSelector.js';
+import { selectWithTimeout } from './smartTemplateSelector.ts';
 import { getTemplateCount } from './templateImporter.ts';
 
 // B values for each level (scene count per arc)

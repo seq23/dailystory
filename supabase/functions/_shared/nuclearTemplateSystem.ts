@@ -133,7 +133,7 @@ export async function preloadPopularTemplates(): Promise<void> {
   
   for (const { level, index } of popularTemplates) {
     try {
-      const { loadTemplate } = await import('./dynamicTemplateLoader.js');
+      const { loadTemplate } = await import('./dynamicTemplateLoader.ts');
       const template = await loadTemplate(level, index);
       
       if (template) {
@@ -190,7 +190,7 @@ export async function nuclearLoadTemplate(level: string, templateIndex?: number)
   
   // Stage 3: Dynamic loading with circuit breaker protection
   try {
-    const { loadTemplate } = await import('./dynamicTemplateLoader.js');
+    const { loadTemplate } = await import('./dynamicTemplateLoader.ts');
     const template = await Promise.race([
       loadTemplate(level, templateIndex),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))

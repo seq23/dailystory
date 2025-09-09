@@ -10,7 +10,7 @@ import {
   generateCorsTestingInfo,
   getCorsMonitoringStats 
 } from "../_shared/corsAdvanced.js";
-import { monitorRequest, globalHeaderMonitor } from "../_shared/headerMonitor.js";
+import { monitorRequest, globalHeaderMonitor } from "../_shared/headerMonitor.ts";
 
 serve(async (req) => {
   console.log(`🧪 CORS Testing Endpoint: ${req.method} ${req.url}`);

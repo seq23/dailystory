@@ -5,7 +5,7 @@ import {
   createDynamicCorsResponse, 
   createDynamicCorsErrorResponse 
 } from "../_shared/corsAdvanced.js";
-import { monitorRequest } from "../_shared/headerMonitor.js";
+import { monitorRequest } from "../_shared/headerMonitor.ts";
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

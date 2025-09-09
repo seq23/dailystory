@@ -3,8 +3,8 @@
  * Handles dynamic imports from frontend template files
  */
 
-import { convertStoryTemplateToStringArray } from './templateConverter.js';
-import { UserInfo } from './placeholderResolver.js';
+import { convertStoryTemplateToStringArray } from './templateConverter.ts';
+import { UserInfo } from './placeholderResolver.ts';
 
 interface StoryTemplate {
   title: string;
@@ -46,7 +46,7 @@ interface TemplateModule {
 }
 
 // Import new dynamic template loader
-import { loadTemplate, getDynamicTemplateCount } from './dynamicTemplateLoader.js';
+import { loadTemplate, getDynamicTemplateCount } from './dynamicTemplateLoader.ts';
 
 /**
  * Get template count for a given level (for exploration mode)

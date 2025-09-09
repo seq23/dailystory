@@ -1,7 +1,7 @@
 // Test the African American Character Generation Fix
 // This tests that the real AI functions are being used correctly
 
-import { FrontendIntelligence } from './FrontendIntelligence.js';
+import { FrontendIntelligence } from './FrontendIntelligence.ts';
 
 // Test African American user profile
 const testUserInfo = {

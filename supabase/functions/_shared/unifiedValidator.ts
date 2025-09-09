@@ -10,7 +10,7 @@ import {
   validateLivePageLength,
   getExpectedPagesForService,
   type ValidationLevel 
-} from './validation-utils.js';
+} from './validation-utils.ts';
 
 // Re-export ValidationLevel for compatibility
 export type { ValidationLevel };
