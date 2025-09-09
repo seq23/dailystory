@@ -1361,12 +1361,12 @@ serve(async (req) => {
                       el.name, 
                       'secondary_character'
                     );
-                    const seedDescription = characterConsistencyService.generateSecondaryCharacterDescription(
+                    const seedDescription = await characterConsistencyService.generateSecondaryCharacterDescription(
                       el.name, 
                       'secondary_character', 
-                      secondaryCharacterSeed.seed
+                      secondaryCharacterSeed
                     );
-                    console.log(`👤 [${requestId}] Secondary character seed applied: ${el.name} -> ${seedDescription} (seed: ${secondaryCharacterSeed.seed})`);
+                    console.log(`👤 [${requestId}] Secondary character seed applied: ${el.name} -> ${seedDescription} (seed: ${secondaryCharacterSeed})`);
                     return `${el.name}: ${seedDescription}`;
                   } catch (error) {
                     console.warn(`⚠️ [${requestId}] Secondary character seed failed for ${el.name}:`, error.message);

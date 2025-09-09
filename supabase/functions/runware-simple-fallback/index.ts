@@ -4888,6 +4888,21 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
       console.log('🛡️ Applied cultural features fallback:', safeFinalFeatures);
     }
     
+    // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
+    // Analyze current page text for visual details before building colored objects
+    try {
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
+      await VisualDetailTracker.analyzeTextForDetails(
+        sessionId || 'fallback-session', 
+        pageText, 
+        1, // Default to page 1 for tier 2.5A
+        userInfo?.avatar?.type || 'child'
+      );
+      console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
+    } catch (error) {
+      console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
+    }
+    
     // ============= NEW: COLORED OBJECTS INTEGRATION =============
     // Add persistent colored objects from VisualDetailTracker BEFORE template processing
     let coloredObjects = '';
@@ -5701,7 +5716,9 @@ serve(async (req: Request) => {
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
       try {
-        const characterSeed = await CharacterConsistencyService.getCharacterSeed(
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const characterConsistencyService = new CharacterConsistencyService();
+        const characterSeed = await characterConsistencyService.getCharacterSeed(
           sessionId, 
           'main_character', 
           pageText, 
