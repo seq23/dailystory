@@ -46,6 +46,13 @@ serve(async (req) => {
       userName: userInfo?.name,
       sessionId: sessionId?.substring(0, 8)
     });
+    
+    // FLICKER DETECTION: Log original content
+    console.log('📚 [FLICKER-CHECK] Original story pages received:', {
+      pageCount: pages.length,
+      firstPageOriginal: pages[0]?.substring(0, 50) + '...',
+      totalLength: pages.join(' ').length
+    });
 
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
       throw new Error('Invalid pages array provided');
@@ -83,6 +90,15 @@ serve(async (req) => {
       if (grammarResult.success) {
         grammarEnhancementSuccesses++;
         console.log(`✅ Enhanced grammar applied for page ${i + 1}: ${grammarResult.result.substring(0, 50)}...`);
+        
+        // FLICKER DETECTION: Check for content changes
+        if (grammarResult.result !== placeholderResolved) {
+          console.log(`📚 [FLICKER-DETECTED] Page ${i + 1} text modified during grammar processing:`, {
+            originalLength: placeholderResolved.length,
+            processedLength: grammarResult.result.length,
+            contentChanged: placeholderResolved.toLowerCase() !== grammarResult.result.toLowerCase()
+          });
+        }
       } else {
         grammarFailureReasons.push(`Page ${i + 1}: ${grammarResult.error}`);
         console.warn(`⚠️ Enhanced grammar enhancement failed for page ${i + 1}, using original text`);
@@ -97,6 +113,14 @@ serve(async (req) => {
       enhancedGrammarSuccesses: grammarEnhancementSuccesses,
       enhancedGrammarFailures: grammarFailureReasons.length,
       source: 'unified-processor-enhanced'
+    });
+    
+    // FLICKER DETECTION: Final content comparison
+    console.log('📚 [FLICKER-CHECK] Final processed story pages:', {
+      pageCount: processedPages.length,
+      firstPageProcessed: processedPages[0]?.substring(0, 50) + '...',
+      totalLengthAfter: processedPages.join(' ').length,
+      anyChangesDetected: processedPages.some((page, i) => page !== pages[i])
     });
 
     const response: ProcessResponse = {

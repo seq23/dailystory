@@ -729,6 +729,10 @@ async function generateWithRunwarePremium(
     seed: seed || 'random'
   });
 
+  // ENHANCED LOGGING: Full prompt details for debugging
+  console.log(`🎨 [${requestId || 'unknown'}] FULL Runware Prompt (${positivePrompt.length} chars):`, positivePrompt.substring(0, 200) + (positivePrompt.length > 200 ? '...' : ''));
+  console.log(`🚫 [${requestId || 'unknown'}] NEGATIVE Prompt (${negativePrompt.length} chars):`, negativePrompt.substring(0, 100) + (negativePrompt.length > 100 ? '...' : ''));
+
   try {
     const result = await RunwareWebSocketManager.connectWithRetry(
       apiKey,

@@ -94,3 +94,12 @@ verify_jwt = true
 
 [functions.send-custom-auth-email]
 verify_jwt = false
+
+[functions.debug-ai-prompts]
+verify_jwt = false
+
+[functions.debug-story-processing]
+verify_jwt = false
+
+[functions.process-story-content]
+verify_jwt = false

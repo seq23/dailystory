@@ -65,7 +65,7 @@ serve(async (req) => {
       return createDynamicCorsErrorResponse('Missing sessionId parameter or global=true', req, 400);
     }
 
-    // Enhanced response with detailed debug information
+    // Enhanced response with detailed debug information - FULL PROMPTS AVAILABLE
     return createDynamicCorsResponse({
       success: true,
       sessionId,
@@ -73,11 +73,23 @@ serve(async (req) => {
         tier: prompt.tier,
         timestamp: prompt.timestamp,
         success: prompt.success,
-        prompt: prompt.prompt?.substring(0, 100) + '...',
+        // FIXED: Use correct field name and provide both truncated and full
+        promptTruncated: (prompt.promptText || prompt.prompt || '')?.substring(0, 100) + '...',
+        promptFull: prompt.promptText || prompt.prompt || '',
+        negativePrompt: prompt.negativePrompt || '',
+        originalPageText: prompt.originalPageText || '',
+        enhancedPrompt: prompt.enhancedPrompt || '',
         model: prompt.model,
         sessionId: prompt.sessionId,
         pageNumber: prompt.pageNumber,
         generation_time: prompt.generation_time,
+        generationTime: prompt.generationTime,
+        seed: prompt.seed,
+        imageURL: prompt.imageURL,
+        provider: prompt.provider,
+        cost: prompt.cost,
+        fallbackReason: prompt.fallbackReason,
+        metadata: prompt.metadata || {},
         error: prompt.error
       })),
       totalEntries: imagePrompts.length,
