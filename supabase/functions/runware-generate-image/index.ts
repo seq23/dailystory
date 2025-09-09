@@ -1334,7 +1334,7 @@ serve(async (req) => {
           promptSections.character = characterSection;
         }
         
-        // 3. SCENE DETAILS (Secondary Elements + Visual Details unified)
+        // 3. SCENE DETAILS (Secondary Elements)
         let sceneDetailsSection = '';
         
         // 3.1. Secondary Elements
@@ -1362,15 +1362,15 @@ serve(async (req) => {
           console.log(`⚠️ [${requestId}] Secondary elements detection failed:`, error.message);
         }
         
-        // 3.2. Visual Details (already processed earlier, just get for prompt)
+        // 3.2. Visual Details (automatically integrated from database)
         try {
           const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
           
           if (visualDetails) {
-            const visualDetailsText = `Visual consistency details: ${visualDetails}`;
+            const visualDetailsText = `Consistency details: ${visualDetails}`;
             sceneDetailsSection += sceneDetailsSection ? `, ${visualDetailsText}` : visualDetailsText;
-            console.log(`🎯 [${requestId}] Section 3 - Visual Details Unified:`, {
+            console.log(`🎯 [${requestId}] Section 3 - Consistency Details:`, {
               content: visualDetails,
               source: 'VisualDetailTracker (pre-processed)'
             });
@@ -1469,7 +1469,7 @@ serve(async (req) => {
         console.log(`🏗️ [${requestId}] 5-SECTION ARCHITECTURE SUMMARY:`, {
           'Section 1': 'Primary Scene: AI-enhanced scene description',
           'Section 2': 'Character: Character + cultural context unified',
-          'Section 3': 'Scene Details: Secondary elements + visual details',
+          'Section 3': 'Scene Details: Secondary elements',
           'Section 4': 'Story Context: Page text context (Level 0-1 only)',
           'Section 5': 'Brand Suffix: Style framework prompt'
         });
