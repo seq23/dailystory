@@ -112,7 +112,7 @@ serve(async (req) => {
     } = await req.json();
     
     // Import difficulty mapper for frontend->backend conversion
-    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+    const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
     
     // Handle difficulty parameter with proper frontend->backend conversion
     const rawDifficulty = difficulty || userInfo?.difficultyLevel;
