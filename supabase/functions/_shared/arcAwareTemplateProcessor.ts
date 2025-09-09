@@ -6,7 +6,7 @@
 
 import { convertStoryTemplateToStringArray } from './templateConverter.ts';
 import { calculateArcPosition, generateArcTransition, needsArcTransition, getBValue } from './arcManager.js';
-import { globalArcSessionManager } from './sessionStateManager.js';
+import { globalArcSessionManager } from './SessionStateManager.ts';
 import { getTemplate, getTemplateCount } from './templateImporter.ts';
 import type { UserInfo } from './placeholderResolver.ts';
 

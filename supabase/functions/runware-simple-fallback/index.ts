@@ -1,7 +1,7 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
-import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
+import { globalArcSessionManager } from "../_shared/SessionStateManager.ts";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.ts";
