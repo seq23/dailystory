@@ -1,11 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { 
-  createDynamicCorsOptionsResponse, 
-  createDynamicCorsResponse, 
-  createDynamicCorsErrorResponse 
-} from "../_shared/corsAdvanced.ts";
 import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager, globalSessionManager } from "../_shared/SessionStateManager.ts";
 import { SecurityValidator } from "../_shared/SecurityValidator.ts";
@@ -779,10 +774,18 @@ serve(async (req) => {
   // Monitor request for header analytics
   monitorRequest(req, 'runware-generate-image');
   
-  // Handle CORS preflight requests - BULLETPROOF DYNAMIC SYSTEM
+  // Handle CORS preflight requests - SIMPLE BULLETPROOF SYSTEM
   if (req.method === 'OPTIONS') {
-    console.log('🔄 BULLETPROOF Dynamic CORS preflight - Auto-detecting headers');
-    return createDynamicCorsOptionsResponse(req);
+    console.log('🔄 Simple CORS preflight handling');
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
+        'Access-Control-Max-Age': '86400'
+      }
+    });
   }
 
   // Handle GET requests with health check (FIX: Add debugging endpoint)
@@ -790,7 +793,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get('RUNWARE_API_KEY');
     console.log('🔍 GET request received - returning health check');
     
-    return createDynamicCorsResponse({
+    return new Response(JSON.stringify({
       status: 'healthy',
       function: 'runware-generate-image',
       method: 'GET',
@@ -809,14 +812,33 @@ serve(async (req) => {
         required_fields: ['pageText', 'userInfo', 'sessionId', 'storyId'],
         optional_fields: ['pageNumber', 'isGuestUser', 'enhancedStoryData', 'forceTier']
       },
-      corsSystem: 'BULLETPROOF_DYNAMIC'
-    }, req);
+      corsSystem: 'SIMPLE_BULLETPROOF'
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    });
   }
 
   // Validate request method (FIX: Ensure only POST requests proceed)
   if (req.method !== 'POST') {
     console.error(`❌ Invalid request method: ${req.method}`);
-    return createDynamicCorsErrorResponse(`Method ${req.method} not allowed. Use POST for image generation or GET for health check.`, req, 405);
+    return new Response(JSON.stringify({
+      success: false,
+      error: `Method ${req.method} not allowed. Use POST for image generation or GET for health check.`
+    }), {
+      status: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    });
   }
 
   // Validate API key
@@ -1906,14 +1928,22 @@ serve(async (req) => {
       console.error('❌ Failed to store Tier 4 image prompt:', storeError);
     }
     
-    return createDynamicCorsResponse({
+    return new Response(JSON.stringify({
       success: true,
       imageURL: placeholderResult.url,
       provider: 'runware-orchestrator',
       tier: 4,
       enhancementLevel: 'kid-friendly-placeholder',
       metadata: { orchestrated: true }
-    }, req);
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    });
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     
@@ -1944,6 +1974,17 @@ serve(async (req) => {
     
     const statusCode = isTimeoutError ? 503 : 500; // Use 503 for temporary timeout issues
     
-    return createDynamicCorsErrorResponse(responseMessage, req, statusCode);
+    return new Response(JSON.stringify({
+      success: false,
+      error: responseMessage
+    }), {
+      status: statusCode,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    });
   }
 });

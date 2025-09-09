@@ -5586,16 +5586,35 @@ serve(async (req: Request) => {
   
   console.log('🎯 TIER 2.5 CASCADE: Initializing tier tracking system');
   
-  // Handle CORS preflight
+  // Handle CORS preflight  
   if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, origin, user-agent, cache-control, pragma, expires, if-modified-since, if-none-match',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
+        'Access-Control-Max-Age': '86400'
+      }
+    });
   }
   
   // 🔑 DEBUG: API Key Validation
   const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!runwareApiKey) {
     console.error('❌ CRITICAL: RUNWARE_API_KEY not found in Tier 2.5');
-    return createCorsErrorResponse('Tier 2.5: Missing Runware API key', 500);
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Tier 2.5: Missing Runware API key'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    });
   }
   console.log('✅ Tier 2.5: RUNWARE_API_KEY validated:', runwareApiKey.substring(0, 10) + '...');
   
@@ -6212,6 +6231,17 @@ serve(async (req: Request) => {
     
   } catch (error) {
     console.error('❌ Tier 2.5: Main function error:', error);
-    return createCorsErrorResponse(error.message || 'Internal server error', 500);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message || 'Internal server error'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    });
   }
 });
