@@ -16,8 +16,8 @@
 export const safeErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
+  if (error && typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as any).message);
   }
   return 'Unknown error occurred';
 };
@@ -27,13 +27,13 @@ export const safeErrorMessage = (error: unknown): string => {
  * Prevents TypeErrors from accessing properties on undefined objects
  */
 export const safePropertyAccess = <T>(
-  obj: unknown, 
+  obj: any, 
   property: string, 
   fallback: T
 ): T => {
   if (obj && typeof obj === 'object' && property in obj) {
-    const value = (obj as Record<string, unknown>)[property];
-    return value !== null && value !== undefined ? (value as T) : fallback;
+    const value = obj[property];
+    return value !== null && value !== undefined ? value : fallback;
   }
   return fallback;
 };
@@ -42,7 +42,7 @@ export const safePropertyAccess = <T>(
  * Safely extracts model information from model objects
  * Common pattern used across story generation functions
  */
-export const safeModelAccess = (model: unknown): { name: string; description: string } => {
+export const safeModelAccess = (model: any): { name: string; description: string } => {
   const defaultModel = { name: 'unknown', description: 'Unknown model' };
   
   if (!model || typeof model !== 'object') return defaultModel;
@@ -58,9 +58,9 @@ export const safeModelAccess = (model: unknown): { name: string; description: st
  * Standard pattern for logging errors with context information
  */
 export const logSafeError = (
-  message: string,
-  error: unknown,
-  context?: Record<string, unknown>
+  message: string, 
+  error: unknown, 
+  context?: Record<string, any>
 ): void => {
   const errorMessage = safeErrorMessage(error);
   const logData = {
@@ -85,7 +85,7 @@ export const ERROR_PATTERNS = {
   UNSAFE_MODEL_ACCESS: `currentModel.model`,
   UNSAFE_ERROR_MESSAGE: `error.message`,
   UNSAFE_PROPERTY_ACCESS: `obj.property`
-} as const;
+};
 
 /**
  * Validates that error handling follows safe patterns

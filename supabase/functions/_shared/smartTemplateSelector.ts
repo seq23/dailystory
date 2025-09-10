@@ -6,10 +6,14 @@
 import { safeErrorMessage, safePropertyAccess, logSafeError } from './errorPatterns.ts';
 import { getRegistryConfig } from './templates/registry.ts';
 
+interface KeywordPatterns {
+  [key: string]: string[];
+}
+
 /**
  * Validates special request input with comprehensive safety checks
  */
-function validateSpecialRequest(specialRequest) {
+function validateSpecialRequest(specialRequest: string | null | undefined): string | null {
   try {
     // Handle all possible corrupted states
     if (!specialRequest) return null;
@@ -30,7 +34,7 @@ function validateSpecialRequest(specialRequest) {
 /**
  * Extract keywords from special request with bounds checking
  */
-function extractKeywords(request) {
+function extractKeywords(request: string): string[] {
   try {
     if (!request || typeof request !== 'string') return [];
     
@@ -51,7 +55,7 @@ function extractKeywords(request) {
 /**
  * Score template against keywords with timeout protection
  */
-function scoreTemplate(template, keywords) {
+function scoreTemplate(template: any, keywords: string[]): number {
   try {
     if (!template || !keywords || keywords.length === 0) return 0;
     
@@ -87,9 +91,9 @@ function scoreTemplate(template, keywords) {
 /**
  * Check for keyword patterns in template content
  */
-function isKeywordMatch(keyword, title, theme) {
+function isKeywordMatch(keyword: string, title: string, theme: string): boolean {
   try {
-    const patterns = {
+    const patterns: KeywordPatterns = {
       'adventure': ['adventure', 'explore', 'journey', 'quest', 'discover'],
       'friendship': ['friend', 'buddy', 'pal', 'companion', 'together'],
       'animals': ['animal', 'pet', 'cat', 'dog', 'bird', 'creature'],
@@ -114,7 +118,11 @@ function isKeywordMatch(keyword, title, theme) {
 /**
  * Select best matching template with multi-level fallback
  */
-export async function selectBestMatch(specialRequest, templateLevel, templateCount) {
+export async function selectBestMatch(
+  specialRequest: string | null | undefined, 
+  templateLevel: string, 
+  templateCount: number
+): Promise<number | null> {
   try {
     // Input validation with safety checks
     const processedRequest = validateSpecialRequest(specialRequest);
@@ -144,7 +152,7 @@ export async function selectBestMatch(specialRequest, templateLevel, templateCou
     
     // Score all available templates
     let bestScore = 0;
-    let bestIndex = null;
+    let bestIndex: number | null = null;
     const minThreshold = 25; // Minimum score required for smart selection
     
     const templatesToCheck = Math.min(templateCount, config.templates.length);
@@ -187,11 +195,16 @@ export async function selectBestMatch(specialRequest, templateLevel, templateCou
 /**
  * Smart selection with timeout protection
  */
-export async function selectWithTimeout(specialRequest, templateLevel, templateCount, timeoutMs = 100) {
+export async function selectWithTimeout(
+  specialRequest: string | null | undefined, 
+  templateLevel: string, 
+  templateCount: number, 
+  timeoutMs: number = 100
+): Promise<number | null> {
   try {
     return await Promise.race([
       selectBestMatch(specialRequest, templateLevel, templateCount),
-      new Promise((_, reject) => 
+      new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Selection timeout')), timeoutMs)
       )
     ]);

@@ -4,7 +4,27 @@
  * Used for on-demand dynamic imports to reduce memory footprint
  */
 
-export const TEMPLATE_REGISTRY = {
+interface TemplateInfo {
+  file?: string;
+  title: string;
+  theme: string;
+}
+
+interface RegistryConfig {
+  count: number;
+  type: 'static' | 'dynamic';
+  path: string;
+  B?: number; // Arc length (scenes per arc)
+  functions?: {
+    getter: string;
+    counter: string;
+  };
+  templates: TemplateInfo[];
+}
+
+type TemplateRegistry = Record<string, RegistryConfig>;
+
+export const TEMPLATE_REGISTRY: TemplateRegistry = {
   level0: {
     count: 100,
     type: 'static',
@@ -229,7 +249,7 @@ export const TEMPLATE_REGISTRY = {
 /**
  * Get template count for a level
  */
-export function getRegistryTemplateCount(level) {
+export function getRegistryTemplateCount(level: string): number {
   const config = TEMPLATE_REGISTRY[level];
   return config ? config.count : 0;
 }
@@ -237,14 +257,14 @@ export function getRegistryTemplateCount(level) {
 /**
  * Get template metadata for a level
  */
-export function getRegistryConfig(level) {
+export function getRegistryConfig(level: string): RegistryConfig | null {
   return TEMPLATE_REGISTRY[level] || null;
 }
 
 /**
  * Get B value (arc length) for a template level
  */
-export function getBValue(level) {
+export function getBValue(level: string): number {
   const config = TEMPLATE_REGISTRY[level];
-  return config ? config.B : 5; // Default to 5 if not found
+  return config ? config.B || 5 : 5; // Default to 5 if not found
 }

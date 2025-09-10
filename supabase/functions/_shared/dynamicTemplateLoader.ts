@@ -6,19 +6,30 @@
 
 import { TEMPLATE_REGISTRY, getRegistryConfig, getRegistryTemplateCount } from './templates/registry.ts';
 
+interface TemplateModule {
+  default?: string[];
+  template?: string[];
+  [key: string]: any;
+}
+
+interface CacheStats {
+  size: number;
+  keys: string[];
+}
+
 // Template cache to avoid re-importing
-const templateCache = new Map();
+const templateCache = new Map<string, string[]>();
 
 /**
  * Load a specific template on-demand with caching
  */
-export async function loadTemplate(level, templateIndex = null) {
+export async function loadTemplate(level: string, templateIndex: number | null = null): Promise<string[] | null> {
   const cacheKey = `${level}_${templateIndex || 'random'}`;
   
   // Check cache first
   if (templateCache.has(cacheKey)) {
     console.log(`📦 Cache hit for ${cacheKey}`);
-    return templateCache.get(cacheKey);
+    return templateCache.get(cacheKey) || null;
   }
 
   console.log(`🔄 Loading template ${level} index ${templateIndex}`);
@@ -28,12 +39,12 @@ export async function loadTemplate(level, templateIndex = null) {
     throw new Error(`Unknown template level: ${level}`);
   }
 
-  let template = null;
+  let template: string[] | null = null;
 
   if (config.type === 'static') {
     // Level 0 - import from single file and call getter function
     try {
-      const module = await import(`./templates/${config.path}`);
+      const module = await import(`./templates/${config.path}`) as any;
       
       // Call the getter function with templateIndex
       if (templateIndex !== null && templateIndex >= 0) {
@@ -57,8 +68,8 @@ export async function loadTemplate(level, templateIndex = null) {
       const templateInfo = config.templates[targetIndex];
       if (templateInfo) {
         const templatePath = `./templates/${config.path}${templateInfo.file}`;
-        const module = await import(templatePath);
-        template = module.default || module.template;
+        const module = await import(templatePath) as TemplateModule;
+        template = module.default || module.template || null;
         
         if (template) {
           console.log(`✅ Loaded individual template file: ${templatePath}`);
@@ -87,7 +98,7 @@ export async function loadTemplate(level, templateIndex = null) {
  * Get template count for exploration mode
  * Uses registry counts since they now accurately match existing files
  */
-export async function getDynamicTemplateCount(level) {
+export async function getDynamicTemplateCount(level: string): Promise<number> {
   const registryCount = getRegistryTemplateCount(level);
   
   // Registry is now accurate after optimization, so use it directly
@@ -107,7 +118,7 @@ export async function getDynamicTemplateCount(level) {
 /**
  * Clear template cache (for memory management)
  */
-export function clearTemplateCache() {
+export function clearTemplateCache(): void {
   const cacheSize = templateCache.size;
   templateCache.clear();
   console.log(`🧹 Cleared ${cacheSize} cached templates`);
@@ -116,7 +127,7 @@ export function clearTemplateCache() {
 /**
  * Get cache statistics
  */
-export function getCacheStats() {
+export function getCacheStats(): CacheStats {
   return {
     size: templateCache.size,
     keys: Array.from(templateCache.keys())
