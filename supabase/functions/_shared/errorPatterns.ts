@@ -13,7 +13,7 @@
  * Safely extracts error message from unknown error types
  * Prevents crashes when error is not an Error instance
  */
-export const safeErrorMessage = (error) => {
+export const safeErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
   if (error && typeof error === 'object' && 'message' in error) {
@@ -26,10 +26,14 @@ export const safeErrorMessage = (error) => {
  * Safely accesses nested object properties with fallback
  * Prevents TypeErrors from accessing properties on undefined objects
  */
-export const safePropertyAccess = (obj, property, fallback) => {
+export const safePropertyAccess = <T>(
+  obj: unknown, 
+  property: string, 
+  fallback: T
+): T => {
   if (obj && typeof obj === 'object' && property in obj) {
-    const value = obj[property];
-    return value !== null && value !== undefined ? value : fallback;
+    const value = (obj as Record<string, unknown>)[property];
+    return value !== null && value !== undefined ? (value as T) : fallback;
   }
   return fallback;
 };
@@ -38,7 +42,7 @@ export const safePropertyAccess = (obj, property, fallback) => {
  * Safely extracts model information from model objects
  * Common pattern used across story generation functions
  */
-export const safeModelAccess = (model) => {
+export const safeModelAccess = (model: unknown): { name: string; description: string } => {
   const defaultModel = { name: 'unknown', description: 'Unknown model' };
   
   if (!model || typeof model !== 'object') return defaultModel;
@@ -53,7 +57,11 @@ export const safeModelAccess = (model) => {
  * Enhanced error logging with safe property access
  * Standard pattern for logging errors with context information
  */
-export const logSafeError = (message, error, context) => {
+export const logSafeError = (
+  message: string,
+  error: unknown,
+  context?: Record<string, unknown>
+): void => {
   const errorMessage = safeErrorMessage(error);
   const logData = {
     error: errorMessage,
@@ -77,14 +85,14 @@ export const ERROR_PATTERNS = {
   UNSAFE_MODEL_ACCESS: `currentModel.model`,
   UNSAFE_ERROR_MESSAGE: `error.message`,
   UNSAFE_PROPERTY_ACCESS: `obj.property`
-};
+} as const;
 
 /**
  * Validates that error handling follows safe patterns
  * Used for development-time checking
  */
-export const validateErrorHandling = (code) => {
-  const issues = [];
+export const validateErrorHandling = (code: string): string[] => {
+  const issues: string[] = [];
   
   if (code.includes('error.message') && !code.includes('safeErrorMessage')) {
     issues.push('Direct error.message access detected - use safeErrorMessage(error) instead');
