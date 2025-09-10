@@ -42,12 +42,12 @@ function createCorsOptionsResponse() {
 // 🎨 NUCLEAR STYLE SETTINGS - GLOBAL SCOPE FOR FUNCTION ACCESS 🎨
 const NUCLEAR_STYLE_SETTINGS = {
   'beginner': {
-    frameworkPrompt: 'Contemporary children\\\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
     steps: 20,
     CFGScale: 7
   },
   'easy': {
-    frameworkPrompt: 'Contemporary children\\\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
     steps: 22,
     CFGScale: 7.5
   },
@@ -71,7 +71,7 @@ const NUCLEAR_STYLE_SETTINGS = {
 // 🚨 ULTIMATE FALLBACK FRAMEWORK PROMPT - EMERGENCY USE ONLY 🚨
 const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting';
 
-// ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - RUNWARE OPTIMAL + STORY LENGTH OPTIMAL =============
+// ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE =============
 const PREMIUM_PROMPT_TEMPLATES = {
   beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
   easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
@@ -80,7 +80,6 @@ const PREMIUM_PROMPT_TEMPLATES = {
   expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}"
 };
 
-// ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 const BASIC_PROMPT_TEMPLATES = {
   beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
   easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
@@ -89,126 +88,78 @@ const BASIC_PROMPT_TEMPLATES = {
   expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
 
-// ============= VOCABULARY ARRAYS - EXTENSIVE AND COMPREHENSIVE =============
+// AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
+    'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
+    'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
+    'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
+    'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
+    'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
+    'textured ponytail with locs', 'detailed nape area tapered'
+  ],
+  girls: [
+    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
+    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
+    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
+    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
+    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
+    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
+    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
+    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
+    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
+    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
+    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
+  ]
+};
 
-const ageAdjectives = [
-  "baby", "toddler", "young", "preteen", "teen", "elderly", "ancient", "newborn", "infant", "child",
-  "youthful", "middle-aged", "senior", "old", "mature", "adolescent", "growing", "developing", "ripe", "prime"
+const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
+  "light brown skin tone with warm amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "caramel skin tone with deep brown eyes, soft full lips, high cheekbones, elegant nose shape",
+  "honey complexion with hazel-green eyes, naturally full lips, sculpted cheekbones, refined nose",
+  "warm beige skin with golden brown eyes, full expressive lips, defined facial structure, natural nose",
+  "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
+  "medium brown skin tone with golden amber eyes, full lips, strong cheekbones, natural nose bridge",
+  "cocoa skin tone with warm honey eyes, naturally full lips, defined cheekbones, elegant nose shape",
+  "warm brown complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "chestnut skin tone with hazel-brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "amber skin tone with deep brown eyes, soft full lips, high cheekbones, natural nose shape",
+  "deep brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "rich chocolate complexion with warm honey eyes, naturally full lips, strong cheekbones, elegant nose",
+  "mahogany skin tone with bright hazel eyes, full expressive lips, sculpted cheekbones, refined nose shape",
+  "warm deep brown skin with golden brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "bronze skin tone with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  "dark brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "ebony skin tone with warm honey eyes, naturally full lips, strong cheekbones, elegant nose shape",
+  "deep mahogany complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "rich dark chocolate skin with golden hazel eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "beautiful dark brown skin with light amber eyes, soft full lips, high cheekbones, natural nose shape"
 ];
 
-const ethnicityAdjectives = [
-  "African", "Asian", "European", "Hispanic", "Indigenous", "Caucasian", "Indian", "Middle Eastern", "Pacific Islander", "Mixed",
-  "Black", "White", "Brown", "Yellow", "Tan", "Olive", "Pale", "Dark", "Light", "Ruddy"
+const EXPANDED_COLOR_ARRAY = [
+  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray',
+  'bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
+  'vibrant red', 'vibrant blue', 'vibrant green', 'electric blue', 'neon green', 'hot pink', 'lime green',
+  'light blue', 'light pink', 'light green', 'light yellow', 'soft blue', 'soft pink', 'soft purple',
+  'pastel blue', 'pastel pink', 'pastel yellow', 'pale blue', 'pale green', 'pale yellow',
+  'dark blue', 'dark green', 'dark red', 'dark purple', 'navy blue', 'forest green', 'burgundy',
+  'silver', 'gold', 'metallic blue', 'shiny red', 'sparkly pink', 'glittery purple', 'rainbow',
+  'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
 ];
 
-const hairAdjectives = [
-  "long", "short", "curly", "straight", "wavy", "bald", "blonde", "brunette", "red", "gray",
-  "black", "white", "brown", "auburn", "golden", "silver", "thick", "thin", "frizzy", "spiky"
-];
-
-const featureAdjectives = [
-  "smiling", "frowning", "laughing", "crying", "serious", "playful", "mischievous", "kind", "stern", "gentle",
-  "happy", "sad", "angry", "calm", "excited", "tired", "energetic", "shy", "brave", "curious"
-];
-
-const subjectAdjectives = [
-  "boy", "girl", "man", "woman", "person", "child", "teenager", "adult", "elder", "infant",
-  "student", "teacher", "doctor", "nurse", "artist", "writer", "musician", "athlete", "chef", "engineer"
-];
-
-const actionAdjectives = [
-  "running", "jumping", "dancing", "singing", "reading", "writing", "painting", "cooking", "playing", "working",
-  "studying", "teaching", "healing", "creating", "performing", "competing", "preparing", "building", "repairing", "exploring"
-];
-
-const emotionAdjectives = [
-  "happy", "sad", "angry", "calm", "excited", "tired", "energetic", "shy", "brave", "curious",
-  "joyful", "depressed", "furious", "peaceful", "thrilled", "exhausted", "lively", "timid", "courageous", "inquisitive"
-];
-
-const secondaryCharacterAdjectives = [
-  "friends", "family", "pets", "animals", "strangers", "crowd", "team", "group", "community", "audience",
-  "companions", "relatives", "dogs", "cats", "passersby", "spectators", "crew", "gang", "society", "congregation"
-];
-
-const coloredObjectAdjectives = [
-  "red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "gray", "black",
-  "white", "gold", "silver", "bronze", "copper", "crimson", "teal", "violet", "magenta", "lime"
-];
-
-const settingAdjectives = [
-  "forest", "beach", "city", "mountain", "desert", "ocean", "river", "lake", "garden", "park",
-  "school", "home", "office", "hospital", "restaurant", "store", "library", "museum", "theater", "stadium"
-];
-
-const adjectiveColors = [
-  "bright", "dark", "vibrant", "dull", "pastel", "neon", "muted", "clear", "cloudy", "smoky",
-  "warm", "cool", "soft", "hard", "light", "heavy", "deep", "shallow", "rich", "poor"
-];
-
-const cameraDirectives = [
-  "wide-angle shot", "close-up shot", "medium shot", "establishing shot", "point-of-view shot",
-  "over-the-shoulder shot", "dutch angle", "aerial shot", "tracking shot", "zoom shot",
-  "panoramic view", "macro photography", "time-lapse", "slow motion", "fish-eye lens",
-  "tilt-shift", "bokeh effect", "long exposure", "split diopter", "cinemagraph"
-];
-
-const sceneSettings = [
-  "sunny day", "rainy day", "snowy day", "nighttime", "dawn", "dusk", "foggy morning", "stormy weather",
-  "clear sky", "cloudy sky", "windy day", "calm sea", "raging river", "peaceful forest", "bustling city",
-  "quiet village", "desert landscape", "mountain range", "tropical island", "arctic tundra"
-];
-
-const actionIntensities = [
-  "gentle", "moderate", "intense", "subtle", "vigorous", "delicate", "forceful", "restrained", "dynamic", "static",
-  "brisk", "lethargic", "energetic", "placid", "frenetic", "serene", "powerful", "feeble", "robust", "fragile"
-];
-
-const spatialPositionings = [
-  "center", "left", "right", "top", "bottom", "foreground", "background", "middle ground", "corner", "edge",
-  "above", "below", "beside", "behind", "in front", "nearby", "distant", "adjacent", "opposite", "surrounding"
-];
-
-const objectInteractions = [
-  "holding", "touching", "using", "wearing", "carrying", "eating", "drinking", "reading", "writing", "drawing",
-  "pushing", "pulling", "lifting", "dropping", "catching", "throwing", "kicking", "hitting", "breaking", "fixing"
-];
-
-const bodyLanguages = [
-  "smiling", "frowning", "nodding", "shaking head", "waving", "pointing", "hugging", "kissing", "bowing", "curtsying",
-  "jumping", "running", "walking", "sitting", "standing", "lying down", "kneeling", "crouching", "leaning", "stretching"
-];
-
-const spatialCompositions = [
-  "symmetrical", "asymmetrical", "balanced", "unbalanced", "geometric", "organic", "circular", "linear", "radial", "clustered",
-  "open", "closed", "dense", "sparse", "layered", "flat", "deep", "shallow", "wide", "narrow"
-];
-
-const atmospheres = [
-  "peaceful", "chaotic", "romantic", "mysterious", "cheerful", "somber", "tense", "relaxed", "exciting", "calm",
-  "eerie", "vibrant", "dreary", "lively", "gloomy", "serene", "agitated", "dynamic", "stagnant", "tranquil"
-];
-
-const props = [
-  "book", "toy", "ball", "doll", "car", "bike", "hat", "glasses", "umbrella", "backpack",
-  "phone", "camera", "laptop", "tablet", "watch", "jewelry", "wallet", "keys", "pen", "pencil"
-];
-
-const actionObjects = [
-  "sword", "shield", "bow", "arrow", "gun", "knife", "rope", "ladder", "hammer", "wrench",
-  "brush", "paint", "needle", "thread", "shovel", "rake", "broom", "mop", "sponge", "bucket"
-];
-
-const sensoryDetails = [
-  "smell of rain", "sound of waves", "taste of chocolate", "feel of silk", "sight of stars",
-  "scent of flowers", "noise of traffic", "flavor of coffee", "texture of wood", "glow of sunset",
-  "aroma of spices", "roar of thunder", "sweetness of honey", "smoothness of glass", "twinkle of lights",
-  "fragrance of perfume", "hum of machinery", "bitterness of lemon", "roughness of stone", "sparkle of diamonds"
-];
-
-const communityContexts = [
-  "school event", "family gathering", "sports game", "concert", "festival", "parade", "market", "fair", "picnic", "party",
-  "church service", "community meeting", "volunteer work", "charity event", "town hall", "public park", "local library", "art exhibition", "theater performance", "dance recital"
+const CLOTHING_DETECTION_KEYWORDS = [
+  'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
+  'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
+  'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves',
+  'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
+  'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
+  'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
 ];
 
 // ============= SEEDED RANDOM FOR CONSISTENT VARIETY =============
@@ -216,7 +167,6 @@ function getSeededRandomItem(array, seed) {
   if (!array || array.length === 0) return '';
   if (array.length === 1) return array[0];
   
-  // Create consistent hash from seed
   let hash = 0;
   const seedStr = String(seed || '');
   for (let i = 0; i < seedStr.length; i++) {
@@ -227,83 +177,683 @@ function getSeededRandomItem(array, seed) {
   return array[index];
 }
 
-// ============= DIFFICULTY LEVEL VALIDATION =============
+// Helper: Validate difficulty level and fallback
 function validateDifficultyLevel(level) {
-  const validLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'];
-  return validLevels.includes(level) ? level : 'beginner';
+  if (!level || !NUCLEAR_STYLE_SETTINGS[level]) {
+    return 'beginner';
+  }
+  return level;
 }
 
-// ============= EXACT WORD EXTRACTION HELPERS =============
+// Helper: Extract exact words from text for consistency
 function extractExactWords(text) {
   const extractor = new ExactWordExtractor();
-  return extractor.extractWords(text);
+  return extractor.extract(text);
 }
 
-// ============= VISUAL DETAIL TRACKING =============
+// Helper: Track visual details for consistency
 function trackVisualDetails(text, sessionId) {
-  const tracker = new VisualDetailTracker();
-  return tracker.trackDetails(text, sessionId);
+  const tracker = VisualDetailTracker.getInstance(sessionId);
+  tracker.updateFromText(text);
+  return tracker.getCurrentDetails();
 }
 
-// ============= CHARACTER CONSISTENCY MANAGEMENT =============
+// Helper: Manage character consistency
 function manageCharacterConsistency(text, sessionId) {
-  const service = new CharacterConsistencyService();
-  return service.manageConsistency(text, sessionId);
+  const service = CharacterConsistencyService.getInstance(sessionId);
+  service.updateFromText(text);
+  return service.getCurrentCharacterState();
 }
 
-// ============= MAIN PAGE TEXT GENERATION FUNCTION =============
-async function rawPageText(userInfo, pageText, sessionId, pageNumber, mode) {
+// ============= NUCLEAR AVATAR MAPPING FUNCTION =============
+function getNuclearAvatarMapping(userInfo, sessionId, pageNumber) {
   try {
+    const avatarType = userInfo?.avatar?.type || 'child';
+    const skinTone = userInfo?.avatar?.skinTone || 'medium';
+    const difficulty = userInfo?.difficulty || 'beginner';
+    
+    let character = avatarType;
+    let features = '';
+    let hair = '';
+    
+    if (skinTone.includes('dark') || skinTone.includes('brown')) {
+      const gender = avatarType === 'girl' ? 'girls' : 'boys';
+      
+      if (HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender]) {
+        const seed = sessionId + pageNumber + gender;
+        hair = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender], seed);
+      }
+      
+      const featureSeed = sessionId + pageNumber + 'features';
+      features = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, featureSeed);
+    }
+    
+    return {
+      character,
+      features,
+      hair,
+      age: getAgeFromDifficulty(difficulty),
+      ethnicity: getCharacterEthnicity(userInfo)
+    };
+    
+  } catch (error) {
+    console.warn('⚠️ Avatar mapping error:', error);
+    return {
+      character: 'child',
+      features: 'friendly features',
+      hair: 'natural hair',
+      age: 'age 8-10',
+      ethnicity: ''
+    };
+  }
+}
+
+// ============= CHARACTER ETHNICITY DETERMINATION =============
+function getCharacterEthnicity(userInfo) {
+  try {
+    const language = userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || '';
+    
+    const hasDarkSkin = skinTone.toLowerCase().includes('dark') || 
+                       skinTone.toLowerCase().includes('brown') ||
+                       skinTone.toLowerCase().includes('black') ||
+                       skinTone.toLowerCase().includes('ebony') ||
+                       skinTone.toLowerCase().includes('chocolate');
+    
+    if (hasDarkSkin) {
+      if (language === 'es' || language === 'spanish') {
+        return "depict character from Afro-Latino background";
+      }
+      if (language === 'fr' || language === 'french') {
+        return "depict character from African Francophone background";
+      }
+      return "depict character from African American background";
+    }
+    
+    if (language === 'es' || language === 'spanish') {
+      return "depict character from Spanish/Latino background";
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      return "depict character from European background";
+    }
+    
+    if (language === 'zh' || language === 'chinese') {
+      return "depict character from Asian background";
+    }
+    
+    if (language === 'hi' || language === 'hindi') {
+      return "child of Indian origin";
+    }
+    
+    if (language === 'ar' || language === 'arabic') {
+      return "depict character from Middle Eastern background";
+    }
+    
+    if (language === 'pt' || language === 'portuguese') {
+      return "depict character from Latin American background";
+    }
+    
+    return "";
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Character ethnicity detection error:', error);
+    return "";
+  }
+}
+
+function getAgeFromDifficulty(difficulty) {
+  const ageMap = {
+    'beginner': 'age 5-6',
+    'easy': 'age 7-8', 
+    'medium': 'age 9-10',
+    'hard': 'age 11-12',
+    'expert': 'age 13-14'
+  };
+  return ageMap[difficulty] || 'age 9-10';
+}
+
+function extractSceneFromSentence(sentence, originalPageText, pageNumber, sessionId) {
+  try {
+    const lowerSentence = sentence.toLowerCase();
+    
+    const actionMappings = {
+      'walk': 'taking a peaceful walk',
+      'run': 'running energetically', 
+      'play': 'playing joyfully',
+      'jump': 'jumping with excitement',
+      'laugh': 'laughing with pure delight',
+      'smile': 'smiling warmly',
+      'look': 'looking with curiosity',
+      'sit': 'sitting comfortably',
+      'stand': 'standing confidently',
+      'dance': 'dancing with rhythm',
+      'sing': 'singing melodiously',
+      'read': 'reading with focus',
+      'write': 'writing carefully',
+      'draw': 'drawing creatively',
+      'paint': 'painting artistically'
+    };
+    
+    for (const [action, description] of Object.entries(actionMappings)) {
+      if (lowerSentence.includes(action)) {
+        return description;
+      }
+    }
+    
+    if (sentence.length > 20) {
+      return 'enjoying a delightful moment';
+    }
+    
+    return 'in a cheerful scene';
+    
+  } catch (error) {
+    console.warn('⚠️ Scene extraction error:', error);
+    return 'enjoying a wonderful moment';
+  }
+}
+
+function extractSettingFromSentence(sentence, originalPageText, previousSetting) {
+  try {
+    const lowerSentence = (sentence + ' ' + (originalPageText || '')).toLowerCase();
+    
+    const settingMappings = {
+      'room': ' a cozy indoor room with comfortable space',
+      'house': ' a welcoming family house with homey atmosphere', 
+      'playground': ' a fun colorful playground with exciting equipment',
+      'school': ' a bright modern school with learning areas',
+      'library': ' a quiet peaceful library with rows of books',
+      'kitchen': ' a warm inviting kitchen with cooking areas',
+      'bedroom': ' a comfortable personal bedroom with cozy furnishings',
+      'garden': ' a beautiful blooming garden with colorful flowers',
+      'park': ' a vibrant community park with green spaces',
+      'store': ' a friendly neighborhood store with interesting items',
+      'hill': ' a scenic hill landscape with natural slopes',
+      'valley': ' a peaceful valley with rolling meadows',
+      'pond': ' a tranquil pond with clear water',
+      'beach': ' a sunny sandy beach with ocean waves',
+      'forest': ' a magical green forest with tall trees'
+    };
+    
+    for (const [setting, description] of Object.entries(settingMappings)) {
+      if (lowerSentence.includes(setting)) {
+        return description;
+      }
+    }
+    
+    const indoorKeywords = ['inside', 'indoors', 'room', 'house', 'home', 'building', 'kitchen', 'bedroom', 'school', 'classroom'];
+    const outdoorKeywords = ['outside', 'outdoors', 'park', 'playground', 'garden', 'yard', 'forest', 'beach', 'field'];
+    
+    let isIndoor = false;
+    let isOutdoor = false;
+    
+    for (const keyword of indoorKeywords) {
+      if (lowerSentence.includes(keyword)) {
+        isIndoor = true;
+        break;
+      }
+    }
+    
+    if (!isIndoor) {
+      for (const keyword of outdoorKeywords) {
+        if (lowerSentence.includes(keyword)) {
+          isOutdoor = true;
+          break;
+        }
+      }
+    }
+    
+    if (isIndoor) {
+      return ' a comfortable indoor space with cozy atmosphere';
+    } else if (isOutdoor) {
+      return ' a beautiful outdoor setting with natural environment';
+    }
+    
+    if (previousSetting && previousSetting.trim().length > 0) {
+      console.log('🛡️ Tier 2.5: Using previous setting memory:', previousSetting);
+      return previousSetting;
+    }
+    
+    return ' indoor portrait style photo with main character focus';
+  } catch (error) {
+    console.warn('⚠️ Setting extraction error:', error);
+    return previousSetting || ' a welcoming colorful environment';
+  }
+}
+
+function extractEmotionFromSentence(sentence, originalPageText) {
+  try {
+    const text = (sentence + ' ' + (originalPageText || '')).toLowerCase();
+    
+    const emotionMappings = {
+      'happy': ['happy', 'joy', 'delight', 'cheer', 'glad', 'pleased'],
+      'excited': ['excited', 'thrilled', 'enthusiastic', 'eager', 'energetic'],
+      'curious': ['curious', 'wonder', 'interest', 'explore', 'discover'],
+      'peaceful': ['calm', 'peaceful', 'serene', 'relaxed', 'comfortable'],
+      'surprised': ['surprised', 'amazed', 'astonished', 'shocked'],
+      'focused': ['focused', 'concentrated', 'attentive', 'careful'],
+      'loving': ['love', 'affection', 'tender', 'caring', 'gentle']
+    };
+    
+    for (const [emotion, keywords] of Object.entries(emotionMappings)) {
+      for (const keyword of keywords) {
+        if (text.includes(keyword)) {
+          return `with ${emotion} expression`;
+        }
+      }
+    }
+    
+    return 'with cheerful expression';
+    
+  } catch (error) {
+    console.warn('⚠️ Emotion extraction error:', error);
+    return 'with happy expression';
+  }
+}
+
+function extractObjectsFromSentence(sentence, originalPageText, pageNumber, sessionId) {
+  const lowerSentence = sentence.toLowerCase();
+  
+  const objects = [
+    'ball', 'toy', 'book', 'flower', 'tree', 'car', 'bike', 'swing', 'slide',
+    'kite', 'doll', 'puzzle', 'game', 'crayon', 'marker', 'rock', 'stick', 
+    'leaf', 'shell', 'butterfly', 'bird', 'dog', 'cat', 'rabbit'
+  ];
+  
+  const detectedObjects = [];
+  
+  for (const obj of objects) {
+    if (lowerSentence.includes(obj)) {
+      detectedObjects.push(obj);
+    }
+  }
+  
+  if (detectedObjects.length > 0) {
+    return detectedObjects.join(', ');
+  }
+  
+  return 'interesting colorful items';
+}
+
+function detectClothingFromStory(text) {
+  if (!text) return '';
+  
+  const lowerText = text.toLowerCase();
+  
+  const dynamicClothingColor = detectAndResolveClothingColor(text);
+  if (dynamicClothingColor) {
+    return dynamicClothingColor;
+  }
+  
+  for (const keyword of CLOTHING_DETECTION_KEYWORDS) {
+    if (lowerText.includes(keyword)) {
+      const sentences = text.split(/[.!?]+/);
+      for (const sentence of sentences) {
+        if (sentence.toLowerCase().includes(keyword)) {
+          const randomColor = EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * EXPANDED_COLOR_ARRAY.length)];
+          return `a ${randomColor} ${keyword}`;
+        }
+      }
+    }
+  }
+  
+  return '';
+}
+
+function detectAndResolveClothingColor(text) {
+  const lowerText = text.toLowerCase();
+  let detectedClothing = '';
+  let detectedColor = '';
+  
+  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
+    if (lowerText.includes(clothing)) {
+      detectedClothing = clothing;
+      break;
+    }
+  }
+  
+  for (const color of EXPANDED_COLOR_ARRAY) {
+    if (lowerText.includes(color)) {
+      detectedColor = color;
+      break;
+    }
+  }
+  
+  if (detectedClothing && detectedColor) {
+    return `a ${detectedColor} ${detectedClothing}`;
+  }
+  
+  if (detectedClothing) {
+    return `a ${detectedClothing}`;
+  }
+  
+  return '';
+}
+
+function extractAtmosphereContext(pageText, setting) {
+  try {
+    const text = (pageText + ' ' + setting).toLowerCase();
+    
+    if (text.includes('warm') || text.includes('cozy') || text.includes('comfort')) {
+      return 'with warm, cozy atmosphere';
+    }
+    
+    if (text.includes('bright') || text.includes('sunny') || text.includes('cheerful')) {
+      return 'with bright, cheerful atmosphere';
+    }
+    
+    if (text.includes('peaceful') || text.includes('calm') || text.includes('quiet')) {
+      return 'with peaceful, serene atmosphere';
+    }
+    
+    if (text.includes('exciting') || text.includes('fun') || text.includes('energetic')) {
+      return 'with exciting, energetic atmosphere';
+    }
+    
+    if (text.includes('magical') || text.includes('wonder') || text.includes('amazing')) {
+      return 'with magical, wonderful atmosphere';
+    }
+    
+    return 'with welcoming, inviting atmosphere';
+    
+  } catch (error) {
+    console.warn('⚠️ Atmosphere extraction error:', error);
+    return 'with pleasant atmosphere';
+  }
+}
+
+function generateSpatialComposition(pageText, scene, setting) {
+  try {
+    const text = (pageText + ' ' + scene + ' ' + setting).toLowerCase();
+    
+    if (text.includes('close') || text.includes('near') || text.includes('together')) {
+      return 'character prominently featured in intimate foreground with close perspective';
+    }
+    
+    if (text.includes('far') || text.includes('distance') || text.includes('wide')) {
+      return 'character positioned in expansive environmental context with wide perspective';
+    }
+    
+    if (text.includes('center') || text.includes('middle') || text.includes('focus')) {
+      return 'character centrally positioned with balanced compositional focus';
+    }
+    
+    if (text.includes('left') || text.includes('right') || text.includes('side')) {
+      return 'character positioned with dynamic asymmetrical composition';
+    }
+    
+    return 'character prominently featured in foreground with engaging composition';
+    
+  } catch (error) {
+    console.warn('⚠️ Spatial composition error:', error);
+    return 'character prominently featured in foreground';
+  }
+}
+
+async function extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber) {
+  try {
+    const lowerSentence = sentence.toLowerCase();
+    
+    const familyMembers = {
+      'mom': 'caring mother nearby',
+      'dad': 'supportive father nearby', 
+      'mother': 'loving mother nearby',
+      'father': 'kind father nearby',
+      'sister': 'playful sister nearby',
+      'brother': 'fun brother nearby',
+      'friend': 'cheerful friend nearby',
+      'friends': 'happy friends nearby'
+    };
+    
+    const detectedCharacters = [];
+    
+    for (const [keyword, description] of Object.entries(familyMembers)) {
+      if (lowerSentence.includes(keyword)) {
+        detectedCharacters.push(description);
+      }
+    }
+    
+    const animals = ['dog', 'cat', 'pet', 'puppy', 'kitten'];
+    for (const animal of animals) {
+      if (lowerSentence.includes(animal)) {
+        detectedCharacters.push(`friendly ${animal} companion`);
+      }
+    }
+    
+    if (detectedCharacters.length > 0) {
+      return detectedCharacters.slice(0, 2).join(', ');
+    }
+    
+    return '';
+    
+  } catch (error) {
+    console.warn('⚠️ Secondary character extraction error:', error);
+    return '';
+  }
+}
+
+function extractCommunityContext(pageText, setting) {
+  try {
+    const text = (pageText + ' ' + setting).toLowerCase();
+    
+    if (text.match(/festival|celebration|party|gathering/)) {
+      return ' gathered together for a vibrant community celebration';
+    }
+    
+    if (text.match(/market|fair|bazaar|vendor/)) {
+      return ' exploring together at a colorful community market';
+    }
+    
+    if (text.match(/library|community center|hall|building/)) {
+      return ' gathered together in a welcoming community space';
+    }
+    
+    if (text.match(/park|playground|garden|outdoor/)) {
+      return ' playing together in a shared community area';
+    }
+    
+    if (text.match(/school|classroom|cafeteria|educational/)) {
+      return ' learning together in an educational community setting';
+    }
+    
+    if (text.match(/friend|classmate|neighbor|peer/)) {
+      return ' connecting with community friends';
+    }
+    
+    if (text.match(/sport|game|play|activity|exercise/)) {
+      return ' playing together in community activities';
+    }
+    
+    return '';
+    
+  } catch (error) {
+    console.warn('⚠️ Community context extraction failed:', error);
+    return '';
+  }
+}
+
+function extractSensoryDetails(pageText, scene) {
+  try {
+    const text = (pageText + ' ' + scene).toLowerCase();
+    
+    let sensoryLayers = [];
+    
+    if (text.match(/laugh|giggle|cheer|happy|joy|delight/)) {
+      sensoryLayers.push('with melodious laughter');
+    }
+    
+    if (text.match(/music|song|singing|melody|rhythm|harmony/)) {
+      sensoryLayers.push('with harmonious melodies');
+    }
+    
+    if (text.match(/birds|chirp|nature|outdoor|forest|garden/)) {
+      sensoryLayers.push('with chirping birds');
+    }
+    
+    if (text.match(/water|stream|splash|ocean|rain|fountain/)) {
+      sensoryLayers.push('with gentle water sounds');
+    }
+    
+    if (text.match(/soft|smooth|fluffy|silky|gentle|comfortable/)) {
+      sensoryLayers.push('featuring silky smooth surfaces');
+    }
+    
+    if (text.match(/warm|cozy|welcoming|inviting|embracing/)) {
+      sensoryLayers.push('featuring warming tactile comfort');
+    }
+    
+    if (text.match(/flower|garden|bloom|botanical|floral|petal/)) {
+      sensoryLayers.push('enhanced by garden bloom fragrances');
+    }
+    
+    if (text.match(/food|cooking|baking|kitchen|meal|delicious/)) {
+      sensoryLayers.push('enhanced by appetizing food aromas');
+    }
+    
+    if (sensoryLayers.length > 1) {
+      return ` ${sensoryLayers.slice(0, 2).join(' and ')}`;
+    } else if (sensoryLayers.length === 1) {
+      return ` ${sensoryLayers[0]}`;
+    }
+    
+    return '';
+    
+  } catch (error) {
+    console.warn('⚠️ Sensory details extraction failed:', error);
+    return '';
+  }
+}
+
+function enhanceNuclearMappingWithConsistency(avatarMapping, pageText, sessionId, pageNumber) {
+  try {
+    const consistentCharacter = manageCharacterConsistency(avatarMapping.character, sessionId);
+    const visualDetails = trackVisualDetails(pageText, sessionId);
+    
+    return {
+      ...avatarMapping,
+      character: consistentCharacter,
+      visualDetails: visualDetails
+    };
+    
+  } catch (error) {
+    console.warn('⚠️ Nuclear mapping enhancement error:', error);
+    return avatarMapping;
+  }
+}
+
+function fillTemplate(template, placeholders) {
+  let filledTemplate = template;
+  
+  for (const [key, value] of Object.entries(placeholders)) {
+    const placeholder = `{${key}}`;
+    const replacement = value || '';
+    filledTemplate = filledTemplate.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), replacement);
+  }
+  
+  return filledTemplate;
+}
+
+function getCameraDirective(pageText, difficulty) {
+  const text = pageText.toLowerCase();
+  
+  const cameraDirectives = {
+    portrait: [
+      'close-up portrait composition', 'character-focused portrait style', 'portrait perspective with character emphasis',
+      'intimate portrait framing', 'detailed portrait composition', 'main character portrait focus'
+    ],
+    environmental: [
+      'environmental storytelling composition', 'wide scene composition', 'contextual environment framing',
+      'narrative environment perspective', 'scenic composition with character integration', 'story setting composition'
+    ],
+    action: [
+      'dynamic action composition', 'movement-focused framing', 'energetic scene composition', 
+      'active scene perspective', 'motion-capturing composition', 'lively action framing'
+    ],
+    intimate: [
+      'warm intimate composition', 'cozy scene framing', 'close personal perspective',
+      'comfortable intimate framing', 'nurturing scene composition', 'gentle close-up perspective'
+    ]
+  };
+  
+  if (text.includes('close') || text.includes('face') || text.includes('look')) {
+    return getSeededRandomItem(cameraDirectives.portrait, pageText);
+  }
+  
+  if (text.includes('run') || text.includes('jump') || text.includes('play')) {
+    return getSeededRandomItem(cameraDirectives.action, pageText);
+  }
+  
+  if (text.includes('hug') || text.includes('love') || text.includes('comfort')) {
+    return getSeededRandomItem(cameraDirectives.intimate, pageText);
+  }
+  
+  return getSeededRandomItem(cameraDirectives.environmental, pageText);
+}
+
+async function generatePageTextPrompt(userInfo, pageText, sessionId, pageNumber, mode = 'premium') {
+  try {
+    console.log('🚀 Generating page text prompt:', { pageNumber, mode });
+    
     const difficulty = validateDifficultyLevel(userInfo?.difficulty || 'beginner');
     
-    console.log('🚀 Tier 2.5 Nuclear Independence: Processing request', {
-      difficulty,
-      pageNumber,
-      mode,
-      sessionId: sessionId?.substring(0, 8) + '...'
-    });
-
-    // Generate nuclear negative prompt
+    const avatarMapping = getNuclearAvatarMapping(userInfo, sessionId, pageNumber);
+    const enhancedMapping = enhanceNuclearMappingWithConsistency(avatarMapping, pageText, sessionId, pageNumber);
+    
+    const scene = extractSceneFromSentence(pageText, pageText, pageNumber, sessionId);
+    const setting = extractSettingFromSentence(pageText, pageText, '');
+    const emotion = extractEmotionFromSentence(pageText, pageText);
+    const objects = extractObjectsFromSentence(pageText, pageText, pageNumber, sessionId);
+    const clothing = detectClothingFromStory(pageText);
+    
+    const atmosphere = extractAtmosphereContext(pageText, setting);
+    const spatialComposition = generateSpatialComposition(pageText, scene, setting);
+    const secondaryCharacters = await extractSecondaryCharactersFromSentence(pageText, sessionId, pageNumber);
+    const communityContext = extractCommunityContext(pageText, setting);
+    const sensoryDetails = extractSensoryDetails(pageText, scene);
+    
+    const cameraDirective = getCameraDirective(pageText, difficulty);
+    
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty];
+    
+    const template = mode === 'premium' ? PREMIUM_PROMPT_TEMPLATES[difficulty] : BASIC_PROMPT_TEMPLATES[difficulty];
+    
+    const placeholders = {
+      frameworkPrompt: styleSettings.frameworkPrompt,
+      cameraDirective: cameraDirective,
+      pageText: pageText,
+      character: enhancedMapping.character,
+      age: enhancedMapping.age,
+      ethnicity: enhancedMapping.ethnicity,
+      hair: enhancedMapping.hair,
+      features: enhancedMapping.features,
+      emotion: emotion,
+      scene: scene,
+      action_intensity: 'moderate energy level',
+      spatial_positioning: 'naturally positioned',
+      object_interaction: objects ? `interacting with ${objects}` : '',
+      body_language: 'natural body language',
+      spatial_composition: spatialComposition,
+      setting: setting,
+      atmosphere: atmosphere,
+      props: clothing || 'appropriate clothing',
+      action_objects: objects,
+      colored_objects: objects,
+      sensory_details: sensoryDetails,
+      community_context: communityContext,
+      secondary_characters: secondaryCharacters,
+      subject: enhancedMapping.character,
+      action: scene,
+      adjective: 'vibrant'
+    };
+    
+    const finalPrompt = fillTemplate(template, placeholders);
+    
     const culturalProfile = detectCulturalProfileForNegatives(userInfo);
     const negativePrompt = generateNuclearNegativePrompt(difficulty, culturalProfile);
     
-    // Extract exact words
-    const exactWords = extractExactWords(pageText);
+    console.log('✅ Generated prompt successfully');
     
-    // Track visual details
-    const visualDetails = trackVisualDetails(pageText, sessionId);
-    
-    // Manage character consistency
-    const characterConsistency = manageCharacterConsistency(pageText, sessionId);
-    
-    // Get style settings
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty];
-    
-    // Compose final prompt using the appropriate template system
-    const template = mode === 'premium' ? PREMIUM_PROMPT_TEMPLATES[difficulty] : BASIC_PROMPT_TEMPLATES[difficulty];
-    
-    const finalPrompt = composeFinalPrompt(template, {
-      frameworkPrompt: styleSettings.frameworkPrompt,
-      pageText: pageText,
-      character: userInfo?.avatar?.type || 'child',
-      exactWords,
-      visualDetails,
-      characterConsistency
-    });
-    
-    // Save session state
-    globalArcSessionManager.saveImagePrompt(sessionId, pageNumber, {
-      prompt: finalPrompt,
-      negativePrompt: negativePrompt,
-      difficulty: difficulty,
-      metadata: {
-        exactWords,
-        visualDetails,
-        characterConsistency
-      }
-    });
-    
-    return createCorsResponse({
+    return {
       success: true,
       prompt: finalPrompt,
       negativePrompt: negativePrompt,
@@ -313,7 +863,52 @@ async function rawPageText(userInfo, pageText, sessionId, pageNumber, mode) {
       outputFormat: 'WEBP',
       scheduler: 'FlowMatchEulerDiscreteScheduler',
       strength: 0.8
+    };
+    
+  } catch (error) {
+    console.error('🚨 Error in generatePageTextPrompt:', error);
+    return {
+      success: false,
+      error: error.message || 'Unknown error occurred'
+    };
+  }
+}
+
+// Core function to generate page text with nuclear negative prompt system
+async function rawPageText(userInfo, pageText, sessionId, pageNumber, mode) {
+  try {
+    const difficulty = validateDifficultyLevel(userInfo?.difficulty || mode);
+
+    // Generate nuclear negative prompt based on cultural profile
+    const culturalProfile = detectCulturalProfileForNegatives(userInfo);
+    const negativePrompt = generateNuclearNegativePrompt(culturalProfile);
+
+    // Extract exact words for consistency
+    const exactWords = extractExactWords(pageText);
+
+    // Track visual details for consistency
+    const visualDetails = trackVisualDetails(pageText, sessionId);
+
+    // Manage character consistency
+    const characterState = manageCharacterConsistency(pageText, sessionId);
+
+    // Generate the complete prompt
+    const result = await generatePageTextPrompt(userInfo, pageText, sessionId, pageNumber, mode);
+
+    if (!result.success) {
+      return createCorsErrorResponse(result.error, 500);
+    }
+
+    // Save session state for continuity
+    globalArcSessionManager.saveSession(sessionId, {
+      lastPageText: pageText,
+      difficulty,
+      visualDetails,
+      characterState,
+      exactWords
     });
+
+    return createCorsResponse(result);
     
   } catch (error) {
     console.error('🚨 Tier 2.5 Nuclear Independence: Error in rawPageText:', error);
@@ -321,181 +916,23 @@ async function rawPageText(userInfo, pageText, sessionId, pageNumber, mode) {
   }
 }
 
-// ============= PROMPT COMPOSITION FUNCTION =============
-function composeFinalPrompt(template, data) {
-  let prompt = template;
-  
-  // Replace all placeholders
-  for (const [key, value] of Object.entries(data)) {
-    const placeholder = `{${key}}`;
-    prompt = prompt.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value || '');
-  }
-  
-  return prompt;
-}
-
-// ============= CULTURAL PROFILE DETECTION FOR NEGATIVES =============
-function detectCulturalProfileForNegatives(userInfo) {
-    // Implement logic to detect cultural profile from userInfo
-    // This is a placeholder; replace with actual implementation
-    return "western"; // Default to western
-}
-
-// ============= CAMERA DIRECTIVE SELECTION =============
-function selectCameraDirective(seed) {
-    return getSeededRandomItem(cameraDirectives, seed);
-}
-
-// ============= SCENE SETTING SELECTION =============
-function selectSceneSetting(seed) {
-    return getSeededRandomItem(sceneSettings, seed);
-}
-
-// ============= ACTION INTENSITY SELECTION =============
-function selectActionIntensity(seed) {
-    return getSeededRandomItem(actionIntensities, seed);
-}
-
-// ============= SPATIAL POSITIONING SELECTION =============
-function selectSpatialPositioning(seed) {
-    return getSeededRandomItem(spatialPositionings, seed);
-}
-
-// ============= OBJECT INTERACTION SELECTION =============
-function selectObjectInteraction(seed) {
-    return getSeededRandomItem(objectInteractions, seed);
-}
-
-// ============= BODY LANGUAGE SELECTION =============
-function selectBodyLanguage(seed) {
-    return getSeededRandomItem(bodyLanguages, seed);
-}
-
-// ============= SPATIAL COMPOSITION SELECTION =============
-function selectSpatialComposition(seed) {
-    return getSeededRandomItem(spatialCompositions, seed);
-}
-
-// ============= ATMOSPHERE SELECTION =============
-function selectAtmosphere(seed) {
-    return getSeededRandomItem(atmospheres, seed);
-}
-
-// ============= PROP SELECTION =============
-function selectProps(seed) {
-    return getSeededRandomItem(props, seed);
-}
-
-// ============= ACTION OBJECT SELECTION =============
-function selectActionObjects(seed) {
-    return getSeededRandomItem(actionObjects, seed);
-}
-
-// ============= COLORED OBJECT SELECTION =============
-function selectColoredObjects(seed) {
-    return getSeededRandomItem(coloredObjectAdjectives, seed);
-}
-
-// ============= SENSORY DETAIL SELECTION =============
-function selectSensoryDetails(seed) {
-    return getSeededRandomItem(sensoryDetails, seed);
-}
-
-// ============= COMMUNITY CONTEXT SELECTION =============
-function selectCommunityContext(seed) {
-    return getSeededRandomItem(communityContexts, seed);
-}
-
-// ============= AGE ADJECTIVE SELECTION =============
-function selectAgeAdjective(seed) {
-    return getSeededRandomItem(ageAdjectives, seed);
-}
-
-// ============= ETHNICITY ADJECTIVE SELECTION =============
-function selectEthnicityAdjective(seed) {
-    return getSeededRandomItem(ethnicityAdjectives, seed);
-}
-
-// ============= HAIR ADJECTIVE SELECTION =============
-function selectHairAdjective(seed) {
-    return getSeededRandomItem(hairAdjectives, seed);
-}
-
-// ============= FEATURE ADJECTIVE SELECTION =============
-function selectFeatureAdjective(seed) {
-    return getSeededRandomItem(featureAdjectives, seed);
-}
-
-// ============= SUBJECT ADJECTIVE SELECTION =============
-function selectSubjectAdjective(seed) {
-    return getSeededRandomItem(subjectAdjectives, seed);
-}
-
-// ============= ACTION ADJECTIVE SELECTION =============
-function selectActionAdjective(seed) {
-    return getSeededRandomItem(actionAdjectives, seed);
-}
-
-// ============= EMOTION ADJECTIVE SELECTION =============
-function selectEmotionAdjective(seed) {
-    return getSeededRandomItem(emotionAdjectives, seed);
-}
-
-// ============= SECONDARY CHARACTER ADJECTIVE SELECTION =============
-function selectSecondaryCharacterAdjective(seed) {
-    return getSeededRandomItem(secondaryCharacterAdjectives, seed);
-}
-
-// ============= SETTING ADJECTIVE SELECTION =============
-function selectSettingAdjective(seed) {
-    return getSeededRandomItem(settingAdjectives, seed);
-}
-
-// ============= ADJECTIVE COLOR SELECTION =============
-function selectAdjectiveColor(seed) {
-    return getSeededRandomItem(adjectiveColors, seed);
-}
-
-// ============= SECONDARY CHARACTER PROCESSING =============
-function processSecondaryCharacters(text, seed) {
-    // Implement logic to process secondary characters
-    // This is a placeholder; replace with actual implementation
-    return getSeededRandomItem(secondaryCharacterAdjectives, seed);
-}
-
-// ============= OBJECT AND SCENE EXTRACTION =============
-function extractObjectsAndScenes(text) {
-    // Implement logic to extract objects and scenes from text
-    // This is a placeholder; replace with actual implementation
-    return "extracted objects and scenes";
-}
-
-// ============= MAIN SERVE FUNCTION =============
+// Main serve function
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
   }
 
   try {
-    const requestBody = await req.json();
-    console.log('📨 Tier 2.5 Nuclear Independence: Request received');
+    const { userInfo, pageText, sessionId, pageNumber, mode } = await req.json();
     
-    // Extract parameters
-    const { userInfo, pageText, sessionId, pageNumber, mode } = requestBody;
+    console.log('🛡️ Tier 2.5 Nuclear Independence: Processing request');
+    console.log('📊 Request data - UserInfo:', !!userInfo, 'PageText:', !!pageText, 'SessionId:', !!sessionId);
     
-    // Validate required parameters
-    if (!userInfo || !pageText || !sessionId || pageNumber === undefined) {
-      return createCorsErrorResponse('Missing required parameters: userInfo, pageText, sessionId, pageNumber', 400);
-    }
-    
-    // Generate prompt using rawPageText function
     const result = await rawPageText(userInfo, pageText, sessionId, pageNumber, mode);
-    
     return result;
     
   } catch (error) {
-    console.error('🚨 Tier 2.5 Nuclear Independence: Server error:', error);
-    return createCorsErrorResponse(error.message || 'Internal server error', 500);
+    console.error('❌ Serve function error:', error);
+    return createCorsErrorResponse(error.message || 'Request processing failed', 400);
   }
 });
