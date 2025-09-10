@@ -4319,6 +4319,1025 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars, pageText, sc
   return enhanceSecondaryCharacterPositioning(secondaryChars, pageText, scene);
 }
 
-// ============= END CHUNK 2 + 3 CONVERSION =============
+// ============= CHUNK 4: CULTURAL LANDMARKS & BASIC TEMPLATE =============
 
+/**
+ * Get cultural landmarks for enhanced prompts
+ */
+function getCulturalLandmarks(userInfo = {}) {
+  const africanAmericanLandmarks = [
+    "vibrant community centers with murals celebrating Black heritage",
+    "tree-lined streets with brownstone houses and colorful gardens",
+    "bustling markets with diverse vendors and rich cultural music",
+    "peaceful parks with monuments honoring civil rights leaders",
+    "lively neighborhoods with street art and cultural expressions",
+    "warm community spaces where families gather and children play",
+    "beautiful libraries with diverse books and welcoming reading areas",
+    "thriving local businesses owned by community members",
+    "schools with inspiring murals and diverse student artwork",
+    "churches with stunning architecture and community gardens"
+  ];
+
+  const generalLandmarks = [
+    "cozy neighborhood parks with playground equipment",
+    "friendly community centers with activity rooms",
+    "welcoming libraries with comfortable reading nooks",
+    "local markets with fresh produce and flowers",
+    "peaceful gardens with benches and walking paths",
+    "busy town squares with fountains and gathering spaces",
+    "charming cafes with outdoor seating and warm lighting",
+    "community schools with colorful murals and playgrounds",
+    "tree-lined streets with bicycle paths and sidewalks",
+    "neighborhood shops with friendly owners and local crafts"
+  ];
+
+  // Determine if user profile suggests African American cultural context
+  const userInterests = userInfo.interests || [];
+  const userRequests = (userInfo.specialRequest || '').toLowerCase();
+  
+  const africanAmericanIndicators = [
+    'african american', 'black culture', 'diversity', 'multicultural',
+    'civil rights', 'heritage', 'community', 'gospel', 'hip hop',
+    'jazz', 'soul food', 'kwanzaa', 'black history'
+  ];
+
+  const shouldUseAfricanAmericanContext = africanAmericanIndicators.some(indicator => 
+    userInterests.some(interest => interest.toLowerCase().includes(indicator)) ||
+    userRequests.includes(indicator)
+  );
+
+  const landmarks = shouldUseAfricanAmericanContext ? africanAmericanLandmarks : generalLandmarks;
+  
+  // Return 2-3 random landmarks for variety
+  const shuffled = landmarks.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 2 + Math.floor(Math.random() * 2));
+}
+
+/**
+ * Fill basic template with nuclear fallback approach
+ */
+function fillBasicTemplate(template, userInfo = {}, pageCount = 5) {
+  if (!template || !Array.isArray(template)) {
+    console.warn('Invalid template provided to fillBasicTemplate');
+    return Array(pageCount).fill("Continue the story...").map((text, i) => `Page ${i + 1}: ${text}`);
+  }
+
+  console.log(`[TIER 2.5] Processing basic template with ${template.length} pages for ${pageCount} target pages`);
+
+  try {
+    // Extract user personalization data with safe fallbacks
+    const userName = userInfo.userName || userInfo.name || "the child";
+    const favoriteColor = userInfo.favoriteColor || userInfo.favorite_color || "blue";
+    const favoriteAnimal = userInfo.favoriteAnimal || userInfo.favorite_animal || "puppy";
+    const favoriteFood = userInfo.favoriteFood || userInfo.favorite_food || "pizza";
+    const hobbies = userInfo.hobbies || "playing outside";
+    const specialRequest = userInfo.specialRequest || userInfo.special_request || "adventure";
+
+    // Get cultural context and landmarks
+    const culturalLandmarks = getCulturalLandmarks(userInfo);
+    const extractedSetting = extractAndEnhanceSetting(culturalLandmarks, userInfo);
+
+    console.log(`[TIER 2.5] User personalization: ${userName}, ${favoriteColor}, ${favoriteAnimal}`);
+    console.log(`[TIER 2.5] Cultural context applied: ${culturalLandmarks.length} landmarks`);
+
+    // Create comprehensive replacement map
+    const replacements = {
+      // Direct user inputs
+      '{userName}': userName,
+      '{child}': userName,
+      '{name}': userName,
+      '{favoriteColor}': favoriteColor,
+      '{favoriteAnimal}': favoriteAnimal,
+      '{favoriteFood}': favoriteFood,
+      '{hobbies}': hobbies,
+      '{specialRequest}': specialRequest,
+      
+      // Derived content
+      '{setting}': extractedSetting,
+      '{culturalLandmark}': culturalLandmarks[0] || "a beautiful neighborhood park",
+      '{secondLandmark}': culturalLandmarks[1] || "a cozy community center",
+      
+      // Weather and atmosphere
+      '{weather}': getRandomWeather(),
+      '{timeOfDay}': getRandomTimeOfDay(),
+      '{atmosphere}': getRandomAtmosphere(),
+      
+      // Character consistency elements
+      '{characterDescription}': generateConsistentCharacter(userInfo),
+      '{companionDescription}': generateConsistentCompanion(userInfo)
+    };
+
+    // Process template pages
+    let processedPages = template.slice(0, pageCount).map((page, index) => {
+      let processedPage = page;
+      
+      // Apply all replacements
+      Object.entries(replacements).forEach(([placeholder, replacement]) => {
+        const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'gi');
+        processedPage = processedPage.replace(regex, replacement);
+      });
+
+      // Add cultural enhancement for first few pages
+      if (index < 2) {
+        processedPage = enhanceWithCulturalContext(processedPage, culturalLandmarks, userInfo);
+      }
+
+      // Ensure page has proper story flow
+      processedPage = ensureStoryFlow(processedPage, index, pageCount);
+
+      console.log(`[TIER 2.5] Processed page ${index + 1}: ${processedPage.substring(0, 100)}...`);
+      return processedPage;
+    });
+
+    // If we need more pages than template provides, extend with continuation
+    while (processedPages.length < pageCount) {
+      const lastPage = processedPages[processedPages.length - 1];
+      const continuationPage = generateContinuationPage(lastPage, processedPages.length, userInfo);
+      processedPages.push(continuationPage);
+      console.log(`[TIER 2.5] Generated continuation page ${processedPages.length}`);
+    }
+
+    // Final validation and cleanup
+    processedPages = processedPages.map((page, index) => {
+      // Remove any remaining placeholders
+      let cleanPage = page.replace(/\{[^}]+\}/g, '');
+      
+      // Ensure proper sentence structure
+      cleanPage = cleanPage.replace(/([.!?])\s*([a-z])/g, '$1 $2'.charAt(0).toUpperCase() + '$1 $2'.slice(1));
+      
+      // Add page numbers if missing
+      if (!cleanPage.match(/^(Page \d+:|Chapter \d+:|Part \d+:)/i)) {
+        cleanPage = `Page ${index + 1}: ${cleanPage}`;
+      }
+
+      return cleanPage.trim();
+    });
+
+    console.log(`[TIER 2.5] Successfully processed ${processedPages.length} pages with basic template`);
+    return processedPages;
+
+  } catch (error) {
+    console.error('[TIER 2.5] Error in fillBasicTemplate:', error);
+    
+    // Nuclear fallback: generate simple pages
+    const fallbackPages = Array(pageCount).fill().map((_, index) => {
+      const userName = userInfo.userName || userInfo.name || "the child";
+      return `Page ${index + 1}: ${userName} continues their wonderful adventure, discovering new things and having fun along the way.`;
+    });
+
+    console.log(`[TIER 2.5] Applied nuclear fallback, generated ${fallbackPages.length} basic pages`);
+    return fallbackPages;
+  }
+}
+
+/**
+ * Extract and enhance setting from cultural landmarks
+ */
+function extractAndEnhanceSetting(culturalLandmarks, userInfo = {}) {
+  try {
+    const baseSetting = culturalLandmarks[0] || "a beautiful neighborhood";
+    const timeOfDay = getRandomTimeOfDay();
+    const weather = getRandomWeather();
+    
+    return `${baseSetting} on ${timeOfDay} with ${weather}`;
+  } catch (error) {
+    console.error('Error extracting setting:', error);
+    return "a wonderful place on a beautiful day";
+  }
+}
+
+/**
+ * Generate consistent character description based on user info
+ */
+function generateConsistentCharacter(userInfo = {}) {
+  const userName = userInfo.userName || userInfo.name || "the child";
+  const favoriteColor = userInfo.favoriteColor || "blue";
+  
+  const descriptions = [
+    `${userName}, wearing a ${favoriteColor} shirt and comfortable shoes`,
+    `${userName}, dressed in ${favoriteColor} clothes with a bright smile`,
+    `${userName}, sporting a ${favoriteColor} jacket and looking excited`,
+    `${userName}, in a cozy ${favoriteColor} outfit and ready for adventure`
+  ];
+  
+  return descriptions[Math.floor(Math.random() * descriptions.length)];
+}
+
+/**
+ * Generate consistent companion description
+ */
+function generateConsistentCompanion(userInfo = {}) {
+  const favoriteAnimal = userInfo.favoriteAnimal || userInfo.favorite_animal || "puppy";
+  
+  const companions = [
+    `a friendly ${favoriteAnimal} who loves to explore`,
+    `a playful ${favoriteAnimal} with curious eyes`,
+    `a loyal ${favoriteAnimal} companion`,
+    `a gentle ${favoriteAnimal} friend`
+  ];
+  
+  return companions[Math.floor(Math.random() * companions.length)];
+}
+
+/**
+ * Get random weather for variety
+ */
+function getRandomWeather() {
+  const weather = [
+    "gentle sunshine", "soft morning light", "warm afternoon sun",
+    "cool evening breeze", "scattered fluffy clouds", "clear blue skies"
+  ];
+  return weather[Math.floor(Math.random() * weather.length)];
+}
+
+/**
+ * Get random time of day
+ */
+function getRandomTimeOfDay() {
+  const times = [
+    "a bright morning", "a sunny afternoon", "a peaceful evening",
+    "early morning", "late afternoon", "golden hour"
+  ];
+  return times[Math.floor(Math.random() * times.length)];
+}
+
+/**
+ * Get random atmosphere
+ */
+function getRandomAtmosphere() {
+  const atmospheres = [
+    "filled with excitement", "peaceful and calm", "bustling with activity",
+    "warm and welcoming", "alive with possibility", "glowing with wonder"
+  ];
+  return atmospheres[Math.floor(Math.random() * atmospheres.length)];
+}
+
+/**
+ * Enhance text with cultural context
+ */
+function enhanceWithCulturalContext(text, culturalLandmarks, userInfo = {}) {
+  try {
+    // Add cultural elements subtly
+    if (culturalLandmarks.length > 1) {
+      const landmark = culturalLandmarks[1];
+      if (!text.toLowerCase().includes('community') && !text.toLowerCase().includes('neighborhood')) {
+        // Add community context where appropriate
+        text = text.replace(/\b(park|street|area)\b/gi, match => `${match} in the ${landmark}`);
+      }
+    }
+    
+    return text;
+  } catch (error) {
+    console.error('Error enhancing cultural context:', error);
+    return text;
+  }
+}
+
+/**
+ * Ensure proper story flow between pages
+ */
+function ensureStoryFlow(page, pageIndex, totalPages) {
+  try {
+    // Add transitions for better flow
+    if (pageIndex === 0) {
+      // Ensure engaging opening
+      if (!page.match(/^(Once|One|It was|The|In a)/i)) {
+        page = `Once upon a time, ${page.charAt(0).toLowerCase()}${page.slice(1)}`;
+      }
+    } else if (pageIndex === totalPages - 1) {
+      // Ensure satisfying conclusion for last page
+      if (!page.match(/(happy|wonderful|amazing|perfect|beautiful|great).*[.!]$/i)) {
+        page += " It was a wonderful adventure!";
+      }
+    } else {
+      // Add connecting words for middle pages
+      const connectors = ["Then", "Next", "Suddenly", "Meanwhile", "After that"];
+      if (!page.match(/^(Then|Next|Suddenly|Meanwhile|After|And|But|So)/i)) {
+        const connector = connectors[Math.floor(Math.random() * connectors.length)];
+        page = `${connector}, ${page.charAt(0).toLowerCase()}${page.slice(1)}`;
+      }
+    }
+    
+    return page;
+  } catch (error) {
+    console.error('Error ensuring story flow:', error);
+    return page;
+  }
+}
+
+/**
+ * Generate continuation page when template is shorter than needed
+ */
+function generateContinuationPage(lastPage, pageNumber, userInfo = {}) {
+  try {
+    const userName = userInfo.userName || userInfo.name || "the child";
+    const favoriteAnimal = userInfo.favoriteAnimal || "puppy";
+    
+    const continuations = [
+      `${userName} discovered something new and exciting around the next corner.`,
+      `The adventure continued as ${userName} met a friendly ${favoriteAnimal}.`,
+      `${userName} found a beautiful place to rest and think about the journey.`,
+      `Something wonderful happened next in ${userName}'s amazing adventure.`,
+      `${userName} learned something important and felt very happy.`
+    ];
+    
+    const continuation = continuations[Math.floor(Math.random() * continuations.length)];
+    return `Page ${pageNumber + 1}: ${continuation}`;
+  } catch (error) {
+    console.error('Error generating continuation:', error);
+    return `Page ${pageNumber + 1}: The adventure continues in wonderful ways.`;
+  }
+}
+
+// ============= CHUNK 5: PREMIUM TEMPLATE & MAIN SERVE FUNCTION =============
+
+/**
+ * Fill premium template with advanced processing
+ */
+function fillPremiumTemplate(template, userInfo = {}, pageCount = 5) {
+  if (!template || typeof template !== 'object') {
+    console.warn('Invalid premium template provided');
+    return fillBasicTemplate(Array(pageCount).fill("Continue the story..."), userInfo, pageCount);
+  }
+
+  console.log(`[TIER 2.5A] Processing premium template with advanced features`);
+
+  try {
+    // Extract template structure
+    const scenes = template.scenes || [];
+    const endings = template.endings || [];
+    const reuse = template.reuse || {};
+
+    // Get user personalization
+    const userName = userInfo.userName || userInfo.name || "the child";
+    const favoriteColor = userInfo.favoriteColor || "blue";
+    const favoriteAnimal = userInfo.favoriteAnimal || "puppy";
+    const favoriteFood = userInfo.favoriteFood || "pizza";
+    const hobbies = userInfo.hobbies || "playing outside";
+    const specialRequest = userInfo.specialRequest || "adventure";
+
+    // Get cultural enhancements
+    const culturalLandmarks = getCulturalLandmarks(userInfo);
+    const setting = extractAndEnhanceSetting(culturalLandmarks, userInfo);
+
+    // Advanced replacement map with premium features
+    const replacements = {
+      // Core user data
+      '{userName}': userName,
+      '{name}': userName,
+      '{child}': userName,
+      '{favoriteColor}': favoriteColor,
+      '{favoriteAnimal}': favoriteAnimal,
+      '{favoriteFood}': favoriteFood,
+      '{hobbies}': hobbies,
+      '{specialRequest}': specialRequest,
+      
+      // Enhanced setting and atmosphere
+      '{setting}': setting,
+      '{culturalLandmark}': culturalLandmarks[0] || "a wonderful place",
+      '{atmosphere}': getRandomAtmosphere(),
+      '{weather}': getRandomWeather(),
+      '{timeOfDay}': getRandomTimeOfDay(),
+      
+      // Character consistency
+      '{characterDescription}': generateConsistentCharacter(userInfo),
+      '{companionDescription}': generateConsistentCompanion(userInfo),
+      
+      // Premium template features
+      '{swappableElement}': getSwappableElement(reuse.swappableElements),
+      '{weatherVariant}': getWeatherVariant(reuse.weatherVariants),
+      '{settingVariant}': getSettingVariant(reuse.settingVariants)
+    };
+
+    // Process scenes into pages
+    let processedPages = [];
+    
+    for (let i = 0; i < pageCount && i < scenes.length; i++) {
+      const scene = scenes[i];
+      let pageText = scene.text || scene;
+      
+      // Apply micro-variants if available
+      if (scene.microVariants && Math.random() < 0.3) {
+        const variants = scene.microVariants.alternatives || [];
+        if (variants.length > 0) {
+          const variant = variants[Math.floor(Math.random() * variants.length)];
+          pageText = variant;
+        }
+      }
+      
+      // Apply all replacements
+      Object.entries(replacements).forEach(([placeholder, replacement]) => {
+        const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'gi');
+        pageText = pageText.replace(regex, replacement);
+      });
+      
+      // Add cultural enhancement
+      pageText = enhanceWithCulturalContext(pageText, culturalLandmarks, userInfo);
+      
+      // Ensure story flow
+      pageText = ensureStoryFlow(pageText, i, pageCount);
+      
+      // Add hook if available and it's not the last page
+      if (scene.hook && i < pageCount - 1) {
+        pageText += ` ${scene.hook}`;
+      }
+      
+      // Add page number
+      if (!pageText.match(/^(Page \d+:|Chapter \d+:)/i)) {
+        pageText = `Page ${i + 1}: ${pageText}`;
+      }
+      
+      processedPages.push(pageText.trim());
+    }
+    
+    // If we need more pages, extend with scene variations or continuations
+    while (processedPages.length < pageCount) {
+      const pageIndex = processedPages.length;
+      let extraPage;
+      
+      if (scenes.length > pageIndex) {
+        // Use additional scenes if available
+        extraPage = processScene(scenes[pageIndex], replacements, pageIndex, userInfo);
+      } else {
+        // Generate continuation
+        extraPage = generateAdvancedContinuation(processedPages, pageIndex, userInfo, culturalLandmarks);
+      }
+      
+      processedPages.push(extraPage);
+    }
+    
+    // Final cleanup and validation
+    processedPages = processedPages.map((page, index) => {
+      // Remove remaining placeholders
+      let cleanPage = page.replace(/\{[^}]+\}/g, '');
+      
+      // Ensure proper capitalization
+      cleanPage = cleanPage.replace(/([.!?])\s*([a-z])/g, (match, punct, letter) => 
+        punct + ' ' + letter.toUpperCase()
+      );
+      
+      return cleanPage.trim();
+    });
+
+    console.log(`[TIER 2.5A] Successfully processed ${processedPages.length} pages with premium template`);
+    return processedPages;
+
+  } catch (error) {
+    console.error('[TIER 2.5A] Error in premium template processing:', error);
+    // Fallback to basic template processing
+    return fillBasicTemplate(Array(pageCount).fill("Continue the adventure..."), userInfo, pageCount);
+  }
+}
+
+/**
+ * Get swappable element from template reuse options
+ */
+function getSwappableElement(swappableElements = {}) {
+  const keys = Object.keys(swappableElements);
+  if (keys.length === 0) return "something wonderful";
+  
+  const randomKey = keys[Math.floor(Math.random() * keys.length)];
+  const options = swappableElements[randomKey];
+  return options[Math.floor(Math.random() * options.length)] || "something special";
+}
+
+/**
+ * Get weather variant
+ */
+function getWeatherVariant(weatherVariants = []) {
+  if (weatherVariants.length === 0) return getRandomWeather();
+  return weatherVariants[Math.floor(Math.random() * weatherVariants.length)];
+}
+
+/**
+ * Get setting variant
+ */
+function getSettingVariant(settingVariants = []) {
+  if (settingVariants.length === 0) return "a beautiful place";
+  return settingVariants[Math.floor(Math.random() * settingVariants.length)];
+}
+
+/**
+ * Process individual scene with advanced features
+ */
+function processScene(scene, replacements, pageIndex, userInfo) {
+  try {
+    let pageText = scene.text || scene;
+    
+    // Apply replacements
+    Object.entries(replacements).forEach(([placeholder, replacement]) => {
+      const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'gi');
+      pageText = pageText.replace(regex, replacement);
+    });
+    
+    // Apply micro-variants
+    if (scene.microVariants && scene.microVariants.optionalDetails) {
+      const details = scene.microVariants.optionalDetails;
+      if (Math.random() < 0.4 && details.length > 0) {
+        const detail = details[Math.floor(Math.random() * details.length)];
+        pageText += ` ${detail}`;
+      }
+    }
+    
+    // Add page number
+    if (!pageText.match(/^Page \d+:/i)) {
+      pageText = `Page ${pageIndex + 1}: ${pageText}`;
+    }
+    
+    return pageText.trim();
+  } catch (error) {
+    console.error('Error processing scene:', error);
+    return `Page ${pageIndex + 1}: The adventure continues...`;
+  }
+}
+
+/**
+ * Generate advanced continuation with cultural context
+ */
+function generateAdvancedContinuation(existingPages, pageIndex, userInfo, culturalLandmarks) {
+  try {
+    const userName = userInfo.userName || userInfo.name || "the child";
+    const lastPage = existingPages[existingPages.length - 1] || "";
+    
+    // Analyze last page for context
+    const hasAdventure = lastPage.toLowerCase().includes('adventure');
+    const hasDiscovery = lastPage.toLowerCase().includes('discover') || lastPage.toLowerCase().includes('found');
+    const hasFriend = lastPage.toLowerCase().includes('friend') || lastPage.toLowerCase().includes('meet');
+    
+    let continuation;
+    
+    if (hasAdventure) {
+      continuation = `${userName} felt excited about what would happen next in this amazing journey.`;
+    } else if (hasDiscovery) {
+      continuation = `${userName} looked around with wonder, eager to explore more of this special place.`;
+    } else if (hasFriend) {
+      continuation = `${userName} smiled happily, grateful for the new friendship and ready for more fun.`;
+    } else {
+      // Use cultural landmarks for continuation
+      const landmark = culturalLandmarks[Math.floor(Math.random() * culturalLandmarks.length)] || "a beautiful area";
+      continuation = `${userName} walked toward ${landmark}, feeling curious and excited about the adventure ahead.`;
+    }
+    
+    return `Page ${pageIndex + 1}: ${continuation}`;
+  } catch (error) {
+    console.error('Error generating advanced continuation:', error);
+    return `Page ${pageIndex + 1}: The story continues with wonderful surprises.`;
+  }
+}
+
+/**
+ * MAIN SERVE FUNCTION - 4-TIER FALLBACK SYSTEM
+ */
+serve(async (req) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  console.log(`[MAIN] Request received: ${req.method} ${req.url}`);
+  console.log('[MAIN] Starting 4-tier fallback system (2.5A → 2.5B → 2.5C → 2.5D)');
+
+  try {
+    const { 
+      prompt, 
+      userInfo = {}, 
+      pageCount = 5, 
+      difficulty = 'easy',
+      sessionId,
+      pageNumber = 1 
+    } = await req.json();
+
+    console.log(`[MAIN] Processing request: pageCount=${pageCount}, difficulty=${difficulty}, sessionId=${sessionId}`);
+
+    // TIER 2.5A: Premium Template System (Database + AI Enhanced)
+    try {
+      console.log('[TIER 2.5A] Attempting premium template with database integration...');
+      
+      const premiumResult = await processWithPremiumTemplate({
+        prompt,
+        userInfo,
+        pageCount,
+        difficulty,
+        sessionId,
+        pageNumber
+      });
+
+      if (premiumResult && premiumResult.success && premiumResult.pages && premiumResult.pages.length > 0) {
+        console.log(`[TIER 2.5A] ✅ SUCCESS - Generated ${premiumResult.pages.length} pages with premium system`);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          pages: premiumResult.pages,
+          tier: "2.5A",
+          processingTime: Date.now(),
+          metadata: {
+            tier: "2.5A",
+            source: "premium_template_system",
+            culturalEnhancement: true,
+            characterConsistency: true,
+            templateProcessing: "advanced",
+            fallbackLevel: 0
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        console.log('[TIER 2.5A] ❌ FAILED - No valid pages generated, falling back to Tier 2.5B');
+        throw new Error('Premium template system failed to generate valid pages');
+      }
+
+    } catch (tier2_5A_error) {
+      console.error('[TIER 2.5A] ERROR:', tier2_5A_error.message);
+    }
+
+    // TIER 2.5B: Advanced Template Fallback (Reduced Features)
+    try {
+      console.log('[TIER 2.5B] Attempting advanced template fallback...');
+      
+      const advancedResult = await processWithAdvancedTemplate({
+        prompt,
+        userInfo,
+        pageCount,
+        difficulty,
+        sessionId
+      });
+
+      if (advancedResult && advancedResult.success && advancedResult.pages && advancedResult.pages.length > 0) {
+        console.log(`[TIER 2.5B] ✅ SUCCESS - Generated ${advancedResult.pages.length} pages with advanced system`);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          pages: advancedResult.pages,
+          tier: "2.5B",
+          processingTime: Date.now(),
+          metadata: {
+            tier: "2.5B",
+            source: "advanced_template_system",
+            culturalEnhancement: true,
+            characterConsistency: false,
+            templateProcessing: "standard",
+            fallbackLevel: 1
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        console.log('[TIER 2.5B] ❌ FAILED - No valid pages generated, falling back to Tier 2.5C');
+        throw new Error('Advanced template system failed');
+      }
+
+    } catch (tier2_5B_error) {
+      console.error('[TIER 2.5B] ERROR:', tier2_5B_error.message);
+    }
+
+    // TIER 2.5C: Basic Template Fallback (Core Features Only)
+    try {
+      console.log('[TIER 2.5C] Attempting basic template fallback...');
+      
+      const basicResult = await processWithBasicTemplate({
+        prompt,
+        userInfo,
+        pageCount,
+        difficulty
+      });
+
+      if (basicResult && basicResult.success && basicResult.pages && basicResult.pages.length > 0) {
+        console.log(`[TIER 2.5C] ✅ SUCCESS - Generated ${basicResult.pages.length} pages with basic system`);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          pages: basicResult.pages,
+          tier: "2.5C",
+          processingTime: Date.now(),
+          metadata: {
+            tier: "2.5C",
+            source: "basic_template_system",
+            culturalEnhancement: false,
+            characterConsistency: false,
+            templateProcessing: "basic",
+            fallbackLevel: 2
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        console.log('[TIER 2.5C] ❌ FAILED - No valid pages generated, falling back to Tier 2.5D');
+        throw new Error('Basic template system failed');
+      }
+
+    } catch (tier2_5C_error) {
+      console.error('[TIER 2.5C] ERROR:', tier2_5C_error.message);
+    }
+
+    // TIER 2.5D: Nuclear Template Fallback (Guaranteed Success)
+    console.log('[TIER 2.5D] Applying nuclear template fallback - GUARANTEED SUCCESS');
+    
+    try {
+      const nuclearResult = processWithNuclearTemplate({
+        prompt,
+        userInfo,
+        pageCount,
+        difficulty
+      });
+
+      console.log(`[TIER 2.5D] ✅ NUCLEAR SUCCESS - Generated ${nuclearResult.pages.length} pages with nuclear system`);
+      
+      return new Response(JSON.stringify({
+        success: true,
+        pages: nuclearResult.pages,
+        tier: "2.5D",
+        processingTime: Date.now(),
+        metadata: {
+          tier: "2.5D",
+          source: "nuclear_template_system",
+          culturalEnhancement: false,
+          characterConsistency: false,
+          templateProcessing: "nuclear",
+          fallbackLevel: 3,
+          guaranteed: true
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+
+    } catch (nuclear_error) {
+      console.error('[TIER 2.5D] NUCLEAR ERROR (This should never happen):', nuclear_error);
+      
+      // Absolute last resort - hardcoded stories
+      const emergencyPages = generateEmergencyPages(pageCount, userInfo);
+      
+      return new Response(JSON.stringify({
+        success: true,
+        pages: emergencyPages,
+        tier: "2.5D-EMERGENCY",
+        processingTime: Date.now(),
+        metadata: {
+          tier: "2.5D-EMERGENCY",
+          source: "hardcoded_emergency_system",
+          culturalEnhancement: false,
+          characterConsistency: false,
+          templateProcessing: "emergency",
+          fallbackLevel: 4,
+          emergency: true
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+  } catch (global_error) {
+    console.error('[MAIN] GLOBAL ERROR:', global_error);
+    
+    // Ultimate failsafe
+    const emergencyPages = generateEmergencyPages(5, {});
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: "All tiers failed",
+      pages: emergencyPages,
+      tier: "EMERGENCY",
+      processingTime: Date.now(),
+      metadata: {
+        tier: "EMERGENCY",
+        source: "failsafe_system",
+        emergency: true,
+        error: global_error.message
+      }
+    }), {
+      status: 200, // Still return 200 to provide content
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
 });
+
+/**
+ * TIER 2.5A: Process with Premium Template System
+ */
+async function processWithPremiumTemplate({ prompt, userInfo, pageCount, difficulty, sessionId, pageNumber }) {
+  console.log('[TIER 2.5A] Processing with premium template system...');
+  
+  try {
+    // Try to get premium template from database/templateImporter
+    const templateData = await getRawTemplate(difficulty, null);
+    
+    if (templateData && typeof templateData === 'object' && templateData.scenes) {
+      console.log(`[TIER 2.5A] Retrieved premium template with ${templateData.scenes.length} scenes`);
+      
+      // Use premium template processor
+      const pages = fillPremiumTemplate(templateData, userInfo, pageCount);
+      
+      if (pages && pages.length > 0) {
+        return {
+          success: true,
+          pages: pages,
+          source: 'premium_template_database'
+        };
+      }
+    }
+    
+    throw new Error('No premium template available or failed to process');
+    
+  } catch (error) {
+    console.error('[TIER 2.5A] Premium template error:', error);
+    throw error;
+  }
+}
+
+/**
+ * TIER 2.5B: Process with Advanced Template System
+ */
+async function processWithAdvancedTemplate({ prompt, userInfo, pageCount, difficulty, sessionId }) {
+  console.log('[TIER 2.5B] Processing with advanced template system...');
+  
+  try {
+    // Try to get any available template
+    const templateData = await getTemplate(difficulty, null, userInfo, pageCount, 'production');
+    
+    if (templateData) {
+      let pages;
+      
+      if (Array.isArray(templateData)) {
+        // Simple string array template
+        pages = fillBasicTemplate(templateData, userInfo, pageCount);
+      } else if (templateData.pages) {
+        // Structured template with pages
+        pages = fillBasicTemplate(templateData.pages, userInfo, pageCount);
+      } else {
+        throw new Error('Invalid template structure');
+      }
+      
+      if (pages && pages.length > 0) {
+        return {
+          success: true,
+          pages: pages,
+          source: 'advanced_template_system'
+        };
+      }
+    }
+    
+    throw new Error('Advanced template processing failed');
+    
+  } catch (error) {
+    console.error('[TIER 2.5B] Advanced template error:', error);
+    throw error;
+  }
+}
+
+/**
+ * TIER 2.5C: Process with Basic Template System
+ */
+async function processWithBasicTemplate({ prompt, userInfo, pageCount, difficulty }) {
+  console.log('[TIER 2.5C] Processing with basic template system...');
+  
+  try {
+    // Use hardcoded basic templates as backup
+    const basicTemplates = getHardcodedTemplates(difficulty);
+    
+    if (basicTemplates && basicTemplates.length > 0) {
+      const randomTemplate = basicTemplates[Math.floor(Math.random() * basicTemplates.length)];
+      const pages = fillBasicTemplate(randomTemplate, userInfo, pageCount);
+      
+      if (pages && pages.length > 0) {
+        return {
+          success: true,
+          pages: pages,
+          source: 'basic_template_hardcoded'
+        };
+      }
+    }
+    
+    throw new Error('Basic template processing failed');
+    
+  } catch (error) {
+    console.error('[TIER 2.5C] Basic template error:', error);
+    throw error;
+  }
+}
+
+/**
+ * TIER 2.5D: Process with Nuclear Template System (Cannot Fail)
+ */
+function processWithNuclearTemplate({ prompt, userInfo, pageCount, difficulty }) {
+  console.log('[TIER 2.5D] Processing with nuclear template system (guaranteed success)...');
+  
+  try {
+    const userName = userInfo.userName || userInfo.name || "the child";
+    const favoriteColor = userInfo.favoriteColor || "blue";
+    const favoriteAnimal = userInfo.favoriteAnimal || "puppy";
+    
+    // Nuclear template - cannot fail
+    const nuclearTemplate = [
+      `${userName} woke up on a beautiful morning, feeling excited about the day ahead.`,
+      `${userName} put on their favorite ${favoriteColor} clothes and stepped outside into the sunshine.`,
+      `While walking through the neighborhood, ${userName} saw a friendly ${favoriteAnimal} playing in the park.`,
+      `${userName} spent time playing and having fun, making new friends along the way.`,
+      `As the day ended, ${userName} felt happy and grateful for such a wonderful adventure.`
+    ];
+    
+    // Extend or truncate to match pageCount
+    let pages = [...nuclearTemplate];
+    
+    while (pages.length < pageCount) {
+      const extraPage = `${userName} discovered something new and exciting, making the adventure even more special.`;
+      pages.push(`Page ${pages.length + 1}: ${extraPage}`);
+    }
+    
+    if (pages.length > pageCount) {
+      pages = pages.slice(0, pageCount);
+    }
+    
+    // Add page numbers
+    pages = pages.map((page, index) => {
+      if (!page.startsWith('Page ')) {
+        return `Page ${index + 1}: ${page}`;
+      }
+      return page;
+    });
+    
+    console.log(`[TIER 2.5D] Nuclear template generated ${pages.length} pages successfully`);
+    
+    return {
+      success: true,
+      pages: pages,
+      source: 'nuclear_template_guaranteed'
+    };
+    
+  } catch (error) {
+    console.error('[TIER 2.5D] Nuclear template error (this should be impossible):', error);
+    throw error;
+  }
+}
+
+/**
+ * Get hardcoded templates for basic fallback
+ */
+function getHardcodedTemplates(difficulty) {
+  const templates = {
+    'easy': [
+      [
+        "{userName} found a magical {favoriteColor} book in the library.",
+        "The book opened to show pictures of a friendly {favoriteAnimal}.",
+        "{userName} and the {favoriteAnimal} became best friends.",
+        "They played together in a beautiful garden full of {favoriteColor} flowers.",
+        "At the end of the day, {userName} felt very happy about this new friendship."
+      ],
+      [
+        "One sunny morning, {userName} decided to go on an adventure.",
+        "They packed their favorite {favoriteFood} for a snack.",
+        "Along the way, {userName} met a helpful {favoriteAnimal} who needed help.",
+        "Together they solved the problem and shared the {favoriteFood}.",
+        "{userName} learned that helping others makes adventures even better."
+      ]
+    ],
+    'medium': [
+      [
+        "{userName} discovered a mysterious {favoriteColor} door in their backyard.",
+        "Behind the door was a wonderful world where {favoriteAnimal}s could talk.",
+        "A wise old {favoriteAnimal} invited {userName} to join their community.",
+        "They worked together to solve a puzzle that would help everyone.",
+        "{userName} returned home with new wisdom and lasting friendships."
+      ]
+    ],
+    'hard': [
+      [
+        "{userName} inherited a special compass that always pointed toward adventure.",
+        "Following the compass led to an ancient forest where animals needed help.",
+        "The forest was losing its {favoriteColor} magic, and only kindness could restore it.",
+        "{userName} organized the animals to work together, sharing {favoriteFood} and stories.",
+        "Through teamwork and friendship, they restored the forest's magic and learned valuable lessons."
+      ]
+    ]
+  };
+  
+  return templates[difficulty] || templates['easy'];
+}
+
+/**
+ * Generate emergency pages as absolute last resort
+ */
+function generateEmergencyPages(pageCount, userInfo = {}) {
+  const userName = userInfo.userName || userInfo.name || "the child";
+  
+  const emergencyTemplate = [
+    `${userName} began a wonderful adventure.`,
+    `${userName} met friendly characters along the way.`,
+    `${userName} learned something important.`,
+    `${userName} helped others and made new friends.`,
+    `${userName} felt happy and proud of the journey.`
+  ];
+  
+  let pages = [];
+  for (let i = 0; i < pageCount; i++) {
+    const pageIndex = i % emergencyTemplate.length;
+    pages.push(`Page ${i + 1}: ${emergencyTemplate[pageIndex]}`);
+  }
+  
+  return pages;
+}
+
+// ============= END COMPLETE INTEGRATION =============
