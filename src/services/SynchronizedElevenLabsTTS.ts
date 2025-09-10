@@ -48,8 +48,8 @@ export class SynchronizedElevenLabsTTS {
       throw new Error(`Synchronized TTS failed: ${error.message}`);
     }
 
-    if (!data?.audioContent || !data?.alignment) {
-      throw new Error('No audio content or timing data received');
+    if (!data?.audioContent) {
+      throw new Error('No audio content received');
     }
 
     // Convert base64 audio to ArrayBuffer
@@ -60,7 +60,9 @@ export class SynchronizedElevenLabsTTS {
     }
 
     // Convert character-level timing to word-level timing
-    const wordTimings = this.convertCharacterTimingsToWords(text, data.alignment);
+    const wordTimings = data.alignment 
+      ? this.convertCharacterTimingsToWords(text, data.alignment)
+      : this.generateFallbackWordTimings(text.split(/(\s+)/).filter(word => word.trim().length > 0));
 
     console.log(`✅ Synchronized TTS Success: ${bytes.byteLength} bytes, ${wordTimings.length} word timings`);
     
