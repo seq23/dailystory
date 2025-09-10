@@ -39,7 +39,7 @@ export class SynchronizedElevenLabsTTS {
         text,
         voiceId,
         context,
-        useTimestamps: true
+        useTimestamps: context === 'learning'
       }
     });
 

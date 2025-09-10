@@ -116,7 +116,7 @@ export class SimplifiedAudioEngine {
   }
 
   async playTextWithSynchronization(opts: SynchronizedPlayOptions) {
-    const { text, voiceId, contentHash, context = 'learning', onWordHighlight } = opts;
+    const { text, voiceId, contentHash, context = 'conversation', onWordHighlight } = opts;
     
     if (!AudioPermissions.canPlayAudio()) {
       const reason = AudioPermissions.getBlockReason('any-audio');
